@@ -248,6 +248,45 @@ export type Database = {
         }
         Relationships: []
       }
+      days_off: {
+        Row: {
+          created_at: string
+          custom_end_time: string | null
+          custom_start_time: string | null
+          date: string
+          id: string
+          is_non_working: boolean
+          label: string | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          custom_end_time?: string | null
+          custom_start_time?: string | null
+          date: string
+          id?: string
+          is_non_working?: boolean
+          label?: string | null
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          custom_end_time?: string | null
+          custom_start_time?: string | null
+          date?: string
+          id?: string
+          is_non_working?: boolean
+          label?: string | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       expected_payments: {
         Row: {
           amount: number
@@ -521,6 +560,39 @@ export type Database = {
           id?: string
           name?: string
           price?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      working_schedule: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          is_working: boolean
+          start_time: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time?: string
+          id?: string
+          is_working?: boolean
+          start_time?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_working?: boolean
+          start_time?: string
           updated_at?: string
           user_id?: string
         }
