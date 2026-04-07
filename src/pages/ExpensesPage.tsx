@@ -1,23 +1,41 @@
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useExpenses, useCreateExpense, useDeleteExpense } from "@/hooks/useData";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
-const mockExpenses = [
-  { id: 1, category: "Rent", amount: 800, date: "Apr 1, 2026", recurring: true },
-  { id: 2, category: "Materials & Oils", amount: 250, date: "Apr 3, 2026", recurring: false },
-  { id: 3, category: "Insurance", amount: 150, date: "Apr 1, 2026", recurring: true },
-  { id: 4, category: "Equipment", amount: 120, date: "Apr 5, 2026", recurring: false },
-  { id: 5, category: "Marketing", amount: 80, date: "Apr 2, 2026", recurring: true },
-  { id: 6, category: "Utilities", amount: 100, date: "Apr 1, 2026", recurring: true },
-  { id: 7, category: "Laundry", amount: 60, date: "Apr 4, 2026", recurring: true },
-  { id: 8, category: "Software", amount: 40, date: "Apr 1, 2026", recurring: true },
-];
-
-const totalMonthly = mockExpenses.reduce((sum, e) => sum + e.amount, 0);
-const recurringTotal = mockExpenses.filter(e => e.recurring).reduce((sum, e) => sum + e.amount, 0);
+const CATEGORIES = ["Rent", "Materials", "Insurance", "Equipment", "Marketing", "Utilities", "Laundry", "Software", "Other"];
 
 export default function ExpensesPage() {
+  const { data: expenses = [], isLoading } = useExpenses();
+  const createExpense = useCreateExpense();
+  const deleteExpense = useDeleteExpense();
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ category: "Other", amount: 0, date: new Date().toISOString().split("T")[0], description: "", is_recurring: false });
+
+  const totalMonthly = expenses.reduce((s, e) => s + Number(e.amount), 0);
+  const recurringTotal = expenses.filter(e => e.is_recurring).reduce((s, e) => s + Number(e.amount), 0);
+
+  const handleCreate = async () => {
+    if (!form.amount) return;
+    try {
+      await createExpense.mutateAsync(form);
+      setForm({ category: "Other", amount: 0, date: new Date().toISOString().split("T")[0], description: "", is_recurring: false });
+      setOpen(false);
+      toast({ title: "Expense added" });
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    }
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -26,9 +44,33 @@ export default function ExpensesPage() {
             <h1 className="text-2xl font-bold text-foreground">Expenses</h1>
             <p className="text-muted-foreground mt-1">Track your business costs</p>
           </div>
-          <Button>
-            <Plus className="h-4 w-4 mr-1" /> Add Expense
-          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button><Plus className="h-4 w-4 mr-1" /> Add Expense</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Add Expense</DialogTitle></DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Category</Label>
+                  <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2"><Label>Amount (€) *</Label><Input type="number" step="0.01" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} /></div>
+                <div className="space-y-2"><Label>Date</Label><Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>Description</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
+                <div className="flex items-center gap-2">
+                  <Checkbox checked={form.is_recurring} onCheckedChange={v => setForm(f => ({ ...f, is_recurring: !!v }))} id="recurring" />
+                  <Label htmlFor="recurring">Recurring monthly</Label>
+                </div>
+                <Button onClick={handleCreate} className="w-full" disabled={createExpense.isPending}>
+                  {createExpense.isPending ? "Adding..." : "Add Expense"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -42,34 +84,46 @@ export default function ExpensesPage() {
           </div>
         </div>
 
-        <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Category</th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Amount</th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Date</th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Type</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mockExpenses.map((expense) => (
-                  <tr key={expense.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer">
-                    <td className="p-4 text-sm font-medium text-foreground">{expense.category}</td>
-                    <td className="p-4 text-sm font-semibold text-foreground">€{expense.amount}</td>
-                    <td className="p-4 text-sm text-muted-foreground">{expense.date}</td>
-                    <td className="p-4">
-                      <Badge variant={expense.recurring ? "default" : "secondary"} className="text-xs">
-                        {expense.recurring ? "Recurring" : "One-time"}
-                      </Badge>
-                    </td>
+        {isLoading ? (
+          <p className="text-muted-foreground text-center py-8">Loading...</p>
+        ) : expenses.length === 0 ? (
+          <p className="text-muted-foreground text-center py-8">No expenses yet. Add your first expense!</p>
+        ) : (
+          <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Category</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Amount</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Date</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Type</th>
+                    <th className="p-4 w-10"></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {expenses.map((expense) => (
+                    <tr key={expense.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                      <td className="p-4 text-sm font-medium text-foreground">{expense.category}</td>
+                      <td className="p-4 text-sm font-semibold text-foreground">€{Number(expense.amount).toFixed(2)}</td>
+                      <td className="p-4 text-sm text-muted-foreground">{expense.date}</td>
+                      <td className="p-4">
+                        <Badge variant={expense.is_recurring ? "default" : "secondary"} className="text-xs">
+                          {expense.is_recurring ? "Recurring" : "One-time"}
+                        </Badge>
+                      </td>
+                      <td className="p-4">
+                        <button onClick={() => deleteExpense.mutate(expense.id)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </AppLayout>
   );
