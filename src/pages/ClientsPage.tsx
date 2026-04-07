@@ -2,7 +2,8 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Phone, Mail, Send, Trash2 } from "lucide-react";
+import { Plus, Search, Phone, Mail, Send, Trash2, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/csvExport";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useClients, useCreateClient, useDeleteClient } from "@/hooks/useData";
@@ -56,10 +57,17 @@ export default function ClientsPage() {
             <h1 className="text-2xl font-bold text-foreground">{t("clients.title")}</h1>
             <p className="text-muted-foreground mt-1">{t("clients.totalClients", { count: clients.length })}</p>
           </div>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-1" /> {t("clients.addClient")}</Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => {
+              downloadCSV("clients.csv",
+                ["Name", "Phone", "Email", "Telegram", "Notes"],
+                clients.map(c => [c.name, c.phone || "", c.email || "", c.telegram || "", c.notes || ""])
+              );
+            }}><Download className="h-4 w-4 mr-1" /> {t("export.csv")}</Button>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button><Plus className="h-4 w-4 mr-1" /> {t("clients.addClient")}</Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>{t("clients.addClient")}</DialogTitle></DialogHeader>
               <div className="space-y-4">

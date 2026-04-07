@@ -343,6 +343,10 @@ export const translations = {
   "toast.uploadFailed": { en: "Upload failed", uk: "Помилка завантаження" },
   "toast.paymentReceived": { en: "Payment received! ✅", uk: "Платіж отримано! ✅" },
   "toast.paymentRecordedDesc": { en: "€{amount} recorded as income.", uk: "€{amount} записано як дохід." },
+
+  // Export
+  "export.csv": { en: "Export CSV", uk: "Експорт CSV" },
+  "toast.exported": { en: "CSV exported", uk: "CSV експортовано" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;
