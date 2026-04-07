@@ -135,7 +135,7 @@ export default function BreakevenPage() {
               const target = goal.target;
               const progress = Math.min((monthlyIncome / Math.max(target, 1)) * 100, 100);
               const remaining = Math.max(target - monthlyIncome, 0);
-              const sessionsNeeded = remaining > 0 ? Math.ceil(remaining / avgServicePrice) : 0;
+              const { sessionsNeeded, isRealistic } = sessionsNeededForTarget(remaining, avgServicePrice, remainingCapacity);
               const reached = monthlyIncome >= target;
 
               return (
@@ -152,9 +152,21 @@ export default function BreakevenPage() {
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>€{monthlyIncome.toLocaleString()} / €{target.toLocaleString()}</span>
                     {remaining > 0 ? (
-                      <span>{t("goals.remaining", { amount: remaining.toLocaleString() })} · {t("goals.sessionsNeeded", { count: sessionsNeeded })}</span>
+                      <div className="flex items-center gap-2">
+                        <span>{t("goals.remaining", { amount: remaining.toLocaleString() })} · {t("goals.sessionsNeeded", { count: sessionsNeeded })}</span>
+                        {!isRealistic && (
+                          <span className="inline-flex items-center gap-0.5 text-warning" title={t("capacity.unrealisticWarning", { slots: remainingCapacity })}>
+                            <AlertTriangle className="h-3.5 w-3.5" />
+                          </span>
+                        )}
+                      </div>
                     ) : null}
                   </div>
+                  {remaining > 0 && !isRealistic && (
+                    <p className="text-xs text-warning mt-1">
+                      {t("capacity.unrealisticWarning", { slots: remainingCapacity })}
+                    </p>
+                  )}
                 </div>
               );
             })}
