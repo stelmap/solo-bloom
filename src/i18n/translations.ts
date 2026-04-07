@@ -466,6 +466,11 @@ export const translations = {
   "dashboard.goals": { en: "Goal Progress", uk: "Прогрес цілей" },
   "dashboard.appointmentsNeeded": { en: "~{count} sessions to go", uk: "~{count} сеансів залишилось" },
   "dashboard.weeklyCapacity": { en: "Weekly Capacity", uk: "Тижнева завантаженість" },
+
+  // Capacity
+  "capacity.exceedsCapacity": { en: "Exceeds capacity", uk: "Перевищує можливості" },
+  "capacity.unrealisticWarning": { en: "This goal exceeds your remaining capacity of {slots} sessions this month", uk: "Ця ціль перевищує вашу залишкову ємність у {slots} сеансів цього місяця" },
+  "capacity.remainingSlots": { en: "{slots} sessions left this month", uk: "{slots} сеансів залишилось цього місяця" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;
