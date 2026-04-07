@@ -159,7 +159,14 @@ export default function CalendarPage() {
     });
     setEditAptId(apt.id);
     setDetailApt(null);
-    setEditOpen(true);
+
+    if (apt.recurring_rule_id) {
+      // For recurring: show scope dialog after edit form is saved
+      setPendingEditApt(apt);
+      setEditOpen(true);
+    } else {
+      setEditOpen(true);
+    }
   };
 
   const handleEdit = async () => {
