@@ -275,13 +275,33 @@ export function useUpdateProfile() {
 // Dashboard stats
 export function useDashboardStats() {
   const { user } = useAuth();
-  const today = new Date().toISOString().split("T")[0];
+  const now = new Date();
+  const today = now.toISOString().split("T")[0];
   const monthStart = today.substring(0, 7) + "-01";
+
+  // Week boundaries (Mon-Sun)
+  const dayOfWeek = now.getDay();
+  const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  const thisMonday = new Date(now);
+  thisMonday.setDate(now.getDate() - mondayOffset);
+  const lastMonday = new Date(thisMonday);
+  lastMonday.setDate(thisMonday.getDate() - 7);
+  const lastSunday = new Date(thisMonday);
+  lastSunday.setDate(thisMonday.getDate() - 1);
+
+  const thisMondayStr = thisMonday.toISOString().split("T")[0];
+  const lastMondayStr = lastMonday.toISOString().split("T")[0];
+  const lastSundayStr = lastSunday.toISOString().split("T")[0];
+
+  // Days in month
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const daysPastInMonth = now.getDate();
+  const daysLeftInMonth = daysInMonth - daysPastInMonth;
 
   return useQuery({
     queryKey: ["dashboard-stats", user?.id, today],
     queryFn: async () => {
-      const [incomeRes, expenseRes, clientRes, todayAptRes] = await Promise.all([
+      const [incomeRes, expenseRes, clientRes, todayAptRes, monthAptRes, profileRes] = await Promise.all([
         supabase.from("income").select("amount, date"),
         supabase.from("expenses").select("amount, date, is_recurring"),
         supabase.from("clients").select("id", { count: "exact", head: true }),
@@ -290,6 +310,13 @@ export function useDashboardStats() {
           .gte("scheduled_at", today + "T00:00:00")
           .lt("scheduled_at", today + "T23:59:59")
           .order("scheduled_at"),
+        supabase.from("appointments")
+          .select("id")
+          .gte("scheduled_at", monthStart + "T00:00:00"),
+        supabase.from("profiles")
+          .select("working_days_per_week, sessions_per_day")
+          .eq("user_id", user!.id)
+          .single(),
       ]);
 
       const allIncome = incomeRes.data ?? [];
@@ -298,6 +325,19 @@ export function useDashboardStats() {
       const monthlyIncome = allIncome.filter(i => i.date >= monthStart).reduce((s, i) => s + Number(i.amount), 0);
       const monthlyExpenses = allExpenses.filter(e => e.date >= monthStart).reduce((s, e) => s + Number(e.amount), 0);
 
+      const thisWeekIncome = allIncome
+        .filter(i => i.date >= thisMondayStr && i.date <= today)
+        .reduce((s, i) => s + Number(i.amount), 0);
+      const lastWeekIncome = allIncome
+        .filter(i => i.date >= lastMondayStr && i.date <= lastSundayStr)
+        .reduce((s, i) => s + Number(i.amount), 0);
+
+      const profile = profileRes.data as any;
+      const workingDays = profile?.working_days_per_week ?? 5;
+      const sessionsPerDay = profile?.sessions_per_day ?? 6;
+      const maxMonthlyCapacity = workingDays * 4 * sessionsPerDay;
+      const monthlyAppointments = monthAptRes.data?.length ?? 0;
+
       return {
         todayIncome,
         monthlyIncome,
@@ -305,6 +345,12 @@ export function useDashboardStats() {
         netProfit: monthlyIncome - monthlyExpenses,
         clientCount: clientRes.count ?? 0,
         todayAppointments: todayAptRes.data ?? [],
+        thisWeekIncome,
+        lastWeekIncome,
+        monthlyAppointments,
+        maxMonthlyCapacity,
+        daysPastInMonth,
+        daysLeftInMonth,
       };
     },
     enabled: !!user,
