@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { calculateCapacity } from "@/lib/capacity";
 
 const INVALIDATE_ALL = ["clients", "services", "appointments", "expenses", "income", "dashboard-stats", "expected-payments", "working-schedule", "days-off", "recurring-rules"];
 
@@ -790,7 +791,7 @@ export function useDashboardStats() {
   return useQuery({
     queryKey: ["dashboard-stats", user?.id, today],
     queryFn: async () => {
-      const [incomeRes, expenseRes, clientRes, todayAptRes, monthAptRes, profileRes, scheduleRes] = await Promise.all([
+      const [incomeRes, expenseRes, clientRes, todayAptRes, monthAptRes, profileRes, scheduleRes, daysOffRes] = await Promise.all([
         supabase.from("income").select("amount, date"),
         supabase.from("expenses").select("amount, date, is_recurring"),
         supabase.from("clients").select("id", { count: "exact", head: true }),
@@ -803,11 +804,15 @@ export function useDashboardStats() {
           .select("id")
           .gte("scheduled_at", monthStart + "T00:00:00"),
         supabase.from("profiles")
-          .select("working_days_per_week, sessions_per_day")
+          .select("working_days_per_week, sessions_per_day, default_duration")
           .eq("user_id", user!.id)
           .single(),
         supabase.from("working_schedule")
           .select("day_of_week, is_working, start_time, end_time"),
+        supabase.from("days_off")
+          .select("date, is_non_working, custom_start_time, custom_end_time")
+          .gte("date", monthStart)
+          .lte("date", today.substring(0, 7) + "-31"),
       ]);
 
       const allIncome = incomeRes.data ?? [];
@@ -820,25 +825,27 @@ export function useDashboardStats() {
 
       const profile = profileRes.data as any;
       const schedule = (scheduleRes.data ?? []) as Array<{ day_of_week: number; is_working: boolean; start_time: string; end_time: string }>;
+      const daysOff = (daysOffRes.data ?? []) as Array<{ date: string; is_non_working: boolean; custom_start_time: string | null; custom_end_time: string | null }>;
 
-      let workingDaysPerWeek: number;
-      if (schedule.length > 0) {
-        workingDaysPerWeek = schedule.filter(s => s.is_working).length;
-      } else {
-        workingDaysPerWeek = profile?.working_days_per_week ?? 5;
-      }
+      const defaultDuration = profile?.default_duration ?? 60;
+      const fallbackWorkDays = profile?.working_days_per_week ?? 5;
+      const fallbackSessionsPerDay = profile?.sessions_per_day ?? 6;
 
-      const sessionsPerDay = profile?.sessions_per_day ?? 6;
-      const maxMonthlyCapacity = workingDaysPerWeek * 4 * sessionsPerDay;
+      // Realistic capacity calculation
+      const capacity = calculateCapacity(
+        schedule, daysOff, defaultDuration, now,
+        fallbackWorkDays, fallbackSessionsPerDay,
+      );
+
       const monthlyAppointments = monthAptRes.data?.length ?? 0;
 
-      const weeklySlots = workingDaysPerWeek * sessionsPerDay;
+      // Weekly capacity with real data
       const weekAptRes = await supabase.from("appointments").select("id, scheduled_at, status")
         .gte("scheduled_at", thisMondayStr + "T00:00:00")
         .lt("scheduled_at", new Date(thisMonday.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] + "T00:00:00");
       const weekAppointments = (weekAptRes.data ?? []).filter(a => a.status !== "cancelled");
       const bookedSlots = weekAppointments.length;
-      const freeSlots = Math.max(weeklySlots - bookedSlots, 0);
+      const freeSlots = Math.max(capacity.weeklyCapacity - bookedSlots, 0);
 
       return {
         todayIncome, monthlyIncome, monthlyExpenses,
@@ -846,10 +853,15 @@ export function useDashboardStats() {
         clientCount: clientRes.count ?? 0,
         todayAppointments: todayAptRes.data ?? [],
         thisWeekIncome, lastWeekIncome,
-        monthlyAppointments, maxMonthlyCapacity,
+        monthlyAppointments,
+        maxMonthlyCapacity: capacity.totalMonthlyCapacity,
+        remainingMonthlyCapacity: capacity.maxMonthlyCapacity,
         daysPastInMonth, daysLeftInMonth,
-        weeklySlots, bookedSlots, freeSlots,
+        weeklySlots: capacity.weeklyCapacity,
+        bookedSlots, freeSlots,
         schedule,
+        totalWorkingDays: capacity.totalWorkingDays,
+        remainingWorkingDays: capacity.remainingWorkingDays,
       };
     },
     enabled: !!user,
