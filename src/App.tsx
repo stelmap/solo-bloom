@@ -14,6 +14,7 @@ import IncomePage from "./pages/IncomePage";
 import ExpensesPage from "./pages/ExpensesPage";
 import BreakevenPage from "./pages/BreakevenPage";
 import SettingsPage from "./pages/SettingsPage";
+import OnboardingPage from "./pages/OnboardingPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
             <Route path="/clients" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />

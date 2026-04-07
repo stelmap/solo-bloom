@@ -191,10 +191,13 @@ export type Database = {
           full_name: string | null
           id: string
           language: string
+          onboarding_completed: boolean
           phone: string | null
           reminder_minutes: number
+          sessions_per_day: number
           updated_at: string
           user_id: string
+          working_days_per_week: number
         }
         Insert: {
           business_name?: string | null
@@ -202,10 +205,13 @@ export type Database = {
           full_name?: string | null
           id?: string
           language?: string
+          onboarding_completed?: boolean
           phone?: string | null
           reminder_minutes?: number
+          sessions_per_day?: number
           updated_at?: string
           user_id: string
+          working_days_per_week?: number
         }
         Update: {
           business_name?: string | null
@@ -213,10 +219,13 @@ export type Database = {
           full_name?: string | null
           id?: string
           language?: string
+          onboarding_completed?: boolean
           phone?: string | null
           reminder_minutes?: number
+          sessions_per_day?: number
           updated_at?: string
           user_id?: string
+          working_days_per_week?: number
         }
         Relationships: []
       }
