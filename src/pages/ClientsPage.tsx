@@ -2,39 +2,61 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Phone, Mail, Trash2 } from "lucide-react";
+import { Plus, Search, Phone, Mail, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useClients, useCreateClient, useDeleteClient } from "@/hooks/useData";
+import { useClients, useCreateClient, useUpdateClient, useDeleteClient } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ClientsPage() {
   const { data: clients = [], isLoading } = useClients();
   const createClient = useCreateClient();
+  const updateClient = useUpdateClient();
   const deleteClient = useDeleteClient();
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", phone: "", email: "", notes: "" });
 
   const filtered = clients.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()));
 
-  const handleCreate = async () => {
+  const openEdit = (client: any) => {
+    setEditId(client.id);
+    setForm({ name: client.name, phone: client.phone || "", email: client.email || "", notes: client.notes || "" });
+    setOpen(true);
+  };
+
+  const openCreate = () => {
+    setEditId(null);
+    setForm({ name: "", phone: "", email: "", notes: "" });
+    setOpen(true);
+  };
+
+  const handleSubmit = async () => {
     if (!form.name.trim()) return;
     try {
-      await createClient.mutateAsync(form);
-      setForm({ name: "", phone: "", email: "", notes: "" });
+      if (editId) {
+        await updateClient.mutateAsync({ id: editId, ...form });
+        toast({ title: "Client updated" });
+      } else {
+        await createClient.mutateAsync(form);
+        toast({ title: "Client added" });
+      }
       setOpen(false);
-      toast({ title: "Client added" });
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async () => {
+    if (!deleteId) return;
     try {
-      await deleteClient.mutateAsync(id);
-      toast({ title: "Client removed" });
+      await deleteClient.mutateAsync(deleteId);
+      toast({ title: "Client deleted" });
+      setDeleteId(null);
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     }
@@ -50,17 +72,17 @@ export default function ClientsPage() {
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-1" /> Add Client</Button>
+              <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Add Client</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Add Client</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{editId ? "Edit Client" : "Add Client"}</DialogTitle></DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2"><Label>Name *</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>Phone</Label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>Email</Label><Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>Notes</Label><Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
-                <Button onClick={handleCreate} className="w-full" disabled={createClient.isPending}>
-                  {createClient.isPending ? "Adding..." : "Add Client"}
+                <Button onClick={handleSubmit} className="w-full" disabled={createClient.isPending || updateClient.isPending}>
+                  {editId ? "Save Changes" : "Add Client"}
                 </Button>
               </div>
             </DialogContent>
@@ -80,9 +102,14 @@ export default function ClientsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((client) => (
               <div key={client.id} className="bg-card rounded-xl border border-border p-5 animate-fade-in group relative">
-                <button onClick={() => handleDelete(client.id)} className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-destructive/10 text-destructive">
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onClick={() => openEdit(client)} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                  <button onClick={() => setDeleteId(client.id)} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
                 <div className="flex items-start gap-3 mb-3">
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
                     {client.name.split(" ").map(n => n[0]).join("").toUpperCase()}
@@ -101,6 +128,15 @@ export default function ClientsPage() {
           </div>
         )}
       </div>
+
+      <ConfirmDeleteDialog
+        open={!!deleteId}
+        onOpenChange={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Delete client?"
+        description="This will permanently delete this client and their data. Appointments linked to this client may also be affected."
+        loading={deleteClient.isPending}
+      />
     </AppLayout>
   );
 }
