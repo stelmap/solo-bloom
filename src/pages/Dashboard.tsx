@@ -3,12 +3,13 @@ import { MetricCard } from "@/components/MetricCard";
 import { BreakevenProgress } from "@/components/BreakevenProgress";
 import { SmartInsights, generateInsights } from "@/components/SmartInsights";
 import { Progress } from "@/components/ui/progress";
-import { DollarSign, Users, TrendingUp, TrendingDown, Clock, Target } from "lucide-react";
+import { DollarSign, Users, TrendingUp, TrendingDown, Clock, Target, AlertTriangle } from "lucide-react";
 import { useDashboardStats, useBreakevenGoals, useServices } from "@/hooks/useData";
 import { format } from "date-fns";
 import { useMemo } from "react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
+import { sessionsNeededForTarget } from "@/lib/capacity";
 
 export default function Dashboard() {
   const { data: stats, isLoading } = useDashboardStats();
@@ -20,10 +21,13 @@ export default function Dashboard() {
     todayIncome: 0, monthlyIncome: 0, monthlyExpenses: 0, netProfit: 0,
     clientCount: 0, todayAppointments: [], thisWeekIncome: 0, lastWeekIncome: 0,
     monthlyAppointments: 0, maxMonthlyCapacity: 0, daysPastInMonth: 1, daysLeftInMonth: 0,
+    remainingMonthlyCapacity: 0, remainingWorkingDays: 0, totalWorkingDays: 0,
   };
 
   const avgServicePrice = services.length > 0
     ? services.reduce((sum, sv) => sum + Number(sv.price), 0) / services.length : 1;
+
+  const remainingCapacity = Math.max((s.remainingMonthlyCapacity ?? s.maxMonthlyCapacity) - s.monthlyAppointments, 0);
 
   const insights = useMemo(() => generateInsights({
     monthlyIncome: s.monthlyIncome,
@@ -80,7 +84,7 @@ export default function Dashboard() {
                 const target = goal.target;
                 const progress = Math.min((s.monthlyIncome / Math.max(target, 1)) * 100, 100);
                 const remaining = Math.max(target - s.monthlyIncome, 0);
-                const sessionsNeeded = remaining > 0 ? Math.ceil(remaining / avgServicePrice) : 0;
+                const { sessionsNeeded, isRealistic } = sessionsNeededForTarget(remaining, avgServicePrice, remainingCapacity);
                 const reached = s.monthlyIncome >= target;
                 return (
                   <div key={goal.id}>
@@ -93,9 +97,17 @@ export default function Dashboard() {
                     </div>
                     <Progress value={progress} className={cn("h-2", reached ? "[&>div]:bg-success" : "")} />
                     {remaining > 0 && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {t("dashboard.appointmentsNeeded", { count: sessionsNeeded })}
-                      </p>
+                      <div className="flex items-center gap-1 mt-1">
+                        <p className="text-xs text-muted-foreground">
+                          {t("dashboard.appointmentsNeeded", { count: sessionsNeeded })}
+                        </p>
+                        {!isRealistic && (
+                          <span className="inline-flex items-center gap-0.5 text-xs text-warning">
+                            <AlertTriangle className="h-3 w-3" />
+                            {t("capacity.exceedsCapacity")}
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
                 );
