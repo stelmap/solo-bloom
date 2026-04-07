@@ -19,8 +19,8 @@ export default function AuthPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
+        <div className="animate-pulse text-secondary-foreground/50">Loading...</div>
       </div>
     );
   }
@@ -65,64 +65,101 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-foreground">
+    <div className="min-h-screen flex">
+      {/* Left panel — dark hero */}
+      <div className="hidden lg:flex lg:w-1/2 bg-secondary items-center justify-center p-12 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-secondary via-accent to-secondary" />
+        <div className="relative z-10 max-w-md space-y-6 text-center">
+          <h1 className="text-4xl font-bold text-secondary-foreground tracking-tight">
             Solo<span className="text-primary">Pro</span>
           </h1>
-          <p className="text-muted-foreground text-sm">
-            {isLogin ? "Welcome back" : "Create your account"}
+          <p className="text-secondary-foreground/70 text-lg leading-relaxed">
+            For solo business owners. No bloat. No cross-feature confusion. Just the tool you need.
           </p>
+          <div className="flex items-center justify-center gap-8 pt-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-primary">100%</p>
+              <p className="text-xs text-secondary-foreground/50 mt-1">Cloud-based</p>
+            </div>
+            <div className="h-8 w-px bg-secondary-foreground/20" />
+            <div className="text-center">
+              <p className="text-2xl font-bold text-primary">Simple</p>
+              <p className="text-xs text-secondary-foreground/50 mt-1">Easy to use</p>
+            </div>
+            <div className="h-8 w-px bg-secondary-foreground/20" />
+            <div className="text-center">
+              <p className="text-2xl font-bold text-primary">Secure</p>
+              <p className="text-xs text-secondary-foreground/50 mt-1">Your data safe</p>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="bg-card rounded-xl border border-border p-6 space-y-4">
-          {!isLogin && (
+      {/* Right panel — form */}
+      <div className="flex-1 flex items-center justify-center p-6 bg-background">
+        <div className="w-full max-w-sm space-y-6">
+          <div className="text-center space-y-2 lg:hidden">
+            <h1 className="text-2xl font-bold text-foreground">
+              Solo<span className="text-primary">Pro</span>
+            </h1>
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-xl font-bold text-foreground">
+              {isLogin ? "Welcome back" : "Create your account"}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {isLogin ? "Sign in to manage your business" : "Get started in seconds"}
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {!isLogin && (
+              <div className="space-y-2">
+                <Label>Full Name</Label>
+                <Input
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Your name"
+                  required={!isLogin}
+                />
+              </div>
+            )}
             <div className="space-y-2">
-              <Label>Full Name</Label>
+              <Label>Email</Label>
               <Input
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Your name"
-                required={!isLogin}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
               />
             </div>
-          )}
-          <div className="space-y-2">
-            <Label>Email</Label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Password</Label>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              minLength={6}
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Loading..." : isLogin ? "Sign In" : "Create Account"}
-          </Button>
-        </form>
+            <div className="space-y-2">
+              <Label>Password</Label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                minLength={6}
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Loading..." : isLogin ? "Sign In" : "Create Account"}
+            </Button>
+          </form>
 
-        <p className="text-center text-sm text-muted-foreground">
-          {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-primary font-medium hover:underline"
-          >
-            {isLogin ? "Sign up" : "Sign in"}
-          </button>
-        </p>
+          <p className="text-center text-sm text-muted-foreground">
+            {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+            <button
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-primary font-medium hover:underline"
+            >
+              {isLogin ? "Sign up" : "Sign in"}
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );
