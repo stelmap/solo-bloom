@@ -2,9 +2,10 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Phone, Mail, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Phone, Mail, Send, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useClients, useCreateClient, useUpdateClient, useDeleteClient } from "@/hooks/useData";
+import { useNavigate } from "react-router-dom";
+import { useClients, useCreateClient, useDeleteClient } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -12,40 +13,23 @@ import { useToast } from "@/hooks/use-toast";
 export default function ClientsPage() {
   const { data: clients = [], isLoading } = useClients();
   const createClient = useCreateClient();
-  const updateClient = useUpdateClient();
   const deleteClient = useDeleteClient();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
-  const [editId, setEditId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", phone: "", email: "", notes: "" });
+  const [form, setForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "" });
 
   const filtered = clients.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()));
 
-  const openEdit = (client: any) => {
-    setEditId(client.id);
-    setForm({ name: client.name, phone: client.phone || "", email: client.email || "", notes: client.notes || "" });
-    setOpen(true);
-  };
-
-  const openCreate = () => {
-    setEditId(null);
-    setForm({ name: "", phone: "", email: "", notes: "" });
-    setOpen(true);
-  };
-
-  const handleSubmit = async () => {
+  const handleCreate = async () => {
     if (!form.name.trim()) return;
     try {
-      if (editId) {
-        await updateClient.mutateAsync({ id: editId, ...form });
-        toast({ title: "Client updated" });
-      } else {
-        await createClient.mutateAsync(form);
-        toast({ title: "Client added" });
-      }
+      await createClient.mutateAsync(form);
+      setForm({ name: "", phone: "", email: "", notes: "", telegram: "" });
       setOpen(false);
+      toast({ title: "Client added" });
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     }
@@ -72,17 +56,18 @@ export default function ClientsPage() {
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Add Client</Button>
+              <Button><Plus className="h-4 w-4 mr-1" /> Add Client</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>{editId ? "Edit Client" : "Add Client"}</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>Add Client</DialogTitle></DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2"><Label>Name *</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>Phone</Label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>Email</Label><Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>Telegram</Label><Input placeholder="username" value={form.telegram} onChange={e => setForm(f => ({ ...f, telegram: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>Notes</Label><Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
-                <Button onClick={handleSubmit} className="w-full" disabled={createClient.isPending || updateClient.isPending}>
-                  {editId ? "Save Changes" : "Add Client"}
+                <Button onClick={handleCreate} className="w-full" disabled={createClient.isPending}>
+                  {createClient.isPending ? "Adding..." : "Add Client"}
                 </Button>
               </div>
             </DialogContent>
@@ -101,12 +86,13 @@ export default function ClientsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((client) => (
-              <div key={client.id} className="bg-card rounded-xl border border-border p-5 animate-fade-in group relative">
-                <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={() => openEdit(client)} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-                    <Pencil className="h-3.5 w-3.5" />
-                  </button>
-                  <button onClick={() => setDeleteId(client.id)} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
+              <div
+                key={client.id}
+                onClick={() => navigate(`/clients/${client.id}`)}
+                className="bg-card rounded-xl border border-border p-5 animate-fade-in group relative cursor-pointer hover:border-primary/30 hover:shadow-md transition-all"
+              >
+                <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                  <button onClick={(e) => { e.stopPropagation(); setDeleteId(client.id); }} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -121,6 +107,7 @@ export default function ClientsPage() {
                 <div className="space-y-1.5 text-sm">
                   {client.phone && <div className="flex items-center gap-2 text-muted-foreground"><Phone className="h-3.5 w-3.5" /><span className="truncate">{client.phone}</span></div>}
                   {client.email && <div className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" /><span className="truncate">{client.email}</span></div>}
+                  {(client as any).telegram && <div className="flex items-center gap-2 text-muted-foreground"><Send className="h-3.5 w-3.5" /><span className="truncate">@{(client as any).telegram}</span></div>}
                 </div>
                 {client.notes && <p className="mt-3 text-xs text-muted-foreground bg-muted/50 rounded-md p-2 line-clamp-2">📝 {client.notes}</p>}
               </div>
@@ -129,14 +116,9 @@ export default function ClientsPage() {
         )}
       </div>
 
-      <ConfirmDeleteDialog
-        open={!!deleteId}
-        onOpenChange={() => setDeleteId(null)}
-        onConfirm={handleDelete}
-        title="Delete client?"
-        description="This will permanently delete this client and their data. Appointments linked to this client may also be affected."
-        loading={deleteClient.isPending}
-      />
+      <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={handleDelete}
+        title="Delete client?" description="This will permanently delete this client, their session history, notes, and attachments."
+        loading={deleteClient.isPending} />
     </AppLayout>
   );
 }

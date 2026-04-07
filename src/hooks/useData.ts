@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-const INVALIDATE_ALL = ["clients", "services", "appointments", "expenses", "income", "dashboard-stats"];
+const INVALIDATE_ALL = ["clients", "services", "appointments", "expenses", "income", "dashboard-stats", "expected-payments"];
 
 // Clients
 export function useClients() {
@@ -18,12 +18,25 @@ export function useClients() {
   });
 }
 
+export function useClient(id: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["client", id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("clients").select("*").eq("id", id!).single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user && !!id,
+  });
+}
+
 export function useCreateClient() {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async (client: { name: string; phone?: string; email?: string; notes?: string }) => {
-      const { data, error } = await supabase.from("clients").insert({ ...client, user_id: user!.id }).select().single();
+    mutationFn: async (client: { name: string; phone?: string; email?: string; notes?: string; telegram?: string }) => {
+      const { data, error } = await supabase.from("clients").insert({ ...client, user_id: user!.id } as any).select().single();
       if (error) throw error;
       return data;
     },
@@ -34,11 +47,14 @@ export function useCreateClient() {
 export function useUpdateClient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; phone?: string; email?: string; notes?: string }) => {
-      const { error } = await supabase.from("clients").update(updates).eq("id", id);
+    mutationFn: async ({ id, ...updates }: { id: string; name?: string; phone?: string; email?: string; notes?: string; telegram?: string }) => {
+      const { error } = await supabase.from("clients").update(updates as any).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["clients"] }),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["clients"] });
+      qc.invalidateQueries({ queryKey: ["client", vars.id] });
+    },
   });
 }
 
@@ -50,6 +66,123 @@ export function useDeleteClient() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["clients"] }),
+  });
+}
+
+// Client Notes
+export function useClientNotes(clientId: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["client-notes", clientId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("client_notes")
+        .select("*")
+        .eq("client_id", clientId!)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user && !!clientId,
+  });
+}
+
+export function useCreateClientNote() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (note: { client_id: string; content: string; appointment_id?: string }) => {
+      const { data, error } = await supabase.from("client_notes").insert({ ...note, user_id: user!.id } as any).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["client-notes", vars.client_id] }),
+  });
+}
+
+export function useDeleteClientNote() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, clientId }: { id: string; clientId: string }) => {
+      const { error } = await supabase.from("client_notes").delete().eq("id", id);
+      if (error) throw error;
+      return clientId;
+    },
+    onSuccess: (clientId) => qc.invalidateQueries({ queryKey: ["client-notes", clientId] }),
+  });
+}
+
+// Client Attachments
+export function useClientAttachments(clientId: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["client-attachments", clientId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("client_attachments")
+        .select("*")
+        .eq("client_id", clientId!)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user && !!clientId,
+  });
+}
+
+export function useUploadAttachment() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async ({ file, clientId, appointmentId }: { file: File; clientId: string; appointmentId?: string }) => {
+      const filePath = `${user!.id}/${clientId}/${Date.now()}_${file.name}`;
+      const { error: uploadError } = await supabase.storage.from("client-attachments").upload(filePath, file);
+      if (uploadError) throw uploadError;
+
+      const { data, error } = await supabase.from("client_attachments").insert({
+        user_id: user!.id,
+        client_id: clientId,
+        appointment_id: appointmentId || null,
+        file_name: file.name,
+        file_path: filePath,
+        file_type: file.type.startsWith("image/") ? "image" : "file",
+        file_size: file.size,
+      } as any).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["client-attachments", vars.clientId] }),
+  });
+}
+
+export function useDeleteAttachment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, filePath, clientId }: { id: string; filePath: string; clientId: string }) => {
+      await supabase.storage.from("client-attachments").remove([filePath]);
+      const { error } = await supabase.from("client_attachments").delete().eq("id", id);
+      if (error) throw error;
+      return clientId;
+    },
+    onSuccess: (clientId) => qc.invalidateQueries({ queryKey: ["client-attachments", clientId] }),
+  });
+}
+
+// Client Appointments (session history)
+export function useClientAppointments(clientId: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["client-appointments", clientId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select("*, services(name, price)")
+        .eq("client_id", clientId!)
+        .order("scheduled_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user && !!clientId,
   });
 }
 
@@ -141,8 +274,9 @@ export function useUpdateAppointment() {
     mutationFn: async ({ id, ...updates }: {
       id: string; status?: string; notes?: string; scheduled_at?: string;
       price?: number; client_id?: string; service_id?: string; duration_minutes?: number;
+      payment_status?: string;
     }) => {
-      const { error } = await supabase.from("appointments").update(updates).eq("id", id);
+      const { error } = await supabase.from("appointments").update(updates as any).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
@@ -153,8 +287,8 @@ export function useDeleteAppointment() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      // Delete related income first
       await supabase.from("income").delete().eq("appointment_id", id);
+      await supabase.from("expected_payments").delete().eq("appointment_id", id);
       const { error } = await supabase.from("appointments").delete().eq("id", id);
       if (error) throw error;
     },
@@ -162,48 +296,105 @@ export function useDeleteAppointment() {
   });
 }
 
-// Complete appointment — creates income record
+// Complete appointment with payment status
 export function useCompleteAppointment() {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async ({ appointmentId, price, paymentMethod }: {
-      appointmentId: string; price: number; paymentMethod: string;
+    mutationFn: async ({ appointmentId, clientId, price, paymentMethod, paymentStatus }: {
+      appointmentId: string; clientId: string; price: number; paymentMethod: string; paymentStatus: string;
     }) => {
-      // Update status
+      // Update appointment
       const { error: aptErr } = await supabase
         .from("appointments")
-        .update({ status: "completed", price })
+        .update({ status: "completed", price, payment_status: paymentStatus } as any)
         .eq("id", appointmentId);
       if (aptErr) throw aptErr;
 
-      // Delete existing income for this appointment (if re-completing)
+      // Clean up existing records
       await supabase.from("income").delete().eq("appointment_id", appointmentId);
+      await supabase.from("expected_payments").delete().eq("appointment_id", appointmentId);
 
-      // Create income record
       const today = new Date().toISOString().split("T")[0];
-      const { error: incErr } = await supabase.from("income").insert({
-        user_id: user!.id,
-        appointment_id: appointmentId,
-        amount: price,
-        date: today,
-        source: "appointment",
-        payment_method: paymentMethod,
-      } as any);
-      if (incErr) throw incErr;
+
+      if (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") {
+        // Create income
+        const { error: incErr } = await supabase.from("income").insert({
+          user_id: user!.id, appointment_id: appointmentId,
+          amount: price, date: today, source: "appointment",
+          payment_method: paymentMethod,
+        } as any);
+        if (incErr) throw incErr;
+      } else if (paymentStatus === "waiting_for_payment") {
+        // Create expected payment
+        const { error: epErr } = await supabase.from("expected_payments").insert({
+          user_id: user!.id, appointment_id: appointmentId,
+          client_id: clientId, amount: price, status: "pending",
+        } as any);
+        if (epErr) throw epErr;
+      }
     },
     onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
-// Cancel/no-show appointment — removes income if exists
+// Cancel/no-show
 export function useCancelAppointment() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: "cancelled" | "no-show" }) => {
       await supabase.from("income").delete().eq("appointment_id", id);
-      const { error } = await supabase.from("appointments").update({ status }).eq("id", id);
+      await supabase.from("expected_payments").delete().eq("appointment_id", id);
+      const { error } = await supabase.from("appointments").update({ status, payment_status: "not_applicable" } as any).eq("id", id);
       if (error) throw error;
+    },
+    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+  });
+}
+
+// Expected Payments
+export function useExpectedPayments() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["expected-payments", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("expected_payments")
+        .select("*, clients(name), appointments(scheduled_at, services(name))")
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+}
+
+export function useMarkExpectedPaymentPaid() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async ({ id, appointmentId, amount, paymentMethod }: {
+      id: string; appointmentId: string; amount: number; paymentMethod: string;
+    }) => {
+      // Update expected payment
+      const { error: epErr } = await supabase
+        .from("expected_payments")
+        .update({ status: "paid", paid_at: new Date().toISOString(), payment_method: paymentMethod } as any)
+        .eq("id", id);
+      if (epErr) throw epErr;
+
+      // Update appointment payment_status
+      await supabase.from("appointments").update({ payment_status: "paid_now" } as any).eq("id", appointmentId);
+
+      // Create income
+      const today = new Date().toISOString().split("T")[0];
+      const { error: incErr } = await supabase.from("income").insert({
+        user_id: user!.id, appointment_id: appointmentId,
+        amount, date: today, source: "appointment",
+        payment_method: paymentMethod,
+      } as any);
+      if (incErr) throw incErr;
     },
     onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
@@ -375,7 +566,6 @@ export function useDashboardStats() {
       const todayIncome = allIncome.filter(i => i.date === today).reduce((s, i) => s + Number(i.amount), 0);
       const monthlyIncome = allIncome.filter(i => i.date >= monthStart).reduce((s, i) => s + Number(i.amount), 0);
       const monthlyExpenses = allExpenses.filter(e => e.date >= monthStart).reduce((s, e) => s + Number(e.amount), 0);
-
       const thisWeekIncome = allIncome.filter(i => i.date >= thisMondayStr && i.date <= today).reduce((s, i) => s + Number(i.amount), 0);
       const lastWeekIncome = allIncome.filter(i => i.date >= lastMondayStr && i.date <= lastSundayStr).reduce((s, i) => s + Number(i.amount), 0);
 
