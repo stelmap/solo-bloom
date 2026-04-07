@@ -11,6 +11,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { TranslationKey } from "@/i18n/translations";
 
 const CATEGORIES = ["Rent", "Materials", "Insurance", "Equipment", "Marketing", "Utilities", "Laundry", "Software", "Other"];
 
@@ -20,6 +22,7 @@ export default function ExpensesPage() {
   const updateExpense = useUpdateExpense();
   const deleteExpense = useDeleteExpense();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -27,6 +30,11 @@ export default function ExpensesPage() {
 
   const totalMonthly = expenses.reduce((s, e) => s + Number(e.amount), 0);
   const recurringTotal = expenses.filter(e => e.is_recurring).reduce((s, e) => s + Number(e.amount), 0);
+
+  const catLabel = (cat: string) => {
+    const key = `category.${cat}` as TranslationKey;
+    return t(key);
+  };
 
   const openEdit = (exp: any) => {
     setEditId(exp.id);
@@ -45,14 +53,14 @@ export default function ExpensesPage() {
     try {
       if (editId) {
         await updateExpense.mutateAsync({ id: editId, ...form });
-        toast({ title: "Expense updated" });
+        toast({ title: t("toast.expenseUpdated") });
       } else {
         await createExpense.mutateAsync(form);
-        toast({ title: "Expense added" });
+        toast({ title: t("toast.expenseAdded") });
       }
       setOpen(false);
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
 
@@ -60,10 +68,10 @@ export default function ExpensesPage() {
     if (!deleteId) return;
     try {
       await deleteExpense.mutateAsync(deleteId);
-      toast({ title: "Expense deleted" });
+      toast({ title: t("toast.expenseDeleted") });
       setDeleteId(null);
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
 
@@ -72,32 +80,32 @@ export default function ExpensesPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Expenses</h1>
-            <p className="text-muted-foreground mt-1">Track your business costs</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("expenses.title")}</h1>
+            <p className="text-muted-foreground mt-1">{t("expenses.subtitle")}</p>
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Add Expense</Button>
+              <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> {t("expenses.addExpense")}</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>{editId ? "Edit Expense" : "Add Expense"}</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{editId ? t("expenses.editExpense") : t("expenses.addExpense")}</DialogTitle></DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Category</Label>
+                  <Label>{t("common.category")}</Label>
                   <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                    <SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c}>{catLabel(c)}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2"><Label>Amount (€) *</Label><Input type="number" step="0.01" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} /></div>
-                <div className="space-y-2"><Label>Date</Label><Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>Description</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>{t("common.amount")} *</Label><Input type="number" step="0.01" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} /></div>
+                <div className="space-y-2"><Label>{t("common.date")}</Label><Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>{t("common.description")}</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
                 <div className="flex items-center gap-2">
                   <Checkbox checked={form.is_recurring} onCheckedChange={v => setForm(f => ({ ...f, is_recurring: !!v }))} id="recurring" />
-                  <Label htmlFor="recurring">Recurring monthly</Label>
+                  <Label htmlFor="recurring">{t("expenses.recurringMonthlyCheckbox")}</Label>
                 </div>
                 <Button onClick={handleSubmit} className="w-full" disabled={createExpense.isPending || updateExpense.isPending}>
-                  {editId ? "Save Changes" : "Add Expense"}
+                  {editId ? t("common.save") : t("expenses.addExpense")}
                 </Button>
               </div>
             </DialogContent>
@@ -106,41 +114,41 @@ export default function ExpensesPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-            <p className="text-sm text-muted-foreground">Total This Month</p>
+            <p className="text-sm text-muted-foreground">{t("expenses.totalThisMonth")}</p>
             <p className="text-2xl font-bold text-foreground mt-1">€{totalMonthly.toLocaleString()}</p>
           </div>
           <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-            <p className="text-sm text-muted-foreground">Recurring Monthly</p>
+            <p className="text-sm text-muted-foreground">{t("expenses.recurringMonthly")}</p>
             <p className="text-2xl font-bold text-foreground mt-1">€{recurringTotal.toLocaleString()}</p>
           </div>
         </div>
 
         {isLoading ? (
-          <p className="text-muted-foreground text-center py-8">Loading...</p>
+          <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
         ) : expenses.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">No expenses yet. Add your first expense!</p>
+          <p className="text-muted-foreground text-center py-8">{t("expenses.noExpenses")}</p>
         ) : (
           <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Category</th>
-                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Amount</th>
-                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Date</th>
-                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Type</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.category")}</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.amount")}</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.date")}</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.type")}</th>
                     <th className="p-4 w-20"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {expenses.map((expense) => (
                     <tr key={expense.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors group">
-                      <td className="p-4 text-sm font-medium text-foreground">{expense.category}</td>
+                      <td className="p-4 text-sm font-medium text-foreground">{catLabel(expense.category)}</td>
                       <td className="p-4 text-sm font-semibold text-foreground">€{Number(expense.amount).toFixed(2)}</td>
                       <td className="p-4 text-sm text-muted-foreground">{expense.date}</td>
                       <td className="p-4">
                         <Badge variant={expense.is_recurring ? "default" : "secondary"} className="text-xs">
-                          {expense.is_recurring ? "Recurring" : "One-time"}
+                          {expense.is_recurring ? t("expenses.recurring") : t("expenses.oneTime")}
                         </Badge>
                       </td>
                       <td className="p-4">
@@ -163,11 +171,8 @@ export default function ExpensesPage() {
       </div>
 
       <ConfirmDeleteDialog
-        open={!!deleteId}
-        onOpenChange={() => setDeleteId(null)}
-        onConfirm={handleDelete}
-        title="Delete expense?"
-        description="This will permanently remove this expense record."
+        open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={handleDelete}
+        title={t("expenses.deleteTitle")} description={t("expenses.deleteDesc")}
         loading={deleteExpense.isPending}
       />
     </AppLayout>

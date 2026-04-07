@@ -12,12 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-
-const PAYMENT_METHODS = [
-  { value: "cash", label: "Cash" },
-  { value: "card", label: "Card" },
-  { value: "bank_transfer", label: "Bank Transfer" },
-];
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function IncomePage() {
   const { data: income = [], isLoading } = useIncome();
@@ -26,6 +21,7 @@ export default function IncomePage() {
   const deleteIncome = useDeleteIncome();
   const markPaid = useMarkExpectedPaymentPaid();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [payDialog, setPayDialog] = useState<any>(null);
@@ -35,15 +31,23 @@ export default function IncomePage() {
   const total = income.reduce((s, i) => s + Number(i.amount), 0);
   const pendingTotal = (expectedPayments as any[]).reduce((s: number, ep: any) => s + Number(ep.amount), 0);
 
+  const PAYMENT_METHODS = [
+    { value: "cash", label: t("method.cashLabel") },
+    { value: "card", label: t("method.cardLabel") },
+    { value: "bank_transfer", label: t("method.bankTransferLabel") },
+  ];
+
+  const paymentLabel = (method: string) => PAYMENT_METHODS.find(m => m.value === method)?.label || method;
+
   const handleCreate = async () => {
     if (!form.amount) return;
     try {
       await createIncome.mutateAsync({ ...form, source: "manual" });
       setForm({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash" });
       setOpen(false);
-      toast({ title: "Income added" });
+      toast({ title: t("toast.incomeAdded") });
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
 
@@ -51,10 +55,10 @@ export default function IncomePage() {
     if (!deleteId) return;
     try {
       await deleteIncome.mutateAsync(deleteId);
-      toast({ title: "Income deleted" });
+      toast({ title: t("toast.incomeDeleted") });
       setDeleteId(null);
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
 
@@ -66,40 +70,38 @@ export default function IncomePage() {
         amount: Number(payDialog.amount), paymentMethod: payMethod,
       });
       setPayDialog(null);
-      toast({ title: "Payment received! ✅", description: `€${Number(payDialog.amount).toFixed(2)} recorded as income.` });
+      toast({ title: t("toast.paymentReceived"), description: t("toast.paymentRecordedDesc", { amount: Number(payDialog.amount).toFixed(2) }) });
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
-
-  const paymentLabel = (method: string) => PAYMENT_METHODS.find(m => m.value === method)?.label || method;
 
   return (
     <AppLayout>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Income</h1>
-            <p className="text-muted-foreground mt-1">Track your earnings</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("income.title")}</h1>
+            <p className="text-muted-foreground mt-1">{t("income.subtitle")}</p>
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-1" /> Add Manual Entry</Button>
+              <Button><Plus className="h-4 w-4 mr-1" /> {t("income.addManual")}</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Add Income</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{t("income.addIncome")}</DialogTitle></DialogHeader>
               <div className="space-y-4">
-                <div className="space-y-2"><Label>Amount (€) *</Label><Input type="number" step="0.01" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} /></div>
-                <div className="space-y-2"><Label>Date</Label><Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>Description</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>{t("common.amount")} *</Label><Input type="number" step="0.01" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} /></div>
+                <div className="space-y-2"><Label>{t("common.date")}</Label><Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>{t("common.description")}</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
                 <div className="space-y-2">
-                  <Label>Payment Method</Label>
+                  <Label>{t("calendar.paymentMethod")}</Label>
                   <Select value={form.payment_method} onValueChange={v => setForm(f => ({ ...f, payment_method: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>{PAYMENT_METHODS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <Button onClick={handleCreate} className="w-full" disabled={createIncome.isPending}>{createIncome.isPending ? "Adding..." : "Add Income"}</Button>
+                <Button onClick={handleCreate} className="w-full" disabled={createIncome.isPending}>{createIncome.isPending ? t("common.adding") : t("income.addIncome")}</Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -107,21 +109,21 @@ export default function IncomePage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-            <p className="text-sm text-muted-foreground">Confirmed Income</p>
+            <p className="text-sm text-muted-foreground">{t("income.confirmedIncome")}</p>
             <p className="text-2xl font-bold text-foreground mt-1">€{total.toLocaleString()}</p>
           </div>
           <div className="bg-card rounded-xl border border-warning/30 p-5 animate-fade-in">
-            <p className="text-sm text-warning">Pending Payments</p>
+            <p className="text-sm text-warning">{t("income.pendingPayments")}</p>
             <p className="text-2xl font-bold text-warning mt-1">€{pendingTotal.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">{(expectedPayments as any[]).length} awaiting payment</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("income.awaitingPayment", { count: (expectedPayments as any[]).length })}</p>
           </div>
         </div>
 
         <Tabs defaultValue="income" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="income">Confirmed Income</TabsTrigger>
+            <TabsTrigger value="income">{t("income.confirmedIncome")}</TabsTrigger>
             <TabsTrigger value="pending">
-              Expected Payments
+              {t("income.expectedPayments")}
               {(expectedPayments as any[]).length > 0 && (
                 <Badge className="ml-2 bg-warning/20 text-warning text-xs">{(expectedPayments as any[]).length}</Badge>
               )}
@@ -130,20 +132,20 @@ export default function IncomePage() {
 
           <TabsContent value="income">
             {isLoading ? (
-              <p className="text-muted-foreground text-center py-8">Loading...</p>
+              <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
             ) : income.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No income recorded yet.</p>
+              <p className="text-muted-foreground text-center py-8">{t("income.noIncome")}</p>
             ) : (
               <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-border">
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">Description</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">Amount</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">Date</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">Payment</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">Source</th>
+                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.description")}</th>
+                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.amount")}</th>
+                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.date")}</th>
+                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.payment")}</th>
+                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.source")}</th>
                         <th className="p-4 w-10"></th>
                       </tr>
                     </thead>
@@ -153,12 +155,12 @@ export default function IncomePage() {
                           <td className="p-4 text-sm font-medium text-foreground">
                             {entry.source === "appointment"
                               ? `${entry.appointments?.clients?.name} — ${entry.appointments?.services?.name}`
-                              : entry.description || "Manual entry"}
+                              : entry.description || t("income.manualEntry")}
                           </td>
                           <td className="p-4 text-sm font-semibold text-foreground">€{Number(entry.amount).toFixed(2)}</td>
                           <td className="p-4 text-sm text-muted-foreground">{entry.date}</td>
                           <td className="p-4"><Badge variant="outline" className="text-xs capitalize">{paymentLabel(entry.payment_method || "cash")}</Badge></td>
-                          <td className="p-4"><Badge variant={entry.source === "appointment" ? "default" : "secondary"} className="text-xs">{entry.source === "appointment" ? "Appointment" : "Manual"}</Badge></td>
+                          <td className="p-4"><Badge variant={entry.source === "appointment" ? "default" : "secondary"} className="text-xs">{entry.source === "appointment" ? t("income.appointment") : t("income.manual")}</Badge></td>
                           <td className="p-4">
                             {entry.source !== "appointment" && (
                               <button onClick={() => setDeleteId(entry.id)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100">
@@ -177,9 +179,9 @@ export default function IncomePage() {
 
           <TabsContent value="pending">
             {epLoading ? (
-              <p className="text-muted-foreground text-center py-8">Loading...</p>
+              <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
             ) : (expectedPayments as any[]).length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No pending payments. All caught up! 🎉</p>
+              <p className="text-muted-foreground text-center py-8">{t("income.noPending")}</p>
             ) : (
               <div className="space-y-3">
                 {(expectedPayments as any[]).map((ep: any) => (
@@ -195,7 +197,7 @@ export default function IncomePage() {
                     </div>
                     <p className="text-lg font-bold text-warning">€{Number(ep.amount).toFixed(2)}</p>
                     <Button size="sm" onClick={() => { setPayDialog(ep); setPayMethod("cash"); }}>
-                      <CheckCircle className="h-4 w-4 mr-1" /> Mark Paid
+                      <CheckCircle className="h-4 w-4 mr-1" /> {t("income.markPaid")}
                     </Button>
                   </div>
                 ))}
@@ -208,15 +210,15 @@ export default function IncomePage() {
       {/* Mark as paid dialog */}
       <Dialog open={!!payDialog} onOpenChange={(o) => { if (!o) setPayDialog(null); }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Confirm Payment</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("income.confirmPayment")}</DialogTitle></DialogHeader>
           {payDialog && (
             <div className="space-y-4">
               <div className="bg-muted/50 rounded-lg p-4 space-y-1 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Client</span><span className="font-medium text-foreground">{payDialog.clients?.name}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span className="font-semibold text-foreground">€{Number(payDialog.amount).toFixed(2)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{t("calendar.client")}</span><span className="font-medium text-foreground">{payDialog.clients?.name}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{t("common.amount")}</span><span className="font-semibold text-foreground">€{Number(payDialog.amount).toFixed(2)}</span></div>
               </div>
               <div className="space-y-2">
-                <Label>Payment Method</Label>
+                <Label>{t("calendar.paymentMethod")}</Label>
                 <div className="grid grid-cols-3 gap-2">
                   {PAYMENT_METHODS.map(m => (
                     <button key={m.value} onClick={() => setPayMethod(m.value)}
@@ -229,7 +231,7 @@ export default function IncomePage() {
                 </div>
               </div>
               <Button onClick={handleMarkPaid} className="w-full" disabled={markPaid.isPending}>
-                {markPaid.isPending ? "Saving..." : "Confirm Payment Received"}
+                {markPaid.isPending ? t("common.saving") : t("income.confirmPaymentReceived")}
               </Button>
             </div>
           )}
@@ -237,7 +239,7 @@ export default function IncomePage() {
       </Dialog>
 
       <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={handleDelete}
-        title="Delete income record?" description="This will permanently remove this income entry." loading={deleteIncome.isPending} />
+        title={t("income.deleteTitle")} description={t("income.deleteDesc")} loading={deleteIncome.isPending} />
     </AppLayout>
   );
 }

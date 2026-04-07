@@ -1,9 +1,9 @@
-import { useMemo } from "react";
 import {
   TrendingUp, TrendingDown, Target, AlertTriangle,
-  CalendarCheck, Zap, CheckCircle, Info,
+  CalendarCheck, Zap, CheckCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { translations, Language } from "@/i18n/translations";
 
 export type InsightType = "success" | "info" | "warning" | "risk";
 
@@ -32,19 +32,29 @@ const typeStyles: Record<InsightType, string> = {
   risk: "bg-destructive/10 text-destructive border-destructive/20",
 };
 
-export function generateInsights(data: SmartInsightsProps): Insight[] {
+function tt(key: keyof typeof translations, lang: Language, params?: Record<string, string | number>): string {
+  const entry = translations[key];
+  if (!entry) return key;
+  let text: string = entry[lang] || entry.en;
+  if (params) {
+    Object.entries(params).forEach(([k, v]) => {
+      text = text.replace(`{${k}}`, String(v));
+    });
+  }
+  return text;
+}
+
+export function generateInsights(data: SmartInsightsProps, lang: Language = "en"): Insight[] {
   const insights: Insight[] = [];
   const {
     monthlyIncome, monthlyExpenses, lastWeekIncome, thisWeekIncome,
     monthlyAppointments, maxMonthlyCapacity, daysLeftInMonth, daysPastInMonth,
   } = data;
 
-  // --- Income insights ---
   if (thisWeekIncome > 0) {
     insights.push({
-      id: "week-income",
-      type: "info",
-      message: `You earned €${thisWeekIncome.toLocaleString()} this week.`,
+      id: "week-income", type: "info",
+      message: tt("insights.weekIncome", lang, { amount: thisWeekIncome.toLocaleString() }),
       icon: TrendingUp,
     });
   }
@@ -53,94 +63,43 @@ export function generateInsights(data: SmartInsightsProps): Insight[] {
     const diff = thisWeekIncome - lastWeekIncome;
     const pct = Math.round(Math.abs(diff / lastWeekIncome) * 100);
     if (diff > 0) {
-      insights.push({
-        id: "income-trend",
-        type: "success",
-        message: `Your income increased ${pct}% compared to last week. Keep it up!`,
-        icon: TrendingUp,
-      });
+      insights.push({ id: "income-trend", type: "success", message: tt("insights.incomeUp", lang, { pct }), icon: TrendingUp });
     } else if (diff < 0) {
-      insights.push({
-        id: "income-trend",
-        type: "warning",
-        message: `Your income decreased ${pct}% compared to last week.`,
-        icon: TrendingDown,
-      });
+      insights.push({ id: "income-trend", type: "warning", message: tt("insights.incomeDown", lang, { pct }), icon: TrendingDown });
     }
   }
 
-  // --- Break-even insights ---
   if (monthlyExpenses > 0) {
     const breakevenPct = Math.min(Math.round((monthlyIncome / monthlyExpenses) * 100), 100);
-
     if (monthlyIncome >= monthlyExpenses) {
-      insights.push({
-        id: "breakeven-reached",
-        type: "success",
-        message: `You've reached your break-even point this month! 🎉`,
-        icon: CheckCircle,
-      });
+      insights.push({ id: "breakeven-reached", type: "success", message: tt("insights.breakevenReached", lang), icon: CheckCircle });
     } else {
       const remaining = monthlyExpenses - monthlyIncome;
-      insights.push({
-        id: "breakeven-progress",
-        type: "info",
-        message: `You are ${breakevenPct}% toward your break-even. €${remaining.toLocaleString()} more to go.`,
-        icon: Target,
-      });
+      insights.push({ id: "breakeven-progress", type: "info", message: tt("insights.breakevenProgress", lang, { pct: breakevenPct, remaining: remaining.toLocaleString() }), icon: Target });
 
-      // Risk: projected to miss break-even
       if (daysPastInMonth > 7 && daysLeftInMonth > 0) {
         const dailyRate = monthlyIncome / daysPastInMonth;
         const projected = monthlyIncome + dailyRate * daysLeftInMonth;
         if (projected < monthlyExpenses) {
-          insights.push({
-            id: "breakeven-risk",
-            type: "risk",
-            message: `At this pace, you may not reach break-even this month. Consider booking more sessions.`,
-            icon: AlertTriangle,
-          });
+          insights.push({ id: "breakeven-risk", type: "risk", message: tt("insights.breakevenRisk", lang), icon: AlertTriangle });
         }
       }
     }
   }
 
-  // --- Expense alert ---
   if (monthlyExpenses > monthlyIncome * 1.5 && monthlyIncome > 0) {
-    insights.push({
-      id: "expense-alert",
-      type: "risk",
-      message: `Your expenses are significantly higher than your income this month.`,
-      icon: AlertTriangle,
-    });
+    insights.push({ id: "expense-alert", type: "risk", message: tt("insights.expenseAlert", lang), icon: AlertTriangle });
   }
 
-  // --- Capacity insights ---
   if (maxMonthlyCapacity > 0) {
     const capacityPct = Math.round((monthlyAppointments / maxMonthlyCapacity) * 100);
-
     if (capacityPct >= 90) {
-      insights.push({
-        id: "capacity-full",
-        type: "success",
-        message: `You're working at ${capacityPct}% capacity — almost fully booked!`,
-        icon: Zap,
-      });
+      insights.push({ id: "capacity-full", type: "success", message: tt("insights.capacityFull", lang, { pct: capacityPct }), icon: Zap });
     } else if (capacityPct >= 60) {
-      insights.push({
-        id: "capacity-good",
-        type: "info",
-        message: `You're working at ${capacityPct}% capacity this month.`,
-        icon: CalendarCheck,
-      });
+      insights.push({ id: "capacity-good", type: "info", message: tt("insights.capacityGood", lang, { pct: capacityPct }), icon: CalendarCheck });
     } else if (monthlyAppointments > 0) {
       const freeSlots = maxMonthlyCapacity - monthlyAppointments;
-      insights.push({
-        id: "capacity-free",
-        type: "info",
-        message: `You have ${freeSlots} free slots available this month. Time to fill them!`,
-        icon: CalendarCheck,
-      });
+      insights.push({ id: "capacity-free", type: "info", message: tt("insights.capacityFree", lang, { slots: freeSlots }), icon: CalendarCheck });
     }
   }
 
@@ -148,25 +107,17 @@ export function generateInsights(data: SmartInsightsProps): Insight[] {
 }
 
 export function SmartInsights({ insights }: { insights: Insight[] }) {
-  if (insights.length === 0) {
-    return null;
-  }
+  if (insights.length === 0) return null;
 
   return (
     <div className="space-y-3 animate-fade-in">
       <div className="flex items-center gap-2">
         <Zap className="h-5 w-5 text-primary" />
-        <h3 className="font-semibold text-foreground">Smart Insights</h3>
+        <h3 className="font-semibold text-foreground">{translations["insights.title"]?.en ?? "Smart Insights"}</h3>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {insights.map((insight) => (
-          <div
-            key={insight.id}
-            className={cn(
-              "flex items-start gap-3 p-4 rounded-xl border transition-colors",
-              typeStyles[insight.type]
-            )}
-          >
+          <div key={insight.id} className={cn("flex items-start gap-3 p-4 rounded-xl border transition-colors", typeStyles[insight.type])}>
             <insight.icon className="h-5 w-5 shrink-0 mt-0.5" />
             <p className="text-sm font-medium leading-relaxed">{insight.message}</p>
           </div>

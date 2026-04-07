@@ -2,13 +2,14 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Phone, Mail, Send, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Phone, Mail, Send, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useClients, useCreateClient, useDeleteClient } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function ClientsPage() {
   const { data: clients = [], isLoading } = useClients();
@@ -16,6 +17,7 @@ export default function ClientsPage() {
   const deleteClient = useDeleteClient();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -29,9 +31,9 @@ export default function ClientsPage() {
       await createClient.mutateAsync(form);
       setForm({ name: "", phone: "", email: "", notes: "", telegram: "" });
       setOpen(false);
-      toast({ title: "Client added" });
+      toast({ title: t("toast.clientAdded") });
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
 
@@ -39,10 +41,10 @@ export default function ClientsPage() {
     if (!deleteId) return;
     try {
       await deleteClient.mutateAsync(deleteId);
-      toast({ title: "Client deleted" });
+      toast({ title: t("toast.clientDeleted") });
       setDeleteId(null);
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
 
@@ -51,23 +53,23 @@ export default function ClientsPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Clients</h1>
-            <p className="text-muted-foreground mt-1">{clients.length} total clients</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("clients.title")}</h1>
+            <p className="text-muted-foreground mt-1">{t("clients.totalClients", { count: clients.length })}</p>
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-1" /> Add Client</Button>
+              <Button><Plus className="h-4 w-4 mr-1" /> {t("clients.addClient")}</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Add Client</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{t("clients.addClient")}</DialogTitle></DialogHeader>
               <div className="space-y-4">
-                <div className="space-y-2"><Label>Name *</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>Phone</Label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>Email</Label><Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>Telegram</Label><Input placeholder="username" value={form.telegram} onChange={e => setForm(f => ({ ...f, telegram: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>Notes</Label><Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>{t("common.name")} *</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>{t("common.phone")}</Label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>{t("common.email")}</Label><Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>{t("common.telegram")}</Label><Input placeholder="username" value={form.telegram} onChange={e => setForm(f => ({ ...f, telegram: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>{t("common.notes")}</Label><Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
                 <Button onClick={handleCreate} className="w-full" disabled={createClient.isPending}>
-                  {createClient.isPending ? "Adding..." : "Add Client"}
+                  {createClient.isPending ? t("common.adding") : t("clients.addClient")}
                 </Button>
               </div>
             </DialogContent>
@@ -76,13 +78,13 @@ export default function ClientsPage() {
 
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search clients..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+          <Input placeholder={t("clients.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
         </div>
 
         {isLoading ? (
-          <p className="text-muted-foreground text-center py-8">Loading...</p>
+          <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
         ) : filtered.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">No clients yet. Add your first client!</p>
+          <p className="text-muted-foreground text-center py-8">{t("clients.noClients")}</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((client) => (
@@ -117,7 +119,7 @@ export default function ClientsPage() {
       </div>
 
       <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={handleDelete}
-        title="Delete client?" description="This will permanently delete this client, their session history, notes, and attachments."
+        title={t("clients.deleteTitle")} description={t("clients.deleteDesc")}
         loading={deleteClient.isPending} />
     </AppLayout>
   );

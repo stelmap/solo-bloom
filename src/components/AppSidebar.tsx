@@ -6,22 +6,25 @@ import {
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { TranslationKey } from "@/i18n/translations";
 
-const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-  { icon: Calendar, label: "Calendar", path: "/calendar" },
-  { icon: Users, label: "Clients", path: "/clients" },
-  { icon: Scissors, label: "Services", path: "/services" },
-  { icon: DollarSign, label: "Income", path: "/income" },
-  { icon: TrendingDown, label: "Expenses", path: "/expenses" },
-  { icon: Target, label: "Break-even", path: "/breakeven" },
-  { icon: Settings, label: "Settings", path: "/settings" },
+const navItems: { icon: any; labelKey: TranslationKey; path: string }[] = [
+  { icon: LayoutDashboard, labelKey: "nav.dashboard", path: "/" },
+  { icon: Calendar, labelKey: "nav.calendar", path: "/calendar" },
+  { icon: Users, labelKey: "nav.clients", path: "/clients" },
+  { icon: Scissors, labelKey: "nav.services", path: "/services" },
+  { icon: DollarSign, labelKey: "nav.income", path: "/income" },
+  { icon: TrendingDown, labelKey: "nav.expenses", path: "/expenses" },
+  { icon: Target, labelKey: "nav.breakeven", path: "/breakeven" },
+  { icon: Settings, labelKey: "nav.settings", path: "/settings" },
 ];
 
 export function AppSidebar() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { t } = useLanguage();
 
   const initials = user?.user_metadata?.full_name
     ? user.user_metadata.full_name.split(" ").map((n: string) => n[0]).join("").toUpperCase()
@@ -68,7 +71,7 @@ export function AppSidebar() {
                 )}
               >
                 <item.icon className="h-4.5 w-4.5 shrink-0" />
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             );
           })}
@@ -85,7 +88,7 @@ export function AppSidebar() {
               </p>
               <p className="text-xs text-sidebar-foreground/50 truncate">{user?.email}</p>
             </div>
-            <button onClick={signOut} className="p-1.5 rounded-md hover:bg-sidebar-accent transition-colors text-sidebar-foreground/50 hover:text-sidebar-foreground" title="Sign out">
+            <button onClick={signOut} className="p-1.5 rounded-md hover:bg-sidebar-accent transition-colors text-sidebar-foreground/50 hover:text-sidebar-foreground" title={t("nav.signOut")}>
               <LogOut className="h-4 w-4" />
             </button>
           </div>

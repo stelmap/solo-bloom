@@ -6,9 +6,11 @@ import { DollarSign, Users, TrendingUp, TrendingDown, Clock } from "lucide-react
 import { useDashboardStats } from "@/hooks/useData";
 import { format } from "date-fns";
 import { useMemo } from "react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function Dashboard() {
   const { data: stats, isLoading } = useDashboardStats();
+  const { t, lang } = useLanguage();
 
   const s = stats ?? {
     todayIncome: 0, monthlyIncome: 0, monthlyExpenses: 0, netProfit: 0,
@@ -25,12 +27,12 @@ export default function Dashboard() {
     maxMonthlyCapacity: s.maxMonthlyCapacity,
     daysLeftInMonth: s.daysLeftInMonth,
     daysPastInMonth: s.daysPastInMonth,
-  }), [s]);
+  }, lang), [s, lang]);
 
   if (isLoading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center h-64 text-muted-foreground">Loading dashboard...</div>
+        <div className="flex items-center justify-center h-64 text-muted-foreground">{t("dashboard.loading")}</div>
       </AppLayout>
     );
   }
@@ -39,18 +41,17 @@ export default function Dashboard() {
     <AppLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Good morning! 👋</h1>
-          <p className="text-muted-foreground mt-1">Here's how your business is doing today.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("dashboard.greeting")}</h1>
+          <p className="text-muted-foreground mt-1">{t("dashboard.subtitle")}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard title="Today's Income" value={`€${s.todayIncome.toLocaleString()}`} icon={DollarSign} />
-          <MetricCard title="Monthly Income" value={`€${s.monthlyIncome.toLocaleString()}`} icon={TrendingUp} />
-          <MetricCard title="Monthly Expenses" value={`€${s.monthlyExpenses.toLocaleString()}`} icon={TrendingDown} />
-          <MetricCard title="Active Clients" value={s.clientCount.toString()} icon={Users} />
+          <MetricCard title={t("dashboard.todayIncome")} value={`€${s.todayIncome.toLocaleString()}`} icon={DollarSign} />
+          <MetricCard title={t("dashboard.monthlyIncome")} value={`€${s.monthlyIncome.toLocaleString()}`} icon={TrendingUp} />
+          <MetricCard title={t("dashboard.monthlyExpenses")} value={`€${s.monthlyExpenses.toLocaleString()}`} icon={TrendingDown} />
+          <MetricCard title={t("dashboard.activeClients")} value={s.clientCount.toString()} icon={Users} />
         </div>
 
-        {/* Smart Insights */}
         <SmartInsights insights={insights} />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -59,26 +60,25 @@ export default function Dashboard() {
             requiredIncome={Math.max(s.monthlyExpenses, 1)}
           />
 
-          {/* Today's appointments */}
           <div className="bg-card rounded-xl border border-border p-6 animate-fade-in">
             <div className="flex items-center gap-3 mb-4">
               <div className="h-10 w-10 rounded-lg bg-accent flex items-center justify-center">
                 <Clock className="h-5 w-5 text-accent-foreground" />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground">Today's Appointments</h3>
-                <p className="text-sm text-muted-foreground">{s.todayAppointments.length} sessions</p>
+                <h3 className="font-semibold text-foreground">{t("dashboard.todayAppointments")}</h3>
+                <p className="text-sm text-muted-foreground">{s.todayAppointments.length} {t("dashboard.sessions")}</p>
               </div>
             </div>
             <div className="space-y-3">
               {s.todayAppointments.length === 0 && (
-                <p className="text-sm text-muted-foreground py-4 text-center">No appointments today</p>
+                <p className="text-sm text-muted-foreground py-4 text-center">{t("dashboard.noAppointments")}</p>
               )}
               {s.todayAppointments.map((apt: any) => (
                 <div key={apt.id} className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
                   <div className="text-center min-w-[50px]">
                     <p className="text-sm font-semibold text-foreground">{format(new Date(apt.scheduled_at), "HH:mm")}</p>
-                    <p className="text-xs text-muted-foreground">{apt.duration_minutes}m</p>
+                    <p className="text-xs text-muted-foreground">{apt.duration_minutes}{t("common.min")}</p>
                   </div>
                   <div className="h-8 w-px bg-border" />
                   <div className="flex-1 min-w-0">
