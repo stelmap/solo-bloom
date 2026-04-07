@@ -10,13 +10,18 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 
+const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, "0")}:00`);
+
 export default function SettingsPage() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
   const updateProfile = useUpdateProfile();
   const { toast } = useToast();
   const { t } = useLanguage();
-  const [form, setForm] = useState({ full_name: "", business_name: "", phone: "", language: "en", reminder_minutes: 1440 });
+  const [form, setForm] = useState({
+    full_name: "", business_name: "", phone: "", language: "en", reminder_minutes: 1440,
+    work_hours_start: "09:00", work_hours_end: "18:00", time_format: "24h", default_duration: 60,
+  });
 
   useEffect(() => {
     if (profile) {
@@ -26,6 +31,10 @@ export default function SettingsPage() {
         phone: profile.phone || "",
         language: profile.language,
         reminder_minutes: profile.reminder_minutes,
+        work_hours_start: (profile as any).work_hours_start || "09:00",
+        work_hours_end: (profile as any).work_hours_end || "18:00",
+        time_format: (profile as any).time_format || "24h",
+        default_duration: (profile as any).default_duration || 60,
       });
     }
   }, [profile]);
@@ -55,9 +64,50 @@ export default function SettingsPage() {
             <div className="space-y-2"><Label>{t("common.businessName")}</Label><Input value={form.business_name} onChange={e => setForm(f => ({ ...f, business_name: e.target.value }))} /></div>
             <div className="space-y-2"><Label>{t("common.phone")}</Label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
           </div>
-          <Button onClick={handleSave} disabled={updateProfile.isPending}>
-            {updateProfile.isPending ? t("common.saving") : t("common.save")}
-          </Button>
+        </div>
+
+        <Separator />
+
+        <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
+          <h2 className="font-semibold text-foreground">{t("settings.calendar")}</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>{t("settings.workHoursStart")}</Label>
+              <Select value={form.work_hours_start} onValueChange={v => setForm(f => ({ ...f, work_hours_start: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{HOUR_OPTIONS.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("settings.workHoursEnd")}</Label>
+              <Select value={form.work_hours_end} onValueChange={v => setForm(f => ({ ...f, work_hours_end: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{HOUR_OPTIONS.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("settings.timeFormat")}</Label>
+              <Select value={form.time_format} onValueChange={v => setForm(f => ({ ...f, time_format: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="24h">{t("settings.24h")}</SelectItem>
+                  <SelectItem value="12h">{t("settings.12h")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("settings.defaultDuration")}</Label>
+              <Select value={form.default_duration.toString()} onValueChange={v => setForm(f => ({ ...f, default_duration: parseInt(v) }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="30">{t("settings.30min")}</SelectItem>
+                  <SelectItem value="60">{t("settings.60min")}</SelectItem>
+                  <SelectItem value="90">{t("settings.90min")}</SelectItem>
+                  <SelectItem value="120">{t("settings.120min")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
         <Separator />
@@ -92,6 +142,12 @@ export default function SettingsPage() {
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        <div className="pt-2">
+          <Button onClick={handleSave} disabled={updateProfile.isPending} className="w-full sm:w-auto">
+            {updateProfile.isPending ? t("common.saving") : t("common.save")}
+          </Button>
         </div>
 
         <Separator />
