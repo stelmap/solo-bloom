@@ -1,5 +1,6 @@
 import { Target } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface BreakevenProgressProps {
   currentIncome: number;
@@ -8,6 +9,7 @@ interface BreakevenProgressProps {
 }
 
 export function BreakevenProgress({ currentIncome, requiredIncome, currency = "â‚¬" }: BreakevenProgressProps) {
+  const { t } = useLanguage();
   const percentage = Math.min((currentIncome / requiredIncome) * 100, 100);
   const remaining = Math.max(requiredIncome - currentIncome, 0);
 
@@ -18,8 +20,8 @@ export function BreakevenProgress({ currentIncome, requiredIncome, currency = "â
           <Target className="h-5 w-5 text-accent-foreground" />
         </div>
         <div>
-          <h3 className="font-semibold text-foreground">Break-even Progress</h3>
-          <p className="text-sm text-muted-foreground">This month</p>
+          <h3 className="font-semibold text-foreground">{t("breakeven.title")}</h3>
+          <p className="text-sm text-muted-foreground">{t("breakeven.thisMonth")}</p>
         </div>
       </div>
 
@@ -27,18 +29,18 @@ export function BreakevenProgress({ currentIncome, requiredIncome, currency = "â
         <Progress value={percentage} className="h-3" />
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">
-            {currency}{currentIncome.toLocaleString()} earned
+            {currency}{currentIncome.toLocaleString()} {t("breakeven.earned")}
           </span>
           <span className="font-medium text-foreground">
-            {currency}{requiredIncome.toLocaleString()} needed
+            {currency}{requiredIncome.toLocaleString()} {t("breakeven.needed")}
           </span>
         </div>
         {remaining > 0 ? (
           <p className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{currency}{remaining.toLocaleString()}</span> more to break even
+            <span className="font-medium text-foreground">{currency}{remaining.toLocaleString()}</span> {t("breakeven.moreToGo")}
           </p>
         ) : (
-          <p className="text-sm font-medium text-success">âœ“ Break-even reached!</p>
+          <p className="text-sm font-medium text-success">{t("breakeven.reached")}</p>
         )}
       </div>
     </div>

@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/i18n/LanguageContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import AuthPage from "./pages/AuthPage";
 import Dashboard from "./pages/Dashboard";
@@ -23,26 +24,28 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/onboarding" element={<OnboardingPage />} />
-            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
-            <Route path="/clients" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
-            <Route path="/clients/:id" element={<ProtectedRoute><ClientDetailPage /></ProtectedRoute>} />
-            <Route path="/services" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
-            <Route path="/income" element={<ProtectedRoute><IncomePage /></ProtectedRoute>} />
-            <Route path="/expenses" element={<ProtectedRoute><ExpensesPage /></ProtectedRoute>} />
-            <Route path="/breakeven" element={<ProtectedRoute><BreakevenPage /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <LanguageProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/onboarding" element={<OnboardingPage />} />
+              <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
+              <Route path="/clients" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
+              <Route path="/clients/:id" element={<ProtectedRoute><ClientDetailPage /></ProtectedRoute>} />
+              <Route path="/services" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
+              <Route path="/income" element={<ProtectedRoute><IncomePage /></ProtectedRoute>} />
+              <Route path="/expenses" element={<ProtectedRoute><ExpensesPage /></ProtectedRoute>} />
+              <Route path="/breakeven" element={<ProtectedRoute><BreakevenPage /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </LanguageProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

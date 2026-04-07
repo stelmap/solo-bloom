@@ -2,6 +2,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface ConfirmDeleteDialogProps {
   open: boolean;
@@ -14,24 +15,25 @@ interface ConfirmDeleteDialogProps {
 
 export function ConfirmDeleteDialog({
   open, onOpenChange, onConfirm, loading,
-  title = "Are you sure?",
-  description = "This action cannot be undone. This will permanently delete this record.",
+  title,
+  description,
 }: ConfirmDeleteDialogProps) {
+  const { t } = useLanguage();
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          <AlertDialogTitle>{title || t("confirmDelete.areYouSure")}</AlertDialogTitle>
+          <AlertDialogDescription>{description || t("confirmDelete.cannotUndo")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={loading}>{t("common.cancel")}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             disabled={loading}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {loading ? "Deleting..." : "Delete"}
+            {loading ? t("common.deleting") : t("common.delete")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
