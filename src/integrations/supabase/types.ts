@@ -565,6 +565,48 @@ export type Database = {
         }
         Relationships: []
       }
+      tax_settings: {
+        Row: {
+          calculate_on: string
+          created_at: string
+          fixed_amount: number
+          frequency: string
+          id: string
+          is_active: boolean
+          tax_name: string
+          tax_rate: number
+          tax_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          calculate_on?: string
+          created_at?: string
+          fixed_amount?: number
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          tax_name?: string
+          tax_rate?: number
+          tax_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          calculate_on?: string
+          created_at?: string
+          fixed_amount?: number
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          tax_name?: string
+          tax_rate?: number
+          tax_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       working_schedule: {
         Row: {
           created_at: string
