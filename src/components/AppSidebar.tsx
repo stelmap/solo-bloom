@@ -1,18 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard,
-  Calendar,
-  Users,
-  Scissors,
-  DollarSign,
-  TrendingDown,
-  Settings,
-  Target,
-  Menu,
-  X,
+  LayoutDashboard, Calendar, Users, Scissors, DollarSign,
+  TrendingDown, Settings, Target, Menu, X, LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -28,10 +21,14 @@ const navItems = [
 export function AppSidebar() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, signOut } = useAuth();
+
+  const initials = user?.user_metadata?.full_name
+    ? user.user_metadata.full_name.split(" ").map((n: string) => n[0]).join("").toUpperCase()
+    : user?.email?.[0]?.toUpperCase() ?? "U";
 
   return (
     <>
-      {/* Mobile toggle */}
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
         className="fixed top-4 left-4 z-50 md:hidden p-2 rounded-lg bg-card border border-border shadow-sm"
@@ -39,22 +36,15 @@ export function AppSidebar() {
         {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
 
-      {/* Overlay */}
       {mobileOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-foreground/20 backdrop-blur-sm md:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
+        <div className="fixed inset-0 z-30 bg-foreground/20 backdrop-blur-sm md:hidden" onClick={() => setMobileOpen(false)} />
       )}
 
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          "fixed left-0 top-0 z-40 h-full w-64 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-200",
-          "md:translate-x-0",
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
+      <aside className={cn(
+        "fixed left-0 top-0 z-40 h-full w-64 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-200",
+        "md:translate-x-0",
+        mobileOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
         <div className="p-6 border-b border-sidebar-border">
           <h1 className="text-xl font-bold text-foreground tracking-tight">
             Solo<span className="text-primary">Pro</span>
@@ -86,13 +76,18 @@ export function AppSidebar() {
 
         <div className="p-4 border-t border-sidebar-border">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-semibold">
-              S
+            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-semibold shrink-0">
+              {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">Solo User</p>
-              <p className="text-xs text-muted-foreground truncate">Free trial</p>
+              <p className="text-sm font-medium text-foreground truncate">
+                {user?.user_metadata?.full_name || user?.email}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             </div>
+            <button onClick={signOut} className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" title="Sign out">
+              <LogOut className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </aside>
