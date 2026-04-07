@@ -6,14 +6,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { useProfile, useUpdateProfile, useWorkingSchedule, useUpsertWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff } from "@/hooks/useData";
+import { useProfile, useUpdateProfile, useWorkingSchedule, useUpsertWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff, useTaxSettings, useCreateTaxSetting, useUpdateTaxSetting, useDeleteTaxSetting } from "@/hooks/useData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { Plus, Trash2, CalendarOff } from "lucide-react";
+import { Plus, Trash2, CalendarOff, Receipt, Pencil } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, "0")}:00`);
 
@@ -21,7 +22,7 @@ const DAY_FULL_KEYS = ["day.monday", "day.tuesday", "day.wednesday", "day.thursd
 
 const DEFAULT_SCHEDULE = Array.from({ length: 7 }, (_, i) => ({
   day_of_week: i + 1,
-  is_working: i < 5, // Mon-Fri working by default
+  is_working: i < 5,
   start_time: "09:00",
   end_time: "18:00",
 }));
@@ -35,6 +36,10 @@ export default function SettingsPage() {
   const { data: daysOff = [] } = useDaysOff();
   const createDayOff = useCreateDayOff();
   const deleteDayOff = useDeleteDayOff();
+  const { data: taxSettings = [] } = useTaxSettings();
+  const createTax = useCreateTaxSetting();
+  const updateTax = useUpdateTaxSetting();
+  const deleteTax = useDeleteTaxSetting();
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -46,6 +51,14 @@ export default function SettingsPage() {
   const [schedule, setSchedule] = useState(DEFAULT_SCHEDULE);
   const [dayOffOpen, setDayOffOpen] = useState(false);
   const [dayOffForm, setDayOffForm] = useState({ date: "", type: "day_off", label: "" });
+
+  // Tax form
+  const [taxOpen, setTaxOpen] = useState(false);
+  const [taxEditId, setTaxEditId] = useState<string | null>(null);
+  const [taxForm, setTaxForm] = useState({
+    tax_name: "", tax_type: "percentage", tax_rate: 0, fixed_amount: 0,
+    frequency: "monthly", calculate_on: "actual_income",
+  });
 
   useEffect(() => {
     if (profile) {
@@ -89,12 +102,7 @@ export default function SettingsPage() {
   const handleAddDayOff = async () => {
     if (!dayOffForm.date) return;
     try {
-      await createDayOff.mutateAsync({
-        date: dayOffForm.date,
-        type: dayOffForm.type,
-        label: dayOffForm.label || undefined,
-        is_non_working: true,
-      });
+      await createDayOff.mutateAsync({ date: dayOffForm.date, type: dayOffForm.type, label: dayOffForm.label || undefined, is_non_working: true });
       toast({ title: t("toast.dayOffAdded") });
       setDayOffForm({ date: "", type: "day_off", label: "" });
       setDayOffOpen(false);
@@ -104,12 +112,8 @@ export default function SettingsPage() {
   };
 
   const handleDeleteDayOff = async (id: string) => {
-    try {
-      await deleteDayOff.mutateAsync(id);
-      toast({ title: t("toast.dayOffRemoved") });
-    } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
-    }
+    try { await deleteDayOff.mutateAsync(id); toast({ title: t("toast.dayOffRemoved") }); }
+    catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
   };
 
   const updateScheduleDay = (dayOfWeek: number, updates: Partial<typeof schedule[0]>) => {
@@ -117,23 +121,53 @@ export default function SettingsPage() {
   };
 
   const dayOffTypeLabel = (type: string) => {
-    const map: Record<string, string> = {
-      day_off: t("settings.dayOff"),
-      vacation: t("settings.vacation"),
-      holiday: t("settings.holiday"),
-      sick: t("settings.sickDay"),
-    };
+    const map: Record<string, string> = { day_off: t("settings.dayOff"), vacation: t("settings.vacation"), holiday: t("settings.holiday"), sick: t("settings.sickDay") };
     return map[type] || type;
   };
 
   const dayOffTypeColor = (type: string) => {
     const map: Record<string, string> = {
-      day_off: "bg-muted text-muted-foreground",
-      vacation: "bg-primary/15 text-primary",
-      holiday: "bg-accent text-accent-foreground",
-      sick: "bg-destructive/15 text-destructive",
+      day_off: "bg-muted text-muted-foreground", vacation: "bg-primary/15 text-primary",
+      holiday: "bg-accent text-accent-foreground", sick: "bg-destructive/15 text-destructive",
     };
     return map[type] || "bg-muted text-muted-foreground";
+  };
+
+  // Tax handlers
+  const openCreateTax = () => {
+    setTaxEditId(null);
+    setTaxForm({ tax_name: "", tax_type: "percentage", tax_rate: 0, fixed_amount: 0, frequency: "monthly", calculate_on: "actual_income" });
+    setTaxOpen(true);
+  };
+  const openEditTax = (tax: any) => {
+    setTaxEditId(tax.id);
+    setTaxForm({
+      tax_name: tax.tax_name, tax_type: tax.tax_type, tax_rate: Number(tax.tax_rate),
+      fixed_amount: Number(tax.fixed_amount), frequency: tax.frequency, calculate_on: tax.calculate_on,
+    });
+    setTaxOpen(true);
+  };
+  const handleSaveTax = async () => {
+    if (!taxForm.tax_name) return;
+    try {
+      if (taxEditId) {
+        await updateTax.mutateAsync({ id: taxEditId, ...taxForm });
+      } else {
+        await createTax.mutateAsync(taxForm);
+      }
+      toast({ title: t("tax.saved") });
+      setTaxOpen(false);
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
+  const handleDeleteTax = async (id: string) => {
+    try { await deleteTax.mutateAsync(id); toast({ title: t("tax.deleted") }); }
+    catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
+  };
+  const handleToggleTax = async (id: string, isActive: boolean) => {
+    try { await updateTax.mutateAsync({ id, is_active: isActive }); }
+    catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
   };
 
   return (
@@ -161,39 +195,19 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>{t("settings.workHoursStart")}</Label>
-              <Select value={form.work_hours_start} onValueChange={v => setForm(f => ({ ...f, work_hours_start: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{HOUR_OPTIONS.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent>
-              </Select>
+              <Select value={form.work_hours_start} onValueChange={v => setForm(f => ({ ...f, work_hours_start: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{HOUR_OPTIONS.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent></Select>
             </div>
             <div className="space-y-2">
               <Label>{t("settings.workHoursEnd")}</Label>
-              <Select value={form.work_hours_end} onValueChange={v => setForm(f => ({ ...f, work_hours_end: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{HOUR_OPTIONS.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent>
-              </Select>
+              <Select value={form.work_hours_end} onValueChange={v => setForm(f => ({ ...f, work_hours_end: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{HOUR_OPTIONS.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent></Select>
             </div>
             <div className="space-y-2">
               <Label>{t("settings.timeFormat")}</Label>
-              <Select value={form.time_format} onValueChange={v => setForm(f => ({ ...f, time_format: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="24h">{t("settings.24h")}</SelectItem>
-                  <SelectItem value="12h">{t("settings.12h")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <Select value={form.time_format} onValueChange={v => setForm(f => ({ ...f, time_format: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="24h">{t("settings.24h")}</SelectItem><SelectItem value="12h">{t("settings.12h")}</SelectItem></SelectContent></Select>
             </div>
             <div className="space-y-2">
               <Label>{t("settings.defaultDuration")}</Label>
-              <Select value={form.default_duration.toString()} onValueChange={v => setForm(f => ({ ...f, default_duration: parseInt(v) }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="30">{t("settings.30min")}</SelectItem>
-                  <SelectItem value="60">{t("settings.60min")}</SelectItem>
-                  <SelectItem value="90">{t("settings.90min")}</SelectItem>
-                  <SelectItem value="120">{t("settings.120min")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <Select value={form.default_duration.toString()} onValueChange={v => setForm(f => ({ ...f, default_duration: parseInt(v) }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="30">{t("settings.30min")}</SelectItem><SelectItem value="60">{t("settings.60min")}</SelectItem><SelectItem value="90">{t("settings.90min")}</SelectItem><SelectItem value="120">{t("settings.120min")}</SelectItem></SelectContent></Select>
             </div>
           </div>
         </div>
@@ -209,24 +223,13 @@ export default function SettingsPage() {
           <div className="space-y-3">
             {schedule.map((day, i) => (
               <div key={day.day_of_week} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border">
-                <div className="w-24 shrink-0">
-                  <span className="text-sm font-medium text-foreground">{t(DAY_FULL_KEYS[i] as any)}</span>
-                </div>
-                <Switch
-                  checked={day.is_working}
-                  onCheckedChange={v => updateScheduleDay(day.day_of_week, { is_working: v })}
-                />
+                <div className="w-24 shrink-0"><span className="text-sm font-medium text-foreground">{t(DAY_FULL_KEYS[i] as any)}</span></div>
+                <Switch checked={day.is_working} onCheckedChange={v => updateScheduleDay(day.day_of_week, { is_working: v })} />
                 {day.is_working ? (
                   <div className="flex items-center gap-2 flex-1">
-                    <Select value={day.start_time} onValueChange={v => updateScheduleDay(day.day_of_week, { start_time: v })}>
-                      <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
-                      <SelectContent>{HOUR_OPTIONS.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent>
-                    </Select>
+                    <Select value={day.start_time} onValueChange={v => updateScheduleDay(day.day_of_week, { start_time: v })}><SelectTrigger className="w-24"><SelectValue /></SelectTrigger><SelectContent>{HOUR_OPTIONS.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent></Select>
                     <span className="text-muted-foreground text-sm">–</span>
-                    <Select value={day.end_time} onValueChange={v => updateScheduleDay(day.day_of_week, { end_time: v })}>
-                      <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
-                      <SelectContent>{HOUR_OPTIONS.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent>
-                    </Select>
+                    <Select value={day.end_time} onValueChange={v => updateScheduleDay(day.day_of_week, { end_time: v })}><SelectTrigger className="w-24"><SelectValue /></SelectTrigger><SelectContent>{HOUR_OPTIONS.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent></Select>
                   </div>
                 ) : (
                   <span className="text-sm text-muted-foreground italic">{t("settings.dayOff")}</span>
@@ -238,7 +241,7 @@ export default function SettingsPage() {
 
         <Separator />
 
-        {/* Days Off management */}
+        {/* Days Off */}
         <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
           <div className="flex items-center justify-between">
             <div>
@@ -246,32 +249,16 @@ export default function SettingsPage() {
               <p className="text-sm text-muted-foreground mt-1">{t("settings.daysOffDesc")}</p>
             </div>
             <Dialog open={dayOffOpen} onOpenChange={setDayOffOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm"><Plus className="h-4 w-4 mr-1" /> {t("settings.addDayOff")}</Button>
-              </DialogTrigger>
+              <DialogTrigger asChild><Button variant="outline" size="sm"><Plus className="h-4 w-4 mr-1" /> {t("settings.addDayOff")}</Button></DialogTrigger>
               <DialogContent>
                 <DialogHeader><DialogTitle>{t("settings.addDayOff")}</DialogTitle></DialogHeader>
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>{t("common.date")} *</Label>
-                    <Input type="date" value={dayOffForm.date} onChange={e => setDayOffForm(f => ({ ...f, date: e.target.value }))} />
-                  </div>
+                  <div className="space-y-2"><Label>{t("common.date")} *</Label><Input type="date" value={dayOffForm.date} onChange={e => setDayOffForm(f => ({ ...f, date: e.target.value }))} /></div>
                   <div className="space-y-2">
                     <Label>{t("settings.dayOffType")}</Label>
-                    <Select value={dayOffForm.type} onValueChange={v => setDayOffForm(f => ({ ...f, type: v }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="day_off">{t("settings.dayOff")}</SelectItem>
-                        <SelectItem value="vacation">{t("settings.vacation")}</SelectItem>
-                        <SelectItem value="holiday">{t("settings.holiday")}</SelectItem>
-                        <SelectItem value="sick">{t("settings.sickDay")}</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Select value={dayOffForm.type} onValueChange={v => setDayOffForm(f => ({ ...f, type: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="day_off">{t("settings.dayOff")}</SelectItem><SelectItem value="vacation">{t("settings.vacation")}</SelectItem><SelectItem value="holiday">{t("settings.holiday")}</SelectItem><SelectItem value="sick">{t("settings.sickDay")}</SelectItem></SelectContent></Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label>{t("settings.dayOffLabel")}</Label>
-                    <Input value={dayOffForm.label} onChange={e => setDayOffForm(f => ({ ...f, label: e.target.value }))} placeholder="e.g. Christmas" />
-                  </div>
+                  <div className="space-y-2"><Label>{t("settings.dayOffLabel")}</Label><Input value={dayOffForm.label} onChange={e => setDayOffForm(f => ({ ...f, label: e.target.value }))} placeholder="e.g. Christmas" /></div>
                   <Button onClick={handleAddDayOff} className="w-full" disabled={createDayOff.isPending || !dayOffForm.date}>
                     {createDayOff.isPending ? t("common.adding") : t("settings.addDayOff")}
                   </Button>
@@ -279,12 +266,8 @@ export default function SettingsPage() {
               </DialogContent>
             </Dialog>
           </div>
-
           {(daysOff as any[]).length === 0 ? (
-            <div className="text-center py-6 text-sm text-muted-foreground">
-              <CalendarOff className="h-8 w-8 mx-auto mb-2 opacity-40" />
-              {t("settings.noDaysOff")}
-            </div>
+            <div className="text-center py-6 text-sm text-muted-foreground"><CalendarOff className="h-8 w-8 mx-auto mb-2 opacity-40" />{t("settings.noDaysOff")}</div>
           ) : (
             <div className="space-y-2">
               {(daysOff as any[]).map((dayOff: any) => (
@@ -294,9 +277,7 @@ export default function SettingsPage() {
                     <Badge className={dayOffTypeColor(dayOff.type)}>{dayOffTypeLabel(dayOff.type)}</Badge>
                     {dayOff.label && <span className="text-xs text-muted-foreground">{dayOff.label}</span>}
                   </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDeleteDayOff(dayOff.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDeleteDayOff(dayOff.id)}><Trash2 className="h-4 w-4" /></Button>
                 </div>
               ))}
             </div>
@@ -305,17 +286,108 @@ export default function SettingsPage() {
 
         <Separator />
 
+        {/* Tax Configuration */}
+        <div className="bg-card rounded-xl border border-warning/20 p-6 space-y-4 animate-fade-in">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Receipt className="h-5 w-5 text-warning" />
+              <div>
+                <h2 className="font-semibold text-foreground">{t("tax.title")}</h2>
+                <p className="text-sm text-muted-foreground">{t("tax.subtitle")}</p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={openCreateTax}><Plus className="h-4 w-4 mr-1" /> {t("tax.addTax")}</Button>
+          </div>
+
+          {(taxSettings as any[]).length === 0 ? (
+            <div className="text-center py-6 text-sm text-muted-foreground">
+              <Receipt className="h-8 w-8 mx-auto mb-2 opacity-40" />
+              {t("tax.noTaxes")}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {(taxSettings as any[]).map((tax: any) => (
+                <div key={tax.id} className={cn("flex items-center justify-between p-4 rounded-lg border", tax.is_active ? "bg-warning/5 border-warning/20" : "bg-muted/30 border-border opacity-60")}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-foreground">{tax.tax_name}</span>
+                      <Badge variant="outline" className={cn("text-xs", tax.is_active ? "border-warning text-warning" : "")}>
+                        {tax.tax_type === "percentage" ? `${tax.tax_rate}%` : `€${Number(tax.fixed_amount).toLocaleString()}`}
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        {tax.frequency === "quarterly" ? t("tax.quarterly") : t("tax.monthly")}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch checked={tax.is_active} onCheckedChange={v => handleToggleTax(tax.id, v)} />
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditTax(tax)}><Pencil className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDeleteTax(tax.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Tax Dialog */}
+        <Dialog open={taxOpen} onOpenChange={setTaxOpen}>
+          <DialogContent>
+            <DialogHeader><DialogTitle>{taxEditId ? t("tax.editTax") : t("tax.addTax")}</DialogTitle></DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2"><Label>{t("tax.taxName")} *</Label><Input value={taxForm.tax_name} onChange={e => setTaxForm(f => ({ ...f, tax_name: e.target.value }))} placeholder="e.g. Income Tax" /></div>
+              <div className="space-y-2">
+                <Label>{t("tax.taxType")}</Label>
+                <Select value={taxForm.tax_type} onValueChange={v => setTaxForm(f => ({ ...f, tax_type: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="percentage">{t("tax.percentage")}</SelectItem>
+                    <SelectItem value="fixed">{t("tax.fixed")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {taxForm.tax_type === "percentage" && (
+                <div className="space-y-2"><Label>{t("tax.taxRate")}</Label><Input type="number" step="0.1" value={taxForm.tax_rate || ""} onChange={e => setTaxForm(f => ({ ...f, tax_rate: parseFloat(e.target.value) || 0 }))} /></div>
+              )}
+              {taxForm.tax_type === "fixed" && (
+                <>
+                  <div className="space-y-2"><Label>{t("tax.fixedAmount")}</Label><Input type="number" step="0.01" value={taxForm.fixed_amount || ""} onChange={e => setTaxForm(f => ({ ...f, fixed_amount: parseFloat(e.target.value) || 0 }))} /></div>
+                  <div className="space-y-2">
+                    <Label>{t("tax.frequency")}</Label>
+                    <Select value={taxForm.frequency} onValueChange={v => setTaxForm(f => ({ ...f, frequency: v }))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="monthly">{t("tax.monthly")}</SelectItem>
+                        <SelectItem value="quarterly">{t("tax.quarterly")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+              <div className="space-y-2">
+                <Label>{t("tax.calculateOn")}</Label>
+                <Select value={taxForm.calculate_on} onValueChange={v => setTaxForm(f => ({ ...f, calculate_on: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="actual_income">{t("tax.actualIncome")}</SelectItem>
+                    <SelectItem value="all_income">{t("tax.allIncome")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button onClick={handleSaveTax} className="w-full" disabled={createTax.isPending || updateTax.isPending || !taxForm.tax_name}>
+                {(createTax.isPending || updateTax.isPending) ? t("common.saving") : t("common.save")}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Separator />
+
         <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
           <h2 className="font-semibold text-foreground">{t("settings.language")}</h2>
           <div className="max-w-xs space-y-2">
             <Label>{t("settings.displayLanguage")}</Label>
-            <Select value={form.language} onValueChange={v => setForm(f => ({ ...f, language: v }))}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="uk">Українська</SelectItem>
-              </SelectContent>
-            </Select>
+            <Select value={form.language} onValueChange={v => setForm(f => ({ ...f, language: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="en">English</SelectItem><SelectItem value="uk">Українська</SelectItem></SelectContent></Select>
           </div>
         </div>
 
@@ -325,15 +397,7 @@ export default function SettingsPage() {
           <h2 className="font-semibold text-foreground">{t("settings.notifications")}</h2>
           <div className="max-w-xs space-y-2">
             <Label>{t("settings.reminderTime")}</Label>
-            <Select value={form.reminder_minutes.toString()} onValueChange={v => setForm(f => ({ ...f, reminder_minutes: parseInt(v) }))}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="60">{t("settings.1hBefore")}</SelectItem>
-                <SelectItem value="180">{t("settings.3hBefore")}</SelectItem>
-                <SelectItem value="1440">{t("settings.24hBefore")}</SelectItem>
-                <SelectItem value="2880">{t("settings.48hBefore")}</SelectItem>
-              </SelectContent>
-            </Select>
+            <Select value={form.reminder_minutes.toString()} onValueChange={v => setForm(f => ({ ...f, reminder_minutes: parseInt(v) }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="60">{t("settings.1hBefore")}</SelectItem><SelectItem value="180">{t("settings.3hBefore")}</SelectItem><SelectItem value="1440">{t("settings.24hBefore")}</SelectItem><SelectItem value="2880">{t("settings.48hBefore")}</SelectItem></SelectContent></Select>
           </div>
         </div>
 

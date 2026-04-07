@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateCapacity } from "@/lib/capacity";
 
-const INVALIDATE_ALL = ["clients", "services", "appointments", "expenses", "income", "dashboard-stats", "expected-payments", "working-schedule", "days-off", "recurring-rules"];
+const INVALIDATE_ALL = ["clients", "services", "appointments", "expenses", "income", "dashboard-stats", "expected-payments", "working-schedule", "days-off", "recurring-rules", "tax-settings"];
 
 // Clients
 export function useClients() {
@@ -618,6 +618,66 @@ export function useUpsertBreakevenGoals() {
       }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["breakeven-goals"] }),
+  });
+}
+
+// Tax Settings
+export function useTaxSettings() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["tax-settings", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("tax_settings").select("*").order("created_at");
+      if (error) throw error;
+      return data as Array<{
+        id: string; user_id: string; tax_name: string; tax_type: string;
+        tax_rate: number; fixed_amount: number; frequency: string;
+        is_active: boolean; calculate_on: string;
+      }>;
+    },
+    enabled: !!user,
+  });
+}
+
+export function useCreateTaxSetting() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (tax: {
+      tax_name: string; tax_type: string; tax_rate?: number;
+      fixed_amount?: number; frequency?: string; calculate_on?: string;
+    }) => {
+      const { data, error } = await supabase.from("tax_settings")
+        .insert({ ...tax, user_id: user!.id } as any).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["tax-settings"] }); qc.invalidateQueries({ queryKey: ["dashboard-stats"] }); },
+  });
+}
+
+export function useUpdateTaxSetting() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: {
+      id: string; tax_name?: string; tax_type?: string; tax_rate?: number;
+      fixed_amount?: number; frequency?: string; is_active?: boolean; calculate_on?: string;
+    }) => {
+      const { error } = await supabase.from("tax_settings").update(updates as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["tax-settings"] }); qc.invalidateQueries({ queryKey: ["dashboard-stats"] }); },
+  });
+}
+
+export function useDeleteTaxSetting() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("tax_settings").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["tax-settings"] }); qc.invalidateQueries({ queryKey: ["dashboard-stats"] }); },
   });
 }
 

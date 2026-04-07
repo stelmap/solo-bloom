@@ -471,6 +471,50 @@ export const translations = {
   "capacity.exceedsCapacity": { en: "Exceeds capacity", uk: "Перевищує можливості" },
   "capacity.unrealisticWarning": { en: "This goal exceeds your remaining capacity of {slots} sessions this month", uk: "Ця ціль перевищує вашу залишкову ємність у {slots} сеансів цього місяця" },
   "capacity.remainingSlots": { en: "{slots} sessions left this month", uk: "{slots} сеансів залишилось цього місяця" },
+
+  // Tax settings
+  "tax.title": { en: "Tax Configuration", uk: "Налаштування податків" },
+  "tax.subtitle": { en: "Configure your tax rates and fixed payments", uk: "Налаштуйте податкові ставки та фіксовані платежі" },
+  "tax.addTax": { en: "Add Tax", uk: "Додати податок" },
+  "tax.editTax": { en: "Edit Tax", uk: "Редагувати податок" },
+  "tax.taxName": { en: "Tax name", uk: "Назва податку" },
+  "tax.taxType": { en: "Type", uk: "Тип" },
+  "tax.percentage": { en: "Percentage of income", uk: "Відсоток від доходу" },
+  "tax.fixed": { en: "Fixed amount", uk: "Фіксована сума" },
+  "tax.taxRate": { en: "Tax rate (%)", uk: "Ставка податку (%)" },
+  "tax.fixedAmount": { en: "Fixed amount (€)", uk: "Фіксована сума (€)" },
+  "tax.frequency": { en: "Frequency", uk: "Періодичність" },
+  "tax.monthly": { en: "Monthly", uk: "Щомісячно" },
+  "tax.quarterly": { en: "Щоквартально", uk: "Щоквартально" },
+  "tax.active": { en: "Active", uk: "Активний" },
+  "tax.inactive": { en: "Inactive", uk: "Неактивний" },
+  "tax.noTaxes": { en: "No taxes configured", uk: "Податки не налаштовані" },
+  "tax.saved": { en: "Tax setting saved", uk: "Податкове налаштування збережено" },
+  "tax.deleted": { en: "Tax setting deleted", uk: "Податкове налаштування видалено" },
+  "tax.calculateOn": { en: "Calculate on", uk: "Розраховувати з" },
+  "tax.actualIncome": { en: "Actual income (received)", uk: "Фактичний дохід (отриманий)" },
+  "tax.allIncome": { en: "All income (incl. pending)", uk: "Весь дохід (вкл. очікуваний)" },
+
+  // Financial metrics
+  "finance.grossIncome": { en: "Gross Income", uk: "Валовий дохід" },
+  "finance.totalTaxes": { en: "Taxes", uk: "Податки" },
+  "finance.netAfterTax": { en: "Net After Tax", uk: "Чистий після податків" },
+  "finance.totalExpenses": { en: "Expenses (excl. tax)", uk: "Витрати (без податків)" },
+  "finance.netProfit": { en: "Net Profit", uk: "Чистий прибуток" },
+  "finance.taxImpact": { en: "Tax impact: €{amount}/mo estimated", uk: "Вплив податків: ~€{amount}/міс" },
+  "finance.expectedIncome": { en: "Expected Income", uk: "Очікуваний дохід" },
+
+  // Filters
+  "filter.dateRange": { en: "Date range", uk: "Період" },
+  "filter.thisMonth": { en: "This month", uk: "Цей місяць" },
+  "filter.thisWeek": { en: "This week", uk: "Цей тиждень" },
+  "filter.today": { en: "Today", uk: "Сьогодні" },
+  "filter.allTime": { en: "All time", uk: "Весь час" },
+  "filter.category": { en: "Category", uk: "Категорія" },
+  "filter.all": { en: "All", uk: "Усі" },
+
+  // Expense types
+  "category.Tax": { en: "Tax", uk: "Податок" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;

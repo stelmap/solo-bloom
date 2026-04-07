@@ -3,19 +3,23 @@ import { MetricCard } from "@/components/MetricCard";
 import { BreakevenProgress } from "@/components/BreakevenProgress";
 import { SmartInsights, generateInsights } from "@/components/SmartInsights";
 import { Progress } from "@/components/ui/progress";
-import { DollarSign, Users, TrendingUp, TrendingDown, Clock, Target, AlertTriangle } from "lucide-react";
-import { useDashboardStats, useBreakevenGoals, useServices } from "@/hooks/useData";
+import { DollarSign, Users, TrendingUp, TrendingDown, Clock, Target, AlertTriangle, Receipt } from "lucide-react";
+import { useDashboardStats, useBreakevenGoals, useServices, useTaxSettings, useExpectedPayments } from "@/hooks/useData";
 import { format } from "date-fns";
 import { useMemo } from "react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
 import { sessionsNeededForTarget } from "@/lib/capacity";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const { data: stats, isLoading } = useDashboardStats();
   const { data: goals = [] } = useBreakevenGoals();
   const { data: services = [] } = useServices();
+  const { data: taxSettings = [] } = useTaxSettings();
+  const { data: expectedPayments = [] } = useExpectedPayments();
   const { t, lang } = useLanguage();
+  const navigate = useNavigate();
 
   const s = stats ?? {
     todayIncome: 0, monthlyIncome: 0, monthlyExpenses: 0, netProfit: 0,
@@ -28,6 +32,25 @@ export default function Dashboard() {
     ? services.reduce((sum, sv) => sum + Number(sv.price), 0) / services.length : 1;
 
   const remainingCapacity = Math.max((s.remainingMonthlyCapacity ?? s.maxMonthlyCapacity) - s.monthlyAppointments, 0);
+
+  // Tax calculations
+  const activeTaxes = (taxSettings as any[]).filter((ts: any) => ts.is_active);
+  const monthlyTaxEstimate = useMemo(() => {
+    let total = 0;
+    for (const tax of activeTaxes) {
+      if (tax.tax_type === "percentage") {
+        total += s.monthlyIncome * (Number(tax.tax_rate) / 100);
+      } else if (tax.tax_type === "fixed") {
+        const amount = Number(tax.fixed_amount);
+        total += tax.frequency === "quarterly" ? amount / 3 : amount;
+      }
+    }
+    return Math.round(total);
+  }, [activeTaxes, s.monthlyIncome]);
+
+  const pendingTotal = (expectedPayments as any[]).reduce((sum: number, ep: any) => sum + Number(ep.amount), 0);
+  const netAfterTax = s.monthlyIncome - monthlyTaxEstimate;
+  const netProfit = netAfterTax - s.monthlyExpenses;
 
   const insights = useMemo(() => generateInsights({
     monthlyIncome: s.monthlyIncome,
@@ -61,12 +84,42 @@ export default function Dashboard() {
           <p className="text-muted-foreground mt-1">{t("dashboard.subtitle")}</p>
         </div>
 
+        {/* Clickable metric cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard title={t("dashboard.todayIncome")} value={`€${s.todayIncome.toLocaleString()}`} icon={DollarSign} />
-          <MetricCard title={t("dashboard.monthlyIncome")} value={`€${s.monthlyIncome.toLocaleString()}`} icon={TrendingUp} />
-          <MetricCard title={t("dashboard.monthlyExpenses")} value={`€${s.monthlyExpenses.toLocaleString()}`} icon={TrendingDown} />
+          <div className="cursor-pointer" onClick={() => navigate("/income?range=today")}>
+            <MetricCard title={t("dashboard.todayIncome")} value={`€${s.todayIncome.toLocaleString()}`} icon={DollarSign} />
+          </div>
+          <div className="cursor-pointer" onClick={() => navigate("/income?range=month")}>
+            <MetricCard title={t("finance.grossIncome")} value={`€${s.monthlyIncome.toLocaleString()}`} icon={TrendingUp}
+              subtitle={pendingTotal > 0 ? `+ €${pendingTotal.toLocaleString()} ${t("income.pendingPayments").toLowerCase()}` : undefined} />
+          </div>
+          <div className="cursor-pointer" onClick={() => navigate("/expenses?range=month")}>
+            <MetricCard title={t("dashboard.monthlyExpenses")} value={`€${s.monthlyExpenses.toLocaleString()}`} icon={TrendingDown} />
+          </div>
           <MetricCard title={t("dashboard.activeClients")} value={s.clientCount.toString()} icon={Users} />
         </div>
+
+        {/* Tax & net profit row */}
+        {activeTaxes.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className={cn("bg-card rounded-xl border p-5 animate-fade-in border-warning/30")}>
+              <div className="flex items-center gap-2 mb-1">
+                <Receipt className="h-4 w-4 text-warning" />
+                <p className="text-sm text-warning">{t("finance.totalTaxes")}</p>
+              </div>
+              <p className="text-2xl font-bold text-warning">€{monthlyTaxEstimate.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("finance.taxImpact", { amount: monthlyTaxEstimate })}</p>
+            </div>
+            <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
+              <p className="text-sm text-muted-foreground">{t("finance.netAfterTax")}</p>
+              <p className="text-2xl font-bold text-foreground mt-1">€{netAfterTax.toLocaleString()}</p>
+            </div>
+            <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
+              <p className="text-sm text-muted-foreground">{t("finance.netProfit")}</p>
+              <p className={cn("text-2xl font-bold mt-1", netProfit >= 0 ? "text-success" : "text-destructive")}>€{netProfit.toLocaleString()}</p>
+            </div>
+          </div>
+        )}
 
         <SmartInsights insights={insights} />
 
@@ -81,7 +134,15 @@ export default function Dashboard() {
             </div>
             <div className="space-y-4">
               {goalTargets.map((goal: any) => {
-                const target = goal.target;
+                // Include tax in goal target
+                const taxAdjustedTarget = activeTaxes.length > 0
+                  ? goal.target + (activeTaxes.reduce((sum: number, tax: any) => {
+                      if (tax.tax_type === "percentage") return sum + goal.target * (Number(tax.tax_rate) / 100);
+                      if (tax.tax_type === "fixed") return sum + (tax.frequency === "quarterly" ? Number(tax.fixed_amount) / 3 : Number(tax.fixed_amount));
+                      return sum;
+                    }, 0))
+                  : goal.target;
+                const target = Math.round(taxAdjustedTarget);
                 const progress = Math.min((s.monthlyIncome / Math.max(target, 1)) * 100, 100);
                 const remaining = Math.max(target - s.monthlyIncome, 0);
                 const { sessionsNeeded, isRealistic } = sessionsNeededForTarget(remaining, avgServicePrice, remainingCapacity);
@@ -119,7 +180,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <BreakevenProgress
             currentIncome={s.monthlyIncome}
-            requiredIncome={Math.max(s.monthlyExpenses, 1)}
+            requiredIncome={Math.max(s.monthlyExpenses + monthlyTaxEstimate, 1)}
           />
 
           <div className="bg-card rounded-xl border border-border p-6 animate-fade-in">
