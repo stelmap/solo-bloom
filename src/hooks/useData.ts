@@ -2,16 +2,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
+const INVALIDATE_ALL = ["clients", "services", "appointments", "expenses", "income", "dashboard-stats"];
+
 // Clients
 export function useClients() {
   const { user } = useAuth();
   return useQuery({
     queryKey: ["clients", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("clients")
-        .select("*")
-        .order("name");
+      const { data, error } = await supabase.from("clients").select("*").order("name");
       if (error) throw error;
       return data;
     },
@@ -24,11 +23,7 @@ export function useCreateClient() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (client: { name: string; phone?: string; email?: string; notes?: string }) => {
-      const { data, error } = await supabase
-        .from("clients")
-        .insert({ ...client, user_id: user!.id })
-        .select()
-        .single();
+      const { data, error } = await supabase.from("clients").insert({ ...client, user_id: user!.id }).select().single();
       if (error) throw error;
       return data;
     },
@@ -77,13 +72,20 @@ export function useCreateService() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (service: { name: string; duration_minutes: number; price: number }) => {
-      const { data, error } = await supabase
-        .from("services")
-        .insert({ ...service, user_id: user!.id })
-        .select()
-        .single();
+      const { data, error } = await supabase.from("services").insert({ ...service, user_id: user!.id }).select().single();
       if (error) throw error;
       return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["services"] }),
+  });
+}
+
+export function useUpdateService() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string; name?: string; duration_minutes?: number; price?: number }) => {
+      const { error } = await supabase.from("services").update(updates).eq("id", id);
+      if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["services"] }),
   });
@@ -108,7 +110,7 @@ export function useAppointments() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("appointments")
-        .select("*, clients(name), services(name)")
+        .select("*, clients(name), services(name, price)")
         .order("scheduled_at", { ascending: true });
       if (error) throw error;
       return data;
@@ -122,36 +124,28 @@ export function useCreateAppointment() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (apt: {
-      client_id: string;
-      service_id: string;
-      scheduled_at: string;
-      duration_minutes: number;
-      price: number;
-      notes?: string;
+      client_id: string; service_id: string; scheduled_at: string;
+      duration_minutes: number; price: number; notes?: string;
     }) => {
-      const { data, error } = await supabase
-        .from("appointments")
-        .insert({ ...apt, user_id: user!.id })
-        .select()
-        .single();
+      const { data, error } = await supabase.from("appointments").insert({ ...apt, user_id: user!.id }).select().single();
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["appointments"] }),
+    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
 export function useUpdateAppointment() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; status?: string; notes?: string; scheduled_at?: string; price?: number }) => {
+    mutationFn: async ({ id, ...updates }: {
+      id: string; status?: string; notes?: string; scheduled_at?: string;
+      price?: number; client_id?: string; service_id?: string; duration_minutes?: number;
+    }) => {
       const { error } = await supabase.from("appointments").update(updates).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["appointments"] });
-      qc.invalidateQueries({ queryKey: ["income"] });
-    },
+    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -159,10 +153,59 @@ export function useDeleteAppointment() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
+      // Delete related income first
+      await supabase.from("income").delete().eq("appointment_id", id);
       const { error } = await supabase.from("appointments").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["appointments"] }),
+    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+  });
+}
+
+// Complete appointment — creates income record
+export function useCompleteAppointment() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async ({ appointmentId, price, paymentMethod }: {
+      appointmentId: string; price: number; paymentMethod: string;
+    }) => {
+      // Update status
+      const { error: aptErr } = await supabase
+        .from("appointments")
+        .update({ status: "completed", price })
+        .eq("id", appointmentId);
+      if (aptErr) throw aptErr;
+
+      // Delete existing income for this appointment (if re-completing)
+      await supabase.from("income").delete().eq("appointment_id", appointmentId);
+
+      // Create income record
+      const today = new Date().toISOString().split("T")[0];
+      const { error: incErr } = await supabase.from("income").insert({
+        user_id: user!.id,
+        appointment_id: appointmentId,
+        amount: price,
+        date: today,
+        source: "appointment",
+        payment_method: paymentMethod,
+      } as any);
+      if (incErr) throw incErr;
+    },
+    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+  });
+}
+
+// Cancel/no-show appointment — removes income if exists
+export function useCancelAppointment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: "cancelled" | "no-show" }) => {
+      await supabase.from("income").delete().eq("appointment_id", id);
+      const { error } = await supabase.from("appointments").update({ status }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -185,15 +228,22 @@ export function useCreateExpense() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (expense: { category: string; amount: number; date: string; description?: string; is_recurring?: boolean }) => {
-      const { data, error } = await supabase
-        .from("expenses")
-        .insert({ ...expense, user_id: user!.id })
-        .select()
-        .single();
+      const { data, error } = await supabase.from("expenses").insert({ ...expense, user_id: user!.id }).select().single();
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["expenses"] }),
+    onSuccess: () => { ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+  });
+}
+
+export function useUpdateExpense() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string; category?: string; amount?: number; date?: string; description?: string; is_recurring?: boolean }) => {
+      const { error } = await supabase.from("expenses").update(updates).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -204,7 +254,7 @@ export function useDeleteExpense() {
       const { error } = await supabase.from("expenses").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["expenses"] }),
+    onSuccess: () => { ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -229,16 +279,23 @@ export function useCreateIncome() {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async (income: { amount: number; date: string; description?: string; source?: string; appointment_id?: string }) => {
-      const { data, error } = await supabase
-        .from("income")
-        .insert({ ...income, user_id: user!.id })
-        .select()
-        .single();
+    mutationFn: async (income: { amount: number; date: string; description?: string; source?: string; appointment_id?: string; payment_method?: string }) => {
+      const { data, error } = await supabase.from("income").insert({ ...income, user_id: user!.id } as any).select().single();
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["income"] }),
+    onSuccess: () => { ["income", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+  });
+}
+
+export function useDeleteIncome() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("income").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { ["income", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -248,11 +305,7 @@ export function useProfile() {
   return useQuery({
     queryKey: ["profile", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", user!.id)
-        .single();
+      const { data, error } = await supabase.from("profiles").select("*").eq("user_id", user!.id).single();
       if (error) throw error;
       return data;
     },
@@ -279,7 +332,6 @@ export function useDashboardStats() {
   const today = now.toISOString().split("T")[0];
   const monthStart = today.substring(0, 7) + "-01";
 
-  // Week boundaries (Mon-Sun)
   const dayOfWeek = now.getDay();
   const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
   const thisMonday = new Date(now);
@@ -293,7 +345,6 @@ export function useDashboardStats() {
   const lastMondayStr = lastMonday.toISOString().split("T")[0];
   const lastSundayStr = lastSunday.toISOString().split("T")[0];
 
-  // Days in month
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const daysPastInMonth = now.getDate();
   const daysLeftInMonth = daysInMonth - daysPastInMonth;
@@ -325,12 +376,8 @@ export function useDashboardStats() {
       const monthlyIncome = allIncome.filter(i => i.date >= monthStart).reduce((s, i) => s + Number(i.amount), 0);
       const monthlyExpenses = allExpenses.filter(e => e.date >= monthStart).reduce((s, e) => s + Number(e.amount), 0);
 
-      const thisWeekIncome = allIncome
-        .filter(i => i.date >= thisMondayStr && i.date <= today)
-        .reduce((s, i) => s + Number(i.amount), 0);
-      const lastWeekIncome = allIncome
-        .filter(i => i.date >= lastMondayStr && i.date <= lastSundayStr)
-        .reduce((s, i) => s + Number(i.amount), 0);
+      const thisWeekIncome = allIncome.filter(i => i.date >= thisMondayStr && i.date <= today).reduce((s, i) => s + Number(i.amount), 0);
+      const lastWeekIncome = allIncome.filter(i => i.date >= lastMondayStr && i.date <= lastSundayStr).reduce((s, i) => s + Number(i.amount), 0);
 
       const profile = profileRes.data as any;
       const workingDays = profile?.working_days_per_week ?? 5;
@@ -339,18 +386,13 @@ export function useDashboardStats() {
       const monthlyAppointments = monthAptRes.data?.length ?? 0;
 
       return {
-        todayIncome,
-        monthlyIncome,
-        monthlyExpenses,
+        todayIncome, monthlyIncome, monthlyExpenses,
         netProfit: monthlyIncome - monthlyExpenses,
         clientCount: clientRes.count ?? 0,
         todayAppointments: todayAptRes.data ?? [],
-        thisWeekIncome,
-        lastWeekIncome,
-        monthlyAppointments,
-        maxMonthlyCapacity,
-        daysPastInMonth,
-        daysLeftInMonth,
+        thisWeekIncome, lastWeekIncome,
+        monthlyAppointments, maxMonthlyCapacity,
+        daysPastInMonth, daysLeftInMonth,
       };
     },
     enabled: !!user,
