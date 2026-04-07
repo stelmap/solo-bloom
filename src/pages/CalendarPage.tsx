@@ -16,28 +16,9 @@ import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const hours = Array.from({ length: 11 }, (_, i) => i + 8);
-
-const STATUSES = [
-  { value: "scheduled", label: "Scheduled", color: "bg-muted text-muted-foreground" },
-  { value: "confirmed", label: "Confirmed", color: "bg-primary/15 text-primary" },
-  { value: "completed", label: "Completed", color: "bg-success/15 text-success" },
-  { value: "cancelled", label: "Cancelled", color: "bg-destructive/15 text-destructive" },
-  { value: "no-show", label: "No-show", color: "bg-warning/15 text-warning" },
-];
-
-const PAYMENT_METHODS = [
-  { value: "cash", label: "💵 Cash" },
-  { value: "card", label: "💳 Card" },
-  { value: "bank_transfer", label: "🏦 Bank Transfer" },
-];
-
-const PAYMENT_STATUSES = [
-  { value: "paid_now", label: "Paid now", description: "Client paid during or after the session" },
-  { value: "paid_in_advance", label: "Paid in advance", description: "Client already paid before the session" },
-  { value: "waiting_for_payment", label: "Waiting for payment", description: "Session done, payment pending" },
-];
 
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -50,6 +31,27 @@ export default function CalendarPage() {
   const completeAppointment = useCompleteAppointment();
   const cancelAppointment = useCancelAppointment();
   const { toast } = useToast();
+  const { t } = useLanguage();
+
+  const STATUSES = [
+    { value: "scheduled", label: t("status.scheduled"), color: "bg-muted text-muted-foreground" },
+    { value: "confirmed", label: t("status.confirmed"), color: "bg-primary/15 text-primary" },
+    { value: "completed", label: t("status.completed"), color: "bg-success/15 text-success" },
+    { value: "cancelled", label: t("status.cancelled"), color: "bg-destructive/15 text-destructive" },
+    { value: "no-show", label: t("status.noShow"), color: "bg-warning/15 text-warning" },
+  ];
+
+  const PAYMENT_METHODS = [
+    { value: "cash", label: t("method.cash") },
+    { value: "card", label: t("method.card") },
+    { value: "bank_transfer", label: t("method.bankTransfer") },
+  ];
+
+  const PAYMENT_STATUSES = [
+    { value: "paid_now", label: t("payment.paidNow"), description: t("payment.paidNowDesc") },
+    { value: "paid_in_advance", label: t("payment.paidInAdvance"), description: t("payment.paidInAdvanceDesc") },
+    { value: "waiting_for_payment", label: t("payment.waitingForPayment"), description: t("payment.waitingForPaymentDesc") },
+  ];
 
   const [createOpen, setCreateOpen] = useState(false);
   const [detailApt, setDetailApt] = useState<any>(null);
@@ -82,9 +84,9 @@ export default function CalendarPage() {
       });
       setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
       setCreateOpen(false);
-      toast({ title: "Appointment created" });
+      toast({ title: t("toast.appointmentCreated") });
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
 
@@ -111,9 +113,9 @@ export default function CalendarPage() {
         price: editForm.price, notes: editForm.notes || undefined,
       });
       setEditOpen(false);
-      toast({ title: "Appointment updated" });
+      toast({ title: t("toast.appointmentUpdated") });
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
 
@@ -136,11 +138,11 @@ export default function CalendarPage() {
       });
       setCompleteOpen(false);
       const msg = paymentStatus === "waiting_for_payment"
-        ? "Session completed. Expected payment recorded."
-        : `Session completed! €${completePrice} income recorded.`;
-      toast({ title: "✅ Appointment completed", description: msg });
+        ? t("toast.sessionCompletedExpected")
+        : t("toast.sessionCompletedIncome", { amount: completePrice.toString() });
+      toast({ title: t("toast.appointmentCompleted"), description: msg });
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
 
@@ -152,9 +154,10 @@ export default function CalendarPage() {
         await updateAppointment.mutateAsync({ id: apt.id, status });
       }
       setDetailApt(null);
-      toast({ title: `Status updated to ${status}` });
+      const statusLabel = STATUSES.find(s => s.value === status)?.label || status;
+      toast({ title: t("toast.statusUpdated", { status: statusLabel }) });
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
 
@@ -162,11 +165,11 @@ export default function CalendarPage() {
     if (!deleteId) return;
     try {
       await deleteAppointment.mutateAsync(deleteId);
-      toast({ title: "Appointment deleted" });
+      toast({ title: t("toast.appointmentDeleted") });
       setDeleteId(null);
       setDetailApt(null);
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
 
@@ -180,8 +183,8 @@ export default function CalendarPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Calendar</h1>
-            <p className="text-muted-foreground mt-1">Manage your appointments</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("calendar.title")}</h1>
+            <p className="text-muted-foreground mt-1">{t("calendar.subtitle")}</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1">
@@ -193,32 +196,32 @@ export default function CalendarPage() {
             </div>
             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
               <DialogTrigger asChild>
-                <Button><Plus className="h-4 w-4 mr-1" /> New Appointment</Button>
+                <Button><Plus className="h-4 w-4 mr-1" /> {t("calendar.newAppointment")}</Button>
               </DialogTrigger>
               <DialogContent>
-                <DialogHeader><DialogTitle>New Appointment</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>{t("calendar.newAppointment")}</DialogTitle></DialogHeader>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Client *</Label>
+                    <Label>{t("calendar.client")} *</Label>
                     <Select value={form.client_id} onValueChange={v => setForm(f => ({ ...f, client_id: v }))}>
-                      <SelectTrigger><SelectValue placeholder="Select client" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={t("calendar.selectClient")} /></SelectTrigger>
                       <SelectContent>{clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Service *</Label>
+                    <Label>{t("calendar.service")} *</Label>
                     <Select value={form.service_id} onValueChange={v => setForm(f => ({ ...f, service_id: v }))}>
-                      <SelectTrigger><SelectValue placeholder="Select service" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
                       <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — €{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2"><Label>Date *</Label><Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} /></div>
-                    <div className="space-y-2"><Label>Time *</Label><Input type="time" value={form.time} onChange={e => setForm(f => ({ ...f, time: e.target.value }))} /></div>
+                    <div className="space-y-2"><Label>{t("common.date")} *</Label><Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} /></div>
+                    <div className="space-y-2"><Label>{t("common.time")} *</Label><Input type="time" value={form.time} onChange={e => setForm(f => ({ ...f, time: e.target.value }))} /></div>
                   </div>
-                  <div className="space-y-2"><Label>Notes</Label><Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
+                  <div className="space-y-2"><Label>{t("calendar.notes")}</Label><Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
                   <Button onClick={handleCreate} className="w-full" disabled={createAppointment.isPending}>
-                    {createAppointment.isPending ? "Creating..." : "Create Appointment"}
+                    {createAppointment.isPending ? t("calendar.creating") : t("calendar.createAppointment")}
                   </Button>
                 </div>
               </DialogContent>
@@ -273,32 +276,32 @@ export default function CalendarPage() {
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-3">
-                  Appointment Details
+                  {t("calendar.appointmentDetails")}
                   <Badge className={cn("text-xs", statusInfo(detailApt.status).color)}>{statusInfo(detailApt.status).label}</Badge>
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
-                  <div className="flex justify-between"><span className="text-muted-foreground">Client</span><span className="font-medium text-foreground">{detailApt.clients?.name}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Service</span><span className="font-medium text-foreground">{detailApt.services?.name}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Date & Time</span><span className="font-medium text-foreground">{format(new Date(detailApt.scheduled_at), "MMM d, yyyy · HH:mm")}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Duration</span><span className="font-medium text-foreground">{detailApt.duration_minutes} min</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Price</span><span className="font-semibold text-foreground">€{Number(detailApt.price).toFixed(2)}</span></div>
-                  {detailApt.notes && <div className="pt-2 border-t border-border"><p className="text-xs text-muted-foreground">Notes: {detailApt.notes}</p></div>}
+                  <div className="flex justify-between"><span className="text-muted-foreground">{t("calendar.client")}</span><span className="font-medium text-foreground">{detailApt.clients?.name}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{t("calendar.service")}</span><span className="font-medium text-foreground">{detailApt.services?.name}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{t("calendar.dateTime")}</span><span className="font-medium text-foreground">{format(new Date(detailApt.scheduled_at), "MMM d, yyyy · HH:mm")}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{t("calendar.duration")}</span><span className="font-medium text-foreground">{detailApt.duration_minutes} {t("common.min")}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{t("calendar.price")}</span><span className="font-semibold text-foreground">€{Number(detailApt.price).toFixed(2)}</span></div>
+                  {detailApt.notes && <div className="pt-2 border-t border-border"><p className="text-xs text-muted-foreground">{t("calendar.notes")}: {detailApt.notes}</p></div>}
                 </div>
                 {(detailApt.status === "scheduled" || detailApt.status === "confirmed") && (
                   <div className="flex flex-wrap gap-2">
-                    <Button onClick={() => openComplete(detailApt)} className="flex-1"><CheckCircle className="h-4 w-4 mr-2" /> Complete</Button>
+                    <Button onClick={() => openComplete(detailApt)} className="flex-1"><CheckCircle className="h-4 w-4 mr-2" /> {t("calendar.complete")}</Button>
                     {detailApt.status === "scheduled" && (
-                      <Button variant="outline" onClick={() => handleStatusChange(detailApt, "confirmed")} className="flex-1"><Clock className="h-4 w-4 mr-2" /> Confirm</Button>
+                      <Button variant="outline" onClick={() => handleStatusChange(detailApt, "confirmed")} className="flex-1"><Clock className="h-4 w-4 mr-2" /> {t("calendar.confirm")}</Button>
                     )}
-                    <Button variant="outline" onClick={() => handleStatusChange(detailApt, "cancelled")} className="text-destructive hover:text-destructive"><XCircle className="h-4 w-4 mr-1" /> Cancel</Button>
-                    <Button variant="outline" onClick={() => handleStatusChange(detailApt, "no-show")} className="text-warning hover:text-warning"><Ban className="h-4 w-4 mr-1" /> No-show</Button>
+                    <Button variant="outline" onClick={() => handleStatusChange(detailApt, "cancelled")} className="text-destructive hover:text-destructive"><XCircle className="h-4 w-4 mr-1" /> {t("calendar.cancel")}</Button>
+                    <Button variant="outline" onClick={() => handleStatusChange(detailApt, "no-show")} className="text-warning hover:text-warning"><Ban className="h-4 w-4 mr-1" /> {t("calendar.noShow")}</Button>
                   </div>
                 )}
                 <div className="flex gap-2 border-t border-border pt-3">
-                  <Button variant="ghost" size="sm" onClick={() => openEditFromDetail(detailApt)}><Pencil className="h-3.5 w-3.5 mr-1" /> Edit</Button>
-                  <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteId(detailApt.id)}><Trash2 className="h-3.5 w-3.5 mr-1" /> Delete</Button>
+                  <Button variant="ghost" size="sm" onClick={() => openEditFromDetail(detailApt)}><Pencil className="h-3.5 w-3.5 mr-1" /> {t("calendar.edit")}</Button>
+                  <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteId(detailApt.id)}><Trash2 className="h-3.5 w-3.5 mr-1" /> {t("calendar.delete")}</Button>
                 </div>
               </div>
             </>
@@ -309,17 +312,17 @@ export default function CalendarPage() {
       {/* Edit dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Edit Appointment</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("calendar.editAppointment")}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Client *</Label>
+              <Label>{t("calendar.client")} *</Label>
               <Select value={editForm.client_id} onValueChange={v => setEditForm(f => ({ ...f, client_id: v }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Service *</Label>
+              <Label>{t("calendar.service")} *</Label>
               <Select value={editForm.service_id} onValueChange={v => {
                 const svc = services.find(s => s.id === v);
                 setEditForm(f => ({ ...f, service_id: v, price: Number(svc?.price ?? f.price) }));
@@ -329,13 +332,13 @@ export default function CalendarPage() {
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>Date *</Label><Input type="date" value={editForm.date} onChange={e => setEditForm(f => ({ ...f, date: e.target.value }))} /></div>
-              <div className="space-y-2"><Label>Time *</Label><Input type="time" value={editForm.time} onChange={e => setEditForm(f => ({ ...f, time: e.target.value }))} /></div>
+              <div className="space-y-2"><Label>{t("common.date")} *</Label><Input type="date" value={editForm.date} onChange={e => setEditForm(f => ({ ...f, date: e.target.value }))} /></div>
+              <div className="space-y-2"><Label>{t("common.time")} *</Label><Input type="time" value={editForm.time} onChange={e => setEditForm(f => ({ ...f, time: e.target.value }))} /></div>
             </div>
-            <div className="space-y-2"><Label>Price (€)</Label><Input type="number" step="0.01" value={editForm.price} onChange={e => setEditForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} /></div>
-            <div className="space-y-2"><Label>Notes</Label><Input value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} /></div>
+            <div className="space-y-2"><Label>{t("calendar.price")} (€)</Label><Input type="number" step="0.01" value={editForm.price} onChange={e => setEditForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} /></div>
+            <div className="space-y-2"><Label>{t("calendar.notes")}</Label><Input value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} /></div>
             <Button onClick={handleEdit} className="w-full" disabled={updateAppointment.isPending}>
-              {updateAppointment.isPending ? "Saving..." : "Save Changes"}
+              {updateAppointment.isPending ? t("calendar.saving") : t("calendar.saveChanges")}
             </Button>
           </div>
         </DialogContent>
@@ -344,17 +347,17 @@ export default function CalendarPage() {
       {/* Complete dialog with payment status */}
       <Dialog open={completeOpen} onOpenChange={setCompleteOpen}>
         <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>Complete Appointment</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("calendar.completeAppointment")}</DialogTitle></DialogHeader>
           <div className="space-y-5">
-            <p className="text-sm text-muted-foreground">Confirm the session outcome and payment details.</p>
+            <p className="text-sm text-muted-foreground">{t("calendar.confirmOutcome")}</p>
 
             <div className="space-y-2">
-              <Label>Final Price (€)</Label>
+              <Label>{t("calendar.finalPrice")}</Label>
               <Input type="number" step="0.01" value={completePrice} onChange={e => setCompletePrice(parseFloat(e.target.value) || 0)} />
             </div>
 
             <div className="space-y-2">
-              <Label>Payment Status</Label>
+              <Label>{t("calendar.paymentStatus")}</Label>
               <div className="space-y-2">
                 {PAYMENT_STATUSES.map(ps => (
                   <button key={ps.value} onClick={() => setPaymentStatus(ps.value)}
@@ -370,7 +373,7 @@ export default function CalendarPage() {
 
             {(paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") && (
               <div className="space-y-2">
-                <Label>Payment Method</Label>
+                <Label>{t("calendar.paymentMethod")}</Label>
                 <div className="grid grid-cols-3 gap-2">
                   {PAYMENT_METHODS.map(m => (
                     <button key={m.value} onClick={() => setPaymentMethod(m.value)}
@@ -391,24 +394,24 @@ export default function CalendarPage() {
               <div>
                 <p className="text-sm font-semibold text-foreground">
                   {paymentStatus === "waiting_for_payment"
-                    ? `€${completePrice.toFixed(2)} will be tracked as expected payment`
-                    : `€${completePrice.toFixed(2)} will be recorded as income`}
+                    ? t("calendar.willBeExpected", { amount: completePrice.toFixed(2) })
+                    : t("calendar.willBeIncome", { amount: completePrice.toFixed(2) })}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {paymentStatus === "waiting_for_payment" ? "You can mark it as paid later" : `Paid via ${PAYMENT_METHODS.find(m => m.value === paymentMethod)?.label}`}
+                  {paymentStatus === "waiting_for_payment" ? t("calendar.markPaidLater") : t("calendar.paidVia", { method: PAYMENT_METHODS.find(m => m.value === paymentMethod)?.label || "" })}
                 </p>
               </div>
             </div>
 
             <Button onClick={handleComplete} className="w-full" disabled={completeAppointment.isPending}>
-              {completeAppointment.isPending ? "Saving..." : "Confirm & Complete"}
+              {completeAppointment.isPending ? t("calendar.saving") : t("calendar.confirmComplete")}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
       <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={handleDelete}
-        title="Delete appointment?" description="This will permanently delete this appointment and any related income or expected payment records."
+        title={t("calendar.deleteTitle")} description={t("calendar.deleteDesc")}
         loading={deleteAppointment.isPending} />
     </AppLayout>
   );
