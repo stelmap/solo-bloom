@@ -508,12 +508,157 @@ export function useUpdateProfile() {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async (updates: { full_name?: string; business_name?: string; phone?: string; language?: string; reminder_minutes?: number }) => {
-      const { error } = await supabase.from("profiles").update(updates).eq("user_id", user!.id);
+    mutationFn: async (updates: { full_name?: string; business_name?: string; phone?: string; language?: string; reminder_minutes?: number; work_hours_start?: string; work_hours_end?: string; time_format?: string; default_duration?: number }) => {
+      const { error } = await supabase.from("profiles").update(updates as any).eq("user_id", user!.id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["profile"] }),
   });
+}
+
+// Breakeven Goals
+export function useBreakevenGoals() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["breakeven-goals", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("breakeven_goals").select("*").order("goal_number");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+}
+
+export function useUpsertBreakevenGoals() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (goals: Array<{ goal_number: number; label: string; description: string; fixed_expenses: number; desired_income: number; buffer: number }>) => {
+      // Delete existing then insert
+      await supabase.from("breakeven_goals").delete().eq("user_id", user!.id);
+      if (goals.length > 0) {
+        const { error } = await supabase.from("breakeven_goals").insert(
+          goals.map(g => ({ ...g, user_id: user!.id })) as any
+        );
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["breakeven-goals"] }),
+  });
+}
+
+// Recurring Rules
+export function useRecurringRules() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["recurring-rules", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("recurring_rules").select("*, clients(name), services(name)").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+}
+
+export function useCreateRecurringRule() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (rule: {
+      client_id: string; service_id: string; time: string; duration_minutes: number;
+      price: number; notes?: string; recurrence_type: string; interval_weeks: number;
+      days_of_week: number[]; start_date: string; end_date?: string;
+    }) => {
+      // Create the rule
+      const { data: ruleData, error: ruleErr } = await supabase.from("recurring_rules")
+        .insert({ ...rule, user_id: user!.id } as any).select().single();
+      if (ruleErr) throw ruleErr;
+
+      // Generate appointments
+      const appointments = generateRecurringAppointments(ruleData as any, user!.id);
+      if (appointments.length > 0) {
+        const { error: aptErr } = await supabase.from("appointments").insert(appointments as any);
+        if (aptErr) throw aptErr;
+      }
+      return { rule: ruleData, count: appointments.length };
+    },
+    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); qc.invalidateQueries({ queryKey: ["recurring-rules"] }); },
+  });
+}
+
+export function useDeleteRecurringAppointments() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ ruleId, scope, appointmentId }: { ruleId: string; scope: "this" | "following" | "all"; appointmentId?: string }) => {
+      if (scope === "all") {
+        // Delete all appointments in the series
+        const { data: apts } = await supabase.from("appointments").select("id").eq("recurring_rule_id", ruleId);
+        for (const apt of apts || []) {
+          await supabase.from("income").delete().eq("appointment_id", apt.id);
+          await supabase.from("expected_payments").delete().eq("appointment_id", apt.id);
+        }
+        await supabase.from("appointments").delete().eq("recurring_rule_id", ruleId);
+        await supabase.from("recurring_rules").delete().eq("id", ruleId);
+      } else if (scope === "this" && appointmentId) {
+        await supabase.from("income").delete().eq("appointment_id", appointmentId);
+        await supabase.from("expected_payments").delete().eq("appointment_id", appointmentId);
+        await supabase.from("appointments").delete().eq("id", appointmentId);
+      } else if (scope === "following" && appointmentId) {
+        const { data: apt } = await supabase.from("appointments").select("scheduled_at").eq("id", appointmentId).single();
+        if (apt) {
+          const { data: futureApts } = await supabase.from("appointments").select("id")
+            .eq("recurring_rule_id", ruleId).gte("scheduled_at", apt.scheduled_at);
+          for (const a of futureApts || []) {
+            await supabase.from("income").delete().eq("appointment_id", a.id);
+            await supabase.from("expected_payments").delete().eq("appointment_id", a.id);
+          }
+          await supabase.from("appointments").delete()
+            .eq("recurring_rule_id", ruleId).gte("scheduled_at", apt.scheduled_at);
+        }
+      }
+    },
+    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); qc.invalidateQueries({ queryKey: ["recurring-rules"] }); },
+  });
+}
+
+function generateRecurringAppointments(rule: any, userId: string, maxWeeks = 12) {
+  const appointments: any[] = [];
+  const startDate = new Date(rule.start_date);
+  const endDate = rule.end_date ? new Date(rule.end_date) : null;
+  const maxDate = endDate || new Date(startDate.getTime() + maxWeeks * 7 * 24 * 60 * 60 * 1000);
+  const daysOfWeek: number[] = rule.days_of_week || [1];
+
+  let currentWeekStart = new Date(startDate);
+  // Find the Monday of the start week
+  const dayOfWeek = currentWeekStart.getDay();
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  currentWeekStart.setDate(currentWeekStart.getDate() + mondayOffset);
+
+  while (currentWeekStart <= maxDate) {
+    for (const dow of daysOfWeek) {
+      const aptDate = new Date(currentWeekStart);
+      aptDate.setDate(aptDate.getDate() + (dow - 1)); // dow: 1=Mon, 7=Sun
+      if (aptDate < startDate || aptDate > maxDate) continue;
+
+      const [h, m] = (rule.time || "09:00").split(":").map(Number);
+      aptDate.setHours(h, m, 0, 0);
+
+      appointments.push({
+        user_id: userId,
+        client_id: rule.client_id,
+        service_id: rule.service_id,
+        scheduled_at: aptDate.toISOString(),
+        duration_minutes: rule.duration_minutes,
+        price: rule.price,
+        notes: rule.notes || null,
+        recurring_rule_id: rule.id,
+      });
+    }
+    currentWeekStart.setDate(currentWeekStart.getDate() + (rule.interval_weeks || 1) * 7);
+  }
+  return appointments;
 }
 
 // Dashboard stats
