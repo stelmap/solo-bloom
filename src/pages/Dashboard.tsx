@@ -2,14 +2,18 @@ import { AppLayout } from "@/components/AppLayout";
 import { MetricCard } from "@/components/MetricCard";
 import { BreakevenProgress } from "@/components/BreakevenProgress";
 import { SmartInsights, generateInsights } from "@/components/SmartInsights";
-import { DollarSign, Users, TrendingUp, TrendingDown, Clock } from "lucide-react";
-import { useDashboardStats } from "@/hooks/useData";
+import { Progress } from "@/components/ui/progress";
+import { DollarSign, Users, TrendingUp, TrendingDown, Clock, Target } from "lucide-react";
+import { useDashboardStats, useBreakevenGoals, useServices } from "@/hooks/useData";
 import { format } from "date-fns";
 import { useMemo } from "react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { cn } from "@/lib/utils";
 
 export default function Dashboard() {
   const { data: stats, isLoading } = useDashboardStats();
+  const { data: goals = [] } = useBreakevenGoals();
+  const { data: services = [] } = useServices();
   const { t, lang } = useLanguage();
 
   const s = stats ?? {
@@ -17,6 +21,9 @@ export default function Dashboard() {
     clientCount: 0, todayAppointments: [], thisWeekIncome: 0, lastWeekIncome: 0,
     monthlyAppointments: 0, maxMonthlyCapacity: 0, daysPastInMonth: 1, daysLeftInMonth: 0,
   };
+
+  const avgServicePrice = services.length > 0
+    ? services.reduce((sum, sv) => sum + Number(sv.price), 0) / services.length : 1;
 
   const insights = useMemo(() => generateInsights({
     monthlyIncome: s.monthlyIncome,
@@ -28,6 +35,11 @@ export default function Dashboard() {
     daysLeftInMonth: s.daysLeftInMonth,
     daysPastInMonth: s.daysPastInMonth,
   }, lang), [s, lang]);
+
+  const goalTargets = (goals as any[]).map((g: any) => ({
+    ...g,
+    target: Number(g.fixed_expenses) + Number(g.desired_income) + Number(g.buffer),
+  }));
 
   if (isLoading) {
     return (
@@ -53,6 +65,44 @@ export default function Dashboard() {
         </div>
 
         <SmartInsights insights={insights} />
+
+        {/* Goal progress on dashboard */}
+        {goalTargets.length > 0 && (
+          <div className="bg-card rounded-xl border border-border p-6 animate-fade-in">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-lg bg-accent flex items-center justify-center">
+                <Target className="h-5 w-5 text-accent-foreground" />
+              </div>
+              <h3 className="font-semibold text-foreground">{t("dashboard.goals")}</h3>
+            </div>
+            <div className="space-y-4">
+              {goalTargets.map((goal: any) => {
+                const target = goal.target;
+                const progress = Math.min((s.monthlyIncome / Math.max(target, 1)) * 100, 100);
+                const remaining = Math.max(target - s.monthlyIncome, 0);
+                const sessionsNeeded = remaining > 0 ? Math.ceil(remaining / avgServicePrice) : 0;
+                const reached = s.monthlyIncome >= target;
+                return (
+                  <div key={goal.id}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="font-medium text-foreground">
+                        {goal.label}
+                        {reached && <span className="text-success ml-2 text-xs">{t("goals.reached")}</span>}
+                      </span>
+                      <span className="text-muted-foreground">€{s.monthlyIncome.toLocaleString()} / €{target.toLocaleString()}</span>
+                    </div>
+                    <Progress value={progress} className={cn("h-2", reached ? "[&>div]:bg-success" : "")} />
+                    {remaining > 0 && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t("dashboard.appointmentsNeeded", { count: sessionsNeeded })}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <BreakevenProgress

@@ -23,6 +23,7 @@ export type Database = {
           notes: string | null
           payment_status: string
           price: number
+          recurring_rule_id: string | null
           scheduled_at: string
           service_id: string
           status: string
@@ -37,6 +38,7 @@ export type Database = {
           notes?: string | null
           payment_status?: string
           price?: number
+          recurring_rule_id?: string | null
           scheduled_at: string
           service_id: string
           status?: string
@@ -51,6 +53,7 @@ export type Database = {
           notes?: string | null
           payment_status?: string
           price?: number
+          recurring_rule_id?: string | null
           scheduled_at?: string
           service_id?: string
           status?: string
@@ -73,6 +76,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      breakeven_goals: {
+        Row: {
+          buffer: number
+          created_at: string
+          description: string | null
+          desired_income: number
+          fixed_expenses: number
+          goal_number: number
+          id: string
+          label: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          buffer?: number
+          created_at?: string
+          description?: string | null
+          desired_income?: number
+          fixed_expenses?: number
+          goal_number?: number
+          id?: string
+          label?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          buffer?: number
+          created_at?: string
+          description?: string | null
+          desired_income?: number
+          fixed_expenses?: number
+          goal_number?: number
+          id?: string
+          label?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       client_attachments: {
         Row: {
@@ -347,6 +389,7 @@ export type Database = {
         Row: {
           business_name: string | null
           created_at: string
+          default_duration: number
           full_name: string | null
           id: string
           language: string
@@ -354,13 +397,17 @@ export type Database = {
           phone: string | null
           reminder_minutes: number
           sessions_per_day: number
+          time_format: string
           updated_at: string
           user_id: string
+          work_hours_end: string
+          work_hours_start: string
           working_days_per_week: number
         }
         Insert: {
           business_name?: string | null
           created_at?: string
+          default_duration?: number
           full_name?: string | null
           id?: string
           language?: string
@@ -368,13 +415,17 @@ export type Database = {
           phone?: string | null
           reminder_minutes?: number
           sessions_per_day?: number
+          time_format?: string
           updated_at?: string
           user_id: string
+          work_hours_end?: string
+          work_hours_start?: string
           working_days_per_week?: number
         }
         Update: {
           business_name?: string | null
           created_at?: string
+          default_duration?: number
           full_name?: string | null
           id?: string
           language?: string
@@ -382,9 +433,66 @@ export type Database = {
           phone?: string | null
           reminder_minutes?: number
           sessions_per_day?: number
+          time_format?: string
           updated_at?: string
           user_id?: string
+          work_hours_end?: string
+          work_hours_start?: string
           working_days_per_week?: number
+        }
+        Relationships: []
+      }
+      recurring_rules: {
+        Row: {
+          client_id: string
+          created_at: string
+          days_of_week: number[]
+          duration_minutes: number
+          end_date: string | null
+          id: string
+          interval_weeks: number
+          notes: string | null
+          price: number
+          recurrence_type: string
+          service_id: string
+          start_date: string
+          time: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          days_of_week?: number[]
+          duration_minutes?: number
+          end_date?: string | null
+          id?: string
+          interval_weeks?: number
+          notes?: string | null
+          price?: number
+          recurrence_type?: string
+          service_id: string
+          start_date: string
+          time?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          days_of_week?: number[]
+          duration_minutes?: number
+          end_date?: string | null
+          id?: string
+          interval_weeks?: number
+          notes?: string | null
+          price?: number
+          recurrence_type?: string
+          service_id?: string
+          start_date?: string
+          time?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
