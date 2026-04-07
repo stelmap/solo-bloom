@@ -10,10 +10,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useSearchParams } from "react-router-dom";
+import { startOfWeek, startOfMonth, format } from "date-fns";
 
 export default function IncomePage() {
   const { data: income = [], isLoading } = useIncome();
@@ -23,13 +25,29 @@ export default function IncomePage() {
   const markPaid = useMarkExpectedPaymentPaid();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const [searchParams] = useSearchParams();
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [payDialog, setPayDialog] = useState<any>(null);
   const [payMethod, setPayMethod] = useState("cash");
   const [form, setForm] = useState({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash" });
 
-  const total = income.reduce((s, i) => s + Number(i.amount), 0);
+  // Filters
+  const initialRange = searchParams.get("range") || "month";
+  const [dateRange, setDateRange] = useState(initialRange);
+
+  const filtered = useMemo(() => {
+    const now = new Date();
+    const todayStr = format(now, "yyyy-MM-dd");
+    let from = "";
+    if (dateRange === "today") from = todayStr;
+    else if (dateRange === "week") from = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
+    else if (dateRange === "month") from = format(startOfMonth(now), "yyyy-MM-dd");
+    else return income; // all
+    return income.filter((i: any) => i.date >= from);
+  }, [income, dateRange]);
+
+  const total = filtered.reduce((s: number, i: any) => s + Number(i.amount), 0);
   const pendingTotal = (expectedPayments as any[]).reduce((s: number, ep: any) => s + Number(ep.amount), 0);
 
   const PAYMENT_METHODS = [
@@ -89,7 +107,7 @@ export default function IncomePage() {
             <Button variant="outline" onClick={() => {
               downloadCSV("income.csv",
                 ["Date", "Amount", "Source", "Payment Method", "Description"],
-                income.map((i: any) => [i.date, String(i.amount), i.source || "", i.payment_method || "", i.description || ""])
+                filtered.map((i: any) => [i.date, String(i.amount), i.source || "", i.payment_method || "", i.description || ""])
               );
             }}><Download className="h-4 w-4 mr-1" /> {t("export.csv")}</Button>
             <Dialog open={open} onOpenChange={setOpen}>
@@ -116,7 +134,17 @@ export default function IncomePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Date range filter */}
+        <div className="flex gap-2 flex-wrap">
+          {(["today", "week", "month", "all"] as const).map(range => (
+            <Button key={range} variant={dateRange === range ? "default" : "outline"} size="sm"
+              onClick={() => setDateRange(range)}>
+              {t(`filter.${range === "all" ? "allTime" : range === "month" ? "thisMonth" : range === "week" ? "thisWeek" : "today"}` as any)}
+            </Button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
             <p className="text-sm text-muted-foreground">{t("income.confirmedIncome")}</p>
             <p className="text-2xl font-bold text-foreground mt-1">€{total.toLocaleString()}</p>
@@ -125,6 +153,10 @@ export default function IncomePage() {
             <p className="text-sm text-warning">{t("income.pendingPayments")}</p>
             <p className="text-2xl font-bold text-warning mt-1">€{pendingTotal.toLocaleString()}</p>
             <p className="text-xs text-muted-foreground mt-1">{t("income.awaitingPayment", { count: (expectedPayments as any[]).length })}</p>
+          </div>
+          <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
+            <p className="text-sm text-muted-foreground">{t("finance.expectedIncome")}</p>
+            <p className="text-2xl font-bold text-foreground mt-1">€{(total + pendingTotal).toLocaleString()}</p>
           </div>
         </div>
 
@@ -142,7 +174,7 @@ export default function IncomePage() {
           <TabsContent value="income">
             {isLoading ? (
               <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
-            ) : income.length === 0 ? (
+            ) : filtered.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">{t("income.noIncome")}</p>
             ) : (
               <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
@@ -150,24 +182,24 @@ export default function IncomePage() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-border">
+                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.date")}</th>
                         <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.description")}</th>
                         <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.amount")}</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.date")}</th>
                         <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.payment")}</th>
                         <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.source")}</th>
                         <th className="p-4 w-10"></th>
                       </tr>
                     </thead>
                     <tbody>
-                      {income.map((entry: any) => (
+                      {filtered.map((entry: any) => (
                         <tr key={entry.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors group">
+                          <td className="p-4 text-sm text-muted-foreground">{entry.date}</td>
                           <td className="p-4 text-sm font-medium text-foreground">
                             {entry.source === "appointment"
                               ? `${entry.appointments?.clients?.name} — ${entry.appointments?.services?.name}`
                               : entry.description || t("income.manualEntry")}
                           </td>
                           <td className="p-4 text-sm font-semibold text-foreground">€{Number(entry.amount).toFixed(2)}</td>
-                          <td className="p-4 text-sm text-muted-foreground">{entry.date}</td>
                           <td className="p-4"><Badge variant="outline" className="text-xs capitalize">{paymentLabel(entry.payment_method || "cash")}</Badge></td>
                           <td className="p-4"><Badge variant={entry.source === "appointment" ? "default" : "secondary"} className="text-xs">{entry.source === "appointment" ? t("income.appointment") : t("income.manual")}</Badge></td>
                           <td className="p-4">
