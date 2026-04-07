@@ -81,6 +81,12 @@ export const translations = {
   "calendar.markPaidLater": { en: "You can mark it as paid later", uk: "Ви зможете відмітити оплату пізніше" },
   "calendar.deleteTitle": { en: "Delete appointment?", uk: "Видалити запис?" },
   "calendar.deleteDesc": { en: "This will permanently delete this appointment and any related income or expected payment records.", uk: "Це назавжди видалить цей запис та всі пов'язані записи доходу чи очікуваних платежів." },
+  "calendar.dayOff": { en: "Day off", uk: "Вихідний" },
+  "calendar.outsideHours": { en: "Outside working hours", uk: "Поза робочим часом" },
+  "calendar.doubleBooking": { en: "This time slot is already booked", uk: "Цей час вже зайнятий" },
+  "calendar.dayOffBlocked": { en: "Cannot book — this day is marked as day off", uk: "Неможливо записати — цей день позначений як вихідний" },
+  "calendar.addDayOff": { en: "Mark day off", uk: "Позначити вихідний" },
+  "calendar.removeDayOff": { en: "Remove day off", uk: "Зняти вихідний" },
 
   // Statuses
   "status.scheduled": { en: "Scheduled", uk: "Заплановано" },
@@ -343,6 +349,9 @@ export const translations = {
   "toast.uploadFailed": { en: "Upload failed", uk: "Помилка завантаження" },
   "toast.paymentReceived": { en: "Payment received! ✅", uk: "Платіж отримано! ✅" },
   "toast.paymentRecordedDesc": { en: "€{amount} recorded as income.", uk: "€{amount} записано як дохід." },
+  "toast.dayOffAdded": { en: "Day off added", uk: "Вихідний додано" },
+  "toast.dayOffRemoved": { en: "Day off removed", uk: "Вихідний знято" },
+  "toast.scheduleSaved": { en: "Working schedule saved", uk: "Робочий графік збережено" },
 
   // Export
   "export.csv": { en: "Export CSV", uk: "Експорт CSV" },
@@ -360,6 +369,29 @@ export const translations = {
   "settings.60min": { en: "60 minutes", uk: "60 хвилин" },
   "settings.90min": { en: "90 minutes", uk: "90 хвилин" },
   "settings.120min": { en: "120 minutes", uk: "120 хвилин" },
+
+  // Working schedule settings
+  "settings.workingSchedule": { en: "Working Schedule", uk: "Робочий графік" },
+  "settings.workingScheduleDesc": { en: "Configure your working days and hours for each day of the week", uk: "Налаштуйте робочі дні та години для кожного дня тижня" },
+  "settings.workingDay": { en: "Working day", uk: "Робочий день" },
+  "settings.daysOff": { en: "Days Off", uk: "Вихідні дні" },
+  "settings.daysOffDesc": { en: "Manage your vacations, holidays and sick days", uk: "Керуйте відпустками, святами та лікарняними" },
+  "settings.addDayOff": { en: "Add Day Off", uk: "Додати вихідний" },
+  "settings.noDaysOff": { en: "No days off configured", uk: "Вихідних не налаштовано" },
+  "settings.dayOffType": { en: "Type", uk: "Тип" },
+  "settings.dayOff": { en: "Day off", uk: "Вихідний" },
+  "settings.vacation": { en: "Vacation", uk: "Відпустка" },
+  "settings.holiday": { en: "Holiday", uk: "Свято" },
+  "settings.sickDay": { en: "Sick day", uk: "Лікарняний" },
+  "settings.dayOffLabel": { en: "Label (optional)", uk: "Підпис (необов'язково)" },
+
+  // Capacity
+  "capacity.title": { en: "Weekly Capacity", uk: "Тижнева завантаженість" },
+  "capacity.totalSlots": { en: "Total slots", uk: "Всього слотів" },
+  "capacity.booked": { en: "Booked", uk: "Заброньовано" },
+  "capacity.free": { en: "Free", uk: "Вільних" },
+  "capacity.fullyBooked": { en: "Fully booked", uk: "Повний запис" },
+  "capacity.underutilized": { en: "Low utilization", uk: "Низьке завантаження" },
 
   // Recurring appointments
   "recurring.title": { en: "Recurring", uk: "Повторюваний" },
@@ -390,6 +422,13 @@ export const translations = {
   "day.fri": { en: "Fri", uk: "Пт" },
   "day.sat": { en: "Sat", uk: "Сб" },
   "day.sun": { en: "Sun", uk: "Нд" },
+  "day.monday": { en: "Monday", uk: "Понеділок" },
+  "day.tuesday": { en: "Tuesday", uk: "Вівторок" },
+  "day.wednesday": { en: "Wednesday", uk: "Середа" },
+  "day.thursday": { en: "Thursday", uk: "Четвер" },
+  "day.friday": { en: "Friday", uk: "П'ятниця" },
+  "day.saturday": { en: "Saturday", uk: "Субота" },
+  "day.sunday": { en: "Sunday", uk: "Неділя" },
 
   // Breakeven goals
   "goals.title": { en: "Financial Goals", uk: "Фінансові цілі" },
@@ -426,6 +465,7 @@ export const translations = {
   // Dashboard goals
   "dashboard.goals": { en: "Goal Progress", uk: "Прогрес цілей" },
   "dashboard.appointmentsNeeded": { en: "~{count} sessions to go", uk: "~{count} сеансів залишилось" },
+  "dashboard.weeklyCapacity": { en: "Weekly Capacity", uk: "Тижнева завантаженість" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;

@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-const INVALIDATE_ALL = ["clients", "services", "appointments", "expenses", "income", "dashboard-stats", "expected-payments"];
+const INVALIDATE_ALL = ["clients", "services", "appointments", "expenses", "income", "dashboard-stats", "expected-payments", "working-schedule", "days-off", "recurring-rules"];
 
 // Clients
 export function useClients() {
@@ -304,21 +304,18 @@ export function useCompleteAppointment() {
     mutationFn: async ({ appointmentId, clientId, price, paymentMethod, paymentStatus }: {
       appointmentId: string; clientId: string; price: number; paymentMethod: string; paymentStatus: string;
     }) => {
-      // Update appointment
       const { error: aptErr } = await supabase
         .from("appointments")
         .update({ status: "completed", price, payment_status: paymentStatus } as any)
         .eq("id", appointmentId);
       if (aptErr) throw aptErr;
 
-      // Clean up existing records
       await supabase.from("income").delete().eq("appointment_id", appointmentId);
       await supabase.from("expected_payments").delete().eq("appointment_id", appointmentId);
 
       const today = new Date().toISOString().split("T")[0];
 
       if (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") {
-        // Create income
         const { error: incErr } = await supabase.from("income").insert({
           user_id: user!.id, appointment_id: appointmentId,
           amount: price, date: today, source: "appointment",
@@ -326,7 +323,6 @@ export function useCompleteAppointment() {
         } as any);
         if (incErr) throw incErr;
       } else if (paymentStatus === "waiting_for_payment") {
-        // Create expected payment
         const { error: epErr } = await supabase.from("expected_payments").insert({
           user_id: user!.id, appointment_id: appointmentId,
           client_id: clientId, amount: price, status: "pending",
@@ -377,17 +373,14 @@ export function useMarkExpectedPaymentPaid() {
     mutationFn: async ({ id, appointmentId, amount, paymentMethod }: {
       id: string; appointmentId: string; amount: number; paymentMethod: string;
     }) => {
-      // Update expected payment
       const { error: epErr } = await supabase
         .from("expected_payments")
         .update({ status: "paid", paid_at: new Date().toISOString(), payment_method: paymentMethod } as any)
         .eq("id", id);
       if (epErr) throw epErr;
 
-      // Update appointment payment_status
       await supabase.from("appointments").update({ payment_status: "paid_now" } as any).eq("id", appointmentId);
 
-      // Create income
       const today = new Date().toISOString().split("T")[0];
       const { error: incErr } = await supabase.from("income").insert({
         user_id: user!.id, appointment_id: appointmentId,
@@ -516,6 +509,86 @@ export function useUpdateProfile() {
   });
 }
 
+// Working Schedule (per-weekday)
+export function useWorkingSchedule() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["working-schedule", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("working_schedule").select("*").order("day_of_week");
+      if (error) throw error;
+      return data as Array<{
+        id: string; user_id: string; day_of_week: number;
+        is_working: boolean; start_time: string; end_time: string;
+      }>;
+    },
+    enabled: !!user,
+  });
+}
+
+export function useUpsertWorkingSchedule() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (days: Array<{ day_of_week: number; is_working: boolean; start_time: string; end_time: string }>) => {
+      await supabase.from("working_schedule").delete().eq("user_id", user!.id);
+      if (days.length > 0) {
+        const { error } = await supabase.from("working_schedule").insert(
+          days.map(d => ({ ...d, user_id: user!.id })) as any
+        );
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["working-schedule"] }),
+  });
+}
+
+// Days Off
+export function useDaysOff() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["days-off", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("days_off").select("*").order("date");
+      if (error) throw error;
+      return data as Array<{
+        id: string; user_id: string; date: string; type: string;
+        label: string | null; custom_start_time: string | null;
+        custom_end_time: string | null; is_non_working: boolean;
+      }>;
+    },
+    enabled: !!user,
+  });
+}
+
+export function useCreateDayOff() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (dayOff: {
+      date: string; type: string; label?: string;
+      custom_start_time?: string; custom_end_time?: string; is_non_working?: boolean;
+    }) => {
+      const { data, error } = await supabase.from("days_off")
+        .insert({ ...dayOff, user_id: user!.id } as any).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["days-off"] }),
+  });
+}
+
+export function useDeleteDayOff() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("days_off").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["days-off"] }),
+  });
+}
+
 // Breakeven Goals
 export function useBreakevenGoals() {
   const { user } = useAuth();
@@ -535,7 +608,6 @@ export function useUpsertBreakevenGoals() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (goals: Array<{ goal_number: number; label: string; description: string; fixed_expenses: number; desired_income: number; buffer: number }>) => {
-      // Delete existing then insert
       await supabase.from("breakeven_goals").delete().eq("user_id", user!.id);
       if (goals.length > 0) {
         const { error } = await supabase.from("breakeven_goals").insert(
@@ -571,12 +643,10 @@ export function useCreateRecurringRule() {
       price: number; notes?: string; recurrence_type: string; interval_weeks: number;
       days_of_week: number[]; start_date: string; end_date?: string;
     }) => {
-      // Create the rule
       const { data: ruleData, error: ruleErr } = await supabase.from("recurring_rules")
         .insert({ ...rule, user_id: user!.id } as any).select().single();
       if (ruleErr) throw ruleErr;
 
-      // Generate appointments
       const appointments = generateRecurringAppointments(ruleData as any, user!.id);
       if (appointments.length > 0) {
         const { error: aptErr } = await supabase.from("appointments").insert(appointments as any);
@@ -603,13 +673,12 @@ export function useEditRecurringAppointments() {
         if (apt) {
           const { data: futureApts } = await supabase.from("appointments").select("id")
             .eq("recurring_rule_id", ruleId).gte("scheduled_at", apt.scheduled_at)
-            .neq("status", "completed"); // Don't overwrite completed appointments
+            .neq("status", "completed");
           for (const a of futureApts || []) {
             await supabase.from("appointments").update(updates as any).eq("id", a.id);
           }
         }
       } else if (scope === "all") {
-        // Only update scheduled/confirmed ones — don't overwrite completed/cancelled
         const { data: allApts } = await supabase.from("appointments").select("id, status")
           .eq("recurring_rule_id", ruleId);
         for (const a of allApts || []) {
@@ -665,7 +734,6 @@ function generateRecurringAppointments(rule: any, userId: string, maxWeeks = 12)
   const daysOfWeek: number[] = rule.days_of_week || [1];
 
   let currentWeekStart = new Date(startDate);
-  // Find the Monday of the start week
   const dayOfWeek = currentWeekStart.getDay();
   const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
   currentWeekStart.setDate(currentWeekStart.getDate() + mondayOffset);
@@ -673,7 +741,7 @@ function generateRecurringAppointments(rule: any, userId: string, maxWeeks = 12)
   while (currentWeekStart <= maxDate) {
     for (const dow of daysOfWeek) {
       const aptDate = new Date(currentWeekStart);
-      aptDate.setDate(aptDate.getDate() + (dow - 1)); // dow: 1=Mon, 7=Sun
+      aptDate.setDate(aptDate.getDate() + (dow - 1));
       if (aptDate < startDate || aptDate > maxDate) continue;
 
       const [h, m] = (rule.time || "09:00").split(":").map(Number);
@@ -722,7 +790,7 @@ export function useDashboardStats() {
   return useQuery({
     queryKey: ["dashboard-stats", user?.id, today],
     queryFn: async () => {
-      const [incomeRes, expenseRes, clientRes, todayAptRes, monthAptRes, profileRes] = await Promise.all([
+      const [incomeRes, expenseRes, clientRes, todayAptRes, monthAptRes, profileRes, scheduleRes] = await Promise.all([
         supabase.from("income").select("amount, date"),
         supabase.from("expenses").select("amount, date, is_recurring"),
         supabase.from("clients").select("id", { count: "exact", head: true }),
@@ -738,6 +806,8 @@ export function useDashboardStats() {
           .select("working_days_per_week, sessions_per_day")
           .eq("user_id", user!.id)
           .single(),
+        supabase.from("working_schedule")
+          .select("day_of_week, is_working, start_time, end_time"),
       ]);
 
       const allIncome = incomeRes.data ?? [];
@@ -749,10 +819,26 @@ export function useDashboardStats() {
       const lastWeekIncome = allIncome.filter(i => i.date >= lastMondayStr && i.date <= lastSundayStr).reduce((s, i) => s + Number(i.amount), 0);
 
       const profile = profileRes.data as any;
-      const workingDays = profile?.working_days_per_week ?? 5;
+      const schedule = (scheduleRes.data ?? []) as Array<{ day_of_week: number; is_working: boolean; start_time: string; end_time: string }>;
+
+      let workingDaysPerWeek: number;
+      if (schedule.length > 0) {
+        workingDaysPerWeek = schedule.filter(s => s.is_working).length;
+      } else {
+        workingDaysPerWeek = profile?.working_days_per_week ?? 5;
+      }
+
       const sessionsPerDay = profile?.sessions_per_day ?? 6;
-      const maxMonthlyCapacity = workingDays * 4 * sessionsPerDay;
+      const maxMonthlyCapacity = workingDaysPerWeek * 4 * sessionsPerDay;
       const monthlyAppointments = monthAptRes.data?.length ?? 0;
+
+      const weeklySlots = workingDaysPerWeek * sessionsPerDay;
+      const weekAptRes = await supabase.from("appointments").select("id, scheduled_at, status")
+        .gte("scheduled_at", thisMondayStr + "T00:00:00")
+        .lt("scheduled_at", new Date(thisMonday.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] + "T00:00:00");
+      const weekAppointments = (weekAptRes.data ?? []).filter(a => a.status !== "cancelled");
+      const bookedSlots = weekAppointments.length;
+      const freeSlots = Math.max(weeklySlots - bookedSlots, 0);
 
       return {
         todayIncome, monthlyIncome, monthlyExpenses,
@@ -762,6 +848,8 @@ export function useDashboardStats() {
         thisWeekIncome, lastWeekIncome,
         monthlyAppointments, maxMonthlyCapacity,
         daysPastInMonth, daysLeftInMonth,
+        weeklySlots, bookedSlots, freeSlots,
+        schedule,
       };
     },
     enabled: !!user,
