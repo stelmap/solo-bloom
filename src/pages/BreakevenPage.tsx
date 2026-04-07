@@ -4,13 +4,14 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Target, DollarSign, Users, Calculator, Settings, Info } from "lucide-react";
-import { useExpenses, useIncome, useServices, useAppointments, useBreakevenGoals, useUpsertBreakevenGoals } from "@/hooks/useData";
+import { Target, DollarSign, Users, Calculator, Settings, Info, AlertTriangle } from "lucide-react";
+import { useExpenses, useIncome, useServices, useAppointments, useBreakevenGoals, useUpsertBreakevenGoals, useWorkingSchedule, useDaysOff, useProfile } from "@/hooks/useData";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { calculateCapacity, sessionsNeededForTarget } from "@/lib/capacity";
 
 interface GoalForm {
   goal_number: number;
@@ -33,6 +34,9 @@ export default function BreakevenPage() {
   const { data: services = [] } = useServices();
   const { data: appointments = [] } = useAppointments();
   const { data: goals = [] } = useBreakevenGoals();
+  const { data: schedule = [] } = useWorkingSchedule();
+  const { data: daysOff = [] } = useDaysOff();
+  const { data: profile } = useProfile();
   const upsertGoals = useUpsertBreakevenGoals();
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -45,6 +49,17 @@ export default function BreakevenPage() {
   const monthlyIncome = income.filter(i => i.date >= monthStart).reduce((s, i) => s + Number(i.amount), 0);
   const avgServicePrice = services.length > 0 ? services.reduce((s, sv) => s + Number(sv.price), 0) / services.length : 1;
   const sessionsCompleted = appointments.filter(a => a.status === "completed" && a.scheduled_at >= monthStart + "T00:00:00").length;
+  const bookedSessions = appointments.filter(a => (a.status === "scheduled" || a.status === "confirmed") && a.scheduled_at >= today + "T00:00:00" && a.scheduled_at < today.substring(0, 7) + "-31T23:59:59").length;
+
+  const capacity = useMemo(() => calculateCapacity(
+    schedule as any[], daysOff as any[],
+    (profile as any)?.default_duration ?? 60,
+    new Date(),
+    (profile as any)?.working_days_per_week ?? 5,
+    (profile as any)?.sessions_per_day ?? 6,
+  ), [schedule, daysOff, profile]);
+
+  const remainingCapacity = Math.max(capacity.maxMonthlyCapacity - bookedSessions, 0);
 
   const goalTargets = (goals as any[]).map((g: any) => ({
     ...g,
