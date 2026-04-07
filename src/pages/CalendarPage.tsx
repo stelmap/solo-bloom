@@ -8,7 +8,8 @@ import { format, addDays, startOfWeek, isSameDay } from "date-fns";
 import {
   useAppointments, useCreateAppointment, useUpdateAppointment,
   useDeleteAppointment, useCompleteAppointment, useCancelAppointment,
-  useClients, useServices, useProfile, useCreateRecurringRule, useDeleteRecurringAppointments,
+  useClients, useServices, useProfile, useCreateRecurringRule,
+  useDeleteRecurringAppointments, useEditRecurringAppointments,
 } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -42,6 +43,7 @@ export default function CalendarPage() {
   const cancelAppointment = useCancelAppointment();
   const createRecurringRule = useCreateRecurringRule();
   const deleteRecurring = useDeleteRecurringAppointments();
+  const editRecurring = useEditRecurringAppointments();
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -81,6 +83,8 @@ export default function CalendarPage() {
   const [completeClientId, setCompleteClientId] = useState<string | null>(null);
   const [recurringDeleteOpen, setRecurringDeleteOpen] = useState(false);
   const [recurringDeleteApt, setRecurringDeleteApt] = useState<any>(null);
+  const [recurringEditScopeOpen, setRecurringEditScopeOpen] = useState(false);
+  const [pendingEditApt, setPendingEditApt] = useState<any>(null);
 
   const [form, setForm] = useState({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
   const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "09:00", notes: "", price: 0 });
