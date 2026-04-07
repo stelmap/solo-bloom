@@ -2,14 +2,16 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ChevronLeft, ChevronRight, Plus, CheckCircle, XCircle, Ban, Clock, Pencil, Trash2, DollarSign, Repeat } from "lucide-react";
-import { useState } from "react";
+import { Progress } from "@/components/ui/progress";
+import { ChevronLeft, ChevronRight, Plus, CheckCircle, XCircle, Ban, Clock, Pencil, Trash2, DollarSign, Repeat, CalendarOff, BarChart3 } from "lucide-react";
+import { useState, useMemo } from "react";
 import { format, addDays, startOfWeek, isSameDay } from "date-fns";
 import {
   useAppointments, useCreateAppointment, useUpdateAppointment,
   useDeleteAppointment, useCompleteAppointment, useCancelAppointment,
   useClients, useServices, useProfile, useCreateRecurringRule,
   useDeleteRecurringAppointments, useEditRecurringAppointments,
+  useWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff,
 } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -36,6 +38,8 @@ export default function CalendarPage() {
   const { data: clients = [] } = useClients();
   const { data: services = [] } = useServices();
   const { data: profile } = useProfile();
+  const { data: workingSchedule = [] } = useWorkingSchedule();
+  const { data: daysOff = [] } = useDaysOff();
   const createAppointment = useCreateAppointment();
   const updateAppointment = useUpdateAppointment();
   const deleteAppointment = useDeleteAppointment();
@@ -44,6 +48,8 @@ export default function CalendarPage() {
   const createRecurringRule = useCreateRecurringRule();
   const deleteRecurring = useDeleteRecurringAppointments();
   const editRecurring = useEditRecurringAppointments();
+  const createDayOff = useCreateDayOff();
+  const deleteDayOff = useDeleteDayOff();
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -52,6 +58,67 @@ export default function CalendarPage() {
   const endHour = parseInt((profile as any)?.work_hours_end || "18") || 18;
   const use12h = (profile as any)?.time_format === "12h";
   const hours = Array.from({ length: endHour - startHour }, (_, i) => i + startHour);
+
+  // Build schedule map: day_of_week -> { is_working, start_time, end_time }
+  const scheduleMap = useMemo(() => {
+    const map: Record<number, { is_working: boolean; start_time: string; end_time: string }> = {};
+    if (workingSchedule.length > 0) {
+      for (const ws of workingSchedule) {
+        map[ws.day_of_week] = { is_working: ws.is_working, start_time: ws.start_time, end_time: ws.end_time };
+      }
+    }
+    return map;
+  }, [workingSchedule]);
+
+  // Build days off set
+  const daysOffSet = useMemo(() => {
+    const set = new Set<string>();
+    for (const d of daysOff as any[]) {
+      if (d.is_non_working) set.add(d.date);
+    }
+    return set;
+  }, [daysOff]);
+
+  const getDayOfWeek = (date: Date) => {
+    const d = date.getDay();
+    return d === 0 ? 7 : d; // 1=Mon, 7=Sun
+  };
+
+  const isDayOff = (date: Date) => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    return daysOffSet.has(dateStr);
+  };
+
+  const isDayWorking = (date: Date) => {
+    if (isDayOff(date)) return false;
+    const dow = getDayOfWeek(date);
+    if (scheduleMap[dow] !== undefined) return scheduleMap[dow].is_working;
+    return dow <= 5; // Default Mon-Fri
+  };
+
+  const isHourWorking = (date: Date, hour: number) => {
+    if (!isDayWorking(date)) return false;
+    const dow = getDayOfWeek(date);
+    const sched = scheduleMap[dow];
+    if (sched) {
+      const sh = parseInt(sched.start_time);
+      const eh = parseInt(sched.end_time);
+      return hour >= sh && hour < eh;
+    }
+    return hour >= startHour && hour < endHour;
+  };
+
+  const hasConflict = (date: string, time: string, durationMinutes: number, excludeId?: string) => {
+    const newStart = new Date(`${date}T${time}:00`).getTime();
+    const newEnd = newStart + durationMinutes * 60 * 1000;
+    return appointments.some(apt => {
+      if (excludeId && apt.id === excludeId) return false;
+      if (apt.status === "cancelled") return false;
+      const aptStart = new Date(apt.scheduled_at).getTime();
+      const aptEnd = aptStart + apt.duration_minutes * 60 * 1000;
+      return newStart < aptEnd && newEnd > aptStart;
+    });
+  };
 
   const STATUSES = [
     { value: "scheduled", label: t("status.scheduled"), color: "bg-muted text-muted-foreground" },
@@ -105,8 +172,24 @@ export default function CalendarPage() {
     setRecurDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d].sort());
   };
 
+  // Validation for create
+  const createValidation = useMemo(() => {
+    if (!form.date || !form.time) return null;
+    const date = new Date(form.date);
+    if (isDayOff(date)) return t("calendar.dayOffBlocked");
+    if (!isDayWorking(date)) return t("calendar.outsideHours");
+    const hour = parseInt(form.time);
+    if (!isHourWorking(date, hour)) return t("calendar.outsideHours");
+    const service = services.find(s => s.id === form.service_id);
+    if (form.service_id && hasConflict(form.date, form.time, service?.duration_minutes ?? 60)) {
+      return t("calendar.doubleBooking");
+    }
+    return null;
+  }, [form.date, form.time, form.service_id, services, appointments, scheduleMap, daysOffSet]);
+
   const handleCreate = async () => {
     if (!form.client_id || !form.service_id || !form.date) return;
+    if (createValidation && !isRecurring) return;
     const service = services.find(s => s.id === form.service_id);
 
     if (isRecurring) {
@@ -120,18 +203,10 @@ export default function CalendarPage() {
           start_date: form.date, end_date: recurEndDate || undefined,
         });
         setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
-        setIsRecurring(false);
-        setRecurInterval(1);
-        setRecurDays([1]);
-        setRecurEndDate("");
+        setIsRecurring(false); setRecurInterval(1); setRecurDays([1]); setRecurEndDate("");
         setCreateOpen(false);
-        toast({
-          title: t("recurring.seriesCreated"),
-          description: t("recurring.seriesCreatedDesc", { count: (result as any).count }),
-        });
-      } catch (e: any) {
-        toast({ title: t("common.error"), description: e.message, variant: "destructive" });
-      }
+        toast({ title: t("recurring.seriesCreated"), description: t("recurring.seriesCreatedDesc", { count: (result as any).count }) });
+      } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
     } else {
       try {
         await createAppointment.mutateAsync({
@@ -144,9 +219,7 @@ export default function CalendarPage() {
         setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
         setCreateOpen(false);
         toast({ title: t("toast.appointmentCreated") });
-      } catch (e: any) {
-        toast({ title: t("common.error"), description: e.message, variant: "destructive" });
-      }
+      } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
     }
   };
 
@@ -159,26 +232,15 @@ export default function CalendarPage() {
     });
     setEditAptId(apt.id);
     setDetailApt(null);
-
-    if (apt.recurring_rule_id) {
-      // For recurring: show scope dialog after edit form is saved
-      setPendingEditApt(apt);
-      setEditOpen(true);
-    } else {
-      setEditOpen(true);
-    }
+    if (apt.recurring_rule_id) { setPendingEditApt(apt); }
+    setEditOpen(true);
   };
 
   const handleEdit = async () => {
     if (!editAptId) return;
-
-    // If it's a recurring appointment, show scope dialog instead of saving directly
     if (pendingEditApt?.recurring_rule_id) {
-      setEditOpen(false);
-      setRecurringEditScopeOpen(true);
-      return;
+      setEditOpen(false); setRecurringEditScopeOpen(true); return;
     }
-
     try {
       const service = services.find(s => s.id === editForm.service_id);
       await updateAppointment.mutateAsync({
@@ -189,9 +251,7 @@ export default function CalendarPage() {
       });
       setEditOpen(false);
       toast({ title: t("toast.appointmentUpdated") });
-    } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
-    }
+    } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
   };
 
   const handleRecurringEdit = async (scope: "this" | "following" | "all") => {
@@ -199,7 +259,6 @@ export default function CalendarPage() {
     try {
       const service = services.find(s => s.id === editForm.service_id);
       if (scope === "this") {
-        // For "this only", update the single appointment directly
         await updateAppointment.mutateAsync({
           id: editAptId, client_id: editForm.client_id, service_id: editForm.service_id,
           scheduled_at: `${editForm.date}T${editForm.time}:00`,
@@ -207,11 +266,8 @@ export default function CalendarPage() {
           price: editForm.price, notes: editForm.notes || undefined,
         });
       } else {
-        // For "following" or "all", batch-update non-time fields
         await editRecurring.mutateAsync({
-          ruleId: pendingEditApt.recurring_rule_id,
-          scope,
-          appointmentId: editAptId,
+          ruleId: pendingEditApt.recurring_rule_id, scope, appointmentId: editAptId,
           updates: {
             client_id: editForm.client_id, service_id: editForm.service_id,
             duration_minutes: service?.duration_minutes ?? 60,
@@ -219,22 +275,15 @@ export default function CalendarPage() {
           },
         });
       }
-      setRecurringEditScopeOpen(false);
-      setPendingEditApt(null);
+      setRecurringEditScopeOpen(false); setPendingEditApt(null);
       toast({ title: t("toast.appointmentUpdated") });
-    } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
-    }
+    } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
   };
 
   const openComplete = (apt: any) => {
-    setCompletePrice(Number(apt.price));
-    setPaymentMethod("cash");
-    setPaymentStatus("paid_now");
-    setCompleteAptId(apt.id);
-    setCompleteClientId(apt.client_id);
-    setDetailApt(null);
-    setCompleteOpen(true);
+    setCompletePrice(Number(apt.price)); setPaymentMethod("cash"); setPaymentStatus("paid_now");
+    setCompleteAptId(apt.id); setCompleteClientId(apt.client_id);
+    setDetailApt(null); setCompleteOpen(true);
   };
 
   const handleComplete = async () => {
@@ -246,27 +295,18 @@ export default function CalendarPage() {
       });
       setCompleteOpen(false);
       const msg = paymentStatus === "waiting_for_payment"
-        ? t("toast.sessionCompletedExpected")
-        : t("toast.sessionCompletedIncome", { amount: completePrice.toString() });
+        ? t("toast.sessionCompletedExpected") : t("toast.sessionCompletedIncome", { amount: completePrice.toString() });
       toast({ title: t("toast.appointmentCompleted"), description: msg });
-    } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
-    }
+    } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
   };
 
   const handleStatusChange = async (apt: any, status: "confirmed" | "cancelled" | "no-show") => {
     try {
-      if (status === "cancelled" || status === "no-show") {
-        await cancelAppointment.mutateAsync({ id: apt.id, status });
-      } else {
-        await updateAppointment.mutateAsync({ id: apt.id, status });
-      }
+      if (status === "cancelled" || status === "no-show") { await cancelAppointment.mutateAsync({ id: apt.id, status }); }
+      else { await updateAppointment.mutateAsync({ id: apt.id, status }); }
       setDetailApt(null);
-      const statusLabel = STATUSES.find(s => s.value === status)?.label || status;
-      toast({ title: t("toast.statusUpdated", { status: statusLabel }) });
-    } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
-    }
+      toast({ title: t("toast.statusUpdated", { status: STATUSES.find(s => s.value === status)?.label || status }) });
+    } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
   };
 
   const handleDelete = async () => {
@@ -274,32 +314,32 @@ export default function CalendarPage() {
     try {
       await deleteAppointment.mutateAsync(deleteId);
       toast({ title: t("toast.appointmentDeleted") });
-      setDeleteId(null);
-      setDetailApt(null);
-    } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
-    }
+      setDeleteId(null); setDetailApt(null);
+    } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
   };
 
   const openRecurringDelete = (apt: any) => {
-    setRecurringDeleteApt(apt);
-    setRecurringDeleteOpen(true);
-    setDetailApt(null);
+    setRecurringDeleteApt(apt); setRecurringDeleteOpen(true); setDetailApt(null);
   };
 
   const handleRecurringDelete = async (scope: "this" | "following" | "all") => {
     if (!recurringDeleteApt) return;
     try {
-      await deleteRecurring.mutateAsync({
-        ruleId: recurringDeleteApt.recurring_rule_id,
-        scope,
-        appointmentId: recurringDeleteApt.id,
-      });
+      await deleteRecurring.mutateAsync({ ruleId: recurringDeleteApt.recurring_rule_id, scope, appointmentId: recurringDeleteApt.id });
       toast({ title: t("toast.appointmentDeleted") });
-      setRecurringDeleteOpen(false);
-      setRecurringDeleteApt(null);
-    } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      setRecurringDeleteOpen(false); setRecurringDeleteApt(null);
+    } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
+  };
+
+  const handleQuickDayOff = async (date: Date) => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    const existing = (daysOff as any[]).find((d: any) => d.date === dateStr);
+    if (existing) {
+      await deleteDayOff.mutateAsync(existing.id);
+      toast({ title: t("toast.dayOffRemoved") });
+    } else {
+      await createDayOff.mutateAsync({ date: dateStr, type: "day_off", is_non_working: true });
+      toast({ title: t("toast.dayOffAdded") });
     }
   };
 
@@ -313,6 +353,23 @@ export default function CalendarPage() {
     const d = new Date(dateStr);
     return formatTime(format(d, "HH:mm"), use12h);
   };
+
+  // Weekly capacity calculations
+  const weekCapacity = useMemo(() => {
+    const sessionsPerDay = (profile as any)?.sessions_per_day ?? 6;
+    let totalSlots = 0;
+    const dayStats = days.map(day => {
+      const working = isDayWorking(day);
+      const slots = working ? sessionsPerDay : 0;
+      totalSlots += slots;
+      const booked = appointments.filter(apt =>
+        isSameDay(new Date(apt.scheduled_at), day) && apt.status !== "cancelled"
+      ).length;
+      return { day, working, slots, booked, free: Math.max(slots - booked, 0) };
+    });
+    const totalBooked = dayStats.reduce((s, d) => s + d.booked, 0);
+    return { totalSlots, totalBooked, totalFree: Math.max(totalSlots - totalBooked, 0), dayStats };
+  }, [days, appointments, profile, scheduleMap, daysOffSet]);
 
   return (
     <AppLayout>
@@ -355,6 +412,13 @@ export default function CalendarPage() {
                     <div className="space-y-2"><Label>{t("common.date")} *</Label><Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} /></div>
                     <div className="space-y-2"><Label>{t("common.time")} *</Label><Input type="time" value={form.time} onChange={e => setForm(f => ({ ...f, time: e.target.value }))} /></div>
                   </div>
+
+                  {createValidation && !isRecurring && (
+                    <div className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
+                      ⚠️ {createValidation}
+                    </div>
+                  )}
+
                   <div className="space-y-2"><Label>{t("calendar.notes")}</Label><Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
 
                   {/* Recurring section */}
@@ -400,7 +464,8 @@ export default function CalendarPage() {
                     )}
                   </div>
 
-                  <Button onClick={handleCreate} className="w-full" disabled={createAppointment.isPending || createRecurringRule.isPending}>
+                  <Button onClick={handleCreate} className="w-full"
+                    disabled={createAppointment.isPending || createRecurringRule.isPending || (!isRecurring && !!createValidation)}>
                     {(createAppointment.isPending || createRecurringRule.isPending) ? t("calendar.creating") : (isRecurring ? t("recurring.seriesCreated").split(" ")[0] + "..." : t("calendar.createAppointment"))}
                   </Button>
                 </div>
@@ -409,15 +474,76 @@ export default function CalendarPage() {
           </div>
         </div>
 
+        {/* Weekly capacity bar */}
+        <div className="bg-card rounded-xl border border-border p-4 animate-fade-in">
+          <div className="flex items-center gap-3 mb-3">
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">{t("capacity.title")}</span>
+            <div className="flex items-center gap-4 ml-auto text-xs text-muted-foreground">
+              <span>{t("capacity.totalSlots")}: {weekCapacity.totalSlots}</span>
+              <span>{t("capacity.booked")}: {weekCapacity.totalBooked}</span>
+              <span>{t("capacity.free")}: {weekCapacity.totalFree}</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-7 gap-2">
+            {weekCapacity.dayStats.map((ds, i) => {
+              const pct = ds.slots > 0 ? (ds.booked / ds.slots) * 100 : 0;
+              const isFull = ds.slots > 0 && ds.booked >= ds.slots;
+              const isLow = ds.working && ds.slots > 0 && pct < 30;
+              return (
+                <div key={i} className="text-center">
+                  <p className="text-xs text-muted-foreground mb-1">{t(DAY_KEYS[i] as any)}</p>
+                  {ds.working ? (
+                    <>
+                      <Progress value={pct} className={cn("h-2", isFull ? "[&>div]:bg-destructive" : isLow ? "[&>div]:bg-warning" : "")} />
+                      <p className="text-xs mt-1">
+                        <span className="font-medium text-foreground">{ds.booked}</span>
+                        <span className="text-muted-foreground">/{ds.slots}</span>
+                      </p>
+                      {isFull && <Badge variant="outline" className="text-[10px] px-1 mt-0.5 border-destructive/30 text-destructive">{t("capacity.fullyBooked")}</Badge>}
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-center h-6">
+                      <CalendarOff className="h-3.5 w-3.5 text-muted-foreground/40" />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
           <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border">
             <div className="p-3" />
-            {days.map((day, i) => (
-              <div key={i} className={`p-3 text-center border-l border-border ${isSameDay(day, new Date()) ? "bg-accent" : ""}`}>
-                <p className="text-xs text-muted-foreground">{format(day, "EEE")}</p>
-                <p className={`text-lg font-semibold ${isSameDay(day, new Date()) ? "text-accent-foreground" : "text-foreground"}`}>{format(day, "d")}</p>
-              </div>
-            ))}
+            {days.map((day, i) => {
+              const dayOffStatus = isDayOff(day);
+              const working = isDayWorking(day);
+              return (
+                <div key={i} className={cn(
+                  "p-3 text-center border-l border-border relative group",
+                  isSameDay(day, new Date()) ? "bg-accent" : "",
+                  dayOffStatus ? "bg-destructive/5" : !working ? "bg-muted/30" : "",
+                )}>
+                  <p className="text-xs text-muted-foreground">{format(day, "EEE")}</p>
+                  <p className={cn("text-lg font-semibold", isSameDay(day, new Date()) ? "text-accent-foreground" : dayOffStatus ? "text-destructive/60" : "text-foreground")}>
+                    {format(day, "d")}
+                  </p>
+                  {dayOffStatus && (
+                    <Badge variant="outline" className="text-[9px] px-1 border-destructive/20 text-destructive/60 absolute top-1 right-1">
+                      <CalendarOff className="h-2.5 w-2.5" />
+                    </Badge>
+                  )}
+                  <button
+                    onClick={() => handleQuickDayOff(day)}
+                    className="absolute bottom-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity text-[9px] text-muted-foreground hover:text-foreground"
+                    title={dayOffStatus ? t("calendar.removeDayOff") : t("calendar.addDayOff")}
+                  >
+                    {dayOffStatus ? "✓" : <CalendarOff className="h-3 w-3" />}
+                  </button>
+                </div>
+              );
+            })}
           </div>
           <div className="grid grid-cols-[60px_repeat(7,1fr)] max-h-[600px] overflow-y-auto">
             {hours.map((hour) => (
@@ -427,13 +553,18 @@ export default function CalendarPage() {
                 </div>
                 {days.map((day, dayIdx) => {
                   const events = getEventsForDayHour(day, hour);
+                  const working = isHourWorking(day, hour);
+                  const dayOff = isDayOff(day);
                   return (
-                    <div key={dayIdx} className="relative border-l border-b border-border min-h-[60px] hover:bg-muted/30 transition-colors cursor-pointer">
+                    <div key={dayIdx} className={cn(
+                      "relative border-l border-b border-border min-h-[60px] transition-colors cursor-pointer",
+                      dayOff ? "bg-destructive/5 cursor-not-allowed" : !working ? "bg-muted/20" : "hover:bg-muted/30",
+                    )}>
                       {events.map((evt) => {
                         const si = statusInfo(evt.status);
                         return (
                           <div key={evt.id} onClick={() => setDetailApt(evt)}
-                            className={cn("absolute inset-x-1 top-1 rounded-md border p-2 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all", si.color)}
+                            className={cn("absolute inset-x-1 top-1 rounded-md border p-2 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10", si.color)}
                             style={{ height: `${(evt.duration_minutes / 60) * 60 - 8}px` }}>
                             <p className="text-xs font-semibold truncate">{(evt as any).clients?.name}</p>
                             <div className="flex items-center gap-1">
@@ -536,7 +667,7 @@ export default function CalendarPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Complete dialog with payment status */}
+      {/* Complete dialog */}
       <Dialog open={completeOpen} onOpenChange={setCompleteOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>{t("calendar.completeAppointment")}</DialogTitle></DialogHeader>
@@ -602,15 +733,9 @@ export default function CalendarPage() {
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>{t("recurring.deleteScope")}</DialogTitle></DialogHeader>
           <div className="space-y-2">
-            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringDelete("this")}>
-              {t("recurring.thisOnly")}
-            </Button>
-            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringDelete("following")}>
-              {t("recurring.thisAndFollowing")}
-            </Button>
-            <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive" onClick={() => handleRecurringDelete("all")}>
-              {t("recurring.allInSeries")}
-            </Button>
+            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringDelete("this")}>{t("recurring.thisOnly")}</Button>
+            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringDelete("following")}>{t("recurring.thisAndFollowing")}</Button>
+            <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive" onClick={() => handleRecurringDelete("all")}>{t("recurring.allInSeries")}</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -621,15 +746,9 @@ export default function CalendarPage() {
           <DialogHeader><DialogTitle>{t("recurring.editScope")}</DialogTitle></DialogHeader>
           <p className="text-sm text-muted-foreground mb-2">{t("recurring.editScopeDesc")}</p>
           <div className="space-y-2">
-            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringEdit("this")} disabled={editRecurring.isPending}>
-              {t("recurring.thisOnly")}
-            </Button>
-            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringEdit("following")} disabled={editRecurring.isPending}>
-              {t("recurring.thisAndFollowing")}
-            </Button>
-            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringEdit("all")} disabled={editRecurring.isPending}>
-              {t("recurring.allInSeries")}
-            </Button>
+            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringEdit("this")} disabled={editRecurring.isPending}>{t("recurring.thisOnly")}</Button>
+            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringEdit("following")} disabled={editRecurring.isPending}>{t("recurring.thisAndFollowing")}</Button>
+            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringEdit("all")} disabled={editRecurring.isPending}>{t("recurring.allInSeries")}</Button>
           </div>
         </DialogContent>
       </Dialog>
