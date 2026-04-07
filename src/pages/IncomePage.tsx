@@ -2,7 +2,8 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, DollarSign, CheckCircle } from "lucide-react";
+import { Plus, Trash2, DollarSign, CheckCircle, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
 import { useIncome, useCreateIncome, useDeleteIncome, useExpectedPayments, useMarkExpectedPaymentPaid } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -84,10 +85,17 @@ export default function IncomePage() {
             <h1 className="text-2xl font-bold text-foreground">{t("income.title")}</h1>
             <p className="text-muted-foreground mt-1">{t("income.subtitle")}</p>
           </div>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-1" /> {t("income.addManual")}</Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => {
+              downloadCSV("income.csv",
+                ["Date", "Amount", "Source", "Payment Method", "Description"],
+                income.map((i: any) => [i.date, String(i.amount), i.source || "", i.payment_method || "", i.description || ""])
+              );
+            }}><Download className="h-4 w-4 mr-1" /> {t("export.csv")}</Button>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button><Plus className="h-4 w-4 mr-1" /> {t("income.addManual")}</Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>{t("income.addIncome")}</DialogTitle></DialogHeader>
               <div className="space-y-4">

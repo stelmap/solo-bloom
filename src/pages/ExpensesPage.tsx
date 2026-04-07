@@ -2,7 +2,8 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
 import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -83,10 +84,17 @@ export default function ExpensesPage() {
             <h1 className="text-2xl font-bold text-foreground">{t("expenses.title")}</h1>
             <p className="text-muted-foreground mt-1">{t("expenses.subtitle")}</p>
           </div>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> {t("expenses.addExpense")}</Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => {
+              downloadCSV("expenses.csv",
+                ["Date", "Category", "Amount", "Description", "Recurring"],
+                expenses.map((e: any) => [e.date, e.category, String(e.amount), e.description || "", e.is_recurring ? "Yes" : "No"])
+              );
+            }}><Download className="h-4 w-4 mr-1" /> {t("export.csv")}</Button>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> {t("expenses.addExpense")}</Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>{editId ? t("expenses.editExpense") : t("expenses.addExpense")}</DialogTitle></DialogHeader>
               <div className="space-y-4">
