@@ -31,13 +31,13 @@ export function AppSidebar() {
     <>
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="fixed top-4 left-4 z-50 md:hidden p-2 rounded-lg bg-card border border-border shadow-sm"
+        className="fixed top-4 left-4 z-50 md:hidden p-2 rounded-lg bg-secondary text-secondary-foreground border border-sidebar-border shadow-lg"
       >
         {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
 
       {mobileOpen && (
-        <div className="fixed inset-0 z-30 bg-foreground/20 backdrop-blur-sm md:hidden" onClick={() => setMobileOpen(false)} />
+        <div className="fixed inset-0 z-30 bg-foreground/40 backdrop-blur-sm md:hidden" onClick={() => setMobileOpen(false)} />
       )}
 
       <aside className={cn(
@@ -46,10 +46,10 @@ export function AppSidebar() {
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="p-6 border-b border-sidebar-border">
-          <h1 className="text-xl font-bold text-foreground tracking-tight">
-            Solo<span className="text-primary">Pro</span>
+          <h1 className="text-xl font-bold text-sidebar-foreground tracking-tight">
+            Solo<span className="text-sidebar-primary">Pro</span>
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Business Manager</p>
+          <p className="text-xs text-sidebar-foreground/50 mt-0.5">Business Manager</p>
         </div>
 
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
@@ -64,7 +64,7 @@ export function AppSidebar() {
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                   isActive
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                 )}
               >
                 <item.icon className="h-4.5 w-4.5 shrink-0" />
@@ -76,16 +76,16 @@ export function AppSidebar() {
 
         <div className="p-4 border-t border-sidebar-border">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-semibold shrink-0">
+            <div className="h-8 w-8 rounded-full bg-sidebar-primary/20 flex items-center justify-center text-sidebar-primary text-sm font-semibold shrink-0">
               {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">
+              <p className="text-sm font-medium text-sidebar-foreground truncate">
                 {user?.user_metadata?.full_name || user?.email}
               </p>
-              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+              <p className="text-xs text-sidebar-foreground/50 truncate">{user?.email}</p>
             </div>
-            <button onClick={signOut} className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" title="Sign out">
+            <button onClick={signOut} className="p-1.5 rounded-md hover:bg-sidebar-accent transition-colors text-sidebar-foreground/50 hover:text-sidebar-foreground" title="Sign out">
               <LogOut className="h-4 w-4" />
             </button>
           </div>
