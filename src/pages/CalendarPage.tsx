@@ -171,6 +171,14 @@ export default function CalendarPage() {
 
   const handleEdit = async () => {
     if (!editAptId) return;
+
+    // If it's a recurring appointment, show scope dialog instead of saving directly
+    if (pendingEditApt?.recurring_rule_id) {
+      setEditOpen(false);
+      setRecurringEditScopeOpen(true);
+      return;
+    }
+
     try {
       const service = services.find(s => s.id === editForm.service_id);
       await updateAppointment.mutateAsync({
@@ -180,6 +188,39 @@ export default function CalendarPage() {
         price: editForm.price, notes: editForm.notes || undefined,
       });
       setEditOpen(false);
+      toast({ title: t("toast.appointmentUpdated") });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleRecurringEdit = async (scope: "this" | "following" | "all") => {
+    if (!editAptId || !pendingEditApt) return;
+    try {
+      const service = services.find(s => s.id === editForm.service_id);
+      if (scope === "this") {
+        // For "this only", update the single appointment directly
+        await updateAppointment.mutateAsync({
+          id: editAptId, client_id: editForm.client_id, service_id: editForm.service_id,
+          scheduled_at: `${editForm.date}T${editForm.time}:00`,
+          duration_minutes: service?.duration_minutes ?? 60,
+          price: editForm.price, notes: editForm.notes || undefined,
+        });
+      } else {
+        // For "following" or "all", batch-update non-time fields
+        await editRecurring.mutateAsync({
+          ruleId: pendingEditApt.recurring_rule_id,
+          scope,
+          appointmentId: editAptId,
+          updates: {
+            client_id: editForm.client_id, service_id: editForm.service_id,
+            duration_minutes: service?.duration_minutes ?? 60,
+            price: editForm.price, notes: editForm.notes || undefined,
+          },
+        });
+      }
+      setRecurringEditScopeOpen(false);
+      setPendingEditApt(null);
       toast({ title: t("toast.appointmentUpdated") });
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
