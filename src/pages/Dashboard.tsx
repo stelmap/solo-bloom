@@ -1,12 +1,31 @@
 import { AppLayout } from "@/components/AppLayout";
 import { MetricCard } from "@/components/MetricCard";
 import { BreakevenProgress } from "@/components/BreakevenProgress";
+import { SmartInsights, generateInsights } from "@/components/SmartInsights";
 import { DollarSign, Users, TrendingUp, TrendingDown, Clock } from "lucide-react";
 import { useDashboardStats } from "@/hooks/useData";
 import { format } from "date-fns";
+import { useMemo } from "react";
 
 export default function Dashboard() {
   const { data: stats, isLoading } = useDashboardStats();
+
+  const s = stats ?? {
+    todayIncome: 0, monthlyIncome: 0, monthlyExpenses: 0, netProfit: 0,
+    clientCount: 0, todayAppointments: [], thisWeekIncome: 0, lastWeekIncome: 0,
+    monthlyAppointments: 0, maxMonthlyCapacity: 0, daysPastInMonth: 1, daysLeftInMonth: 0,
+  };
+
+  const insights = useMemo(() => generateInsights({
+    monthlyIncome: s.monthlyIncome,
+    monthlyExpenses: s.monthlyExpenses,
+    lastWeekIncome: s.lastWeekIncome,
+    thisWeekIncome: s.thisWeekIncome,
+    monthlyAppointments: s.monthlyAppointments,
+    maxMonthlyCapacity: s.maxMonthlyCapacity,
+    daysLeftInMonth: s.daysLeftInMonth,
+    daysPastInMonth: s.daysPastInMonth,
+  }), [s]);
 
   if (isLoading) {
     return (
@@ -15,8 +34,6 @@ export default function Dashboard() {
       </AppLayout>
     );
   }
-
-  const s = stats ?? { todayIncome: 0, monthlyIncome: 0, monthlyExpenses: 0, netProfit: 0, clientCount: 0, todayAppointments: [] };
 
   return (
     <AppLayout>
@@ -32,6 +49,9 @@ export default function Dashboard() {
           <MetricCard title="Monthly Expenses" value={`€${s.monthlyExpenses.toLocaleString()}`} icon={TrendingDown} />
           <MetricCard title="Active Clients" value={s.clientCount.toString()} icon={Users} />
         </div>
+
+        {/* Smart Insights */}
+        <SmartInsights insights={insights} />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <BreakevenProgress
