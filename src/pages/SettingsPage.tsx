@@ -4,24 +4,48 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { useProfile, useUpdateProfile } from "@/hooks/useData";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { useProfile, useUpdateProfile, useWorkingSchedule, useUpsertWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff } from "@/hooks/useData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { Plus, Trash2, CalendarOff } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { format } from "date-fns";
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, "0")}:00`);
+
+const DAY_FULL_KEYS = ["day.monday", "day.tuesday", "day.wednesday", "day.thursday", "day.friday", "day.saturday", "day.sunday"] as const;
+
+const DEFAULT_SCHEDULE = Array.from({ length: 7 }, (_, i) => ({
+  day_of_week: i + 1,
+  is_working: i < 5, // Mon-Fri working by default
+  start_time: "09:00",
+  end_time: "18:00",
+}));
 
 export default function SettingsPage() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
   const updateProfile = useUpdateProfile();
+  const { data: workingSchedule } = useWorkingSchedule();
+  const upsertSchedule = useUpsertWorkingSchedule();
+  const { data: daysOff = [] } = useDaysOff();
+  const createDayOff = useCreateDayOff();
+  const deleteDayOff = useDeleteDayOff();
   const { toast } = useToast();
   const { t } = useLanguage();
+
   const [form, setForm] = useState({
     full_name: "", business_name: "", phone: "", language: "en", reminder_minutes: 1440,
     work_hours_start: "09:00", work_hours_end: "18:00", time_format: "24h", default_duration: 60,
   });
+
+  const [schedule, setSchedule] = useState(DEFAULT_SCHEDULE);
+  const [dayOffOpen, setDayOffOpen] = useState(false);
+  const [dayOffForm, setDayOffForm] = useState({ date: "", type: "day_off", label: "" });
 
   useEffect(() => {
     if (profile) {
@@ -39,13 +63,77 @@ export default function SettingsPage() {
     }
   }, [profile]);
 
+  useEffect(() => {
+    if (workingSchedule && workingSchedule.length > 0) {
+      setSchedule(workingSchedule.map(ws => ({
+        day_of_week: ws.day_of_week,
+        is_working: ws.is_working,
+        start_time: ws.start_time,
+        end_time: ws.end_time,
+      })));
+    }
+  }, [workingSchedule]);
+
   const handleSave = async () => {
     try {
-      await updateProfile.mutateAsync(form);
+      await Promise.all([
+        updateProfile.mutateAsync(form),
+        upsertSchedule.mutateAsync(schedule),
+      ]);
       toast({ title: t("settings.saved") });
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
+  };
+
+  const handleAddDayOff = async () => {
+    if (!dayOffForm.date) return;
+    try {
+      await createDayOff.mutateAsync({
+        date: dayOffForm.date,
+        type: dayOffForm.type,
+        label: dayOffForm.label || undefined,
+        is_non_working: true,
+      });
+      toast({ title: t("toast.dayOffAdded") });
+      setDayOffForm({ date: "", type: "day_off", label: "" });
+      setDayOffOpen(false);
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleDeleteDayOff = async (id: string) => {
+    try {
+      await deleteDayOff.mutateAsync(id);
+      toast({ title: t("toast.dayOffRemoved") });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
+
+  const updateScheduleDay = (dayOfWeek: number, updates: Partial<typeof schedule[0]>) => {
+    setSchedule(prev => prev.map(d => d.day_of_week === dayOfWeek ? { ...d, ...updates } : d));
+  };
+
+  const dayOffTypeLabel = (type: string) => {
+    const map: Record<string, string> = {
+      day_off: t("settings.dayOff"),
+      vacation: t("settings.vacation"),
+      holiday: t("settings.holiday"),
+      sick: t("settings.sickDay"),
+    };
+    return map[type] || type;
+  };
+
+  const dayOffTypeColor = (type: string) => {
+    const map: Record<string, string> = {
+      day_off: "bg-muted text-muted-foreground",
+      vacation: "bg-primary/15 text-primary",
+      holiday: "bg-accent text-accent-foreground",
+      sick: "bg-destructive/15 text-destructive",
+    };
+    return map[type] || "bg-muted text-muted-foreground";
   };
 
   return (
@@ -112,6 +200,111 @@ export default function SettingsPage() {
 
         <Separator />
 
+        {/* Working Schedule per weekday */}
+        <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
+          <div>
+            <h2 className="font-semibold text-foreground">{t("settings.workingSchedule")}</h2>
+            <p className="text-sm text-muted-foreground mt-1">{t("settings.workingScheduleDesc")}</p>
+          </div>
+          <div className="space-y-3">
+            {schedule.map((day, i) => (
+              <div key={day.day_of_week} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border">
+                <div className="w-24 shrink-0">
+                  <span className="text-sm font-medium text-foreground">{t(DAY_FULL_KEYS[i] as any)}</span>
+                </div>
+                <Switch
+                  checked={day.is_working}
+                  onCheckedChange={v => updateScheduleDay(day.day_of_week, { is_working: v })}
+                />
+                {day.is_working ? (
+                  <div className="flex items-center gap-2 flex-1">
+                    <Select value={day.start_time} onValueChange={v => updateScheduleDay(day.day_of_week, { start_time: v })}>
+                      <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
+                      <SelectContent>{HOUR_OPTIONS.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent>
+                    </Select>
+                    <span className="text-muted-foreground text-sm">–</span>
+                    <Select value={day.end_time} onValueChange={v => updateScheduleDay(day.day_of_week, { end_time: v })}>
+                      <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
+                      <SelectContent>{HOUR_OPTIONS.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <span className="text-sm text-muted-foreground italic">{t("settings.dayOff")}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Days Off management */}
+        <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-semibold text-foreground">{t("settings.daysOff")}</h2>
+              <p className="text-sm text-muted-foreground mt-1">{t("settings.daysOffDesc")}</p>
+            </div>
+            <Dialog open={dayOffOpen} onOpenChange={setDayOffOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm"><Plus className="h-4 w-4 mr-1" /> {t("settings.addDayOff")}</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>{t("settings.addDayOff")}</DialogTitle></DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>{t("common.date")} *</Label>
+                    <Input type="date" value={dayOffForm.date} onChange={e => setDayOffForm(f => ({ ...f, date: e.target.value }))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t("settings.dayOffType")}</Label>
+                    <Select value={dayOffForm.type} onValueChange={v => setDayOffForm(f => ({ ...f, type: v }))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="day_off">{t("settings.dayOff")}</SelectItem>
+                        <SelectItem value="vacation">{t("settings.vacation")}</SelectItem>
+                        <SelectItem value="holiday">{t("settings.holiday")}</SelectItem>
+                        <SelectItem value="sick">{t("settings.sickDay")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t("settings.dayOffLabel")}</Label>
+                    <Input value={dayOffForm.label} onChange={e => setDayOffForm(f => ({ ...f, label: e.target.value }))} placeholder="e.g. Christmas" />
+                  </div>
+                  <Button onClick={handleAddDayOff} className="w-full" disabled={createDayOff.isPending || !dayOffForm.date}>
+                    {createDayOff.isPending ? t("common.adding") : t("settings.addDayOff")}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {(daysOff as any[]).length === 0 ? (
+            <div className="text-center py-6 text-sm text-muted-foreground">
+              <CalendarOff className="h-8 w-8 mx-auto mb-2 opacity-40" />
+              {t("settings.noDaysOff")}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {(daysOff as any[]).map((dayOff: any) => (
+                <div key={dayOff.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-foreground">{format(new Date(dayOff.date + "T12:00:00"), "MMM d, yyyy")}</span>
+                    <Badge className={dayOffTypeColor(dayOff.type)}>{dayOffTypeLabel(dayOff.type)}</Badge>
+                    {dayOff.label && <span className="text-xs text-muted-foreground">{dayOff.label}</span>}
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDeleteDayOff(dayOff.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <Separator />
+
         <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
           <h2 className="font-semibold text-foreground">{t("settings.language")}</h2>
           <div className="max-w-xs space-y-2">
@@ -145,8 +338,8 @@ export default function SettingsPage() {
         </div>
 
         <div className="pt-2">
-          <Button onClick={handleSave} disabled={updateProfile.isPending} className="w-full sm:w-auto">
-            {updateProfile.isPending ? t("common.saving") : t("common.save")}
+          <Button onClick={handleSave} disabled={updateProfile.isPending || upsertSchedule.isPending} className="w-full sm:w-auto">
+            {(updateProfile.isPending || upsertSchedule.isPending) ? t("common.saving") : t("common.save")}
           </Button>
         </div>
 
