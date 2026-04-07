@@ -615,6 +615,25 @@ export default function CalendarPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Recurring edit scope dialog */}
+      <Dialog open={recurringEditScopeOpen} onOpenChange={(o) => { if (!o) { setRecurringEditScopeOpen(false); setPendingEditApt(null); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>{t("recurring.editScope")}</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground mb-2">{t("recurring.editScopeDesc")}</p>
+          <div className="space-y-2">
+            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringEdit("this")} disabled={editRecurring.isPending}>
+              {t("recurring.thisOnly")}
+            </Button>
+            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringEdit("following")} disabled={editRecurring.isPending}>
+              {t("recurring.thisAndFollowing")}
+            </Button>
+            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringEdit("all")} disabled={editRecurring.isPending}>
+              {t("recurring.allInSeries")}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={handleDelete}
         title={t("calendar.deleteTitle")} description={t("calendar.deleteDesc")}
         loading={deleteAppointment.isPending} />
