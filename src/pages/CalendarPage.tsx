@@ -8,7 +8,8 @@ import { format, addDays, startOfWeek, isSameDay } from "date-fns";
 import {
   useAppointments, useCreateAppointment, useUpdateAppointment,
   useDeleteAppointment, useCompleteAppointment, useCancelAppointment,
-  useClients, useServices, useProfile, useCreateRecurringRule, useDeleteRecurringAppointments,
+  useClients, useServices, useProfile, useCreateRecurringRule,
+  useDeleteRecurringAppointments, useEditRecurringAppointments,
 } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -42,6 +43,7 @@ export default function CalendarPage() {
   const cancelAppointment = useCancelAppointment();
   const createRecurringRule = useCreateRecurringRule();
   const deleteRecurring = useDeleteRecurringAppointments();
+  const editRecurring = useEditRecurringAppointments();
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -81,6 +83,8 @@ export default function CalendarPage() {
   const [completeClientId, setCompleteClientId] = useState<string | null>(null);
   const [recurringDeleteOpen, setRecurringDeleteOpen] = useState(false);
   const [recurringDeleteApt, setRecurringDeleteApt] = useState<any>(null);
+  const [recurringEditScopeOpen, setRecurringEditScopeOpen] = useState(false);
+  const [pendingEditApt, setPendingEditApt] = useState<any>(null);
 
   const [form, setForm] = useState({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
   const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "09:00", notes: "", price: 0 });
@@ -155,11 +159,26 @@ export default function CalendarPage() {
     });
     setEditAptId(apt.id);
     setDetailApt(null);
-    setEditOpen(true);
+
+    if (apt.recurring_rule_id) {
+      // For recurring: show scope dialog after edit form is saved
+      setPendingEditApt(apt);
+      setEditOpen(true);
+    } else {
+      setEditOpen(true);
+    }
   };
 
   const handleEdit = async () => {
     if (!editAptId) return;
+
+    // If it's a recurring appointment, show scope dialog instead of saving directly
+    if (pendingEditApt?.recurring_rule_id) {
+      setEditOpen(false);
+      setRecurringEditScopeOpen(true);
+      return;
+    }
+
     try {
       const service = services.find(s => s.id === editForm.service_id);
       await updateAppointment.mutateAsync({
@@ -169,6 +188,39 @@ export default function CalendarPage() {
         price: editForm.price, notes: editForm.notes || undefined,
       });
       setEditOpen(false);
+      toast({ title: t("toast.appointmentUpdated") });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleRecurringEdit = async (scope: "this" | "following" | "all") => {
+    if (!editAptId || !pendingEditApt) return;
+    try {
+      const service = services.find(s => s.id === editForm.service_id);
+      if (scope === "this") {
+        // For "this only", update the single appointment directly
+        await updateAppointment.mutateAsync({
+          id: editAptId, client_id: editForm.client_id, service_id: editForm.service_id,
+          scheduled_at: `${editForm.date}T${editForm.time}:00`,
+          duration_minutes: service?.duration_minutes ?? 60,
+          price: editForm.price, notes: editForm.notes || undefined,
+        });
+      } else {
+        // For "following" or "all", batch-update non-time fields
+        await editRecurring.mutateAsync({
+          ruleId: pendingEditApt.recurring_rule_id,
+          scope,
+          appointmentId: editAptId,
+          updates: {
+            client_id: editForm.client_id, service_id: editForm.service_id,
+            duration_minutes: service?.duration_minutes ?? 60,
+            price: editForm.price, notes: editForm.notes || undefined,
+          },
+        });
+      }
+      setRecurringEditScopeOpen(false);
+      setPendingEditApt(null);
       toast({ title: t("toast.appointmentUpdated") });
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
@@ -557,6 +609,25 @@ export default function CalendarPage() {
               {t("recurring.thisAndFollowing")}
             </Button>
             <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive" onClick={() => handleRecurringDelete("all")}>
+              {t("recurring.allInSeries")}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Recurring edit scope dialog */}
+      <Dialog open={recurringEditScopeOpen} onOpenChange={(o) => { if (!o) { setRecurringEditScopeOpen(false); setPendingEditApt(null); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>{t("recurring.editScope")}</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground mb-2">{t("recurring.editScopeDesc")}</p>
+          <div className="space-y-2">
+            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringEdit("this")} disabled={editRecurring.isPending}>
+              {t("recurring.thisOnly")}
+            </Button>
+            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringEdit("following")} disabled={editRecurring.isPending}>
+              {t("recurring.thisAndFollowing")}
+            </Button>
+            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringEdit("all")} disabled={editRecurring.isPending}>
               {t("recurring.allInSeries")}
             </Button>
           </div>
