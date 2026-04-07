@@ -21,6 +21,7 @@ export type Database = {
           duration_minutes: number
           id: string
           notes: string | null
+          payment_status: string
           price: number
           scheduled_at: string
           service_id: string
@@ -34,6 +35,7 @@ export type Database = {
           duration_minutes?: number
           id?: string
           notes?: string | null
+          payment_status?: string
           price?: number
           scheduled_at: string
           service_id: string
@@ -47,6 +49,7 @@ export type Database = {
           duration_minutes?: number
           id?: string
           notes?: string | null
+          payment_status?: string
           price?: number
           scheduled_at?: string
           service_id?: string
@@ -71,6 +74,102 @@ export type Database = {
           },
         ]
       }
+      client_attachments: {
+        Row: {
+          appointment_id: string | null
+          client_id: string
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          client_id: string
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          appointment_id?: string | null
+          client_id?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_attachments_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_attachments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_notes: {
+        Row: {
+          appointment_id: string | null
+          client_id: string
+          content: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          client_id: string
+          content: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          appointment_id?: string | null
+          client_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_notes_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_notes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           created_at: string
@@ -79,6 +178,7 @@ export type Database = {
           name: string
           notes: string | null
           phone: string | null
+          telegram: string | null
           updated_at: string
           user_id: string
         }
@@ -89,6 +189,7 @@ export type Database = {
           name: string
           notes?: string | null
           phone?: string | null
+          telegram?: string | null
           updated_at?: string
           user_id: string
         }
@@ -99,10 +200,65 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string | null
+          telegram?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: []
+      }
+      expected_payments: {
+        Row: {
+          amount: number
+          appointment_id: string
+          client_id: string
+          created_at: string
+          id: string
+          paid_at: string | null
+          payment_method: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          appointment_id: string
+          client_id: string
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          appointment_id?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expected_payments_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expected_payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       expenses: {
         Row: {
