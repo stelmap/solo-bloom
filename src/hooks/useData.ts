@@ -588,12 +588,46 @@ export function useCreateRecurringRule() {
   });
 }
 
+export function useEditRecurringAppointments() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ ruleId, scope, appointmentId, updates }: {
+      ruleId: string; scope: "this" | "following" | "all"; appointmentId: string;
+      updates: { client_id?: string; service_id?: string; duration_minutes?: number; price?: number; notes?: string; scheduled_at?: string };
+    }) => {
+      if (scope === "this") {
+        const { error } = await supabase.from("appointments").update(updates as any).eq("id", appointmentId);
+        if (error) throw error;
+      } else if (scope === "following") {
+        const { data: apt } = await supabase.from("appointments").select("scheduled_at").eq("id", appointmentId).single();
+        if (apt) {
+          const { data: futureApts } = await supabase.from("appointments").select("id")
+            .eq("recurring_rule_id", ruleId).gte("scheduled_at", apt.scheduled_at)
+            .neq("status", "completed"); // Don't overwrite completed appointments
+          for (const a of futureApts || []) {
+            await supabase.from("appointments").update(updates as any).eq("id", a.id);
+          }
+        }
+      } else if (scope === "all") {
+        // Only update scheduled/confirmed ones — don't overwrite completed/cancelled
+        const { data: allApts } = await supabase.from("appointments").select("id, status")
+          .eq("recurring_rule_id", ruleId);
+        for (const a of allApts || []) {
+          if (a.status === "scheduled" || a.status === "confirmed") {
+            await supabase.from("appointments").update(updates as any).eq("id", a.id);
+          }
+        }
+      }
+    },
+    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+  });
+}
+
 export function useDeleteRecurringAppointments() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ ruleId, scope, appointmentId }: { ruleId: string; scope: "this" | "following" | "all"; appointmentId?: string }) => {
       if (scope === "all") {
-        // Delete all appointments in the series
         const { data: apts } = await supabase.from("appointments").select("id").eq("recurring_rule_id", ruleId);
         for (const apt of apts || []) {
           await supabase.from("income").delete().eq("appointment_id", apt.id);
