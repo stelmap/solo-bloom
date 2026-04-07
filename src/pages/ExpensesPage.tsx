@@ -2,12 +2,13 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useExpenses, useCreateExpense, useDeleteExpense } from "@/hooks/useData";
+import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,21 +17,51 @@ const CATEGORIES = ["Rent", "Materials", "Insurance", "Equipment", "Marketing", 
 export default function ExpensesPage() {
   const { data: expenses = [], isLoading } = useExpenses();
   const createExpense = useCreateExpense();
+  const updateExpense = useUpdateExpense();
   const deleteExpense = useDeleteExpense();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState({ category: "Other", amount: 0, date: new Date().toISOString().split("T")[0], description: "", is_recurring: false });
 
   const totalMonthly = expenses.reduce((s, e) => s + Number(e.amount), 0);
   const recurringTotal = expenses.filter(e => e.is_recurring).reduce((s, e) => s + Number(e.amount), 0);
 
-  const handleCreate = async () => {
+  const openEdit = (exp: any) => {
+    setEditId(exp.id);
+    setForm({ category: exp.category, amount: Number(exp.amount), date: exp.date, description: exp.description || "", is_recurring: exp.is_recurring });
+    setOpen(true);
+  };
+
+  const openCreate = () => {
+    setEditId(null);
+    setForm({ category: "Other", amount: 0, date: new Date().toISOString().split("T")[0], description: "", is_recurring: false });
+    setOpen(true);
+  };
+
+  const handleSubmit = async () => {
     if (!form.amount) return;
     try {
-      await createExpense.mutateAsync(form);
-      setForm({ category: "Other", amount: 0, date: new Date().toISOString().split("T")[0], description: "", is_recurring: false });
+      if (editId) {
+        await updateExpense.mutateAsync({ id: editId, ...form });
+        toast({ title: "Expense updated" });
+      } else {
+        await createExpense.mutateAsync(form);
+        toast({ title: "Expense added" });
+      }
       setOpen(false);
-      toast({ title: "Expense added" });
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await deleteExpense.mutateAsync(deleteId);
+      toast({ title: "Expense deleted" });
+      setDeleteId(null);
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     }
@@ -46,10 +77,10 @@ export default function ExpensesPage() {
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-1" /> Add Expense</Button>
+              <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Add Expense</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Add Expense</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{editId ? "Edit Expense" : "Add Expense"}</DialogTitle></DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>Category</Label>
@@ -65,8 +96,8 @@ export default function ExpensesPage() {
                   <Checkbox checked={form.is_recurring} onCheckedChange={v => setForm(f => ({ ...f, is_recurring: !!v }))} id="recurring" />
                   <Label htmlFor="recurring">Recurring monthly</Label>
                 </div>
-                <Button onClick={handleCreate} className="w-full" disabled={createExpense.isPending}>
-                  {createExpense.isPending ? "Adding..." : "Add Expense"}
+                <Button onClick={handleSubmit} className="w-full" disabled={createExpense.isPending || updateExpense.isPending}>
+                  {editId ? "Save Changes" : "Add Expense"}
                 </Button>
               </div>
             </DialogContent>
@@ -98,12 +129,12 @@ export default function ExpensesPage() {
                     <th className="text-left p-4 text-sm font-medium text-muted-foreground">Amount</th>
                     <th className="text-left p-4 text-sm font-medium text-muted-foreground">Date</th>
                     <th className="text-left p-4 text-sm font-medium text-muted-foreground">Type</th>
-                    <th className="p-4 w-10"></th>
+                    <th className="p-4 w-20"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {expenses.map((expense) => (
-                    <tr key={expense.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                    <tr key={expense.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors group">
                       <td className="p-4 text-sm font-medium text-foreground">{expense.category}</td>
                       <td className="p-4 text-sm font-semibold text-foreground">€{Number(expense.amount).toFixed(2)}</td>
                       <td className="p-4 text-sm text-muted-foreground">{expense.date}</td>
@@ -113,9 +144,14 @@ export default function ExpensesPage() {
                         </Badge>
                       </td>
                       <td className="p-4">
-                        <button onClick={() => deleteExpense.mutate(expense.id)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => openEdit(expense)} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                          <button onClick={() => setDeleteId(expense.id)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -125,6 +161,15 @@ export default function ExpensesPage() {
           </div>
         )}
       </div>
+
+      <ConfirmDeleteDialog
+        open={!!deleteId}
+        onOpenChange={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Delete expense?"
+        description="This will permanently remove this expense record."
+        loading={deleteExpense.isPending}
+      />
     </AppLayout>
   );
 }
