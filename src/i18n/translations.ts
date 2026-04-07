@@ -373,6 +373,7 @@ export const translations = {
   "recurring.endDate": { en: "End date (optional)", uk: "Дата закінчення (необов'язково)" },
   "recurring.ongoing": { en: "Ongoing", uk: "Безстроково" },
   "recurring.editScope": { en: "Edit recurring appointment", uk: "Редагувати повторюваний запис" },
+  "recurring.editScopeDesc": { en: "Choose which appointments to update. Completed appointments won't be changed.", uk: "Оберіть, які записи оновити. Завершені записи не будуть змінені." },
   "recurring.deleteScope": { en: "Delete recurring appointment", uk: "Видалити повторюваний запис" },
   "recurring.thisOnly": { en: "Only this appointment", uk: "Лише цей запис" },
   "recurring.thisAndFollowing": { en: "This and following", uk: "Цей та наступні" },
