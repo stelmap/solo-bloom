@@ -11,10 +11,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { Plus, Trash2, CalendarOff, Receipt, Pencil } from "lucide-react";
+import { Plus, Trash2, CalendarOff, Receipt, Pencil, Eye, EyeOff, Lock } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, "0")}:00`);
 
@@ -47,6 +48,11 @@ export default function SettingsPage() {
     full_name: "", business_name: "", phone: "", language: "en", reminder_minutes: 1440,
     work_hours_start: "09:00", work_hours_end: "18:00", time_format: "24h", default_duration: 60,
   });
+
+  // Password change state
+  const [passwordForm, setPasswordForm] = useState({ current: "", newPass: "", confirm: "" });
+  const [showPasswords, setShowPasswords] = useState({ current: false, newPass: false, confirm: false });
+  const [changingPassword, setChangingPassword] = useState(false);
 
   const [schedule, setSchedule] = useState(DEFAULT_SCHEDULE);
   const [dayOffOpen, setDayOffOpen] = useState(false);
@@ -96,6 +102,35 @@ export default function SettingsPage() {
       toast({ title: t("settings.saved") });
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (passwordForm.newPass.length < 6) {
+      toast({ title: t("common.error"), description: t("password.tooShort"), variant: "destructive" });
+      return;
+    }
+    if (passwordForm.newPass !== passwordForm.confirm) {
+      toast({ title: t("common.error"), description: t("password.mismatch"), variant: "destructive" });
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      // Verify current password by re-signing in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user?.email || "",
+        password: passwordForm.current,
+      });
+      if (signInError) throw new Error(t("common.error"));
+
+      const { error } = await supabase.auth.updateUser({ password: passwordForm.newPass });
+      if (error) throw error;
+      toast({ title: t("password.changed") });
+      setPasswordForm({ current: "", newPass: "", confirm: "" });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -185,6 +220,85 @@ export default function SettingsPage() {
             <div className="space-y-2"><Label>{t("common.email")}</Label><Input value={user?.email || ""} disabled /></div>
             <div className="space-y-2"><Label>{t("common.businessName")}</Label><Input value={form.business_name} onChange={e => setForm(f => ({ ...f, business_name: e.target.value }))} /></div>
             <div className="space-y-2"><Label>{t("common.phone")}</Label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Password Management */}
+        <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <Lock className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <h2 className="font-semibold text-foreground">{t("password.title")}</h2>
+              <p className="text-sm text-muted-foreground">{t("password.subtitle")}</p>
+            </div>
+          </div>
+          <div className="space-y-4 max-w-sm">
+            <div className="space-y-2">
+              <Label>{t("password.currentPassword")}</Label>
+              <div className="relative">
+                <Input
+                  type={showPasswords.current ? "text" : "password"}
+                  value={passwordForm.current}
+                  onChange={e => setPasswordForm(f => ({ ...f, current: e.target.value }))}
+                  placeholder="••••••••"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswords(s => ({ ...s, current: !s.current }))}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPasswords.current ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("password.newPassword")}</Label>
+              <div className="relative">
+                <Input
+                  type={showPasswords.newPass ? "text" : "password"}
+                  value={passwordForm.newPass}
+                  onChange={e => setPasswordForm(f => ({ ...f, newPass: e.target.value }))}
+                  placeholder="••••••••"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswords(s => ({ ...s, newPass: !s.newPass }))}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPasswords.newPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("password.confirmPassword")}</Label>
+              <div className="relative">
+                <Input
+                  type={showPasswords.confirm ? "text" : "password"}
+                  value={passwordForm.confirm}
+                  onChange={e => setPasswordForm(f => ({ ...f, confirm: e.target.value }))}
+                  placeholder="••••••••"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswords(s => ({ ...s, confirm: !s.confirm }))}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPasswords.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <Button
+              onClick={handleChangePassword}
+              disabled={changingPassword || !passwordForm.current || !passwordForm.newPass || !passwordForm.confirm}
+              variant="outline"
+            >
+              {changingPassword ? t("password.changing") : t("password.changePassword")}
+            </Button>
           </div>
         </div>
 
