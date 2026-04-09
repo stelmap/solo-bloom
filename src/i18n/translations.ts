@@ -556,6 +556,8 @@ export const translations = {
   "financial.expenseDetails": { en: "Expense Details", uk: "Деталі витрат" },
   "financial.recurring": { en: "Recurring", uk: "Щомісячна" },
   "financial.noData": { en: "No data for this month", uk: "Немає даних за цей місяць" },
+  "financial.confirmed": { en: "Confirmed", uk: "Підтверджений" },
+  "financial.expected": { en: "Expected", uk: "Очікуваний" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;

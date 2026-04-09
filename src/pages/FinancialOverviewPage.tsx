@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
-import { useIncome, useExpenses, useAppointments, useTaxSettings } from "@/hooks/useData";
+import { useIncome, useExpenses, useAppointments, useTaxSettings, useExpectedPayments } from "@/hooks/useData";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { format, startOfMonth, endOfMonth, eachMonthOfInterval, isBefore, isAfter, isSameMonth } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -20,6 +20,8 @@ interface MonthData {
   label: string;
   shortLabel: string;
   income: number;
+  confirmedIncome: number;
+  expectedIncome: number;
   expenses: number;
   taxes: number;
   net: number;
@@ -39,6 +41,7 @@ export default function FinancialOverviewPage() {
   const { data: allExpenses = [] } = useExpenses();
   const { data: allAppointments = [] } = useAppointments();
   const { data: taxSettings = [] } = useTaxSettings();
+  const { data: expectedPayments = [] } = useExpectedPayments();
 
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -65,9 +68,8 @@ export default function FinancialOverviewPage() {
     });
 
     // Recurring expenses monthly amount
-    const recurringMonthly = (allExpenses as any[])
-      .filter(e => e.is_recurring)
-      .reduce((s, e) => s + Number(e.amount), 0);
+    const recurringExpenses = (allExpenses as any[]).filter(e => e.is_recurring);
+    const recurringMonthly = recurringExpenses.reduce((s, e) => s + Number(e.amount), 0);
 
     return months.map((monthDate, idx) => {
       const isFuture = year > currentYear || (year === currentYear && idx > currentMonth);
@@ -76,12 +78,20 @@ export default function FinancialOverviewPage() {
       const mKey = format(monthDate, "yyyy-MM");
 
       if (isFuture) {
-        // Forecast: use scheduled appointments
+        // Forecast: use scheduled appointments for income
         const futureApts = (allAppointments as any[]).filter(a => {
           const d = new Date(a.scheduled_at);
           return d >= mStart && d <= mEnd && a.status !== "cancelled" && a.status !== "no-show";
         });
-        const predictedIncome = futureApts.reduce((s, a) => s + Number(a.price), 0);
+
+        // Split: completed+paid = confirmed, rest = expected
+        const confirmedApts = futureApts.filter(a => a.status === "completed" && (a.payment_status === "paid_now" || a.payment_status === "paid_in_advance"));
+        const expectedApts = futureApts.filter(a => !confirmedApts.includes(a));
+        const confirmedIncome = confirmedApts.reduce((s, a) => s + Number(a.price), 0);
+        const expectedIncome = expectedApts.reduce((s, a) => s + Number(a.price), 0);
+        const predictedIncome = confirmedIncome + expectedIncome;
+
+        // Recurring expenses projected into future month
         const predictedExpenses = recurringMonthly;
         const predictedTaxes = calcTaxes(predictedIncome);
 
@@ -90,25 +100,50 @@ export default function FinancialOverviewPage() {
           label: format(monthDate, "MMMM"),
           shortLabel: format(monthDate, "MMM"),
           income: predictedIncome,
+          confirmedIncome,
+          expectedIncome,
           expenses: predictedExpenses,
           taxes: predictedTaxes,
           net: predictedIncome - predictedTaxes - predictedExpenses,
           sessions: futureApts.length,
           isFuture: true,
-          incomeItems: futureApts.map(a => ({
-            description: `${(a.clients as any)?.name || "Client"} — ${(a.services as any)?.name || "Service"}`,
-            amount: Number(a.price),
-            date: format(new Date(a.scheduled_at), "MMM d"),
-            type: "forecast",
+          incomeItems: [
+            ...confirmedApts.map(a => ({
+              description: `${(a.clients as any)?.name || "Client"} — ${(a.services as any)?.name || "Service"}`,
+              amount: Number(a.price),
+              date: format(new Date(a.scheduled_at), "MMM d"),
+              type: "confirmed" as const,
+            })),
+            ...expectedApts.map(a => ({
+              description: `${(a.clients as any)?.name || "Client"} — ${(a.services as any)?.name || "Service"}`,
+              amount: Number(a.price),
+              date: format(new Date(a.scheduled_at), "MMM d"),
+              type: "expected" as const,
+            })),
+          ],
+          expenseItems: recurringExpenses.map((e: any) => ({
+            description: e.description || e.category,
+            amount: Number(e.amount),
+            date: "—",
+            category: e.category,
+            isRecurring: true,
           })),
-          expenseItems: [],
         };
       }
 
-      // Past/current: actual data
+      // Past/current: actual data only
       const monthIncome = (allIncome as any[]).filter(i => i.date?.startsWith(mKey));
       const monthExpenses = (allExpenses as any[]).filter(e => e.date?.startsWith(mKey));
       const totalIncome = monthIncome.reduce((s, i) => s + Number(i.amount), 0);
+
+      // Expected payments for this month (pending)
+      const monthExpected = (expectedPayments as any[]).filter(ep => {
+        const apt = ep.appointments as any;
+        if (!apt?.scheduled_at) return false;
+        return apt.scheduled_at.startsWith(mKey) && ep.status === "pending";
+      });
+      const expectedIncomeTotal = monthExpected.reduce((s, ep) => s + Number(ep.amount), 0);
+
       const totalExpenses = monthExpenses.reduce((s, e) => s + Number(e.amount), 0);
       const monthTaxes = calcTaxes(totalIncome);
       const monthSessions = (allAppointments as any[]).filter(a => {
@@ -121,6 +156,8 @@ export default function FinancialOverviewPage() {
         label: format(monthDate, "MMMM"),
         shortLabel: format(monthDate, "MMM"),
         income: totalIncome,
+        confirmedIncome: totalIncome,
+        expectedIncome: expectedIncomeTotal,
         expenses: totalExpenses,
         taxes: monthTaxes,
         net: totalIncome - monthTaxes - totalExpenses,
@@ -130,7 +167,7 @@ export default function FinancialOverviewPage() {
           description: i.description || (i.appointments?.clients?.name ? `${i.appointments.clients.name} — ${i.appointments.services?.name}` : "Manual"),
           amount: Number(i.amount),
           date: format(new Date(i.date), "MMM d"),
-          type: "actual",
+          type: "confirmed" as const,
         })),
         expenseItems: monthExpenses.map((e: any) => ({
           description: e.description || e.category,
@@ -141,7 +178,7 @@ export default function FinancialOverviewPage() {
         })),
       };
     });
-  }, [year, allIncome, allExpenses, allAppointments, activeTaxes, currentMonth, currentYear]);
+  }, [year, allIncome, allExpenses, allAppointments, activeTaxes, expectedPayments, currentMonth, currentYear]);
 
   // Yearly summaries
   const pastMonths = monthsData.filter(m => !m.isFuture && (m.income > 0 || m.expenses > 0));
@@ -267,7 +304,12 @@ export default function FinancialOverviewPage() {
               <div className="space-y-1 text-xs">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("financial.income")}</span>
-                  <span className="text-success font-medium">{fmt(m.income)}</span>
+                  <div className="text-right">
+                    <span className="text-success font-medium">{fmt(m.confirmedIncome)}</span>
+                    {m.expectedIncome > 0 && (
+                      <span className="text-muted-foreground ml-1">(+{fmt(m.expectedIncome)})</span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("financial.expenses")}</span>
@@ -313,8 +355,12 @@ export default function FinancialOverviewPage() {
                 {/* Summary */}
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="bg-success/10 rounded-lg p-3">
-                    <p className="text-muted-foreground text-xs">{t("financial.income")}</p>
-                    <p className="text-success font-bold text-lg">{fmt(drillMonth.income)}</p>
+                    <p className="text-muted-foreground text-xs">{t("financial.confirmed")}</p>
+                    <p className="text-success font-bold text-lg">{fmt(drillMonth.confirmedIncome)}</p>
+                  </div>
+                  <div className="bg-primary/10 rounded-lg p-3">
+                    <p className="text-muted-foreground text-xs">{t("financial.expected")}</p>
+                    <p className="text-primary font-bold text-lg">{fmt(drillMonth.expectedIncome)}</p>
                   </div>
                   <div className="bg-destructive/10 rounded-lg p-3">
                     <p className="text-muted-foreground text-xs">{t("financial.expenses")}</p>
@@ -324,7 +370,7 @@ export default function FinancialOverviewPage() {
                     <p className="text-muted-foreground text-xs">{t("financial.taxes")}</p>
                     <p className="text-warning font-bold text-lg">{fmt(drillMonth.taxes)}</p>
                   </div>
-                  <div className={cn("rounded-lg p-3", drillMonth.net >= 0 ? "bg-success/10" : "bg-destructive/10")}>
+                  <div className={cn("rounded-lg p-3 col-span-2", drillMonth.net >= 0 ? "bg-success/10" : "bg-destructive/10")}>
                     <p className="text-muted-foreground text-xs">{t("financial.netResult")}</p>
                     <p className={cn("font-bold text-lg", drillMonth.net >= 0 ? "text-success" : "text-destructive")}>
                       {drillMonth.net < 0 ? "-" : ""}{fmt(drillMonth.net)}
@@ -358,12 +404,16 @@ export default function FinancialOverviewPage() {
                     </h3>
                     <div className="space-y-1 max-h-40 overflow-y-auto">
                       {drillMonth.incomeItems.map((item, i) => (
-                        <div key={i} className="flex justify-between text-sm bg-muted/50 rounded-lg px-3 py-2">
-                          <div>
+                        <div key={i} className={cn(
+                          "flex justify-between text-sm rounded-lg px-3 py-2",
+                          item.type === "expected" ? "bg-primary/5 border border-dashed border-primary/20" : "bg-muted/50"
+                        )}>
+                          <div className="flex items-center gap-2">
                             <span className="text-foreground">{item.description}</span>
-                            <span className="text-muted-foreground text-xs ml-2">{item.date}</span>
+                            <span className="text-muted-foreground text-xs">{item.date}</span>
+                            {item.type === "expected" && <Badge variant="outline" className="text-[9px] border-dashed">{t("financial.expected")}</Badge>}
                           </div>
-                          <span className="text-success font-medium">{fmt(item.amount)}</span>
+                          <span className={cn("font-medium", item.type === "expected" ? "text-primary" : "text-success")}>{fmt(item.amount)}</span>
                         </div>
                       ))}
                     </div>
