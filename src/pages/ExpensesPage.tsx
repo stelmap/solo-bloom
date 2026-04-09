@@ -247,7 +247,7 @@ export default function ExpensesPage() {
             </div>
             {totalPages > 1 && (
               <div className="flex items-center justify-between p-4 border-t border-border">
-                <p className="text-sm text-muted-foreground">{t("common.showing")} {page * pageSize + 1}–{Math.min((page + 1) * pageSize, totalCount)} {t("common.of")} {totalCount}</p>
+                <p className="text-sm text-muted-foreground">{page * pageSize + 1}–{Math.min((page + 1) * pageSize, totalCount)} / {totalCount}</p>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
                     <ChevronLeft className="h-4 w-4" />
