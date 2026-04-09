@@ -13,6 +13,36 @@ import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 
+const ClientCard = memo(({ client, onNavigate, onDelete, t }: {
+  client: any; onNavigate: (id: string) => void; onDelete: (id: string) => void; t: any;
+}) => (
+  <div
+    onClick={() => onNavigate(client.id)}
+    className="bg-card rounded-xl border border-border p-5 animate-fade-in group relative cursor-pointer hover:border-primary/30 hover:shadow-md transition-all"
+  >
+    <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+      <button onClick={(e) => { e.stopPropagation(); onDelete(client.id); }} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
+        <Trash2 className="h-3.5 w-3.5" />
+      </button>
+    </div>
+    <div className="flex items-start gap-3 mb-3">
+      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
+        {client.name.split(" ").map((n: string) => n[0]).join("").toUpperCase()}
+      </div>
+      <div className="min-w-0">
+        <h3 className="font-semibold text-foreground truncate">{client.name}</h3>
+      </div>
+    </div>
+    <div className="space-y-1.5 text-sm">
+      {client.phone && <div className="flex items-center gap-2 text-muted-foreground"><Phone className="h-3.5 w-3.5" /><span className="truncate">{client.phone}</span></div>}
+      {client.email && <div className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" /><span className="truncate">{client.email}</span></div>}
+      {client.telegram && <div className="flex items-center gap-2 text-muted-foreground"><Send className="h-3.5 w-3.5" /><span className="truncate">@{client.telegram}</span></div>}
+    </div>
+    {client.notes && <p className="mt-3 text-xs text-muted-foreground bg-muted/50 rounded-md p-2 line-clamp-2">📝 {client.notes}</p>}
+  </div>
+));
+ClientCard.displayName = "ClientCard";
+
 export default function ClientsPage() {
   const { data: clients = [], isLoading } = useClients();
   const createClient = useCreateClient();
