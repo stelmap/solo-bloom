@@ -6,25 +6,38 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { lazy, Suspense } from "react";
+
+// Eagerly loaded (landing + auth — needed immediately)
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import Dashboard from "./pages/Dashboard";
-import CalendarPage from "./pages/CalendarPage";
-import ClientsPage from "./pages/ClientsPage";
-import ClientDetailPage from "./pages/ClientDetailPage";
-import ServicesPage from "./pages/ServicesPage";
-import IncomePage from "./pages/IncomePage";
-import ExpensesPage from "./pages/ExpensesPage";
-import BreakevenPage from "./pages/BreakevenPage";
-import FinancialOverviewPage from "./pages/FinancialOverviewPage";
-import SettingsPage from "./pages/SettingsPage";
-import OnboardingPage from "./pages/OnboardingPage";
-import PrivacyPage from "./pages/PrivacyPage";
-import TermsPage from "./pages/TermsPage";
 import NotFound from "./pages/NotFound";
 
+// Lazy loaded (behind auth or rarely visited)
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const CalendarPage = lazy(() => import("./pages/CalendarPage"));
+const ClientsPage = lazy(() => import("./pages/ClientsPage"));
+const ClientDetailPage = lazy(() => import("./pages/ClientDetailPage"));
+const ServicesPage = lazy(() => import("./pages/ServicesPage"));
+const IncomePage = lazy(() => import("./pages/IncomePage"));
+const ExpensesPage = lazy(() => import("./pages/ExpensesPage"));
+const BreakevenPage = lazy(() => import("./pages/BreakevenPage"));
+const FinancialOverviewPage = lazy(() => import("./pages/FinancialOverviewPage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
+const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
+const TermsPage = lazy(() => import("./pages/TermsPage"));
+
 const queryClient = new QueryClient();
+
+function PageFallback() {
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <div className="animate-pulse text-muted-foreground text-sm">Loading…</div>
+    </div>
+  );
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -34,25 +47,27 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
-              <Route path="/onboarding" element={<OnboardingPage />} />
-              <Route path="/privacy" element={<PrivacyPage />} />
-              <Route path="/terms" element={<TermsPage />} />
-              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
-              <Route path="/clients" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
-              <Route path="/clients/:id" element={<ProtectedRoute><ClientDetailPage /></ProtectedRoute>} />
-              <Route path="/services" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
-              <Route path="/income" element={<ProtectedRoute><IncomePage /></ProtectedRoute>} />
-              <Route path="/expenses" element={<ProtectedRoute><ExpensesPage /></ProtectedRoute>} />
-              <Route path="/breakeven" element={<ProtectedRoute><BreakevenPage /></ProtectedRoute>} />
-              <Route path="/financial" element={<ProtectedRoute><FinancialOverviewPage /></ProtectedRoute>} />
-              <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <Suspense fallback={<PageFallback />}>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/onboarding" element={<OnboardingPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
+                <Route path="/clients" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
+                <Route path="/clients/:id" element={<ProtectedRoute><ClientDetailPage /></ProtectedRoute>} />
+                <Route path="/services" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
+                <Route path="/income" element={<ProtectedRoute><IncomePage /></ProtectedRoute>} />
+                <Route path="/expenses" element={<ProtectedRoute><ExpensesPage /></ProtectedRoute>} />
+                <Route path="/breakeven" element={<ProtectedRoute><BreakevenPage /></ProtectedRoute>} />
+                <Route path="/financial" element={<ProtectedRoute><FinancialOverviewPage /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
           </BrowserRouter>
         </TooltipProvider>
       </LanguageProvider>
