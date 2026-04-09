@@ -271,7 +271,7 @@ export function useCreateAppointment() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -286,7 +286,7 @@ export function useUpdateAppointment() {
       const { error } = await supabase.from("appointments").update(updates as any).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -299,7 +299,7 @@ export function useDeleteAppointment() {
       const { error } = await supabase.from("appointments").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -337,7 +337,7 @@ export function useCompleteAppointment() {
         if (epErr) throw epErr;
       }
     },
-    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -351,7 +351,7 @@ export function useCancelAppointment() {
       const { error } = await supabase.from("appointments").update({ status, payment_status: "not_applicable" } as any).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -396,7 +396,7 @@ export function useMarkExpectedPaymentPaid() {
       } as any);
       if (incErr) throw incErr;
     },
-    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -721,7 +721,7 @@ export function useCreateRecurringRule() {
       }
       return { rule: ruleData, count: appointments.length };
     },
-    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); qc.invalidateQueries({ queryKey: ["recurring-rules"] }); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL, "recurring-rules"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -755,7 +755,7 @@ export function useEditRecurringAppointments() {
         }
       }
     },
-    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -789,7 +789,7 @@ export function useDeleteRecurringAppointments() {
         }
       }
     },
-    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); qc.invalidateQueries({ queryKey: ["recurring-rules"] }); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL, "recurring-rules"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
