@@ -96,8 +96,8 @@ serve(async (req) => {
       logStep("No Stripe customer found");
       const result = { subscribed: false, on_trial: false, subscription_end: null, trial_end: null, price_id: null, cancel_at_period_end: false };
       // Update cache
-      await supabaseClient.from("subscription_cache").upsert({
-        user_id: user.id,
+      await supabaseAdmin.from("subscription_cache").upsert({
+        user_id: userId,
         ...result,
         checked_at: new Date().toISOString(),
       }, { onConflict: "user_id" });
