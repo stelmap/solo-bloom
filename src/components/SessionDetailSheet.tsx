@@ -108,7 +108,14 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const statusInfo = STATUSES[apt.status] || STATUSES.scheduled;
   const payInfo = PAYMENT_STATUS_STYLES[apt.payment_status] || PAYMENT_STATUS_STYLES.unpaid;
   const fmtTime = (dateStr: string) => formatTime(format(new Date(dateStr), "HH:mm"), use12h);
-  const isActive = apt.status === "scheduled" || apt.status === "confirmed";
+  const isActive = apt.status === "scheduled" || apt.status === "confirmed" || apt.status === "reminder_sent";
+
+  const CONFIRMATION_STYLES: Record<string, { label: string; color: string }> = {
+    pending: { label: t("confirmation.pending"), color: "text-warning" },
+    confirmed: { label: t("confirmation.confirmed"), color: "text-success" },
+    not_required: { label: t("confirmation.notRequired"), color: "text-muted-foreground" },
+  };
+  const confirmInfo = CONFIRMATION_STYLES[apt.confirmation_status] || CONFIRMATION_STYLES.not_required;
 
   const handleSaveNotes = async () => {
     try {
