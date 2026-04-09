@@ -44,6 +44,7 @@ export default function CalendarPage() {
   const createRecurringRule = useCreateRecurringRule();
   const createDayOff = useCreateDayOff();
   const deleteDayOff = useDeleteDayOff();
+  const bulkCancel = useBulkCancelForDayOff();
   const { toast } = useToast();
   const { t } = useLanguage();
   const { symbol: cs } = useCurrency();
