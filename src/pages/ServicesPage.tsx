@@ -63,7 +63,7 @@ export default function ServicesPage() {
     }
   };
 
-  const colors = ["bg-primary/10 border-primary/20", "bg-secondary/50 border-secondary"];
+  
 
   return (
     <AppLayout>
@@ -97,8 +97,8 @@ export default function ServicesPage() {
           <p className="text-muted-foreground text-center py-8">{t("services.noServices")}</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {services.map((service, i) => (
-              <div key={service.id} className={`rounded-xl border p-5 animate-fade-in group relative ${colors[i % 2]}`}>
+            {services.map((service) => (
+              <div key={service.id} className="bg-card rounded-xl border border-border p-5 animate-fade-in group relative cursor-default hover:border-primary/30 hover:shadow-md transition-all">
                 <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button onClick={() => openEdit(service)} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
                     <Pencil className="h-3.5 w-3.5" />
