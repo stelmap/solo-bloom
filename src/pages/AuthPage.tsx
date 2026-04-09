@@ -41,7 +41,34 @@ export default function AuthPage() {
     );
   }
 
-  if (user) {
+  // If user is already logged in and a plan was selected, auto-start checkout
+  useEffect(() => {
+    if (user && planParam && PLAN_PRICE_MAP[planParam] && !checkoutTriggeredRef.current) {
+      checkoutTriggeredRef.current = true;
+      const startCheckout = async () => {
+        try {
+          const { data, error } = await supabase.functions.invoke("create-checkout", {
+            body: { priceId: PLAN_PRICE_MAP[planParam] },
+          });
+          if (error) throw error;
+          if (data?.url) {
+            window.open(data.url, "_blank");
+          }
+        } catch (err: any) {
+          toast({ title: "Error", description: err.message || "Failed to start checkout", variant: "destructive" });
+        }
+        navigate("/dashboard", { replace: true });
+      };
+      startCheckout();
+      return null as any;
+    }
+  }, [user, planParam, navigate, toast]);
+
+  if (user && !planParam) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (user && planParam && checkoutTriggeredRef.current) {
     return <Navigate to="/dashboard" replace />;
   }
 
