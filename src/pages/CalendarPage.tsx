@@ -202,15 +202,11 @@ export default function CalendarPage() {
     }
   };
 
-  const getEventsForDayHour = (day: Date, hour: number) => {
-    const result = appointments.filter(apt => { const d = new Date(apt.scheduled_at); return isSameDay(d, day) && d.getHours() === hour; });
-    if (result.length > 0) console.log("DEBUG_EVENTS:", format(day, "yyyy-MM-dd"), hour, result.length);
-    return result;
-  };
-  if (appointments.length > 0 && days.length > 0) {
-    const sample = new Date(appointments[0].scheduled_at);
-    console.log("DEBUG_APPT_SAMPLE:", appointments[0].scheduled_at, "hours:", sample.getHours(), "day:", format(sample, "yyyy-MM-dd"), "gridDays:", days.map(d => format(d, "yyyy-MM-dd")));
-  }
+  const getEventsForDayHour = (day: Date, hour: number) =>
+    appointments.filter(apt => {
+      const d = new Date(apt.scheduled_at);
+      return isSameDay(d, day) && d.getUTCHours() === hour;
+    });
 
   const STATUS_MAP: Record<string, { label: string; color: string }> = {
     scheduled: { label: t("status.scheduled"), color: "bg-muted text-muted-foreground" },
