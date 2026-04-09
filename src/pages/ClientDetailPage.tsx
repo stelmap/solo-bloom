@@ -132,9 +132,10 @@ export default function ClientDetailPage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const getFileUrl = (path: string) => {
-    const { data } = supabase.storage.from("client-attachments").getPublicUrl(path);
-    return data.publicUrl;
+  const getSignedUrl = async (path: string) => {
+    const { data, error } = await supabase.storage.from("client-attachments").createSignedUrl(path, 3600);
+    if (error || !data?.signedUrl) return "";
+    return data.signedUrl;
   };
 
   const statusBadge = (status: string) => {
