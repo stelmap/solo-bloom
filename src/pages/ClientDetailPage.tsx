@@ -46,7 +46,7 @@ export default function ClientDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "" });
+  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "", notification_preference: "no_reminder", confirmation_required: false });
   const [sessionApt, setSessionApt] = useState<any>(null);
   const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
   const use12h = (profile as any)?.time_format === "12h";
@@ -84,6 +84,8 @@ export default function ClientDetailPage() {
     setEditForm({
       name: client.name, phone: client.phone || "", email: client.email || "",
       notes: client.notes || "", telegram: (client as any).telegram || "",
+      notification_preference: (client as any).notification_preference || "no_reminder",
+      confirmation_required: (client as any).confirmation_required || false,
     });
     setEditOpen(true);
   };
