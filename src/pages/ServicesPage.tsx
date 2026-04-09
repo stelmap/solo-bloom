@@ -63,7 +63,7 @@ export default function ServicesPage() {
     }
   };
 
-  const colors = ["bg-primary/10 border-primary/20", "bg-secondary/50 border-secondary"];
+  
 
   return (
     <AppLayout>
