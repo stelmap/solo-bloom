@@ -544,16 +544,7 @@ export default function SettingsPage() {
 
         <Separator />
 
-        <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
-          <h2 className="font-semibold text-foreground">{t("settings.subscription")}</h2>
-          <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-            <div>
-              <p className="font-medium text-foreground">Pro Plan — €20/month</p>
-              <p className="text-sm text-muted-foreground">{t("settings.comingSoon")}</p>
-            </div>
-            <Button variant="outline">{t("settings.manageBilling")}</Button>
-          </div>
-        </div>
+        <SubscriptionSection />
       </div>
     </AppLayout>
   );
