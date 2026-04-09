@@ -14,4 +14,4 @@ project_id = "rxculneqqaziutulnocs"
   [functions.handle-email-suppression]
     verify_jwt = false
   [functions.send-session-reminders]
-    verify_jwt = true
+    verify_jwt = false
