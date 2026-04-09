@@ -8,6 +8,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
@@ -40,70 +42,100 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { email: user.email });
 
+    // Check for force refresh param
+    let forceRefresh = false;
+    try {
+      const body = await req.clone().json();
+      forceRefresh = body?.force === true;
+    } catch {
+      // No body or not JSON — that's fine
+    }
+
+    // Check cache first
+    if (!forceRefresh) {
+      const { data: cached } = await supabaseClient
+        .from("subscription_cache")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+      if (cached) {
+        const cacheAge = Date.now() - new Date(cached.checked_at).getTime();
+        if (cacheAge < CACHE_TTL_MS) {
+          logStep("Returning cached result", { cacheAgeMs: cacheAge });
+          return new Response(
+            JSON.stringify({
+              subscribed: cached.subscribed,
+              on_trial: cached.on_trial,
+              subscription_end: cached.subscription_end,
+              trial_end: cached.trial_end,
+              price_id: cached.price_id,
+              cancel_at_period_end: cached.cancel_at_period_end,
+            }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+          );
+        }
+      }
+    }
+
+    // Cache miss or stale — query Stripe
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
     if (customers.data.length === 0) {
       logStep("No Stripe customer found");
-      return new Response(
-        JSON.stringify({ subscribed: false, on_trial: false }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-      );
+      const result = { subscribed: false, on_trial: false, subscription_end: null, trial_end: null, price_id: null, cancel_at_period_end: false };
+      // Update cache
+      await supabaseClient.from("subscription_cache").upsert({
+        user_id: user.id,
+        ...result,
+        checked_at: new Date().toISOString(),
+      }, { onConflict: "user_id" });
+
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+      });
     }
 
     const customerId = customers.data[0].id;
     logStep("Found customer", { customerId });
 
-    // Check active subs
-    const activeSubs = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 1,
-    });
-
-    // Also check trialing subs
-    const trialingSubs = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "trialing",
-      limit: 1,
-    });
-
+    const activeSubs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
+    const trialingSubs = await stripe.subscriptions.list({ customer: customerId, status: "trialing", limit: 1 });
     const subscription = activeSubs.data[0] || trialingSubs.data[0];
 
+    let result;
     if (!subscription) {
       logStep("No active or trialing subscription");
-      return new Response(
-        JSON.stringify({ subscribed: false, on_trial: false }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-      );
-    }
+      result = { subscribed: false, on_trial: false, subscription_end: null, trial_end: null, price_id: null, cancel_at_period_end: false };
+    } else {
+      const onTrial = subscription.status === "trialing";
+      const subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      const trialEnd = subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null;
+      const priceId = subscription.items.data[0]?.price?.id || null;
 
-    const onTrial = subscription.status === "trialing";
-    const subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-    const trialEnd = subscription.trial_end
-      ? new Date(subscription.trial_end * 1000).toISOString()
-      : null;
-    const priceId = subscription.items.data[0]?.price?.id || null;
+      logStep("Subscription found", { status: subscription.status, onTrial, subscriptionEnd, trialEnd, priceId });
 
-    logStep("Subscription found", {
-      status: subscription.status,
-      onTrial,
-      subscriptionEnd,
-      trialEnd,
-      priceId,
-    });
-
-    return new Response(
-      JSON.stringify({
+      result = {
         subscribed: true,
         on_trial: onTrial,
         subscription_end: subscriptionEnd,
         trial_end: trialEnd,
         price_id: priceId,
         cancel_at_period_end: subscription.cancel_at_period_end,
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-    );
+      };
+    }
+
+    // Update cache
+    await supabaseClient.from("subscription_cache").upsert({
+      user_id: user.id,
+      ...result,
+      checked_at: new Date().toISOString(),
+    }, { onConflict: "user_id" });
+
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message });

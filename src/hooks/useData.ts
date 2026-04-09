@@ -3,7 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateCapacity } from "@/lib/capacity";
 
-const INVALIDATE_ALL = ["clients", "services", "appointments", "expenses", "income", "dashboard-stats", "expected-payments", "working-schedule", "days-off", "recurring-rules", "tax-settings"];
+const INVALIDATE_APPOINTMENTS = ["appointments", "dashboard-stats", "client-appointments"];
+const INVALIDATE_FINANCIAL = ["income", "expenses", "expected-payments", "dashboard-stats"];
+
+// Stale times to avoid redundant refetches on navigation
+const STALE_SHORT = 30_000;  // 30s for dashboard/frequently changing data
+const STALE_MEDIUM = 60_000; // 1min for lists
+const STALE_LONG = 300_000;  // 5min for rarely changing config
 
 // Clients
 export function useClients() {
