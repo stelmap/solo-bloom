@@ -78,7 +78,7 @@ export default function AuthPage() {
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate("/dashboard");
+        // Navigation handled by useEffect (auto-checkout if plan param) or Navigate component
       } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email,
