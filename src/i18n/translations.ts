@@ -287,7 +287,7 @@ export const translations = {
   "onboarding.welcome": { en: "Welcome", uk: "Вітаємо" },
   "onboarding.schedule": { en: "Schedule", uk: "Розклад" },
   "onboarding.insight": { en: "Insight", uk: "Інсайт" },
-  "onboarding.welcomeTitle": { en: "Welcome to SoloPro! 👋", uk: "Ласкаво просимо до SoloPro! 👋" },
+  "onboarding.welcomeTitle": { en: "Welcome to Solo.Biz! 👋", uk: "Ласкаво просимо до Solo.Biz! 👋" },
   "onboarding.welcomeText": { en: "Let's set up your business in <strong>2 minutes</strong>. We'll help you understand how much you need to earn to cover your costs.", uk: "Налаштуймо ваш бізнес за <strong>2 хвилини</strong>. Ми допоможемо зрозуміти, скільки потрібно заробляти для покриття витрат." },
   "onboarding.addServices": { en: "Add services", uk: "Додати послуги" },
   "onboarding.setExpenses": { en: "Set expenses", uk: "Встановити витрати" },
