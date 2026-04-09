@@ -344,6 +344,30 @@ export default function ClientDetailPage() {
             <div className="space-y-2"><Label>{t("common.email")}</Label><Input type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} /></div>
             <div className="space-y-2"><Label>{t("common.telegram")}</Label><Input placeholder="username" value={editForm.telegram} onChange={e => setEditForm(f => ({ ...f, telegram: e.target.value }))} /></div>
             <div className="space-y-2"><Label>{t("common.generalNotes")}</Label><Textarea value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} /></div>
+            
+            <div className="border-t border-border pt-4 space-y-4">
+              <h4 className="text-sm font-medium flex items-center gap-2"><Bell className="h-4 w-4" /> {t("notification.title")}</h4>
+              <div className="space-y-2">
+                <Label>{t("notification.channel")}</Label>
+                <Select value={editForm.notification_preference} onValueChange={v => setEditForm(f => ({ ...f, notification_preference: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="no_reminder">{t("notification.noReminder")}</SelectItem>
+                    <SelectItem value="email_only">{t("notification.emailOnly")}</SelectItem>
+                    <SelectItem value="telegram_only">{t("notification.telegramOnly")}</SelectItem>
+                    <SelectItem value="email_and_telegram">{t("notification.emailAndTelegram")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>{t("notification.confirmationRequired")}</Label>
+                  <p className="text-xs text-muted-foreground">{t("notification.confirmationRequiredDesc")}</p>
+                </div>
+                <Switch checked={editForm.confirmation_required} onCheckedChange={v => setEditForm(f => ({ ...f, confirmation_required: v }))} />
+              </div>
+            </div>
+
             <Button onClick={handleSaveEdit} className="w-full" disabled={updateClient.isPending}>
               {updateClient.isPending ? t("common.saving") : t("common.save")}
             </Button>
