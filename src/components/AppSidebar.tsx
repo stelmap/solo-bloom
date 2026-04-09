@@ -51,7 +51,7 @@ export function AppSidebar() {
       )}>
         <div className="p-6 border-b border-sidebar-border">
           <h1 className="text-xl font-bold text-sidebar-foreground tracking-tight">
-            Solo<span className="text-sidebar-primary">.Biz</span>
+            Solo<span className="text-sidebar-primary">.Bizz</span>
           </h1>
           <p className="text-xs text-sidebar-foreground/50 mt-0.5">Business Manager</p>
         </div>
