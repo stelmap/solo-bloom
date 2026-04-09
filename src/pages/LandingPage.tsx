@@ -7,6 +7,12 @@ import {
   CheckCircle2, ArrowRight, MessageSquareQuote, Zap,
   ChevronRight, BarChart3,
 } from "lucide-react";
+import featureDashboard from "@/assets/feature-dashboard.jpg";
+import featureClients from "@/assets/feature-clients.jpg";
+import featureCalendar from "@/assets/feature-calendar.jpg";
+import featureFinance from "@/assets/feature-finance.jpg";
+import featureInsights from "@/assets/feature-insights.jpg";
+import featureReports from "@/assets/feature-reports.jpg";
 
 // ── Lightweight i18n for the public landing page ──────────────────────
 
