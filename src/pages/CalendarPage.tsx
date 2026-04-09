@@ -556,14 +556,29 @@ export default function CalendarPage() {
                   const working = isHourWorking(day, hour);
                   const dayOff = isDayOff(day);
                   return (
-                    <div key={dayIdx} className={cn(
-                      "relative border-l border-b border-border min-h-[60px] transition-colors cursor-pointer",
-                      dayOff ? "bg-destructive/5 cursor-not-allowed" : !working ? "bg-muted/20" : "hover:bg-muted/30",
-                    )}>
+                    <div key={dayIdx}
+                      onClick={() => {
+                        if (dayOff || !working) return;
+                        if (events.length > 0) return; // don't open create if slot has events
+                        const dateStr = format(day, "yyyy-MM-dd");
+                        const timeStr = `${hour.toString().padStart(2, "0")}:00`;
+                        setForm(f => ({ ...f, date: dateStr, time: timeStr }));
+                        setCreateOpen(true);
+                      }}
+                      className={cn(
+                        "relative border-l border-b border-border min-h-[60px] transition-colors",
+                        dayOff ? "bg-destructive/5 cursor-not-allowed" : !working ? "bg-muted/20 cursor-not-allowed" : events.length === 0 ? "hover:bg-primary/5 cursor-pointer group/slot" : "",
+                      )}>
+                      {/* Click-to-create hint for empty working slots */}
+                      {events.length === 0 && working && !dayOff && (
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/slot:opacity-100 transition-opacity pointer-events-none">
+                          <Plus className="h-4 w-4 text-primary/40" />
+                        </div>
+                      )}
                       {events.map((evt) => {
                         const si = statusInfo(evt.status);
                         return (
-                          <div key={evt.id} onClick={() => setDetailApt(evt)}
+                          <div key={evt.id} onClick={(e) => { e.stopPropagation(); setDetailApt(evt); }}
                             className={cn("absolute inset-x-1 top-1 rounded-md border p-2 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10", si.color)}
                             style={{ height: `${(evt.duration_minutes / 60) * 60 - 8}px` }}>
                             <p className="text-xs font-semibold truncate">{(evt as any).clients?.name}</p>
