@@ -11,8 +11,9 @@ import {
   useAppointments, useCreateAppointment,
   useClients, useServices, useProfile, useCreateRecurringRule,
   useWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff,
+  useBulkCancelForDayOff,
 } from "@/hooks/useData";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
