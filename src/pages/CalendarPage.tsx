@@ -103,7 +103,7 @@ export default function CalendarPage() {
   };
 
   const hasConflict = (date: string, time: string, durationMinutes: number, excludeId?: string) => {
-    const newStart = new Date(`${date}T${time}:00`).getTime();
+    const newStart = new Date(`${date}T${time}:00Z`).getTime();
     const newEnd = newStart + durationMinutes * 60 * 1000;
     return appointments.some(apt => {
       if (excludeId && apt.id === excludeId) return false;
@@ -202,8 +202,16 @@ export default function CalendarPage() {
     }
   };
 
+  const isSameUTCDay = (a: Date, b: Date) =>
+    a.getUTCFullYear() === b.getUTCFullYear() &&
+    a.getUTCMonth() === b.getUTCMonth() &&
+    a.getUTCDate() === b.getUTCDate();
+
   const getEventsForDayHour = (day: Date, hour: number) =>
-    appointments.filter(apt => { const d = new Date(apt.scheduled_at); return isSameDay(d, day) && d.getHours() === hour; });
+    appointments.filter(apt => {
+      const d = new Date(apt.scheduled_at);
+      return isSameUTCDay(d, day) && d.getUTCHours() === hour;
+    });
 
   const STATUS_MAP: Record<string, { label: string; color: string }> = {
     scheduled: { label: t("status.scheduled"), color: "bg-muted text-muted-foreground" },
@@ -217,7 +225,9 @@ export default function CalendarPage() {
   const fmtHour = (hour: number) => formatTime(`${hour.toString().padStart(2, "0")}:00`, use12h);
   const fmtTime = (dateStr: string) => {
     const d = new Date(dateStr);
-    return formatTime(format(d, "HH:mm"), use12h);
+    const hh = d.getUTCHours().toString().padStart(2, "0");
+    const mm = d.getUTCMinutes().toString().padStart(2, "0");
+    return formatTime(`${hh}:${mm}`, use12h);
   };
 
   // Weekly capacity calculations
@@ -229,7 +239,7 @@ export default function CalendarPage() {
       const slots = working ? sessionsPerDay : 0;
       totalSlots += slots;
       const booked = appointments.filter(apt =>
-        isSameDay(new Date(apt.scheduled_at), day) && apt.status !== "cancelled"
+        isSameUTCDay(new Date(apt.scheduled_at), day) && apt.status !== "cancelled"
       ).length;
       return { day, working, slots, booked, free: Math.max(slots - booked, 0) };
     });
