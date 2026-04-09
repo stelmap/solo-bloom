@@ -10,7 +10,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { TranslationKey } from "@/i18n/translations";
 
 const navItems: { icon: any; labelKey: TranslationKey; path: string }[] = [
-  { icon: LayoutDashboard, labelKey: "nav.dashboard", path: "/" },
+  { icon: LayoutDashboard, labelKey: "nav.dashboard", path: "/dashboard" },
   { icon: Calendar, labelKey: "nav.calendar", path: "/calendar" },
   { icon: Users, labelKey: "nav.clients", path: "/clients" },
   { icon: Scissors, labelKey: "nav.services", path: "/services" },
@@ -51,7 +51,7 @@ export function AppSidebar() {
       )}>
         <div className="p-6 border-b border-sidebar-border">
           <h1 className="text-xl font-bold text-sidebar-foreground tracking-tight">
-            Solo<span className="text-sidebar-primary">.Bizz</span>
+            Solo<span className="text-sidebar-primary">Bizz</span>
           </h1>
           <p className="text-xs text-sidebar-foreground/50 mt-0.5">Business Manager</p>
         </div>
