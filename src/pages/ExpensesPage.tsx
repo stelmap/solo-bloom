@@ -245,7 +245,6 @@ export default function ExpensesPage() {
                 </tbody>
               </table>
             </div>
-            </div>
             {totalPages > 1 && (
               <div className="flex items-center justify-between p-4 border-t border-border">
                 <p className="text-sm text-muted-foreground">{t("common.showing")} {page * pageSize + 1}–{Math.min((page + 1) * pageSize, totalCount)} {t("common.of")} {totalCount}</p>
