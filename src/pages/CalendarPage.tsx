@@ -443,7 +443,7 @@ export default function CalendarPage() {
                       {events.map((evt) => {
                         const si = statusInfo(evt.status);
                         return (
-                          <div key={evt.id} onClick={(e) => { e.stopPropagation(); setDetailApt(evt); }}
+                          <div key={evt.id} onClick={(e) => { e.stopPropagation(); openSessionSheet(evt); }}
                             className={cn("absolute inset-x-1 top-1 rounded-md border p-2 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10", si.color)}
                             style={{ height: `${(evt.duration_minutes / 60) * 60 - 8}px` }}>
                             <p className="text-xs font-semibold truncate">{(evt as any).clients?.name}</p>
