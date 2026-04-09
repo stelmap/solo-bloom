@@ -297,6 +297,24 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   <span className="text-muted-foreground">{t("common.payment")}</span>
                   <span className={cn("font-medium", payInfo.color)}>{payInfo.label}</span>
                 </div>
+                {apt.confirmation_status && apt.confirmation_status !== "not_required" && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{t("confirmation.status")}</span>
+                    <span className={cn("font-medium", confirmInfo.color)}>{confirmInfo.label}</span>
+                  </div>
+                )}
+                {apt.confirmation_timestamp && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{t("confirmation.timestamp")}</span>
+                    <span className="font-medium text-foreground">{format(new Date(apt.confirmation_timestamp), "MMM d, HH:mm")}</span>
+                  </div>
+                )}
+                {apt.cancellation_reason && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{t("calendar.cancel")}</span>
+                    <span className="font-medium text-destructive text-xs text-right max-w-[60%]">{apt.cancellation_reason}</span>
+                  </div>
+                )}
               </div>
 
               {/* Session notes */}
