@@ -310,9 +310,9 @@ function PricingSection() {
   const { t } = useLandingLang();
 
   const PLANS = [
-    { name: t("landing.pricing.monthly"), price: "20€", period: t("landing.pricing.perMonth"), savings: null, popular: false },
-    { name: t("landing.pricing.quarterly"), price: "50€", period: t("landing.pricing.per3Months"), savings: t("landing.pricing.save17"), popular: true },
-    { name: t("landing.pricing.yearly"), price: "200€", period: t("landing.pricing.perYear"), savings: t("landing.pricing.save17"), popular: false },
+    { name: t("landing.pricing.monthly"), price: "20€", period: t("landing.pricing.perMonth"), savings: null, popular: false, planId: "monthly" },
+    { name: t("landing.pricing.quarterly"), price: "50€", period: t("landing.pricing.per3Months"), savings: t("landing.pricing.save17"), popular: true, planId: "quarterly" },
+    { name: t("landing.pricing.yearly"), price: "200€", period: t("landing.pricing.perYear"), savings: t("landing.pricing.save17"), popular: false, planId: "yearly" },
   ];
 
   const PLAN_FEATURES: TranslationKey[] = [
@@ -361,7 +361,7 @@ function PricingSection() {
                   </li>
                 ))}
               </ul>
-              <Link to="/auth">
+              <Link to={`/auth?plan=${plan.planId}`}>
                 <Button className={`w-full h-11 text-base gap-2`} variant={plan.popular ? "default" : "outline"}>
                   {t("landing.hero.cta")} <ArrowRight className="h-4 w-4" />
                 </Button>
