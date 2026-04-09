@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { Plus, Trash2, CalendarOff, Receipt, Pencil, Eye, EyeOff, Lock } from "lucide-react";
+import { SubscriptionSection } from "@/components/SubscriptionSection";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -544,16 +545,7 @@ export default function SettingsPage() {
 
         <Separator />
 
-        <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
-          <h2 className="font-semibold text-foreground">{t("settings.subscription")}</h2>
-          <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-            <div>
-              <p className="font-medium text-foreground">Pro Plan — €20/month</p>
-              <p className="text-sm text-muted-foreground">{t("settings.comingSoon")}</p>
-            </div>
-            <Button variant="outline">{t("settings.manageBilling")}</Button>
-          </div>
-        </div>
+        <SubscriptionSection />
       </div>
     </AppLayout>
   );
