@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Search, Phone, Mail, Send, Trash2, Download } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
-import { useState } from "react";
+import { useState, memo } from "react";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useNavigate } from "react-router-dom";
 import { useClients, useCreateClient, useDeleteClient } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -24,7 +25,8 @@ export default function ClientsPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "" });
 
-  const filtered = clients.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()));
+  const debouncedSearch = useDebouncedValue(search, 200);
+  const filtered = clients.filter((c) => c.name.toLowerCase().includes(debouncedSearch.toLowerCase()));
 
   const handleCreate = async () => {
     if (!form.name.trim()) return;
