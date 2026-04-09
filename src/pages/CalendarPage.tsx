@@ -135,22 +135,9 @@ export default function CalendarPage() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [detailApt, setDetailApt] = useState<any>(null);
-  const [editOpen, setEditOpen] = useState(false);
-  const [completeOpen, setCompleteOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [editAptId, setEditAptId] = useState<string | null>(null);
-  const [completeAptId, setCompleteAptId] = useState<string | null>(null);
-  const [completeClientId, setCompleteClientId] = useState<string | null>(null);
-  const [recurringDeleteOpen, setRecurringDeleteOpen] = useState(false);
-  const [recurringDeleteApt, setRecurringDeleteApt] = useState<any>(null);
-  const [recurringEditScopeOpen, setRecurringEditScopeOpen] = useState(false);
-  const [pendingEditApt, setPendingEditApt] = useState<any>(null);
+  const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
 
   const [form, setForm] = useState({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
-  const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "09:00", notes: "", price: 0 });
-  const [completePrice, setCompletePrice] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState("cash");
-  const [paymentStatus, setPaymentStatus] = useState("paid_now");
 
   // Recurring form state
   const [isRecurring, setIsRecurring] = useState(false);
