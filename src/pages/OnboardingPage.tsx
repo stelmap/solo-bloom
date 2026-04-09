@@ -248,7 +248,7 @@ export default function OnboardingPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Price (€)</Label>
+                        <Label>Price</Label>
                         <Input
                           type="number"
                           min={0}
@@ -286,7 +286,7 @@ export default function OnboardingPage() {
                       />
                     </div>
                     <div className="w-32 space-y-2">
-                      <Label>Amount (€)</Label>
+                      <Label>Amount</Label>
                       <Input
                         type="number"
                         min={0}
