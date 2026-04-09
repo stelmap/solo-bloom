@@ -137,8 +137,8 @@ serve(async (req) => {
     }
 
     // Update cache
-    await supabaseClient.from("subscription_cache").upsert({
-      user_id: user.id,
+    await supabaseAdmin.from("subscription_cache").upsert({
+      user_id: userId,
       ...result,
       checked_at: new Date().toISOString(),
     }, { onConflict: "user_id" });
