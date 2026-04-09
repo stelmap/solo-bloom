@@ -19,6 +19,8 @@ const PLAN_PRICE_MAP: Record<string, string> = {
 export default function AuthPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const planParam = searchParams.get("plan");
   const [mode, setMode] = useState<"login" | "signup" | "forgot" | "otp">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,6 +29,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [otpValue, setOtpValue] = useState("");
   const resetEmailRef = useRef("");
+  const checkoutTriggeredRef = useRef(false);
   const { toast } = useToast();
   const { t } = useLanguage();
 
