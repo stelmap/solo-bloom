@@ -12,7 +12,7 @@ import featureClients from "@/assets/feature-clients.png";
 import featureCalendar from "@/assets/feature-calendar.jpg";
 import featureFinance from "@/assets/feature-finance.jpg";
 import featureInsights from "@/assets/feature-insights.jpg";
-import featureReports from "@/assets/feature-reports.jpg";
+import featureReports from "@/assets/feature-reports.png";
 
 // ── Lightweight i18n for the public landing page ──────────────────────
 
