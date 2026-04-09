@@ -405,14 +405,22 @@ export function useMarkExpectedPaymentPaid() {
 }
 
 // Expenses
-export function useExpenses() {
+const EXPENSES_PAGE_SIZE = 50;
+
+export function useExpenses(page = 0) {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["expenses", user?.id],
+    queryKey: ["expenses", user?.id, page],
     queryFn: async () => {
-      const { data, error } = await supabase.from("expenses").select("*").order("date", { ascending: false });
+      const from = page * EXPENSES_PAGE_SIZE;
+      const to = from + EXPENSES_PAGE_SIZE - 1;
+      const { data, error, count } = await supabase
+        .from("expenses")
+        .select("*", { count: "exact" })
+        .order("date", { ascending: false })
+        .range(from, to);
       if (error) throw error;
-      return data;
+      return { data: data ?? [], totalCount: count ?? 0, pageSize: EXPENSES_PAGE_SIZE };
     },
     enabled: !!user,
     staleTime: STALE_MEDIUM,
@@ -455,17 +463,22 @@ export function useDeleteExpense() {
 }
 
 // Income
-export function useIncome() {
+const INCOME_PAGE_SIZE = 50;
+
+export function useIncome(page = 0) {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["income", user?.id],
+    queryKey: ["income", user?.id, page],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const from = page * INCOME_PAGE_SIZE;
+      const to = from + INCOME_PAGE_SIZE - 1;
+      const { data, error, count } = await supabase
         .from("income")
-        .select("*, appointments(clients(name), services(name))")
-        .order("date", { ascending: false });
+        .select("*, appointments(clients(name), services(name))", { count: "exact" })
+        .order("date", { ascending: false })
+        .range(from, to);
       if (error) throw error;
-      return data;
+      return { data: data ?? [], totalCount: count ?? 0, pageSize: INCOME_PAGE_SIZE };
     },
     enabled: !!user,
     staleTime: STALE_MEDIUM,
