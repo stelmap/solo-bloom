@@ -304,7 +304,12 @@ export default function FinancialOverviewPage() {
               <div className="space-y-1 text-xs">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("financial.income")}</span>
-                  <span className="text-success font-medium">{fmt(m.income)}</span>
+                  <div className="text-right">
+                    <span className="text-success font-medium">{fmt(m.confirmedIncome)}</span>
+                    {m.expectedIncome > 0 && (
+                      <span className="text-muted-foreground ml-1">(+{fmt(m.expectedIncome)})</span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("financial.expenses")}</span>
@@ -350,8 +355,12 @@ export default function FinancialOverviewPage() {
                 {/* Summary */}
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="bg-success/10 rounded-lg p-3">
-                    <p className="text-muted-foreground text-xs">{t("financial.income")}</p>
-                    <p className="text-success font-bold text-lg">{fmt(drillMonth.income)}</p>
+                    <p className="text-muted-foreground text-xs">{t("financial.confirmed")}</p>
+                    <p className="text-success font-bold text-lg">{fmt(drillMonth.confirmedIncome)}</p>
+                  </div>
+                  <div className="bg-primary/10 rounded-lg p-3">
+                    <p className="text-muted-foreground text-xs">{t("financial.expected")}</p>
+                    <p className="text-primary font-bold text-lg">{fmt(drillMonth.expectedIncome)}</p>
                   </div>
                   <div className="bg-destructive/10 rounded-lg p-3">
                     <p className="text-muted-foreground text-xs">{t("financial.expenses")}</p>
@@ -361,7 +370,7 @@ export default function FinancialOverviewPage() {
                     <p className="text-muted-foreground text-xs">{t("financial.taxes")}</p>
                     <p className="text-warning font-bold text-lg">{fmt(drillMonth.taxes)}</p>
                   </div>
-                  <div className={cn("rounded-lg p-3", drillMonth.net >= 0 ? "bg-success/10" : "bg-destructive/10")}>
+                  <div className={cn("rounded-lg p-3 col-span-2", drillMonth.net >= 0 ? "bg-success/10" : "bg-destructive/10")}>
                     <p className="text-muted-foreground text-xs">{t("financial.netResult")}</p>
                     <p className={cn("font-bold text-lg", drillMonth.net >= 0 ? "text-success" : "text-destructive")}>
                       {drillMonth.net < 0 ? "-" : ""}{fmt(drillMonth.net)}
@@ -395,12 +404,16 @@ export default function FinancialOverviewPage() {
                     </h3>
                     <div className="space-y-1 max-h-40 overflow-y-auto">
                       {drillMonth.incomeItems.map((item, i) => (
-                        <div key={i} className="flex justify-between text-sm bg-muted/50 rounded-lg px-3 py-2">
-                          <div>
+                        <div key={i} className={cn(
+                          "flex justify-between text-sm rounded-lg px-3 py-2",
+                          item.type === "expected" ? "bg-primary/5 border border-dashed border-primary/20" : "bg-muted/50"
+                        )}>
+                          <div className="flex items-center gap-2">
                             <span className="text-foreground">{item.description}</span>
-                            <span className="text-muted-foreground text-xs ml-2">{item.date}</span>
+                            <span className="text-muted-foreground text-xs">{item.date}</span>
+                            {item.type === "expected" && <Badge variant="outline" className="text-[9px] border-dashed">{t("financial.expected")}</Badge>}
                           </div>
-                          <span className="text-success font-medium">{fmt(item.amount)}</span>
+                          <span className={cn("font-medium", item.type === "expected" ? "text-primary" : "text-success")}>{fmt(item.amount)}</span>
                         </div>
                       ))}
                     </div>
