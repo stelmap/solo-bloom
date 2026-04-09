@@ -203,18 +203,20 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     }
   };
 
-  const handleStatusChange = async (status: "confirmed" | "cancelled" | "no-show") => {
+  const handleStatusChange = async (status: "confirmed" | "cancelled" | "no-show", waiveFee = false) => {
     try {
       if (notesDirty) await updateAppointment.mutateAsync({ id: apt.id, notes });
       if (status === "cancelled" || status === "no-show") {
         await cancelAppointment.mutateAsync({
           id: apt.id, status,
-          clientId: apt.client_id, price: Number(apt.price),
+          clientId: waiveFee ? undefined : apt.client_id,
+          price: waiveFee ? 0 : Number(apt.price),
         });
       } else {
         await updateAppointment.mutateAsync({ id: apt.id, status });
       }
       toast({ title: t("toast.statusUpdated", { status: STATUSES[status]?.label || status }) });
+      setNoShowOpen(false);
       onOpenChange(false);
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
