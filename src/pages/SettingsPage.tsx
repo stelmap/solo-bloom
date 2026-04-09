@@ -225,6 +225,85 @@ export default function SettingsPage() {
 
         <Separator />
 
+        {/* Password Management */}
+        <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <Lock className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <h2 className="font-semibold text-foreground">{t("password.title")}</h2>
+              <p className="text-sm text-muted-foreground">{t("password.subtitle")}</p>
+            </div>
+          </div>
+          <div className="space-y-4 max-w-sm">
+            <div className="space-y-2">
+              <Label>{t("password.currentPassword")}</Label>
+              <div className="relative">
+                <Input
+                  type={showPasswords.current ? "text" : "password"}
+                  value={passwordForm.current}
+                  onChange={e => setPasswordForm(f => ({ ...f, current: e.target.value }))}
+                  placeholder="••••••••"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswords(s => ({ ...s, current: !s.current }))}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPasswords.current ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("password.newPassword")}</Label>
+              <div className="relative">
+                <Input
+                  type={showPasswords.newPass ? "text" : "password"}
+                  value={passwordForm.newPass}
+                  onChange={e => setPasswordForm(f => ({ ...f, newPass: e.target.value }))}
+                  placeholder="••••••••"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswords(s => ({ ...s, newPass: !s.newPass }))}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPasswords.newPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("password.confirmPassword")}</Label>
+              <div className="relative">
+                <Input
+                  type={showPasswords.confirm ? "text" : "password"}
+                  value={passwordForm.confirm}
+                  onChange={e => setPasswordForm(f => ({ ...f, confirm: e.target.value }))}
+                  placeholder="••••••••"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswords(s => ({ ...s, confirm: !s.confirm }))}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPasswords.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <Button
+              onClick={handleChangePassword}
+              disabled={changingPassword || !passwordForm.current || !passwordForm.newPass || !passwordForm.confirm}
+              variant="outline"
+            >
+              {changingPassword ? t("password.changing") : t("password.changePassword")}
+            </Button>
+          </div>
+        </div>
+
+        <Separator />
+
         <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
           <h2 className="font-semibold text-foreground">{t("settings.calendar")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
