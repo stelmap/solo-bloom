@@ -1,18 +1,66 @@
+import { useState, useCallback, createContext, useContext } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { translations, Language, TranslationKey } from "@/i18n/translations";
 import {
   LayoutDashboard, Users, Calendar, DollarSign, Target,
   CheckCircle2, ArrowRight, MessageSquareQuote, Zap,
-  ChevronRight, BarChart3, Shield, Clock,
+  ChevronRight, BarChart3,
 } from "lucide-react";
 
-const NAV_LINKS = [
-  { label: "Features", href: "#features" },
-  { label: "How it works", href: "#how-it-works" },
-  { label: "Pricing", href: "#pricing" },
-];
+// ── Lightweight i18n for the public landing page ──────────────────────
+
+const LandingLangContext = createContext<{
+  lang: Language;
+  t: (key: TranslationKey) => string;
+  toggle: () => void;
+}>({ lang: "en", t: (k) => k, toggle: () => {} });
+
+function useLandingLang() {
+  return useContext(LandingLangContext);
+}
+
+function LandingLangProvider({ children }: { children: React.ReactNode }) {
+  const [lang, setLang] = useState<Language>(() => {
+    const stored = localStorage.getItem("landing_lang");
+    return stored === "uk" ? "uk" : "en";
+  });
+
+  const toggle = useCallback(() => {
+    setLang((prev) => {
+      const next = prev === "en" ? "uk" : "en";
+      localStorage.setItem("landing_lang", next);
+      return next;
+    });
+  }, []);
+
+  const t = useCallback(
+    (key: TranslationKey): string => {
+      const entry = translations[key];
+      if (!entry) return key;
+      return entry[lang] || entry.en;
+    },
+    [lang]
+  );
+
+  return (
+    <LandingLangContext.Provider value={{ lang, t, toggle }}>
+      {children}
+    </LandingLangContext.Provider>
+  );
+}
+
+// ── Nav ───────────────────────────────────────────────────────────────
 
 function LandingNav() {
+  const { lang, t, toggle } = useLandingLang();
+
+  const NAV_LINKS = [
+    { label: t("landing.nav.features"), href: "#features" },
+    { label: t("landing.nav.howItWorks"), href: "#how-it-works" },
+    { label: t("landing.nav.pricing"), href: "#pricing" },
+  ];
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -27,11 +75,18 @@ function LandingNav() {
           ))}
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={toggle}
+            className="px-2.5 py-1 rounded-md border border-border text-sm font-medium text-foreground hover:bg-accent transition-colors"
+            aria-label="Switch language"
+          >
+            {lang === "en" ? "🇺🇦 UA" : "🇬🇧 EN"}
+          </button>
           <Link to="/auth">
-            <Button variant="ghost" size="sm">Log in</Button>
+            <Button variant="ghost" size="sm">{t("landing.nav.login")}</Button>
           </Link>
           <Link to="/auth">
-            <Button size="sm">Start free trial</Button>
+            <Button size="sm">{t("landing.nav.startTrial")}</Button>
           </Link>
         </div>
       </div>
@@ -39,56 +94,85 @@ function LandingNav() {
   );
 }
 
+// ── Hero ──────────────────────────────────────────────────────────────
+
 function HeroSection() {
+  const { t } = useLandingLang();
   return (
     <section className="pt-32 pb-20 px-4 sm:px-6">
       <div className="max-w-4xl mx-auto text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-base font-medium mb-8">
           <Zap className="h-3.5 w-3.5" />
-          Built by a solo professional, for solo professionals
+          {t("landing.hero.badge")}
         </div>
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground tracking-tight leading-[1.1] mb-6">
-          Run your solo business.{" "}
-          <span className="text-primary">Don't guess it.</span>
+          {t("landing.hero.title1")}{" "}
+          <span className="text-primary">{t("landing.hero.title2")}</span>
         </h1>
         <p className="text-xl sm:text-2xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-          Manage clients, track sessions, and understand your income in one simple system.
+          {t("landing.hero.subtitle")}
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link to="/auth">
             <Button size="lg" className="text-base px-8 h-12 gap-2">
-              Start free trial <ArrowRight className="h-4 w-4" />
+              {t("landing.hero.cta")} <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
         </div>
         <p className="text-base text-muted-foreground mt-4">
-          7 days free. Then 20€/month. Cancel anytime.
+          {t("landing.hero.subtext")}
         </p>
       </div>
     </section>
   );
 }
 
-const PROBLEMS = [
-  { icon: MessageSquareQuote, text: "I don't know which sessions are paid" },
-  { icon: MessageSquareQuote, text: "I track everything manually" },
-  { icon: MessageSquareQuote, text: "I don't know my real income" },
-  { icon: MessageSquareQuote, text: "I don't know if my pricing is right" },
-];
+// ── Audience ──────────────────────────────────────────────────────────
+
+function AudienceSection() {
+  const { t } = useLandingLang();
+  const AUDIENCES: TranslationKey[] = [
+    "landing.audience.psychologists", "landing.audience.massage", "landing.audience.beauty",
+    "landing.audience.nails", "landing.audience.coaches", "landing.audience.freelancers",
+  ];
+  return (
+    <section className="py-16 px-4 sm:px-6 bg-muted/30">
+      <div className="max-w-4xl mx-auto text-center">
+        <p className="text-base font-medium text-primary mb-3">{t("landing.audience.label")}</p>
+        <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-8">
+          {t("landing.audience.title")}
+        </h2>
+        <div className="flex flex-wrap justify-center gap-3">
+          {AUDIENCES.map((key) => (
+            <span key={key} className="px-5 py-2.5 rounded-full bg-card border border-border text-base font-medium text-foreground">
+              {t(key)}
+            </span>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Problem ──────────────────────────────────────────────────────────
 
 function ProblemSection() {
+  const { t } = useLandingLang();
+  const PROBLEMS: TranslationKey[] = [
+    "landing.problem.1", "landing.problem.2", "landing.problem.3", "landing.problem.4",
+  ];
   return (
     <section className="py-20 px-4 sm:px-6 bg-secondary">
       <div className="max-w-4xl mx-auto">
-        <p className="text-base font-medium text-primary mb-3 text-center">Sound familiar?</p>
+        <p className="text-base font-medium text-primary mb-3 text-center">{t("landing.problem.label")}</p>
         <h2 className="text-3xl sm:text-4xl font-bold text-secondary-foreground text-center mb-12">
-          The daily struggle of solo professionals
+          {t("landing.problem.title")}
         </h2>
         <div className="grid sm:grid-cols-2 gap-4">
-          {PROBLEMS.map((p, i) => (
-            <div key={i} className="flex items-start gap-4 p-5 rounded-xl bg-accent/50 border border-sidebar-border">
-              <p.icon className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-              <p className="text-base text-secondary-foreground/90 font-medium">"{p.text}"</p>
+          {PROBLEMS.map((key) => (
+            <div key={key} className="flex items-start gap-4 p-5 rounded-xl bg-accent/50 border border-sidebar-border">
+              <MessageSquareQuote className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+              <p className="text-base text-secondary-foreground/90 font-medium">"{t(key)}"</p>
             </div>
           ))}
         </div>
@@ -97,26 +181,25 @@ function ProblemSection() {
   );
 }
 
-const SOLUTIONS = [
-  "Manage clients and sessions",
-  "Track income and expenses",
-  "See real profitability",
-  "Understand your business",
-];
+// ── Solution ─────────────────────────────────────────────────────────
 
 function SolutionSection() {
+  const { t } = useLandingLang();
+  const SOLUTIONS: TranslationKey[] = [
+    "landing.solution.1", "landing.solution.2", "landing.solution.3", "landing.solution.4",
+  ];
   return (
     <section className="py-20 px-4 sm:px-6">
       <div className="max-w-4xl mx-auto">
-        <p className="text-base font-medium text-primary mb-3 text-center">The solution</p>
+        <p className="text-base font-medium text-primary mb-3 text-center">{t("landing.solution.label")}</p>
         <h2 className="text-3xl sm:text-4xl font-bold text-foreground text-center mb-12">
-          With SoloBizz, you finally see the full picture
+          {t("landing.solution.title")}
         </h2>
         <div className="max-w-lg mx-auto space-y-4">
-          {SOLUTIONS.map((s, i) => (
-            <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border">
+          {SOLUTIONS.map((key) => (
+            <div key={key} className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border">
               <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-              <span className="text-base text-foreground font-medium">{s}</span>
+              <span className="text-base text-foreground font-medium">{t(key)}</span>
             </div>
           ))}
         </div>
@@ -125,22 +208,24 @@ function SolutionSection() {
   );
 }
 
-const FEATURES = [
-  { icon: LayoutDashboard, title: "Dashboard", desc: "See income, expenses, taxes, and profit in one place" },
-  { icon: Users, title: "Clients", desc: "Track client history and notes" },
-  { icon: Calendar, title: "Calendar", desc: "Manage sessions and scheduling" },
-  { icon: DollarSign, title: "Finance", desc: "Track income, expenses, and taxes" },
-  { icon: Target, title: "Business Insights", desc: "Understand your break-even and goals" },
-  { icon: BarChart3, title: "Reports", desc: "See what's working and what's not" },
-];
+// ── Features ─────────────────────────────────────────────────────────
 
 function FeaturesSection() {
+  const { t } = useLandingLang();
+  const FEATURES = [
+    { icon: LayoutDashboard, title: t("landing.features.dashboard"), desc: t("landing.features.dashboardDesc") },
+    { icon: Users, title: t("landing.features.clients"), desc: t("landing.features.clientsDesc") },
+    { icon: Calendar, title: t("landing.features.calendar"), desc: t("landing.features.calendarDesc") },
+    { icon: DollarSign, title: t("landing.features.finance"), desc: t("landing.features.financeDesc") },
+    { icon: Target, title: t("landing.features.insights"), desc: t("landing.features.insightsDesc") },
+    { icon: BarChart3, title: t("landing.features.reports"), desc: t("landing.features.reportsDesc") },
+  ];
   return (
     <section id="features" className="py-20 px-4 sm:px-6 bg-muted/50">
       <div className="max-w-5xl mx-auto">
-        <p className="text-base font-medium text-primary mb-3 text-center">Features</p>
+        <p className="text-base font-medium text-primary mb-3 text-center">{t("landing.features.label")}</p>
         <h2 className="text-3xl sm:text-4xl font-bold text-foreground text-center mb-12">
-          Everything you need. Nothing you don't.
+          {t("landing.features.title")}
         </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {FEATURES.map((f, i) => (
@@ -158,19 +243,21 @@ function FeaturesSection() {
   );
 }
 
-const STEPS = [
-  { step: "1", title: "Add services & expenses", desc: "Set up what you offer and your fixed costs" },
-  { step: "2", title: "Add clients & sessions", desc: "Log your appointments and track payments" },
-  { step: "3", title: "See your business clearly", desc: "Understand revenue, profitability, and growth" },
-];
+// ── How it works ─────────────────────────────────────────────────────
 
 function HowItWorksSection() {
+  const { t } = useLandingLang();
+  const STEPS = [
+    { step: "1", title: t("landing.howItWorks.step1Title"), desc: t("landing.howItWorks.step1Desc") },
+    { step: "2", title: t("landing.howItWorks.step2Title"), desc: t("landing.howItWorks.step2Desc") },
+    { step: "3", title: t("landing.howItWorks.step3Title"), desc: t("landing.howItWorks.step3Desc") },
+  ];
   return (
     <section id="how-it-works" className="py-20 px-4 sm:px-6">
       <div className="max-w-4xl mx-auto">
-        <p className="text-base font-medium text-primary mb-3 text-center">How it works</p>
+        <p className="text-base font-medium text-primary mb-3 text-center">{t("landing.howItWorks.label")}</p>
         <h2 className="text-3xl sm:text-4xl font-bold text-foreground text-center mb-12">
-          Up and running in minutes
+          {t("landing.howItWorks.title")}
         </h2>
         <div className="grid md:grid-cols-3 gap-8">
           {STEPS.map((s, i) => (
@@ -191,50 +278,55 @@ function HowItWorksSection() {
   );
 }
 
+// ── Founder / About ──────────────────────────────────────────────────
+
 function FounderSection() {
+  const { t } = useLandingLang();
   return (
     <section className="py-20 px-4 sm:px-6 bg-secondary">
       <div className="max-w-3xl mx-auto">
-        <p className="text-base font-medium text-primary mb-3 text-center">What is Solo.Bizz?</p>
+        <p className="text-base font-medium text-primary mb-3 text-center">{t("landing.founder.label")}</p>
         <h2 className="text-3xl sm:text-4xl font-bold text-secondary-foreground text-center mb-10">
-          Built by a practitioner, for practitioners
+          {t("landing.founder.title")}
         </h2>
         <div className="p-8 sm:p-10 rounded-2xl bg-accent/40 border border-sidebar-border space-y-5 text-secondary-foreground/90 text-lg leading-relaxed">
-          <p>Solo.Bizz is a business management app designed for professionals who work with people through appointments, sessions, and client-based services.</p>
-          <p>The idea came from the founder's personal experience. After many years in IT — building ERP systems, working as a Product Manager, and helping create complex digital products — a severe burnout led to a career change into psychology.</p>
-          <p>That's when a familiar problem appeared: it's very hard to organize your workday when everything is scattered across different tools. Sessions in one place, payments in another, notes somewhere else, and client history stored separately. Whenever you need to quickly understand whether a client is attending regularly, see overall dynamics, check payments, or bring all the information together — it takes too much time and energy.</p>
-          <p>That was the moment the first profession could help the second one.</p>
-          <p className="text-primary font-semibold">This is how Solo.Bizz was created — a tool that brings appointments, sessions, clients, payments, notes, and work analytics together in one place.</p>
-          <p>Solo.Bizz is useful for anyone whose work is built around client sessions and appointments — psychologists, coaches, consultants, beauty professionals, nail technicians, and many other specialists whose business depends on one-to-one client work.</p>
-          <p className="font-medium text-secondary-foreground">A product created by a practitioner for practitioners — to make working with people simpler, clearer, and easier to manage.</p>
+          <p>{t("landing.founder.p1")}</p>
+          <p>{t("landing.founder.p2")}</p>
+          <p>{t("landing.founder.p3")}</p>
+          <p>{t("landing.founder.p4")}</p>
+          <p className="text-primary font-semibold">{t("landing.founder.p5")}</p>
+          <p>{t("landing.founder.p6")}</p>
+          <p className="font-medium text-secondary-foreground">{t("landing.founder.p7")}</p>
         </div>
       </div>
     </section>
   );
 }
 
-const PLANS = [
-  { name: "Monthly", price: "20€", period: "/month", savings: null, popular: false },
-  { name: "Quarterly", price: "50€", period: "/3 months", savings: "Save 17%", popular: true },
-  { name: "Yearly", price: "200€", period: "/year", savings: "Save 17%", popular: false },
-];
-
-const PLAN_FEATURES = [
-  "Full access to all features",
-  "Unlimited clients & sessions",
-  "Financial insights & reports",
-  "Cancel anytime",
-];
+// ── Pricing ──────────────────────────────────────────────────────────
 
 function PricingSection() {
+  const { t } = useLandingLang();
+
+  const PLANS = [
+    { name: t("landing.pricing.monthly"), price: "20€", period: t("landing.pricing.perMonth"), savings: null, popular: false },
+    { name: t("landing.pricing.quarterly"), price: "50€", period: t("landing.pricing.per3Months"), savings: t("landing.pricing.save17"), popular: true },
+    { name: t("landing.pricing.yearly"), price: "200€", period: t("landing.pricing.perYear"), savings: t("landing.pricing.save17"), popular: false },
+  ];
+
+  const PLAN_FEATURES: TranslationKey[] = [
+    "landing.pricing.feature1", "landing.pricing.feature2",
+    "landing.pricing.feature3", "landing.pricing.feature4",
+  ];
+
   return (
     <section id="pricing" className="py-20 px-4 sm:px-6">
       <div className="max-w-5xl mx-auto text-center">
-        <p className="text-base font-medium text-primary mb-3">Pricing</p>
+        <p className="text-base font-medium text-primary mb-3">{t("landing.pricing.label")}</p>
         <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-          Simple, transparent pricing
+          {t("landing.pricing.title")}
         </h2>
-        <p className="text-lg text-muted-foreground mb-12">No hidden fees. No surprises. 7-day free trial on all plans.</p>
+        <p className="text-lg text-muted-foreground mb-12">{t("landing.pricing.subtitle")}</p>
 
         <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
           {PLANS.map((plan, i) => (
@@ -246,7 +338,7 @@ function PricingSection() {
             >
               {plan.popular && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-sm font-semibold">
-                  Most popular
+                  {t("landing.pricing.mostPopular")}
                 </span>
               )}
               <h3 className="text-xl font-semibold text-foreground mb-1">{plan.name}</h3>
@@ -259,42 +351,45 @@ function PricingSection() {
                 <span className="text-4xl font-bold text-foreground">{plan.price}</span>
                 <span className="text-muted-foreground text-base">{plan.period}</span>
               </div>
-              <p className="text-sm text-muted-foreground mb-6">after 7-day free trial</p>
+              <p className="text-sm text-muted-foreground mb-6">{t("landing.pricing.afterTrial")}</p>
               <ul className="space-y-3 text-left mb-8">
-                {PLAN_FEATURES.map((item, j) => (
-                  <li key={j} className="flex items-center gap-3 text-foreground">
+                {PLAN_FEATURES.map((key) => (
+                  <li key={key} className="flex items-center gap-3 text-foreground">
                     <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                    <span className="text-base">{item}</span>
+                    <span className="text-base">{t(key)}</span>
                   </li>
                 ))}
               </ul>
               <Link to="/auth">
-                <Button className={`w-full h-11 text-base gap-2 ${plan.popular ? "" : "variant-outline"}`} variant={plan.popular ? "default" : "outline"}>
-                  Start free trial <ArrowRight className="h-4 w-4" />
+                <Button className={`w-full h-11 text-base gap-2`} variant={plan.popular ? "default" : "outline"}>
+                  {t("landing.hero.cta")} <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
             </div>
           ))}
         </div>
-        <p className="text-base text-muted-foreground mt-6">No credit card required to start</p>
+        <p className="text-base text-muted-foreground mt-6">{t("landing.pricing.noCreditCard")}</p>
       </div>
     </section>
   );
 }
 
+// ── Final CTA ────────────────────────────────────────────────────────
+
 function FinalCTA() {
+  const { t } = useLandingLang();
   return (
     <section className="py-20 px-4 sm:px-6 bg-secondary">
       <div className="max-w-2xl mx-auto text-center">
         <h2 className="text-3xl sm:text-4xl font-bold text-secondary-foreground mb-4">
-          Start running your business today.
+          {t("landing.cta.title")}
         </h2>
         <p className="text-lg text-secondary-foreground/70 mb-8">
-          Join solo professionals who finally understand their business.
+          {t("landing.cta.subtitle")}
         </p>
         <Link to="/auth">
           <Button size="lg" className="text-base px-8 h-12 gap-2">
-            Start free trial <ArrowRight className="h-4 w-4" />
+            {t("landing.hero.cta")} <ArrowRight className="h-4 w-4" />
           </Button>
         </Link>
       </div>
@@ -302,44 +397,22 @@ function FinalCTA() {
   );
 }
 
-const AUDIENCES = [
-  "Psychologists", "Massage therapists", "Beauty specialists",
-  "Nail technicians", "Coaches", "Freelancers",
-];
-
-function AudienceSection() {
-  return (
-    <section className="py-16 px-4 sm:px-6 bg-muted/30">
-      <div className="max-w-4xl mx-auto text-center">
-        <p className="text-base font-medium text-primary mb-3">Who it's for</p>
-        <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-8">
-          Built for session-based professionals
-        </h2>
-        <div className="flex flex-wrap justify-center gap-3">
-          {AUDIENCES.map((a, i) => (
-            <span key={i} className="px-5 py-2.5 rounded-full bg-card border border-border text-base font-medium text-foreground">
-              {a}
-            </span>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
+// ── Footer ───────────────────────────────────────────────────────────
 
 function Footer() {
+  const { t } = useLandingLang();
   return (
     <footer className="py-10 px-4 sm:px-6 border-t border-border bg-background">
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
         <p className="text-base text-muted-foreground">
-          © {new Date().getFullYear()} SoloBizz. All rights reserved.
+          © {new Date().getFullYear()} SoloBizz. {t("landing.footer.rights")}
         </p>
         <div className="flex items-center gap-6">
           <Link to="/privacy" className="text-base text-muted-foreground hover:text-foreground transition-colors">
-            Privacy Policy
+            {t("landing.footer.privacy")}
           </Link>
           <Link to="/terms" className="text-base text-muted-foreground hover:text-foreground transition-colors">
-            Terms & Conditions
+            {t("landing.footer.terms")}
           </Link>
         </div>
       </div>
@@ -347,20 +420,24 @@ function Footer() {
   );
 }
 
+// ── Page ─────────────────────────────────────────────────────────────
+
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <LandingNav />
-      <HeroSection />
-      <AudienceSection />
-      <ProblemSection />
-      <SolutionSection />
-      <FeaturesSection />
-      <HowItWorksSection />
-      <FounderSection />
-      <PricingSection />
-      <FinalCTA />
-      <Footer />
-    </div>
+    <LandingLangProvider>
+      <div className="min-h-screen bg-background">
+        <LandingNav />
+        <HeroSection />
+        <AudienceSection />
+        <ProblemSection />
+        <SolutionSection />
+        <FeaturesSection />
+        <HowItWorksSection />
+        <FounderSection />
+        <PricingSection />
+        <FinalCTA />
+        <Footer />
+      </div>
+    </LandingLangProvider>
   );
 }
