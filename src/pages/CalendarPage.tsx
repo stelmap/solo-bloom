@@ -204,7 +204,14 @@ export default function CalendarPage() {
   const getEventsForDayHour = (day: Date, hour: number) =>
     appointments.filter(apt => { const d = new Date(apt.scheduled_at); return isSameDay(d, day) && d.getHours() === hour; });
 
-  const statusInfo = (status: string) => STATUSES.find(s => s.value === status) || STATUSES[0];
+  const STATUS_MAP: Record<string, { label: string; color: string }> = {
+    scheduled: { label: t("status.scheduled"), color: "bg-muted text-muted-foreground" },
+    confirmed: { label: t("status.confirmed"), color: "bg-primary/15 text-primary" },
+    completed: { label: t("status.completed"), color: "bg-success/15 text-success" },
+    cancelled: { label: t("status.cancelled"), color: "bg-destructive/15 text-destructive" },
+    "no-show": { label: t("status.noShow"), color: "bg-warning/15 text-warning" },
+  };
+  const statusInfo = (status: string) => STATUS_MAP[status] || STATUS_MAP.scheduled;
 
   const fmtHour = (hour: number) => formatTime(`${hour.toString().padStart(2, "0")}:00`, use12h);
   const fmtTime = (dateStr: string) => {
