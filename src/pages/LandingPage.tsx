@@ -7,7 +7,7 @@ import {
   CheckCircle2, ArrowRight, MessageSquareQuote, Zap,
   ChevronRight, BarChart3,
 } from "lucide-react";
-import featureDashboard from "@/assets/feature-dashboard.jpg";
+import featureDashboard from "@/assets/feature-dashboard.png";
 import featureClients from "@/assets/feature-clients.jpg";
 import featureCalendar from "@/assets/feature-calendar.jpg";
 import featureFinance from "@/assets/feature-finance.jpg";
