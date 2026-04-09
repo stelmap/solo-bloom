@@ -113,25 +113,6 @@ export default function CalendarPage() {
     });
   };
 
-  const STATUSES = [
-    { value: "scheduled", label: t("status.scheduled"), color: "bg-muted text-muted-foreground" },
-    { value: "confirmed", label: t("status.confirmed"), color: "bg-primary/15 text-primary" },
-    { value: "completed", label: t("status.completed"), color: "bg-success/15 text-success" },
-    { value: "cancelled", label: t("status.cancelled"), color: "bg-destructive/15 text-destructive" },
-    { value: "no-show", label: t("status.noShow"), color: "bg-warning/15 text-warning" },
-  ];
-
-  const PAYMENT_METHODS = [
-    { value: "cash", label: t("method.cash") },
-    { value: "card", label: t("method.card") },
-    { value: "bank_transfer", label: t("method.bankTransfer") },
-  ];
-
-  const PAYMENT_STATUSES = [
-    { value: "paid_now", label: t("payment.paidNow"), description: t("payment.paidNowDesc") },
-    { value: "paid_in_advance", label: t("payment.paidInAdvance"), description: t("payment.paidInAdvanceDesc") },
-    { value: "waiting_for_payment", label: t("payment.waitingForPayment"), description: t("payment.waitingForPaymentDesc") },
-  ];
 
   const [createOpen, setCreateOpen] = useState(false);
   const [detailApt, setDetailApt] = useState<any>(null);
