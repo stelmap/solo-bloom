@@ -498,20 +498,20 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       <Dialog open={noShowOpen} onOpenChange={setNoShowOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>{t("calendar.noShow")}</DialogTitle></DialogHeader>
-          <p className="text-sm text-muted-foreground">{t("noShow.description") !== "noShow.description" ? t("noShow.description") : "How should this no-show be handled?"}</p>
+          <p className="text-sm text-muted-foreground">{t("noShow.description")}</p>
           <div className="space-y-2">
             <Button variant="outline" className="w-full justify-start" onClick={() => handleStatusChange("no-show", false)}>
               <DollarSign className="h-4 w-4 mr-2 text-warning" />
               <div className="text-left">
-                <p className="text-sm font-medium">{t("noShow.charge") !== "noShow.charge" ? t("noShow.charge") : "Charge the client"}</p>
-                <p className="text-xs text-muted-foreground">{cs}{Number(apt.price).toFixed(2)} {t("noShow.chargeDesc") !== "noShow.chargeDesc" ? t("noShow.chargeDesc") : "will be added as a pending payment"}</p>
+                <p className="text-sm font-medium">{t("noShow.charge")}</p>
+                <p className="text-xs text-muted-foreground">{cs}{Number(apt.price).toFixed(2)} {t("noShow.chargeDesc")}</p>
               </div>
             </Button>
             <Button variant="outline" className="w-full justify-start" onClick={() => handleStatusChange("no-show", true)}>
               <XCircle className="h-4 w-4 mr-2 text-muted-foreground" />
               <div className="text-left">
-                <p className="text-sm font-medium">{t("noShow.waive") !== "noShow.waive" ? t("noShow.waive") : "Waive the fee"}</p>
-                <p className="text-xs text-muted-foreground">{t("noShow.waiveDesc") !== "noShow.waiveDesc" ? t("noShow.waiveDesc") : "No charge for this session"}</p>
+                <p className="text-sm font-medium">{t("noShow.waive")}</p>
+                <p className="text-xs text-muted-foreground">{t("noShow.waiveDesc")}</p>
               </div>
             </Button>
           </div>
