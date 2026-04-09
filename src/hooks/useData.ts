@@ -22,6 +22,7 @@ export function useClients() {
       return data;
     },
     enabled: !!user,
+    staleTime: STALE_MEDIUM,
   });
 }
 
@@ -204,6 +205,7 @@ export function useServices() {
       return data;
     },
     enabled: !!user,
+    staleTime: STALE_LONG,
   });
 }
 
@@ -256,6 +258,7 @@ export function useAppointments() {
       return data;
     },
     enabled: !!user,
+    staleTime: STALE_SHORT,
   });
 }
 
@@ -370,6 +373,7 @@ export function useExpectedPayments() {
       return data;
     },
     enabled: !!user,
+    staleTime: STALE_MEDIUM,
   });
 }
 
@@ -411,6 +415,7 @@ export function useExpenses() {
       return data;
     },
     enabled: !!user,
+    staleTime: STALE_MEDIUM,
   });
 }
 
@@ -463,6 +468,7 @@ export function useIncome() {
       return data;
     },
     enabled: !!user,
+    staleTime: STALE_MEDIUM,
   });
 }
 
@@ -501,6 +507,7 @@ export function useProfile() {
       return data;
     },
     enabled: !!user,
+    staleTime: STALE_LONG,
   });
 }
 
@@ -530,6 +537,7 @@ export function useWorkingSchedule() {
       }>;
     },
     enabled: !!user,
+    staleTime: STALE_LONG,
   });
 }
 
@@ -565,6 +573,7 @@ export function useDaysOff() {
       }>;
     },
     enabled: !!user,
+    staleTime: STALE_LONG,
   });
 }
 
@@ -607,6 +616,7 @@ export function useBreakevenGoals() {
       return data;
     },
     enabled: !!user,
+    staleTime: STALE_LONG,
   });
 }
 
@@ -642,6 +652,7 @@ export function useTaxSettings() {
       }>;
     },
     enabled: !!user,
+    staleTime: STALE_LONG,
   });
 }
 
@@ -698,6 +709,8 @@ export function useRecurringRules() {
       return data;
     },
     enabled: !!user,
+    staleTime: STALE_LONG,
+    staleTime: STALE_SHORT,
   });
 }
 
