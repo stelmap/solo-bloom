@@ -63,10 +63,10 @@ serve(async (req) => {
 
     // Check cache first
     if (!forceRefresh) {
-      const { data: cached } = await supabaseClient
+      const { data: cached } = await supabaseAdmin
         .from("subscription_cache")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .single();
 
       if (cached) {
