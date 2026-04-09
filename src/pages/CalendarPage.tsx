@@ -11,8 +11,9 @@ import {
   useAppointments, useCreateAppointment,
   useClients, useServices, useProfile, useCreateRecurringRule,
   useWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff,
+  useBulkCancelForDayOff,
 } from "@/hooks/useData";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -43,6 +44,7 @@ export default function CalendarPage() {
   const createRecurringRule = useCreateRecurringRule();
   const createDayOff = useCreateDayOff();
   const deleteDayOff = useDeleteDayOff();
+  const bulkCancel = useBulkCancelForDayOff();
   const { toast } = useToast();
   const { t } = useLanguage();
   const { symbol: cs } = useCurrency();
@@ -118,6 +120,7 @@ export default function CalendarPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [detailApt, setDetailApt] = useState<any>(null);
   const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
+  const [dayOffConfirm, setDayOffConfirm] = useState<{ date: Date; affectedApts: any[] } | null>(null);
 
   const [form, setForm] = useState({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
 
@@ -197,8 +200,34 @@ export default function CalendarPage() {
       await deleteDayOff.mutateAsync(existing.id);
       toast({ title: t("toast.dayOffRemoved") });
     } else {
+      // Check for affected sessions
+      const affected = appointments.filter(apt => {
+        if (apt.status === "cancelled" || apt.status === "completed") return false;
+        return isSameUTCDay(new Date(apt.scheduled_at), date);
+      });
+      if (affected.length > 0) {
+        setDayOffConfirm({ date, affectedApts: affected });
+      } else {
+        await createDayOff.mutateAsync({ date: dateStr, type: "day_off", is_non_working: true });
+        toast({ title: t("toast.dayOffAdded") });
+      }
+    }
+  };
+
+  const handleConfirmDayOffCancel = async () => {
+    if (!dayOffConfirm) return;
+    const dateStr = format(dayOffConfirm.date, "yyyy-MM-dd");
+    const reason = t("dayOff.cancelReason");
+    try {
+      await bulkCancel.mutateAsync({
+        appointmentIds: dayOffConfirm.affectedApts.map((a: any) => a.id),
+        reason,
+      });
       await createDayOff.mutateAsync({ date: dateStr, type: "day_off", is_non_working: true });
-      toast({ title: t("toast.dayOffAdded") });
+      toast({ title: t("toast.sessionsCancelled", { count: dayOffConfirm.affectedApts.length.toString() }) });
+      setDayOffConfirm(null);
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
 
@@ -215,6 +244,7 @@ export default function CalendarPage() {
 
   const STATUS_MAP: Record<string, { label: string; color: string }> = {
     scheduled: { label: t("status.scheduled"), color: "bg-muted text-muted-foreground" },
+    reminder_sent: { label: t("status.reminderSent"), color: "bg-accent text-accent-foreground" },
     confirmed: { label: t("status.confirmed"), color: "bg-primary/15 text-primary" },
     completed: { label: t("status.completed"), color: "bg-success/15 text-success" },
     cancelled: { label: t("status.cancelled"), color: "bg-destructive/15 text-destructive" },
@@ -480,6 +510,38 @@ export default function CalendarPage() {
         onOpenChange={(o) => { setSessionSheetOpen(o); if (!o) setDetailApt(null); }}
         use12h={use12h}
       />
+
+      {/* Day-off cancellation confirmation modal */}
+      <Dialog open={!!dayOffConfirm} onOpenChange={(o) => { if (!o) setDayOffConfirm(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("dayOff.cancelTitle")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              {t("dayOff.cancelDesc", { count: dayOffConfirm?.affectedApts.length.toString() ?? "0" })}
+            </p>
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {dayOffConfirm?.affectedApts.map((apt: any) => (
+                <div key={apt.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50 text-sm">
+                  <span className="font-medium">{apt.clients?.name}</span>
+                  <span className="text-muted-foreground">
+                    {format(new Date(apt.scheduled_at), "HH:mm")} · {apt.services?.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setDayOffConfirm(null)}>
+              {t("dayOff.keepSessions")}
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmDayOffCancel} disabled={bulkCancel.isPending}>
+              {bulkCancel.isPending ? t("common.saving") : t("dayOff.cancelConfirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

@@ -55,7 +55,7 @@ export function useCreateClient() {
 export function useUpdateClient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; phone?: string; email?: string; notes?: string; telegram?: string }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; name?: string; phone?: string; email?: string; notes?: string; telegram?: string; notification_preference?: string; confirmation_required?: boolean }) => {
       const { error } = await supabase.from("clients").update(updates as any).eq("id", id);
       if (error) throw error;
     },
@@ -349,13 +349,15 @@ export function useCancelAppointment() {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async ({ id, status, clientId, price }: { id: string; status: "cancelled" | "no-show"; clientId?: string; price?: number }) => {
+    mutationFn: async ({ id, status, clientId, price, cancellationReason }: { id: string; status: "cancelled" | "no-show"; clientId?: string; price?: number; cancellationReason?: string }) => {
       await supabase.from("income").delete().eq("appointment_id", id);
       await supabase.from("expected_payments").delete().eq("appointment_id", id);
 
       if (status === "no-show" && clientId && price && price > 0) {
-        // No-show: mark as waiting for payment and create expected payment
-        const { error } = await supabase.from("appointments").update({ status, payment_status: "waiting_for_payment" } as any).eq("id", id);
+        const { error } = await supabase.from("appointments").update({
+          status, payment_status: "waiting_for_payment",
+          ...(cancellationReason ? { cancellation_reason: cancellationReason } : {}),
+        } as any).eq("id", id);
         if (error) throw error;
         const { error: epErr } = await supabase.from("expected_payments").insert({
           user_id: user!.id, appointment_id: id,
@@ -363,7 +365,30 @@ export function useCancelAppointment() {
         } as any);
         if (epErr) throw epErr;
       } else {
-        const { error } = await supabase.from("appointments").update({ status, payment_status: "not_applicable" } as any).eq("id", id);
+        const { error } = await supabase.from("appointments").update({
+          status, payment_status: "not_applicable",
+          ...(cancellationReason ? { cancellation_reason: cancellationReason } : {}),
+        } as any).eq("id", id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+  });
+}
+
+// Bulk cancel appointments for day-off
+export function useBulkCancelForDayOff() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ appointmentIds, reason }: { appointmentIds: string[]; reason: string }) => {
+      for (const id of appointmentIds) {
+        await supabase.from("income").delete().eq("appointment_id", id);
+        await supabase.from("expected_payments").delete().eq("appointment_id", id);
+        const { error } = await supabase.from("appointments").update({
+          status: "cancelled",
+          payment_status: "not_applicable",
+          cancellation_reason: reason,
+        } as any).eq("id", id);
         if (error) throw error;
       }
     },

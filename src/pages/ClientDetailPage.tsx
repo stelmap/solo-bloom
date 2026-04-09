@@ -15,8 +15,10 @@ import {
 } from "@/hooks/useData";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  ArrowLeft, Phone, Mail, Send, Calendar, Pencil, Trash2, Plus, Paperclip, FileText, Image, Download, X,
+  ArrowLeft, Phone, Mail, Send, Calendar, Pencil, Trash2, Plus, Paperclip, FileText, Image, Download, X, Bell,
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState, useRef } from "react";
 import { format } from "date-fns";
@@ -46,13 +48,14 @@ export default function ClientDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "" });
+  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "", notification_preference: "no_reminder", confirmation_required: false });
   const [sessionApt, setSessionApt] = useState<any>(null);
   const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
   const use12h = (profile as any)?.time_format === "12h";
 
   const SESSION_STATUS_STYLES: Record<string, { label: string; color: string }> = {
     scheduled: { label: t("status.scheduled"), color: "bg-muted text-muted-foreground" },
+    reminder_sent: { label: t("status.reminderSent"), color: "bg-accent text-accent-foreground" },
     confirmed: { label: t("status.confirmed"), color: "bg-primary/15 text-primary" },
     completed: { label: t("status.completed"), color: "bg-success/15 text-success" },
     cancelled: { label: t("status.cancelled"), color: "bg-destructive/15 text-destructive" },
@@ -84,6 +87,8 @@ export default function ClientDetailPage() {
     setEditForm({
       name: client.name, phone: client.phone || "", email: client.email || "",
       notes: client.notes || "", telegram: (client as any).telegram || "",
+      notification_preference: (client as any).notification_preference || "no_reminder",
+      confirmation_required: (client as any).confirmation_required || false,
     });
     setEditOpen(true);
   };
@@ -206,6 +211,30 @@ export default function ClientDetailPage() {
               )}
             </div>
 
+            {/* Notification Settings */}
+            <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <Bell className="h-4 w-4 text-primary" /> {t("notification.title")}
+              </h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{t("notification.channel")}</span>
+                  <Badge variant="outline" className="text-xs">
+                    {(client as any).notification_preference === "email_only" ? t("notification.emailOnly") :
+                     (client as any).notification_preference === "telegram_only" ? t("notification.telegramOnly") :
+                     (client as any).notification_preference === "email_and_telegram" ? t("notification.emailAndTelegram") :
+                     t("notification.noReminder")}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{t("notification.confirmationRequired")}</span>
+                  <Badge variant="outline" className={cn("text-xs", (client as any).confirmation_required ? "text-primary" : "text-muted-foreground")}>
+                    {(client as any).confirmation_required ? "✓" : "—"}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2"><FileText className="h-4 w-4 text-primary" /> {t("clientDetail.notes")}</h3>
               <div className="flex gap-2">
@@ -316,6 +345,30 @@ export default function ClientDetailPage() {
             <div className="space-y-2"><Label>{t("common.email")}</Label><Input type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} /></div>
             <div className="space-y-2"><Label>{t("common.telegram")}</Label><Input placeholder="username" value={editForm.telegram} onChange={e => setEditForm(f => ({ ...f, telegram: e.target.value }))} /></div>
             <div className="space-y-2"><Label>{t("common.generalNotes")}</Label><Textarea value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} /></div>
+            
+            <div className="border-t border-border pt-4 space-y-4">
+              <h4 className="text-sm font-medium flex items-center gap-2"><Bell className="h-4 w-4" /> {t("notification.title")}</h4>
+              <div className="space-y-2">
+                <Label>{t("notification.channel")}</Label>
+                <Select value={editForm.notification_preference} onValueChange={v => setEditForm(f => ({ ...f, notification_preference: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="no_reminder">{t("notification.noReminder")}</SelectItem>
+                    <SelectItem value="email_only">{t("notification.emailOnly")}</SelectItem>
+                    <SelectItem value="telegram_only">{t("notification.telegramOnly")}</SelectItem>
+                    <SelectItem value="email_and_telegram">{t("notification.emailAndTelegram")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>{t("notification.confirmationRequired")}</Label>
+                  <p className="text-xs text-muted-foreground">{t("notification.confirmationRequiredDesc")}</p>
+                </div>
+                <Switch checked={editForm.confirmation_required} onCheckedChange={v => setEditForm(f => ({ ...f, confirmation_required: v }))} />
+              </div>
+            </div>
+
             <Button onClick={handleSaveEdit} className="w-full" disabled={updateClient.isPending}>
               {updateClient.isPending ? t("common.saving") : t("common.save")}
             </Button>

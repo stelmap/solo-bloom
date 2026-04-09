@@ -79,6 +79,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
   const STATUSES: Record<string, { label: string; color: string }> = {
     scheduled: { label: t("status.scheduled"), color: "bg-muted text-muted-foreground" },
+    reminder_sent: { label: t("status.reminderSent"), color: "bg-accent text-accent-foreground" },
     confirmed: { label: t("status.confirmed"), color: "bg-primary/15 text-primary" },
     completed: { label: t("status.completed"), color: "bg-success/15 text-success" },
     cancelled: { label: t("status.cancelled"), color: "bg-destructive/15 text-destructive" },
@@ -107,7 +108,14 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const statusInfo = STATUSES[apt.status] || STATUSES.scheduled;
   const payInfo = PAYMENT_STATUS_STYLES[apt.payment_status] || PAYMENT_STATUS_STYLES.unpaid;
   const fmtTime = (dateStr: string) => formatTime(format(new Date(dateStr), "HH:mm"), use12h);
-  const isActive = apt.status === "scheduled" || apt.status === "confirmed";
+  const isActive = apt.status === "scheduled" || apt.status === "confirmed" || apt.status === "reminder_sent";
+
+  const CONFIRMATION_STYLES: Record<string, { label: string; color: string }> = {
+    pending: { label: t("confirmation.pending"), color: "text-warning" },
+    confirmed: { label: t("confirmation.confirmed"), color: "text-success" },
+    not_required: { label: t("confirmation.notRequired"), color: "text-muted-foreground" },
+  };
+  const confirmInfo = CONFIRMATION_STYLES[apt.confirmation_status] || CONFIRMATION_STYLES.not_required;
 
   const handleSaveNotes = async () => {
     try {
@@ -289,6 +297,24 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   <span className="text-muted-foreground">{t("common.payment")}</span>
                   <span className={cn("font-medium", payInfo.color)}>{payInfo.label}</span>
                 </div>
+                {apt.confirmation_status && apt.confirmation_status !== "not_required" && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{t("confirmation.status")}</span>
+                    <span className={cn("font-medium", confirmInfo.color)}>{confirmInfo.label}</span>
+                  </div>
+                )}
+                {apt.confirmation_timestamp && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{t("confirmation.timestamp")}</span>
+                    <span className="font-medium text-foreground">{format(new Date(apt.confirmation_timestamp), "MMM d, HH:mm")}</span>
+                  </div>
+                )}
+                {apt.cancellation_reason && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{t("calendar.cancel")}</span>
+                    <span className="font-medium text-destructive text-xs text-right max-w-[60%]">{apt.cancellation_reason}</span>
+                  </div>
+                )}
               </div>
 
               {/* Session notes */}

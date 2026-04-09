@@ -713,6 +713,34 @@ export const translations = {
   "landing.footer.rights": { en: "All rights reserved.", uk: "Усі права захищені." },
   "landing.footer.privacy": { en: "Privacy Policy", uk: "Політика конфіденційності" },
   "landing.footer.terms": { en: "Terms & Conditions", uk: "Умови використання" },
+
+  // Notification settings
+  "notification.title": { en: "Notification Settings", uk: "Налаштування сповіщень" },
+  "notification.channel": { en: "Reminder Channel", uk: "Канал нагадування" },
+  "notification.emailOnly": { en: "Email only", uk: "Тільки Email" },
+  "notification.telegramOnly": { en: "Telegram only", uk: "Тільки Telegram" },
+  "notification.emailAndTelegram": { en: "Email + Telegram", uk: "Email + Telegram" },
+  "notification.noReminder": { en: "No reminder", uk: "Без нагадувань" },
+  "notification.confirmationRequired": { en: "Confirmation required", uk: "Потрібне підтвердження" },
+  "notification.confirmationRequiredDesc": { en: "Client must confirm the session", uk: "Клієнт повинен підтвердити сеанс" },
+
+  // Confirmation statuses
+  "confirmation.pending": { en: "Pending", uk: "Очікує" },
+  "confirmation.confirmed": { en: "Confirmed", uk: "Підтверджено" },
+  "confirmation.notRequired": { en: "Not required", uk: "Не потрібно" },
+  "confirmation.status": { en: "Confirmation", uk: "Підтвердження" },
+  "confirmation.timestamp": { en: "Confirmed at", uk: "Підтверджено о" },
+
+  // Session status - reminder sent
+  "status.reminderSent": { en: "Reminder Sent", uk: "Нагадування надіслано" },
+
+  // Day-off cancellation
+  "dayOff.cancelTitle": { en: "Cancel affected sessions?", uk: "Скасувати заплановані сеанси?" },
+  "dayOff.cancelDesc": { en: "{count} session(s) scheduled for this day will be cancelled. All affected clients will be notified via their preferred channel.", uk: "{count} сеанс(ів) заплановано на цей день буде скасовано. Всі клієнти отримають сповіщення." },
+  "dayOff.cancelConfirm": { en: "Cancel sessions & mark day off", uk: "Скасувати сеанси та позначити вихідний" },
+  "dayOff.cancelReason": { en: "Cancelled: specialist marked this time as unavailable", uk: "Скасовано: спеціаліст позначив цей час як недоступний" },
+  "dayOff.keepSessions": { en: "Keep sessions", uk: "Залишити сеанси" },
+  "toast.sessionsCancelled": { en: "{count} session(s) cancelled", uk: "{count} сеанс(ів) скасовано" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;
