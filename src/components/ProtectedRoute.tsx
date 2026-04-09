@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useData";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, isRecovery } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
 
   if (loading || (user && profileLoading)) {
@@ -18,7 +18,12 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/auth" replace />;
   }
 
-  // Redirect to onboarding if not completed (but not if already on onboarding)
+  // Force password reset — user cannot access the app until new password is set
+  if (isRecovery) {
+    return <Navigate to="/reset-password" replace />;
+  }
+
+  // Redirect to onboarding if not completed
   if (profile && !(profile as any).onboarding_completed) {
     return <Navigate to="/onboarding" replace />;
   }

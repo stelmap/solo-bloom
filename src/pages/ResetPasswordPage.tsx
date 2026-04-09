@@ -1,57 +1,56 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff, Lock } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { Eye, EyeOff, Lock, ShieldAlert } from "lucide-react";
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
+  const { user, isRecovery, clearRecovery } = useAuth();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [isRecovery, setIsRecovery] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Listen for PASSWORD_RECOVERY event from the auth state change
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
-        setIsRecovery(true);
-        setReady(true);
-      }
-    });
-
-    // Also check if there's a recovery token in the URL hash
+    // Check URL hash for recovery token (from email link click)
     const hash = window.location.hash;
     if (hash && hash.includes("type=recovery")) {
-      setIsRecovery(true);
       setReady(true);
+      return;
     }
 
-    // Give it a moment to process the token
-    const timeout = setTimeout(() => setReady(true), 1500);
+    // If user is in recovery mode from OTP verification
+    if (isRecovery && user) {
+      setReady(true);
+      return;
+    }
 
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(timeout);
-    };
-  }, []);
+    // Give a moment for auth state to settle
+    const timeout = setTimeout(() => setReady(true), 1500);
+    return () => clearTimeout(timeout);
+  }, [isRecovery, user]);
+
+  const isAuthorized = isRecovery || (window.location.hash && window.location.hash.includes("type=recovery"));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (password.length < 6) {
-      toast({ title: "Error", description: "Password must be at least 6 characters", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("auth.passwordTooShort"), variant: "destructive" });
       return;
     }
     if (password !== confirmPassword) {
-      toast({ title: "Error", description: "Passwords do not match", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("auth.passwordsMismatch"), variant: "destructive" });
       return;
     }
 
@@ -59,10 +58,11 @@ export default function ResetPasswordPage() {
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
-      toast({ title: "Password updated!", description: "You can now sign in with your new password." });
+      clearRecovery();
+      toast({ title: t("auth.passwordUpdated"), description: t("auth.passwordUpdatedDesc") });
       navigate("/");
     } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -71,21 +71,19 @@ export default function ResetPasswordPage() {
   if (!ready) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+        <div className="animate-pulse text-muted-foreground">{t("common.loading")}</div>
       </div>
     );
   }
 
-  if (!isRecovery) {
+  if (!isAuthorized) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="w-full max-w-sm space-y-6 text-center">
           <Lock className="h-12 w-12 mx-auto text-muted-foreground" />
-          <h2 className="text-xl font-bold text-foreground">Invalid or Expired Link</h2>
-          <p className="text-sm text-muted-foreground">
-            This password reset link is invalid or has expired. Please request a new one.
-          </p>
-          <Button onClick={() => navigate("/auth")} className="w-full">Back to Login</Button>
+          <h2 className="text-xl font-bold text-foreground">{t("auth.invalidResetLink")}</h2>
+          <p className="text-sm text-muted-foreground">{t("auth.invalidResetLinkDesc")}</p>
+          <Button onClick={() => navigate("/auth")} className="w-full">{t("auth.backToLogin")}</Button>
         </div>
       </div>
     );
@@ -99,14 +97,20 @@ export default function ResetPasswordPage() {
             Solo<span className="text-primary">Pro</span>
           </h1>
         </div>
+
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 flex items-start gap-3">
+          <ShieldAlert className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+          <p className="text-sm text-foreground">{t("auth.mustSetNewPassword")}</p>
+        </div>
+
         <div className="space-y-1">
-          <h2 className="text-xl font-bold text-foreground">Set New Password</h2>
-          <p className="text-sm text-muted-foreground">Enter your new password below.</p>
+          <h2 className="text-xl font-bold text-foreground">{t("auth.setNewPassword")}</h2>
+          <p className="text-sm text-muted-foreground">{t("auth.setNewPasswordDesc")}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>New Password</Label>
+            <Label>{t("auth.newPassword")}</Label>
             <div className="relative">
               <Input
                 type={showPassword ? "text" : "password"}
@@ -127,7 +131,7 @@ export default function ResetPasswordPage() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Confirm New Password</Label>
+            <Label>{t("auth.confirmNewPassword")}</Label>
             <div className="relative">
               <Input
                 type={showConfirm ? "text" : "password"}
@@ -148,7 +152,7 @@ export default function ResetPasswordPage() {
             </div>
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Updating..." : "Update Password"}
+            {loading ? t("auth.updating") : t("auth.updatePassword")}
           </Button>
         </form>
       </div>
