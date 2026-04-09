@@ -30,8 +30,10 @@ const defaultGoals = (t: any): GoalForm[] => [
 ];
 
 export default function BreakevenPage() {
-  const { data: expenses = [] } = useExpenses();
-  const { data: income = [] } = useIncome();
+  const { data: expenseResult } = useExpenses();
+  const expenses = (expenseResult as any)?.data ?? expenseResult ?? [];
+  const { data: incomeResult } = useIncome();
+  const income = (incomeResult as any)?.data ?? incomeResult ?? [];
   const { data: services = [] } = useServices();
   const { data: appointments = [] } = useAppointments();
   const { data: goals = [] } = useBreakevenGoals();

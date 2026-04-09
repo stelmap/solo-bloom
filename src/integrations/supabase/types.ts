@@ -655,6 +655,48 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_cache: {
+        Row: {
+          cancel_at_period_end: boolean
+          checked_at: string
+          created_at: string
+          id: string
+          on_trial: boolean
+          price_id: string | null
+          subscribed: boolean
+          subscription_end: string | null
+          trial_end: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          checked_at?: string
+          created_at?: string
+          id?: string
+          on_trial?: boolean
+          price_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          trial_end?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          checked_at?: string
+          created_at?: string
+          id?: string
+          on_trial?: boolean
+          price_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          trial_end?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string

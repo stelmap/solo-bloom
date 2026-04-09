@@ -3,7 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateCapacity } from "@/lib/capacity";
 
-const INVALIDATE_ALL = ["clients", "services", "appointments", "expenses", "income", "dashboard-stats", "expected-payments", "working-schedule", "days-off", "recurring-rules", "tax-settings"];
+const INVALIDATE_APPOINTMENTS = ["appointments", "dashboard-stats", "client-appointments"];
+const INVALIDATE_FINANCIAL = ["income", "expenses", "expected-payments", "dashboard-stats"];
+
+// Stale times to avoid redundant refetches on navigation
+const STALE_SHORT = 30_000;  // 30s for dashboard/frequently changing data
+const STALE_MEDIUM = 60_000; // 1min for lists
+const STALE_LONG = 300_000;  // 5min for rarely changing config
 
 // Clients
 export function useClients() {
@@ -16,6 +22,7 @@ export function useClients() {
       return data;
     },
     enabled: !!user,
+    staleTime: STALE_MEDIUM,
   });
 }
 
@@ -198,6 +205,7 @@ export function useServices() {
       return data;
     },
     enabled: !!user,
+    staleTime: STALE_LONG,
   });
 }
 
@@ -250,6 +258,7 @@ export function useAppointments() {
       return data;
     },
     enabled: !!user,
+    staleTime: STALE_SHORT,
   });
 }
 
@@ -265,7 +274,7 @@ export function useCreateAppointment() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -280,7 +289,7 @@ export function useUpdateAppointment() {
       const { error } = await supabase.from("appointments").update(updates as any).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -293,7 +302,7 @@ export function useDeleteAppointment() {
       const { error } = await supabase.from("appointments").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -331,7 +340,7 @@ export function useCompleteAppointment() {
         if (epErr) throw epErr;
       }
     },
-    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -345,7 +354,7 @@ export function useCancelAppointment() {
       const { error } = await supabase.from("appointments").update({ status, payment_status: "not_applicable" } as any).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -364,6 +373,7 @@ export function useExpectedPayments() {
       return data;
     },
     enabled: !!user,
+    staleTime: STALE_MEDIUM,
   });
 }
 
@@ -390,21 +400,30 @@ export function useMarkExpectedPaymentPaid() {
       } as any);
       if (incErr) throw incErr;
     },
-    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
 // Expenses
-export function useExpenses() {
+const EXPENSES_PAGE_SIZE = 50;
+
+export function useExpenses(page = 0) {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["expenses", user?.id],
+    queryKey: ["expenses", user?.id, page],
     queryFn: async () => {
-      const { data, error } = await supabase.from("expenses").select("*").order("date", { ascending: false });
+      const from = page * EXPENSES_PAGE_SIZE;
+      const to = from + EXPENSES_PAGE_SIZE - 1;
+      const { data, error, count } = await supabase
+        .from("expenses")
+        .select("*", { count: "exact" })
+        .order("date", { ascending: false })
+        .range(from, to);
       if (error) throw error;
-      return data;
+      return { data: data ?? [], totalCount: count ?? 0, pageSize: EXPENSES_PAGE_SIZE };
     },
     enabled: !!user,
+    staleTime: STALE_MEDIUM,
   });
 }
 
@@ -444,19 +463,25 @@ export function useDeleteExpense() {
 }
 
 // Income
-export function useIncome() {
+const INCOME_PAGE_SIZE = 50;
+
+export function useIncome(page = 0) {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["income", user?.id],
+    queryKey: ["income", user?.id, page],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const from = page * INCOME_PAGE_SIZE;
+      const to = from + INCOME_PAGE_SIZE - 1;
+      const { data, error, count } = await supabase
         .from("income")
-        .select("*, appointments(clients(name), services(name))")
-        .order("date", { ascending: false });
+        .select("*, appointments(clients(name), services(name))", { count: "exact" })
+        .order("date", { ascending: false })
+        .range(from, to);
       if (error) throw error;
-      return data;
+      return { data: data ?? [], totalCount: count ?? 0, pageSize: INCOME_PAGE_SIZE };
     },
     enabled: !!user,
+    staleTime: STALE_MEDIUM,
   });
 }
 
@@ -495,6 +520,7 @@ export function useProfile() {
       return data;
     },
     enabled: !!user,
+    staleTime: STALE_LONG,
   });
 }
 
@@ -524,6 +550,7 @@ export function useWorkingSchedule() {
       }>;
     },
     enabled: !!user,
+    staleTime: STALE_LONG,
   });
 }
 
@@ -559,6 +586,7 @@ export function useDaysOff() {
       }>;
     },
     enabled: !!user,
+    staleTime: STALE_LONG,
   });
 }
 
@@ -601,6 +629,7 @@ export function useBreakevenGoals() {
       return data;
     },
     enabled: !!user,
+    staleTime: STALE_LONG,
   });
 }
 
@@ -636,6 +665,7 @@ export function useTaxSettings() {
       }>;
     },
     enabled: !!user,
+    staleTime: STALE_LONG,
   });
 }
 
@@ -692,6 +722,7 @@ export function useRecurringRules() {
       return data;
     },
     enabled: !!user,
+    staleTime: STALE_LONG,
   });
 }
 
@@ -715,7 +746,7 @@ export function useCreateRecurringRule() {
       }
       return { rule: ruleData, count: appointments.length };
     },
-    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); qc.invalidateQueries({ queryKey: ["recurring-rules"] }); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL, "recurring-rules"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -749,7 +780,7 @@ export function useEditRecurringAppointments() {
         }
       }
     },
-    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -783,7 +814,7 @@ export function useDeleteRecurringAppointments() {
         }
       }
     },
-    onSuccess: () => { INVALIDATE_ALL.forEach(k => qc.invalidateQueries({ queryKey: [k] })); qc.invalidateQueries({ queryKey: ["recurring-rules"] }); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL, "recurring-rules"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 

@@ -39,8 +39,10 @@ export default function FinancialOverviewPage() {
   const [drillMonth, setDrillMonth] = useState<MonthData | null>(null);
   const [viewMode, setViewMode] = useState<"table" | "chart">("chart");
 
-  const { data: allIncome = [] } = useIncome();
-  const { data: allExpenses = [] } = useExpenses();
+  const { data: incomeResult } = useIncome();
+  const allIncome = (incomeResult as any)?.data ?? incomeResult ?? [];
+  const { data: expenseResult } = useExpenses();
+  const allExpenses = (expenseResult as any)?.data ?? expenseResult ?? [];
   const { data: allAppointments = [] } = useAppointments();
   const { data: taxSettings = [] } = useTaxSettings();
   const { data: expectedPayments = [] } = useExpectedPayments();

@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { useState, useMemo } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -22,7 +23,12 @@ import { cn } from "@/lib/utils";
 const CATEGORIES = ["Rent", "Materials", "Insurance", "Equipment", "Marketing", "Utilities", "Laundry", "Software", "Tax", "Other"];
 
 export default function ExpensesPage() {
-  const { data: expenses = [], isLoading } = useExpenses();
+  const [page, setPage] = useState(0);
+  const { data: expenseResult, isLoading } = useExpenses(page);
+  const expenses = expenseResult?.data ?? [];
+  const totalCount = expenseResult?.totalCount ?? 0;
+  const pageSize = expenseResult?.pageSize ?? 50;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const createExpense = useCreateExpense();
   const updateExpense = useUpdateExpense();
   const deleteExpense = useDeleteExpense();
@@ -239,6 +245,19 @@ export default function ExpensesPage() {
                 </tbody>
               </table>
             </div>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between p-4 border-t border-border">
+                <p className="text-sm text-muted-foreground">{page * pageSize + 1}–{Math.min((page + 1) * pageSize, totalCount)} / {totalCount}</p>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
