@@ -57,6 +57,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [recurDeleteOpen, setRecurDeleteOpen] = useState(false);
   const [recurEditScopeOpen, setRecurEditScopeOpen] = useState(false);
+  const [noShowOpen, setNoShowOpen] = useState(false);
 
   // Edit form
   const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "", notes: "", price: 0 });
