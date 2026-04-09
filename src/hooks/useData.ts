@@ -347,12 +347,25 @@ export function useCompleteAppointment() {
 // Cancel/no-show
 export function useCancelAppointment() {
   const qc = useQueryClient();
+  const { user } = useAuth();
   return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: "cancelled" | "no-show" }) => {
+    mutationFn: async ({ id, status, clientId, price }: { id: string; status: "cancelled" | "no-show"; clientId?: string; price?: number }) => {
       await supabase.from("income").delete().eq("appointment_id", id);
       await supabase.from("expected_payments").delete().eq("appointment_id", id);
-      const { error } = await supabase.from("appointments").update({ status, payment_status: "not_applicable" } as any).eq("id", id);
-      if (error) throw error;
+
+      if (status === "no-show" && clientId && price && price > 0) {
+        // No-show: mark as waiting for payment and create expected payment
+        const { error } = await supabase.from("appointments").update({ status, payment_status: "waiting_for_payment" } as any).eq("id", id);
+        if (error) throw error;
+        const { error: epErr } = await supabase.from("expected_payments").insert({
+          user_id: user!.id, appointment_id: id,
+          client_id: clientId, amount: price, status: "pending",
+        } as any);
+        if (epErr) throw epErr;
+      } else {
+        const { error } = await supabase.from("appointments").update({ status, payment_status: "not_applicable" } as any).eq("id", id);
+        if (error) throw error;
+      }
     },
     onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
