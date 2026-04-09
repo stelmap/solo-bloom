@@ -40,13 +40,7 @@ export default function CalendarPage() {
   const { data: workingSchedule = [] } = useWorkingSchedule();
   const { data: daysOff = [] } = useDaysOff();
   const createAppointment = useCreateAppointment();
-  const updateAppointment = useUpdateAppointment();
-  const deleteAppointment = useDeleteAppointment();
-  const completeAppointment = useCompleteAppointment();
-  const cancelAppointment = useCancelAppointment();
   const createRecurringRule = useCreateRecurringRule();
-  const deleteRecurring = useDeleteRecurringAppointments();
-  const editRecurring = useEditRecurringAppointments();
   const createDayOff = useCreateDayOff();
   const deleteDayOff = useDeleteDayOff();
   const { toast } = useToast();
