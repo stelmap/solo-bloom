@@ -33,14 +33,6 @@ export default function AuthPage() {
   const { toast } = useToast();
   const { t } = useLanguage();
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-secondary flex items-center justify-center">
-        <div className="animate-pulse text-secondary-foreground/50">{t("common.loading")}</div>
-      </div>
-    );
-  }
-
   // If user is already logged in and a plan was selected, auto-start checkout
   useEffect(() => {
     if (user && planParam && PLAN_PRICE_MAP[planParam] && !checkoutTriggeredRef.current) {
@@ -60,9 +52,16 @@ export default function AuthPage() {
         navigate("/dashboard", { replace: true });
       };
       startCheckout();
-      return null as any;
     }
   }, [user, planParam, navigate, toast]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
+        <div className="animate-pulse text-secondary-foreground/50">{t("common.loading")}</div>
+      </div>
+    );
+  }
 
   if (user && !planParam) {
     return <Navigate to="/dashboard" replace />;
