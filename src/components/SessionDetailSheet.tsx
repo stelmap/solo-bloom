@@ -57,6 +57,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [recurDeleteOpen, setRecurDeleteOpen] = useState(false);
   const [recurEditScopeOpen, setRecurEditScopeOpen] = useState(false);
+  const [noShowOpen, setNoShowOpen] = useState(false);
 
   // Edit form
   const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "", notes: "", price: 0 });
@@ -202,18 +203,20 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     }
   };
 
-  const handleStatusChange = async (status: "confirmed" | "cancelled" | "no-show") => {
+  const handleStatusChange = async (status: "confirmed" | "cancelled" | "no-show", waiveFee = false) => {
     try {
       if (notesDirty) await updateAppointment.mutateAsync({ id: apt.id, notes });
       if (status === "cancelled" || status === "no-show") {
         await cancelAppointment.mutateAsync({
           id: apt.id, status,
-          clientId: apt.client_id, price: Number(apt.price),
+          clientId: waiveFee ? undefined : apt.client_id,
+          price: waiveFee ? 0 : Number(apt.price),
         });
       } else {
         await updateAppointment.mutateAsync({ id: apt.id, status });
       }
       toast({ title: t("toast.statusUpdated", { status: STATUSES[status]?.label || status }) });
+      setNoShowOpen(false);
       onOpenChange(false);
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
@@ -329,7 +332,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   <Button variant="outline" size="sm" onClick={() => handleStatusChange("cancelled")} className="text-destructive hover:text-destructive">
                     <XCircle className="h-3.5 w-3.5 mr-1" /> {t("calendar.cancel")}
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleStatusChange("no-show")} className="text-warning hover:text-warning">
+                  <Button variant="outline" size="sm" onClick={() => setNoShowOpen(true)} className="text-warning hover:text-warning">
                     <Ban className="h-3.5 w-3.5 mr-1" /> {t("calendar.noShow")}
                   </Button>
                 </div>
@@ -487,6 +490,30 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
             <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringEdit("this")}>{t("recurring.thisOnly")}</Button>
             <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringEdit("following")}>{t("recurring.thisAndFollowing")}</Button>
             <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringEdit("all")}>{t("recurring.allInSeries")}</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* No-show choice */}
+      <Dialog open={noShowOpen} onOpenChange={setNoShowOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>{t("calendar.noShow")}</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">{t("noShow.description")}</p>
+          <div className="space-y-2">
+            <Button variant="outline" className="w-full justify-start" onClick={() => handleStatusChange("no-show", false)}>
+              <DollarSign className="h-4 w-4 mr-2 text-warning" />
+              <div className="text-left">
+                <p className="text-sm font-medium">{t("noShow.charge")}</p>
+                <p className="text-xs text-muted-foreground">{cs}{Number(apt.price).toFixed(2)} {t("noShow.chargeDesc")}</p>
+              </div>
+            </Button>
+            <Button variant="outline" className="w-full justify-start" onClick={() => handleStatusChange("no-show", true)}>
+              <XCircle className="h-4 w-4 mr-2 text-muted-foreground" />
+              <div className="text-left">
+                <p className="text-sm font-medium">{t("noShow.waive")}</p>
+                <p className="text-xs text-muted-foreground">{t("noShow.waiveDesc")}</p>
+              </div>
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
