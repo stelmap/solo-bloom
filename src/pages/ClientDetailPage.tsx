@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
+import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +11,7 @@ import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import {
   useClient, useUpdateClient, useDeleteClient,
   useClientAppointments, useClientNotes, useCreateClientNote, useDeleteClientNote,
-  useClientAttachments, useUploadAttachment, useDeleteAttachment,
+  useClientAttachments, useUploadAttachment, useDeleteAttachment, useProfile,
 } from "@/hooks/useData";
 import { supabase } from "@/integrations/supabase/client";
 import {
