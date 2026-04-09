@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,16 +8,19 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 export default function AuthPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot" | "otp">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [otpValue, setOtpValue] = useState("");
+  const resetEmailRef = useRef("");
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -36,7 +39,6 @@ export default function AuthPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -52,17 +54,10 @@ export default function AuthPage() {
           },
         });
         if (error) throw error;
-        toast({
-          title: t("auth.accountCreated"),
-          description: t("auth.checkEmail"),
-        });
+        toast({ title: t("auth.accountCreated"), description: t("auth.checkEmail") });
       }
     } catch (error: any) {
-      toast({
-        title: t("common.error"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -76,19 +71,196 @@ export default function AuthPage() {
         redirectTo: `${window.location.origin}/reset-password`,
       });
       if (error) throw error;
-      toast({
-        title: t("auth.resetLinkSent"),
-        description: t("auth.checkEmailForReset"),
-      });
+      resetEmailRef.current = email;
+      toast({ title: t("auth.otpSent"), description: t("auth.otpSentDesc") });
+      setMode("otp");
     } catch (error: any) {
-      toast({
-        title: t("common.error"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otpValue.length !== 6) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: resetEmailRef.current,
+        token: otpValue,
+        type: "recovery",
+      });
+      if (error) {
+        if (error.message.toLowerCase().includes("expired")) {
+          throw new Error(t("auth.otpExpired"));
+        }
+        throw error;
+      }
+      // PASSWORD_RECOVERY event fires in AuthContext → isRecovery = true
+      // ProtectedRoute will redirect to /reset-password
+      navigate("/reset-password");
+    } catch (error: any) {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      setOtpValue("");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderForm = () => {
+    if (mode === "otp") {
+      return (
+        <>
+          <div className="space-y-1">
+            <button
+              onClick={() => { setMode("forgot"); setOtpValue(""); }}
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {t("auth.backToLogin")}
+            </button>
+            <h2 className="text-xl font-bold text-foreground">{t("auth.enterOtp")}</h2>
+            <p className="text-sm text-muted-foreground">
+              {t("auth.otpDescription")}
+            </p>
+          </div>
+          <form onSubmit={handleVerifyOtp} className="space-y-6">
+            <div className="flex justify-center">
+              <InputOTP maxLength={6} value={otpValue} onChange={setOtpValue}>
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+            <Button type="submit" className="w-full" disabled={loading || otpValue.length !== 6}>
+              {loading ? t("auth.verifying") : t("auth.verifyCode")}
+            </Button>
+            <p className="text-center text-xs text-muted-foreground">{t("auth.otpExpiry")}</p>
+          </form>
+        </>
+      );
+    }
+
+    if (mode === "forgot") {
+      return (
+        <>
+          <div className="space-y-1">
+            <button
+              onClick={() => setMode("login")}
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {t("auth.backToLogin")}
+            </button>
+            <h2 className="text-xl font-bold text-foreground">{t("auth.resetPassword")}</h2>
+            <p className="text-sm text-muted-foreground">{t("auth.resetPasswordOtpDesc")}</p>
+          </div>
+          <form onSubmit={handleForgotPassword} className="space-y-4">
+            <div className="space-y-2">
+              <Label>{t("common.email")}</Label>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? t("auth.sending") : t("auth.sendOtp")}
+            </Button>
+          </form>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <div className="space-y-1">
+          <h2 className="text-xl font-bold text-foreground">
+            {mode === "login" ? t("auth.welcomeBack") : t("auth.createAccount")}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {mode === "login" ? t("auth.signInToManage") : t("auth.getStarted")}
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {mode === "signup" && (
+            <div className="space-y-2">
+              <Label>{t("common.fullName")}</Label>
+              <Input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder={t("auth.yourName")}
+                required
+              />
+            </div>
+          )}
+          <div className="space-y-2">
+            <Label>{t("common.email")}</Label>
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label>{t("auth.password")}</Label>
+              {mode === "login" && (
+                <button
+                  type="button"
+                  onClick={() => setMode("forgot")}
+                  className="text-xs text-primary hover:underline"
+                >
+                  {t("auth.forgotPassword")}
+                </button>
+              )}
+            </div>
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                minLength={6}
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? t("common.loading") : mode === "login" ? t("auth.signIn") : t("auth.createAccount")}
+          </Button>
+        </form>
+
+        <p className="text-center text-sm text-muted-foreground">
+          {mode === "login" ? t("auth.noAccount") : t("auth.haveAccount")}{" "}
+          <button
+            onClick={() => setMode(mode === "login" ? "signup" : "login")}
+            className="text-primary font-medium hover:underline"
+          >
+            {mode === "login" ? t("auth.signUp") : t("auth.signIn")}
+          </button>
+        </p>
+      </>
+    );
   };
 
   return (
@@ -130,117 +302,7 @@ export default function AuthPage() {
               Solo<span className="text-primary">Pro</span>
             </h1>
           </div>
-
-          {mode === "forgot" ? (
-            <>
-              <div className="space-y-1">
-                <button
-                  onClick={() => setMode("login")}
-                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-2"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  {t("auth.backToLogin")}
-                </button>
-                <h2 className="text-xl font-bold text-foreground">{t("auth.resetPassword")}</h2>
-                <p className="text-sm text-muted-foreground">{t("auth.resetPasswordDesc")}</p>
-              </div>
-              <form onSubmit={handleForgotPassword} className="space-y-4">
-                <div className="space-y-2">
-                  <Label>{t("common.email")}</Label>
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? t("auth.sending") : t("auth.sendResetLink")}
-                </Button>
-              </form>
-            </>
-          ) : (
-            <>
-              <div className="space-y-1">
-                <h2 className="text-xl font-bold text-foreground">
-                  {mode === "login" ? t("auth.welcomeBack") : t("auth.createAccount")}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {mode === "login" ? t("auth.signInToManage") : t("auth.getStarted")}
-                </p>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {mode === "signup" && (
-                  <div className="space-y-2">
-                    <Label>{t("common.fullName")}</Label>
-                    <Input
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder={t("auth.yourName")}
-                      required
-                    />
-                  </div>
-                )}
-                <div className="space-y-2">
-                  <Label>{t("common.email")}</Label>
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label>{t("auth.password")}</Label>
-                    {mode === "login" && (
-                      <button
-                        type="button"
-                        onClick={() => setMode("forgot")}
-                        className="text-xs text-primary hover:underline"
-                      >
-                        {t("auth.forgotPassword")}
-                      </button>
-                    )}
-                  </div>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      required
-                      minLength={6}
-                      className="pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? t("common.loading") : mode === "login" ? t("auth.signIn") : t("auth.createAccount")}
-                </Button>
-              </form>
-
-              <p className="text-center text-sm text-muted-foreground">
-                {mode === "login" ? t("auth.noAccount") : t("auth.haveAccount")}{" "}
-                <button
-                  onClick={() => setMode(mode === "login" ? "signup" : "login")}
-                  className="text-primary font-medium hover:underline"
-                >
-                  {mode === "login" ? t("auth.signUp") : t("auth.signIn")}
-                </button>
-              </p>
-            </>
-          )}
+          {renderForm()}
         </div>
       </div>
     </div>
