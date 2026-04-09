@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
 import {
   useUpdateAppointment, useDeleteAppointment, useCompleteAppointment,
@@ -39,6 +40,7 @@ function formatTime(time: string, use12h: boolean) {
 
 export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12h = false }: SessionDetailSheetProps) {
   const { t } = useLanguage();
+  const { symbol: cs } = useCurrency();
   const { toast } = useToast();
   const { data: clients = [] } = useClients();
   const { data: services = [] } = useServices();
@@ -275,7 +277,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("calendar.price")}</span>
-                  <span className="font-semibold text-foreground">€{Number(apt.price).toFixed(2)}</span>
+                  <span className="font-semibold text-foreground">{cs}{Number(apt.price).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("common.payment")}</span>
@@ -358,7 +360,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   setEditForm(f => ({ ...f, service_id: v, price: Number(svc?.price ?? f.price) }));
                 }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — €{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
+                  <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -366,7 +368,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 <div className="space-y-2"><Label>{t("common.time")} *</Label><Input type="time" value={editForm.time} onChange={e => setEditForm(f => ({ ...f, time: e.target.value }))} /></div>
               </div>
               <div className="space-y-2">
-                <Label>{t("calendar.price")} (€)</Label>
+                <Label>{t("calendar.price")} ({cs})</Label>
                 <Input type="number" step="0.01" value={editForm.price} onChange={e => setEditForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} />
               </div>
               <div className="space-y-2">

@@ -9,6 +9,7 @@ import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export default function ServicesPage() {
   const { data: services = [], isLoading } = useServices();
@@ -17,6 +18,7 @@ export default function ServicesPage() {
   const deleteService = useDeleteService();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { symbol: cs } = useCurrency();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -80,7 +82,7 @@ export default function ServicesPage() {
               <div className="space-y-4">
                 <div className="space-y-2"><Label>{t("common.name")} *</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>{t("common.duration")}</Label><Input type="number" value={form.duration_minutes} onChange={e => setForm(f => ({ ...f, duration_minutes: parseInt(e.target.value) || 60 }))} /></div>
-                <div className="space-y-2"><Label>{t("calendar.price")} (€)</Label><Input type="number" step="0.01" value={form.price} onChange={e => setForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} /></div>
+                <div className="space-y-2"><Label>{t("calendar.price")} ({cs})</Label><Input type="number" step="0.01" value={form.price} onChange={e => setForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} /></div>
                 <Button onClick={handleSubmit} className="w-full" disabled={createService.isPending || updateService.isPending}>
                   {editId ? t("common.save") : t("services.addService")}
                 </Button>
@@ -108,7 +110,7 @@ export default function ServicesPage() {
                 <h3 className="font-semibold text-foreground text-lg mb-3">{service.name}</h3>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1.5 text-muted-foreground"><Clock className="h-4 w-4" /><span className="text-sm">{service.duration_minutes} {t("common.min")}</span></div>
-                  <div className="flex items-center gap-1.5 text-foreground font-semibold"><DollarSign className="h-4 w-4" /><span className="text-sm">€{Number(service.price).toFixed(0)}</span></div>
+                  <div className="flex items-center gap-1.5 text-foreground font-semibold"><DollarSign className="h-4 w-4" /><span className="text-sm">{cs}{Number(service.price).toFixed(0)}</span></div>
                 </div>
               </div>
             ))}
