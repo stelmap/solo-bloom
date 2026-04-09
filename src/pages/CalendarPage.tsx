@@ -3,19 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight, Plus, CheckCircle, XCircle, Ban, Clock, Pencil, Trash2, DollarSign, Repeat, CalendarOff, BarChart3 } from "lucide-react";
+import { SessionDetailSheet } from "@/components/SessionDetailSheet";
+import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { format, addDays, startOfWeek, isSameDay } from "date-fns";
 import {
-  useAppointments, useCreateAppointment, useUpdateAppointment,
-  useDeleteAppointment, useCompleteAppointment, useCancelAppointment,
+  useAppointments, useCreateAppointment,
   useClients, useServices, useProfile, useCreateRecurringRule,
-  useDeleteRecurringAppointments, useEditRecurringAppointments,
   useWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff,
 } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
@@ -41,13 +39,7 @@ export default function CalendarPage() {
   const { data: workingSchedule = [] } = useWorkingSchedule();
   const { data: daysOff = [] } = useDaysOff();
   const createAppointment = useCreateAppointment();
-  const updateAppointment = useUpdateAppointment();
-  const deleteAppointment = useDeleteAppointment();
-  const completeAppointment = useCompleteAppointment();
-  const cancelAppointment = useCancelAppointment();
   const createRecurringRule = useCreateRecurringRule();
-  const deleteRecurring = useDeleteRecurringAppointments();
-  const editRecurring = useEditRecurringAppointments();
   const createDayOff = useCreateDayOff();
   const deleteDayOff = useDeleteDayOff();
   const { toast } = useToast();
@@ -120,44 +112,12 @@ export default function CalendarPage() {
     });
   };
 
-  const STATUSES = [
-    { value: "scheduled", label: t("status.scheduled"), color: "bg-muted text-muted-foreground" },
-    { value: "confirmed", label: t("status.confirmed"), color: "bg-primary/15 text-primary" },
-    { value: "completed", label: t("status.completed"), color: "bg-success/15 text-success" },
-    { value: "cancelled", label: t("status.cancelled"), color: "bg-destructive/15 text-destructive" },
-    { value: "no-show", label: t("status.noShow"), color: "bg-warning/15 text-warning" },
-  ];
-
-  const PAYMENT_METHODS = [
-    { value: "cash", label: t("method.cash") },
-    { value: "card", label: t("method.card") },
-    { value: "bank_transfer", label: t("method.bankTransfer") },
-  ];
-
-  const PAYMENT_STATUSES = [
-    { value: "paid_now", label: t("payment.paidNow"), description: t("payment.paidNowDesc") },
-    { value: "paid_in_advance", label: t("payment.paidInAdvance"), description: t("payment.paidInAdvanceDesc") },
-    { value: "waiting_for_payment", label: t("payment.waitingForPayment"), description: t("payment.waitingForPaymentDesc") },
-  ];
 
   const [createOpen, setCreateOpen] = useState(false);
   const [detailApt, setDetailApt] = useState<any>(null);
-  const [editOpen, setEditOpen] = useState(false);
-  const [completeOpen, setCompleteOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [editAptId, setEditAptId] = useState<string | null>(null);
-  const [completeAptId, setCompleteAptId] = useState<string | null>(null);
-  const [completeClientId, setCompleteClientId] = useState<string | null>(null);
-  const [recurringDeleteOpen, setRecurringDeleteOpen] = useState(false);
-  const [recurringDeleteApt, setRecurringDeleteApt] = useState<any>(null);
-  const [recurringEditScopeOpen, setRecurringEditScopeOpen] = useState(false);
-  const [pendingEditApt, setPendingEditApt] = useState<any>(null);
+  const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
 
   const [form, setForm] = useState({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
-  const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "09:00", notes: "", price: 0 });
-  const [completePrice, setCompletePrice] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState("cash");
-  const [paymentStatus, setPaymentStatus] = useState("paid_now");
 
   // Recurring form state
   const [isRecurring, setIsRecurring] = useState(false);
@@ -223,112 +183,9 @@ export default function CalendarPage() {
     }
   };
 
-  const openEditFromDetail = (apt: any) => {
-    const d = new Date(apt.scheduled_at);
-    setEditForm({
-      client_id: apt.client_id, service_id: apt.service_id,
-      date: format(d, "yyyy-MM-dd"), time: format(d, "HH:mm"),
-      notes: apt.notes || "", price: Number(apt.price),
-    });
-    setEditAptId(apt.id);
-    setDetailApt(null);
-    if (apt.recurring_rule_id) { setPendingEditApt(apt); }
-    setEditOpen(true);
-  };
-
-  const handleEdit = async () => {
-    if (!editAptId) return;
-    if (pendingEditApt?.recurring_rule_id) {
-      setEditOpen(false); setRecurringEditScopeOpen(true); return;
-    }
-    try {
-      const service = services.find(s => s.id === editForm.service_id);
-      await updateAppointment.mutateAsync({
-        id: editAptId, client_id: editForm.client_id, service_id: editForm.service_id,
-        scheduled_at: `${editForm.date}T${editForm.time}:00`,
-        duration_minutes: service?.duration_minutes ?? 60,
-        price: editForm.price, notes: editForm.notes || undefined,
-      });
-      setEditOpen(false);
-      toast({ title: t("toast.appointmentUpdated") });
-    } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
-  };
-
-  const handleRecurringEdit = async (scope: "this" | "following" | "all") => {
-    if (!editAptId || !pendingEditApt) return;
-    try {
-      const service = services.find(s => s.id === editForm.service_id);
-      if (scope === "this") {
-        await updateAppointment.mutateAsync({
-          id: editAptId, client_id: editForm.client_id, service_id: editForm.service_id,
-          scheduled_at: `${editForm.date}T${editForm.time}:00`,
-          duration_minutes: service?.duration_minutes ?? 60,
-          price: editForm.price, notes: editForm.notes || undefined,
-        });
-      } else {
-        await editRecurring.mutateAsync({
-          ruleId: pendingEditApt.recurring_rule_id, scope, appointmentId: editAptId,
-          updates: {
-            client_id: editForm.client_id, service_id: editForm.service_id,
-            duration_minutes: service?.duration_minutes ?? 60,
-            price: editForm.price, notes: editForm.notes || undefined,
-          },
-        });
-      }
-      setRecurringEditScopeOpen(false); setPendingEditApt(null);
-      toast({ title: t("toast.appointmentUpdated") });
-    } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
-  };
-
-  const openComplete = (apt: any) => {
-    setCompletePrice(Number(apt.price)); setPaymentMethod("cash"); setPaymentStatus("paid_now");
-    setCompleteAptId(apt.id); setCompleteClientId(apt.client_id);
-    setDetailApt(null); setCompleteOpen(true);
-  };
-
-  const handleComplete = async () => {
-    if (!completeAptId || !completeClientId) return;
-    try {
-      await completeAppointment.mutateAsync({
-        appointmentId: completeAptId, clientId: completeClientId,
-        price: completePrice, paymentMethod, paymentStatus,
-      });
-      setCompleteOpen(false);
-      const msg = paymentStatus === "waiting_for_payment"
-        ? t("toast.sessionCompletedExpected") : t("toast.sessionCompletedIncome", { amount: completePrice.toString() });
-      toast({ title: t("toast.appointmentCompleted"), description: msg });
-    } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
-  };
-
-  const handleStatusChange = async (apt: any, status: "confirmed" | "cancelled" | "no-show") => {
-    try {
-      if (status === "cancelled" || status === "no-show") { await cancelAppointment.mutateAsync({ id: apt.id, status }); }
-      else { await updateAppointment.mutateAsync({ id: apt.id, status }); }
-      setDetailApt(null);
-      toast({ title: t("toast.statusUpdated", { status: STATUSES.find(s => s.value === status)?.label || status }) });
-    } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
-  };
-
-  const handleDelete = async () => {
-    if (!deleteId) return;
-    try {
-      await deleteAppointment.mutateAsync(deleteId);
-      toast({ title: t("toast.appointmentDeleted") });
-      setDeleteId(null); setDetailApt(null);
-    } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
-  };
-
-  const openRecurringDelete = (apt: any) => {
-    setRecurringDeleteApt(apt); setRecurringDeleteOpen(true); setDetailApt(null);
-  };
-
-  const handleRecurringDelete = async (scope: "this" | "following" | "all") => {
-    if (!recurringDeleteApt) return;
-    try {
-      await deleteRecurring.mutateAsync({ ruleId: recurringDeleteApt.recurring_rule_id, scope, appointmentId: recurringDeleteApt.id });
-      toast({ title: t("toast.appointmentDeleted") });
-      setRecurringDeleteOpen(false); setRecurringDeleteApt(null);
-    } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
+  const openSessionSheet = (apt: any) => {
+    setDetailApt(apt);
+    setSessionSheetOpen(true);
   };
 
   const handleQuickDayOff = async (date: Date) => {
@@ -346,7 +203,14 @@ export default function CalendarPage() {
   const getEventsForDayHour = (day: Date, hour: number) =>
     appointments.filter(apt => { const d = new Date(apt.scheduled_at); return isSameDay(d, day) && d.getHours() === hour; });
 
-  const statusInfo = (status: string) => STATUSES.find(s => s.value === status) || STATUSES[0];
+  const STATUS_MAP: Record<string, { label: string; color: string }> = {
+    scheduled: { label: t("status.scheduled"), color: "bg-muted text-muted-foreground" },
+    confirmed: { label: t("status.confirmed"), color: "bg-primary/15 text-primary" },
+    completed: { label: t("status.completed"), color: "bg-success/15 text-success" },
+    cancelled: { label: t("status.cancelled"), color: "bg-destructive/15 text-destructive" },
+    "no-show": { label: t("status.noShow"), color: "bg-warning/15 text-warning" },
+  };
+  const statusInfo = (status: string) => STATUS_MAP[status] || STATUS_MAP.scheduled;
 
   const fmtHour = (hour: number) => formatTime(`${hour.toString().padStart(2, "0")}:00`, use12h);
   const fmtTime = (dateStr: string) => {
@@ -578,7 +442,7 @@ export default function CalendarPage() {
                       {events.map((evt) => {
                         const si = statusInfo(evt.status);
                         return (
-                          <div key={evt.id} onClick={(e) => { e.stopPropagation(); setDetailApt(evt); }}
+                          <div key={evt.id} onClick={(e) => { e.stopPropagation(); openSessionSheet(evt); }}
                             className={cn("absolute inset-x-1 top-1 rounded-md border p-2 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10", si.color)}
                             style={{ height: `${(evt.duration_minutes / 60) * 60 - 8}px` }}>
                             <p className="text-xs font-semibold truncate">{(evt as any).clients?.name}</p>
@@ -598,179 +462,12 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      {/* Detail dialog */}
-      <Dialog open={!!detailApt} onOpenChange={(o) => { if (!o) setDetailApt(null); }}>
-        <DialogContent>
-          {detailApt && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-3">
-                  {t("calendar.appointmentDetails")}
-                  <Badge className={cn("text-xs", statusInfo(detailApt.status).color)}>{statusInfo(detailApt.status).label}</Badge>
-                  {detailApt.recurring_rule_id && <Badge variant="outline" className="text-xs"><Repeat className="h-3 w-3 mr-1" />{t("recurring.badge")}</Badge>}
-                </DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
-                  <div className="flex justify-between"><span className="text-muted-foreground">{t("calendar.client")}</span><span className="font-medium text-foreground">{detailApt.clients?.name}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">{t("calendar.service")}</span><span className="font-medium text-foreground">{detailApt.services?.name}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">{t("calendar.dateTime")}</span><span className="font-medium text-foreground">{format(new Date(detailApt.scheduled_at), "MMM d, yyyy")} · {fmtTime(detailApt.scheduled_at)}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">{t("calendar.duration")}</span><span className="font-medium text-foreground">{detailApt.duration_minutes} {t("common.min")}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">{t("calendar.price")}</span><span className="font-semibold text-foreground">€{Number(detailApt.price).toFixed(2)}</span></div>
-                  {detailApt.notes && <div className="pt-2 border-t border-border"><p className="text-xs text-muted-foreground">{t("calendar.notes")}: {detailApt.notes}</p></div>}
-                </div>
-                {(detailApt.status === "scheduled" || detailApt.status === "confirmed") && (
-                  <div className="flex flex-wrap gap-2">
-                    <Button onClick={() => openComplete(detailApt)} className="flex-1"><CheckCircle className="h-4 w-4 mr-2" /> {t("calendar.complete")}</Button>
-                    {detailApt.status === "scheduled" && (
-                      <Button variant="outline" onClick={() => handleStatusChange(detailApt, "confirmed")} className="flex-1"><Clock className="h-4 w-4 mr-2" /> {t("calendar.confirm")}</Button>
-                    )}
-                    <Button variant="outline" onClick={() => handleStatusChange(detailApt, "cancelled")} className="text-destructive hover:text-destructive"><XCircle className="h-4 w-4 mr-1" /> {t("calendar.cancel")}</Button>
-                    <Button variant="outline" onClick={() => handleStatusChange(detailApt, "no-show")} className="text-warning hover:text-warning"><Ban className="h-4 w-4 mr-1" /> {t("calendar.noShow")}</Button>
-                  </div>
-                )}
-                <div className="flex gap-2 border-t border-border pt-3">
-                  <Button variant="ghost" size="sm" onClick={() => openEditFromDetail(detailApt)}><Pencil className="h-3.5 w-3.5 mr-1" /> {t("calendar.edit")}</Button>
-                  {detailApt.recurring_rule_id ? (
-                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => openRecurringDelete(detailApt)}>
-                      <Trash2 className="h-3.5 w-3.5 mr-1" /> {t("calendar.delete")}
-                    </Button>
-                  ) : (
-                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteId(detailApt.id)}>
-                      <Trash2 className="h-3.5 w-3.5 mr-1" /> {t("calendar.delete")}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit dialog */}
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>{t("calendar.editAppointment")}</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t("calendar.client")} *</Label>
-              <Select value={editForm.client_id} onValueChange={v => setEditForm(f => ({ ...f, client_id: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>{t("calendar.service")} *</Label>
-              <Select value={editForm.service_id} onValueChange={v => {
-                const svc = services.find(s => s.id === v);
-                setEditForm(f => ({ ...f, service_id: v, price: Number(svc?.price ?? f.price) }));
-              }}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — €{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>{t("common.date")} *</Label><Input type="date" value={editForm.date} onChange={e => setEditForm(f => ({ ...f, date: e.target.value }))} /></div>
-              <div className="space-y-2"><Label>{t("common.time")} *</Label><Input type="time" value={editForm.time} onChange={e => setEditForm(f => ({ ...f, time: e.target.value }))} /></div>
-            </div>
-            <div className="space-y-2"><Label>{t("calendar.price")} (€)</Label><Input type="number" step="0.01" value={editForm.price} onChange={e => setEditForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} /></div>
-            <div className="space-y-2"><Label>{t("calendar.notes")}</Label><Input value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} /></div>
-            <Button onClick={handleEdit} className="w-full" disabled={updateAppointment.isPending}>
-              {updateAppointment.isPending ? t("calendar.saving") : t("calendar.saveChanges")}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Complete dialog */}
-      <Dialog open={completeOpen} onOpenChange={setCompleteOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>{t("calendar.completeAppointment")}</DialogTitle></DialogHeader>
-          <div className="space-y-5">
-            <p className="text-sm text-muted-foreground">{t("calendar.confirmOutcome")}</p>
-            <div className="space-y-2">
-              <Label>{t("calendar.finalPrice")}</Label>
-              <Input type="number" step="0.01" value={completePrice} onChange={e => setCompletePrice(parseFloat(e.target.value) || 0)} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t("calendar.paymentStatus")}</Label>
-              <div className="space-y-2">
-                {PAYMENT_STATUSES.map(ps => (
-                  <button key={ps.value} onClick={() => setPaymentStatus(ps.value)}
-                    className={cn("w-full text-left p-3 rounded-lg border transition-colors",
-                      paymentStatus === ps.value ? "bg-primary/10 border-primary" : "bg-card border-border hover:bg-muted"
-                    )}>
-                    <p className="text-sm font-medium text-foreground">{ps.label}</p>
-                    <p className="text-xs text-muted-foreground">{ps.description}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-            {(paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") && (
-              <div className="space-y-2">
-                <Label>{t("calendar.paymentMethod")}</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {PAYMENT_METHODS.map(m => (
-                    <button key={m.value} onClick={() => setPaymentMethod(m.value)}
-                      className={cn("p-3 rounded-lg border text-sm font-medium transition-colors text-center",
-                        paymentMethod === m.value ? "bg-primary/10 border-primary text-primary" : "bg-card border-border text-muted-foreground hover:bg-muted"
-                      )}>
-                      {m.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            <div className={cn("rounded-lg p-4 flex items-center gap-3 border",
-              paymentStatus === "waiting_for_payment" ? "bg-warning/10 border-warning/20" : "bg-success/10 border-success/20"
-            )}>
-              <DollarSign className={cn("h-5 w-5", paymentStatus === "waiting_for_payment" ? "text-warning" : "text-success")} />
-              <div>
-                <p className="text-sm font-semibold text-foreground">
-                  {paymentStatus === "waiting_for_payment"
-                    ? t("calendar.willBeExpected", { amount: completePrice.toFixed(2) })
-                    : t("calendar.willBeIncome", { amount: completePrice.toFixed(2) })}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {paymentStatus === "waiting_for_payment" ? t("calendar.markPaidLater") : t("calendar.paidVia", { method: PAYMENT_METHODS.find(m => m.value === paymentMethod)?.label || "" })}
-                </p>
-              </div>
-            </div>
-            <Button onClick={handleComplete} className="w-full" disabled={completeAppointment.isPending}>
-              {completeAppointment.isPending ? t("calendar.saving") : t("calendar.confirmComplete")}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Recurring delete dialog */}
-      <Dialog open={recurringDeleteOpen} onOpenChange={setRecurringDeleteOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>{t("recurring.deleteScope")}</DialogTitle></DialogHeader>
-          <div className="space-y-2">
-            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringDelete("this")}>{t("recurring.thisOnly")}</Button>
-            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringDelete("following")}>{t("recurring.thisAndFollowing")}</Button>
-            <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive" onClick={() => handleRecurringDelete("all")}>{t("recurring.allInSeries")}</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Recurring edit scope dialog */}
-      <Dialog open={recurringEditScopeOpen} onOpenChange={(o) => { if (!o) { setRecurringEditScopeOpen(false); setPendingEditApt(null); } }}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>{t("recurring.editScope")}</DialogTitle></DialogHeader>
-          <p className="text-sm text-muted-foreground mb-2">{t("recurring.editScopeDesc")}</p>
-          <div className="space-y-2">
-            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringEdit("this")} disabled={editRecurring.isPending}>{t("recurring.thisOnly")}</Button>
-            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringEdit("following")} disabled={editRecurring.isPending}>{t("recurring.thisAndFollowing")}</Button>
-            <Button variant="outline" className="w-full justify-start" onClick={() => handleRecurringEdit("all")} disabled={editRecurring.isPending}>{t("recurring.allInSeries")}</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={handleDelete}
-        title={t("calendar.deleteTitle")} description={t("calendar.deleteDesc")}
-        loading={deleteAppointment.isPending} />
+      <SessionDetailSheet
+        appointment={detailApt}
+        open={sessionSheetOpen}
+        onOpenChange={(o) => { setSessionSheetOpen(o); if (!o) setDetailApt(null); }}
+        use12h={use12h}
+      />
     </AppLayout>
   );
 }

@@ -515,6 +515,16 @@ export const translations = {
 
   // Expense types
   "category.Tax": { en: "Tax", uk: "Податок" },
+
+  // Session
+  "session.title": { en: "Session Details", uk: "Деталі сеансу" },
+  "session.notes": { en: "Session Notes", uk: "Нотатки сеансу" },
+  "session.notesPlaceholder": { en: "Write notes about this session...", uk: "Напишіть нотатки про цей сеанс..." },
+  "session.saveNotes": { en: "Save", uk: "Зберегти" },
+  "session.notesSaved": { en: "Notes saved", uk: "Нотатки збережено" },
+  "session.summary": { en: "Summary", uk: "Підсумок" },
+  "session.viewDetails": { en: "View details", uk: "Переглянути деталі" },
+  "calendar.deleteAppointment": { en: "Delete appointment?", uk: "Видалити запис?" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;

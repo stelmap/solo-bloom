@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
+import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +11,7 @@ import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import {
   useClient, useUpdateClient, useDeleteClient,
   useClientAppointments, useClientNotes, useCreateClientNote, useDeleteClientNote,
-  useClientAttachments, useUploadAttachment, useDeleteAttachment,
+  useClientAttachments, useUploadAttachment, useDeleteAttachment, useProfile,
 } from "@/hooks/useData";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -37,12 +38,16 @@ export default function ClientDetailPage() {
   const { data: attachments = [] } = useClientAttachments(id);
   const uploadAttachment = useUploadAttachment();
   const deleteAttachment = useDeleteAttachment();
+  const { data: profile } = useProfile();
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "" });
+  const [sessionApt, setSessionApt] = useState<any>(null);
+  const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
+  const use12h = (profile as any)?.time_format === "12h";
 
   const SESSION_STATUS_STYLES: Record<string, { label: string; color: string }> = {
     scheduled: { label: t("status.scheduled"), color: "bg-muted text-muted-foreground" },
@@ -254,29 +259,41 @@ export default function ClientDetailPage() {
                 <p className="text-sm text-muted-foreground text-center py-8">{t("clientDetail.noSessions")}</p>
               ) : (
                 <div className="space-y-2">
-                  {(appointments as any[]).map((apt: any) => (
-                    <div key={apt.id} className={cn(
-                      "flex items-center gap-4 p-4 rounded-lg border transition-colors",
-                      apt.status === "cancelled" || apt.status === "no-show" ? "bg-muted/30 border-border opacity-60" : "bg-muted/50 border-border"
-                    )}>
-                      <div className="text-center min-w-[70px]">
-                        <p className="text-sm font-semibold text-foreground">{format(new Date(apt.scheduled_at), "MMM d")}</p>
-                        <p className="text-xs text-muted-foreground">{format(new Date(apt.scheduled_at), "HH:mm")}</p>
-                      </div>
-                      <div className="h-10 w-px bg-border" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{apt.services?.name}</p>
-                        <p className="text-xs text-muted-foreground">{apt.duration_minutes} {t("common.min")}</p>
-                      </div>
-                      <div className="flex flex-col items-end gap-1">
-                        <span className="text-sm font-semibold text-foreground">€{Number(apt.price).toFixed(0)}</span>
-                        <div className="flex gap-1">
-                          {statusBadge(apt.status)}
-                          {paymentBadge(apt.payment_status)}
+                  {(appointments as any[]).map((apt: any) => {
+                    const notePreview = apt.notes ? (apt.notes.length > 80 ? apt.notes.slice(0, 80) + "…" : apt.notes) : null;
+                    return (
+                      <div key={apt.id}
+                        onClick={() => { setSessionApt(apt); setSessionSheetOpen(true); }}
+                        className={cn(
+                          "flex flex-col gap-2 p-4 rounded-lg border transition-colors cursor-pointer hover:ring-2 hover:ring-ring/20",
+                          apt.status === "cancelled" || apt.status === "no-show" ? "bg-muted/30 border-border opacity-60" : "bg-muted/50 border-border"
+                        )}>
+                        <div className="flex items-center gap-4">
+                          <div className="text-center min-w-[70px]">
+                            <p className="text-sm font-semibold text-foreground">{format(new Date(apt.scheduled_at), "MMM d")}</p>
+                            <p className="text-xs text-muted-foreground">{format(new Date(apt.scheduled_at), "HH:mm")}</p>
+                          </div>
+                          <div className="h-10 w-px bg-border" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{apt.services?.name}</p>
+                            <p className="text-xs text-muted-foreground">{apt.duration_minutes} {t("common.min")}</p>
+                          </div>
+                          <div className="flex flex-col items-end gap-1">
+                            <span className="text-sm font-semibold text-foreground">€{Number(apt.price).toFixed(0)}</span>
+                            <div className="flex gap-1">
+                              {statusBadge(apt.status)}
+                              {paymentBadge(apt.payment_status)}
+                            </div>
+                          </div>
                         </div>
+                        {notePreview && (
+                          <div className="pl-[86px] border-t border-border/50 pt-2">
+                            <p className="text-xs text-muted-foreground italic">📝 {notePreview}</p>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -303,6 +320,13 @@ export default function ClientDetailPage() {
       <ConfirmDeleteDialog open={deleteOpen} onOpenChange={setDeleteOpen} onConfirm={handleDelete}
         title={t("clientDetail.deleteClient")} description={t("clients.deleteDesc")}
         loading={deleteClient.isPending} />
+
+      <SessionDetailSheet
+        appointment={sessionApt}
+        open={sessionSheetOpen}
+        onOpenChange={(o) => { setSessionSheetOpen(o); if (!o) setSessionApt(null); }}
+        use12h={use12h}
+      />
     </AppLayout>
   );
 }
