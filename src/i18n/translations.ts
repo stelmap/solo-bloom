@@ -558,6 +558,36 @@ export const translations = {
   "financial.noData": { en: "No data for this month", uk: "Немає даних за цей місяць" },
   "financial.confirmed": { en: "Confirmed", uk: "Підтверджений" },
   "financial.expected": { en: "Expected", uk: "Очікуваний" },
+
+  // Password management
+  "password.title": { en: "Password", uk: "Пароль" },
+  "password.subtitle": { en: "Manage your account password", uk: "Керуйте паролем облікового запису" },
+  "password.currentPassword": { en: "Current Password", uk: "Поточний пароль" },
+  "password.newPassword": { en: "New Password", uk: "Новий пароль" },
+  "password.confirmPassword": { en: "Confirm New Password", uk: "Підтвердіть новий пароль" },
+  "password.changePassword": { en: "Change Password", uk: "Змінити пароль" },
+  "password.changing": { en: "Changing...", uk: "Зміна..." },
+  "password.changed": { en: "Password changed successfully", uk: "Пароль успішно змінено" },
+  "password.mismatch": { en: "New passwords do not match", uk: "Нові паролі не збігаються" },
+  "password.tooShort": { en: "Password must be at least 6 characters", uk: "Пароль має бути не менше 6 символів" },
+  "password.showPassword": { en: "Show password", uk: "Показати пароль" },
+  "password.hidePassword": { en: "Hide password", uk: "Сховати пароль" },
+
+  // Forgot password
+  "auth.forgotPassword": { en: "Forgot password?", uk: "Забули пароль?" },
+  "auth.resetPassword": { en: "Reset Password", uk: "Скинути пароль" },
+  "auth.resetPasswordDesc": { en: "Enter your email and we'll send you a password reset link.", uk: "Введіть email і ми надішлемо посилання для скидання пароля." },
+  "auth.sendResetLink": { en: "Send Reset Link", uk: "Надіслати посилання" },
+  "auth.sending": { en: "Sending...", uk: "Надсилання..." },
+  "auth.resetLinkSent": { en: "Reset link sent!", uk: "Посилання надіслано!" },
+  "auth.checkEmailForReset": { en: "Check your email for the password reset link.", uk: "Перевірте email для отримання посилання скидання пароля." },
+  "auth.backToLogin": { en: "Back to login", uk: "Повернутися до входу" },
+  "auth.setNewPassword": { en: "Set New Password", uk: "Встановити новий пароль" },
+  "auth.setNewPasswordDesc": { en: "Enter your new password below.", uk: "Введіть новий пароль нижче." },
+  "auth.updatePassword": { en: "Update Password", uk: "Оновити пароль" },
+  "auth.updating": { en: "Updating...", uk: "Оновлення..." },
+  "auth.passwordUpdated": { en: "Password updated!", uk: "Пароль оновлено!" },
+  "auth.passwordUpdatedDesc": { en: "You can now sign in with your new password.", uk: "Тепер ви можете увійти з новим паролем." },
 } as const;
 
 export type TranslationKey = keyof typeof translations;
