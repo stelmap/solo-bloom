@@ -219,12 +219,12 @@ function SolutionSection() {
 function FeaturesSection() {
   const { t } = useLandingLang();
   const FEATURES = [
-    { icon: LayoutDashboard, title: t("landing.features.dashboard"), desc: t("landing.features.dashboardDesc"), img: featureDashboard },
-    { icon: Users, title: t("landing.features.clients"), desc: t("landing.features.clientsDesc"), img: featureClients },
-    { icon: Calendar, title: t("landing.features.calendar"), desc: t("landing.features.calendarDesc"), img: featureCalendar },
-    { icon: DollarSign, title: t("landing.features.finance"), desc: t("landing.features.financeDesc"), img: featureFinance },
-    { icon: Target, title: t("landing.features.insights"), desc: t("landing.features.insightsDesc"), img: featureInsights },
-    { icon: BarChart3, title: t("landing.features.reports"), desc: t("landing.features.reportsDesc"), img: featureReports },
+    { icon: LayoutDashboard, title: t("landing.features.dashboard"), desc: t("landing.features.dashboardDesc") },
+    { icon: Users, title: t("landing.features.clients"), desc: t("landing.features.clientsDesc") },
+    { icon: Calendar, title: t("landing.features.calendar"), desc: t("landing.features.calendarDesc") },
+    { icon: DollarSign, title: t("landing.features.finance"), desc: t("landing.features.financeDesc") },
+    { icon: Target, title: t("landing.features.insights"), desc: t("landing.features.insightsDesc") },
+    { icon: BarChart3, title: t("landing.features.reports"), desc: t("landing.features.reportsDesc") },
   ];
   return (
     <section id="features" className="py-20 px-4 sm:px-6 bg-muted/50">
@@ -235,22 +235,12 @@ function FeaturesSection() {
         </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {FEATURES.map((f, i) => (
-            <div key={i} className="rounded-xl bg-card border border-border hover:shadow-md transition-shadow overflow-hidden">
-              <img
-                src={f.img}
-                alt={f.title}
-                loading="lazy"
-                width={800}
-                height={512}
-                className="w-full h-40 object-cover"
-              />
-              <div className="p-6">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <f.icon className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">{f.title}</h3>
-                <p className="text-base text-muted-foreground leading-relaxed">{f.desc}</p>
+            <div key={i} className="p-6 rounded-xl bg-card border border-border hover:shadow-md transition-shadow">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                <f.icon className="h-5 w-5 text-primary" />
               </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">{f.title}</h3>
+              <p className="text-base text-muted-foreground leading-relaxed">{f.desc}</p>
             </div>
           ))}
         </div>
