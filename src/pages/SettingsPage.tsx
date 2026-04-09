@@ -47,6 +47,7 @@ export default function SettingsPage() {
   const [form, setForm] = useState({
     full_name: "", business_name: "", phone: "", language: "en", reminder_minutes: 1440,
     work_hours_start: "09:00", work_hours_end: "18:00", time_format: "24h", default_duration: 60,
+    currency: "EUR",
   });
 
   // Password change state
@@ -78,6 +79,7 @@ export default function SettingsPage() {
         work_hours_end: (profile as any).work_hours_end || "18:00",
         time_format: (profile as any).time_format || "24h",
         default_duration: (profile as any).default_duration || 60,
+        currency: (profile as any).currency || "EUR",
       });
     }
   }, [profile]);
@@ -426,7 +428,7 @@ export default function SettingsPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-foreground">{tax.tax_name}</span>
                       <Badge variant="outline" className={cn("text-xs", tax.is_active ? "border-warning text-warning" : "")}>
-                        {tax.tax_type === "percentage" ? `${tax.tax_rate}%` : `€${Number(tax.fixed_amount).toLocaleString()}`}
+                        {tax.tax_type === "percentage" ? `${tax.tax_rate}%` : `${(profile as any)?.currency === "UAH" ? "₴" : "€"}${Number(tax.fixed_amount).toLocaleString()}`}
                       </Badge>
                       <Badge variant="secondary" className="text-xs">
                         {tax.frequency === "quarterly" ? t("tax.quarterly") : t("tax.monthly")}
@@ -494,6 +496,25 @@ export default function SettingsPage() {
             </div>
           </DialogContent>
         </Dialog>
+
+        <Separator />
+
+        <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
+          <h2 className="font-semibold text-foreground">{t("settings.currency")}</h2>
+          <p className="text-sm text-muted-foreground">{t("settings.currencyDesc")}</p>
+          <div className="max-w-xs space-y-2">
+            <Select value={form.currency} onValueChange={v => setForm(f => ({ ...f, currency: v }))}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="EUR">{t("currency.EUR")}</SelectItem>
+                <SelectItem value="UAH">{t("currency.UAH")}</SelectItem>
+              </SelectContent>
+            </Select>
+            {form.currency !== ((profile as any)?.currency || "EUR") && (
+              <p className="text-xs text-warning">{t("settings.currencyWarning")}</p>
+            )}
+          </div>
+        </div>
 
         <Separator />
 
