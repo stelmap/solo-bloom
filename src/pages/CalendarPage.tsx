@@ -220,7 +220,9 @@ export default function CalendarPage() {
   const fmtHour = (hour: number) => formatTime(`${hour.toString().padStart(2, "0")}:00`, use12h);
   const fmtTime = (dateStr: string) => {
     const d = new Date(dateStr);
-    return formatTime(format(d, "HH:mm"), use12h);
+    const hh = d.getUTCHours().toString().padStart(2, "0");
+    const mm = d.getUTCMinutes().toString().padStart(2, "0");
+    return formatTime(`${hh}:${mm}`, use12h);
   };
 
   // Weekly capacity calculations
