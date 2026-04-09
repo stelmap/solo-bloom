@@ -390,7 +390,7 @@ export default function CalendarPage() {
         </div>
 
         <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
-          <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border">
+          <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border overflow-y-scroll" style={{ scrollbarGutter: "stable" }}>
             <div className="p-3" />
             {days.map((day, i) => {
               const dayOffStatus = isDayOff(day);
@@ -421,7 +421,7 @@ export default function CalendarPage() {
               );
             })}
           </div>
-          <div className="grid grid-cols-[60px_repeat(7,1fr)] max-h-[600px] overflow-y-auto">
+          <div className="grid grid-cols-[60px_repeat(7,1fr)] max-h-[600px] overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
             {hours.map((hour) => (
               <div key={hour} className="contents">
                 <div className="h-[60px] flex items-start justify-end pr-3 pt-0 border-b border-border">
