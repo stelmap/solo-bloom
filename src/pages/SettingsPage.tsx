@@ -105,6 +105,35 @@ export default function SettingsPage() {
     }
   };
 
+  const handleChangePassword = async () => {
+    if (passwordForm.newPass.length < 6) {
+      toast({ title: t("common.error"), description: t("password.tooShort"), variant: "destructive" });
+      return;
+    }
+    if (passwordForm.newPass !== passwordForm.confirm) {
+      toast({ title: t("common.error"), description: t("password.mismatch"), variant: "destructive" });
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      // Verify current password by re-signing in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user?.email || "",
+        password: passwordForm.current,
+      });
+      if (signInError) throw new Error(t("common.error"));
+
+      const { error } = await supabase.auth.updateUser({ password: passwordForm.newPass });
+      if (error) throw error;
+      toast({ title: t("password.changed") });
+      setPasswordForm({ current: "", newPass: "", confirm: "" });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   const handleAddDayOff = async () => {
     if (!dayOffForm.date) return;
     try {
