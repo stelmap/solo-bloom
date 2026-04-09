@@ -330,7 +330,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   <Button variant="outline" size="sm" onClick={() => handleStatusChange("cancelled")} className="text-destructive hover:text-destructive">
                     <XCircle className="h-3.5 w-3.5 mr-1" /> {t("calendar.cancel")}
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleStatusChange("no-show")} className="text-warning hover:text-warning">
+                  <Button variant="outline" size="sm" onClick={() => setNoShowOpen(true)} className="text-warning hover:text-warning">
                     <Ban className="h-3.5 w-3.5 mr-1" /> {t("calendar.noShow")}
                   </Button>
                 </div>
