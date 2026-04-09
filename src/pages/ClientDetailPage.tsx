@@ -210,8 +210,30 @@ export default function ClientDetailPage() {
               )}
             </div>
 
+            {/* Notification Settings */}
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-              <h3 className="font-semibold text-foreground flex items-center gap-2"><FileText className="h-4 w-4 text-primary" /> {t("clientDetail.notes")}</h3>
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <Bell className="h-4 w-4 text-primary" /> {t("notification.title")}
+              </h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{t("notification.channel")}</span>
+                  <Badge variant="outline" className="text-xs">
+                    {(client as any).notification_preference === "email_only" ? t("notification.emailOnly") :
+                     (client as any).notification_preference === "telegram_only" ? t("notification.telegramOnly") :
+                     (client as any).notification_preference === "email_and_telegram" ? t("notification.emailAndTelegram") :
+                     t("notification.noReminder")}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{t("notification.confirmationRequired")}</span>
+                  <Badge variant="outline" className={cn("text-xs", (client as any).confirmation_required ? "text-primary" : "text-muted-foreground")}>
+                    {(client as any).confirmation_required ? "✓" : "—"}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
               <div className="flex gap-2">
                 <Textarea placeholder={t("clientDetail.addNote")} value={noteText} onChange={e => setNoteText(e.target.value)} className="min-h-[60px] text-sm" />
                 <Button size="sm" onClick={handleAddNote} disabled={!noteText.trim() || createNote.isPending}><Plus className="h-4 w-4" /></Button>
