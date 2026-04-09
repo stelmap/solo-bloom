@@ -376,12 +376,19 @@ export function useCancelAppointment() {
   });
 }
 
-// Bulk cancel appointments for day-off
+// Bulk cancel appointments for day-off + send cancellation emails
 export function useBulkCancelForDayOff() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ appointmentIds, reason }: { appointmentIds: string[]; reason: string }) => {
       for (const id of appointmentIds) {
+        // Fetch appointment details for the cancellation email
+        const { data: apt } = await supabase
+          .from("appointments")
+          .select("scheduled_at, clients(name, email, notification_preference), services(name)")
+          .eq("id", id)
+          .single();
+
         await supabase.from("income").delete().eq("appointment_id", id);
         await supabase.from("expected_payments").delete().eq("appointment_id", id);
         const { error } = await supabase.from("appointments").update({
@@ -390,6 +397,29 @@ export function useBulkCancelForDayOff() {
           cancellation_reason: reason,
         } as any).eq("id", id);
         if (error) throw error;
+
+        // Send cancellation email if client wants email notifications
+        const client = (apt as any)?.clients;
+        if (client?.email && ['email_only', 'email_and_telegram'].includes(client.notification_preference)) {
+          const scheduledDate = new Date(apt!.scheduled_at);
+          supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "session-cancellation",
+              recipientEmail: client.email,
+              idempotencyKey: `session-cancel-${id}`,
+              templateData: {
+                clientName: client.name,
+                sessionDate: scheduledDate.toLocaleDateString("en-US", {
+                  weekday: "long", year: "numeric", month: "long", day: "numeric",
+                }),
+                sessionTime: scheduledDate.toLocaleTimeString("en-US", {
+                  hour: "2-digit", minute: "2-digit",
+                }),
+                cancellationReason: reason,
+              },
+            },
+          }).catch(err => console.error("Failed to send cancellation email", err));
+        }
       }
     },
     onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
