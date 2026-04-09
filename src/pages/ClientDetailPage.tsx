@@ -239,9 +239,12 @@ export default function ClientDetailPage() {
                     {att.file_type === "image" ? <Image className="h-4 w-4 text-primary shrink-0" /> : <FileText className="h-4 w-4 text-primary shrink-0" />}
                     <span className="text-sm text-foreground truncate flex-1">{att.file_name}</span>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <a href={getFileUrl(att.file_path)} target="_blank" rel="noopener" className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground">
+                      <button onClick={async () => {
+                        const url = await getSignedUrl(att.file_path);
+                        if (url) window.open(url, "_blank");
+                      }} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground">
                         <Download className="h-3.5 w-3.5" />
-                      </a>
+                      </button>
                       <button onClick={() => deleteAttachment.mutate({ id: att.id, filePath: att.file_path, clientId: client.id })} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
