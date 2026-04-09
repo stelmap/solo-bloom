@@ -16,7 +16,10 @@ export type Database = {
     Tables: {
       appointments: {
         Row: {
+          cancellation_reason: string | null
           client_id: string
+          confirmation_status: string
+          confirmation_timestamp: string | null
           created_at: string
           duration_minutes: number
           id: string
@@ -31,7 +34,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cancellation_reason?: string | null
           client_id: string
+          confirmation_status?: string
+          confirmation_timestamp?: string | null
           created_at?: string
           duration_minutes?: number
           id?: string
@@ -46,7 +52,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cancellation_reason?: string | null
           client_id?: string
+          confirmation_status?: string
+          confirmation_timestamp?: string | null
           created_at?: string
           duration_minutes?: number
           id?: string
@@ -214,33 +223,39 @@ export type Database = {
       }
       clients: {
         Row: {
+          confirmation_required: boolean
           created_at: string
           email: string | null
           id: string
           name: string
           notes: string | null
+          notification_preference: string
           phone: string | null
           telegram: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          confirmation_required?: boolean
           created_at?: string
           email?: string | null
           id?: string
           name: string
           notes?: string | null
+          notification_preference?: string
           phone?: string | null
           telegram?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          confirmation_required?: boolean
           created_at?: string
           email?: string | null
           id?: string
           name?: string
           notes?: string | null
+          notification_preference?: string
           phone?: string | null
           telegram?: string | null
           updated_at?: string
@@ -654,6 +669,38 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      session_confirmations: {
+        Row: {
+          appointment_id: string
+          confirmed_at: string | null
+          created_at: string
+          id: string
+          token: string
+        }
+        Insert: {
+          appointment_id: string
+          confirmed_at?: string | null
+          created_at?: string
+          id?: string
+          token?: string
+        }
+        Update: {
+          appointment_id?: string
+          confirmed_at?: string | null
+          created_at?: string
+          id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_confirmations_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscription_cache: {
         Row: {
