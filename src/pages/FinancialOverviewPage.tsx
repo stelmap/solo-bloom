@@ -338,7 +338,7 @@ export default function FinancialOverviewPage() {
         {/* Cashflow summary */}
         <div className="bg-card rounded-xl border border-border p-5">
           <h2 className="font-semibold text-foreground mb-4">{t("financial.cashflow")}</h2>
-          <CashflowChart data={monthsData} fmt={fmt} t={t} />
+          <CashflowChart data={monthsData} fmt={fmt} t={t} cs={cs} />
         </div>
       </div>
 
@@ -509,7 +509,7 @@ function MonthlyTable({ months, onDrill, fmt, t, currentMonth }: { months: Month
   );
 }
 
-function CashflowChart({ data, fmt, t }: { data: MonthData[]; fmt: (n: number) => string; t: any }) {
+function CashflowChart({ data, fmt, t, cs }: { data: MonthData[]; fmt: (n: number) => string; t: any; cs: string }) {
   let runningBalance = 0;
   const cashflowData = data.map(m => {
     runningBalance += m.income - m.expenses - m.taxes;
