@@ -414,8 +414,8 @@ export default function CalendarPage() {
           <div className="grid grid-cols-[60px_repeat(7,1fr)] max-h-[600px] overflow-y-auto">
             {hours.map((hour) => (
               <div key={hour} className="contents">
-                <div className="p-2 text-right pr-3 border-b border-border">
-                  <span className="text-xs text-muted-foreground">{fmtHour(hour)}</span>
+                <div className="h-[60px] flex items-start justify-end pr-3 pt-0 border-b border-border">
+                  <span className="text-xs text-muted-foreground leading-none -translate-y-[7px]">{fmtHour(hour)}</span>
                 </div>
                 {days.map((day, dayIdx) => {
                   const events = getEventsForDayHour(day, hour);
@@ -425,17 +425,16 @@ export default function CalendarPage() {
                     <div key={dayIdx}
                       onClick={() => {
                         if (dayOff || !working) return;
-                        if (events.length > 0) return; // don't open create if slot has events
+                        if (events.length > 0) return;
                         const dateStr = format(day, "yyyy-MM-dd");
                         const timeStr = `${hour.toString().padStart(2, "0")}:00`;
                         setForm(f => ({ ...f, date: dateStr, time: timeStr }));
                         setCreateOpen(true);
                       }}
                       className={cn(
-                        "relative border-l border-b border-border min-h-[60px] transition-colors",
+                        "relative border-l border-b border-border h-[60px] transition-colors",
                         dayOff ? "bg-destructive/5 cursor-not-allowed" : !working ? "bg-muted/20 cursor-not-allowed" : events.length === 0 ? "hover:bg-primary/5 cursor-pointer group/slot" : "",
                       )}>
-                      {/* Click-to-create hint for empty working slots */}
                       {events.length === 0 && working && !dayOff && (
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/slot:opacity-100 transition-opacity pointer-events-none">
                           <Plus className="h-4 w-4 text-primary/40" />
@@ -443,10 +442,11 @@ export default function CalendarPage() {
                       )}
                       {events.map((evt) => {
                         const si = statusInfo(evt.status);
+                        const heightPx = Math.max((evt.duration_minutes / 60) * 60 - 4, 20);
                         return (
                           <div key={evt.id} onClick={(e) => { e.stopPropagation(); openSessionSheet(evt); }}
-                            className={cn("absolute inset-x-1 top-1 rounded-md border p-2 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10", si.color)}
-                            style={{ height: `${(evt.duration_minutes / 60) * 60 - 8}px` }}>
+                            className={cn("absolute inset-x-1 top-0 rounded-md border p-1.5 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10 overflow-hidden", si.color)}
+                            style={{ height: `${heightPx}px` }}>
                             <p className="text-xs font-semibold truncate">{(evt as any).clients?.name}</p>
                             <div className="flex items-center gap-1">
                               <p className="text-xs opacity-70 truncate">{(evt as any).services?.name}</p>
