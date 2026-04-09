@@ -22,12 +22,14 @@ import { useState, useRef } from "react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export default function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { symbol: cs } = useCurrency();
   const { data: client, isLoading } = useClient(id);
   const updateClient = useUpdateClient();
   const deleteClient = useDeleteClient();
@@ -279,7 +281,7 @@ export default function ClientDetailPage() {
                             <p className="text-xs text-muted-foreground">{apt.duration_minutes} {t("common.min")}</p>
                           </div>
                           <div className="flex flex-col items-end gap-1">
-                            <span className="text-sm font-semibold text-foreground">€{Number(apt.price).toFixed(0)}</span>
+                            <span className="text-sm font-semibold text-foreground">{cs}{Number(apt.price).toFixed(0)}</span>
                             <div className="flex gap-1">
                               {statusBadge(apt.status)}
                               {paymentBadge(apt.payment_status)}
