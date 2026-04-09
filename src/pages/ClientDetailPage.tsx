@@ -320,6 +320,13 @@ export default function ClientDetailPage() {
       <ConfirmDeleteDialog open={deleteOpen} onOpenChange={setDeleteOpen} onConfirm={handleDelete}
         title={t("clientDetail.deleteClient")} description={t("clients.deleteDesc")}
         loading={deleteClient.isPending} />
+
+      <SessionDetailSheet
+        appointment={sessionApt}
+        open={sessionSheetOpen}
+        onOpenChange={(o) => { setSessionSheetOpen(o); if (!o) setSessionApt(null); }}
+        use12h={use12h}
+      />
     </AppLayout>
   );
 }
