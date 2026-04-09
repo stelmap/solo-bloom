@@ -215,6 +215,7 @@ export default function CalendarPage() {
 
   const STATUS_MAP: Record<string, { label: string; color: string }> = {
     scheduled: { label: t("status.scheduled"), color: "bg-muted text-muted-foreground" },
+    reminder_sent: { label: t("status.reminderSent"), color: "bg-accent text-accent-foreground" },
     confirmed: { label: t("status.confirmed"), color: "bg-primary/15 text-primary" },
     completed: { label: t("status.completed"), color: "bg-success/15 text-success" },
     cancelled: { label: t("status.cancelled"), color: "bg-destructive/15 text-destructive" },
