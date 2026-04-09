@@ -19,6 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
@@ -44,6 +45,7 @@ export default function CalendarPage() {
   const deleteDayOff = useDeleteDayOff();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { symbol: cs } = useCurrency();
 
   // Calendar settings from profile
   const startHour = parseInt((profile as any)?.work_hours_start || "09") || 9;
@@ -269,7 +271,7 @@ export default function CalendarPage() {
                     <Label>{t("calendar.service")} *</Label>
                     <Select value={form.service_id} onValueChange={v => setForm(f => ({ ...f, service_id: v }))}>
                       <SelectTrigger><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
-                      <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — €{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
+                      <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div className="grid grid-cols-2 gap-4">

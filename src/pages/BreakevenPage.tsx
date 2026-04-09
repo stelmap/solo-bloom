@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Target, DollarSign, Users, Calculator, Settings, Info, AlertTriangle, Receipt } from "lucide-react";
 import { useExpenses, useIncome, useServices, useAppointments, useBreakevenGoals, useUpsertBreakevenGoals, useWorkingSchedule, useDaysOff, useProfile, useTaxSettings } from "@/hooks/useData";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useCurrency } from "@/hooks/useCurrency";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -40,6 +41,7 @@ export default function BreakevenPage() {
   const { data: taxSettings = [] } = useTaxSettings();
   const upsertGoals = useUpsertBreakevenGoals();
   const { t } = useLanguage();
+  const { symbol: cs } = useCurrency();
   const { toast } = useToast();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [goalForms, setGoalForms] = useState<GoalForm[]>([]);
@@ -128,19 +130,19 @@ export default function BreakevenPage() {
 
         {/* Financial overview with tax separation */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <MetricCard title={t("finance.grossIncome")} value={`€${monthlyIncome.toLocaleString()}`} icon={DollarSign} />
-          <MetricCard title={t("finance.totalExpenses")} value={`€${monthlyExpensesExTax.toLocaleString()}`} icon={Calculator} />
+          <MetricCard title={t("finance.grossIncome")} value={`${cs}${monthlyIncome.toLocaleString()}`} icon={DollarSign} />
+          <MetricCard title={t("finance.totalExpenses")} value={`${cs}${monthlyExpensesExTax.toLocaleString()}`} icon={Calculator} />
           <div className={cn("bg-card rounded-xl border p-5 animate-fade-in", estimatedTax > 0 ? "border-warning/30" : "border-border")}>
             <div className="flex items-center gap-2 mb-1">
               <Receipt className="h-4 w-4 text-warning" />
               <p className={cn("text-sm", estimatedTax > 0 ? "text-warning" : "text-muted-foreground")}>{t("finance.totalTaxes")}</p>
             </div>
-            <p className={cn("text-2xl font-bold", estimatedTax > 0 ? "text-warning" : "text-foreground")}>€{estimatedTax.toLocaleString()}</p>
+            <p className={cn("text-2xl font-bold", estimatedTax > 0 ? "text-warning" : "text-foreground")}>{cs}{estimatedTax.toLocaleString()}</p>
           </div>
-          <MetricCard title={t("finance.netAfterTax")} value={`€${netAfterTax.toLocaleString()}`} icon={Target} />
+          <MetricCard title={t("finance.netAfterTax")} value={`${cs}${netAfterTax.toLocaleString()}`} icon={Target} />
           <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
             <p className="text-sm text-muted-foreground">{t("finance.netProfit")}</p>
-            <p className={cn("text-2xl font-bold mt-1", netProfit >= 0 ? "text-success" : "text-destructive")}>€{netProfit.toLocaleString()}</p>
+            <p className={cn("text-2xl font-bold mt-1", netProfit >= 0 ? "text-success" : "text-destructive")}>{cs}{netProfit.toLocaleString()}</p>
           </div>
         </div>
 
@@ -152,10 +154,10 @@ export default function BreakevenPage() {
           <div className="bg-warning/5 rounded-xl border border-warning/20 p-4 flex items-start gap-3 animate-fade-in">
             <AlertTriangle className="h-5 w-5 text-warning mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm font-medium text-foreground">{t("finance.taxImpact", { amount: estimatedTax })}</p>
+              <p className="text-sm font-medium text-foreground">{t("finance.taxImpact", { amount: estimatedTax, currency: cs })}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 {activeTaxes.map((tax: any) => 
-                  tax.tax_type === "percentage" ? `${tax.tax_name}: ${tax.tax_rate}%` : `${tax.tax_name}: €${Number(tax.fixed_amount).toLocaleString()}/${tax.frequency}`
+                  tax.tax_type === "percentage" ? `${tax.tax_name}: ${tax.tax_rate}%` : `${tax.tax_name}: ${cs}${Number(tax.fixed_amount).toLocaleString()}/${tax.frequency}`
                 ).join(" · ")}
               </p>
             </div>
@@ -200,20 +202,20 @@ export default function BreakevenPage() {
                       <h3 className="font-semibold text-foreground">{t("goals.goal", { n: goal.goal_number })} — {goal.label}</h3>
                       {reached && <span className="text-success text-sm font-medium">{t("goals.reached")}</span>}
                     </div>
-                    <span className="text-sm font-medium text-foreground">{t("goals.targetAmount", { amount: target.toLocaleString() })}</span>
+                    <span className="text-sm font-medium text-foreground">{t("goals.targetAmount", { amount: target.toLocaleString(), currency: cs })}</span>
                   </div>
                   {goal.description && <p className="text-xs text-muted-foreground mb-3">{goal.description}</p>}
                   {activeTaxes.length > 0 && target !== goal.target && (
                     <p className="text-xs text-warning mb-2">
-                      {t("finance.taxImpact", { amount: (target - goal.target).toLocaleString() })}
+                      {t("finance.taxImpact", { amount: (target - goal.target).toLocaleString(), currency: cs })}
                     </p>
                   )}
                   <Progress value={progress} className={cn("h-3 mb-2", reached ? "[&>div]:bg-success" : "")} />
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>€{monthlyIncome.toLocaleString()} / €{target.toLocaleString()}</span>
+                    <span>{cs}{monthlyIncome.toLocaleString()} / {cs}{target.toLocaleString()}</span>
                     {remaining > 0 ? (
                       <div className="flex items-center gap-2">
-                        <span>{t("goals.remaining", { amount: remaining.toLocaleString() })} · {t("goals.sessionsNeeded", { count: sessionsNeeded })}</span>
+                        <span>{t("goals.remaining", { amount: remaining.toLocaleString(), currency: cs })} · {t("goals.sessionsNeeded", { count: sessionsNeeded })}</span>
                         {!isRealistic && (
                           <span className="inline-flex items-center gap-0.5 text-warning" title={t("capacity.unrealisticWarning", { slots: remainingCapacity })}>
                             <AlertTriangle className="h-3.5 w-3.5" />
@@ -264,7 +266,7 @@ export default function BreakevenPage() {
                     <div className="space-y-1"><Label className="text-xs">{t("goals.desiredIncome")}</Label><Input type="number" step="0.01" value={goal.desired_income || ""} onChange={e => updateGoalForm(idx, "desired_income", parseFloat(e.target.value) || 0)} /></div>
                     <div className="space-y-1"><Label className="text-xs">{t("goals.buffer")}</Label><Input type="number" step="0.01" value={goal.buffer || ""} onChange={e => updateGoalForm(idx, "buffer", parseFloat(e.target.value) || 0)} /></div>
                   </div>
-                  <p className="text-sm font-medium text-primary">{t("goals.targetAmount", { amount: target.toLocaleString() })}</p>
+                  <p className="text-sm font-medium text-primary">{t("goals.targetAmount", { amount: target.toLocaleString(), currency: cs })}</p>
                 </div>
               );
             })}

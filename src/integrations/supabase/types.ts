@@ -515,6 +515,7 @@ export type Database = {
         Row: {
           business_name: string | null
           created_at: string
+          currency: string
           default_duration: number
           full_name: string | null
           id: string
@@ -533,6 +534,7 @@ export type Database = {
         Insert: {
           business_name?: string | null
           created_at?: string
+          currency?: string
           default_duration?: number
           full_name?: string | null
           id?: string
@@ -551,6 +553,7 @@ export type Database = {
         Update: {
           business_name?: string | null
           created_at?: string
+          currency?: string
           default_duration?: number
           full_name?: string | null
           id?: string

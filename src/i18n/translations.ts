@@ -26,11 +26,11 @@ export const translations = {
 
   // Smart Insights
   "insights.title": { en: "Smart Insights", uk: "Розумні підказки" },
-  "insights.weekIncome": { en: "You earned €{amount} this week.", uk: "Ви заробили €{amount} цього тижня." },
+  "insights.weekIncome": { en: "You earned {currency}{amount} this week.", uk: "Ви заробили {currency}{amount} цього тижня." },
   "insights.incomeUp": { en: "Your income increased {pct}% compared to last week. Keep it up!", uk: "Ваш дохід зріс на {pct}% порівняно з минулим тижнем. Так тримати!" },
   "insights.incomeDown": { en: "Your income decreased {pct}% compared to last week.", uk: "Ваш дохід знизився на {pct}% порівняно з минулим тижнем." },
   "insights.breakevenReached": { en: "You've reached your break-even point this month! 🎉", uk: "Ви досягли точки беззбитковості цього місяця! 🎉" },
-  "insights.breakevenProgress": { en: "You are {pct}% toward your break-even. €{remaining} more to go.", uk: "Ви на {pct}% до беззбитковості. Ще €{remaining} залишилось." },
+  "insights.breakevenProgress": { en: "You are {pct}% toward your break-even. {currency}{remaining} more to go.", uk: "Ви на {pct}% до беззбитковості. Ще {currency}{remaining} залишилось." },
   "insights.breakevenRisk": { en: "At this pace, you may not reach break-even this month. Consider booking more sessions.", uk: "За такого темпу ви можете не досягти беззбитковості цього місяця. Спробуйте набрати більше записів." },
   "insights.expenseAlert": { en: "Your expenses are significantly higher than your income this month.", uk: "Ваші витрати значно перевищують дохід цього місяця." },
   "insights.capacityFull": { en: "You're working at {pct}% capacity — almost fully booked!", uk: "Ви завантажені на {pct}% — майже повний запис!" },
@@ -438,11 +438,11 @@ export const translations = {
   "goals.goal": { en: "Goal {n}", uk: "Ціль {n}" },
   "goals.goalLabel": { en: "Goal name", uk: "Назва цілі" },
   "goals.goalDescription": { en: "What this goal covers", uk: "Що включає ця ціль" },
-  "goals.fixedExpenses": { en: "Fixed expenses (€)", uk: "Фіксовані витрати (€)" },
-  "goals.desiredIncome": { en: "Desired income (€)", uk: "Бажаний дохід (€)" },
-  "goals.buffer": { en: "Safety buffer (€)", uk: "Резерв безпеки (€)" },
-  "goals.targetAmount": { en: "Target: €{amount}", uk: "Ціль: €{amount}" },
-  "goals.remaining": { en: "€{amount} remaining", uk: "Залишилось €{amount}" },
+  "goals.fixedExpenses": { en: "Fixed expenses", uk: "Фіксовані витрати" },
+  "goals.desiredIncome": { en: "Desired income", uk: "Бажаний дохід" },
+  "goals.buffer": { en: "Safety buffer", uk: "Резерв безпеки" },
+  "goals.targetAmount": { en: "Target: {currency}{amount}", uk: "Ціль: {currency}{amount}" },
+  "goals.remaining": { en: "{currency}{amount} remaining", uk: "Залишилось {currency}{amount}" },
   "goals.sessionsNeeded": { en: "{count} more sessions needed", uk: "Потрібно ще {count} сеансів" },
   "goals.reached": { en: "✓ Goal reached!", uk: "✓ Ціль досягнута!" },
   "goals.saveGoals": { en: "Save Goals", uk: "Зберегти цілі" },
@@ -482,7 +482,7 @@ export const translations = {
   "tax.percentage": { en: "Percentage of income", uk: "Відсоток від доходу" },
   "tax.fixed": { en: "Fixed amount", uk: "Фіксована сума" },
   "tax.taxRate": { en: "Tax rate (%)", uk: "Ставка податку (%)" },
-  "tax.fixedAmount": { en: "Fixed amount (€)", uk: "Фіксована сума (€)" },
+  "tax.fixedAmount": { en: "Fixed amount", uk: "Фіксована сума" },
   "tax.frequency": { en: "Frequency", uk: "Періодичність" },
   "tax.monthly": { en: "Monthly", uk: "Щомісячно" },
   "tax.quarterly": { en: "Щоквартально", uk: "Щоквартально" },
@@ -501,7 +501,7 @@ export const translations = {
   "finance.netAfterTax": { en: "Net After Tax", uk: "Чистий після податків" },
   "finance.totalExpenses": { en: "Expenses (excl. tax)", uk: "Витрати (без податків)" },
   "finance.netProfit": { en: "Net Profit", uk: "Чистий прибуток" },
-  "finance.taxImpact": { en: "Tax impact: €{amount}/mo estimated", uk: "Вплив податків: ~€{amount}/міс" },
+  "finance.taxImpact": { en: "Tax impact: {currency}{amount}/mo estimated", uk: "Вплив податків: ~{currency}{amount}/міс" },
   "finance.expectedIncome": { en: "Expected Income", uk: "Очікуваний дохід" },
 
   // Filters
@@ -605,6 +605,13 @@ export const translations = {
   "auth.invalidResetLinkDesc": { en: "This password reset link is invalid or has expired. Please request a new one.", uk: "Це посилання для скидання пароля недійсне або прострочене. Будь ласка, запросіть нове." },
   "auth.passwordTooShort": { en: "Password must be at least 6 characters.", uk: "Пароль повинен містити щонайменше 6 символів." },
   "auth.passwordsMismatch": { en: "Passwords do not match.", uk: "Паролі не збігаються." },
+
+  // Currency settings
+  "settings.currency": { en: "Currency", uk: "Валюта" },
+  "settings.currencyDesc": { en: "Select your working currency", uk: "Оберіть робочу валюту" },
+  "settings.currencyWarning": { en: "Currency label will change, but existing values will not be converted.", uk: "Символ валюти зміниться, але існуючі значення не будуть конвертовані." },
+  "currency.EUR": { en: "EUR (€) — Euro", uk: "EUR (€) — Євро" },
+  "currency.UAH": { en: "UAH (₴) — Ukrainian Hryvnia", uk: "UAH (₴) — Українська гривня" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;

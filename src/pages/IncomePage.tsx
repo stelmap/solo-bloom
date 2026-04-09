@@ -14,6 +14,7 @@ import { useState, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useCurrency } from "@/hooks/useCurrency";
 import { useSearchParams } from "react-router-dom";
 import { startOfWeek, startOfMonth, format } from "date-fns";
 
@@ -25,6 +26,7 @@ export default function IncomePage() {
   const markPaid = useMarkExpectedPaymentPaid();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { symbol: cs } = useCurrency();
   const [searchParams] = useSearchParams();
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -147,16 +149,16 @@ export default function IncomePage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
             <p className="text-sm text-muted-foreground">{t("income.confirmedIncome")}</p>
-            <p className="text-2xl font-bold text-foreground mt-1">€{total.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-foreground mt-1">{cs}{total.toLocaleString()}</p>
           </div>
           <div className="bg-card rounded-xl border border-warning/30 p-5 animate-fade-in">
             <p className="text-sm text-warning">{t("income.pendingPayments")}</p>
-            <p className="text-2xl font-bold text-warning mt-1">€{pendingTotal.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-warning mt-1">{cs}{pendingTotal.toLocaleString()}</p>
             <p className="text-xs text-muted-foreground mt-1">{t("income.awaitingPayment", { count: (expectedPayments as any[]).length })}</p>
           </div>
           <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
             <p className="text-sm text-muted-foreground">{t("finance.expectedIncome")}</p>
-            <p className="text-2xl font-bold text-foreground mt-1">€{(total + pendingTotal).toLocaleString()}</p>
+            <p className="text-2xl font-bold text-foreground mt-1">{cs}{(total + pendingTotal).toLocaleString()}</p>
           </div>
         </div>
 
@@ -199,7 +201,7 @@ export default function IncomePage() {
                               ? `${entry.appointments?.clients?.name} — ${entry.appointments?.services?.name}`
                               : entry.description || t("income.manualEntry")}
                           </td>
-                          <td className="p-4 text-sm font-semibold text-foreground">€{Number(entry.amount).toFixed(2)}</td>
+                          <td className="p-4 text-sm font-semibold text-foreground">{cs}{Number(entry.amount).toFixed(2)}</td>
                           <td className="p-4"><Badge variant="outline" className="text-xs capitalize">{paymentLabel(entry.payment_method || "cash")}</Badge></td>
                           <td className="p-4"><Badge variant={entry.source === "appointment" ? "default" : "secondary"} className="text-xs">{entry.source === "appointment" ? t("income.appointment") : t("income.manual")}</Badge></td>
                           <td className="p-4">
@@ -236,7 +238,7 @@ export default function IncomePage() {
                         {ep.appointments?.services?.name} · {ep.appointments?.scheduled_at ? new Date(ep.appointments.scheduled_at).toLocaleDateString() : ""}
                       </p>
                     </div>
-                    <p className="text-lg font-bold text-warning">€{Number(ep.amount).toFixed(2)}</p>
+                    <p className="text-lg font-bold text-warning">{cs}{Number(ep.amount).toFixed(2)}</p>
                     <Button size="sm" onClick={() => { setPayDialog(ep); setPayMethod("cash"); }}>
                       <CheckCircle className="h-4 w-4 mr-1" /> {t("income.markPaid")}
                     </Button>
@@ -256,7 +258,7 @@ export default function IncomePage() {
             <div className="space-y-4">
               <div className="bg-muted/50 rounded-lg p-4 space-y-1 text-sm">
                 <div className="flex justify-between"><span className="text-muted-foreground">{t("calendar.client")}</span><span className="font-medium text-foreground">{payDialog.clients?.name}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">{t("common.amount")}</span><span className="font-semibold text-foreground">€{Number(payDialog.amount).toFixed(2)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{t("common.amount")}</span><span className="font-semibold text-foreground">{cs}{Number(payDialog.amount).toFixed(2)}</span></div>
               </div>
               <div className="space-y-2">
                 <Label>{t("calendar.paymentMethod")}</Label>

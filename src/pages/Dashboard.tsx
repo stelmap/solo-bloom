@@ -8,6 +8,7 @@ import { useDashboardStats, useBreakevenGoals, useServices, useTaxSettings, useE
 import { format } from "date-fns";
 import { useMemo } from "react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useCurrency } from "@/hooks/useCurrency";
 import { cn } from "@/lib/utils";
 import { sessionsNeededForTarget } from "@/lib/capacity";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +20,7 @@ export default function Dashboard() {
   const { data: taxSettings = [] } = useTaxSettings();
   const { data: expectedPayments = [] } = useExpectedPayments();
   const { t, lang } = useLanguage();
+  const { symbol: cs } = useCurrency();
   const navigate = useNavigate();
 
   const s = stats ?? {
@@ -61,7 +63,7 @@ export default function Dashboard() {
     maxMonthlyCapacity: s.maxMonthlyCapacity,
     daysLeftInMonth: s.daysLeftInMonth,
     daysPastInMonth: s.daysPastInMonth,
-  }, lang), [s, lang]);
+  }, lang, cs), [s, lang, cs]);
 
   const goalTargets = (goals as any[]).map((g: any) => ({
     ...g,
@@ -87,14 +89,14 @@ export default function Dashboard() {
         {/* Clickable metric cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="cursor-pointer" onClick={() => navigate("/income?range=today")}>
-            <MetricCard title={t("dashboard.todayIncome")} value={`€${s.todayIncome.toLocaleString()}`} icon={DollarSign} />
+            <MetricCard title={t("dashboard.todayIncome")} value={`${cs}${s.todayIncome.toLocaleString()}`} icon={DollarSign} />
           </div>
           <div className="cursor-pointer" onClick={() => navigate("/income?range=month")}>
-            <MetricCard title={t("finance.grossIncome")} value={`€${s.monthlyIncome.toLocaleString()}`} icon={TrendingUp}
-              subtitle={pendingTotal > 0 ? `+ €${pendingTotal.toLocaleString()} ${t("income.pendingPayments").toLowerCase()}` : undefined} />
+            <MetricCard title={t("finance.grossIncome")} value={`${cs}${s.monthlyIncome.toLocaleString()}`} icon={TrendingUp}
+              subtitle={pendingTotal > 0 ? `+ ${cs}${pendingTotal.toLocaleString()} ${t("income.pendingPayments").toLowerCase()}` : undefined} />
           </div>
           <div className="cursor-pointer" onClick={() => navigate("/expenses?range=month")}>
-            <MetricCard title={t("dashboard.monthlyExpenses")} value={`€${s.monthlyExpenses.toLocaleString()}`} icon={TrendingDown} />
+            <MetricCard title={t("dashboard.monthlyExpenses")} value={`${cs}${s.monthlyExpenses.toLocaleString()}`} icon={TrendingDown} />
           </div>
           <MetricCard title={t("dashboard.activeClients")} value={s.clientCount.toString()} icon={Users} />
         </div>
@@ -107,16 +109,16 @@ export default function Dashboard() {
                 <Receipt className="h-4 w-4 text-warning" />
                 <p className="text-sm text-warning">{t("finance.totalTaxes")}</p>
               </div>
-              <p className="text-2xl font-bold text-warning">€{monthlyTaxEstimate.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground mt-1">{t("finance.taxImpact", { amount: monthlyTaxEstimate })}</p>
+              <p className="text-2xl font-bold text-warning">{cs}{monthlyTaxEstimate.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("finance.taxImpact", { amount: monthlyTaxEstimate, currency: cs })}</p>
             </div>
             <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
               <p className="text-sm text-muted-foreground">{t("finance.netAfterTax")}</p>
-              <p className="text-2xl font-bold text-foreground mt-1">€{netAfterTax.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{cs}{netAfterTax.toLocaleString()}</p>
             </div>
             <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
               <p className="text-sm text-muted-foreground">{t("finance.netProfit")}</p>
-              <p className={cn("text-2xl font-bold mt-1", netProfit >= 0 ? "text-success" : "text-destructive")}>€{netProfit.toLocaleString()}</p>
+              <p className={cn("text-2xl font-bold mt-1", netProfit >= 0 ? "text-success" : "text-destructive")}>{cs}{netProfit.toLocaleString()}</p>
             </div>
           </div>
         )}
@@ -154,7 +156,7 @@ export default function Dashboard() {
                         {goal.label}
                         {reached && <span className="text-success ml-2 text-xs">{t("goals.reached")}</span>}
                       </span>
-                      <span className="text-muted-foreground">€{s.monthlyIncome.toLocaleString()} / €{target.toLocaleString()}</span>
+                      <span className="text-muted-foreground">{cs}{s.monthlyIncome.toLocaleString()} / {cs}{target.toLocaleString()}</span>
                     </div>
                     <Progress value={progress} className={cn("h-2", reached ? "[&>div]:bg-success" : "")} />
                     {remaining > 0 && (
@@ -181,6 +183,7 @@ export default function Dashboard() {
           <BreakevenProgress
             currentIncome={s.monthlyIncome}
             requiredIncome={Math.max(s.monthlyExpenses + monthlyTaxEstimate, 1)}
+            currency={cs}
           />
 
           <div className="bg-card rounded-xl border border-border p-6 animate-fade-in">
@@ -208,7 +211,7 @@ export default function Dashboard() {
                     <p className="text-sm font-medium text-foreground truncate">{apt.clients?.name}</p>
                     <p className="text-xs text-muted-foreground truncate">{apt.services?.name}</p>
                   </div>
-                  <span className="text-sm font-semibold text-foreground">€{Number(apt.price).toFixed(0)}</span>
+                  <span className="text-sm font-semibold text-foreground">{cs}{Number(apt.price).toFixed(0)}</span>
                 </div>
               ))}
             </div>

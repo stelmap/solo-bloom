@@ -13,6 +13,7 @@ import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { useState, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useCurrency } from "@/hooks/useCurrency";
 import { TranslationKey } from "@/i18n/translations";
 import { useSearchParams } from "react-router-dom";
 import { startOfWeek, startOfMonth, format } from "date-fns";
@@ -27,6 +28,7 @@ export default function ExpensesPage() {
   const deleteExpense = useDeleteExpense();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { symbol: cs } = useCurrency();
   const [searchParams] = useSearchParams();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -168,19 +170,19 @@ export default function ExpensesPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
             <p className="text-sm text-muted-foreground">{t("expenses.totalThisMonth")}</p>
-            <p className="text-2xl font-bold text-foreground mt-1">€{totalFiltered.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-foreground mt-1">{cs}{totalFiltered.toLocaleString()}</p>
           </div>
           <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
             <p className="text-sm text-muted-foreground">{t("finance.totalExpenses")}</p>
-            <p className="text-2xl font-bold text-foreground mt-1">€{expensesExTax.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-foreground mt-1">{cs}{expensesExTax.toLocaleString()}</p>
           </div>
           <div className={cn("bg-card rounded-xl border p-5 animate-fade-in", taxTotal > 0 ? "border-warning/30" : "border-border")}>
             <p className={cn("text-sm", taxTotal > 0 ? "text-warning" : "text-muted-foreground")}>{t("finance.totalTaxes")}</p>
-            <p className={cn("text-2xl font-bold mt-1", taxTotal > 0 ? "text-warning" : "text-foreground")}>€{taxTotal.toLocaleString()}</p>
+            <p className={cn("text-2xl font-bold mt-1", taxTotal > 0 ? "text-warning" : "text-foreground")}>{cs}{taxTotal.toLocaleString()}</p>
           </div>
           <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
             <p className="text-sm text-muted-foreground">{t("expenses.recurringMonthly")}</p>
-            <p className="text-2xl font-bold text-foreground mt-1">€{recurringTotal.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-foreground mt-1">{cs}{recurringTotal.toLocaleString()}</p>
           </div>
         </div>
 
@@ -215,7 +217,7 @@ export default function ExpensesPage() {
                           {catLabel(expense.category)}
                         </Badge>
                       </td>
-                      <td className="p-4 text-sm font-semibold text-foreground">€{Number(expense.amount).toFixed(2)}</td>
+                      <td className="p-4 text-sm font-semibold text-foreground">{cs}{Number(expense.amount).toFixed(2)}</td>
                       <td className="p-4 text-sm text-muted-foreground truncate max-w-[200px]">{expense.description || "—"}</td>
                       <td className="p-4">
                         <Badge variant={expense.is_recurring ? "default" : "secondary"} className="text-xs">

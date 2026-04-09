@@ -44,7 +44,7 @@ function tt(key: keyof typeof translations, lang: Language, params?: Record<stri
   return text;
 }
 
-export function generateInsights(data: SmartInsightsProps, lang: Language = "en"): Insight[] {
+export function generateInsights(data: SmartInsightsProps, lang: Language = "en", currencySymbol: string = "€"): Insight[] {
   const insights: Insight[] = [];
   const {
     monthlyIncome, monthlyExpenses, lastWeekIncome, thisWeekIncome,
@@ -54,7 +54,7 @@ export function generateInsights(data: SmartInsightsProps, lang: Language = "en"
   if (thisWeekIncome > 0) {
     insights.push({
       id: "week-income", type: "info",
-      message: tt("insights.weekIncome", lang, { amount: thisWeekIncome.toLocaleString() }),
+      message: tt("insights.weekIncome", lang, { amount: thisWeekIncome.toLocaleString(), currency: currencySymbol }),
       icon: TrendingUp,
     });
   }
@@ -75,7 +75,7 @@ export function generateInsights(data: SmartInsightsProps, lang: Language = "en"
       insights.push({ id: "breakeven-reached", type: "success", message: tt("insights.breakevenReached", lang), icon: CheckCircle });
     } else {
       const remaining = monthlyExpenses - monthlyIncome;
-      insights.push({ id: "breakeven-progress", type: "info", message: tt("insights.breakevenProgress", lang, { pct: breakevenPct, remaining: remaining.toLocaleString() }), icon: Target });
+      insights.push({ id: "breakeven-progress", type: "info", message: tt("insights.breakevenProgress", lang, { pct: breakevenPct, remaining: remaining.toLocaleString(), currency: currencySymbol }), icon: Target });
 
       if (daysPastInMonth > 7 && daysLeftInMonth > 0) {
         const dailyRate = monthlyIncome / daysPastInMonth;
