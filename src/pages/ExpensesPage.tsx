@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { useState, useMemo } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -22,7 +23,12 @@ import { cn } from "@/lib/utils";
 const CATEGORIES = ["Rent", "Materials", "Insurance", "Equipment", "Marketing", "Utilities", "Laundry", "Software", "Tax", "Other"];
 
 export default function ExpensesPage() {
-  const { data: expenses = [], isLoading } = useExpenses();
+  const [page, setPage] = useState(0);
+  const { data: expenseResult, isLoading } = useExpenses(page);
+  const expenses = expenseResult?.data ?? [];
+  const totalCount = expenseResult?.totalCount ?? 0;
+  const pageSize = expenseResult?.pageSize ?? 50;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const createExpense = useCreateExpense();
   const updateExpense = useUpdateExpense();
   const deleteExpense = useDeleteExpense();

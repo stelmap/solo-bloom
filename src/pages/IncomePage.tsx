@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useMemo } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -19,7 +20,12 @@ import { useSearchParams } from "react-router-dom";
 import { startOfWeek, startOfMonth, format } from "date-fns";
 
 export default function IncomePage() {
-  const { data: income = [], isLoading } = useIncome();
+  const [page, setPage] = useState(0);
+  const { data: incomeResult, isLoading } = useIncome(page);
+  const income = incomeResult?.data ?? [];
+  const totalCount = incomeResult?.totalCount ?? 0;
+  const pageSize = incomeResult?.pageSize ?? 50;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const { data: expectedPayments = [], isLoading: epLoading } = useExpectedPayments();
   const createIncome = useCreateIncome();
   const deleteIncome = useDeleteIncome();

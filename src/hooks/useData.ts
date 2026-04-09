@@ -723,7 +723,6 @@ export function useRecurringRules() {
     },
     enabled: !!user,
     staleTime: STALE_LONG,
-    staleTime: STALE_SHORT,
   });
 }
 
