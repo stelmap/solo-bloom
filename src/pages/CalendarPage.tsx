@@ -202,10 +202,15 @@ export default function CalendarPage() {
     }
   };
 
+  const isSameUTCDay = (a: Date, b: Date) =>
+    a.getUTCFullYear() === b.getUTCFullYear() &&
+    a.getUTCMonth() === b.getUTCMonth() &&
+    a.getUTCDate() === b.getUTCDate();
+
   const getEventsForDayHour = (day: Date, hour: number) =>
     appointments.filter(apt => {
       const d = new Date(apt.scheduled_at);
-      return isSameDay(d, day) && d.getUTCHours() === hour;
+      return isSameUTCDay(d, day) && d.getUTCHours() === hour;
     });
 
   const STATUS_MAP: Record<string, { label: string; color: string }> = {
