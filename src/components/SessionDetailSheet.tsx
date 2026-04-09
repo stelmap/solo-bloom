@@ -206,7 +206,10 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     try {
       if (notesDirty) await updateAppointment.mutateAsync({ id: apt.id, notes });
       if (status === "cancelled" || status === "no-show") {
-        await cancelAppointment.mutateAsync({ id: apt.id, status });
+        await cancelAppointment.mutateAsync({
+          id: apt.id, status,
+          clientId: apt.client_id, price: Number(apt.price),
+        });
       } else {
         await updateAppointment.mutateAsync({ id: apt.id, status });
       }
