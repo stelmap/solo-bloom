@@ -3,14 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight, Plus, CheckCircle, XCircle, Ban, Clock, Pencil, Trash2, DollarSign, Repeat, CalendarOff, BarChart3 } from "lucide-react";
+import { SessionDetailSheet } from "@/components/SessionDetailSheet";
+import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { format, addDays, startOfWeek, isSameDay } from "date-fns";
 import {
-  useAppointments, useCreateAppointment, useUpdateAppointment,
-  useDeleteAppointment, useCompleteAppointment, useCancelAppointment,
+  useAppointments, useCreateAppointment,
   useClients, useServices, useProfile, useCreateRecurringRule,
-  useDeleteRecurringAppointments, useEditRecurringAppointments,
   useWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff,
 } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
