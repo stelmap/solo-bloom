@@ -38,12 +38,16 @@ export default function ClientDetailPage() {
   const { data: attachments = [] } = useClientAttachments(id);
   const uploadAttachment = useUploadAttachment();
   const deleteAttachment = useDeleteAttachment();
+  const { data: profile } = useProfile();
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "" });
+  const [sessionApt, setSessionApt] = useState<any>(null);
+  const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
+  const use12h = (profile as any)?.time_format === "12h";
 
   const SESSION_STATUS_STYLES: Record<string, { label: string; color: string }> = {
     scheduled: { label: t("status.scheduled"), color: "bg-muted text-muted-foreground" },
