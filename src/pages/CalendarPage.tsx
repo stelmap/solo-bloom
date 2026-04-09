@@ -103,7 +103,7 @@ export default function CalendarPage() {
   };
 
   const hasConflict = (date: string, time: string, durationMinutes: number, excludeId?: string) => {
-    const newStart = new Date(`${date}T${time}:00`).getTime();
+    const newStart = new Date(`${date}T${time}:00Z`).getTime();
     const newEnd = newStart + durationMinutes * 60 * 1000;
     return appointments.some(apt => {
       if (excludeId && apt.id === excludeId) return false;
