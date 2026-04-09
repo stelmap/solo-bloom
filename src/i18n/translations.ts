@@ -605,6 +605,13 @@ export const translations = {
   "auth.invalidResetLinkDesc": { en: "This password reset link is invalid or has expired. Please request a new one.", uk: "Це посилання для скидання пароля недійсне або прострочене. Будь ласка, запросіть нове." },
   "auth.passwordTooShort": { en: "Password must be at least 6 characters.", uk: "Пароль повинен містити щонайменше 6 символів." },
   "auth.passwordsMismatch": { en: "Passwords do not match.", uk: "Паролі не збігаються." },
+
+  // Currency settings
+  "settings.currency": { en: "Currency", uk: "Валюта" },
+  "settings.currencyDesc": { en: "Select your working currency", uk: "Оберіть робочу валюту" },
+  "settings.currencyWarning": { en: "Currency label will change, but existing values will not be converted.", uk: "Символ валюти зміниться, але існуючі значення не будуть конвертовані." },
+  "currency.EUR": { en: "EUR (€) — Euro", uk: "EUR (€) — Євро" },
+  "currency.UAH": { en: "UAH (₴) — Ukrainian Hryvnia", uk: "UAH (₴) — Українська гривня" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;
