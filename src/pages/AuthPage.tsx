@@ -270,7 +270,7 @@ export default function AuthPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-secondary via-accent to-secondary" />
         <div className="relative z-10 max-w-md space-y-6 text-center">
           <h1 className="text-4xl font-bold text-secondary-foreground tracking-tight">
-            Solo<span className="text-primary">Pro</span>
+            Solo<span className="text-primary">.Biz</span>
           </h1>
           <p className="text-secondary-foreground/70 text-lg leading-relaxed">
             {t("auth.heroText")}
@@ -299,7 +299,7 @@ export default function AuthPage() {
         <div className="w-full max-w-sm space-y-6">
           <div className="text-center space-y-2 lg:hidden">
             <h1 className="text-2xl font-bold text-foreground">
-              Solo<span className="text-primary">Pro</span>
+              Solo<span className="text-primary">.Biz</span>
             </h1>
           </div>
           {renderForm()}

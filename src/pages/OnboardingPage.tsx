@@ -197,7 +197,7 @@ export default function OnboardingPage() {
               </div>
               <div className="space-y-3">
                 <h1 className="text-3xl font-bold text-foreground">
-                  Welcome to Solo<span className="text-primary">Pro</span>! 👋
+                  Welcome to Solo<span className="text-primary">.Biz</span>! 👋
                 </h1>
                 <p className="text-muted-foreground text-lg leading-relaxed max-w-md mx-auto">
                   Let's set up your business in <strong className="text-foreground">2 minutes</strong>. We'll help you understand how much you need to earn to cover your costs.
