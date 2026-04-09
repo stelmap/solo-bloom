@@ -195,14 +195,18 @@ function FounderSection() {
   return (
     <section className="py-20 px-4 sm:px-6 bg-secondary">
       <div className="max-w-3xl mx-auto">
-        <div className="p-8 sm:p-10 rounded-2xl bg-accent/40 border border-sidebar-border">
-          <p className="text-sm font-medium text-primary mb-4">From the founder</p>
-          <blockquote className="text-lg sm:text-xl text-secondary-foreground/90 leading-relaxed space-y-4">
-            <p>"I built SoloBizz for myself as a psychologist.</p>
-            <p>I constantly struggled with rescheduled sessions, unpaid sessions, manual tracking, and not knowing how much I actually earned.</p>
-            <p>I needed one simple system. So I built SoloBizz.</p>
-            <p className="text-primary font-medium">Now it helps other professionals do the same."</p>
-          </blockquote>
+        <p className="text-sm font-medium text-primary mb-3 text-center">What is Solo.Bizz?</p>
+        <h2 className="text-3xl sm:text-4xl font-bold text-secondary-foreground text-center mb-10">
+          Built by a practitioner, for practitioners
+        </h2>
+        <div className="p-8 sm:p-10 rounded-2xl bg-accent/40 border border-sidebar-border space-y-5 text-secondary-foreground/90 leading-relaxed">
+          <p>Solo.Bizz is a business management app designed for professionals who work with people through appointments, sessions, and client-based services.</p>
+          <p>The idea came from the founder's personal experience. After many years in IT — building ERP systems, working as a Product Manager, and helping create complex digital products — a severe burnout led to a career change into psychology.</p>
+          <p>That's when a familiar problem appeared: it's very hard to organize your workday when everything is scattered across different tools. Sessions in one place, payments in another, notes somewhere else, and client history stored separately. Whenever you need to quickly understand whether a client is attending regularly, see overall dynamics, check payments, or bring all the information together — it takes too much time and energy.</p>
+          <p>That was the moment the first profession could help the second one.</p>
+          <p className="text-primary font-semibold">This is how Solo.Bizz was created — a tool that brings appointments, sessions, clients, payments, notes, and work analytics together in one place.</p>
+          <p>Solo.Bizz is useful for anyone whose work is built around client sessions and appointments — psychologists, coaches, consultants, beauty professionals, nail technicians, and many other specialists whose business depends on one-to-one client work.</p>
+          <p className="font-medium text-secondary-foreground">A product created by a practitioner for practitioners — to make working with people simpler, clearer, and easier to manage.</p>
         </div>
       </div>
     </section>
