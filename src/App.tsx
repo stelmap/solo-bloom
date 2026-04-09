@@ -15,6 +15,7 @@ import ServicesPage from "./pages/ServicesPage";
 import IncomePage from "./pages/IncomePage";
 import ExpensesPage from "./pages/ExpensesPage";
 import BreakevenPage from "./pages/BreakevenPage";
+import FinancialOverviewPage from "./pages/FinancialOverviewPage";
 import SettingsPage from "./pages/SettingsPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import NotFound from "./pages/NotFound";
@@ -40,6 +41,7 @@ const App = () => (
               <Route path="/income" element={<ProtectedRoute><IncomePage /></ProtectedRoute>} />
               <Route path="/expenses" element={<ProtectedRoute><ExpensesPage /></ProtectedRoute>} />
               <Route path="/breakeven" element={<ProtectedRoute><BreakevenPage /></ProtectedRoute>} />
+              <Route path="/financial" element={<ProtectedRoute><FinancialOverviewPage /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
