@@ -510,6 +510,38 @@ export default function CalendarPage() {
         onOpenChange={(o) => { setSessionSheetOpen(o); if (!o) setDetailApt(null); }}
         use12h={use12h}
       />
+
+      {/* Day-off cancellation confirmation modal */}
+      <Dialog open={!!dayOffConfirm} onOpenChange={(o) => { if (!o) setDayOffConfirm(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("dayOff.cancelTitle")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              {t("dayOff.cancelDesc", { count: dayOffConfirm?.affectedApts.length.toString() ?? "0" })}
+            </p>
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {dayOffConfirm?.affectedApts.map((apt: any) => (
+                <div key={apt.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50 text-sm">
+                  <span className="font-medium">{apt.clients?.name}</span>
+                  <span className="text-muted-foreground">
+                    {format(new Date(apt.scheduled_at), "HH:mm")} · {apt.services?.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setDayOffConfirm(null)}>
+              {t("dayOff.keepSessions")}
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmDayOffCancel} disabled={bulkCancel.isPending}>
+              {bulkCancel.isPending ? t("common.saving") : t("dayOff.cancelConfirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
