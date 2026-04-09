@@ -20,7 +20,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
+  const supabaseAdmin = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     { auth: { persistSession: false } }
@@ -33,14 +33,24 @@ serve(async (req) => {
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
+    if (!authHeader?.startsWith("Bearer ")) throw new Error("No authorization header provided");
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
-    const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated");
-    logStep("User authenticated", { email: user.email });
+
+    // Use a user-context client to validate the JWT
+    const supabaseUser = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: claimsData, error: claimsError } = await supabaseUser.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) throw new Error("Authentication failed");
+
+    const userId = claimsData.claims.sub as string;
+    const userEmail = claimsData.claims.email as string;
+    if (!userEmail) throw new Error("User email not available");
+    logStep("User authenticated", { email: userEmail });
 
     // Check for force refresh param
     let forceRefresh = false;
@@ -53,10 +63,10 @@ serve(async (req) => {
 
     // Check cache first
     if (!forceRefresh) {
-      const { data: cached } = await supabaseClient
+      const { data: cached } = await supabaseAdmin
         .from("subscription_cache")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .single();
 
       if (cached) {
@@ -80,14 +90,14 @@ serve(async (req) => {
 
     // Cache miss or stale — query Stripe
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
 
     if (customers.data.length === 0) {
       logStep("No Stripe customer found");
       const result = { subscribed: false, on_trial: false, subscription_end: null, trial_end: null, price_id: null, cancel_at_period_end: false };
       // Update cache
-      await supabaseClient.from("subscription_cache").upsert({
-        user_id: user.id,
+      await supabaseAdmin.from("subscription_cache").upsert({
+        user_id: userId,
         ...result,
         checked_at: new Date().toISOString(),
       }, { onConflict: "user_id" });
@@ -127,8 +137,8 @@ serve(async (req) => {
     }
 
     // Update cache
-    await supabaseClient.from("subscription_cache").upsert({
-      user_id: user.id,
+    await supabaseAdmin.from("subscription_cache").upsert({
+      user_id: userId,
       ...result,
       checked_at: new Date().toISOString(),
     }, { onConflict: "user_id" });
