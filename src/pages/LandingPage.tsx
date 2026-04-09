@@ -209,42 +209,70 @@ function FounderSection() {
   );
 }
 
+const PLANS = [
+  { name: "Monthly", price: "20€", period: "/month", savings: null, popular: false },
+  { name: "Quarterly", price: "50€", period: "/3 months", savings: "Save 17%", popular: true },
+  { name: "Yearly", price: "200€", period: "/year", savings: "Save 17%", popular: false },
+];
+
+const PLAN_FEATURES = [
+  "Full access to all features",
+  "Unlimited clients & sessions",
+  "Financial insights & reports",
+  "Cancel anytime",
+];
+
 function PricingSection() {
   return (
     <section id="pricing" className="py-20 px-4 sm:px-6">
-      <div className="max-w-lg mx-auto text-center">
+      <div className="max-w-5xl mx-auto text-center">
         <p className="text-sm font-medium text-primary mb-3">Pricing</p>
         <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
           Simple, transparent pricing
         </h2>
-        <p className="text-muted-foreground mb-10">No hidden fees. No surprises.</p>
+        <p className="text-muted-foreground mb-12">No hidden fees. No surprises. 7-day free trial on all plans.</p>
 
-        <div className="p-8 rounded-2xl bg-card border-2 border-primary/30 shadow-lg">
-          <div className="flex items-baseline justify-center gap-1 mb-2">
-            <span className="text-5xl font-bold text-foreground">20€</span>
-            <span className="text-muted-foreground">/month</span>
-          </div>
-          <p className="text-muted-foreground mb-8">after 7-day free trial</p>
-          <ul className="space-y-3 text-left mb-8">
-            {[
-              "Full access to all features",
-              "Unlimited clients & sessions",
-              "Financial insights & reports",
-              "Cancel anytime",
-            ].map((item, i) => (
-              <li key={i} className="flex items-center gap-3 text-foreground">
-                <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                <span className="text-sm">{item}</span>
-              </li>
-            ))}
-          </ul>
-          <Link to="/auth">
-            <Button className="w-full h-12 text-base gap-2">
-              Start free trial <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-          <p className="text-xs text-muted-foreground mt-3">No credit card required to start</p>
+        <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          {PLANS.map((plan, i) => (
+            <div
+              key={i}
+              className={`relative p-8 rounded-2xl bg-card border-2 ${
+                plan.popular ? "border-primary shadow-lg scale-[1.03]" : "border-border"
+              } transition-shadow`}
+            >
+              {plan.popular && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
+                  Most popular
+                </span>
+              )}
+              <h3 className="text-lg font-semibold text-foreground mb-1">{plan.name}</h3>
+              {plan.savings && (
+                <span className="inline-block px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium mb-3">
+                  {plan.savings}
+                </span>
+              )}
+              <div className="flex items-baseline justify-center gap-1 mb-1 mt-2">
+                <span className="text-4xl font-bold text-foreground">{plan.price}</span>
+                <span className="text-muted-foreground text-sm">{plan.period}</span>
+              </div>
+              <p className="text-xs text-muted-foreground mb-6">after 7-day free trial</p>
+              <ul className="space-y-3 text-left mb-8">
+                {PLAN_FEATURES.map((item, j) => (
+                  <li key={j} className="flex items-center gap-3 text-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                    <span className="text-sm">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link to="/auth">
+                <Button className={`w-full h-11 text-sm gap-2 ${plan.popular ? "" : "variant-outline"}`} variant={plan.popular ? "default" : "outline"}>
+                  Start free trial <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          ))}
         </div>
+        <p className="text-sm text-muted-foreground mt-6">No credit card required to start</p>
       </div>
     </section>
   );
