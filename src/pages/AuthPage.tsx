@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate, Navigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+
+const PLAN_PRICE_MAP: Record<string, string> = {
+  monthly: "price_1TKL7TRwTkI7QgwJe1i7gScN",
+  quarterly: "price_1TKLFFRwTkI7QgwJ2pv6DxKp",
+  yearly: "price_1TKLG7RwTkI7QgwJTcDckYXF",
+};
 
 export default function AuthPage() {
   const { user, loading: authLoading } = useAuth();
