@@ -200,8 +200,34 @@ export default function CalendarPage() {
       await deleteDayOff.mutateAsync(existing.id);
       toast({ title: t("toast.dayOffRemoved") });
     } else {
+      // Check for affected sessions
+      const affected = appointments.filter(apt => {
+        if (apt.status === "cancelled" || apt.status === "completed") return false;
+        return isSameUTCDay(new Date(apt.scheduled_at), date);
+      });
+      if (affected.length > 0) {
+        setDayOffConfirm({ date, affectedApts: affected });
+      } else {
+        await createDayOff.mutateAsync({ date: dateStr, type: "day_off", is_non_working: true });
+        toast({ title: t("toast.dayOffAdded") });
+      }
+    }
+  };
+
+  const handleConfirmDayOffCancel = async () => {
+    if (!dayOffConfirm) return;
+    const dateStr = format(dayOffConfirm.date, "yyyy-MM-dd");
+    const reason = t("dayOff.cancelReason");
+    try {
+      await bulkCancel.mutateAsync({
+        appointmentIds: dayOffConfirm.affectedApts.map((a: any) => a.id),
+        reason,
+      });
       await createDayOff.mutateAsync({ date: dateStr, type: "day_off", is_non_working: true });
-      toast({ title: t("toast.dayOffAdded") });
+      toast({ title: t("toast.sessionsCancelled", { count: dayOffConfirm.affectedApts.length.toString() }) });
+      setDayOffConfirm(null);
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
 
