@@ -239,7 +239,7 @@ export default function CalendarPage() {
       const slots = working ? sessionsPerDay : 0;
       totalSlots += slots;
       const booked = appointments.filter(apt =>
-        isSameDay(new Date(apt.scheduled_at), day) && apt.status !== "cancelled"
+        isSameUTCDay(new Date(apt.scheduled_at), day) && apt.status !== "cancelled"
       ).length;
       return { day, working, slots, booked, free: Math.max(slots - booked, 0) };
     });
