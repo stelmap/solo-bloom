@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate, Navigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,9 +10,17 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
+const PLAN_PRICE_MAP: Record<string, string> = {
+  monthly: "price_1TKL7TRwTkI7QgwJe1i7gScN",
+  quarterly: "price_1TKLFFRwTkI7QgwJ2pv6DxKp",
+  yearly: "price_1TKLG7RwTkI7QgwJTcDckYXF",
+};
+
 export default function AuthPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const planParam = searchParams.get("plan");
   const [mode, setMode] = useState<"login" | "signup" | "forgot" | "otp">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,8 +29,31 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [otpValue, setOtpValue] = useState("");
   const resetEmailRef = useRef("");
+  const checkoutTriggeredRef = useRef(false);
   const { toast } = useToast();
   const { t } = useLanguage();
+
+  // If user is already logged in and a plan was selected, auto-start checkout
+  useEffect(() => {
+    if (user && planParam && PLAN_PRICE_MAP[planParam] && !checkoutTriggeredRef.current) {
+      checkoutTriggeredRef.current = true;
+      const startCheckout = async () => {
+        try {
+          const { data, error } = await supabase.functions.invoke("create-checkout", {
+            body: { priceId: PLAN_PRICE_MAP[planParam] },
+          });
+          if (error) throw error;
+          if (data?.url) {
+            window.open(data.url, "_blank");
+          }
+        } catch (err: any) {
+          toast({ title: "Error", description: err.message || "Failed to start checkout", variant: "destructive" });
+        }
+        navigate("/dashboard", { replace: true });
+      };
+      startCheckout();
+    }
+  }, [user, planParam, navigate, toast]);
 
   if (authLoading) {
     return (
@@ -32,7 +63,11 @@ export default function AuthPage() {
     );
   }
 
-  if (user) {
+  if (user && !planParam) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (user && planParam && checkoutTriggeredRef.current) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -43,7 +78,7 @@ export default function AuthPage() {
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate("/dashboard");
+        // Navigation handled by useEffect (auto-checkout if plan param) or Navigate component
       } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email,
