@@ -103,10 +103,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [session, refreshSubscription]);
 
-  // Periodic refresh every 60s
+  // Periodic refresh every 5 minutes (reduced from 60s to avoid Stripe rate limits at scale)
   useEffect(() => {
     if (!session) return;
-    const interval = setInterval(refreshSubscription, 60_000);
+    const interval = setInterval(refreshSubscription, 300_000);
     return () => clearInterval(interval);
   }, [session, refreshSubscription]);
 
