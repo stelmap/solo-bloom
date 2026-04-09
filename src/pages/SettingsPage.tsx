@@ -49,6 +49,11 @@ export default function SettingsPage() {
     work_hours_start: "09:00", work_hours_end: "18:00", time_format: "24h", default_duration: 60,
   });
 
+  // Password change state
+  const [passwordForm, setPasswordForm] = useState({ current: "", newPass: "", confirm: "" });
+  const [showPasswords, setShowPasswords] = useState({ current: false, newPass: false, confirm: false });
+  const [changingPassword, setChangingPassword] = useState(false);
+
   const [schedule, setSchedule] = useState(DEFAULT_SCHEDULE);
   const [dayOffOpen, setDayOffOpen] = useState(false);
   const [dayOffForm, setDayOffForm] = useState({ date: "", type: "day_off", label: "" });
