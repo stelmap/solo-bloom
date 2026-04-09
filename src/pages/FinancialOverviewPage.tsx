@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { useIncome, useExpenses, useAppointments, useTaxSettings, useExpectedPayments } from "@/hooks/useData";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useCurrency } from "@/hooks/useCurrency";
 import { format, startOfMonth, endOfMonth, eachMonthOfInterval, isBefore, isAfter, isSameMonth } from "date-fns";
 import { cn } from "@/lib/utils";
 import {
@@ -33,6 +34,7 @@ interface MonthData {
 
 export default function FinancialOverviewPage() {
   const { t } = useLanguage();
+  const { symbol: cs } = useCurrency();
   const [year, setYear] = useState(new Date().getFullYear());
   const [drillMonth, setDrillMonth] = useState<MonthData | null>(null);
   const [viewMode, setViewMode] = useState<"table" | "chart">("chart");
@@ -202,7 +204,7 @@ export default function FinancialOverviewPage() {
     isFuture: m.isFuture,
   }));
 
-  const fmt = (n: number) => `€${Math.abs(n).toLocaleString("en", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  const fmt = (n: number) => `${cs}${Math.abs(n).toLocaleString("en", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
   return (
     <AppLayout>
@@ -266,11 +268,11 @@ export default function FinancialOverviewPage() {
                 <ComposedChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="name" className="text-xs fill-muted-foreground" tick={{ fontSize: 12 }} />
-                  <YAxis className="text-xs fill-muted-foreground" tick={{ fontSize: 12 }} tickFormatter={v => `€${v}`} />
+                  <YAxis className="text-xs fill-muted-foreground" tick={{ fontSize: 12 }} tickFormatter={v => `${cs}${v}`} />
                   <Tooltip
                     contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px" }}
                     labelStyle={{ color: "hsl(var(--foreground))" }}
-                    formatter={(value: number, name: string) => [`€${value.toFixed(0)}`, name]}
+                    formatter={(value: number, name: string) => [`${cs}${value.toFixed(0)}`, name]}
                   />
                   <Legend />
                   <Bar dataKey="income" name={t("financial.income")} fill="hsl(var(--success))" radius={[4, 4, 0, 0]} opacity={0.9} />
@@ -526,10 +528,10 @@ function CashflowChart({ data, fmt, t }: { data: MonthData[]; fmt: (n: number) =
         <ComposedChart data={cashflowData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
           <XAxis dataKey="name" className="text-xs fill-muted-foreground" tick={{ fontSize: 12 }} />
-          <YAxis className="text-xs fill-muted-foreground" tick={{ fontSize: 12 }} tickFormatter={v => `€${v}`} />
+          <YAxis className="text-xs fill-muted-foreground" tick={{ fontSize: 12 }} tickFormatter={v => `${cs}${v}`} />
           <Tooltip
             contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px" }}
-            formatter={(value: number, name: string) => [`€${value.toFixed(0)}`, name]}
+            formatter={(value: number, name: string) => [`${cs}${value.toFixed(0)}`, name]}
           />
           <Legend />
           <Area type="monotone" dataKey="balance" name={t("financial.balance")} fill="hsl(var(--primary) / 0.1)" stroke="hsl(var(--primary))" strokeWidth={2} />
