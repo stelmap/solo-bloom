@@ -71,6 +71,15 @@
 - [x] Email queue processing works
 - [x] Rate limiting and retry logic
 - [x] Dead-letter queue for failed emails
+- [x] Session reminder emails (cron-based, 24h before)
+- [x] Session cancellation emails (day-off flow)
+- [x] Public session confirmation page
+- [x] Email unsubscribe flow
+
+### ✅ Stripe Billing
+- [x] Checkout flow
+- [x] Customer portal
+- [x] Subscription status check & caching
 
 ### ✅ Security
 - [x] RLS on all tables
@@ -78,11 +87,13 @@
 - [x] Authenticated-only file access
 - [x] JWT validation on edge functions
 - [x] No hardcoded secrets
+- [x] Session confirmation tokens: token-based access only
+- [x] Subscription cache: user-scoped read access
+- [x] Security scan — all critical findings resolved
 
 ### ⬜ Not Yet Implemented
-- [ ] Stripe billing integration
 - [ ] Google Calendar sync
-- [ ] Scheduled email reminders
+- [ ] Telegram notifications
 - [ ] Forecasting page
 - [ ] Push notifications (for mobile)
 
