@@ -120,11 +120,29 @@ serve(async (req) => {
       result = { subscribed: false, on_trial: false, subscription_end: null, trial_end: null, price_id: null, cancel_at_period_end: false };
     } else {
       const onTrial = subscription.status === "trialing";
-      const subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      const trialEnd = subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null;
+
+      // Safely convert Stripe unix timestamps (seconds) to ISO strings
+      let subscriptionEnd: string | null = null;
+      if (typeof subscription.current_period_end === "number" && subscription.current_period_end > 0) {
+        subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      }
+
+      let trialEnd: string | null = null;
+      if (typeof subscription.trial_end === "number" && subscription.trial_end > 0) {
+        trialEnd = new Date(subscription.trial_end * 1000).toISOString();
+      }
+
       const priceId = subscription.items.data[0]?.price?.id || null;
 
-      logStep("Subscription found", { status: subscription.status, onTrial, subscriptionEnd, trialEnd, priceId });
+      logStep("Subscription found", {
+        status: subscription.status,
+        onTrial,
+        subscriptionEnd,
+        trialEnd,
+        priceId,
+        rawPeriodEnd: subscription.current_period_end,
+        rawTrialEnd: subscription.trial_end,
+      });
 
       result = {
         subscribed: true,
