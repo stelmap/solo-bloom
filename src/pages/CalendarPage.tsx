@@ -536,114 +536,124 @@ export default function CalendarPage() {
         </div>
 
         <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex flex-col" style={{ maxHeight: "calc(100vh - 280px)" }}>
-          <div className="grid grid-cols-[72px_repeat(7,1fr)] border-b border-border shrink-0 overflow-y-scroll invisible-scrollbar" style={{ scrollbarGutter: "stable" }}>
-            <div className="p-3" />
-            {days.map((day, i) => {
-              const dayOffStatus = isDayOff(day);
-              const working = isDayWorking(day);
-              return (
-                <div key={i} className={cn(
-                  "p-3 text-center border-l border-border relative group",
-                  isSameDay(day, new Date()) ? "bg-accent" : "",
-                  dayOffStatus ? "bg-destructive/5" : !working ? "bg-muted/30" : "",
-                )}>
-                  <p className="text-xs text-muted-foreground">{format(day, "EEE")}</p>
-                  <p className={cn("text-lg font-semibold", isSameDay(day, new Date()) ? "text-accent-foreground" : dayOffStatus ? "text-destructive/60" : "text-foreground")}>
-                    {format(day, "d")}
-                  </p>
-                  {dayOffStatus && (
-                    <Badge variant="outline" className="text-[9px] px-1 border-destructive/20 text-destructive/60 absolute top-1 right-1">
-                      <CalendarOff className="h-2.5 w-2.5" />
-                    </Badge>
-                  )}
-                  <button
-                    onClick={() => handleQuickDayOff(day)}
-                    className="absolute bottom-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity text-[9px] text-muted-foreground hover:text-foreground"
-                    title={dayOffStatus ? t("calendar.removeDayOff") : t("calendar.addDayOff")}
-                  >
-                    {dayOffStatus ? "✓" : <CalendarOff className="h-3 w-3" />}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-          <div className="grid grid-cols-[72px_repeat(7,1fr)] overflow-y-auto flex-1 min-h-0" style={{ scrollbarGutter: "stable" }}>
-            {hours.map((hour) => (
-              <div key={hour} className="contents">
-                <div className="h-[60px] flex items-center justify-end pr-3 border-b border-border">
-                  <span className="text-xs text-muted-foreground font-medium">{fmtHour(hour)}</span>
-                </div>
-                {days.map((day, dayIdx) => {
-                  const events = getEventsForDayHour(day, hour);
-                  const working = isHourWorking(day, hour);
-                  const dayOff = isDayOff(day);
-                  return (
-                    <div key={dayIdx}
-                      onClick={() => {
-                        if (dayOff || !working) return;
-                        if (events.length > 0) return;
-                        const dateStr = format(day, "yyyy-MM-dd");
-                        const timeStr = `${hour.toString().padStart(2, "0")}:00`;
-                        setForm(f => ({ ...f, date: dateStr, time: timeStr }));
-                        setCreateOpen(true);
-                      }}
-                      onDragOver={(e) => handleDragOver(e, day, hour)}
-                      onDragLeave={handleDragLeave}
-                      onDrop={(e) => handleDrop(e, day, hour)}
-                      className={cn(
-                        "relative border-l border-b border-border h-[60px] transition-colors",
-                        dayOff ? "bg-destructive/5 cursor-not-allowed" : !working ? "bg-muted/20 cursor-not-allowed" : events.length === 0 ? "hover:bg-primary/5 cursor-pointer group/slot" : "",
-                        dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && canDropOnSlot(day, hour, dragAptId) && "bg-primary/15 ring-2 ring-primary/30 ring-inset",
-                        dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && !canDropOnSlot(day, hour, dragAptId) && "bg-destructive/10 ring-2 ring-destructive/30 ring-inset",
+          <div className="overflow-y-auto flex-1 min-h-0" style={{ scrollbarGutter: "stable" }}>
+            <table className="w-full border-collapse table-fixed">
+              <colgroup>
+                <col className="w-[72px]" />
+                {days.map((_, i) => <col key={i} />)}
+              </colgroup>
+              <thead className="sticky top-0 z-20 bg-card">
+                <tr className="border-b border-border">
+                  <th className="p-3" />
+                  {days.map((day, i) => {
+                    const dayOffStatus = isDayOff(day);
+                    const working = isDayWorking(day);
+                    return (
+                      <th key={i} className={cn(
+                        "p-3 text-center border-l border-border relative group font-normal",
+                        isSameDay(day, new Date()) ? "bg-accent" : "",
+                        dayOffStatus ? "bg-destructive/5" : !working ? "bg-muted/30" : "",
                       )}>
-                      {events.length === 0 && working && !dayOff && !dragAptId && (
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/slot:opacity-100 transition-opacity pointer-events-none">
-                          <Plus className="h-4 w-4 text-primary/40" />
-                        </div>
-                      )}
-                      {events.map((evt) => {
-                        const si = statusInfo(evt.status);
-                        const heightPx = Math.max((evt.duration_minutes / 60) * 60 - 4, 20);
-                        const isActiveEvt = evt.status === "scheduled" || evt.status === "confirmed" || evt.status === "reminder_sent";
-                        const client = clients.find(c => c.id === evt.client_id);
-                        const needsConfirmation = client?.confirmation_required && evt.confirmation_status !== "confirmed";
-                        const isConfirmed = evt.confirmation_status === "confirmed";
-                        return (
-                          <div key={evt.id}
-                            draggable={isActiveEvt}
-                            onDragStart={isActiveEvt ? (e) => handleDragStart(e, evt.id) : undefined}
-                            onDragEnd={handleDragEnd}
-                            onClick={(e) => { e.stopPropagation(); openSessionSheet(evt); }}
-                            className={cn(
-                              "absolute inset-x-1 top-0 rounded-md border p-1.5 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10 overflow-hidden",
-                              si.color,
-                              needsConfirmation && "border-warning/50",
-                              isConfirmed && "border-success/50",
-                              isActiveEvt && "cursor-grab active:cursor-grabbing",
-                              dragAptId === evt.id && "opacity-40 ring-2 ring-primary",
-                            )}
-                            style={{ height: `${heightPx}px` }}>
-                            <div className="flex items-center gap-1">
-                              <p className="text-xs font-semibold truncate flex-1">{(evt as any).clients?.name}</p>
-                              {needsConfirmation && (
-                                <span className="shrink-0 h-2 w-2 rounded-full bg-warning" title={t("confirmation.pending")} />
-                              )}
-                              {isConfirmed && (
-                                <span className="shrink-0 h-2 w-2 rounded-full bg-success" title={t("confirmation.confirmed")} />
-                              )}
+                        <p className="text-xs text-muted-foreground">{format(day, "EEE")}</p>
+                        <p className={cn("text-lg font-semibold", isSameDay(day, new Date()) ? "text-accent-foreground" : dayOffStatus ? "text-destructive/60" : "text-foreground")}>
+                          {format(day, "d")}
+                        </p>
+                        {dayOffStatus && (
+                          <Badge variant="outline" className="text-[9px] px-1 border-destructive/20 text-destructive/60 absolute top-1 right-1">
+                            <CalendarOff className="h-2.5 w-2.5" />
+                          </Badge>
+                        )}
+                        <button
+                          onClick={() => handleQuickDayOff(day)}
+                          className="absolute bottom-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity text-[9px] text-muted-foreground hover:text-foreground"
+                          title={dayOffStatus ? t("calendar.removeDayOff") : t("calendar.addDayOff")}
+                        >
+                          {dayOffStatus ? "✓" : <CalendarOff className="h-3 w-3" />}
+                        </button>
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {hours.map((hour) => (
+                  <tr key={hour}>
+                    <td className="h-[60px] text-right pr-3 border-b border-border align-middle">
+                      <span className="text-xs text-muted-foreground font-medium">{fmtHour(hour)}</span>
+                    </td>
+                    {days.map((day, dayIdx) => {
+                      const events = getEventsForDayHour(day, hour);
+                      const working = isHourWorking(day, hour);
+                      const dayOff = isDayOff(day);
+                      return (
+                        <td key={dayIdx}
+                          onClick={() => {
+                            if (dayOff || !working) return;
+                            if (events.length > 0) return;
+                            const dateStr = format(day, "yyyy-MM-dd");
+                            const timeStr = `${hour.toString().padStart(2, "0")}:00`;
+                            setForm(f => ({ ...f, date: dateStr, time: timeStr }));
+                            setCreateOpen(true);
+                          }}
+                          onDragOver={(e) => handleDragOver(e, day, hour)}
+                          onDragLeave={handleDragLeave}
+                          onDrop={(e) => handleDrop(e, day, hour)}
+                          className={cn(
+                            "relative border-l border-b border-border h-[60px] transition-colors",
+                            dayOff ? "bg-destructive/5 cursor-not-allowed" : !working ? "bg-muted/20 cursor-not-allowed" : events.length === 0 ? "hover:bg-primary/5 cursor-pointer group/slot" : "",
+                            dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && canDropOnSlot(day, hour, dragAptId) && "bg-primary/15 ring-2 ring-primary/30 ring-inset",
+                            dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && !canDropOnSlot(day, hour, dragAptId) && "bg-destructive/10 ring-2 ring-destructive/30 ring-inset",
+                          )}>
+                          {events.length === 0 && working && !dayOff && !dragAptId && (
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/slot:opacity-100 transition-opacity pointer-events-none">
+                              <Plus className="h-4 w-4 text-primary/40" />
                             </div>
-                            <div className="flex items-center gap-1">
-                              <p className="text-xs opacity-70 truncate">{(evt as any).services?.name}</p>
-                              {(evt as any).recurring_rule_id && <Repeat className="h-2.5 w-2.5 opacity-50 shrink-0" />}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+                          )}
+                          {events.map((evt) => {
+                            const si = statusInfo(evt.status);
+                            const heightPx = Math.max((evt.duration_minutes / 60) * 60 - 4, 20);
+                            const isActiveEvt = evt.status === "scheduled" || evt.status === "confirmed" || evt.status === "reminder_sent";
+                            const client = clients.find(c => c.id === evt.client_id);
+                            const needsConfirmation = client?.confirmation_required && evt.confirmation_status !== "confirmed";
+                            const isConfirmed = evt.confirmation_status === "confirmed";
+                            return (
+                              <div key={evt.id}
+                                draggable={isActiveEvt}
+                                onDragStart={isActiveEvt ? (e) => handleDragStart(e, evt.id) : undefined}
+                                onDragEnd={handleDragEnd}
+                                onClick={(e) => { e.stopPropagation(); openSessionSheet(evt); }}
+                                className={cn(
+                                  "absolute inset-x-1 top-0 rounded-md border p-1.5 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10 overflow-hidden",
+                                  si.color,
+                                  needsConfirmation && "border-warning/50",
+                                  isConfirmed && "border-success/50",
+                                  isActiveEvt && "cursor-grab active:cursor-grabbing",
+                                  dragAptId === evt.id && "opacity-40 ring-2 ring-primary",
+                                )}
+                                style={{ height: `${heightPx}px` }}>
+                                <div className="flex items-center gap-1">
+                                  <p className="text-xs font-semibold truncate flex-1">{(evt as any).clients?.name}</p>
+                                  {needsConfirmation && (
+                                    <span className="shrink-0 h-2 w-2 rounded-full bg-warning" title={t("confirmation.pending")} />
+                                  )}
+                                  {isConfirmed && (
+                                    <span className="shrink-0 h-2 w-2 rounded-full bg-success" title={t("confirmation.confirmed")} />
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <p className="text-xs opacity-70 truncate">{(evt as any).services?.name}</p>
+                                  {(evt as any).recurring_rule_id && <Repeat className="h-2.5 w-2.5 opacity-50 shrink-0" />}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
