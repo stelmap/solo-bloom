@@ -92,6 +92,11 @@ export const translations = {
   "calendar.dayOffBlocked": { en: "Cannot book — this day is marked as day off", uk: "Неможливо записати — цей день позначений як вихідний" },
   "calendar.addDayOff": { en: "Mark day off", uk: "Позначити вихідний" },
   "calendar.removeDayOff": { en: "Remove day off", uk: "Зняти вихідний" },
+  "calendar.moveBlocked": { en: "Cannot move here", uk: "Не можна перемістити сюди" },
+  "calendar.movePastBlocked": { en: "Cannot move to a past time slot", uk: "Не можна перемістити в минулий час" },
+  "calendar.sessionMoved": { en: "Session moved successfully", uk: "Сеанс успішно переміщено" },
+  "calendar.moveRecurringTitle": { en: "Move recurring session", uk: "Перемістити повторюваний сеанс" },
+  "calendar.moveRecurringDesc": { en: "This session is part of a recurring series. How would you like to apply this change?", uk: "Цей сеанс є частиною повторюваної серії. Як ви хочете застосувати цю зміну?" },
 
   // Statuses
   "status.scheduled": { en: "Scheduled", uk: "Заплановано" },
