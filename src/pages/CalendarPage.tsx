@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
+import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
 import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { format, addDays, startOfWeek, isSameDay } from "date-fns";
@@ -315,10 +316,15 @@ export default function CalendarPage() {
                       <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2"><Label>{t("common.date")} *</Label><Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} /></div>
-                    <div className="space-y-2"><Label>{t("common.time")} *</Label><Input type="time" value={form.time} onChange={e => setForm(f => ({ ...f, time: e.target.value }))} /></div>
-                  </div>
+                  <DateTimePicker
+                    date={form.date}
+                    time={form.time}
+                    onDateChange={v => setForm(f => ({ ...f, date: v }))}
+                    onTimeChange={v => setForm(f => ({ ...f, time: v }))}
+                    use12h={use12h}
+                    dateLabel={t("common.date")}
+                    timeLabel={t("common.time")}
+                  />
 
                   {createValidation && !isRecurring && (
                     <div className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
@@ -365,7 +371,7 @@ export default function CalendarPage() {
                         </div>
                         <div className="space-y-2">
                           <Label className="text-xs">{t("recurring.endDate")}</Label>
-                          <Input type="date" value={recurEndDate} onChange={e => setRecurEndDate(e.target.value)} placeholder={t("recurring.ongoing")} />
+                          <DatePicker date={recurEndDate} onDateChange={setRecurEndDate} placeholder={t("recurring.ongoing")} />
                         </div>
                       </div>
                     )}
