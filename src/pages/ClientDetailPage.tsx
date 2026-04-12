@@ -22,6 +22,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState, useRef } from "react";
 import { format } from "date-fns";
+import { useMemo } from "react";
 import { formatScheduledTime } from "@/lib/timeFormat";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
