@@ -374,6 +374,8 @@ export default function CalendarPage() {
           });
 
         await Promise.all(updates);
+        // Invalidate appointments cache to reflect changes
+        qc.invalidateQueries({ queryKey: ["appointments"] });
       }
       toast({ title: t("calendar.sessionMoved") });
     } catch (e: any) {
