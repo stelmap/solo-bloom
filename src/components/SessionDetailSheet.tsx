@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { format } from "date-fns";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -400,10 +401,15 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Label>{t("common.date")} *</Label><Input type="date" value={editForm.date} onChange={e => setEditForm(f => ({ ...f, date: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>{t("common.time")} *</Label><Input type="time" value={editForm.time} onChange={e => setEditForm(f => ({ ...f, time: e.target.value }))} /></div>
-              </div>
+              <DateTimePicker
+                date={editForm.date}
+                time={editForm.time}
+                onDateChange={v => setEditForm(f => ({ ...f, date: v }))}
+                onTimeChange={v => setEditForm(f => ({ ...f, time: v }))}
+                use12h={use12h}
+                dateLabel={t("common.date")}
+                timeLabel={t("common.time")}
+              />
               <div className="space-y-2">
                 <Label>{t("calendar.price")} ({cs})</Label>
                 <Input type="number" step="0.01" value={editForm.price} onChange={e => setEditForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} />
