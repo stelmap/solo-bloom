@@ -8,6 +8,7 @@ import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
 import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { format, addDays, startOfWeek, isSameDay } from "date-fns";
+import { formatTime, formatScheduledTime } from "@/lib/timeFormat";
 import {
   useAppointments, useCreateAppointment,
   useClients, useServices, useProfile, useCreateRecurringRule,
@@ -25,13 +26,6 @@ import { useCurrency } from "@/hooks/useCurrency";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
-function formatTime(time: string, use12h: boolean) {
-  if (!use12h) return time;
-  const [h, m] = time.split(":").map(Number);
-  const ampm = h >= 12 ? "PM" : "AM";
-  const h12 = h % 12 || 12;
-  return `${h12}:${m.toString().padStart(2, "0")} ${ampm}`;
-}
 
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());

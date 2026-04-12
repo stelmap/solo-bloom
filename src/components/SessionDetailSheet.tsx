@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { format } from "date-fns";
+import { formatTime, formatScheduledTime } from "@/lib/timeFormat";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,13 +32,6 @@ interface SessionDetailSheetProps {
   use12h?: boolean;
 }
 
-function formatTime(time: string, use12h: boolean) {
-  if (!use12h) return time;
-  const [h, m] = time.split(":").map(Number);
-  const ampm = h >= 12 ? "PM" : "AM";
-  const h12 = h % 12 || 12;
-  return `${h12}:${m.toString().padStart(2, "0")} ${ampm}`;
-}
 
 export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12h = false }: SessionDetailSheetProps) {
   const { t } = useLanguage();
