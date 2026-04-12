@@ -102,8 +102,8 @@ export default function FinancialOverviewPage() {
         const expectedIncome = expectedApts.reduce((s, a) => s + Number(a.price), 0);
         const predictedIncome = confirmedIncome + expectedIncome;
 
-        // Recurring expenses projected into future month
-        const predictedExpenses = recurringMonthly;
+        // Recurring expenses projected into future month (only those started by this month)
+        const predictedExpenses = getRecurringForMonth(mKey);
         const predictedTaxes = calcTaxes(predictedIncome);
 
         return {
