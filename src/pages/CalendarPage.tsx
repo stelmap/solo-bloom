@@ -176,7 +176,7 @@ export default function CalendarPage() {
       try {
         await createAppointment.mutateAsync({
           client_id: form.client_id, service_id: form.service_id,
-          scheduled_at: `${form.date}T${form.time}:00`,
+          scheduled_at: `${form.date}T${form.time}:00Z`,
           duration_minutes: service?.duration_minutes ?? 60,
           price: Number(service?.price ?? 0),
           notes: form.notes || undefined,
