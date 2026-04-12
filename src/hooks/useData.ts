@@ -888,24 +888,29 @@ export function useDeleteRecurringAppointments() {
 
 function generateRecurringAppointments(rule: any, userId: string, maxWeeks = 12) {
   const appointments: any[] = [];
-  const startDate = new Date(rule.start_date);
-  const endDate = rule.end_date ? new Date(rule.end_date) : null;
+  // Parse start_date as UTC to avoid timezone shifts
+  const [sy, sm, sd] = (rule.start_date as string).split("-").map(Number);
+  const startDate = new Date(Date.UTC(sy, sm - 1, sd));
+  const endDate = rule.end_date
+    ? (() => { const [ey, em, ed] = (rule.end_date as string).split("-").map(Number); return new Date(Date.UTC(ey, em - 1, ed)); })()
+    : null;
   const maxDate = endDate || new Date(startDate.getTime() + maxWeeks * 7 * 24 * 60 * 60 * 1000);
   const daysOfWeek: number[] = rule.days_of_week || [1];
 
   let currentWeekStart = new Date(startDate);
-  const dayOfWeek = currentWeekStart.getDay();
+  const dayOfWeek = currentWeekStart.getUTCDay();
   const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  currentWeekStart.setDate(currentWeekStart.getDate() + mondayOffset);
+  currentWeekStart.setUTCDate(currentWeekStart.getUTCDate() + mondayOffset);
+
+  const [h, m] = (rule.time || "09:00").split(":").map(Number);
 
   while (currentWeekStart <= maxDate) {
     for (const dow of daysOfWeek) {
       const aptDate = new Date(currentWeekStart);
-      aptDate.setDate(aptDate.getDate() + (dow - 1));
+      aptDate.setUTCDate(aptDate.getUTCDate() + (dow - 1));
       if (aptDate < startDate || aptDate > maxDate) continue;
 
-      const [h, m] = (rule.time || "09:00").split(":").map(Number);
-      aptDate.setHours(h, m, 0, 0);
+      aptDate.setUTCHours(h, m, 0, 0);
 
       appointments.push({
         user_id: userId,
@@ -918,7 +923,7 @@ function generateRecurringAppointments(rule: any, userId: string, maxWeeks = 12)
         recurring_rule_id: rule.id,
       });
     }
-    currentWeekStart.setDate(currentWeekStart.getDate() + (rule.interval_weeks || 1) * 7);
+    currentWeekStart.setUTCDate(currentWeekStart.getUTCDate() + (rule.interval_weeks || 1) * 7);
   }
   return appointments;
 }
