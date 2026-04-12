@@ -672,6 +672,32 @@ export default function CalendarPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Recurring move scope dialog */}
+      <Dialog open={recurMoveOpen} onOpenChange={(o) => { if (!o) { setRecurMoveOpen(false); pendingMove.current = null; } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("calendar.moveRecurringTitle")}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">{t("calendar.moveRecurringDesc")}</p>
+          <div className="flex flex-col gap-2 mt-2">
+            <Button variant="outline" onClick={() => handleRecurringMoveScope("this")}>
+              {t("recurring.thisOnly")}
+            </Button>
+            <Button variant="outline" onClick={() => handleRecurringMoveScope("following")}>
+              {t("recurring.thisAndFollowing")}
+            </Button>
+            <Button variant="outline" onClick={() => handleRecurringMoveScope("all")}>
+              {t("recurring.allInSeries")}
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setRecurMoveOpen(false); pendingMove.current = null; }}>
+              {t("common.cancel")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
