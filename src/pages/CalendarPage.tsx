@@ -586,11 +586,16 @@ export default function CalendarPage() {
                         setForm(f => ({ ...f, date: dateStr, time: timeStr }));
                         setCreateOpen(true);
                       }}
+                      onDragOver={(e) => handleDragOver(e, day, hour)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => handleDrop(e, day, hour)}
                       className={cn(
                         "relative border-l border-b border-border h-[60px] transition-colors",
                         dayOff ? "bg-destructive/5 cursor-not-allowed" : !working ? "bg-muted/20 cursor-not-allowed" : events.length === 0 ? "hover:bg-primary/5 cursor-pointer group/slot" : "",
+                        dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && canDropOnSlot(day, hour, dragAptId) && "bg-primary/15 ring-2 ring-primary/30 ring-inset",
+                        dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && !canDropOnSlot(day, hour, dragAptId) && "bg-destructive/10 ring-2 ring-destructive/30 ring-inset",
                       )}>
-                      {events.length === 0 && working && !dayOff && (
+                      {events.length === 0 && working && !dayOff && !dragAptId && (
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/slot:opacity-100 transition-opacity pointer-events-none">
                           <Plus className="h-4 w-4 text-primary/40" />
                         </div>
@@ -598,9 +603,19 @@ export default function CalendarPage() {
                       {events.map((evt) => {
                         const si = statusInfo(evt.status);
                         const heightPx = Math.max((evt.duration_minutes / 60) * 60 - 4, 20);
+                        const isActive = evt.status === "scheduled" || evt.status === "confirmed" || evt.status === "reminder_sent";
                         return (
-                          <div key={evt.id} onClick={(e) => { e.stopPropagation(); openSessionSheet(evt); }}
-                            className={cn("absolute inset-x-1 top-0 rounded-md border p-1.5 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10 overflow-hidden", si.color)}
+                          <div key={evt.id}
+                            draggable={isActive}
+                            onDragStart={isActive ? (e) => handleDragStart(e, evt.id) : undefined}
+                            onDragEnd={handleDragEnd}
+                            onClick={(e) => { e.stopPropagation(); openSessionSheet(evt); }}
+                            className={cn(
+                              "absolute inset-x-1 top-0 rounded-md border p-1.5 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10 overflow-hidden",
+                              si.color,
+                              isActive && "cursor-grab active:cursor-grabbing",
+                              dragAptId === evt.id && "opacity-40 ring-2 ring-primary",
+                            )}
                             style={{ height: `${heightPx}px` }}>
                             <p className="text-xs font-semibold truncate">{(evt as any).clients?.name}</p>
                             <div className="flex items-center gap-1">
