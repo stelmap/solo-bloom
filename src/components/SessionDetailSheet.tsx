@@ -204,10 +204,14 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const handleRecurringEdit = async (scope: "this" | "following" | "all") => {
     try {
       const service = services.find(s => s.id === editForm.service_id);
+      const newScheduled = new Date(`${editForm.date}T${editForm.time}:00Z`);
+      const oldScheduled = new Date(apt.scheduled_at);
+      const deltaMs = newScheduled.getTime() - oldScheduled.getTime();
+
       if (scope === "this") {
         await updateAppointment.mutateAsync({
           id: apt.id, client_id: editForm.client_id, service_id: editForm.service_id,
-          scheduled_at: `${editForm.date}T${editForm.time}:00Z`,
+          scheduled_at: newScheduled.toISOString(),
           duration_minutes: service?.duration_minutes ?? 60,
           price: editForm.price, notes: editForm.notes || undefined,
         });
@@ -219,6 +223,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
             duration_minutes: service?.duration_minutes ?? 60,
             price: editForm.price, notes: editForm.notes || undefined,
           },
+          deltaMs: deltaMs !== 0 ? deltaMs : undefined,
         });
       }
       setRecurEditScopeOpen(false);
