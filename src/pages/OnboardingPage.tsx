@@ -7,6 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { useCurrency } from "@/hooks/useCurrency";
 import { Sparkles, Scissors, TrendingDown, CalendarDays, Target, Plus, Trash2, ArrowRight, ArrowLeft, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +36,8 @@ export default function OnboardingPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { t } = useLanguage();
+  const { symbol: cs } = useCurrency();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
 
@@ -113,10 +117,10 @@ export default function OnboardingPage() {
       qc.invalidateQueries({ queryKey: ["services"] });
       qc.invalidateQueries({ queryKey: ["expenses"] });
 
-      toast({ title: "You're all set! 🎉", description: "Your business is ready to go." });
+      toast({ title: t("onboarding.allSet"), description: t("onboarding.businessReady") });
       navigate("/");
     } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -145,7 +149,9 @@ export default function OnboardingPage() {
   };
 
   const stepIcons = [Sparkles, Scissors, TrendingDown, CalendarDays, Target];
-  const stepLabels = ["Welcome", "Services", "Expenses", "Schedule", "Insight"];
+  const stepLabelKeys: Array<"onboarding.welcome" | "services.title" | "expenses.title" | "onboarding.schedule" | "onboarding.insight"> = [
+    "onboarding.welcome", "services.title", "expenses.title", "onboarding.schedule", "onboarding.insight",
+  ];
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -153,12 +159,12 @@ export default function OnboardingPage() {
       <div className="w-full bg-muted">
         <div className="max-w-2xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-3">
-            {stepLabels.map((label, i) => {
+            {stepLabelKeys.map((key, i) => {
               const Icon = stepIcons[i];
               const isActive = step === i + 1;
               const isDone = step > i + 1;
               return (
-                <div key={label} className="flex flex-col items-center gap-1.5">
+                <div key={key} className="flex flex-col items-center gap-1.5">
                   <div
                     className={cn(
                       "h-9 w-9 rounded-full flex items-center justify-center text-sm font-semibold transition-colors",
@@ -172,7 +178,7 @@ export default function OnboardingPage() {
                     {isDone ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
                   </div>
                   <span className={cn("text-xs font-medium hidden sm:block", isActive ? "text-foreground" : "text-muted-foreground")}>
-                    {label}
+                    {t(key)}
                   </span>
                 </div>
               );
@@ -198,16 +204,17 @@ export default function OnboardingPage() {
               </div>
               <div className="space-y-3">
                 <h1 className="text-3xl font-bold text-foreground">
-                  Welcome to Solo<span className="text-primary">.Biz</span>! 👋
+                  {t("onboarding.welcomeTitle")}
                 </h1>
-                <p className="text-muted-foreground text-lg leading-relaxed max-w-md mx-auto">
-                  Let's set up your business in <strong className="text-foreground">2 minutes</strong>. We'll help you understand how much you need to earn to cover your costs.
-                </p>
+                <p
+                  className="text-muted-foreground text-lg leading-relaxed max-w-md mx-auto"
+                  dangerouslySetInnerHTML={{ __html: t("onboarding.welcomeText") }}
+                />
               </div>
               <div className="flex items-center justify-center gap-6 pt-2 text-sm text-muted-foreground">
-                <span className="flex items-center gap-2"><Scissors className="h-4 w-4 text-primary" /> Add services</span>
-                <span className="flex items-center gap-2"><TrendingDown className="h-4 w-4 text-primary" /> Set expenses</span>
-                <span className="flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> Get insight</span>
+                <span className="flex items-center gap-2"><Scissors className="h-4 w-4 text-primary" /> {t("onboarding.addServices")}</span>
+                <span className="flex items-center gap-2"><TrendingDown className="h-4 w-4 text-primary" /> {t("onboarding.setExpenses")}</span>
+                <span className="flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> {t("onboarding.getInsight")}</span>
               </div>
             </div>
           )}
@@ -216,14 +223,14 @@ export default function OnboardingPage() {
           {step === 2 && (
             <div className="space-y-6">
               <div className="space-y-2">
-                <h2 className="text-2xl font-bold text-foreground">What services do you offer?</h2>
-                <p className="text-muted-foreground">Add at least one service so we can calculate your break-even.</p>
+                <h2 className="text-2xl font-bold text-foreground">{t("onboarding.whatServices")}</h2>
+                <p className="text-muted-foreground">{t("onboarding.addAtLeastOne")}</p>
               </div>
               <div className="space-y-4">
                 {services.map((s, i) => (
                   <div key={i} className="bg-card rounded-xl border border-border p-4 space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-muted-foreground">Service {i + 1}</span>
+                      <span className="text-sm font-medium text-muted-foreground">{t("calendar.service")} {i + 1}</span>
                       {services.length > 1 && (
                         <button onClick={() => removeService(i)} className="text-muted-foreground hover:text-destructive transition-colors">
                           <Trash2 className="h-4 w-4" />
@@ -231,16 +238,16 @@ export default function OnboardingPage() {
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label>Name</Label>
+                      <Label>{t("common.name")}</Label>
                       <Input
-                        placeholder="e.g. Deep Tissue Massage"
+                        placeholder={t("onboarding.servicePlaceholder")}
                         value={s.name}
                         onChange={(e) => updateService(i, "name", e.target.value)}
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <Label>Duration (min)</Label>
+                        <Label>{t("common.duration")}</Label>
                         <Input
                           type="number"
                           min={15}
@@ -249,7 +256,7 @@ export default function OnboardingPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Price</Label>
+                        <Label>{t("calendar.price")}</Label>
                         <Input
                           type="number"
                           min={0}
@@ -263,7 +270,7 @@ export default function OnboardingPage() {
                 ))}
               </div>
               <Button variant="outline" onClick={addService} className="w-full">
-                <Plus className="h-4 w-4 mr-2" /> Add another service
+                <Plus className="h-4 w-4 mr-2" /> {t("onboarding.addAnotherService")}
               </Button>
             </div>
           )}
@@ -272,22 +279,22 @@ export default function OnboardingPage() {
           {step === 3 && (
             <div className="space-y-6">
               <div className="space-y-2">
-                <h2 className="text-2xl font-bold text-foreground">What are your monthly expenses?</h2>
-                <p className="text-muted-foreground">These help us calculate your break-even point. Estimates are fine!</p>
+                <h2 className="text-2xl font-bold text-foreground">{t("onboarding.whatExpenses")}</h2>
+                <p className="text-muted-foreground">{t("onboarding.expensesHelp")}</p>
               </div>
               <div className="space-y-3">
                 {expenses.map((e, i) => (
                   <div key={i} className="bg-card rounded-xl border border-border p-4 flex items-end gap-3">
                     <div className="flex-1 space-y-2">
-                      <Label>Category</Label>
+                      <Label>{t("common.category")}</Label>
                       <Input
-                        placeholder="e.g. Rent"
+                        placeholder={t("category.Rent")}
                         value={e.category}
                         onChange={(ev) => updateExpense(i, "category", ev.target.value)}
                       />
                     </div>
                     <div className="w-32 space-y-2">
-                      <Label>Amount</Label>
+                      <Label>{t("common.amount")}</Label>
                       <Input
                         type="number"
                         min={0}
@@ -305,7 +312,7 @@ export default function OnboardingPage() {
                 ))}
               </div>
               <Button variant="outline" onClick={addExpense} className="w-full">
-                <Plus className="h-4 w-4 mr-2" /> Add expense
+                <Plus className="h-4 w-4 mr-2" /> {t("onboarding.addExpense")}
               </Button>
             </div>
           )}
@@ -314,12 +321,12 @@ export default function OnboardingPage() {
           {step === 4 && (
             <div className="space-y-6">
               <div className="space-y-2">
-                <h2 className="text-2xl font-bold text-foreground">Your work schedule</h2>
-                <p className="text-muted-foreground">This helps us calculate how many clients you can see per month.</p>
+                <h2 className="text-2xl font-bold text-foreground">{t("onboarding.workSchedule")}</h2>
+                <p className="text-muted-foreground">{t("onboarding.scheduleHelp")}</p>
               </div>
               <div className="bg-card rounded-xl border border-border p-6 space-y-6">
                 <div className="space-y-3">
-                  <Label className="text-base">Working days per week</Label>
+                  <Label className="text-base">{t("onboarding.workingDays")}</Label>
                   <div className="flex items-center gap-2">
                     {[3, 4, 5, 6, 7].map(d => (
                       <button
@@ -338,7 +345,7 @@ export default function OnboardingPage() {
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <Label className="text-base">Sessions per day</Label>
+                  <Label className="text-base">{t("onboarding.sessionsPerDay")}</Label>
                   <div className="flex items-center gap-2">
                     {[2, 3, 4, 5, 6, 7, 8].map(s => (
                       <button
@@ -358,7 +365,7 @@ export default function OnboardingPage() {
                 </div>
                 <div className="pt-2 border-t border-border">
                   <p className="text-sm text-muted-foreground">
-                    Max monthly capacity: <strong className="text-foreground">{maxMonthlyCapacity} sessions</strong>
+                    {t("onboarding.maxCapacity")} <strong className="text-foreground">{maxMonthlyCapacity} {t("onboarding.sessionsSuffix")}</strong>
                   </p>
                 </div>
               </div>
@@ -372,29 +379,29 @@ export default function OnboardingPage() {
                 <Target className="h-10 w-10 text-primary" />
               </div>
               <div className="space-y-3">
-                <h2 className="text-2xl font-bold text-foreground">Your first insight</h2>
-                <p className="text-muted-foreground">Based on what you told us, here's what you need:</p>
+                <h2 className="text-2xl font-bold text-foreground">{t("onboarding.firstInsight")}</h2>
+                <p className="text-muted-foreground">{t("onboarding.basedOnData")}</p>
               </div>
 
               <div className="bg-card rounded-xl border border-border p-6 space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-muted/50 rounded-lg p-4">
-                    <p className="text-sm text-muted-foreground">Monthly expenses</p>
-                    <p className="text-2xl font-bold text-foreground">€{totalMonthlyExpenses.toLocaleString()}</p>
+                    <p className="text-sm text-muted-foreground">{t("onboarding.monthlyExpenses")}</p>
+                    <p className="text-2xl font-bold text-foreground">{cs}{totalMonthlyExpenses.toLocaleString()}</p>
                   </div>
                   <div className="bg-muted/50 rounded-lg p-4">
-                    <p className="text-sm text-muted-foreground">Avg. service price</p>
-                    <p className="text-2xl font-bold text-foreground">€{avgServicePrice.toFixed(0)}</p>
+                    <p className="text-sm text-muted-foreground">{t("onboarding.avgPrice")}</p>
+                    <p className="text-2xl font-bold text-foreground">{cs}{avgServicePrice.toFixed(0)}</p>
                   </div>
                 </div>
 
                 <div className="bg-secondary rounded-xl p-6">
-                  <p className="text-secondary-foreground/70 text-sm mb-1">To cover your costs, you need</p>
+                  <p className="text-secondary-foreground/70 text-sm mb-1">{t("onboarding.toCoverCosts")}</p>
                   <p className="text-4xl font-bold text-primary">
                     {clientsNeeded > 0 ? clientsNeeded : "—"}
                   </p>
                   <p className="text-secondary-foreground/70 text-sm mt-1">
-                    {clientsNeeded > 0 ? "clients per month" : "Add services & expenses to see your number"}
+                    {clientsNeeded > 0 ? t("onboarding.clientsPerMonth") : t("onboarding.addDataToSee")}
                   </p>
                 </div>
 
@@ -402,11 +409,11 @@ export default function OnboardingPage() {
                   <div className="text-sm text-muted-foreground">
                     {clientsNeeded <= maxMonthlyCapacity ? (
                       <p className="text-success font-medium">
-                        ✅ That's {Math.round((clientsNeeded / maxMonthlyCapacity) * 100)}% of your capacity — very achievable!
+                        ✅ {t("onboarding.achievable", { pct: Math.round((clientsNeeded / maxMonthlyCapacity) * 100).toString() })}
                       </p>
                     ) : (
                       <p className="text-destructive font-medium">
-                        ⚠️ That exceeds your capacity of {maxMonthlyCapacity} sessions. Consider raising prices or reducing expenses.
+                        ⚠️ {t("onboarding.exceedsCapacity", { max: maxMonthlyCapacity.toString() })}
                       </p>
                     )}
                   </div>
@@ -420,21 +427,21 @@ export default function OnboardingPage() {
             <div>
               {step > 1 && (
                 <Button variant="ghost" onClick={() => setStep(step - 1)} disabled={saving}>
-                  <ArrowLeft className="h-4 w-4 mr-2" /> Back
+                  <ArrowLeft className="h-4 w-4 mr-2" /> {t("onboarding.back")}
                 </Button>
               )}
             </div>
             <div className="flex items-center gap-3">
               <Button variant="ghost" onClick={handleSkip} disabled={saving} className="text-muted-foreground">
-                Skip setup
+                {t("onboarding.skipSetup")}
               </Button>
               {step < TOTAL_STEPS ? (
                 <Button onClick={() => setStep(step + 1)} disabled={step === 2 && !canProceed()}>
-                  Continue <ArrowRight className="h-4 w-4 ml-2" />
+                  {t("onboarding.continue")} <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               ) : (
                 <Button onClick={handleFinish} disabled={saving}>
-                  {saving ? "Saving..." : "Go to Dashboard"} <ArrowRight className="h-4 w-4 ml-2" />
+                  {saving ? t("common.saving") : t("onboarding.goToDashboard")} <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               )}
             </div>

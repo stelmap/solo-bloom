@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { getStoredLang, setStoredLang } from "@/i18n/LanguageContext";
+import { Language } from "@/i18n/translations";
+import { Eye, EyeOff, ArrowLeft, Globe } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 const PLAN_PRICE_MAP: Record<string, string> = {
@@ -31,7 +33,7 @@ export default function AuthPage() {
   const resetEmailRef = useRef("");
   const checkoutTriggeredRef = useRef(false);
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   // If user is already logged in and a plan was selected, auto-start checkout
   useEffect(() => {
@@ -298,8 +300,25 @@ export default function AuthPage() {
     );
   };
 
+  const toggleLang = () => {
+    const current = getStoredLang();
+    const next: Language = current === "en" ? "uk" : "en";
+    setStoredLang(next);
+    window.location.reload();
+  };
+
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex relative">
+      {/* Language toggle */}
+      <button
+        onClick={toggleLang}
+        className="absolute top-4 right-4 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/80 hover:bg-muted text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+        title={t("settings.language")}
+      >
+        <Globe className="h-4 w-4" />
+        {lang === "en" ? "UA" : "EN"}
+      </button>
+
       {/* Left panel — dark hero */}
       <div className="hidden lg:flex lg:w-1/2 bg-secondary items-center justify-center p-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-secondary via-accent to-secondary" />
