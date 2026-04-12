@@ -415,8 +415,8 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
-          <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border overflow-y-scroll" style={{ scrollbarGutter: "stable" }}>
+        <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex flex-col" style={{ maxHeight: "calc(100vh - 280px)" }}>
+          <div className="grid grid-cols-[72px_repeat(7,1fr)] border-b border-border shrink-0" style={{ scrollbarGutter: "stable" }}>
             <div className="p-3" />
             {days.map((day, i) => {
               const dayOffStatus = isDayOff(day);
@@ -447,11 +447,11 @@ export default function CalendarPage() {
               );
             })}
           </div>
-          <div className="grid grid-cols-[60px_repeat(7,1fr)] max-h-[600px] overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
+          <div className="grid grid-cols-[72px_repeat(7,1fr)] overflow-y-auto flex-1 min-h-0" style={{ scrollbarGutter: "stable" }}>
             {hours.map((hour) => (
               <div key={hour} className="contents">
-                <div className="h-[60px] flex items-start justify-end pr-3 pt-0 border-b border-border">
-                  <span className="text-xs text-muted-foreground leading-none -translate-y-[7px]">{fmtHour(hour)}</span>
+                <div className="h-[60px] flex items-center justify-end pr-3 border-b border-border">
+                  <span className="text-xs text-muted-foreground font-medium">{fmtHour(hour)}</span>
                 </div>
                 {days.map((day, dayIdx) => {
                   const events = getEventsForDayHour(day, hour);
