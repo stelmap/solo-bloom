@@ -5,15 +5,15 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
-import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3 } from "lucide-react";
-import { useState, useMemo } from "react";
-import { format, addDays, startOfWeek, isSameDay } from "date-fns";
+import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3, GripVertical } from "lucide-react";
+import { useState, useMemo, useCallback, useRef } from "react";
+import { format, addDays, startOfWeek, isSameDay, isBefore, startOfDay } from "date-fns";
 import { formatTime, formatScheduledTime } from "@/lib/timeFormat";
 import {
-  useAppointments, useCreateAppointment,
+  useAppointments, useCreateAppointment, useUpdateAppointment,
   useClients, useServices, useProfile, useCreateRecurringRule,
   useWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff,
-  useBulkCancelForDayOff,
+  useBulkCancelForDayOff, useEditRecurringAppointments,
 } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
