@@ -102,4 +102,11 @@
   .glass-card {
     @apply bg-card/80 backdrop-blur-sm border border-border/50 shadow-sm;
   }
+  .invisible-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .invisible-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
