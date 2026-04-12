@@ -33,7 +33,7 @@ export default function AuthPage() {
   const resetEmailRef = useRef("");
   const checkoutTriggeredRef = useRef(false);
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   // If user is already logged in and a plan was selected, auto-start checkout
   useEffect(() => {
