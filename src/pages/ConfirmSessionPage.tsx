@@ -99,7 +99,7 @@ export default function ConfirmSessionPage() {
     const d = new Date(iso);
     return d.toLocaleDateString("en-US", {
       weekday: "long", year: "numeric", month: "long", day: "numeric",
-    }) + " at " + d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+    }) + " at " + d.getUTCHours().toString().padStart(2, "0") + ":" + d.getUTCMinutes().toString().padStart(2, "0");
   };
 
   return (
