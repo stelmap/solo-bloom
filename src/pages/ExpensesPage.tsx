@@ -20,7 +20,7 @@ import { useSearchParams } from "react-router-dom";
 import { startOfWeek, startOfMonth, format } from "date-fns";
 import { cn } from "@/lib/utils";
 
-const CATEGORIES = ["Rent", "Materials", "Insurance", "Equipment", "Marketing", "Utilities", "Laundry", "Software", "Tax", "Other"];
+const DEFAULT_CATEGORIES = ["Rent", "Materials", "Insurance", "Equipment", "Marketing", "Utilities", "Laundry", "Software", "Tax", "Other"];
 
 export default function ExpensesPage() {
   const [page, setPage] = useState(0);
@@ -46,6 +46,14 @@ export default function ExpensesPage() {
   const [dateRange, setDateRange] = useState(initialRange);
   const [catFilter, setCatFilter] = useState("all");
 
+  // Merge default categories with any custom ones from saved data
+  const CATEGORIES = useMemo(() => {
+    const customCats = expenses
+      .map((e: any) => e.category as string)
+      .filter((c: string) => c && !DEFAULT_CATEGORIES.includes(c));
+    return [...DEFAULT_CATEGORIES, ...Array.from(new Set(customCats))];
+  }, [expenses]);
+
   const filtered = useMemo(() => {
     const now = new Date();
     const todayStr = format(now, "yyyy-MM-dd");
@@ -66,7 +74,9 @@ export default function ExpensesPage() {
 
   const catLabel = (cat: string) => {
     const key = `category.${cat}` as TranslationKey;
-    return t(key);
+    const translated = t(key);
+    // If translation returns the key itself, it's a custom category — show raw name
+    return translated === key ? cat : translated;
   };
 
   const openEdit = (exp: any) => {
