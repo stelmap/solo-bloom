@@ -852,7 +852,7 @@ export function useEditRecurringAppointments() {
           const oldScheduled = new Date((await supabase.from("appointments").select("scheduled_at").eq("id", appointmentId).single()).data!.scheduled_at);
           thisUpdates.scheduled_at = new Date(oldScheduled.getTime() + deltaMs).toISOString();
         }
-        const { error } = await supabase.from("appointments").update(thisUpdates).eq("id", appointmentId);
+        const { error } = await supabase.from("appointments").update(thisUpdates as any).eq("id", appointmentId);
         if (error) throw error;
       } else if (scope === "following") {
         const { data: apt } = await supabase.from("appointments").select("scheduled_at").eq("id", appointmentId).single();
@@ -866,7 +866,7 @@ export function useEditRecurringAppointments() {
             if (deltaMs) {
               perAptUpdates.scheduled_at = new Date(new Date(a.scheduled_at).getTime() + deltaMs).toISOString();
             }
-            await supabase.from("appointments").update(perAptUpdates).eq("id", a.id);
+            await supabase.from("appointments").update(perAptUpdates as any).eq("id", a.id);
           }
         }
       } else if (scope === "all") {
@@ -879,7 +879,7 @@ export function useEditRecurringAppointments() {
           if (deltaMs) {
             perAptUpdates.scheduled_at = new Date(new Date(a.scheduled_at).getTime() + deltaMs).toISOString();
           }
-          await supabase.from("appointments").update(perAptUpdates).eq("id", a.id);
+          await supabase.from("appointments").update(perAptUpdates as any).eq("id", a.id);
         }
       }
     },
