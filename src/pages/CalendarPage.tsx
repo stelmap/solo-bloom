@@ -533,7 +533,7 @@ export default function CalendarPage() {
                 <div key={apt.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50 text-sm">
                   <span className="font-medium">{apt.clients?.name}</span>
                   <span className="text-muted-foreground">
-                    {format(new Date(apt.scheduled_at), "HH:mm")} · {apt.services?.name}
+                    {fmtTime(apt.scheduled_at)} · {apt.services?.name}
                   </span>
                 </div>
               ))}

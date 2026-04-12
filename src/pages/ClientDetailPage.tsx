@@ -306,7 +306,7 @@ export default function ClientDetailPage() {
                         <div className="flex items-center gap-4">
                           <div className="text-center min-w-[70px]">
                             <p className="text-sm font-semibold text-foreground">{format(new Date(apt.scheduled_at), "MMM d")}</p>
-                            <p className="text-xs text-muted-foreground">{format(new Date(apt.scheduled_at), "HH:mm")}</p>
+                            <p className="text-xs text-muted-foreground">{formatScheduledTime(apt.scheduled_at, use12h)}</p>
                           </div>
                           <div className="h-10 w-px bg-border" />
                           <div className="flex-1 min-w-0">
