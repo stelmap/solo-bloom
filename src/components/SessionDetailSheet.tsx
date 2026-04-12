@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { format } from "date-fns";
+import { formatTime, formatScheduledTime } from "@/lib/timeFormat";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,13 +32,6 @@ interface SessionDetailSheetProps {
   use12h?: boolean;
 }
 
-function formatTime(time: string, use12h: boolean) {
-  if (!use12h) return time;
-  const [h, m] = time.split(":").map(Number);
-  const ampm = h >= 12 ? "PM" : "AM";
-  const h12 = h % 12 || 12;
-  return `${h12}:${m.toString().padStart(2, "0")} ${ampm}`;
-}
 
 export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12h = false }: SessionDetailSheetProps) {
   const { t } = useLanguage();
@@ -108,7 +102,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
   const statusInfo = STATUSES[apt.status] || STATUSES.scheduled;
   const payInfo = PAYMENT_STATUS_STYLES[apt.payment_status] || PAYMENT_STATUS_STYLES.unpaid;
-  const fmtTime = (dateStr: string) => formatTime(format(new Date(dateStr), "HH:mm"), use12h);
+  const fmtTime = (dateStr: string) => formatScheduledTime(dateStr, use12h);
   const isActive = apt.status === "scheduled" || apt.status === "confirmed" || apt.status === "reminder_sent";
 
   const CONFIRMATION_STYLES: Record<string, { label: string; color: string }> = {
@@ -312,7 +306,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 {apt.confirmation_timestamp && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t("confirmation.timestamp")}</span>
-                    <span className="font-medium text-foreground">{format(new Date(apt.confirmation_timestamp), "MMM d, HH:mm")}</span>
+                    <span className="font-medium text-foreground">{format(new Date(apt.confirmation_timestamp), "MMM d")} · {fmtTime(apt.confirmation_timestamp)}</span>
                   </div>
                 )}
                 {apt.cancellation_reason && (

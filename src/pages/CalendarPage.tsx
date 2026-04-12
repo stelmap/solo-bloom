@@ -8,6 +8,7 @@ import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
 import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { format, addDays, startOfWeek, isSameDay } from "date-fns";
+import { formatTime, formatScheduledTime } from "@/lib/timeFormat";
 import {
   useAppointments, useCreateAppointment,
   useClients, useServices, useProfile, useCreateRecurringRule,
@@ -25,13 +26,6 @@ import { useCurrency } from "@/hooks/useCurrency";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
-function formatTime(time: string, use12h: boolean) {
-  if (!use12h) return time;
-  const [h, m] = time.split(":").map(Number);
-  const ampm = h >= 12 ? "PM" : "AM";
-  const h12 = h % 12 || 12;
-  return `${h12}:${m.toString().padStart(2, "0")} ${ampm}`;
-}
 
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -254,12 +248,7 @@ export default function CalendarPage() {
   const statusInfo = (status: string) => STATUS_MAP[status] || STATUS_MAP.scheduled;
 
   const fmtHour = (hour: number) => formatTime(`${hour.toString().padStart(2, "0")}:00`, use12h);
-  const fmtTime = (dateStr: string) => {
-    const d = new Date(dateStr);
-    const hh = d.getUTCHours().toString().padStart(2, "0");
-    const mm = d.getUTCMinutes().toString().padStart(2, "0");
-    return formatTime(`${hh}:${mm}`, use12h);
-  };
+  const fmtTime = (dateStr: string) => formatScheduledTime(dateStr, use12h);
 
   // Weekly capacity calculations
   const weekCapacity = useMemo(() => {
@@ -533,7 +522,7 @@ export default function CalendarPage() {
                 <div key={apt.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50 text-sm">
                   <span className="font-medium">{apt.clients?.name}</span>
                   <span className="text-muted-foreground">
-                    {format(new Date(apt.scheduled_at), "HH:mm")} · {apt.services?.name}
+                    {fmtTime(apt.scheduled_at)} · {apt.services?.name}
                   </span>
                 </div>
               ))}

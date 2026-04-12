@@ -22,6 +22,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState, useRef } from "react";
 import { format } from "date-fns";
+import { formatScheduledTime } from "@/lib/timeFormat";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -246,7 +247,7 @@ export default function ClientDetailPage() {
                 {(notes as any[]).map((note: any) => (
                   <div key={note.id} className="bg-muted/50 rounded-lg p-3 group relative">
                     <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{format(new Date(note.created_at), "MMM d, yyyy · HH:mm")}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{format(new Date(note.created_at), "MMM d, yyyy")} · {formatScheduledTime(note.created_at, use12h)}</p>
                     <button onClick={() => deleteNote.mutate({ id: note.id, clientId: client.id })} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all">
                       <X className="h-3 w-3" />
                     </button>
@@ -306,7 +307,7 @@ export default function ClientDetailPage() {
                         <div className="flex items-center gap-4">
                           <div className="text-center min-w-[70px]">
                             <p className="text-sm font-semibold text-foreground">{format(new Date(apt.scheduled_at), "MMM d")}</p>
-                            <p className="text-xs text-muted-foreground">{format(new Date(apt.scheduled_at), "HH:mm")}</p>
+                            <p className="text-xs text-muted-foreground">{formatScheduledTime(apt.scheduled_at, use12h)}</p>
                           </div>
                           <div className="h-10 w-px bg-border" />
                           <div className="flex-1 min-w-0">
