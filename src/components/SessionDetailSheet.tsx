@@ -114,6 +114,48 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   };
   const confirmInfo = CONFIRMATION_STYLES[apt.confirmation_status] || CONFIRMATION_STYLES.not_required;
 
+  // Determine if client requires confirmation
+  const client = clients.find(c => c.id === apt.client_id);
+  const clientRequiresConfirmation = client?.confirmation_required === true;
+  const showConfirmationState = clientRequiresConfirmation || (apt.confirmation_status && apt.confirmation_status !== "not_required");
+  const canSendReminder = isActive && clientRequiresConfirmation && apt.confirmation_status !== "confirmed";
+
+  const handleSendReminder = async () => {
+    if (!client?.email) {
+      toast({ title: t("confirmation.noEmail"), variant: "destructive" });
+      return;
+    }
+    setSendingReminder(true);
+    try {
+      const scheduledDate = new Date(apt.scheduled_at);
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "session-reminder",
+          recipientEmail: client.email,
+          idempotencyKey: `manual-reminder-${apt.id}-${Date.now()}`,
+          templateData: {
+            clientName: client.name,
+            sessionDate: scheduledDate.toLocaleDateString("en-US", {
+              weekday: "long", year: "numeric", month: "long", day: "numeric",
+            }),
+            sessionTime: scheduledDate.toLocaleTimeString("en-US", {
+              hour: "2-digit", minute: "2-digit",
+            }),
+            serviceName: apt.services?.name || "",
+          },
+        },
+      });
+      if (error) throw error;
+      // Update status to reminder_sent
+      await updateAppointment.mutateAsync({ id: apt.id, status: "reminder_sent" });
+      toast({ title: t("confirmation.reminderSent") });
+    } catch (e: any) {
+      toast({ title: t("confirmation.reminderFailed"), description: e.message, variant: "destructive" });
+    } finally {
+      setSendingReminder(false);
+    }
+  };
+
   const handleSaveNotes = async () => {
     try {
       await updateAppointment.mutateAsync({ id: apt.id, notes });
