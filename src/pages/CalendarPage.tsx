@@ -603,21 +603,34 @@ export default function CalendarPage() {
                       {events.map((evt) => {
                         const si = statusInfo(evt.status);
                         const heightPx = Math.max((evt.duration_minutes / 60) * 60 - 4, 20);
-                        const isActive = evt.status === "scheduled" || evt.status === "confirmed" || evt.status === "reminder_sent";
+                        const isActiveEvt = evt.status === "scheduled" || evt.status === "confirmed" || evt.status === "reminder_sent";
+                        const client = clients.find(c => c.id === evt.client_id);
+                        const needsConfirmation = client?.confirmation_required && evt.confirmation_status !== "confirmed";
+                        const isConfirmed = evt.confirmation_status === "confirmed";
                         return (
                           <div key={evt.id}
-                            draggable={isActive}
-                            onDragStart={isActive ? (e) => handleDragStart(e, evt.id) : undefined}
+                            draggable={isActiveEvt}
+                            onDragStart={isActiveEvt ? (e) => handleDragStart(e, evt.id) : undefined}
                             onDragEnd={handleDragEnd}
                             onClick={(e) => { e.stopPropagation(); openSessionSheet(evt); }}
                             className={cn(
                               "absolute inset-x-1 top-0 rounded-md border p-1.5 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10 overflow-hidden",
                               si.color,
-                              isActive && "cursor-grab active:cursor-grabbing",
+                              needsConfirmation && "border-warning/50",
+                              isConfirmed && "border-success/50",
+                              isActiveEvt && "cursor-grab active:cursor-grabbing",
                               dragAptId === evt.id && "opacity-40 ring-2 ring-primary",
                             )}
                             style={{ height: `${heightPx}px` }}>
-                            <p className="text-xs font-semibold truncate">{(evt as any).clients?.name}</p>
+                            <div className="flex items-center gap-1">
+                              <p className="text-xs font-semibold truncate flex-1">{(evt as any).clients?.name}</p>
+                              {needsConfirmation && (
+                                <span className="shrink-0 h-2 w-2 rounded-full bg-warning" title={t("confirmation.pending")} />
+                              )}
+                              {isConfirmed && (
+                                <span className="shrink-0 h-2 w-2 rounded-full bg-success" title={t("confirmation.confirmed")} />
+                              )}
+                            </div>
                             <div className="flex items-center gap-1">
                               <p className="text-xs opacity-70 truncate">{(evt as any).services?.name}</p>
                               {(evt as any).recurring_rule_id && <Repeat className="h-2.5 w-2.5 opacity-50 shrink-0" />}

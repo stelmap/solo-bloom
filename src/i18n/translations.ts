@@ -735,6 +735,11 @@ export const translations = {
   "confirmation.notRequired": { en: "Not required", uk: "Не потрібно" },
   "confirmation.status": { en: "Confirmation", uk: "Підтвердження" },
   "confirmation.timestamp": { en: "Confirmed at", uk: "Підтверджено о" },
+  "confirmation.sendReminder": { en: "Send Reminder", uk: "Надіслати нагадування" },
+  "confirmation.requestConfirmation": { en: "Request Confirmation", uk: "Запросити підтвердження" },
+  "confirmation.reminderSent": { en: "Reminder sent successfully", uk: "Нагадування надіслано" },
+  "confirmation.reminderFailed": { en: "Failed to send reminder", uk: "Не вдалося надіслати нагадування" },
+  "confirmation.noEmail": { en: "Client has no email address", uk: "У клієнта немає email адреси" },
 
   // Session status - reminder sent
   "status.reminderSent": { en: "Reminder Sent", uk: "Нагадування надіслано" },

@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import {
-  CheckCircle, XCircle, Ban, Clock, Pencil, Trash2, DollarSign, Repeat, Save, X, FileText,
+  CheckCircle, XCircle, Ban, Clock, Pencil, Trash2, DollarSign, Repeat, Save, X, FileText, Bell, Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -24,6 +24,7 @@ import {
   useDeleteRecurringAppointments, useEditRecurringAppointments,
 } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SessionDetailSheetProps {
   appointment: any | null;
@@ -53,6 +54,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [recurDeleteOpen, setRecurDeleteOpen] = useState(false);
   const [recurEditScopeOpen, setRecurEditScopeOpen] = useState(false);
   const [noShowOpen, setNoShowOpen] = useState(false);
+  const [sendingReminder, setSendingReminder] = useState(false);
 
   // Edit form
   const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "", notes: "", price: 0 });
@@ -111,6 +113,48 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     not_required: { label: t("confirmation.notRequired"), color: "text-muted-foreground" },
   };
   const confirmInfo = CONFIRMATION_STYLES[apt.confirmation_status] || CONFIRMATION_STYLES.not_required;
+
+  // Determine if client requires confirmation
+  const client = clients.find(c => c.id === apt.client_id);
+  const clientRequiresConfirmation = client?.confirmation_required === true;
+  const showConfirmationState = clientRequiresConfirmation || (apt.confirmation_status && apt.confirmation_status !== "not_required");
+  const canSendReminder = isActive && clientRequiresConfirmation && apt.confirmation_status !== "confirmed";
+
+  const handleSendReminder = async () => {
+    if (!client?.email) {
+      toast({ title: t("confirmation.noEmail"), variant: "destructive" });
+      return;
+    }
+    setSendingReminder(true);
+    try {
+      const scheduledDate = new Date(apt.scheduled_at);
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "session-reminder",
+          recipientEmail: client.email,
+          idempotencyKey: `manual-reminder-${apt.id}-${Date.now()}`,
+          templateData: {
+            clientName: client.name,
+            sessionDate: scheduledDate.toLocaleDateString("en-US", {
+              weekday: "long", year: "numeric", month: "long", day: "numeric",
+            }),
+            sessionTime: scheduledDate.toLocaleTimeString("en-US", {
+              hour: "2-digit", minute: "2-digit",
+            }),
+            serviceName: apt.services?.name || "",
+          },
+        },
+      });
+      if (error) throw error;
+      // Update status to reminder_sent
+      await updateAppointment.mutateAsync({ id: apt.id, status: "reminder_sent" });
+      toast({ title: t("confirmation.reminderSent") });
+    } catch (e: any) {
+      toast({ title: t("confirmation.reminderFailed"), description: e.message, variant: "destructive" });
+    } finally {
+      setSendingReminder(false);
+    }
+  };
 
   const handleSaveNotes = async () => {
     try {
@@ -297,10 +341,18 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   <span className="text-muted-foreground">{t("common.payment")}</span>
                   <span className={cn("font-medium", payInfo.color)}>{payInfo.label}</span>
                 </div>
-                {apt.confirmation_status && apt.confirmation_status !== "not_required" && (
-                  <div className="flex justify-between">
+                {showConfirmationState && (
+                  <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">{t("confirmation.status")}</span>
-                    <span className={cn("font-medium", confirmInfo.color)}>{confirmInfo.label}</span>
+                    <Badge variant="outline" className={cn("text-xs", 
+                      apt.confirmation_status === "confirmed" ? "border-success/30 text-success bg-success/10" :
+                      apt.confirmation_status === "pending" ? "border-warning/30 text-warning bg-warning/10" :
+                      "border-border text-muted-foreground"
+                    )}>
+                      {apt.confirmation_status === "confirmed" && <CheckCircle className="h-3 w-3 mr-1" />}
+                      {apt.confirmation_status === "pending" && <Clock className="h-3 w-3 mr-1" />}
+                      {confirmInfo.label}
+                    </Badge>
                   </div>
                 )}
                 {apt.confirmation_timestamp && (
@@ -316,6 +368,23 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   </div>
                 )}
               </div>
+
+              {/* Send Reminder / Request Confirmation */}
+              {canSendReminder && (
+                <div className="rounded-lg border border-warning/20 bg-warning/5 p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-warning">
+                      <Bell className="h-4 w-4" />
+                      <span>{apt.confirmation_status === "pending" ? t("confirmation.pending") : t("confirmation.requestConfirmation")}</span>
+                    </div>
+                    <Button size="sm" variant="outline" onClick={handleSendReminder} disabled={sendingReminder}
+                      className="border-warning/30 text-warning hover:bg-warning/10 hover:text-warning">
+                      <Send className="h-3.5 w-3.5 mr-1" />
+                      {sendingReminder ? "..." : t("confirmation.sendReminder")}
+                    </Button>
+                  </div>
+                </div>
+              )}
 
               {/* Session notes */}
               <div className="space-y-2">
