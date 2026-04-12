@@ -8,6 +8,7 @@ import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
 import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3, GripVertical } from "lucide-react";
 import { useState, useMemo, useCallback, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { format, addDays, startOfWeek, isSameDay, isBefore, startOfDay } from "date-fns";
 import { formatTime, formatScheduledTime } from "@/lib/timeFormat";
 import {
