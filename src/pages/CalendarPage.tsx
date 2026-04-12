@@ -332,28 +332,50 @@ export default function CalendarPage() {
     if (!pendingMove.current) return;
     const { aptId, newDate, newTime } = pendingMove.current;
     const apt = appointments.find(a => a.id === aptId);
+    // Close dialog immediately for responsiveness
+    setRecurMoveOpen(false);
+    pendingMove.current = null;
+
+    if (!apt) return;
+
+    const oldScheduled = new Date(apt.scheduled_at);
+    const newScheduled = new Date(`${newDate}T${newTime}:00Z`);
+    const deltaMs = newScheduled.getTime() - oldScheduled.getTime();
+
     try {
       if (scope === "this") {
         await updateAppointment.mutateAsync({
           id: aptId,
-          scheduled_at: `${newDate}T${newTime}:00Z`,
+          scheduled_at: newScheduled.toISOString(),
         });
-      } else if (apt?.recurring_rule_id) {
-        await editRecurring.mutateAsync({
-          ruleId: apt.recurring_rule_id, scope, appointmentId: aptId,
-          updates: {},
-        });
-        await updateAppointment.mutateAsync({
-          id: aptId,
-          scheduled_at: `${newDate}T${newTime}:00Z`,
-        });
+      } else if (apt.recurring_rule_id) {
+        // Fetch affected appointments
+        let query = supabase.from("appointments").select("id, scheduled_at, status")
+          .eq("recurring_rule_id", apt.recurring_rule_id);
+
+        if (scope === "following") {
+          query = query.gte("scheduled_at", apt.scheduled_at);
+        }
+
+        const { data: seriesApts, error: fetchErr } = await query;
+        if (fetchErr) throw fetchErr;
+
+        // Build batch updates - only move non-completed/non-cancelled appointments
+        const updates = (seriesApts || [])
+          .filter(a => a.status === "scheduled" || a.status === "confirmed" || a.status === "reminder_sent")
+          .map(a => {
+            const shifted = new Date(new Date(a.scheduled_at).getTime() + deltaMs);
+            return supabase.from("appointments")
+              .update({ scheduled_at: shifted.toISOString() })
+              .eq("id", a.id);
+          });
+
+        await Promise.all(updates);
       }
       toast({ title: t("calendar.sessionMoved") });
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
-    setRecurMoveOpen(false);
-    pendingMove.current = null;
   };
 
   const handleDrop = useCallback((e: React.DragEvent, day: Date, hour: number) => {
