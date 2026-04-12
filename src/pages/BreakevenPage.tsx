@@ -50,9 +50,27 @@ export default function BreakevenPage() {
 
   const today = new Date().toISOString().split("T")[0];
   const monthStart = today.substring(0, 7) + "-01";
-  const monthlyExpenses = expenses.filter(e => e.date >= monthStart).reduce((s, e) => s + Number(e.amount), 0);
-  const monthlyExpensesExTax = expenses.filter(e => e.date >= monthStart && e.category !== "Tax").reduce((s, e) => s + Number(e.amount), 0);
-  const monthlyTaxExpenses = expenses.filter(e => e.date >= monthStart && e.category === "Tax").reduce((s, e) => s + Number(e.amount), 0);
+  const monthlyExpenses = expenses.filter((e: any) => {
+    if (e.is_recurring) {
+      const startDate = e.recurring_start_date || e.date;
+      return startDate <= today; // recurring expense has started
+    }
+    return e.date >= monthStart;
+  }).reduce((s: number, e: any) => s + Number(e.amount), 0);
+  const monthlyExpensesExTax = expenses.filter((e: any) => {
+    if (e.is_recurring) {
+      const startDate = e.recurring_start_date || e.date;
+      return startDate <= today && e.category !== "Tax";
+    }
+    return e.date >= monthStart && e.category !== "Tax";
+  }).reduce((s: number, e: any) => s + Number(e.amount), 0);
+  const monthlyTaxExpenses = expenses.filter((e: any) => {
+    if (e.is_recurring) {
+      const startDate = e.recurring_start_date || e.date;
+      return startDate <= today && e.category === "Tax";
+    }
+    return e.date >= monthStart && e.category === "Tax";
+  }).reduce((s: number, e: any) => s + Number(e.amount), 0);
   const monthlyIncome = income.filter(i => i.date >= monthStart).reduce((s, i) => s + Number(i.amount), 0);
   const avgServicePrice = services.length > 0 ? services.reduce((s, sv) => s + Number(sv.price), 0) / services.length : 1;
   const sessionsCompleted = appointments.filter(a => a.status === "completed" && a.scheduled_at >= monthStart + "T00:00:00").length;
