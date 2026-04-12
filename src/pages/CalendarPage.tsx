@@ -36,13 +36,21 @@ export default function CalendarPage() {
   const { data: workingSchedule = [] } = useWorkingSchedule();
   const { data: daysOff = [] } = useDaysOff();
   const createAppointment = useCreateAppointment();
+  const updateAppointment = useUpdateAppointment();
   const createRecurringRule = useCreateRecurringRule();
+  const editRecurring = useEditRecurringAppointments();
   const createDayOff = useCreateDayOff();
   const deleteDayOff = useDeleteDayOff();
   const bulkCancel = useBulkCancelForDayOff();
   const { toast } = useToast();
   const { t } = useLanguage();
   const { symbol: cs } = useCurrency();
+
+  // Drag-and-drop state
+  const [dragAptId, setDragAptId] = useState<string | null>(null);
+  const [dragOverSlot, setDragOverSlot] = useState<string | null>(null);
+  const [recurMoveOpen, setRecurMoveOpen] = useState(false);
+  const pendingMove = useRef<{ aptId: string; newDate: string; newTime: string } | null>(null);
 
   // Calendar settings from profile
   const startHour = parseInt((profile as any)?.work_hours_start || "09") || 9;
