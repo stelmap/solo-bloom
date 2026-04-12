@@ -85,6 +85,27 @@ export default function ClientDetailPage() {
   const cancelledSessions = appointments.filter((a: any) => a.status === "cancelled" || a.status === "no-show").length;
   const pendingPayments = appointments.filter((a: any) => a.payment_status === "waiting_for_payment").length;
 
+  // Sort: upcoming (nearest first), then past (newest first)
+  const { sortedAppointments, nextUpcomingId } = useMemo(() => {
+    const now = new Date();
+    const upcoming: any[] = [];
+    const past: any[] = [];
+    for (const apt of appointments as any[]) {
+      const d = new Date(apt.scheduled_at);
+      if (d >= now && (apt.status === "scheduled" || apt.status === "confirmed" || apt.status === "reminder_sent")) {
+        upcoming.push(apt);
+      } else {
+        past.push(apt);
+      }
+    }
+    // Upcoming: nearest first (ascending)
+    upcoming.sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
+    // Past: newest first (descending)
+    past.sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime());
+    const sorted = [...upcoming, ...past];
+    return { sortedAppointments: sorted, nextUpcomingId: upcoming.length > 0 ? upcoming[0].id : null };
+  }, [appointments]);
+
   const openEdit = () => {
     setEditForm({
       name: client.name, phone: client.phone || "", email: client.email || "",
