@@ -536,7 +536,7 @@ export default function CalendarPage() {
         </div>
 
         <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex flex-col" style={{ maxHeight: "calc(100vh - 280px)" }}>
-          <div className="grid grid-cols-[72px_repeat(7,1fr)] border-b border-border shrink-0 overflow-hidden">
+          <div className="grid grid-cols-[72px_repeat(7,1fr)] border-b border-border shrink-0" style={{ scrollbarGutter: "stable", paddingRight: "0px" }}>
             <div className="p-3" />
             {days.map((day, i) => {
               const dayOffStatus = isDayOff(day);
