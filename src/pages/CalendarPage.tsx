@@ -5,15 +5,15 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
-import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3 } from "lucide-react";
-import { useState, useMemo } from "react";
-import { format, addDays, startOfWeek, isSameDay } from "date-fns";
+import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3, GripVertical } from "lucide-react";
+import { useState, useMemo, useCallback, useRef } from "react";
+import { format, addDays, startOfWeek, isSameDay, isBefore, startOfDay } from "date-fns";
 import { formatTime, formatScheduledTime } from "@/lib/timeFormat";
 import {
-  useAppointments, useCreateAppointment,
+  useAppointments, useCreateAppointment, useUpdateAppointment,
   useClients, useServices, useProfile, useCreateRecurringRule,
   useWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff,
-  useBulkCancelForDayOff,
+  useBulkCancelForDayOff, useEditRecurringAppointments,
 } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -36,13 +36,21 @@ export default function CalendarPage() {
   const { data: workingSchedule = [] } = useWorkingSchedule();
   const { data: daysOff = [] } = useDaysOff();
   const createAppointment = useCreateAppointment();
+  const updateAppointment = useUpdateAppointment();
   const createRecurringRule = useCreateRecurringRule();
+  const editRecurring = useEditRecurringAppointments();
   const createDayOff = useCreateDayOff();
   const deleteDayOff = useDeleteDayOff();
   const bulkCancel = useBulkCancelForDayOff();
   const { toast } = useToast();
   const { t } = useLanguage();
   const { symbol: cs } = useCurrency();
+
+  // Drag-and-drop state
+  const [dragAptId, setDragAptId] = useState<string | null>(null);
+  const [dragOverSlot, setDragOverSlot] = useState<string | null>(null);
+  const [recurMoveOpen, setRecurMoveOpen] = useState(false);
+  const pendingMove = useRef<{ aptId: string; newDate: string; newTime: string } | null>(null);
 
   // Calendar settings from profile
   const startHour = parseInt((profile as any)?.work_hours_start || "09") || 9;
@@ -268,6 +276,117 @@ export default function CalendarPage() {
     return { totalSlots, totalBooked, totalFree: Math.max(totalSlots - totalBooked, 0), dayStats };
   }, [days, appointments, profile, scheduleMap, daysOffSet]);
 
+  // Drag-and-drop handlers
+  const canDropOnSlot = useCallback((day: Date, hour: number, aptId: string) => {
+    if (isDayOff(day)) return false;
+    if (!isHourWorking(day, hour)) return false;
+    const slotTime = new Date(day);
+    slotTime.setHours(hour, 0, 0, 0);
+    if (isBefore(slotTime, new Date())) return false;
+    const dateStr = format(day, "yyyy-MM-dd");
+    const timeStr = `${hour.toString().padStart(2, "0")}:00`;
+    const apt = appointments.find(a => a.id === aptId);
+    if (apt && hasConflict(dateStr, timeStr, apt.duration_minutes, aptId)) return false;
+    return true;
+  }, [appointments, scheduleMap, daysOffSet]);
+
+  const handleDragStart = useCallback((e: React.DragEvent, aptId: string) => {
+    e.dataTransfer.setData("text/plain", aptId);
+    e.dataTransfer.effectAllowed = "move";
+    setDragAptId(aptId);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent, day: Date, hour: number) => {
+    e.preventDefault();
+    const slotKey = `${format(day, "yyyy-MM-dd")}-${hour}`;
+    setDragOverSlot(slotKey);
+    if (dragAptId && canDropOnSlot(day, hour, dragAptId)) {
+      e.dataTransfer.dropEffect = "move";
+    } else {
+      e.dataTransfer.dropEffect = "none";
+    }
+  }, [dragAptId, canDropOnSlot]);
+
+  const handleDragLeave = useCallback(() => {
+    setDragOverSlot(null);
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    setDragAptId(null);
+    setDragOverSlot(null);
+  }, []);
+
+  const executeMoveAppointment = async (aptId: string, newDate: string, newTime: string) => {
+    try {
+      await updateAppointment.mutateAsync({
+        id: aptId,
+        scheduled_at: `${newDate}T${newTime}:00Z`,
+      });
+      toast({ title: t("calendar.sessionMoved") });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleRecurringMoveScope = async (scope: "this" | "following" | "all") => {
+    if (!pendingMove.current) return;
+    const { aptId, newDate, newTime } = pendingMove.current;
+    const apt = appointments.find(a => a.id === aptId);
+    try {
+      if (scope === "this") {
+        await updateAppointment.mutateAsync({
+          id: aptId,
+          scheduled_at: `${newDate}T${newTime}:00Z`,
+        });
+      } else if (apt?.recurring_rule_id) {
+        await editRecurring.mutateAsync({
+          ruleId: apt.recurring_rule_id, scope, appointmentId: aptId,
+          updates: {},
+        });
+        await updateAppointment.mutateAsync({
+          id: aptId,
+          scheduled_at: `${newDate}T${newTime}:00Z`,
+        });
+      }
+      toast({ title: t("calendar.sessionMoved") });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+    setRecurMoveOpen(false);
+    pendingMove.current = null;
+  };
+
+  const handleDrop = useCallback((e: React.DragEvent, day: Date, hour: number) => {
+    e.preventDefault();
+    setDragAptId(null);
+    setDragOverSlot(null);
+    const aptId = e.dataTransfer.getData("text/plain");
+    if (!aptId) return;
+
+    if (!canDropOnSlot(day, hour, aptId)) {
+      const reason = isDayOff(day) ? t("calendar.dayOffBlocked")
+        : !isHourWorking(day, hour) ? t("calendar.outsideHours")
+        : (() => {
+            const slotTime = new Date(day);
+            slotTime.setHours(hour, 0, 0, 0);
+            return isBefore(slotTime, new Date()) ? t("calendar.movePastBlocked") : t("calendar.doubleBooking");
+          })();
+      toast({ title: t("calendar.moveBlocked"), description: reason, variant: "destructive" });
+      return;
+    }
+
+    const newDate = format(day, "yyyy-MM-dd");
+    const newTime = `${hour.toString().padStart(2, "0")}:00`;
+    const apt = appointments.find(a => a.id === aptId);
+
+    if (apt?.recurring_rule_id) {
+      pendingMove.current = { aptId, newDate, newTime };
+      setRecurMoveOpen(true);
+    } else {
+      executeMoveAppointment(aptId, newDate, newTime);
+    }
+  }, [appointments, canDropOnSlot, toast, t]);
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -467,11 +586,16 @@ export default function CalendarPage() {
                         setForm(f => ({ ...f, date: dateStr, time: timeStr }));
                         setCreateOpen(true);
                       }}
+                      onDragOver={(e) => handleDragOver(e, day, hour)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => handleDrop(e, day, hour)}
                       className={cn(
                         "relative border-l border-b border-border h-[60px] transition-colors",
                         dayOff ? "bg-destructive/5 cursor-not-allowed" : !working ? "bg-muted/20 cursor-not-allowed" : events.length === 0 ? "hover:bg-primary/5 cursor-pointer group/slot" : "",
+                        dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && canDropOnSlot(day, hour, dragAptId) && "bg-primary/15 ring-2 ring-primary/30 ring-inset",
+                        dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && !canDropOnSlot(day, hour, dragAptId) && "bg-destructive/10 ring-2 ring-destructive/30 ring-inset",
                       )}>
-                      {events.length === 0 && working && !dayOff && (
+                      {events.length === 0 && working && !dayOff && !dragAptId && (
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/slot:opacity-100 transition-opacity pointer-events-none">
                           <Plus className="h-4 w-4 text-primary/40" />
                         </div>
@@ -479,9 +603,19 @@ export default function CalendarPage() {
                       {events.map((evt) => {
                         const si = statusInfo(evt.status);
                         const heightPx = Math.max((evt.duration_minutes / 60) * 60 - 4, 20);
+                        const isActive = evt.status === "scheduled" || evt.status === "confirmed" || evt.status === "reminder_sent";
                         return (
-                          <div key={evt.id} onClick={(e) => { e.stopPropagation(); openSessionSheet(evt); }}
-                            className={cn("absolute inset-x-1 top-0 rounded-md border p-1.5 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10 overflow-hidden", si.color)}
+                          <div key={evt.id}
+                            draggable={isActive}
+                            onDragStart={isActive ? (e) => handleDragStart(e, evt.id) : undefined}
+                            onDragEnd={handleDragEnd}
+                            onClick={(e) => { e.stopPropagation(); openSessionSheet(evt); }}
+                            className={cn(
+                              "absolute inset-x-1 top-0 rounded-md border p-1.5 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10 overflow-hidden",
+                              si.color,
+                              isActive && "cursor-grab active:cursor-grabbing",
+                              dragAptId === evt.id && "opacity-40 ring-2 ring-primary",
+                            )}
                             style={{ height: `${heightPx}px` }}>
                             <p className="text-xs font-semibold truncate">{(evt as any).clients?.name}</p>
                             <div className="flex items-center gap-1">
@@ -534,6 +668,32 @@ export default function CalendarPage() {
             </Button>
             <Button variant="destructive" onClick={handleConfirmDayOffCancel} disabled={bulkCancel.isPending}>
               {bulkCancel.isPending ? t("common.saving") : t("dayOff.cancelConfirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Recurring move scope dialog */}
+      <Dialog open={recurMoveOpen} onOpenChange={(o) => { if (!o) { setRecurMoveOpen(false); pendingMove.current = null; } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("calendar.moveRecurringTitle")}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">{t("calendar.moveRecurringDesc")}</p>
+          <div className="flex flex-col gap-2 mt-2">
+            <Button variant="outline" onClick={() => handleRecurringMoveScope("this")}>
+              {t("recurring.thisOnly")}
+            </Button>
+            <Button variant="outline" onClick={() => handleRecurringMoveScope("following")}>
+              {t("recurring.thisAndFollowing")}
+            </Button>
+            <Button variant="outline" onClick={() => handleRecurringMoveScope("all")}>
+              {t("recurring.allInSeries")}
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setRecurMoveOpen(false); pendingMove.current = null; }}>
+              {t("common.cancel")}
             </Button>
           </DialogFooter>
         </DialogContent>
