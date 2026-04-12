@@ -276,6 +276,117 @@ export default function CalendarPage() {
     return { totalSlots, totalBooked, totalFree: Math.max(totalSlots - totalBooked, 0), dayStats };
   }, [days, appointments, profile, scheduleMap, daysOffSet]);
 
+  // Drag-and-drop handlers
+  const canDropOnSlot = useCallback((day: Date, hour: number, aptId: string) => {
+    if (isDayOff(day)) return false;
+    if (!isHourWorking(day, hour)) return false;
+    const slotTime = new Date(day);
+    slotTime.setHours(hour, 0, 0, 0);
+    if (isBefore(slotTime, new Date())) return false;
+    const dateStr = format(day, "yyyy-MM-dd");
+    const timeStr = `${hour.toString().padStart(2, "0")}:00`;
+    const apt = appointments.find(a => a.id === aptId);
+    if (apt && hasConflict(dateStr, timeStr, apt.duration_minutes, aptId)) return false;
+    return true;
+  }, [appointments, scheduleMap, daysOffSet]);
+
+  const handleDragStart = useCallback((e: React.DragEvent, aptId: string) => {
+    e.dataTransfer.setData("text/plain", aptId);
+    e.dataTransfer.effectAllowed = "move";
+    setDragAptId(aptId);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent, day: Date, hour: number) => {
+    e.preventDefault();
+    const slotKey = `${format(day, "yyyy-MM-dd")}-${hour}`;
+    setDragOverSlot(slotKey);
+    if (dragAptId && canDropOnSlot(day, hour, dragAptId)) {
+      e.dataTransfer.dropEffect = "move";
+    } else {
+      e.dataTransfer.dropEffect = "none";
+    }
+  }, [dragAptId, canDropOnSlot]);
+
+  const handleDragLeave = useCallback(() => {
+    setDragOverSlot(null);
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    setDragAptId(null);
+    setDragOverSlot(null);
+  }, []);
+
+  const executeMoveAppointment = async (aptId: string, newDate: string, newTime: string) => {
+    try {
+      await updateAppointment.mutateAsync({
+        id: aptId,
+        scheduled_at: `${newDate}T${newTime}:00Z`,
+      });
+      toast({ title: t("calendar.sessionMoved") });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleRecurringMoveScope = async (scope: "this" | "following" | "all") => {
+    if (!pendingMove.current) return;
+    const { aptId, newDate, newTime } = pendingMove.current;
+    const apt = appointments.find(a => a.id === aptId);
+    try {
+      if (scope === "this") {
+        await updateAppointment.mutateAsync({
+          id: aptId,
+          scheduled_at: `${newDate}T${newTime}:00Z`,
+        });
+      } else if (apt?.recurring_rule_id) {
+        await editRecurring.mutateAsync({
+          ruleId: apt.recurring_rule_id, scope, appointmentId: aptId,
+          updates: {},
+        });
+        await updateAppointment.mutateAsync({
+          id: aptId,
+          scheduled_at: `${newDate}T${newTime}:00Z`,
+        });
+      }
+      toast({ title: t("calendar.sessionMoved") });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+    setRecurMoveOpen(false);
+    pendingMove.current = null;
+  };
+
+  const handleDrop = useCallback((e: React.DragEvent, day: Date, hour: number) => {
+    e.preventDefault();
+    setDragAptId(null);
+    setDragOverSlot(null);
+    const aptId = e.dataTransfer.getData("text/plain");
+    if (!aptId) return;
+
+    if (!canDropOnSlot(day, hour, aptId)) {
+      const reason = isDayOff(day) ? t("calendar.dayOffBlocked")
+        : !isHourWorking(day, hour) ? t("calendar.outsideHours")
+        : (() => {
+            const slotTime = new Date(day);
+            slotTime.setHours(hour, 0, 0, 0);
+            return isBefore(slotTime, new Date()) ? t("calendar.movePastBlocked") : t("calendar.doubleBooking");
+          })();
+      toast({ title: t("calendar.moveBlocked"), description: reason, variant: "destructive" });
+      return;
+    }
+
+    const newDate = format(day, "yyyy-MM-dd");
+    const newTime = `${hour.toString().padStart(2, "0")}:00`;
+    const apt = appointments.find(a => a.id === aptId);
+
+    if (apt?.recurring_rule_id) {
+      pendingMove.current = { aptId, newDate, newTime };
+      setRecurMoveOpen(true);
+    } else {
+      executeMoveAppointment(aptId, newDate, newTime);
+    }
+  }, [appointments, canDropOnSlot, toast, t]);
+
   return (
     <AppLayout>
       <div className="space-y-6">
