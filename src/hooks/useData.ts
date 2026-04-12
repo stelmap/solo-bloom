@@ -894,7 +894,7 @@ function generateRecurringAppointments(rule: any, userId: string, maxWeeks = 12)
   const endDate = rule.end_date
     ? (() => { const [ey, em, ed] = (rule.end_date as string).split("-").map(Number); return new Date(Date.UTC(ey, em - 1, ed)); })()
     : null;
-  const maxDate = endDate || new Date(startDate.getTime() + maxWeeks * 7 * 24 * 60 * 60 * 1000);
+  const maxDate = endDate || new Date(Date.UTC(sy, 11, 31)); // default: end of current year
   const daysOfWeek: number[] = rule.days_of_week || [1];
 
   let currentWeekStart = new Date(startDate);
