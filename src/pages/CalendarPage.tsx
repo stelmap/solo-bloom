@@ -506,7 +506,8 @@ export default function CalendarPage() {
               <span>{t("capacity.free")}: {weekCapacity.totalFree}</span>
             </div>
           </div>
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-[72px_repeat(7,1fr)] gap-0">
+            <div />{/* spacer for time column */}
             {weekCapacity.dayStats.map((ds, i) => {
               const pct = ds.slots > 0 ? (ds.booked / ds.slots) * 100 : 0;
               const isFull = ds.slots > 0 && ds.booked >= ds.slots;
@@ -535,7 +536,7 @@ export default function CalendarPage() {
         </div>
 
         <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex flex-col" style={{ maxHeight: "calc(100vh - 280px)" }}>
-          <div className="grid grid-cols-[72px_repeat(7,1fr)] border-b border-border shrink-0 overflow-y-scroll" style={{ scrollbarGutter: "stable" }}>
+          <div className="grid grid-cols-[72px_repeat(7,1fr)] border-b border-border shrink-0 overflow-y-scroll invisible-scrollbar" style={{ scrollbarGutter: "stable" }}>
             <div className="p-3" />
             {days.map((day, i) => {
               const dayOffStatus = isDayOff(day);
