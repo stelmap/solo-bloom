@@ -22,6 +22,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState, useRef } from "react";
 import { format } from "date-fns";
+import { useMemo } from "react";
 import { formatScheduledTime } from "@/lib/timeFormat";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -71,6 +72,25 @@ export default function ClientDetailPage() {
     paid_in_advance: { label: t("payment.paidAdvance"), color: "bg-success/10 text-success" },
     not_applicable: { label: t("payment.na"), color: "bg-muted text-muted-foreground" },
   };
+
+  // Sort: upcoming (nearest first), then past (newest first)
+  const { sortedAppointments, nextUpcomingId } = useMemo(() => {
+    const now = new Date();
+    const upcoming: any[] = [];
+    const past: any[] = [];
+    for (const apt of appointments as any[]) {
+      const d = new Date(apt.scheduled_at);
+      if (d >= now && (apt.status === "scheduled" || apt.status === "confirmed" || apt.status === "reminder_sent")) {
+        upcoming.push(apt);
+      } else {
+        past.push(apt);
+      }
+    }
+    upcoming.sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
+    past.sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime());
+    const sorted = [...upcoming, ...past];
+    return { sortedAppointments: sorted, nextUpcomingId: upcoming.length > 0 ? upcoming[0].id : null };
+  }, [appointments]);
 
   if (isLoading) {
     return <AppLayout><div className="flex items-center justify-center h-64 text-muted-foreground">{t("clientDetail.loading")}</div></AppLayout>;
@@ -294,14 +314,16 @@ export default function ClientDetailPage() {
               {appointments.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">{t("clientDetail.noSessions")}</p>
               ) : (
-                <div className="space-y-2">
-                  {(appointments as any[]).map((apt: any) => {
+                <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+                  {sortedAppointments.map((apt: any) => {
                     const notePreview = apt.notes ? (apt.notes.length > 80 ? apt.notes.slice(0, 80) + "…" : apt.notes) : null;
+                    const isNextUpcoming = apt.id === nextUpcomingId;
                     return (
                       <div key={apt.id}
                         onClick={() => { setSessionApt(apt); setSessionSheetOpen(true); }}
                         className={cn(
                           "flex flex-col gap-2 p-4 rounded-lg border transition-colors cursor-pointer hover:ring-2 hover:ring-ring/20",
+                          isNextUpcoming ? "bg-primary/5 border-primary/30 ring-1 ring-primary/20" :
                           apt.status === "cancelled" || apt.status === "no-show" ? "bg-muted/30 border-border opacity-60" : "bg-muted/50 border-border"
                         )}>
                         <div className="flex items-center gap-4">
@@ -311,7 +333,10 @@ export default function ClientDetailPage() {
                           </div>
                           <div className="h-10 w-px bg-border" />
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-foreground truncate">{apt.services?.name}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-medium text-foreground truncate">{apt.services?.name}</p>
+                              {isNextUpcoming && <Badge className="text-[10px] px-1.5 py-0 bg-primary/15 text-primary border-0">{t("status.scheduled")}</Badge>}
+                            </div>
                             <p className="text-xs text-muted-foreground">{apt.duration_minutes} {t("common.min")}</p>
                           </div>
                           <div className="flex flex-col items-end gap-1">
