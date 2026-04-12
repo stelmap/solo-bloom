@@ -7,6 +7,23 @@ interface LanguageContextType {
   t: (key: TranslationKey, params?: Record<string, string | number>) => string;
 }
 
+/** Translate a key for a specific language (standalone, no hook needed) */
+export function translateFor(
+  lang: Language,
+  key: TranslationKey,
+  params?: Record<string, string | number>,
+): string {
+  const entry = translations[key];
+  if (!entry) return key;
+  let text: string = entry[lang] || entry.en;
+  if (params) {
+    Object.entries(params).forEach(([k, v]) => {
+      text = text.replace(`{${k}}`, String(v));
+    });
+  }
+  return text;
+}
+
 const LanguageContext = createContext<LanguageContextType>({
   lang: "en",
   t: (key) => key,
@@ -17,17 +34,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const lang: Language = (profile?.language as Language) || "en";
 
   const t = useCallback(
-    (key: TranslationKey, params?: Record<string, string | number>): string => {
-      const entry = translations[key];
-      if (!entry) return key;
-      let text: string = entry[lang] || entry.en;
-      if (params) {
-        Object.entries(params).forEach(([k, v]) => {
-          text = text.replace(`{${k}}`, String(v));
-        });
-      }
-      return text;
-    },
+    (key: TranslationKey, params?: Record<string, string | number>): string =>
+      translateFor(lang, key, params),
     [lang]
   );
 
