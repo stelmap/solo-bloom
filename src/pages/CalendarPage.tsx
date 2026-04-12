@@ -45,6 +45,7 @@ export default function CalendarPage() {
   const deleteDayOff = useDeleteDayOff();
   const bulkCancel = useBulkCancelForDayOff();
   const { toast } = useToast();
+  const qc = useQueryClient();
   const { t } = useLanguage();
   const { symbol: cs } = useCurrency();
 
