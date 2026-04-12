@@ -248,12 +248,7 @@ export default function CalendarPage() {
   const statusInfo = (status: string) => STATUS_MAP[status] || STATUS_MAP.scheduled;
 
   const fmtHour = (hour: number) => formatTime(`${hour.toString().padStart(2, "0")}:00`, use12h);
-  const fmtTime = (dateStr: string) => {
-    const d = new Date(dateStr);
-    const hh = d.getUTCHours().toString().padStart(2, "0");
-    const mm = d.getUTCMinutes().toString().padStart(2, "0");
-    return formatTime(`${hh}:${mm}`, use12h);
-  };
+  const fmtTime = (dateStr: string) => formatScheduledTime(dateStr, use12h);
 
   // Weekly capacity calculations
   const weekCapacity = useMemo(() => {

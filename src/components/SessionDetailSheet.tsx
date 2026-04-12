@@ -102,7 +102,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
   const statusInfo = STATUSES[apt.status] || STATUSES.scheduled;
   const payInfo = PAYMENT_STATUS_STYLES[apt.payment_status] || PAYMENT_STATUS_STYLES.unpaid;
-  const fmtTime = (dateStr: string) => formatTime(format(new Date(dateStr), "HH:mm"), use12h);
+  const fmtTime = (dateStr: string) => formatScheduledTime(dateStr, use12h);
   const isActive = apt.status === "scheduled" || apt.status === "confirmed" || apt.status === "reminder_sent";
 
   const CONFIRMATION_STYLES: Record<string, { label: string; color: string }> = {
