@@ -71,9 +71,16 @@ export default function FinancialOverviewPage() {
       end: new Date(year, 11, 31),
     });
 
-    // Recurring expenses monthly amount
+    // Recurring expenses: only count those whose recurring_start_date <= the month
     const recurringExpenses = (allExpenses as any[]).filter(e => e.is_recurring);
-    const recurringMonthly = recurringExpenses.reduce((s, e) => s + Number(e.amount), 0);
+    const getRecurringForMonth = (monthKey: string) => {
+      return recurringExpenses
+        .filter(e => {
+          const startDate = e.recurring_start_date || e.date;
+          return startDate <= monthKey + "-31"; // started on or before end of month
+        })
+        .reduce((s, e) => s + Number(e.amount), 0);
+    };
 
     return months.map((monthDate, idx) => {
       const isFuture = year > currentYear || (year === currentYear && idx > currentMonth);
