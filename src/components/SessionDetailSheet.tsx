@@ -129,9 +129,14 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
   const openEdit = () => {
     const d = new Date(apt.scheduled_at);
+    const yyyy = d.getUTCFullYear();
+    const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+    const dd = String(d.getUTCDate()).padStart(2, "0");
+    const hh = String(d.getUTCHours()).padStart(2, "0");
+    const min = String(d.getUTCMinutes()).padStart(2, "0");
     setEditForm({
       client_id: apt.client_id, service_id: apt.service_id,
-      date: format(d, "yyyy-MM-dd"), time: format(d, "HH:mm"),
+      date: `${yyyy}-${mm}-${dd}`, time: `${hh}:${min}`,
       notes: apt.notes || "", price: Number(apt.price),
     });
     setMode("edit");
@@ -146,7 +151,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       const service = services.find(s => s.id === editForm.service_id);
       await updateAppointment.mutateAsync({
         id: apt.id, client_id: editForm.client_id, service_id: editForm.service_id,
-        scheduled_at: `${editForm.date}T${editForm.time}:00`,
+        scheduled_at: `${editForm.date}T${editForm.time}:00Z`,
         duration_minutes: service?.duration_minutes ?? 60,
         price: editForm.price, notes: editForm.notes || undefined,
       });
@@ -163,7 +168,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       if (scope === "this") {
         await updateAppointment.mutateAsync({
           id: apt.id, client_id: editForm.client_id, service_id: editForm.service_id,
-          scheduled_at: `${editForm.date}T${editForm.time}:00`,
+          scheduled_at: `${editForm.date}T${editForm.time}:00Z`,
           duration_minutes: service?.duration_minutes ?? 60,
           price: editForm.price, notes: editForm.notes || undefined,
         });

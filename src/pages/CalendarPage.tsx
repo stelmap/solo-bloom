@@ -176,7 +176,7 @@ export default function CalendarPage() {
       try {
         await createAppointment.mutateAsync({
           client_id: form.client_id, service_id: form.service_id,
-          scheduled_at: `${form.date}T${form.time}:00`,
+          scheduled_at: `${form.date}T${form.time}:00Z`,
           duration_minutes: service?.duration_minutes ?? 60,
           price: Number(service?.price ?? 0),
           notes: form.notes || undefined,
@@ -203,7 +203,7 @@ export default function CalendarPage() {
       // Check for affected sessions
       const affected = appointments.filter(apt => {
         if (apt.status === "cancelled" || apt.status === "completed") return false;
-        return isSameUTCDay(new Date(apt.scheduled_at), date);
+        return toUTCDateStr(new Date(apt.scheduled_at)) === format(date, "yyyy-MM-dd");
       });
       if (affected.length > 0) {
         setDayOffConfirm({ date, affectedApts: affected });
@@ -231,16 +231,16 @@ export default function CalendarPage() {
     }
   };
 
-  const isSameUTCDay = (a: Date, b: Date) =>
-    a.getUTCFullYear() === b.getUTCFullYear() &&
-    a.getUTCMonth() === b.getUTCMonth() &&
-    a.getUTCDate() === b.getUTCDate();
+  const toUTCDateStr = (d: Date) =>
+    `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
 
-  const getEventsForDayHour = (day: Date, hour: number) =>
-    appointments.filter(apt => {
+  const getEventsForDayHour = (day: Date, hour: number) => {
+    const dayStr = format(day, "yyyy-MM-dd"); // local calendar day string
+    return appointments.filter(apt => {
       const d = new Date(apt.scheduled_at);
-      return isSameUTCDay(d, day) && d.getUTCHours() === hour;
+      return toUTCDateStr(d) === dayStr && d.getUTCHours() === hour;
     });
+  };
 
   const STATUS_MAP: Record<string, { label: string; color: string }> = {
     scheduled: { label: t("status.scheduled"), color: "bg-muted text-muted-foreground" },
@@ -268,9 +268,10 @@ export default function CalendarPage() {
       const working = isDayWorking(day);
       const slots = working ? sessionsPerDay : 0;
       totalSlots += slots;
-      const booked = appointments.filter(apt =>
-        isSameUTCDay(new Date(apt.scheduled_at), day) && apt.status !== "cancelled"
-      ).length;
+      const booked = appointments.filter(apt => {
+        const dayStr = format(day, "yyyy-MM-dd");
+        return toUTCDateStr(new Date(apt.scheduled_at)) === dayStr && apt.status !== "cancelled";
+      }).length;
       return { day, working, slots, booked, free: Math.max(slots - booked, 0) };
     });
     const totalBooked = dayStats.reduce((s, d) => s + d.booked, 0);
