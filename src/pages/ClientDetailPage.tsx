@@ -73,18 +73,6 @@ export default function ClientDetailPage() {
     not_applicable: { label: t("payment.na"), color: "bg-muted text-muted-foreground" },
   };
 
-  if (isLoading) {
-    return <AppLayout><div className="flex items-center justify-center h-64 text-muted-foreground">{t("clientDetail.loading")}</div></AppLayout>;
-  }
-  if (!client) {
-    return <AppLayout><div className="text-center py-16 text-muted-foreground">{t("clientDetail.notFound")}</div></AppLayout>;
-  }
-
-  const totalSessions = appointments.length;
-  const paidSessions = appointments.filter((a: any) => a.payment_status === "paid_now" || a.payment_status === "paid_in_advance").length;
-  const cancelledSessions = appointments.filter((a: any) => a.status === "cancelled" || a.status === "no-show").length;
-  const pendingPayments = appointments.filter((a: any) => a.payment_status === "waiting_for_payment").length;
-
   // Sort: upcoming (nearest first), then past (newest first)
   const { sortedAppointments, nextUpcomingId } = useMemo(() => {
     const now = new Date();
@@ -98,13 +86,23 @@ export default function ClientDetailPage() {
         past.push(apt);
       }
     }
-    // Upcoming: nearest first (ascending)
     upcoming.sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
-    // Past: newest first (descending)
     past.sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime());
     const sorted = [...upcoming, ...past];
     return { sortedAppointments: sorted, nextUpcomingId: upcoming.length > 0 ? upcoming[0].id : null };
   }, [appointments]);
+
+  if (isLoading) {
+    return <AppLayout><div className="flex items-center justify-center h-64 text-muted-foreground">{t("clientDetail.loading")}</div></AppLayout>;
+  }
+  if (!client) {
+    return <AppLayout><div className="text-center py-16 text-muted-foreground">{t("clientDetail.notFound")}</div></AppLayout>;
+  }
+
+  const totalSessions = appointments.length;
+  const paidSessions = appointments.filter((a: any) => a.payment_status === "paid_now" || a.payment_status === "paid_in_advance").length;
+  const cancelledSessions = appointments.filter((a: any) => a.status === "cancelled" || a.status === "no-show").length;
+  const pendingPayments = appointments.filter((a: any) => a.payment_status === "waiting_for_payment").length;
 
   const openEdit = () => {
     setEditForm({
