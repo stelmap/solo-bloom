@@ -295,14 +295,16 @@ export default function ClientDetailPage() {
               {appointments.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">{t("clientDetail.noSessions")}</p>
               ) : (
-                <div className="space-y-2">
-                  {(appointments as any[]).map((apt: any) => {
+                <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+                  {sortedAppointments.map((apt: any) => {
                     const notePreview = apt.notes ? (apt.notes.length > 80 ? apt.notes.slice(0, 80) + "…" : apt.notes) : null;
+                    const isNextUpcoming = apt.id === nextUpcomingId;
                     return (
                       <div key={apt.id}
                         onClick={() => { setSessionApt(apt); setSessionSheetOpen(true); }}
                         className={cn(
                           "flex flex-col gap-2 p-4 rounded-lg border transition-colors cursor-pointer hover:ring-2 hover:ring-ring/20",
+                          isNextUpcoming ? "bg-primary/5 border-primary/30 ring-1 ring-primary/20" :
                           apt.status === "cancelled" || apt.status === "no-show" ? "bg-muted/30 border-border opacity-60" : "bg-muted/50 border-border"
                         )}>
                         <div className="flex items-center gap-4">
@@ -312,7 +314,10 @@ export default function ClientDetailPage() {
                           </div>
                           <div className="h-10 w-px bg-border" />
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-foreground truncate">{apt.services?.name}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-medium text-foreground truncate">{apt.services?.name}</p>
+                              {isNextUpcoming && <Badge className="text-[10px] px-1.5 py-0 bg-primary/15 text-primary border-0">{t("status.scheduled")}</Badge>}
+                            </div>
                             <p className="text-xs text-muted-foreground">{apt.duration_minutes} {t("common.min")}</p>
                           </div>
                           <div className="flex flex-col items-end gap-1">
