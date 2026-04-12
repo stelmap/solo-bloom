@@ -20,9 +20,11 @@ export default function Dashboard() {
   const { data: services = [] } = useServices();
   const { data: taxSettings = [] } = useTaxSettings();
   const { data: expectedPayments = [] } = useExpectedPayments();
+  const { data: profile } = useProfile();
   const { t, lang } = useLanguage();
   const { symbol: cs } = useCurrency();
   const navigate = useNavigate();
+  const use12h = (profile as any)?.time_format === "12h";
 
   const s = stats ?? {
     todayIncome: 0, monthlyIncome: 0, monthlyExpenses: 0, netProfit: 0,
@@ -204,7 +206,7 @@ export default function Dashboard() {
               {s.todayAppointments.map((apt: any) => (
                 <div key={apt.id} className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
                   <div className="text-center min-w-[50px]">
-                    <p className="text-sm font-semibold text-foreground">{format(new Date(apt.scheduled_at), "HH:mm")}</p>
+                    <p className="text-sm font-semibold text-foreground">{formatScheduledTime(apt.scheduled_at, use12h)}</p>
                     <p className="text-xs text-muted-foreground">{apt.duration_minutes}{t("common.min")}</p>
                   </div>
                   <div className="h-8 w-px bg-border" />
