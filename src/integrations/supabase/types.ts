@@ -452,6 +452,7 @@ export type Database = {
           description: string | null
           id: string
           is_recurring: boolean
+          recurring_start_date: string | null
           updated_at: string
           user_id: string
         }
@@ -463,6 +464,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_recurring?: boolean
+          recurring_start_date?: string | null
           updated_at?: string
           user_id: string
         }
@@ -474,6 +476,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_recurring?: boolean
+          recurring_start_date?: string | null
           updated_at?: string
           user_id?: string
         }

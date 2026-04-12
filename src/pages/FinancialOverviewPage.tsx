@@ -71,9 +71,16 @@ export default function FinancialOverviewPage() {
       end: new Date(year, 11, 31),
     });
 
-    // Recurring expenses monthly amount
+    // Recurring expenses: only count those whose recurring_start_date <= the month
     const recurringExpenses = (allExpenses as any[]).filter(e => e.is_recurring);
-    const recurringMonthly = recurringExpenses.reduce((s, e) => s + Number(e.amount), 0);
+    const getRecurringForMonth = (monthKey: string) => {
+      return recurringExpenses
+        .filter(e => {
+          const startDate = e.recurring_start_date || e.date;
+          return startDate <= monthKey + "-31"; // started on or before end of month
+        })
+        .reduce((s, e) => s + Number(e.amount), 0);
+    };
 
     return months.map((monthDate, idx) => {
       const isFuture = year > currentYear || (year === currentYear && idx > currentMonth);
@@ -95,8 +102,8 @@ export default function FinancialOverviewPage() {
         const expectedIncome = expectedApts.reduce((s, a) => s + Number(a.price), 0);
         const predictedIncome = confirmedIncome + expectedIncome;
 
-        // Recurring expenses projected into future month
-        const predictedExpenses = recurringMonthly;
+        // Recurring expenses projected into future month (only those started by this month)
+        const predictedExpenses = getRecurringForMonth(mKey);
         const predictedTaxes = calcTaxes(predictedIncome);
 
         return {
@@ -125,13 +132,18 @@ export default function FinancialOverviewPage() {
               type: "expected" as const,
             })),
           ],
-          expenseItems: recurringExpenses.map((e: any) => ({
-            description: e.description || e.category,
-            amount: Number(e.amount),
-            date: "—",
-            category: e.category,
-            isRecurring: true,
-          })),
+          expenseItems: recurringExpenses
+            .filter((e: any) => {
+              const startDate = e.recurring_start_date || e.date;
+              return startDate <= mKey + "-31";
+            })
+            .map((e: any) => ({
+              description: e.description || e.category,
+              amount: Number(e.amount),
+              date: "—",
+              category: e.category,
+              isRecurring: true,
+            })),
         };
       }
 

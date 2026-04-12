@@ -200,6 +200,8 @@ export const translations = {
   "expenses.recurring": { en: "Recurring", uk: "Щомісячна" },
   "expenses.oneTime": { en: "One-time", uk: "Одноразова" },
   "expenses.recurringMonthlyCheckbox": { en: "Recurring monthly", uk: "Щомісячна витрата" },
+  "expenses.recurringStartDate": { en: "Start counting from", uk: "Рахувати починаючи з" },
+  "expenses.recurringStartDateHint": { en: "The date from which this recurring expense is counted in calculations", uk: "Дата, з якої ця щомісячна витрата враховується в розрахунках" },
 
   // Expense categories
   "category.Rent": { en: "Rent", uk: "Оренда" },

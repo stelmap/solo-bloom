@@ -39,7 +39,7 @@ export default function ExpensesPage() {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [form, setForm] = useState({ category: "Other", amount: 0, date: new Date().toISOString().split("T")[0], description: "", is_recurring: false });
+  const [form, setForm] = useState({ category: "Other", amount: 0, date: new Date().toISOString().split("T")[0], description: "", is_recurring: false, recurring_start_date: "" });
 
   // Filters
   const initialRange = searchParams.get("range") || "month";
@@ -81,13 +81,14 @@ export default function ExpensesPage() {
 
   const openEdit = (exp: any) => {
     setEditId(exp.id);
-    setForm({ category: exp.category, amount: Number(exp.amount), date: exp.date, description: exp.description || "", is_recurring: exp.is_recurring });
+    setForm({ category: exp.category, amount: Number(exp.amount), date: exp.date, description: exp.description || "", is_recurring: exp.is_recurring, recurring_start_date: exp.recurring_start_date || exp.date });
     setOpen(true);
   };
 
   const openCreate = () => {
     setEditId(null);
-    setForm({ category: "Other", amount: 0, date: new Date().toISOString().split("T")[0], description: "", is_recurring: false });
+    const today = new Date().toISOString().split("T")[0];
+    setForm({ category: "Other", amount: 0, date: today, description: "", is_recurring: false, recurring_start_date: today });
     setOpen(true);
   };
 
@@ -151,9 +152,16 @@ export default function ExpensesPage() {
                 <div className="space-y-2"><Label>{t("common.date")}</Label><Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>{t("common.description")}</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
                 <div className="flex items-center gap-2">
-                  <Checkbox checked={form.is_recurring} onCheckedChange={v => setForm(f => ({ ...f, is_recurring: !!v }))} id="recurring" />
+                  <Checkbox checked={form.is_recurring} onCheckedChange={v => setForm(f => ({ ...f, is_recurring: !!v, recurring_start_date: !!v ? (f.recurring_start_date || f.date) : "" }))} id="recurring" />
                   <Label htmlFor="recurring">{t("expenses.recurringMonthlyCheckbox")}</Label>
                 </div>
+                {form.is_recurring && (
+                  <div className="space-y-1">
+                    <Label>{t("expenses.recurringStartDate")}</Label>
+                    <Input type="date" value={form.recurring_start_date} onChange={e => setForm(f => ({ ...f, recurring_start_date: e.target.value }))} />
+                    <p className="text-xs text-muted-foreground">{t("expenses.recurringStartDateHint")}</p>
+                  </div>
+                )}
                 <Button onClick={handleSubmit} className="w-full" disabled={createExpense.isPending || updateExpense.isPending}>
                   {editId ? t("common.save") : t("expenses.addExpense")}
                 </Button>

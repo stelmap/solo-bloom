@@ -91,6 +91,7 @@ export default function OnboardingPage() {
             amount: Number(e.amount),
             date: today,
             is_recurring: true,
+            recurring_start_date: today,
             user_id: user.id,
           }))
         );

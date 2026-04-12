@@ -499,8 +499,16 @@ export function useCreateExpense() {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async (expense: { category: string; amount: number; date: string; description?: string; is_recurring?: boolean }) => {
-      const { data, error } = await supabase.from("expenses").insert({ ...expense, user_id: user!.id }).select().single();
+    mutationFn: async (expense: { category: string; amount: number; date: string; description?: string; is_recurring?: boolean; recurring_start_date?: string | null }) => {
+      const payload = { ...expense, user_id: user!.id };
+      // Auto-set recurring_start_date when is_recurring is true and no start date provided
+      if (payload.is_recurring && !payload.recurring_start_date) {
+        payload.recurring_start_date = payload.date;
+      }
+      if (!payload.is_recurring) {
+        payload.recurring_start_date = null;
+      }
+      const { data, error } = await supabase.from("expenses").insert(payload as any).select().single();
       if (error) throw error;
       return data;
     },
@@ -511,7 +519,11 @@ export function useCreateExpense() {
 export function useUpdateExpense() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; category?: string; amount?: number; date?: string; description?: string; is_recurring?: boolean }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; category?: string; amount?: number; date?: string; description?: string; is_recurring?: boolean; recurring_start_date?: string | null }) => {
+      // Clear recurring_start_date if is_recurring is being set to false
+      if (updates.is_recurring === false) {
+        updates.recurring_start_date = null;
+      }
       const { error } = await supabase.from("expenses").update(updates).eq("id", id);
       if (error) throw error;
     },
