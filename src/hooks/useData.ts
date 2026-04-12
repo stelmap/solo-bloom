@@ -833,30 +833,53 @@ export function useCreateRecurringRule() {
 export function useEditRecurringAppointments() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ ruleId, scope, appointmentId, updates }: {
+    mutationFn: async ({ ruleId, scope, appointmentId, updates, deltaMs }: {
       ruleId: string; scope: "this" | "following" | "all"; appointmentId: string;
-      updates: { client_id?: string; service_id?: string; duration_minutes?: number; price?: number; notes?: string; scheduled_at?: string };
+      updates: { client_id?: string; service_id?: string; duration_minutes?: number; price?: number; notes?: string };
+      deltaMs?: number; // time shift in milliseconds to apply to each appointment's scheduled_at
     }) => {
+      // Separate non-time updates from time shift
+      const fieldUpdates: Record<string, any> = {};
+      if (updates.client_id !== undefined) fieldUpdates.client_id = updates.client_id;
+      if (updates.service_id !== undefined) fieldUpdates.service_id = updates.service_id;
+      if (updates.duration_minutes !== undefined) fieldUpdates.duration_minutes = updates.duration_minutes;
+      if (updates.price !== undefined) fieldUpdates.price = updates.price;
+      if (updates.notes !== undefined) fieldUpdates.notes = updates.notes;
+
       if (scope === "this") {
-        const { error } = await supabase.from("appointments").update(updates as any).eq("id", appointmentId);
+        const thisUpdates: Record<string, any> = { ...fieldUpdates };
+        if (deltaMs) {
+          const oldScheduled = new Date((await supabase.from("appointments").select("scheduled_at").eq("id", appointmentId).single()).data!.scheduled_at);
+          thisUpdates.scheduled_at = new Date(oldScheduled.getTime() + deltaMs).toISOString();
+        }
+        const { error } = await supabase.from("appointments").update(thisUpdates as any).eq("id", appointmentId);
         if (error) throw error;
       } else if (scope === "following") {
         const { data: apt } = await supabase.from("appointments").select("scheduled_at").eq("id", appointmentId).single();
         if (apt) {
-          const { data: futureApts } = await supabase.from("appointments").select("id")
-            .eq("recurring_rule_id", ruleId).gte("scheduled_at", apt.scheduled_at)
-            .neq("status", "completed");
+          const { data: futureApts } = await supabase.from("appointments").select("id, scheduled_at, status")
+            .eq("recurring_rule_id", ruleId).gte("scheduled_at", apt.scheduled_at);
+          const activeStatuses = ["scheduled", "confirmed", "reminder_sent"];
           for (const a of futureApts || []) {
-            await supabase.from("appointments").update(updates as any).eq("id", a.id);
+            if (!activeStatuses.includes(a.status)) continue;
+            const perAptUpdates: Record<string, any> = { ...fieldUpdates };
+            if (deltaMs) {
+              perAptUpdates.scheduled_at = new Date(new Date(a.scheduled_at).getTime() + deltaMs).toISOString();
+            }
+            await supabase.from("appointments").update(perAptUpdates as any).eq("id", a.id);
           }
         }
       } else if (scope === "all") {
-        const { data: allApts } = await supabase.from("appointments").select("id, status")
+        const { data: allApts } = await supabase.from("appointments").select("id, status, scheduled_at")
           .eq("recurring_rule_id", ruleId);
+        const activeStatuses = ["scheduled", "confirmed", "reminder_sent"];
         for (const a of allApts || []) {
-          if (a.status === "scheduled" || a.status === "confirmed") {
-            await supabase.from("appointments").update(updates as any).eq("id", a.id);
+          if (!activeStatuses.includes(a.status)) continue;
+          const perAptUpdates: Record<string, any> = { ...fieldUpdates };
+          if (deltaMs) {
+            perAptUpdates.scheduled_at = new Date(new Date(a.scheduled_at).getTime() + deltaMs).toISOString();
           }
+          await supabase.from("appointments").update(perAptUpdates as any).eq("id", a.id);
         }
       }
     },
