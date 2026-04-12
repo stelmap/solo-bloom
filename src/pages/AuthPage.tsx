@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { getStoredLang, setStoredLang } from "@/i18n/LanguageContext";
+import { Language } from "@/i18n/translations";
+import { Eye, EyeOff, ArrowLeft, Globe } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 const PLAN_PRICE_MAP: Record<string, string> = {
