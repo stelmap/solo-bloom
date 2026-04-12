@@ -40,7 +40,6 @@ export default function CalendarPage() {
   const createAppointment = useCreateAppointment();
   const updateAppointment = useUpdateAppointment();
   const createRecurringRule = useCreateRecurringRule();
-  const editRecurring = useEditRecurringAppointments();
   const createDayOff = useCreateDayOff();
   const deleteDayOff = useDeleteDayOff();
   const bulkCancel = useBulkCancelForDayOff();
