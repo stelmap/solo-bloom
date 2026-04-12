@@ -2,6 +2,7 @@ import { useState, useCallback, createContext, useContext } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { translations, Language, TranslationKey } from "@/i18n/translations";
+import { getStoredLang, setStoredLang } from "@/i18n/LanguageContext";
 import {
   LayoutDashboard, Users, Calendar, DollarSign, Target,
   CheckCircle2, ArrowRight, MessageSquareQuote, Zap,
@@ -22,15 +23,12 @@ function useLandingLang() {
 }
 
 function LandingLangProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLang] = useState<Language>(() => {
-    const stored = localStorage.getItem("landing_lang");
-    return stored === "uk" ? "uk" : "en";
-  });
+  const [lang, setLang] = useState<Language>(() => getStoredLang());
 
   const toggle = useCallback(() => {
     setLang((prev) => {
       const next = prev === "en" ? "uk" : "en";
-      localStorage.setItem("landing_lang", next);
+      setStoredLang(next);
       return next;
     });
   }, []);
