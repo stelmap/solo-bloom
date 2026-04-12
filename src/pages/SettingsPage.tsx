@@ -99,11 +99,12 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     try {
+      const newLang = (form.language as Language) || "en";
       await Promise.all([
         updateProfile.mutateAsync(form),
         upsertSchedule.mutateAsync(schedule),
       ]);
-      toast({ title: t("settings.saved") });
+      toast({ title: translateFor(newLang, "settings.saved") });
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
