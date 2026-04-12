@@ -231,16 +231,16 @@ export default function CalendarPage() {
     }
   };
 
-  const isSameUTCDay = (a: Date, b: Date) =>
-    a.getUTCFullYear() === b.getUTCFullYear() &&
-    a.getUTCMonth() === b.getUTCMonth() &&
-    a.getUTCDate() === b.getUTCDate();
+  const toUTCDateStr = (d: Date) =>
+    `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
 
-  const getEventsForDayHour = (day: Date, hour: number) =>
-    appointments.filter(apt => {
+  const getEventsForDayHour = (day: Date, hour: number) => {
+    const dayStr = format(day, "yyyy-MM-dd"); // local calendar day string
+    return appointments.filter(apt => {
       const d = new Date(apt.scheduled_at);
-      return isSameUTCDay(d, day) && d.getUTCHours() === hour;
+      return toUTCDateStr(d) === dayStr && d.getUTCHours() === hour;
     });
+  };
 
   const STATUS_MAP: Record<string, { label: string; color: string }> = {
     scheduled: { label: t("status.scheduled"), color: "bg-muted text-muted-foreground" },
