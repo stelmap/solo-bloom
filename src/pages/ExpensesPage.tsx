@@ -20,7 +20,7 @@ import { useSearchParams } from "react-router-dom";
 import { startOfWeek, startOfMonth, format } from "date-fns";
 import { cn } from "@/lib/utils";
 
-const CATEGORIES = ["Rent", "Materials", "Insurance", "Equipment", "Marketing", "Utilities", "Laundry", "Software", "Tax", "Other"];
+const DEFAULT_CATEGORIES = ["Rent", "Materials", "Insurance", "Equipment", "Marketing", "Utilities", "Laundry", "Software", "Tax", "Other"];
 
 export default function ExpensesPage() {
   const [page, setPage] = useState(0);
