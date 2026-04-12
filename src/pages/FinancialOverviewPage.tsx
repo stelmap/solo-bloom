@@ -132,13 +132,18 @@ export default function FinancialOverviewPage() {
               type: "expected" as const,
             })),
           ],
-          expenseItems: recurringExpenses.map((e: any) => ({
-            description: e.description || e.category,
-            amount: Number(e.amount),
-            date: "—",
-            category: e.category,
-            isRecurring: true,
-          })),
+          expenseItems: recurringExpenses
+            .filter((e: any) => {
+              const startDate = e.recurring_start_date || e.date;
+              return startDate <= mKey + "-31";
+            })
+            .map((e: any) => ({
+              description: e.description || e.category,
+              amount: Number(e.amount),
+              date: "—",
+              category: e.category,
+              isRecurring: true,
+            })),
         };
       }
 
