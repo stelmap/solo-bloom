@@ -247,7 +247,7 @@ export default function ClientDetailPage() {
                 {(notes as any[]).map((note: any) => (
                   <div key={note.id} className="bg-muted/50 rounded-lg p-3 group relative">
                     <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{format(new Date(note.created_at), "MMM d, yyyy · HH:mm")}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{format(new Date(note.created_at), "MMM d, yyyy")} · {formatScheduledTime(note.created_at, use12h)}</p>
                     <button onClick={() => deleteNote.mutate({ id: note.id, clientId: client.id })} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all">
                       <X className="h-3 w-3" />
                     </button>
