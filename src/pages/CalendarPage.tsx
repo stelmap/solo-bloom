@@ -203,7 +203,7 @@ export default function CalendarPage() {
       // Check for affected sessions
       const affected = appointments.filter(apt => {
         if (apt.status === "cancelled" || apt.status === "completed") return false;
-        return isSameUTCDay(new Date(apt.scheduled_at), date);
+        return toUTCDateStr(new Date(apt.scheduled_at)) === format(date, "yyyy-MM-dd");
       });
       if (affected.length > 0) {
         setDayOffConfirm({ date, affectedApts: affected });
@@ -268,9 +268,10 @@ export default function CalendarPage() {
       const working = isDayWorking(day);
       const slots = working ? sessionsPerDay : 0;
       totalSlots += slots;
-      const booked = appointments.filter(apt =>
-        isSameUTCDay(new Date(apt.scheduled_at), day) && apt.status !== "cancelled"
-      ).length;
+      const booked = appointments.filter(apt => {
+        const dayStr = format(day, "yyyy-MM-dd");
+        return toUTCDateStr(new Date(apt.scheduled_at)) === dayStr && apt.status !== "cancelled";
+      }).length;
       return { day, working, slots, booked, free: Math.max(slots - booked, 0) };
     });
     const totalBooked = dayStats.reduce((s, d) => s + d.booked, 0);
