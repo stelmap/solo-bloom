@@ -120,8 +120,11 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   // Determine if client requires confirmation
   const client = clients.find(c => c.id === apt.client_id);
   const clientRequiresConfirmation = client?.confirmation_required === true;
+  const clientWantsEmail = ["email_only", "email_and_telegram"].includes(client?.notification_preference || "");
   const showConfirmationState = clientRequiresConfirmation || (apt.confirmation_status && apt.confirmation_status !== "not_required");
-  const canSendReminder = isActive && clientRequiresConfirmation && apt.confirmation_status !== "confirmed";
+  const canSendReminder = isActive && clientWantsEmail && (
+    clientRequiresConfirmation ? apt.confirmation_status !== "confirmed" : true
+  );
 
   const handleSendReminder = async () => {
     if (!client?.email) {
