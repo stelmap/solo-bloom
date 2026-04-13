@@ -9,9 +9,9 @@ const corsHeaders = {
 };
 
 const PRICE_IDS = {
-  monthly: "price_1TKL7TRwTkI7QgwJe1i7gScN",
-  quarterly: "price_1TKLFFRwTkI7QgwJ2pv6DxKp",
-  yearly: "price_1TKLG7RwTkI7QgwJTcDckYXF",
+  monthly: "price_1TL8IORxXuU3N5IFvjohq4sk",
+  quarterly: "price_1TL8IORxXuU3N5IFlwMslTtE",
+  yearly: "price_1TL8INRxXuU3N5IF8bJlwGyr",
 };
 
 serve(async (req) => {
