@@ -235,6 +235,10 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
             price: editForm.price, notes: editForm.notes || undefined,
           },
           deltaMs: deltaMs !== 0 ? deltaMs : undefined,
+          recurrenceUpdates: {
+            days_of_week: editForm.days_of_week,
+            interval_weeks: editForm.interval_weeks,
+          },
         });
       }
       setRecurEditScopeOpen(false);
