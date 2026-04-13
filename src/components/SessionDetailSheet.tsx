@@ -519,7 +519,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                                   return { ...f, days_of_week: next.length > 0 ? next : f.days_of_week };
                                 });
                               }}>
-                              {t(dk)}
+                              {t(dk as any)}
                             </button>
                           );
                         })}
