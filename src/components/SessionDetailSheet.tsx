@@ -57,7 +57,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [sendingReminder, setSendingReminder] = useState(false);
 
   // Edit form
-  const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "", notes: "", price: 0 });
+  const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "", notes: "", price: 0, days_of_week: [1] as number[], interval_weeks: 1 });
 
   // Complete form
   const [completePrice, setCompletePrice] = useState(0);
@@ -166,17 +166,27 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     }
   };
 
-  const openEdit = () => {
+  const openEdit = async () => {
     const d = new Date(apt.scheduled_at);
     const yyyy = d.getUTCFullYear();
     const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
     const dd = String(d.getUTCDate()).padStart(2, "0");
     const hh = String(d.getUTCHours()).padStart(2, "0");
     const min = String(d.getUTCMinutes()).padStart(2, "0");
+    let days_of_week = [1];
+    let interval_weeks = 1;
+    if (apt.recurring_rule_id) {
+      const { data: rule } = await supabase.from("recurring_rules").select("days_of_week, interval_weeks").eq("id", apt.recurring_rule_id).single();
+      if (rule) {
+        days_of_week = rule.days_of_week || [1];
+        interval_weeks = rule.interval_weeks || 1;
+      }
+    }
     setEditForm({
       client_id: apt.client_id, service_id: apt.service_id,
       date: `${yyyy}-${mm}-${dd}`, time: `${hh}:${min}`,
       notes: apt.notes || "", price: Number(apt.price),
+      days_of_week, interval_weeks,
     });
     setMode("edit");
   };
