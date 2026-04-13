@@ -33,6 +33,7 @@ interface SessionDetailSheetProps {
   use12h?: boolean;
 }
 
+const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"];
 
 export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12h = false }: SessionDetailSheetProps) {
   const { t } = useLanguage();

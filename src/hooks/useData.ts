@@ -832,13 +832,14 @@ export function useCreateRecurringRule() {
 
 export function useEditRecurringAppointments() {
   const qc = useQueryClient();
+  const { user } = useAuth();
   return useMutation({
-    mutationFn: async ({ ruleId, scope, appointmentId, updates, deltaMs }: {
+    mutationFn: async ({ ruleId, scope, appointmentId, updates, deltaMs, recurrenceUpdates }: {
       ruleId: string; scope: "this" | "following" | "all"; appointmentId: string;
       updates: { client_id?: string; service_id?: string; duration_minutes?: number; price?: number; notes?: string };
-      deltaMs?: number; // time shift in milliseconds to apply to each appointment's scheduled_at
+      deltaMs?: number;
+      recurrenceUpdates?: { days_of_week?: number[]; interval_weeks?: number };
     }) => {
-      // Separate non-time updates from time shift
       const fieldUpdates: Record<string, any> = {};
       if (updates.client_id !== undefined) fieldUpdates.client_id = updates.client_id;
       if (updates.service_id !== undefined) fieldUpdates.service_id = updates.service_id;
@@ -854,6 +855,57 @@ export function useEditRecurringAppointments() {
         }
         const { error } = await supabase.from("appointments").update(thisUpdates as any).eq("id", appointmentId);
         if (error) throw error;
+      } else if (recurrenceUpdates && (recurrenceUpdates.days_of_week || recurrenceUpdates.interval_weeks)) {
+        // Recurrence pattern changed — update the rule and regenerate future appointments
+        const ruleUpdates: Record<string, any> = {};
+        if (recurrenceUpdates.days_of_week) ruleUpdates.days_of_week = recurrenceUpdates.days_of_week;
+        if (recurrenceUpdates.interval_weeks) ruleUpdates.interval_weeks = recurrenceUpdates.interval_weeks;
+        // Also update field-level changes on the rule
+        if (updates.client_id) ruleUpdates.client_id = updates.client_id;
+        if (updates.service_id) ruleUpdates.service_id = updates.service_id;
+        if (updates.duration_minutes) ruleUpdates.duration_minutes = updates.duration_minutes;
+        if (updates.price !== undefined) ruleUpdates.price = updates.price;
+        if (updates.notes !== undefined) ruleUpdates.notes = updates.notes;
+
+        const { error: ruleErr } = await supabase.from("recurring_rules").update(ruleUpdates as any).eq("id", ruleId);
+        if (ruleErr) throw ruleErr;
+
+        // Get updated rule
+        const { data: updatedRule } = await supabase.from("recurring_rules").select("*").eq("id", ruleId).single();
+        if (!updatedRule) throw new Error("Rule not found");
+
+        // Determine cutoff: for "following", use current appointment's scheduled_at; for "all", use rule start
+        const activeStatuses = ["scheduled", "confirmed", "reminder_sent"];
+        let cutoffDate: string;
+        if (scope === "following") {
+          const { data: apt } = await supabase.from("appointments").select("scheduled_at").eq("id", appointmentId).single();
+          cutoffDate = apt!.scheduled_at;
+        } else {
+          cutoffDate = new Date(0).toISOString(); // all
+        }
+
+        // Delete future active appointments
+        const { data: toDelete } = await supabase.from("appointments").select("id, status, scheduled_at")
+          .eq("recurring_rule_id", ruleId).gte("scheduled_at", cutoffDate);
+        for (const a of toDelete || []) {
+          if (!activeStatuses.includes(a.status)) continue;
+          await supabase.from("income").delete().eq("appointment_id", a.id);
+          await supabase.from("expected_payments").delete().eq("appointment_id", a.id);
+          await supabase.from("appointments").delete().eq("id", a.id);
+        }
+
+        // Regenerate from cutoff
+        const ruleForGen = { ...updatedRule };
+        if (scope === "following") {
+          const cutoff = new Date(cutoffDate);
+          const y = cutoff.getUTCFullYear(), m = cutoff.getUTCMonth() + 1, d = cutoff.getUTCDate();
+          ruleForGen.start_date = `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+        }
+        const newApts = generateRecurringAppointments(ruleForGen, user!.id);
+        if (newApts.length > 0) {
+          const { error: insErr } = await supabase.from("appointments").insert(newApts as any);
+          if (insErr) throw insErr;
+        }
       } else if (scope === "following") {
         const { data: apt } = await supabase.from("appointments").select("scheduled_at").eq("id", appointmentId).single();
         if (apt) {
@@ -883,7 +935,7 @@ export function useEditRecurringAppointments() {
         }
       }
     },
-    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL, "recurring-rules"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
