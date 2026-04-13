@@ -42,6 +42,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const { toast } = useToast();
   const { data: clients = [] } = useClients();
   const { data: services = [] } = useServices();
+  const { data: profile } = useProfile();
   const updateAppointment = useUpdateAppointment();
   const deleteAppointment = useDeleteAppointment();
   const completeAppointment = useCompleteAppointment();
