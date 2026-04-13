@@ -33,6 +33,7 @@ interface SessionDetailSheetProps {
   use12h?: boolean;
 }
 
+const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"];
 
 export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12h = false }: SessionDetailSheetProps) {
   const { t } = useLanguage();
@@ -57,7 +58,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [sendingReminder, setSendingReminder] = useState(false);
 
   // Edit form
-  const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "", notes: "", price: 0 });
+  const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "", notes: "", price: 0, days_of_week: [1] as number[], interval_weeks: 1 });
 
   // Complete form
   const [completePrice, setCompletePrice] = useState(0);
@@ -166,17 +167,27 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     }
   };
 
-  const openEdit = () => {
+  const openEdit = async () => {
     const d = new Date(apt.scheduled_at);
     const yyyy = d.getUTCFullYear();
     const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
     const dd = String(d.getUTCDate()).padStart(2, "0");
     const hh = String(d.getUTCHours()).padStart(2, "0");
     const min = String(d.getUTCMinutes()).padStart(2, "0");
+    let days_of_week = [1];
+    let interval_weeks = 1;
+    if (apt.recurring_rule_id) {
+      const { data: rule } = await supabase.from("recurring_rules").select("days_of_week, interval_weeks").eq("id", apt.recurring_rule_id).single();
+      if (rule) {
+        days_of_week = rule.days_of_week || [1];
+        interval_weeks = rule.interval_weeks || 1;
+      }
+    }
     setEditForm({
       client_id: apt.client_id, service_id: apt.service_id,
       date: `${yyyy}-${mm}-${dd}`, time: `${hh}:${min}`,
       notes: apt.notes || "", price: Number(apt.price),
+      days_of_week, interval_weeks,
     });
     setMode("edit");
   };
@@ -224,6 +235,10 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
             price: editForm.price, notes: editForm.notes || undefined,
           },
           deltaMs: deltaMs !== 0 ? deltaMs : undefined,
+          recurrenceUpdates: {
+            days_of_week: editForm.days_of_week,
+            interval_weeks: editForm.interval_weeks,
+          },
         });
       }
       setRecurEditScopeOpen(false);
@@ -486,6 +501,49 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 <Label>{t("session.notes")}</Label>
                 <Textarea value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} className="min-h-[100px]" />
               </div>
+              {apt.recurring_rule_id && (
+                <>
+                  <Separator />
+                  <div className="space-y-3">
+                    <Label className="flex items-center gap-1.5"><Repeat className="h-3.5 w-3.5" /> {t("recurring.title")}</Label>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">{t("recurring.daysOfWeek")}</Label>
+                      <div className="flex gap-1.5 flex-wrap">
+                        {DAY_KEYS.map((dk, i) => {
+                          const dayNum = i + 1;
+                          const isSelected = editForm.days_of_week.includes(dayNum);
+                          return (
+                            <button key={dk} type="button"
+                              className={cn("h-9 w-9 rounded-full text-xs font-medium border transition-colors",
+                                isSelected ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground hover:bg-muted"
+                              )}
+                              onClick={() => {
+                                setEditForm(f => {
+                                  const next = isSelected ? f.days_of_week.filter(d => d !== dayNum) : [...f.days_of_week, dayNum].sort();
+                                  return { ...f, days_of_week: next.length > 0 ? next : f.days_of_week };
+                                });
+                              }}>
+                              {t(dk as any)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">{t("recurring.intervalWeeks")}</Label>
+                      <Select value={String(editForm.interval_weeks)} onValueChange={v => setEditForm(f => ({ ...f, interval_weeks: Number(v) }))}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">{t("recurring.weekly")}</SelectItem>
+                          <SelectItem value="2">{t("recurring.biweekly")}</SelectItem>
+                          <SelectItem value="3">{t("recurring.custom", { n: "3" })}</SelectItem>
+                          <SelectItem value="4">{t("recurring.custom", { n: "4" })}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </>
+              )}
               <div className="flex gap-2">
                 <Button onClick={handleSaveEdit} className="flex-1" disabled={updateAppointment.isPending}>
                   {updateAppointment.isPending ? t("calendar.saving") : t("calendar.saveChanges")}
