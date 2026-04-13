@@ -496,6 +496,49 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 <Label>{t("session.notes")}</Label>
                 <Textarea value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} className="min-h-[100px]" />
               </div>
+              {apt.recurring_rule_id && (
+                <>
+                  <Separator />
+                  <div className="space-y-3">
+                    <Label className="flex items-center gap-1.5"><Repeat className="h-3.5 w-3.5" /> {t("recurring.title")}</Label>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">{t("recurring.daysOfWeek")}</Label>
+                      <div className="flex gap-1.5 flex-wrap">
+                        {DAY_KEYS.map((dk, i) => {
+                          const dayNum = i + 1;
+                          const isSelected = editForm.days_of_week.includes(dayNum);
+                          return (
+                            <button key={dk} type="button"
+                              className={cn("h-9 w-9 rounded-full text-xs font-medium border transition-colors",
+                                isSelected ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground hover:bg-muted"
+                              )}
+                              onClick={() => {
+                                setEditForm(f => {
+                                  const next = isSelected ? f.days_of_week.filter(d => d !== dayNum) : [...f.days_of_week, dayNum].sort();
+                                  return { ...f, days_of_week: next.length > 0 ? next : f.days_of_week };
+                                });
+                              }}>
+                              {t(dk)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">{t("recurring.intervalWeeks")}</Label>
+                      <Select value={String(editForm.interval_weeks)} onValueChange={v => setEditForm(f => ({ ...f, interval_weeks: Number(v) }))}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">{t("recurring.weekly")}</SelectItem>
+                          <SelectItem value="2">{t("recurring.biweekly")}</SelectItem>
+                          <SelectItem value="3">{t("recurring.custom", { n: "3" })}</SelectItem>
+                          <SelectItem value="4">{t("recurring.custom", { n: "4" })}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </>
+              )}
               <div className="flex gap-2">
                 <Button onClick={handleSaveEdit} className="flex-1" disabled={updateAppointment.isPending}>
                   {updateAppointment.isPending ? t("calendar.saving") : t("calendar.saveChanges")}
