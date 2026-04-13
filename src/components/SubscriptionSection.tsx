@@ -9,9 +9,9 @@ import { CreditCard, ExternalLink, RefreshCw, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 
 const PLANS = [
-  { id: "monthly", priceId: "price_1TKL7TRwTkI7QgwJe1i7gScN", label: "Monthly", price: "€20/mo" },
-  { id: "quarterly", priceId: "price_1TKLFFRwTkI7QgwJ2pv6DxKp", label: "Quarterly", price: "€50/3mo" },
-  { id: "yearly", priceId: "price_1TKLG7RwTkI7QgwJTcDckYXF", label: "Yearly", price: "€200/yr" },
+  { id: "monthly", priceId: "price_1TL8IORxXuU3N5IFvjohq4sk", label: "Monthly", price: "€20/mo" },
+  { id: "quarterly", priceId: "price_1TL8IORxXuU3N5IFlwMslTtE", label: "Quarterly", price: "€50/3mo" },
+  { id: "yearly", priceId: "price_1TL8INRxXuU3N5IF8bJlwGyr", label: "Yearly", price: "€200/yr" },
 ];
 
 export function SubscriptionSection() {
