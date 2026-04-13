@@ -415,14 +415,18 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
               {/* Send Reminder / Request Confirmation */}
               {canSendReminder && (
-                <div className="rounded-lg border border-warning/20 bg-warning/5 p-3">
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-warning">
+                    <div className="flex items-center gap-2 text-sm text-primary">
                       <Bell className="h-4 w-4" />
-                      <span>{apt.confirmation_status === "pending" ? t("confirmation.pending") : t("confirmation.requestConfirmation")}</span>
+                      <span>
+                        {clientRequiresConfirmation
+                          ? (apt.confirmation_status === "pending" ? t("confirmation.pending") : t("confirmation.requestConfirmation"))
+                          : t("confirmation.sendReminder")}
+                      </span>
                     </div>
                     <Button size="sm" variant="outline" onClick={handleSendReminder} disabled={sendingReminder}
-                      className="border-warning/30 text-warning hover:bg-warning/10 hover:text-warning">
+                      className="border-primary/30 text-primary hover:bg-primary/10 hover:text-primary">
                       <Send className="h-3.5 w-3.5 mr-1" />
                       {sendingReminder ? "..." : t("confirmation.sendReminder")}
                     </Button>
