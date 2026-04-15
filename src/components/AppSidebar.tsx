@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Calendar, Users, Scissors, DollarSign,
-  TrendingDown, Settings, Target, Menu, X, LogOut, BarChart3,
+  TrendingDown, Settings, Target, Menu, X, LogOut, BarChart3, UsersRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -13,6 +13,7 @@ const navItems: { icon: any; labelKey: TranslationKey; path: string }[] = [
   { icon: LayoutDashboard, labelKey: "nav.dashboard", path: "/dashboard" },
   { icon: Calendar, labelKey: "nav.calendar", path: "/calendar" },
   { icon: Users, labelKey: "nav.clients", path: "/clients" },
+  { icon: UsersRound, labelKey: "nav.groups", path: "/groups" },
   { icon: Scissors, labelKey: "nav.services", path: "/services" },
   { icon: DollarSign, labelKey: "nav.income", path: "/income" },
   { icon: TrendingDown, labelKey: "nav.expenses", path: "/expenses" },
