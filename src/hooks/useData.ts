@@ -252,7 +252,7 @@ export function useAppointments() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("appointments")
-        .select("*, clients(name), services(name, price)")
+        .select("*, clients(name), services(name, price), group_sessions!appointments_group_session_id_fkey(id, group_id, groups(name))")
         .order("scheduled_at", { ascending: true });
       if (error) throw error;
       return data;

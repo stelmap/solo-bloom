@@ -68,7 +68,7 @@ export function useGroupSessions(groupId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("group_sessions" as any)
-        .select("*, appointments(id, scheduled_at, duration_minutes, status, price, services(name))")
+        .select("*, appointments!group_sessions_appointment_id_fkey(id, scheduled_at, duration_minutes, status, price, services(name))")
         .eq("group_id", groupId!)
         .order("created_at", { ascending: false });
       if (error) throw error;

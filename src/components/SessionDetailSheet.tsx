@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import {
-  CheckCircle, XCircle, Ban, Clock, Pencil, Trash2, DollarSign, Repeat, Save, X, FileText, Bell, Send,
+  CheckCircle, XCircle, Ban, Clock, Pencil, Trash2, DollarSign, Repeat, Save, X, FileText, Bell, Send, Users, Check, MinusCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -26,6 +26,7 @@ import {
 } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { useGroupAttendance, useUpdateAttendance } from "@/hooks/useGroups";
 
 interface SessionDetailSheetProps {
   appointment: any | null;
@@ -117,12 +118,21 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   };
   const confirmInfo = CONFIRMATION_STYLES[apt.confirmation_status] || CONFIRMATION_STYLES.not_required;
 
+  // Group session detection
+  const isGroupSession = !!apt.group_session_id;
+  const groupName = (apt as any).group_sessions?.groups?.name;
+  const groupSessionId = isGroupSession ? (apt as any).group_sessions?.id || apt.group_session_id : undefined;
+
+  // Group attendance
+  const { data: groupAttendance = [] } = useGroupAttendance(groupSessionId);
+  const updateAttendance = useUpdateAttendance();
+
   // Determine if client requires confirmation
   const client = clients.find(c => c.id === apt.client_id);
-  const clientRequiresConfirmation = client?.confirmation_required === true;
-  const clientWantsEmail = ["email_only", "email_and_telegram"].includes(client?.notification_preference || "");
-  const showConfirmationState = clientRequiresConfirmation || (apt.confirmation_status && apt.confirmation_status !== "not_required");
-  const canSendReminder = isActive && clientWantsEmail && (
+  const clientRequiresConfirmation = !isGroupSession && client?.confirmation_required === true;
+  const clientWantsEmail = !isGroupSession && ["email_only", "email_and_telegram"].includes(client?.notification_preference || "");
+  const showConfirmationState = !isGroupSession && (clientRequiresConfirmation || (apt.confirmation_status && apt.confirmation_status !== "not_required"));
+  const canSendReminder = !isGroupSession && isActive && clientWantsEmail && (
     clientRequiresConfirmation ? apt.confirmation_status !== "confirmed" : true
   );
 
@@ -347,8 +357,12 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
           <SheetHeader className="pb-4">
             <SheetTitle className="flex items-center gap-2 flex-wrap">
-              <span>{t("session.title")}</span>
+              {isGroupSession && <Users className="h-4 w-4" />}
+              <span>{isGroupSession ? (groupName || t("groups.groupSession")) : t("session.title")}</span>
               <Badge className={cn("text-xs", statusInfo.color)}>{statusInfo.label}</Badge>
+              {isGroupSession && (
+                <Badge variant="outline" className="text-xs border-primary/30 text-primary"><Users className="h-3 w-3 mr-1" />{t("groups.groupSession")}</Badge>
+              )}
               {apt.recurring_rule_id && (
                 <Badge variant="outline" className="text-xs"><Repeat className="h-3 w-3 mr-1" />{t("recurring.badge")}</Badge>
               )}
@@ -359,10 +373,17 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
             <div className="space-y-5">
               {/* Session info */}
               <div className="bg-muted/50 rounded-lg p-4 space-y-2.5 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("calendar.client")}</span>
-                  <span className="font-medium text-foreground">{apt.clients?.name}</span>
-                </div>
+                {isGroupSession ? (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{t("groups.group")}</span>
+                    <span className="font-medium text-foreground">{groupName || "—"}</span>
+                  </div>
+                ) : (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{t("calendar.client")}</span>
+                    <span className="font-medium text-foreground">{apt.clients?.name}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("calendar.service")}</span>
                   <span className="font-medium text-foreground">{apt.services?.name}</span>
@@ -430,6 +451,51 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                       <Send className="h-3.5 w-3.5 mr-1" />
                       {sendingReminder ? "..." : t("confirmation.sendReminder")}
                     </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Group attendance tracking */}
+              {isGroupSession && groupAttendance.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-primary" />
+                    <Label className="text-sm font-semibold">{t("groups.attendance")} ({groupAttendance.length})</Label>
+                  </div>
+                  <div className="space-y-2">
+                    {groupAttendance.map((att: any) => {
+                      const attStatusColor: Record<string, string> = {
+                        attended: "bg-success/10 border-success/30 text-success",
+                        absent: "bg-destructive/10 border-destructive/30 text-destructive",
+                        skipped: "bg-warning/10 border-warning/30 text-warning",
+                      };
+                      return (
+                        <div key={att.id} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30">
+                          <div className="flex items-center gap-2">
+                            <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-[10px] font-semibold">
+                              {att.clients?.name?.[0]?.toUpperCase() || "?"}
+                            </div>
+                            <span className="text-sm font-medium">{att.clients?.name}</span>
+                          </div>
+                          <Select value={att.status} onValueChange={async (v) => {
+                            try {
+                              await updateAttendance.mutateAsync({ id: att.id, status: v, groupSessionId: groupSessionId! });
+                            } catch (e: any) {
+                              toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+                            }
+                          }}>
+                            <SelectTrigger className={cn("w-28 h-7 text-xs border", attStatusColor[att.status] || "")}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="attended">{t("groups.attended")}</SelectItem>
+                              <SelectItem value="absent">{t("groups.absent")}</SelectItem>
+                              <SelectItem value="skipped">{t("groups.skipped")}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
