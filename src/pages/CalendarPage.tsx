@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
-import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3, GripVertical } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users } from "lucide-react";
 import { useState, useMemo, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, addDays, startOfWeek, isSameDay, isBefore, startOfDay } from "date-fns";
@@ -17,6 +17,7 @@ import {
   useWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff,
   useBulkCancelForDayOff,
 } from "@/hooks/useData";
+import { useGroups, useGroupMembers, useCreateGroupSession } from "@/hooks/useGroups";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -128,6 +129,14 @@ export default function CalendarPage() {
   const [dayOffConfirm, setDayOffConfirm] = useState<{ date: Date; affectedApts: any[] } | null>(null);
 
   const [form, setForm] = useState({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
+
+  // Group session state
+  const [isGroupSession, setIsGroupSession] = useState(false);
+  const [groupId, setGroupId] = useState("");
+  const { data: groups = [] } = useGroups();
+  const activeGroups = useMemo(() => groups.filter((g: any) => g.status === "active"), [groups]);
+  const { data: groupMembers = [] } = useGroupMembers(groupId || undefined);
+  const createGroupSession = useCreateGroupSession();
 
   // Recurring form state
   const [isRecurring, setIsRecurring] = useState(false);
