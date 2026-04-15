@@ -334,6 +334,25 @@ export default function GroupDetailPage() {
                 </SelectContent>
               </Select>
             </div>
+            <Separator />
+            <div className="space-y-3">
+              <div>
+                <Label className="flex items-center gap-2"><Receipt className="h-4 w-4" /> {t("groups.billingRules")}</Label>
+                <p className="text-xs text-muted-foreground mt-1">{t("groups.billingRulesDesc")}</p>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                <span className="text-sm">{t("groups.billPresent")}</span>
+                <Switch checked={editForm.bill_present} onCheckedChange={v => setEditForm(f => ({ ...f, bill_present: v }))} />
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                <span className="text-sm">{t("groups.billAbsent")}</span>
+                <Switch checked={editForm.bill_absent} onCheckedChange={v => setEditForm(f => ({ ...f, bill_absent: v }))} />
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                <span className="text-sm">{t("groups.billSkipped")}</span>
+                <Switch checked={editForm.bill_skipped} onCheckedChange={v => setEditForm(f => ({ ...f, bill_skipped: v }))} />
+              </div>
+            </div>
             <Button onClick={handleSaveEdit} className="w-full" disabled={!editForm.name.trim() || editSaving}>
               {editSaving ? t("common.saving") : t("common.save")}
             </Button>
