@@ -377,6 +377,16 @@ export default function GroupDetailPage() {
         loading={removeMember.isPending}
       />
 
+      {/* Delete Group Confirmation */}
+      <ConfirmDeleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onConfirm={handleDeleteGroup}
+        title={t("groups.deleteGroupTitle")}
+        description={t("groups.deleteGroupDesc")}
+        loading={deleteGroup.isPending}
+      />
+
       {/* Attendance Dialog */}
       {attendanceSessionId && (
         <AttendanceDialog
