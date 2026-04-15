@@ -67,6 +67,7 @@ export default function SettingsPage() {
   const [taxForm, setTaxForm] = useState({
     tax_name: "", tax_type: "percentage", tax_rate: 0, fixed_amount: 0,
     frequency: "monthly", calculate_on: "actual_income",
+    start_calculation_date: new Date().toISOString().split("T")[0],
   });
 
   useEffect(() => {
@@ -176,7 +177,7 @@ export default function SettingsPage() {
   // Tax handlers
   const openCreateTax = () => {
     setTaxEditId(null);
-    setTaxForm({ tax_name: "", tax_type: "percentage", tax_rate: 0, fixed_amount: 0, frequency: "monthly", calculate_on: "actual_income" });
+    setTaxForm({ tax_name: "", tax_type: "percentage", tax_rate: 0, fixed_amount: 0, frequency: "monthly", calculate_on: "actual_income", start_calculation_date: new Date().toISOString().split("T")[0] });
     setTaxOpen(true);
   };
   const openEditTax = (tax: any) => {
@@ -184,6 +185,7 @@ export default function SettingsPage() {
     setTaxForm({
       tax_name: tax.tax_name, tax_type: tax.tax_type, tax_rate: Number(tax.tax_rate),
       fixed_amount: Number(tax.fixed_amount), frequency: tax.frequency, calculate_on: tax.calculate_on,
+      start_calculation_date: tax.start_calculation_date || new Date().toISOString().split("T")[0],
     });
     setTaxOpen(true);
   };
@@ -466,32 +468,39 @@ export default function SettingsPage() {
                 </Select>
               </div>
               {taxForm.tax_type === "percentage" && (
-                <div className="space-y-2"><Label>{t("tax.taxRate")}</Label><Input type="number" step="0.1" value={taxForm.tax_rate || ""} onChange={e => setTaxForm(f => ({ ...f, tax_rate: parseFloat(e.target.value) || 0 }))} /></div>
-              )}
-              {taxForm.tax_type === "fixed" && (
                 <>
-                  <div className="space-y-2"><Label>{t("tax.fixedAmount")}</Label><Input type="number" step="0.01" value={taxForm.fixed_amount || ""} onChange={e => setTaxForm(f => ({ ...f, fixed_amount: parseFloat(e.target.value) || 0 }))} /></div>
+                  <div className="space-y-2"><Label>{t("tax.taxRate")}</Label><Input type="number" step="0.1" value={taxForm.tax_rate || ""} onChange={e => setTaxForm(f => ({ ...f, tax_rate: parseFloat(e.target.value) || 0 }))} /></div>
                   <div className="space-y-2">
-                    <Label>{t("tax.frequency")}</Label>
-                    <Select value={taxForm.frequency} onValueChange={v => setTaxForm(f => ({ ...f, frequency: v }))}>
+                    <Label>{t("tax.calculateOn")}</Label>
+                    <Select value={taxForm.calculate_on} onValueChange={v => setTaxForm(f => ({ ...f, calculate_on: v }))}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="monthly">{t("tax.monthly")}</SelectItem>
-                        <SelectItem value="quarterly">{t("tax.quarterly")}</SelectItem>
+                        <SelectItem value="actual_income">{t("tax.actualIncome")}</SelectItem>
+                        <SelectItem value="all_income">{t("tax.allIncome")}</SelectItem>
+                        <SelectItem value="expenses">{t("tax.percentageExpenses")}</SelectItem>
+                        <SelectItem value="profit">{t("tax.percentageProfit")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </>
               )}
+              {taxForm.tax_type === "fixed" && (
+                <div className="space-y-2"><Label>{t("tax.fixedAmount")}</Label><Input type="number" step="0.01" value={taxForm.fixed_amount || ""} onChange={e => setTaxForm(f => ({ ...f, fixed_amount: parseFloat(e.target.value) || 0 }))} /></div>
+              )}
               <div className="space-y-2">
-                <Label>{t("tax.calculateOn")}</Label>
-                <Select value={taxForm.calculate_on} onValueChange={v => setTaxForm(f => ({ ...f, calculate_on: v }))}>
+                <Label>{t("tax.frequency")}</Label>
+                <Select value={taxForm.frequency} onValueChange={v => setTaxForm(f => ({ ...f, frequency: v }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="actual_income">{t("tax.actualIncome")}</SelectItem>
-                    <SelectItem value="all_income">{t("tax.allIncome")}</SelectItem>
+                    <SelectItem value="monthly">{t("tax.monthly")}</SelectItem>
+                    <SelectItem value="quarterly">{t("tax.quarterly")}</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-1">
+                <Label>{t("tax.startCalculationDate")} *</Label>
+                <Input type="date" value={taxForm.start_calculation_date} onChange={e => setTaxForm(f => ({ ...f, start_calculation_date: e.target.value }))} />
+                <p className="text-xs text-muted-foreground">{t("tax.startCalculationDateHint")}</p>
               </div>
               <Button onClick={handleSaveTax} className="w-full" disabled={createTax.isPending || updateTax.isPending || !taxForm.tax_name}>
                 {(createTax.isPending || updateTax.isPending) ? t("common.saving") : t("common.save")}

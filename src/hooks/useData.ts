@@ -717,7 +717,7 @@ export function useUpsertBreakevenGoals() {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async (goals: Array<{ goal_number: number; label: string; description: string; fixed_expenses: number; desired_income: number; buffer: number }>) => {
+    mutationFn: async (goals: Array<{ goal_number: number; label: string; description: string; fixed_expenses: number; desired_income: number; buffer: number; goal_type?: string }>) => {
       await supabase.from("breakeven_goals").delete().eq("user_id", user!.id);
       if (goals.length > 0) {
         const { error } = await supabase.from("breakeven_goals").insert(
@@ -741,7 +741,7 @@ export function useTaxSettings() {
       return data as Array<{
         id: string; user_id: string; tax_name: string; tax_type: string;
         tax_rate: number; fixed_amount: number; frequency: string;
-        is_active: boolean; calculate_on: string;
+        is_active: boolean; calculate_on: string; start_calculation_date: string;
       }>;
     },
     enabled: !!user,
@@ -756,6 +756,7 @@ export function useCreateTaxSetting() {
     mutationFn: async (tax: {
       tax_name: string; tax_type: string; tax_rate?: number;
       fixed_amount?: number; frequency?: string; calculate_on?: string;
+      start_calculation_date?: string;
     }) => {
       const { data, error } = await supabase.from("tax_settings")
         .insert({ ...tax, user_id: user!.id } as any).select().single();
@@ -772,11 +773,12 @@ export function useUpdateTaxSetting() {
     mutationFn: async ({ id, ...updates }: {
       id: string; tax_name?: string; tax_type?: string; tax_rate?: number;
       fixed_amount?: number; frequency?: string; is_active?: boolean; calculate_on?: string;
+      start_calculation_date?: string;
     }) => {
       const { error } = await supabase.from("tax_settings").update(updates as any).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["tax-settings"] }); qc.invalidateQueries({ queryKey: ["dashboard-stats"] }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["tax-settings"] }); qc.invalidateQueries({ queryKey: ["dashboard-stats"] }); qc.invalidateQueries({ queryKey: ["expenses"] }); },
   });
 }
 
@@ -787,7 +789,57 @@ export function useDeleteTaxSetting() {
       const { error } = await supabase.from("tax_settings").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["tax-settings"] }); qc.invalidateQueries({ queryKey: ["dashboard-stats"] }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["tax-settings"] }); qc.invalidateQueries({ queryKey: ["dashboard-stats"] }); qc.invalidateQueries({ queryKey: ["expenses"] }); },
+  });
+}
+
+// Generate tax expense entries from a tax rule
+export function useGenerateTaxExpenses() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async ({ taxSettingId, entries }: {
+      taxSettingId: string;
+      entries: Array<{ date: string; amount: number; description: string }>;
+    }) => {
+      // Delete existing generated entries for this tax
+      await supabase.from("expenses").delete()
+        .eq("tax_setting_id", taxSettingId)
+        .eq("payment_status", "unpaid");
+      
+      // Insert new entries
+      if (entries.length > 0) {
+        const rows = entries.map(e => ({
+          user_id: user!.id,
+          category: "Tax",
+          amount: e.amount,
+          date: e.date,
+          description: e.description,
+          is_recurring: true,
+          tax_setting_id: taxSettingId,
+          payment_status: "unpaid",
+        }));
+        const { error } = await supabase.from("expenses").insert(rows as any);
+        if (error) throw error;
+      }
+      return entries.length;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["expenses"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
+    },
+  });
+}
+
+// Update expense payment status
+export function useUpdateExpensePaymentStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, payment_status }: { id: string; payment_status: string }) => {
+      const { error } = await supabase.from("expenses").update({ payment_status } as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
