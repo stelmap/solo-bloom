@@ -26,7 +26,7 @@ import {
 } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { useGroupAttendance, useUpdateAttendance } from "@/hooks/useGroups";
+import { useGroupAttendance, useUpdateAttendance, useGroup, useGroupMembers, useCompleteGroupSession, useGroupSessionPayments } from "@/hooks/useGroups";
 
 interface SessionDetailSheetProps {
   appointment: any | null;
