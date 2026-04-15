@@ -799,6 +799,7 @@ export const translations = {
   "groups.subtitle": { en: "Manage client groups and group sessions", uk: "Керуйте групами клієнтів та груповими сеансами" },
   "groups.createGroup": { en: "Create Group", uk: "Створити групу" },
   "groups.editGroup": { en: "Edit Group", uk: "Редагувати групу" },
+  "groups.group": { en: "Group", uk: "Група" },
   "groups.groupName": { en: "Group Name", uk: "Назва групи" },
   "groups.groupNamePlaceholder": { en: "e.g. Monday Advanced", uk: "напр. Понеділок Просунуті" },
   "groups.descriptionPlaceholder": { en: "Group notes or description", uk: "Нотатки або опис групи" },
