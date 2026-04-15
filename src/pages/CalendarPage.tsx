@@ -167,6 +167,42 @@ export default function CalendarPage() {
   }, [form.date, form.time, form.service_id, services, appointments, scheduleMap, daysOffSet]);
 
   const handleCreate = async () => {
+    if (isGroupSession) {
+      if (!groupId || !form.service_id || !form.date) return;
+      if (createValidation) return;
+      const service = services.find(s => s.id === form.service_id);
+      // For group sessions, use first member as client_id placeholder (required by appointments table)
+      const firstMember = groupMembers[0];
+      if (!firstMember) {
+        toast({ title: t("common.error"), description: t("groups.noMembers"), variant: "destructive" });
+        return;
+      }
+      try {
+        const apt = await createAppointment.mutateAsync({
+          client_id: firstMember.client_id,
+          service_id: form.service_id,
+          scheduled_at: `${form.date}T${form.time}:00Z`,
+          duration_minutes: service?.duration_minutes ?? 60,
+          price: Number(service?.price ?? 0),
+          notes: `[Group: ${activeGroups.find(g => g.id === groupId)?.name}] ${form.notes || ""}`.trim(),
+        });
+        await createGroupSession.mutateAsync({
+          groupId,
+          appointmentId: (apt as any).id,
+          notes: form.notes || "",
+          memberClientIds: groupMembers.map((m: any) => m.client_id),
+        });
+        setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
+        setIsGroupSession(false);
+        setGroupId("");
+        setCreateOpen(false);
+        toast({ title: t("groups.groupSessionCreated") });
+      } catch (e: any) {
+        toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      }
+      return;
+    }
+
     if (!form.client_id || !form.service_id || !form.date) return;
     if (createValidation && !isRecurring) return;
     const service = services.find(s => s.id === form.service_id);
