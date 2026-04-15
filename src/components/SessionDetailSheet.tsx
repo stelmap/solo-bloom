@@ -259,6 +259,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       date: `${yyyy}-${mm}-${dd}`, time: `${hh}:${min}`,
       notes: apt.notes || "", price: Number(apt.price),
       days_of_week, interval_weeks,
+      price_override_reason: (apt as any).price_override_reason || "",
     });
     setMode("edit");
   };
