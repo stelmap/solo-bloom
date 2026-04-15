@@ -717,7 +717,7 @@ export function useUpsertBreakevenGoals() {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async (goals: Array<{ goal_number: number; label: string; description: string; fixed_expenses: number; desired_income: number; buffer: number }>) => {
+    mutationFn: async (goals: Array<{ goal_number: number; label: string; description: string; fixed_expenses: number; desired_income: number; buffer: number; goal_type?: string }>) => {
       await supabase.from("breakeven_goals").delete().eq("user_id", user!.id);
       if (goals.length > 0) {
         const { error } = await supabase.from("breakeven_goals").insert(
