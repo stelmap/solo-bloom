@@ -557,7 +557,40 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 </div>
               )}
 
-              {/* Session notes */}
+              {/* Group session payment summary (for completed sessions) */}
+              {isGroupSession && apt.status === "completed" && existingPayments.length > 0 && (
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2 text-sm font-semibold">
+                    <DollarSign className="h-4 w-4 text-primary" /> {t("groups.participantBilling")}
+                  </Label>
+                  <div className="space-y-1.5">
+                    {existingPayments.map((ep: any) => (
+                      <div key={ep.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/20 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{ep.clients?.name}</span>
+                          <Badge variant="outline" className={cn("text-[10px]",
+                            ep.payment_state === "paid_now" || ep.payment_state === "paid_in_advance" ? "border-success/30 text-success" :
+                            ep.payment_state === "waiting_for_payment" ? "border-warning/30 text-warning" :
+                            "border-border text-muted-foreground"
+                          )}>
+                            {ep.billing_rule_applied
+                              ? (ep.payment_state === "paid_now" ? t("payment.paid") : ep.payment_state === "paid_in_advance" ? t("payment.paidAdvance") : ep.payment_state === "waiting_for_payment" ? t("payment.waiting") : "—")
+                              : t("groups.notBillable")}
+                          </Badge>
+                        </div>
+                        <span className={cn("font-semibold", ep.billing_rule_applied ? "" : "text-muted-foreground line-through")}>
+                          {cs}{Number(ep.amount).toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="rounded-lg border border-border p-3 grid grid-cols-2 gap-1 text-sm">
+                    <span className="text-muted-foreground">{t("groups.expectedAmount")}</span>
+                    <span className="text-right font-semibold">
+                      {cs}{existingPayments.filter((ep: any) => ep.billing_rule_applied).reduce((s: number, ep: any) => s + Number(ep.amount), 0).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="flex items-center gap-1.5">
