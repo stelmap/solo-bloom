@@ -159,6 +159,32 @@ export function useUpdateGroup() {
   });
 }
 
+export function useDeleteGroup() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      // Check if group has sessions — if so, soft-delete by setting status to inactive
+      const { data: sessions } = await supabase
+        .from("group_sessions" as any)
+        .select("id")
+        .eq("group_id", id)
+        .limit(1);
+      
+      if (sessions && sessions.length > 0) {
+        throw new Error("GROUP_HAS_SESSIONS");
+      }
+
+      // No sessions — safe to hard delete members then the group
+      await supabase.from("group_members" as any).delete().eq("group_id", id);
+      const { error } = await supabase.from("groups" as any).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      INVALIDATE_GROUPS.forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+    },
+  });
+}
+
 export function useAddGroupMember() {
   const qc = useQueryClient();
   const { user } = useAuth();

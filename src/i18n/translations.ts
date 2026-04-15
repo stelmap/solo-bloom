@@ -841,6 +841,11 @@ export const translations = {
   "groups.groupSession": { en: "Group Session", uk: "Груповий сеанс" },
   "groups.selectGroup": { en: "Select group", uk: "Оберіть групу" },
   "groups.groupSessionCreated": { en: "Group session created", uk: "Груповий сеанс створено" },
+  "groups.deleteGroup": { en: "Delete Group", uk: "Видалити групу" },
+  "groups.deleteGroupTitle": { en: "Delete group?", uk: "Видалити групу?" },
+  "groups.deleteGroupDesc": { en: "This group and its members will be permanently deleted. This cannot be undone.", uk: "Цю групу та її учасників буде видалено назавжди. Цю дію не можна скасувати." },
+  "groups.deleted": { en: "Group deleted", uk: "Групу видалено" },
+  "groups.cannotDeleteHasSessions": { en: "This group has session history and cannot be deleted. Deactivate it instead.", uk: "Ця група має історію сеансів і не може бути видалена. Натомість деактивуйте її." },
   "common.minutes": { en: "min", uk: "хв" },
   "common.status": { en: "Status", uk: "Статус" },
 } as const;
