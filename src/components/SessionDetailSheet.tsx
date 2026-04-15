@@ -329,33 +329,6 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     setMode("complete");
   };
 
-  // Build group participant billing data
-  const groupBillingData = useMemo(() => {
-    if (!isGroupSession || !groupData || groupAttendance.length === 0) return [];
-    const sessionPrice = Number(apt?.price || 0);
-    return groupAttendance.map((att: any) => {
-      const member = groupMembers.find((m: any) => m.client_id === att.client_id);
-      const memberPrice = member?.price_per_session != null ? Number(member.price_per_session) : sessionPrice;
-      const billable =
-        (att.status === "attended" && groupData.bill_present) ||
-        (att.status === "absent" && groupData.bill_absent) ||
-        (att.status === "skipped" && groupData.bill_skipped);
-      return {
-        clientId: att.client_id,
-        clientName: att.clients?.name || "Unknown",
-        attendanceStatus: att.status,
-        billable: !!billable,
-        amount: memberPrice,
-      };
-    });
-  }, [isGroupSession, groupData, groupAttendance, groupMembers, apt?.price]);
-
-  const groupBillingSummary = useMemo(() => {
-    const total = groupBillingData.length;
-    const billable = groupBillingData.filter(p => p.billable);
-    const expectedAmount = billable.reduce((sum, p) => sum + p.amount, 0);
-    return { total, billableCount: billable.length, expectedAmount };
-  }, [groupBillingData]);
 
   const handleComplete = async () => {
     try {
