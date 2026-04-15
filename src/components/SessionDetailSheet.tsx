@@ -73,7 +73,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [sendingReminder, setSendingReminder] = useState(false);
 
   // Edit form
-  const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "", notes: "", price: 0, days_of_week: [1] as number[], interval_weeks: 1 });
+  const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "", notes: "", price: 0, days_of_week: [1] as number[], interval_weeks: 1, price_override_reason: "" });
 
   // Complete form
   const [completePrice, setCompletePrice] = useState(0);
