@@ -842,9 +842,6 @@ export const translations = {
   "groups.selectGroup": { en: "Select group", uk: "Оберіть групу" },
   "groups.groupSessionCreated": { en: "Group session created", uk: "Груповий сеанс створено" },
   "common.minutes": { en: "min", uk: "хв" },
-  "common.saving": { en: "Saving...", uk: "Збереження..." },
-  "common.edit": { en: "Edit", uk: "Редагувати" },
-  "common.save": { en: "Save", uk: "Зберегти" },
   "common.status": { en: "Status", uk: "Статус" },
 } as const;
 
