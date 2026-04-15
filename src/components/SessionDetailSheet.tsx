@@ -128,11 +128,6 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   // Group session detection
   const isGroupSession = !!apt.group_session_id;
   const groupName = (apt as any).group_sessions?.groups?.name;
-  const groupSessionId = isGroupSession ? (apt as any).group_sessions?.id || apt.group_session_id : undefined;
-
-  // Group attendance
-  const { data: groupAttendance = [] } = useGroupAttendance(groupSessionId);
-  const updateAttendance = useUpdateAttendance();
 
   // Determine if client requires confirmation
   const client = clients.find(c => c.id === apt.client_id);
