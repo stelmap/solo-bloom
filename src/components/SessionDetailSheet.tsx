@@ -272,12 +272,28 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     }
     try {
       const service = services.find(s => s.id === editForm.service_id);
+      const priceChanged = editForm.price !== Number(apt.price);
+      const overrideReason = priceChanged ? editForm.price_override_reason : (apt as any).price_override_reason;
+
       await updateAppointment.mutateAsync({
         id: apt.id, client_id: editForm.client_id, service_id: editForm.service_id,
         scheduled_at: `${editForm.date}T${editForm.time}:00Z`,
         duration_minutes: service?.duration_minutes ?? 60,
         price: editForm.price, notes: editForm.notes || undefined,
+        price_override_reason: overrideReason || undefined,
       });
+
+      if (priceChanged) {
+        await createPriceChange.mutateAsync({
+          client_id: apt.client_id,
+          appointment_id: apt.id,
+          old_price: Number(apt.price),
+          new_price: editForm.price,
+          reason: editForm.price_override_reason || undefined,
+          change_type: "session_override",
+        });
+      }
+
       setMode("view");
       toast({ title: t("toast.appointmentUpdated") });
     } catch (e: any) {
