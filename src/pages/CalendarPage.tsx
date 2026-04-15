@@ -711,8 +711,11 @@ export default function CalendarPage() {
                             const heightPx = Math.max((evt.duration_minutes / 60) * 60 - 4, 20);
                             const isActiveEvt = evt.status === "scheduled" || evt.status === "confirmed" || evt.status === "reminder_sent";
                             const client = clients.find(c => c.id === evt.client_id);
-                            const needsConfirmation = client?.confirmation_required && evt.confirmation_status !== "confirmed";
-                            const isConfirmed = evt.confirmation_status === "confirmed";
+                            const isGroupEvt = !!(evt as any).group_session_id;
+                            const groupName = (evt as any).group_sessions?.groups?.name;
+                            const needsConfirmation = !isGroupEvt && client?.confirmation_required && evt.confirmation_status !== "confirmed";
+                            const isConfirmed = !isGroupEvt && evt.confirmation_status === "confirmed";
+                            const displayName = isGroupEvt && groupName ? groupName : (evt as any).clients?.name;
                             return (
                               <div key={evt.id}
                                 draggable={isActiveEvt}
@@ -722,6 +725,7 @@ export default function CalendarPage() {
                                 className={cn(
                                   "absolute inset-x-1 top-0 rounded-md border p-1.5 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10 overflow-hidden",
                                   si.color,
+                                  isGroupEvt && "border-primary/40",
                                   needsConfirmation && "border-warning/50",
                                   isConfirmed && "border-success/50",
                                   isActiveEvt && "cursor-grab active:cursor-grabbing",
@@ -729,7 +733,8 @@ export default function CalendarPage() {
                                 )}
                                 style={{ height: `${heightPx}px` }}>
                                 <div className="flex items-center gap-1">
-                                  <p className="text-xs font-semibold truncate flex-1">{(evt as any).clients?.name}</p>
+                                  {isGroupEvt && <Users className="h-3 w-3 shrink-0 opacity-70" />}
+                                  <p className="text-xs font-semibold truncate flex-1">{displayName}</p>
                                   {needsConfirmation && (
                                     <span className="shrink-0 h-2 w-2 rounded-full bg-warning" title={t("confirmation.pending")} />
                                   )}
