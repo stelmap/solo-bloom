@@ -145,7 +145,7 @@ export function useCreateGroup() {
 export function useUpdateGroup() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; description?: string; status?: string }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; name?: string; description?: string; status?: string; bill_present?: boolean; bill_absent?: boolean; bill_skipped?: boolean }) => {
       const { error } = await supabase
         .from("groups" as any)
         .update(updates)
@@ -156,6 +156,117 @@ export function useUpdateGroup() {
       qc.invalidateQueries({ queryKey: ["groups"] });
       qc.invalidateQueries({ queryKey: ["group-detail", vars.id] });
     },
+  });
+}
+
+// Update member price
+export function useUpdateGroupMemberPrice() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, pricePerSession, groupId }: { id: string; pricePerSession: number | null; groupId: string }) => {
+      const { error } = await supabase
+        .from("group_members" as any)
+        .update({ price_per_session: pricePerSession })
+        .eq("id", id);
+      if (error) throw error;
+      return groupId;
+    },
+    onSuccess: (groupId) => qc.invalidateQueries({ queryKey: ["group-members", groupId] }),
+  });
+}
+
+// Complete group session with attendance-based billing
+export function useCompleteGroupSession() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async ({ appointmentId, groupId, groupSessionId, participants, paymentState, paymentMethod }: {
+      appointmentId: string;
+      groupId: string;
+      groupSessionId: string;
+      participants: Array<{ clientId: string; attendanceStatus: string; billable: boolean; amount: number }>;
+      paymentState: string;
+      paymentMethod: string;
+    }) => {
+      // Mark appointment as completed
+      const { error: aptErr } = await supabase
+        .from("appointments")
+        .update({ status: "completed", payment_status: paymentState } as any)
+        .eq("id", appointmentId);
+      if (aptErr) throw aptErr;
+
+      // Clean up old records
+      await supabase.from("income").delete().eq("appointment_id", appointmentId);
+      await supabase.from("expected_payments").delete().eq("appointment_id", appointmentId);
+
+      // Delete old group_session_payments for this session
+      await supabase.from("group_session_payments" as any).delete().eq("group_session_id", groupSessionId);
+
+      const today = new Date().toISOString().split("T")[0];
+
+      for (const p of participants) {
+        let incomeId: string | null = null;
+        let expectedPaymentId: string | null = null;
+
+        if (p.billable && p.amount > 0) {
+          if (paymentState === "paid_now" || paymentState === "paid_in_advance") {
+            const { data: inc, error: incErr } = await supabase.from("income").insert({
+              user_id: user!.id, appointment_id: appointmentId,
+              amount: p.amount, date: today, source: "group_session",
+              payment_method: paymentMethod, description: `Group session`,
+            } as any).select("id").single();
+            if (incErr) throw incErr;
+            incomeId = inc?.id || null;
+          } else if (paymentState === "waiting_for_payment") {
+            const { data: ep, error: epErr } = await supabase.from("expected_payments").insert({
+              user_id: user!.id, appointment_id: appointmentId,
+              client_id: p.clientId, amount: p.amount, status: "pending",
+            } as any).select("id").single();
+            if (epErr) throw epErr;
+            expectedPaymentId = ep?.id || null;
+          }
+        }
+
+        // Create payment tracking record
+        await supabase.from("group_session_payments" as any).insert({
+          user_id: user!.id,
+          group_id: groupId,
+          group_session_id: groupSessionId,
+          client_id: p.clientId,
+          attendance_status: p.attendanceStatus,
+          billing_rule_applied: p.billable,
+          amount: p.billable ? p.amount : 0,
+          payment_state: p.billable ? paymentState : "not_applicable",
+          payment_method: p.billable && (paymentState === "paid_now" || paymentState === "paid_in_advance") ? paymentMethod : null,
+          income_id: incomeId,
+          expected_payment_id: expectedPaymentId,
+        });
+      }
+    },
+    onSuccess: () => {
+      INVALIDATE_GROUPS.forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+      qc.invalidateQueries({ queryKey: ["appointments"] });
+      qc.invalidateQueries({ queryKey: ["income"] });
+      qc.invalidateQueries({ queryKey: ["expected-payments"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
+    },
+  });
+}
+
+// Group session payments
+export function useGroupSessionPayments(groupSessionId: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["group-session-payments", groupSessionId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("group_session_payments" as any)
+        .select("*, clients(id, name)")
+        .eq("group_session_id", groupSessionId!);
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!user && !!groupSessionId,
   });
 }
 
