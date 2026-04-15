@@ -19,6 +19,8 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const CalendarPage = lazy(() => import("./pages/CalendarPage"));
 const ClientsPage = lazy(() => import("./pages/ClientsPage"));
 const ClientDetailPage = lazy(() => import("./pages/ClientDetailPage"));
+const GroupsPage = lazy(() => import("./pages/GroupsPage"));
+const GroupDetailPage = lazy(() => import("./pages/GroupDetailPage"));
 const ServicesPage = lazy(() => import("./pages/ServicesPage"));
 const IncomePage = lazy(() => import("./pages/IncomePage"));
 const ExpensesPage = lazy(() => import("./pages/ExpensesPage"));
@@ -63,6 +65,8 @@ const App = () => (
                 <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
                 <Route path="/clients" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
                 <Route path="/clients/:id" element={<ProtectedRoute><ClientDetailPage /></ProtectedRoute>} />
+                <Route path="/groups" element={<ProtectedRoute><GroupsPage /></ProtectedRoute>} />
+                <Route path="/groups/:id" element={<ProtectedRoute><GroupDetailPage /></ProtectedRoute>} />
                 <Route path="/services" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
                 <Route path="/income" element={<ProtectedRoute><IncomePage /></ProtectedRoute>} />
                 <Route path="/expenses" element={<ProtectedRoute><ExpensesPage /></ProtectedRoute>} />

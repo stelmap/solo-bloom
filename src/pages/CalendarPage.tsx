@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
-import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3, GripVertical } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users } from "lucide-react";
 import { useState, useMemo, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, addDays, startOfWeek, isSameDay, isBefore, startOfDay } from "date-fns";
@@ -17,6 +17,7 @@ import {
   useWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff,
   useBulkCancelForDayOff,
 } from "@/hooks/useData";
+import { useGroups, useGroupMembers, useCreateGroupSession } from "@/hooks/useGroups";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -129,6 +130,14 @@ export default function CalendarPage() {
 
   const [form, setForm] = useState({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
 
+  // Group session state
+  const [isGroupSession, setIsGroupSession] = useState(false);
+  const [groupId, setGroupId] = useState("");
+  const { data: groups = [] } = useGroups();
+  const activeGroups = useMemo(() => groups.filter((g: any) => g.status === "active"), [groups]);
+  const { data: groupMembers = [] } = useGroupMembers(groupId || undefined);
+  const createGroupSession = useCreateGroupSession();
+
   // Recurring form state
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurInterval, setRecurInterval] = useState(1);
@@ -158,6 +167,42 @@ export default function CalendarPage() {
   }, [form.date, form.time, form.service_id, services, appointments, scheduleMap, daysOffSet]);
 
   const handleCreate = async () => {
+    if (isGroupSession) {
+      if (!groupId || !form.service_id || !form.date) return;
+      if (createValidation) return;
+      const service = services.find(s => s.id === form.service_id);
+      // For group sessions, use first member as client_id placeholder (required by appointments table)
+      const firstMember = groupMembers[0];
+      if (!firstMember) {
+        toast({ title: t("common.error"), description: t("groups.noMembers"), variant: "destructive" });
+        return;
+      }
+      try {
+        const apt = await createAppointment.mutateAsync({
+          client_id: firstMember.client_id,
+          service_id: form.service_id,
+          scheduled_at: `${form.date}T${form.time}:00Z`,
+          duration_minutes: service?.duration_minutes ?? 60,
+          price: Number(service?.price ?? 0),
+          notes: `[Group: ${activeGroups.find(g => g.id === groupId)?.name}] ${form.notes || ""}`.trim(),
+        });
+        await createGroupSession.mutateAsync({
+          groupId,
+          appointmentId: (apt as any).id,
+          notes: form.notes || "",
+          memberClientIds: groupMembers.map((m: any) => m.client_id),
+        });
+        setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
+        setIsGroupSession(false);
+        setGroupId("");
+        setCreateOpen(false);
+        toast({ title: t("groups.groupSessionCreated") });
+      } catch (e: any) {
+        toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      }
+      return;
+    }
+
     if (!form.client_id || !form.service_id || !form.date) return;
     if (createValidation && !isRecurring) return;
     const service = services.find(s => s.id === form.service_id);
@@ -436,13 +481,39 @@ export default function CalendarPage() {
               <DialogContent className="max-h-[85vh] overflow-y-auto">
                 <DialogHeader><DialogTitle>{t("calendar.newAppointment")}</DialogTitle></DialogHeader>
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>{t("calendar.client")} *</Label>
-                    <Select value={form.client_id} onValueChange={v => setForm(f => ({ ...f, client_id: v }))}>
-                      <SelectTrigger><SelectValue placeholder={t("calendar.selectClient")} /></SelectTrigger>
-                      <SelectContent>{clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
+                  {/* Group session toggle */}
+                  {activeGroups.length > 0 && (
+                    <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/30 border border-border">
+                      <Checkbox id="groupSession" checked={isGroupSession} onCheckedChange={v => { setIsGroupSession(!!v); if (!v) setGroupId(""); }} />
+                      <Label htmlFor="groupSession" className="flex items-center gap-1 cursor-pointer">
+                        <Users className="h-3.5 w-3.5" /> {t("groups.groupSession")}
+                      </Label>
+                    </div>
+                  )}
+
+                  {isGroupSession ? (
+                    <div className="space-y-2">
+                      <Label>{t("groups.selectGroup")} *</Label>
+                      <Select value={groupId} onValueChange={setGroupId}>
+                        <SelectTrigger><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
+                        <SelectContent>{activeGroups.map((g: any) => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
+                      </Select>
+                      {groupId && groupMembers.length > 0 && (
+                        <p className="text-xs text-muted-foreground">{groupMembers.length} {t("groups.members").toLowerCase()}: {groupMembers.map((m: any) => m.clients?.name).join(", ")}</p>
+                      )}
+                      {groupId && groupMembers.length === 0 && (
+                        <p className="text-xs text-warning">{t("groups.noMembers")}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label>{t("calendar.client")} *</Label>
+                      <Select value={form.client_id} onValueChange={v => setForm(f => ({ ...f, client_id: v }))}>
+                        <SelectTrigger><SelectValue placeholder={t("calendar.selectClient")} /></SelectTrigger>
+                        <SelectContent>{clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label>{t("calendar.service")} *</Label>
                     <Select value={form.service_id} onValueChange={v => setForm(f => ({ ...f, service_id: v }))}>
@@ -512,8 +583,8 @@ export default function CalendarPage() {
                   </div>
 
                   <Button onClick={handleCreate} className="w-full"
-                    disabled={createAppointment.isPending || createRecurringRule.isPending || (!isRecurring && !!createValidation)}>
-                    {(createAppointment.isPending || createRecurringRule.isPending) ? t("calendar.creating") : (isRecurring ? t("recurring.seriesCreated").split(" ")[0] + "..." : t("calendar.createAppointment"))}
+                    disabled={createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending || (!isRecurring && !isGroupSession && !!createValidation) || (isGroupSession && (!groupId || groupMembers.length === 0))}>
+                    {(createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending) ? t("calendar.creating") : (isGroupSession ? t("groups.groupSession") : isRecurring ? t("recurring.seriesCreated").split(" ")[0] + "..." : t("calendar.createAppointment"))}
                   </Button>
                 </div>
               </DialogContent>

@@ -22,6 +22,7 @@ export type Database = {
           confirmation_timestamp: string | null
           created_at: string
           duration_minutes: number
+          group_session_id: string | null
           id: string
           notes: string | null
           payment_status: string
@@ -40,6 +41,7 @@ export type Database = {
           confirmation_timestamp?: string | null
           created_at?: string
           duration_minutes?: number
+          group_session_id?: string | null
           id?: string
           notes?: string | null
           payment_status?: string
@@ -58,6 +60,7 @@ export type Database = {
           confirmation_timestamp?: string | null
           created_at?: string
           duration_minutes?: number
+          group_session_id?: string | null
           id?: string
           notes?: string | null
           payment_status?: string
@@ -75,6 +78,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_group_session_id_fkey"
+            columns: ["group_session_id"]
+            isOneToOne: false
+            referencedRelation: "group_sessions"
             referencedColumns: ["id"]
           },
           {
@@ -498,6 +508,168 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      group_attendance: {
+        Row: {
+          client_id: string
+          created_at: string
+          group_session_id: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          group_session_id: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          group_session_id?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_attendance_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_attendance_group_session_id_fkey"
+            columns: ["group_session_id"]
+            isOneToOne: false
+            referencedRelation: "group_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_members: {
+        Row: {
+          client_id: string
+          created_at: string
+          group_id: string
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          group_id: string
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_sessions: {
+        Row: {
+          appointment_id: string
+          created_at: string
+          group_id: string
+          id: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          appointment_id: string
+          created_at?: string
+          group_id: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          appointment_id?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_sessions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: true
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_sessions_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       income: {
         Row: {
