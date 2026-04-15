@@ -285,6 +285,53 @@ export default function ClientDetailPage() {
               </div>
             </div>
 
+            {/* Pricing */}
+            <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-primary" /> {t("pricing.title")}
+              </h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{t("pricing.mode")}</span>
+                  <Badge variant="outline" className="text-xs">
+                    {(client as any).pricing_mode === "dynamic" ? t("pricing.dynamic") : t("pricing.fixed")}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{t("pricing.currentBase")}</span>
+                  <span className="font-semibold text-foreground">
+                    {(client as any).base_price != null ? `${cs}${Number((client as any).base_price).toFixed(0)}` : t("pricing.notSet")}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Price History */}
+            {priceHistory.length > 0 && (
+              <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <History className="h-4 w-4 text-primary" /> {t("pricing.history")}
+                </h3>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {priceHistory.map((ph: any) => (
+                    <div key={ph.id} className="bg-muted/50 rounded-lg p-3 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-foreground">
+                          {ph.change_type === "session_override" ? t("pricing.sessionOverrideLabel") : t("pricing.basePriceChange")}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{format(new Date(ph.created_at), "MMM d, yyyy")}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        {ph.old_price != null && <span className="text-muted-foreground line-through">{cs}{Number(ph.old_price).toFixed(0)}</span>}
+                        <span className="text-foreground font-semibold">{cs}{Number(ph.new_price).toFixed(0)}</span>
+                      </div>
+                      {ph.reason && <p className="text-xs text-muted-foreground mt-1 italic">"{ph.reason}"</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2"><FileText className="h-4 w-4 text-primary" /> {t("clientDetail.notes")}</h3>
               <div className="flex gap-2">
