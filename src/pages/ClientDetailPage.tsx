@@ -47,12 +47,14 @@ export default function ClientDetailPage() {
   const uploadAttachment = useUploadAttachment();
   const deleteAttachment = useDeleteAttachment();
   const { data: profile } = useProfile();
+  const { data: priceHistory = [] } = useClientPriceHistory(id);
+  const createPriceChange = useCreatePriceChange();
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "", notification_preference: "no_reminder", confirmation_required: false });
+  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "", notification_preference: "no_reminder", confirmation_required: false, pricing_mode: "fixed", base_price: "" });
   const [sessionApt, setSessionApt] = useState<any>(null);
   const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
   const use12h = (profile as any)?.time_format === "12h";
