@@ -704,7 +704,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
             </div>
           )}
 
-          {mode === "complete" && (
+          {mode === "complete" && !isGroupSession && (
             <div className="space-y-5">
               <p className="text-sm text-muted-foreground">{t("calendar.confirmOutcome")}</p>
 
@@ -771,6 +771,120 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
               <div className="flex gap-2">
                 <Button onClick={handleComplete} className="flex-1" disabled={completeAppointment.isPending}>
                   {completeAppointment.isPending ? t("calendar.saving") : t("calendar.confirmComplete")}
+                </Button>
+                <Button variant="outline" onClick={() => setMode("view")}><X className="h-4 w-4" /></Button>
+              </div>
+            </div>
+          )}
+
+          {/* GROUP SESSION COMPLETE MODE */}
+          {mode === "complete" && isGroupSession && (
+            <div className="space-y-5">
+              <p className="text-sm text-muted-foreground">{t("groups.completeGroupSession")}</p>
+
+              {/* Notes */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1.5"><FileText className="h-3.5 w-3.5" /> {t("session.notes")}</Label>
+                <Textarea placeholder={t("session.notesPlaceholder")} value={notes}
+                  onChange={(e) => { setNotes(e.target.value); setNotesDirty(true); }}
+                  className="min-h-[60px] text-sm" />
+              </div>
+
+              {/* Participant billing table */}
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2">
+                  <Users className="h-4 w-4" /> {t("groups.participantBilling")}
+                </Label>
+                <div className="space-y-2">
+                  {groupBillingData.map((p) => (
+                    <div key={p.clientId} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{p.clientName}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <Badge variant="outline" className={cn("text-[10px]",
+                            p.attendanceStatus === "attended" ? "border-success/30 text-success" :
+                            p.attendanceStatus === "absent" ? "border-destructive/30 text-destructive" :
+                            "border-warning/30 text-warning"
+                          )}>
+                            {t(`groups.${p.attendanceStatus}` as any)}
+                          </Badge>
+                          <Badge variant={p.billable ? "default" : "secondary"} className="text-[10px]">
+                            {p.billable ? t("groups.billable") : t("groups.notBillable")}
+                          </Badge>
+                        </div>
+                      </div>
+                      <span className={cn("text-sm font-semibold", p.billable ? "text-foreground" : "text-muted-foreground line-through")}>
+                        {cs}{p.amount.toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Session summary */}
+              <div className="rounded-lg border border-border p-4 space-y-2">
+                <Label className="text-sm font-semibold">{t("groups.sessionSummary")}</Label>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <span className="text-muted-foreground">{t("groups.totalParticipants")}</span>
+                  <span className="text-right font-medium">{groupBillingSummary.total}</span>
+                  <span className="text-muted-foreground">{t("groups.billableParticipants")}</span>
+                  <span className="text-right font-medium">{groupBillingSummary.billableCount}</span>
+                  <span className="text-muted-foreground">{t("groups.expectedAmount")}</span>
+                  <span className="text-right font-semibold text-foreground">{cs}{groupBillingSummary.expectedAmount.toFixed(2)}</span>
+                </div>
+              </div>
+
+              {/* Payment state */}
+              <div className="space-y-2">
+                <Label>{t("calendar.paymentStatus")}</Label>
+                <div className="space-y-2">
+                  {PAYMENT_STATUSES.map(ps => (
+                    <button key={ps.value} onClick={() => setGroupPaymentState(ps.value)}
+                      className={cn("w-full text-left p-3 rounded-lg border transition-colors",
+                        groupPaymentState === ps.value ? "bg-primary/10 border-primary" : "bg-card border-border hover:bg-muted"
+                      )}>
+                      <p className="text-sm font-medium text-foreground">{ps.label}</p>
+                      <p className="text-xs text-muted-foreground">{ps.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {(groupPaymentState === "paid_now" || groupPaymentState === "paid_in_advance") && (
+                <div className="space-y-2">
+                  <Label>{t("calendar.paymentMethod")}</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {PAYMENT_METHODS.map(m => (
+                      <button key={m.value} onClick={() => setGroupPaymentMethod(m.value)}
+                        className={cn("p-3 rounded-lg border text-sm font-medium transition-colors text-center",
+                          groupPaymentMethod === m.value ? "bg-primary/10 border-primary text-primary" : "bg-card border-border text-muted-foreground hover:bg-muted"
+                        )}>
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className={cn("rounded-lg p-4 flex items-center gap-3 border",
+                groupPaymentState === "waiting_for_payment" ? "bg-warning/10 border-warning/20" : "bg-success/10 border-success/20"
+              )}>
+                <DollarSign className={cn("h-5 w-5", groupPaymentState === "waiting_for_payment" ? "text-warning" : "text-success")} />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    {groupPaymentState === "waiting_for_payment"
+                      ? t("calendar.willBeExpected", { amount: groupBillingSummary.expectedAmount.toFixed(2) })
+                      : t("calendar.willBeIncome", { amount: groupBillingSummary.expectedAmount.toFixed(2) })}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {groupBillingSummary.billableCount} / {groupBillingSummary.total} {t("groups.billableParticipants").toLowerCase()}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button onClick={handleComplete} className="flex-1" disabled={completeGroupSession.isPending}>
+                  {completeGroupSession.isPending ? t("calendar.saving") : t("calendar.confirmComplete")}
                 </Button>
                 <Button variant="outline" onClick={() => setMode("view")}><X className="h-4 w-4" /></Button>
               </div>
