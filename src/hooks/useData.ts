@@ -319,7 +319,7 @@ export function useUpdateAppointment() {
     mutationFn: async ({ id, ...updates }: {
       id: string; status?: string; notes?: string; scheduled_at?: string;
       price?: number; client_id?: string; service_id?: string; duration_minutes?: number;
-      payment_status?: string;
+      payment_status?: string; price_override_reason?: string;
     }) => {
       const { error } = await supabase.from("appointments").update(updates as any).eq("id", id);
       if (error) throw error;
