@@ -5,16 +5,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import {
   ArrowLeft, Pencil, Users, UserPlus, UserMinus, Calendar,
-  Check, X, MinusCircle, BarChart3, Save, Trash2,
+  Check, X, MinusCircle, BarChart3, Save, Trash2, Receipt,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   useGroup, useUpdateGroup, useDeleteGroup, useGroupMembers, useAddGroupMember,
   useRemoveGroupMember, useGroupSessions, useGroupAttendance,
-  useUpdateAttendance, useGroupAllAttendance,
+  useUpdateAttendance, useGroupAllAttendance, useUpdateGroupMemberPrice,
 } from "@/hooks/useGroups";
 import { useClients } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
