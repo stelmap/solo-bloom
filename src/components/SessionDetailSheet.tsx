@@ -118,12 +118,21 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   };
   const confirmInfo = CONFIRMATION_STYLES[apt.confirmation_status] || CONFIRMATION_STYLES.not_required;
 
+  // Group session detection
+  const isGroupSession = !!apt.group_session_id;
+  const groupName = (apt as any).group_sessions?.groups?.name;
+  const groupSessionId = isGroupSession ? (apt as any).group_sessions?.id || apt.group_session_id : undefined;
+
+  // Group attendance
+  const { data: groupAttendance = [] } = useGroupAttendance(groupSessionId);
+  const updateAttendance = useUpdateAttendance();
+
   // Determine if client requires confirmation
   const client = clients.find(c => c.id === apt.client_id);
-  const clientRequiresConfirmation = client?.confirmation_required === true;
-  const clientWantsEmail = ["email_only", "email_and_telegram"].includes(client?.notification_preference || "");
-  const showConfirmationState = clientRequiresConfirmation || (apt.confirmation_status && apt.confirmation_status !== "not_required");
-  const canSendReminder = isActive && clientWantsEmail && (
+  const clientRequiresConfirmation = !isGroupSession && client?.confirmation_required === true;
+  const clientWantsEmail = !isGroupSession && ["email_only", "email_and_telegram"].includes(client?.notification_preference || "");
+  const showConfirmationState = !isGroupSession && (clientRequiresConfirmation || (apt.confirmation_status && apt.confirmation_status !== "not_required"));
+  const canSendReminder = !isGroupSession && isActive && clientWantsEmail && (
     clientRequiresConfirmation ? apt.confirmation_status !== "confirmed" : true
   );
 
