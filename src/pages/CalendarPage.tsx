@@ -780,7 +780,7 @@ export default function CalendarPage() {
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {dayOffConfirm?.affectedApts.map((apt: any) => (
                 <div key={apt.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50 text-sm">
-                  <span className="font-medium">{apt.clients?.name}</span>
+                  <span className="font-medium">{apt.group_session_id && apt.group_sessions?.groups?.name ? apt.group_sessions.groups.name : apt.clients?.name}</span>
                   <span className="text-muted-foreground">
                     {fmtTime(apt.scheduled_at)} · {apt.services?.name}
                   </span>
