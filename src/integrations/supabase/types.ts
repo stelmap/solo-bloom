@@ -94,6 +94,7 @@ export type Database = {
           desired_income: number
           fixed_expenses: number
           goal_number: number
+          goal_type: string
           id: string
           label: string
           updated_at: string
@@ -106,6 +107,7 @@ export type Database = {
           desired_income?: number
           fixed_expenses?: number
           goal_number?: number
+          goal_type?: string
           id?: string
           label?: string
           updated_at?: string
@@ -118,6 +120,7 @@ export type Database = {
           desired_income?: number
           fixed_expenses?: number
           goal_number?: number
+          goal_type?: string
           id?: string
           label?: string
           updated_at?: string
@@ -452,7 +455,9 @@ export type Database = {
           description: string | null
           id: string
           is_recurring: boolean
+          payment_status: string
           recurring_start_date: string | null
+          tax_setting_id: string | null
           updated_at: string
           user_id: string
         }
@@ -464,7 +469,9 @@ export type Database = {
           description?: string | null
           id?: string
           is_recurring?: boolean
+          payment_status?: string
           recurring_start_date?: string | null
+          tax_setting_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -476,11 +483,21 @@ export type Database = {
           description?: string | null
           id?: string
           is_recurring?: boolean
+          payment_status?: string
           recurring_start_date?: string | null
+          tax_setting_id?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "expenses_tax_setting_id_fkey"
+            columns: ["tax_setting_id"]
+            isOneToOne: false
+            referencedRelation: "tax_settings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       income: {
         Row: {
@@ -779,6 +796,7 @@ export type Database = {
           frequency: string
           id: string
           is_active: boolean
+          start_calculation_date: string
           tax_name: string
           tax_rate: number
           tax_type: string
@@ -792,6 +810,7 @@ export type Database = {
           frequency?: string
           id?: string
           is_active?: boolean
+          start_calculation_date?: string
           tax_name?: string
           tax_rate?: number
           tax_type?: string
@@ -805,6 +824,7 @@ export type Database = {
           frequency?: string
           id?: string
           is_active?: boolean
+          start_calculation_date?: string
           tax_name?: string
           tax_rate?: number
           tax_type?: string
