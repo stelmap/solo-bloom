@@ -481,13 +481,39 @@ export default function CalendarPage() {
               <DialogContent className="max-h-[85vh] overflow-y-auto">
                 <DialogHeader><DialogTitle>{t("calendar.newAppointment")}</DialogTitle></DialogHeader>
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>{t("calendar.client")} *</Label>
-                    <Select value={form.client_id} onValueChange={v => setForm(f => ({ ...f, client_id: v }))}>
-                      <SelectTrigger><SelectValue placeholder={t("calendar.selectClient")} /></SelectTrigger>
-                      <SelectContent>{clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
+                  {/* Group session toggle */}
+                  {activeGroups.length > 0 && (
+                    <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/30 border border-border">
+                      <Checkbox id="groupSession" checked={isGroupSession} onCheckedChange={v => { setIsGroupSession(!!v); if (!v) setGroupId(""); }} />
+                      <Label htmlFor="groupSession" className="flex items-center gap-1 cursor-pointer">
+                        <Users className="h-3.5 w-3.5" /> {t("groups.groupSession")}
+                      </Label>
+                    </div>
+                  )}
+
+                  {isGroupSession ? (
+                    <div className="space-y-2">
+                      <Label>{t("groups.selectGroup")} *</Label>
+                      <Select value={groupId} onValueChange={setGroupId}>
+                        <SelectTrigger><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
+                        <SelectContent>{activeGroups.map((g: any) => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
+                      </Select>
+                      {groupId && groupMembers.length > 0 && (
+                        <p className="text-xs text-muted-foreground">{groupMembers.length} {t("groups.members").toLowerCase()}: {groupMembers.map((m: any) => m.clients?.name).join(", ")}</p>
+                      )}
+                      {groupId && groupMembers.length === 0 && (
+                        <p className="text-xs text-warning">{t("groups.noMembers")}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label>{t("calendar.client")} *</Label>
+                      <Select value={form.client_id} onValueChange={v => setForm(f => ({ ...f, client_id: v }))}>
+                        <SelectTrigger><SelectValue placeholder={t("calendar.selectClient")} /></SelectTrigger>
+                        <SelectContent>{clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label>{t("calendar.service")} *</Label>
                     <Select value={form.service_id} onValueChange={v => setForm(f => ({ ...f, service_id: v }))}>
