@@ -2,10 +2,10 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Pencil, Trash2, Download } from "lucide-react";
+import { Plus, Pencil, Trash2, Download, Check, X } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
-import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense } from "@/hooks/useData";
+import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense, useUpdateExpensePaymentStatus } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,10 +17,12 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { TranslationKey } from "@/i18n/translations";
 import { useSearchParams } from "react-router-dom";
-import { startOfWeek, startOfMonth, format } from "date-fns";
+import { startOfWeek, startOfMonth, startOfQuarter, subMonths, format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_CATEGORIES = ["Rent", "Materials", "Insurance", "Equipment", "Marketing", "Utilities", "Laundry", "Software", "Tax", "Other"];
+
+type DateRangeKey = "today" | "week" | "month" | "quarter" | "last3" | "last12" | "all";
 
 export default function ExpensesPage() {
   const [page, setPage] = useState(0);
@@ -32,6 +34,7 @@ export default function ExpensesPage() {
   const createExpense = useCreateExpense();
   const updateExpense = useUpdateExpense();
   const deleteExpense = useDeleteExpense();
+  const updatePaymentStatus = useUpdateExpensePaymentStatus();
   const { toast } = useToast();
   const { t } = useLanguage();
   const { symbol: cs } = useCurrency();
@@ -42,11 +45,10 @@ export default function ExpensesPage() {
   const [form, setForm] = useState({ category: "Other", amount: 0, date: new Date().toISOString().split("T")[0], description: "", is_recurring: false, recurring_start_date: "" });
 
   // Filters
-  const initialRange = searchParams.get("range") || "month";
-  const [dateRange, setDateRange] = useState(initialRange);
+  const initialRange = (searchParams.get("range") || "month") as DateRangeKey;
+  const [dateRange, setDateRange] = useState<DateRangeKey>(initialRange);
   const [catFilter, setCatFilter] = useState("all");
 
-  // Merge default categories with any custom ones from saved data
   const CATEGORIES = useMemo(() => {
     const customCats = expenses
       .map((e: any) => e.category as string)
@@ -61,6 +63,9 @@ export default function ExpensesPage() {
     if (dateRange === "today") from = todayStr;
     else if (dateRange === "week") from = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
     else if (dateRange === "month") from = format(startOfMonth(now), "yyyy-MM-dd");
+    else if (dateRange === "quarter") from = format(startOfQuarter(now), "yyyy-MM-dd");
+    else if (dateRange === "last3") from = format(subMonths(now, 3), "yyyy-MM-dd");
+    else if (dateRange === "last12") from = format(subMonths(now, 12), "yyyy-MM-dd");
 
     let result = from ? expenses.filter(e => e.date >= from) : expenses;
     if (catFilter !== "all") result = result.filter(e => e.category === catFilter);
@@ -71,11 +76,11 @@ export default function ExpensesPage() {
   const taxTotal = filtered.filter(e => e.category === "Tax").reduce((s, e) => s + Number(e.amount), 0);
   const expensesExTax = totalFiltered - taxTotal;
   const recurringTotal = filtered.filter(e => e.is_recurring).reduce((s, e) => s + Number(e.amount), 0);
+  const unpaidTotal = filtered.filter(e => (e as any).payment_status === "unpaid" && e.category === "Tax").reduce((s, e) => s + Number(e.amount), 0);
 
   const catLabel = (cat: string) => {
     const key = `category.${cat}` as TranslationKey;
     const translated = t(key);
-    // If translation returns the key itself, it's a custom category — show raw name
     return translated === key ? cat : translated;
   };
 
@@ -119,6 +124,25 @@ export default function ExpensesPage() {
     }
   };
 
+  const togglePaymentStatus = async (expense: any) => {
+    const newStatus = expense.payment_status === "paid" ? "unpaid" : "paid";
+    try {
+      await updatePaymentStatus.mutateAsync({ id: expense.id, payment_status: newStatus });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
+
+  const filterButtons: { key: DateRangeKey; labelKey: string }[] = [
+    { key: "today", labelKey: "filter.today" },
+    { key: "week", labelKey: "filter.thisWeek" },
+    { key: "month", labelKey: "filter.thisMonth" },
+    { key: "quarter", labelKey: "filter.thisQuarter" },
+    { key: "last3", labelKey: "filter.last3Months" },
+    { key: "last12", labelKey: "filter.last12Months" },
+    { key: "all", labelKey: "filter.allTime" },
+  ];
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -130,8 +154,8 @@ export default function ExpensesPage() {
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => {
               downloadCSV("expenses.csv",
-                ["Date", "Category", "Amount", "Description", "Recurring"],
-                filtered.map((e: any) => [e.date, e.category, String(e.amount), e.description || "", e.is_recurring ? "Yes" : "No"])
+                ["Date", "Category", "Amount", "Description", "Recurring", "Payment Status"],
+                filtered.map((e: any) => [e.date, e.category, String(e.amount), e.description || "", e.is_recurring ? "Yes" : "No", e.payment_status || "unpaid"])
               );
             }}><Download className="h-4 w-4 mr-1" /> {t("export.csv")}</Button>
             <Dialog open={open} onOpenChange={setOpen}>
@@ -173,10 +197,10 @@ export default function ExpensesPage() {
 
         {/* Filters */}
         <div className="flex flex-wrap gap-2 items-center">
-          {(["today", "week", "month", "all"] as const).map(range => (
-            <Button key={range} variant={dateRange === range ? "default" : "outline"} size="sm"
-              onClick={() => setDateRange(range)}>
-              {t(`filter.${range === "all" ? "allTime" : range === "month" ? "thisMonth" : range === "week" ? "thisWeek" : "today"}` as any)}
+          {filterButtons.map(({ key, labelKey }) => (
+            <Button key={key} variant={dateRange === key ? "default" : "outline"} size="sm"
+              onClick={() => setDateRange(key)}>
+              {t(labelKey as any)}
             </Button>
           ))}
           <div className="w-px h-6 bg-border mx-1" />
@@ -191,7 +215,7 @@ export default function ExpensesPage() {
           </Select>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
             <p className="text-sm text-muted-foreground">{t("expenses.totalThisMonth")}</p>
             <p className="text-2xl font-bold text-foreground mt-1">{cs}{totalFiltered.toLocaleString()}</p>
@@ -207,6 +231,10 @@ export default function ExpensesPage() {
           <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
             <p className="text-sm text-muted-foreground">{t("expenses.recurringMonthly")}</p>
             <p className="text-2xl font-bold text-foreground mt-1">{cs}{recurringTotal.toLocaleString()}</p>
+          </div>
+          <div className={cn("bg-card rounded-xl border p-5 animate-fade-in", unpaidTotal > 0 ? "border-destructive/30" : "border-border")}>
+            <p className={cn("text-sm", unpaidTotal > 0 ? "text-destructive" : "text-muted-foreground")}>{t("expenses.unpaid")}</p>
+            <p className={cn("text-2xl font-bold mt-1", unpaidTotal > 0 ? "text-destructive" : "text-foreground")}>{cs}{unpaidTotal.toLocaleString()}</p>
           </div>
         </div>
 
@@ -225,41 +253,70 @@ export default function ExpensesPage() {
                     <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.amount")}</th>
                     <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.description")}</th>
                     <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.type")}</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.payment")}</th>
                     <th className="p-4 w-20"></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((expense) => (
-                    <tr key={expense.id} className={cn(
-                      "border-b border-border last:border-0 hover:bg-muted/30 transition-colors group",
-                      expense.category === "Tax" && "bg-warning/5"
-                    )}>
-                      <td className="p-4 text-sm text-muted-foreground">{expense.date}</td>
-                      <td className="p-4">
-                        <Badge variant={expense.category === "Tax" ? "outline" : "secondary"}
-                          className={cn("text-xs", expense.category === "Tax" && "border-warning text-warning")}>
-                          {catLabel(expense.category)}
-                        </Badge>
-                      </td>
-                      <td className="p-4 text-sm font-semibold text-foreground">{cs}{Number(expense.amount).toFixed(2)}</td>
-                      <td className="p-4 text-sm text-muted-foreground truncate max-w-[200px]">{expense.description || "—"}</td>
-                      <td className="p-4">
-                        <Badge variant={expense.is_recurring ? "default" : "secondary"} className="text-xs">
-                          {expense.is_recurring ? t("expenses.recurring") : t("expenses.oneTime")}
-                        </Badge>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => openEdit(expense)} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-                            <Pencil className="h-3.5 w-3.5" />
+                  {filtered.map((expense: any) => {
+                    const isTaxGenerated = !!expense.tax_setting_id;
+                    const isPaid = expense.payment_status === "paid";
+                    return (
+                      <tr key={expense.id} className={cn(
+                        "border-b border-border last:border-0 hover:bg-muted/30 transition-colors group",
+                        expense.category === "Tax" && "bg-warning/5",
+                        isTaxGenerated && "border-l-2 border-l-warning"
+                      )}>
+                        <td className="p-4 text-sm text-muted-foreground">{expense.date}</td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-1.5">
+                            <Badge variant={expense.category === "Tax" ? "outline" : "secondary"}
+                              className={cn("text-xs", expense.category === "Tax" && "border-warning text-warning")}>
+                              {catLabel(expense.category)}
+                            </Badge>
+                            {isTaxGenerated && (
+                              <Badge variant="outline" className="text-xs border-warning/50 text-warning/70">
+                                {t("tax.autoGenerated")}
+                              </Badge>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-4 text-sm font-semibold text-foreground">{cs}{Number(expense.amount).toFixed(2)}</td>
+                        <td className="p-4 text-sm text-muted-foreground truncate max-w-[200px]">{expense.description || "—"}</td>
+                        <td className="p-4">
+                          <Badge variant={expense.is_recurring ? "default" : "secondary"} className="text-xs">
+                            {expense.is_recurring ? t("expenses.recurring") : t("expenses.oneTime")}
+                          </Badge>
+                        </td>
+                        <td className="p-4">
+                          <button
+                            onClick={() => togglePaymentStatus(expense)}
+                            className={cn(
+                              "inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border transition-colors",
+                              isPaid
+                                ? "bg-success/10 border-success/30 text-success hover:bg-success/20"
+                                : "bg-destructive/10 border-destructive/30 text-destructive hover:bg-destructive/20"
+                            )}
+                          >
+                            {isPaid ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                            {isPaid ? t("expenses.paid") : t("expenses.unpaid")}
                           </button>
-                          <button onClick={() => setDeleteId(expense.id)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="p-4">
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {!isTaxGenerated && (
+                              <button onClick={() => openEdit(expense)} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                            <button onClick={() => setDeleteId(expense.id)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
