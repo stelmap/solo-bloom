@@ -67,6 +67,7 @@ export default function SettingsPage() {
   const [taxForm, setTaxForm] = useState({
     tax_name: "", tax_type: "percentage", tax_rate: 0, fixed_amount: 0,
     frequency: "monthly", calculate_on: "actual_income",
+    start_calculation_date: new Date().toISOString().split("T")[0],
   });
 
   useEffect(() => {
@@ -176,7 +177,7 @@ export default function SettingsPage() {
   // Tax handlers
   const openCreateTax = () => {
     setTaxEditId(null);
-    setTaxForm({ tax_name: "", tax_type: "percentage", tax_rate: 0, fixed_amount: 0, frequency: "monthly", calculate_on: "actual_income" });
+    setTaxForm({ tax_name: "", tax_type: "percentage", tax_rate: 0, fixed_amount: 0, frequency: "monthly", calculate_on: "actual_income", start_calculation_date: new Date().toISOString().split("T")[0] });
     setTaxOpen(true);
   };
   const openEditTax = (tax: any) => {
@@ -184,6 +185,7 @@ export default function SettingsPage() {
     setTaxForm({
       tax_name: tax.tax_name, tax_type: tax.tax_type, tax_rate: Number(tax.tax_rate),
       fixed_amount: Number(tax.fixed_amount), frequency: tax.frequency, calculate_on: tax.calculate_on,
+      start_calculation_date: tax.start_calculation_date || new Date().toISOString().split("T")[0],
     });
     setTaxOpen(true);
   };
