@@ -471,6 +471,32 @@ export default function ClientDetailPage() {
               </div>
             </div>
 
+            <div className="border-t border-border pt-4 space-y-4">
+              <h4 className="text-sm font-medium flex items-center gap-2"><DollarSign className="h-4 w-4" /> {t("pricing.title")}</h4>
+              <div className="space-y-2">
+                <Label>{t("pricing.mode")}</Label>
+                <RadioGroup value={editForm.pricing_mode} onValueChange={v => setEditForm(f => ({ ...f, pricing_mode: v }))} className="flex gap-4">
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="fixed" id="pricing-fixed" />
+                    <Label htmlFor="pricing-fixed" className="font-normal cursor-pointer">
+                      {t("pricing.fixed")}
+                      <span className="text-xs text-muted-foreground ml-1">— {t("pricing.fixedDesc")}</span>
+                    </Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="dynamic" id="pricing-dynamic" />
+                    <Label htmlFor="pricing-dynamic" className="font-normal cursor-pointer">
+                      {t("pricing.dynamic")}
+                      <span className="text-xs text-muted-foreground ml-1">— {t("pricing.dynamicDesc")}</span>
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="space-y-2">
+                <Label>{t("pricing.basePrice")}</Label>
+                <Input type="number" min="0" step="1" placeholder="0" value={editForm.base_price} onChange={e => setEditForm(f => ({ ...f, base_price: e.target.value }))} />
+              </div>
+            </div>
             <Button onClick={handleSaveEdit} className="w-full" disabled={updateClient.isPending}>
               {updateClient.isPending ? t("common.saving") : t("common.save")}
             </Button>
