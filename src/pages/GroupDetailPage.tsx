@@ -123,6 +123,22 @@ export default function GroupDetailPage() {
     }
   };
 
+  const handleDeleteGroup = async () => {
+    if (!id) return;
+    try {
+      await deleteGroup.mutateAsync(id);
+      toast({ title: t("groups.deleted") });
+      navigate("/groups");
+    } catch (e: any) {
+      if (e.message === "GROUP_HAS_SESSIONS") {
+        toast({ title: t("common.error"), description: t("groups.cannotDeleteHasSessions"), variant: "destructive" });
+      } else {
+        toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      }
+      setDeleteOpen(false);
+    }
+  };
+
   if (groupLoading) {
     return <AppLayout><p className="text-muted-foreground text-center py-12">{t("common.loading")}</p></AppLayout>;
   }
@@ -148,9 +164,14 @@ export default function GroupDetailPage() {
             </div>
             {group.description && <p className="text-muted-foreground text-sm mt-1">{group.description}</p>}
           </div>
-          <Button variant="outline" size="sm" onClick={openEdit}>
-            <Pencil className="h-4 w-4 mr-1" /> {t("common.edit")}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={openEdit}>
+              <Pencil className="h-4 w-4 mr-1" /> {t("common.edit")}
+            </Button>
+            <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteOpen(true)}>
+              <Trash2 className="h-4 w-4 mr-1" /> {t("groups.deleteGroup")}
+            </Button>
+          </div>
         </div>
 
         {/* Members Section */}
