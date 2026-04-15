@@ -51,6 +51,13 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const deleteRecurring = useDeleteRecurringAppointments();
   const editRecurring = useEditRecurringAppointments();
 
+  // Group attendance hooks — must be before any early return
+  const groupSessionId = apt?.group_session_id
+    ? ((apt as any).group_sessions?.id || apt.group_session_id)
+    : undefined;
+  const { data: groupAttendance = [] } = useGroupAttendance(groupSessionId);
+  const updateAttendance = useUpdateAttendance();
+
   const [mode, setMode] = useState<"view" | "edit" | "complete">("view");
   const [notes, setNotes] = useState("");
   const [notesDirty, setNotesDirty] = useState(false);
