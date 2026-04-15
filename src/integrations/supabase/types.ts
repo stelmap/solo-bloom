@@ -27,6 +27,7 @@ export type Database = {
           notes: string | null
           payment_status: string
           price: number
+          price_override_reason: string | null
           recurring_rule_id: string | null
           scheduled_at: string
           service_id: string
@@ -46,6 +47,7 @@ export type Database = {
           notes?: string | null
           payment_status?: string
           price?: number
+          price_override_reason?: string | null
           recurring_rule_id?: string | null
           scheduled_at: string
           service_id: string
@@ -65,6 +67,7 @@ export type Database = {
           notes?: string | null
           payment_status?: string
           price?: number
+          price_override_reason?: string | null
           recurring_rule_id?: string | null
           scheduled_at?: string
           service_id?: string
@@ -234,8 +237,45 @@ export type Database = {
           },
         ]
       }
+      client_price_changes: {
+        Row: {
+          appointment_id: string | null
+          change_type: string
+          client_id: string
+          created_at: string
+          id: string
+          new_price: number
+          old_price: number | null
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          change_type?: string
+          client_id: string
+          created_at?: string
+          id?: string
+          new_price: number
+          old_price?: number | null
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          appointment_id?: string | null
+          change_type?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          new_price?: number
+          old_price?: number | null
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
+          base_price: number | null
           confirmation_required: boolean
           created_at: string
           email: string | null
@@ -244,11 +284,13 @@ export type Database = {
           notes: string | null
           notification_preference: string
           phone: string | null
+          pricing_mode: string
           telegram: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          base_price?: number | null
           confirmation_required?: boolean
           created_at?: string
           email?: string | null
@@ -257,11 +299,13 @@ export type Database = {
           notes?: string | null
           notification_preference?: string
           phone?: string | null
+          pricing_mode?: string
           telegram?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          base_price?: number | null
           confirmation_required?: boolean
           created_at?: string
           email?: string | null
@@ -270,6 +314,7 @@ export type Database = {
           notes?: string | null
           notification_preference?: string
           phone?: string | null
+          pricing_mode?: string
           telegram?: string | null
           updated_at?: string
           user_id?: string

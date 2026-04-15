@@ -869,6 +869,26 @@ export const translations = {
   "groups.participantBilling": { en: "Participant Billing", uk: "Оплата учасників" },
   "common.minutes": { en: "min", uk: "хв" },
   "common.status": { en: "Status", uk: "Статус" },
+
+  // Client Pricing
+  "pricing.title": { en: "Pricing", uk: "Ціноутворення" },
+  "pricing.mode": { en: "Pricing Mode", uk: "Режим ціноутворення" },
+  "pricing.fixed": { en: "Fixed", uk: "Фіксована" },
+  "pricing.dynamic": { en: "Dynamic", uk: "Динамічна" },
+  "pricing.fixedDesc": { en: "Same price for every session", uk: "Однакова ціна за кожен сеанс" },
+  "pricing.dynamicDesc": { en: "Price can vary per session", uk: "Ціна може змінюватись за сеанс" },
+  "pricing.basePrice": { en: "Base Price", uk: "Базова ціна" },
+  "pricing.currentBase": { en: "Current base price", uk: "Поточна базова ціна" },
+  "pricing.sessionOverride": { en: "Price Override", uk: "Зміна ціни" },
+  "pricing.overrideReason": { en: "Reason for price change", uk: "Причина зміни ціни" },
+  "pricing.overrideReasonRequired": { en: "Please provide a reason for the price change", uk: "Вкажіть причину зміни ціни" },
+  "pricing.history": { en: "Price History", uk: "Історія цін" },
+  "pricing.noHistory": { en: "No price changes yet", uk: "Змін цін ще немає" },
+  "pricing.basePriceChange": { en: "Base price changed", uk: "Базову ціну змінено" },
+  "pricing.sessionOverrideLabel": { en: "Session override", uk: "Зміна за сеанс" },
+  "pricing.priceUpdated": { en: "Price updated", uk: "Ціну оновлено" },
+  "pricing.notSet": { en: "Not set", uk: "Не встановлено" },
+  "pricing.overridden": { en: "Overridden", uk: "Змінено" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;

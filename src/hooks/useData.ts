@@ -55,7 +55,7 @@ export function useCreateClient() {
 export function useUpdateClient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; phone?: string; email?: string; notes?: string; telegram?: string; notification_preference?: string; confirmation_required?: boolean }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; name?: string; phone?: string; email?: string; notes?: string; telegram?: string; notification_preference?: string; confirmation_required?: boolean; pricing_mode?: string; base_price?: number | null }) => {
       const { error } = await supabase.from("clients").update(updates as any).eq("id", id);
       if (error) throw error;
     },
@@ -63,6 +63,41 @@ export function useUpdateClient() {
       qc.invalidateQueries({ queryKey: ["clients"] });
       qc.invalidateQueries({ queryKey: ["client", vars.id] });
     },
+  });
+}
+
+// Client Price History
+export function useClientPriceHistory(clientId: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["client-price-history", clientId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("client_price_changes" as any)
+        .select("*")
+        .eq("client_id", clientId!)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!user && !!clientId,
+  });
+}
+
+export function useCreatePriceChange() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (change: { client_id: string; appointment_id?: string; old_price?: number; new_price: number; reason?: string; change_type: string }) => {
+      const { data, error } = await supabase
+        .from("client_price_changes" as any)
+        .insert({ ...change, user_id: user!.id } as any)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["client-price-history", vars.client_id] }),
   });
 }
 
@@ -284,7 +319,7 @@ export function useUpdateAppointment() {
     mutationFn: async ({ id, ...updates }: {
       id: string; status?: string; notes?: string; scheduled_at?: string;
       price?: number; client_id?: string; service_id?: string; duration_minutes?: number;
-      payment_status?: string;
+      payment_status?: string; price_override_reason?: string;
     }) => {
       const { error } = await supabase.from("appointments").update(updates as any).eq("id", id);
       if (error) throw error;

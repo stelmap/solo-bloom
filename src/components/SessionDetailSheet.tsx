@@ -22,7 +22,7 @@ import {
   useUpdateAppointment, useDeleteAppointment, useCompleteAppointment,
   useCancelAppointment, useClients, useServices,
   useDeleteRecurringAppointments, useEditRecurringAppointments,
-  useProfile,
+  useProfile, useCreatePriceChange,
 } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,6 +62,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const { data: existingPayments = [] } = useGroupSessionPayments(groupSessionId);
   const updateAttendance = useUpdateAttendance();
   const completeGroupSession = useCompleteGroupSession();
+  const createPriceChange = useCreatePriceChange();
 
   const [mode, setMode] = useState<"view" | "edit" | "complete">("view");
   const [notes, setNotes] = useState("");
@@ -73,7 +74,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [sendingReminder, setSendingReminder] = useState(false);
 
   // Edit form
-  const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "", notes: "", price: 0, days_of_week: [1] as number[], interval_weeks: 1 });
+  const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "", notes: "", price: 0, days_of_week: [1] as number[], interval_weeks: 1, price_override_reason: "" });
 
   // Complete form
   const [completePrice, setCompletePrice] = useState(0);
@@ -259,6 +260,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       date: `${yyyy}-${mm}-${dd}`, time: `${hh}:${min}`,
       notes: apt.notes || "", price: Number(apt.price),
       days_of_week, interval_weeks,
+      price_override_reason: (apt as any).price_override_reason || "",
     });
     setMode("edit");
   };
@@ -270,12 +272,28 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     }
     try {
       const service = services.find(s => s.id === editForm.service_id);
+      const priceChanged = editForm.price !== Number(apt.price);
+      const overrideReason = priceChanged ? editForm.price_override_reason : (apt as any).price_override_reason;
+
       await updateAppointment.mutateAsync({
         id: apt.id, client_id: editForm.client_id, service_id: editForm.service_id,
         scheduled_at: `${editForm.date}T${editForm.time}:00Z`,
         duration_minutes: service?.duration_minutes ?? 60,
         price: editForm.price, notes: editForm.notes || undefined,
+        price_override_reason: overrideReason || undefined,
       });
+
+      if (priceChanged) {
+        await createPriceChange.mutateAsync({
+          client_id: apt.client_id,
+          appointment_id: apt.id,
+          old_price: Number(apt.price),
+          new_price: editForm.price,
+          reason: editForm.price_override_reason || undefined,
+          change_type: "session_override",
+        });
+      }
+
       setMode("view");
       toast({ title: t("toast.appointmentUpdated") });
     } catch (e: any) {
@@ -457,8 +475,16 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("calendar.price")}</span>
-                  <span className="font-semibold text-foreground">{cs}{Number(apt.price).toFixed(2)}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-foreground">{cs}{Number(apt.price).toFixed(2)}</span>
+                    {(apt as any).price_override_reason && <Badge variant="outline" className="text-[10px]">{t("pricing.overridden")}</Badge>}
+                  </div>
                 </div>
+                {(apt as any).price_override_reason && (
+                  <div className="bg-muted/50 rounded-md p-2">
+                    <p className="text-xs text-muted-foreground italic">💰 {(apt as any).price_override_reason}</p>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("common.payment")}</span>
                   <span className={cn("font-medium", payInfo.color)}>{payInfo.label}</span>
@@ -684,6 +710,12 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 <Label>{t("calendar.price")} ({cs})</Label>
                 <Input type="number" step="0.01" value={editForm.price} onChange={e => setEditForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} />
               </div>
+              {editForm.price !== Number(apt.price) && (
+                <div className="space-y-2">
+                  <Label>{t("pricing.overrideReason")}</Label>
+                  <Input placeholder={t("pricing.overrideReason")} value={editForm.price_override_reason} onChange={e => setEditForm(f => ({ ...f, price_override_reason: e.target.value }))} />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label>{t("session.notes")}</Label>
                 <Textarea value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} className="min-h-[100px]" />

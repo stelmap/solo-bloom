@@ -12,13 +12,15 @@ import {
   useClient, useUpdateClient, useDeleteClient,
   useClientAppointments, useClientNotes, useCreateClientNote, useDeleteClientNote,
   useClientAttachments, useUploadAttachment, useDeleteAttachment, useProfile,
+  useClientPriceHistory, useCreatePriceChange,
 } from "@/hooks/useData";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  ArrowLeft, Phone, Mail, Send, Calendar, Pencil, Trash2, Plus, Paperclip, FileText, Image, Download, X, Bell,
+  ArrowLeft, Phone, Mail, Send, Calendar, Pencil, Trash2, Plus, Paperclip, FileText, Image, Download, X, Bell, DollarSign, History,
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState, useRef } from "react";
 import { format } from "date-fns";
@@ -45,12 +47,14 @@ export default function ClientDetailPage() {
   const uploadAttachment = useUploadAttachment();
   const deleteAttachment = useDeleteAttachment();
   const { data: profile } = useProfile();
+  const { data: priceHistory = [] } = useClientPriceHistory(id);
+  const createPriceChange = useCreatePriceChange();
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "", notification_preference: "no_reminder", confirmation_required: false });
+  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "", notification_preference: "no_reminder", confirmation_required: false, pricing_mode: "fixed", base_price: "" });
   const [sessionApt, setSessionApt] = useState<any>(null);
   const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
   const use12h = (profile as any)?.time_format === "12h";
@@ -110,6 +114,8 @@ export default function ClientDetailPage() {
       notes: client.notes || "", telegram: (client as any).telegram || "",
       notification_preference: (client as any).notification_preference || "no_reminder",
       confirmation_required: (client as any).confirmation_required || false,
+      pricing_mode: (client as any).pricing_mode || "fixed",
+      base_price: (client as any).base_price != null ? String((client as any).base_price) : "",
     });
     setEditOpen(true);
   };
@@ -117,7 +123,30 @@ export default function ClientDetailPage() {
   const handleSaveEdit = async () => {
     if (!editForm.name.trim()) return;
     try {
-      await updateClient.mutateAsync({ id: client.id, ...editForm });
+      const oldBasePrice = (client as any).base_price;
+      const newBasePrice = editForm.base_price ? Number(editForm.base_price) : null;
+      const basePriceChanged = oldBasePrice !== newBasePrice && newBasePrice !== null;
+
+      await updateClient.mutateAsync({
+        id: client.id,
+        name: editForm.name, phone: editForm.phone, email: editForm.email,
+        notes: editForm.notes, telegram: editForm.telegram,
+        notification_preference: editForm.notification_preference,
+        confirmation_required: editForm.confirmation_required,
+        pricing_mode: editForm.pricing_mode,
+        base_price: newBasePrice,
+      });
+
+      if (basePriceChanged) {
+        await createPriceChange.mutateAsync({
+          client_id: client.id,
+          old_price: oldBasePrice ?? undefined,
+          new_price: newBasePrice!,
+          reason: "Base price updated",
+          change_type: "base_price_change",
+        });
+      }
+
       setEditOpen(false);
       toast({ title: t("toast.clientUpdated") });
     } catch (e: any) {
@@ -256,6 +285,53 @@ export default function ClientDetailPage() {
               </div>
             </div>
 
+            {/* Pricing */}
+            <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-primary" /> {t("pricing.title")}
+              </h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{t("pricing.mode")}</span>
+                  <Badge variant="outline" className="text-xs">
+                    {(client as any).pricing_mode === "dynamic" ? t("pricing.dynamic") : t("pricing.fixed")}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{t("pricing.currentBase")}</span>
+                  <span className="font-semibold text-foreground">
+                    {(client as any).base_price != null ? `${cs}${Number((client as any).base_price).toFixed(0)}` : t("pricing.notSet")}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Price History */}
+            {priceHistory.length > 0 && (
+              <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <History className="h-4 w-4 text-primary" /> {t("pricing.history")}
+                </h3>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {priceHistory.map((ph: any) => (
+                    <div key={ph.id} className="bg-muted/50 rounded-lg p-3 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-foreground">
+                          {ph.change_type === "session_override" ? t("pricing.sessionOverrideLabel") : t("pricing.basePriceChange")}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{format(new Date(ph.created_at), "MMM d, yyyy")}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        {ph.old_price != null && <span className="text-muted-foreground line-through">{cs}{Number(ph.old_price).toFixed(0)}</span>}
+                        <span className="text-foreground font-semibold">{cs}{Number(ph.new_price).toFixed(0)}</span>
+                      </div>
+                      {ph.reason && <p className="text-xs text-muted-foreground mt-1 italic">"{ph.reason}"</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2"><FileText className="h-4 w-4 text-primary" /> {t("clientDetail.notes")}</h3>
               <div className="flex gap-2">
@@ -340,7 +416,10 @@ export default function ClientDetailPage() {
                             <p className="text-xs text-muted-foreground">{apt.duration_minutes} {t("common.min")}</p>
                           </div>
                           <div className="flex flex-col items-end gap-1">
-                            <span className="text-sm font-semibold text-foreground">{cs}{Number(apt.price).toFixed(0)}</span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-sm font-semibold text-foreground">{cs}{Number(apt.price).toFixed(0)}</span>
+                              {apt.price_override_reason && <Badge variant="outline" className="text-[10px] px-1 py-0">{t("pricing.overridden")}</Badge>}
+                            </div>
                             <div className="flex gap-1">
                               {statusBadge(apt.status)}
                               {paymentBadge(apt.payment_status)}
@@ -395,6 +474,32 @@ export default function ClientDetailPage() {
               </div>
             </div>
 
+            <div className="border-t border-border pt-4 space-y-4">
+              <h4 className="text-sm font-medium flex items-center gap-2"><DollarSign className="h-4 w-4" /> {t("pricing.title")}</h4>
+              <div className="space-y-2">
+                <Label>{t("pricing.mode")}</Label>
+                <RadioGroup value={editForm.pricing_mode} onValueChange={v => setEditForm(f => ({ ...f, pricing_mode: v }))} className="flex gap-4">
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="fixed" id="pricing-fixed" />
+                    <Label htmlFor="pricing-fixed" className="font-normal cursor-pointer">
+                      {t("pricing.fixed")}
+                      <span className="text-xs text-muted-foreground ml-1">— {t("pricing.fixedDesc")}</span>
+                    </Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="dynamic" id="pricing-dynamic" />
+                    <Label htmlFor="pricing-dynamic" className="font-normal cursor-pointer">
+                      {t("pricing.dynamic")}
+                      <span className="text-xs text-muted-foreground ml-1">— {t("pricing.dynamicDesc")}</span>
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="space-y-2">
+                <Label>{t("pricing.basePrice")}</Label>
+                <Input type="number" min="0" step="1" placeholder="0" value={editForm.base_price} onChange={e => setEditForm(f => ({ ...f, base_price: e.target.value }))} />
+              </div>
+            </div>
             <Button onClick={handleSaveEdit} className="w-full" disabled={updateClient.isPending}>
               {updateClient.isPending ? t("common.saving") : t("common.save")}
             </Button>
