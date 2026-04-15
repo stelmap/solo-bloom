@@ -591,6 +591,9 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                     </span>
                   </div>
                 </div>
+              )}
+
+              {/* Session notes */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="flex items-center gap-1.5">
