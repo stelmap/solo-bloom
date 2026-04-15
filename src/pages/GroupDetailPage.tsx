@@ -5,16 +5,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import {
   ArrowLeft, Pencil, Users, UserPlus, UserMinus, Calendar,
-  Check, X, MinusCircle, BarChart3, Save, Trash2,
+  Check, X, MinusCircle, BarChart3, Save, Trash2, Receipt,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   useGroup, useUpdateGroup, useDeleteGroup, useGroupMembers, useAddGroupMember,
   useRemoveGroupMember, useGroupSessions, useGroupAttendance,
-  useUpdateAttendance, useGroupAllAttendance,
+  useUpdateAttendance, useGroupAllAttendance, useUpdateGroupMemberPrice,
 } from "@/hooks/useGroups";
 import { useClients } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -43,8 +44,10 @@ export default function GroupDetailPage() {
   const addMember = useAddGroupMember();
   const removeMember = useRemoveGroupMember();
 
+  const updateMemberPrice = useUpdateGroupMemberPrice();
+
   const [editOpen, setEditOpen] = useState(false);
-  const [editForm, setEditForm] = useState({ name: "", description: "", status: "active" });
+  const [editForm, setEditForm] = useState({ name: "", description: "", status: "active", bill_present: true, bill_absent: false, bill_skipped: false });
   const [editSaving, setEditSaving] = useState(false);
   const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState("");
@@ -81,7 +84,7 @@ export default function GroupDetailPage() {
 
   const openEdit = () => {
     if (!group) return;
-    setEditForm({ name: group.name, description: group.description || "", status: group.status });
+    setEditForm({ name: group.name, description: group.description || "", status: group.status, bill_present: group.bill_present ?? true, bill_absent: group.bill_absent ?? false, bill_skipped: group.bill_skipped ?? false });
     setEditOpen(true);
   };
 
@@ -89,7 +92,7 @@ export default function GroupDetailPage() {
     if (!id || !editForm.name.trim() || editSaving) return;
     setEditSaving(true);
     try {
-      await updateGroup.mutateAsync({ id, name: editForm.name.trim(), description: editForm.description.trim(), status: editForm.status });
+      await updateGroup.mutateAsync({ id, name: editForm.name.trim(), description: editForm.description.trim(), status: editForm.status, bill_present: editForm.bill_present, bill_absent: editForm.bill_absent, bill_skipped: editForm.bill_skipped });
       toast({ title: t("groups.updated") });
       setEditOpen(false);
     } catch (e: any) {
@@ -330,6 +333,25 @@ export default function GroupDetailPage() {
                   <SelectItem value="inactive">{t("groups.inactive")}</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <Separator />
+            <div className="space-y-3">
+              <div>
+                <Label className="flex items-center gap-2"><Receipt className="h-4 w-4" /> {t("groups.billingRules")}</Label>
+                <p className="text-xs text-muted-foreground mt-1">{t("groups.billingRulesDesc")}</p>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                <span className="text-sm">{t("groups.billPresent")}</span>
+                <Switch checked={editForm.bill_present} onCheckedChange={v => setEditForm(f => ({ ...f, bill_present: v }))} />
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                <span className="text-sm">{t("groups.billAbsent")}</span>
+                <Switch checked={editForm.bill_absent} onCheckedChange={v => setEditForm(f => ({ ...f, bill_absent: v }))} />
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                <span className="text-sm">{t("groups.billSkipped")}</span>
+                <Switch checked={editForm.bill_skipped} onCheckedChange={v => setEditForm(f => ({ ...f, bill_skipped: v }))} />
+              </div>
             </div>
             <Button onClick={handleSaveEdit} className="w-full" disabled={!editForm.name.trim() || editSaving}>
               {editSaving ? t("common.saving") : t("common.save")}

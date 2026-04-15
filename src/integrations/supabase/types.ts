@@ -561,6 +561,7 @@ export type Database = {
           group_id: string
           id: string
           joined_at: string
+          price_per_session: number | null
           user_id: string
         }
         Insert: {
@@ -569,6 +570,7 @@ export type Database = {
           group_id: string
           id?: string
           joined_at?: string
+          price_per_session?: number | null
           user_id: string
         }
         Update: {
@@ -577,6 +579,7 @@ export type Database = {
           group_id?: string
           id?: string
           joined_at?: string
+          price_per_session?: number | null
           user_id?: string
         }
         Relationships: [
@@ -595,6 +598,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      group_session_payments: {
+        Row: {
+          amount: number
+          attendance_status: string
+          billing_rule_applied: boolean
+          client_id: string
+          created_at: string
+          expected_payment_id: string | null
+          group_id: string
+          group_session_id: string
+          id: string
+          income_id: string | null
+          payment_method: string | null
+          payment_state: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          attendance_status: string
+          billing_rule_applied?: boolean
+          client_id: string
+          created_at?: string
+          expected_payment_id?: string | null
+          group_id: string
+          group_session_id: string
+          id?: string
+          income_id?: string | null
+          payment_method?: string | null
+          payment_state?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          attendance_status?: string
+          billing_rule_applied?: boolean
+          client_id?: string
+          created_at?: string
+          expected_payment_id?: string | null
+          group_id?: string
+          group_session_id?: string
+          id?: string
+          income_id?: string | null
+          payment_method?: string | null
+          payment_state?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       group_sessions: {
         Row: {
@@ -643,6 +697,9 @@ export type Database = {
       }
       groups: {
         Row: {
+          bill_absent: boolean
+          bill_present: boolean
+          bill_skipped: boolean
           created_at: string
           description: string | null
           id: string
@@ -652,6 +709,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          bill_absent?: boolean
+          bill_present?: boolean
+          bill_skipped?: boolean
           created_at?: string
           description?: string | null
           id?: string
@@ -661,6 +721,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          bill_absent?: boolean
+          bill_present?: boolean
+          bill_skipped?: boolean
           created_at?: string
           description?: string | null
           id?: string

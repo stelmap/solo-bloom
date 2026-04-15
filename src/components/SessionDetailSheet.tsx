@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { format } from "date-fns";
 import { formatTime, formatScheduledTime } from "@/lib/timeFormat";
@@ -26,7 +26,7 @@ import {
 } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { useGroupAttendance, useUpdateAttendance } from "@/hooks/useGroups";
+import { useGroupAttendance, useUpdateAttendance, useGroup, useGroupMembers, useCompleteGroupSession, useGroupSessionPayments } from "@/hooks/useGroups";
 
 interface SessionDetailSheetProps {
   appointment: any | null;
@@ -55,8 +55,13 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const groupSessionId = apt?.group_session_id
     ? ((apt as any).group_sessions?.id || apt.group_session_id)
     : undefined;
+  const groupId = (apt as any)?.group_sessions?.group_id || undefined;
   const { data: groupAttendance = [] } = useGroupAttendance(groupSessionId);
+  const { data: groupData } = useGroup(groupId);
+  const { data: groupMembers = [] } = useGroupMembers(groupId);
+  const { data: existingPayments = [] } = useGroupSessionPayments(groupSessionId);
   const updateAttendance = useUpdateAttendance();
+  const completeGroupSession = useCompleteGroupSession();
 
   const [mode, setMode] = useState<"view" | "edit" | "complete">("view");
   const [notes, setNotes] = useState("");
@@ -74,6 +79,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [completePrice, setCompletePrice] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [paymentStatus, setPaymentStatus] = useState("paid_now");
+  const [groupPaymentState, setGroupPaymentState] = useState("paid_now");
+  const [groupPaymentMethod, setGroupPaymentMethod] = useState("cash");
 
   useEffect(() => {
     if (apt) {
@@ -82,6 +89,35 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       setMode("view");
     }
   }, [apt?.id, apt?.notes]);
+
+  // Group billing data — must be before early return
+  const isGroupSession = !!apt?.group_session_id;
+  const groupBillingData = useMemo(() => {
+    if (!isGroupSession || !groupData || groupAttendance.length === 0) return [];
+    const sessionPrice = Number(apt?.price || 0);
+    return groupAttendance.map((att: any) => {
+      const member = groupMembers.find((m: any) => m.client_id === att.client_id);
+      const memberPrice = member?.price_per_session != null ? Number(member.price_per_session) : sessionPrice;
+      const billable =
+        (att.status === "attended" && groupData.bill_present) ||
+        (att.status === "absent" && groupData.bill_absent) ||
+        (att.status === "skipped" && groupData.bill_skipped);
+      return {
+        clientId: att.client_id,
+        clientName: att.clients?.name || "Unknown",
+        attendanceStatus: att.status,
+        billable: !!billable,
+        amount: memberPrice,
+      };
+    });
+  }, [isGroupSession, groupData, groupAttendance, groupMembers, apt?.price]);
+
+  const groupBillingSummary = useMemo(() => {
+    const total = groupBillingData.length;
+    const billable = groupBillingData.filter(p => p.billable);
+    const expectedAmount = billable.reduce((sum, p) => sum + p.amount, 0);
+    return { total, billableCount: billable.length, expectedAmount };
+  }, [groupBillingData]);
 
   if (!apt) return null;
 
@@ -125,8 +161,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   };
   const confirmInfo = CONFIRMATION_STYLES[apt.confirmation_status] || CONFIRMATION_STYLES.not_required;
 
-  // Group session detection
-  const isGroupSession = !!apt.group_session_id;
+  // Group session detection (isGroupSession already declared above early return)
   const groupName = (apt as any).group_sessions?.groups?.name;
 
   // Determine if client requires confirmation
@@ -289,22 +324,42 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     setCompletePrice(Number(apt.price));
     setPaymentMethod("cash");
     setPaymentStatus("paid_now");
+    setGroupPaymentState("paid_now");
+    setGroupPaymentMethod("cash");
     setMode("complete");
   };
 
+
   const handleComplete = async () => {
     try {
-      // Save notes first if dirty
       if (notesDirty) {
         await updateAppointment.mutateAsync({ id: apt.id, notes });
       }
-      await completeAppointment.mutateAsync({
-        appointmentId: apt.id, clientId: apt.client_id,
-        price: completePrice, paymentMethod, paymentStatus,
-      });
-      const msg = paymentStatus === "waiting_for_payment"
-        ? t("toast.sessionCompletedExpected") : t("toast.sessionCompletedIncome", { amount: completePrice.toString() });
-      toast({ title: t("toast.appointmentCompleted"), description: msg });
+
+      if (isGroupSession && groupSessionId && groupId) {
+        await completeGroupSession.mutateAsync({
+          appointmentId: apt.id,
+          groupId,
+          groupSessionId,
+          participants: groupBillingData.map(p => ({
+            clientId: p.clientId,
+            attendanceStatus: p.attendanceStatus,
+            billable: p.billable,
+            amount: p.amount,
+          })),
+          paymentState: groupPaymentState,
+          paymentMethod: groupPaymentMethod,
+        });
+        toast({ title: t("groups.sessionCompleted") });
+      } else {
+        await completeAppointment.mutateAsync({
+          appointmentId: apt.id, clientId: apt.client_id,
+          price: completePrice, paymentMethod, paymentStatus,
+        });
+        const msg = paymentStatus === "waiting_for_payment"
+          ? t("toast.sessionCompletedExpected") : t("toast.sessionCompletedIncome", { amount: completePrice.toString() });
+        toast({ title: t("toast.appointmentCompleted"), description: msg });
+      }
       onOpenChange(false);
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
@@ -502,6 +557,42 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 </div>
               )}
 
+              {/* Group session payment summary (for completed sessions) */}
+              {isGroupSession && apt.status === "completed" && existingPayments.length > 0 && (
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2 text-sm font-semibold">
+                    <DollarSign className="h-4 w-4 text-primary" /> {t("groups.participantBilling")}
+                  </Label>
+                  <div className="space-y-1.5">
+                    {existingPayments.map((ep: any) => (
+                      <div key={ep.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/20 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{ep.clients?.name}</span>
+                          <Badge variant="outline" className={cn("text-[10px]",
+                            ep.payment_state === "paid_now" || ep.payment_state === "paid_in_advance" ? "border-success/30 text-success" :
+                            ep.payment_state === "waiting_for_payment" ? "border-warning/30 text-warning" :
+                            "border-border text-muted-foreground"
+                          )}>
+                            {ep.billing_rule_applied
+                              ? (ep.payment_state === "paid_now" ? t("payment.paid") : ep.payment_state === "paid_in_advance" ? t("payment.paidAdvance") : ep.payment_state === "waiting_for_payment" ? t("payment.waiting") : "—")
+                              : t("groups.notBillable")}
+                          </Badge>
+                        </div>
+                        <span className={cn("font-semibold", ep.billing_rule_applied ? "" : "text-muted-foreground line-through")}>
+                          {cs}{Number(ep.amount).toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="rounded-lg border border-border p-3 grid grid-cols-2 gap-1 text-sm">
+                    <span className="text-muted-foreground">{t("groups.expectedAmount")}</span>
+                    <span className="text-right font-semibold">
+                      {cs}{existingPayments.filter((ep: any) => ep.billing_rule_applied).reduce((s: number, ep: any) => s + Number(ep.amount), 0).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {/* Session notes */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -649,7 +740,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
             </div>
           )}
 
-          {mode === "complete" && (
+          {mode === "complete" && !isGroupSession && (
             <div className="space-y-5">
               <p className="text-sm text-muted-foreground">{t("calendar.confirmOutcome")}</p>
 
@@ -716,6 +807,120 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
               <div className="flex gap-2">
                 <Button onClick={handleComplete} className="flex-1" disabled={completeAppointment.isPending}>
                   {completeAppointment.isPending ? t("calendar.saving") : t("calendar.confirmComplete")}
+                </Button>
+                <Button variant="outline" onClick={() => setMode("view")}><X className="h-4 w-4" /></Button>
+              </div>
+            </div>
+          )}
+
+          {/* GROUP SESSION COMPLETE MODE */}
+          {mode === "complete" && isGroupSession && (
+            <div className="space-y-5">
+              <p className="text-sm text-muted-foreground">{t("groups.completeGroupSession")}</p>
+
+              {/* Notes */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1.5"><FileText className="h-3.5 w-3.5" /> {t("session.notes")}</Label>
+                <Textarea placeholder={t("session.notesPlaceholder")} value={notes}
+                  onChange={(e) => { setNotes(e.target.value); setNotesDirty(true); }}
+                  className="min-h-[60px] text-sm" />
+              </div>
+
+              {/* Participant billing table */}
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2">
+                  <Users className="h-4 w-4" /> {t("groups.participantBilling")}
+                </Label>
+                <div className="space-y-2">
+                  {groupBillingData.map((p) => (
+                    <div key={p.clientId} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{p.clientName}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <Badge variant="outline" className={cn("text-[10px]",
+                            p.attendanceStatus === "attended" ? "border-success/30 text-success" :
+                            p.attendanceStatus === "absent" ? "border-destructive/30 text-destructive" :
+                            "border-warning/30 text-warning"
+                          )}>
+                            {t(`groups.${p.attendanceStatus}` as any)}
+                          </Badge>
+                          <Badge variant={p.billable ? "default" : "secondary"} className="text-[10px]">
+                            {p.billable ? t("groups.billable") : t("groups.notBillable")}
+                          </Badge>
+                        </div>
+                      </div>
+                      <span className={cn("text-sm font-semibold", p.billable ? "text-foreground" : "text-muted-foreground line-through")}>
+                        {cs}{p.amount.toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Session summary */}
+              <div className="rounded-lg border border-border p-4 space-y-2">
+                <Label className="text-sm font-semibold">{t("groups.sessionSummary")}</Label>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <span className="text-muted-foreground">{t("groups.totalParticipants")}</span>
+                  <span className="text-right font-medium">{groupBillingSummary.total}</span>
+                  <span className="text-muted-foreground">{t("groups.billableParticipants")}</span>
+                  <span className="text-right font-medium">{groupBillingSummary.billableCount}</span>
+                  <span className="text-muted-foreground">{t("groups.expectedAmount")}</span>
+                  <span className="text-right font-semibold text-foreground">{cs}{groupBillingSummary.expectedAmount.toFixed(2)}</span>
+                </div>
+              </div>
+
+              {/* Payment state */}
+              <div className="space-y-2">
+                <Label>{t("calendar.paymentStatus")}</Label>
+                <div className="space-y-2">
+                  {PAYMENT_STATUSES.map(ps => (
+                    <button key={ps.value} onClick={() => setGroupPaymentState(ps.value)}
+                      className={cn("w-full text-left p-3 rounded-lg border transition-colors",
+                        groupPaymentState === ps.value ? "bg-primary/10 border-primary" : "bg-card border-border hover:bg-muted"
+                      )}>
+                      <p className="text-sm font-medium text-foreground">{ps.label}</p>
+                      <p className="text-xs text-muted-foreground">{ps.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {(groupPaymentState === "paid_now" || groupPaymentState === "paid_in_advance") && (
+                <div className="space-y-2">
+                  <Label>{t("calendar.paymentMethod")}</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {PAYMENT_METHODS.map(m => (
+                      <button key={m.value} onClick={() => setGroupPaymentMethod(m.value)}
+                        className={cn("p-3 rounded-lg border text-sm font-medium transition-colors text-center",
+                          groupPaymentMethod === m.value ? "bg-primary/10 border-primary text-primary" : "bg-card border-border text-muted-foreground hover:bg-muted"
+                        )}>
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className={cn("rounded-lg p-4 flex items-center gap-3 border",
+                groupPaymentState === "waiting_for_payment" ? "bg-warning/10 border-warning/20" : "bg-success/10 border-success/20"
+              )}>
+                <DollarSign className={cn("h-5 w-5", groupPaymentState === "waiting_for_payment" ? "text-warning" : "text-success")} />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    {groupPaymentState === "waiting_for_payment"
+                      ? t("calendar.willBeExpected", { amount: groupBillingSummary.expectedAmount.toFixed(2) })
+                      : t("calendar.willBeIncome", { amount: groupBillingSummary.expectedAmount.toFixed(2) })}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {groupBillingSummary.billableCount} / {groupBillingSummary.total} {t("groups.billableParticipants").toLowerCase()}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button onClick={handleComplete} className="flex-1" disabled={completeGroupSession.isPending}>
+                  {completeGroupSession.isPending ? t("calendar.saving") : t("calendar.confirmComplete")}
                 </Button>
                 <Button variant="outline" onClick={() => setMode("view")}><X className="h-4 w-4" /></Button>
               </div>
