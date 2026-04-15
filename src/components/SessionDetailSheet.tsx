@@ -455,6 +455,51 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 </div>
               )}
 
+              {/* Group attendance tracking */}
+              {isGroupSession && groupAttendance.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-primary" />
+                    <Label className="text-sm font-semibold">{t("groups.attendance")} ({groupAttendance.length})</Label>
+                  </div>
+                  <div className="space-y-2">
+                    {groupAttendance.map((att: any) => {
+                      const attStatusColor: Record<string, string> = {
+                        attended: "bg-success/10 border-success/30 text-success",
+                        absent: "bg-destructive/10 border-destructive/30 text-destructive",
+                        skipped: "bg-warning/10 border-warning/30 text-warning",
+                      };
+                      return (
+                        <div key={att.id} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30">
+                          <div className="flex items-center gap-2">
+                            <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-[10px] font-semibold">
+                              {att.clients?.name?.[0]?.toUpperCase() || "?"}
+                            </div>
+                            <span className="text-sm font-medium">{att.clients?.name}</span>
+                          </div>
+                          <Select value={att.status} onValueChange={async (v) => {
+                            try {
+                              await updateAttendance.mutateAsync({ id: att.id, status: v, groupSessionId: groupSessionId! });
+                            } catch (e: any) {
+                              toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+                            }
+                          }}>
+                            <SelectTrigger className={cn("w-28 h-7 text-xs border", attStatusColor[att.status] || "")}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="attended">{t("groups.attended")}</SelectItem>
+                              <SelectItem value="absent">{t("groups.absent")}</SelectItem>
+                              <SelectItem value="skipped">{t("groups.skipped")}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Session notes */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
