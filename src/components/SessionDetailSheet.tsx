@@ -62,6 +62,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const { data: existingPayments = [] } = useGroupSessionPayments(groupSessionId);
   const updateAttendance = useUpdateAttendance();
   const completeGroupSession = useCompleteGroupSession();
+  const createPriceChange = useCreatePriceChange();
 
   const [mode, setMode] = useState<"view" | "edit" | "complete">("view");
   const [notes, setNotes] = useState("");
