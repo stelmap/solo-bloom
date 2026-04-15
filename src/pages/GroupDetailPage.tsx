@@ -44,8 +44,10 @@ export default function GroupDetailPage() {
   const addMember = useAddGroupMember();
   const removeMember = useRemoveGroupMember();
 
+  const updateMemberPrice = useUpdateGroupMemberPrice();
+
   const [editOpen, setEditOpen] = useState(false);
-  const [editForm, setEditForm] = useState({ name: "", description: "", status: "active" });
+  const [editForm, setEditForm] = useState({ name: "", description: "", status: "active", bill_present: true, bill_absent: false, bill_skipped: false });
   const [editSaving, setEditSaving] = useState(false);
   const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState("");
