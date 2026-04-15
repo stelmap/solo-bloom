@@ -296,22 +296,69 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     setCompletePrice(Number(apt.price));
     setPaymentMethod("cash");
     setPaymentStatus("paid_now");
+    setGroupPaymentState("paid_now");
+    setGroupPaymentMethod("cash");
     setMode("complete");
   };
 
+  // Build group participant billing data
+  const groupBillingData = useMemo(() => {
+    if (!isGroupSession || !groupData || groupAttendance.length === 0) return [];
+    const sessionPrice = Number(apt?.price || 0);
+    return groupAttendance.map((att: any) => {
+      const member = groupMembers.find((m: any) => m.client_id === att.client_id);
+      const memberPrice = member?.price_per_session != null ? Number(member.price_per_session) : sessionPrice;
+      const billable =
+        (att.status === "attended" && groupData.bill_present) ||
+        (att.status === "absent" && groupData.bill_absent) ||
+        (att.status === "skipped" && groupData.bill_skipped);
+      return {
+        clientId: att.client_id,
+        clientName: att.clients?.name || "Unknown",
+        attendanceStatus: att.status,
+        billable: !!billable,
+        amount: memberPrice,
+      };
+    });
+  }, [isGroupSession, groupData, groupAttendance, groupMembers, apt?.price]);
+
+  const groupBillingSummary = useMemo(() => {
+    const total = groupBillingData.length;
+    const billable = groupBillingData.filter(p => p.billable);
+    const expectedAmount = billable.reduce((sum, p) => sum + p.amount, 0);
+    return { total, billableCount: billable.length, expectedAmount };
+  }, [groupBillingData]);
+
   const handleComplete = async () => {
     try {
-      // Save notes first if dirty
       if (notesDirty) {
         await updateAppointment.mutateAsync({ id: apt.id, notes });
       }
-      await completeAppointment.mutateAsync({
-        appointmentId: apt.id, clientId: apt.client_id,
-        price: completePrice, paymentMethod, paymentStatus,
-      });
-      const msg = paymentStatus === "waiting_for_payment"
-        ? t("toast.sessionCompletedExpected") : t("toast.sessionCompletedIncome", { amount: completePrice.toString() });
-      toast({ title: t("toast.appointmentCompleted"), description: msg });
+
+      if (isGroupSession && groupSessionId && groupId) {
+        await completeGroupSession.mutateAsync({
+          appointmentId: apt.id,
+          groupId,
+          groupSessionId,
+          participants: groupBillingData.map(p => ({
+            clientId: p.clientId,
+            attendanceStatus: p.attendanceStatus,
+            billable: p.billable,
+            amount: p.amount,
+          })),
+          paymentState: groupPaymentState,
+          paymentMethod: groupPaymentMethod,
+        });
+        toast({ title: t("groups.sessionCompleted") });
+      } else {
+        await completeAppointment.mutateAsync({
+          appointmentId: apt.id, clientId: apt.client_id,
+          price: completePrice, paymentMethod, paymentStatus,
+        });
+        const msg = paymentStatus === "waiting_for_payment"
+          ? t("toast.sessionCompletedExpected") : t("toast.sessionCompletedIncome", { amount: completePrice.toString() });
+        toast({ title: t("toast.appointmentCompleted"), description: msg });
+      }
       onOpenChange(false);
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
