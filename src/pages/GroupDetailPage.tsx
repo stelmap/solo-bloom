@@ -84,7 +84,7 @@ export default function GroupDetailPage() {
 
   const openEdit = () => {
     if (!group) return;
-    setEditForm({ name: group.name, description: group.description || "", status: group.status });
+    setEditForm({ name: group.name, description: group.description || "", status: group.status, bill_present: group.bill_present ?? true, bill_absent: group.bill_absent ?? false, bill_skipped: group.bill_skipped ?? false });
     setEditOpen(true);
   };
 
@@ -92,7 +92,7 @@ export default function GroupDetailPage() {
     if (!id || !editForm.name.trim() || editSaving) return;
     setEditSaving(true);
     try {
-      await updateGroup.mutateAsync({ id, name: editForm.name.trim(), description: editForm.description.trim(), status: editForm.status });
+      await updateGroup.mutateAsync({ id, name: editForm.name.trim(), description: editForm.description.trim(), status: editForm.status, bill_present: editForm.bill_present, bill_absent: editForm.bill_absent, bill_skipped: editForm.bill_skipped });
       toast({ title: t("groups.updated") });
       setEditOpen(false);
     } catch (e: any) {
