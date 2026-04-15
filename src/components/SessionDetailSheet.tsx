@@ -55,8 +55,13 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const groupSessionId = apt?.group_session_id
     ? ((apt as any).group_sessions?.id || apt.group_session_id)
     : undefined;
+  const groupId = (apt as any)?.group_sessions?.group_id || undefined;
   const { data: groupAttendance = [] } = useGroupAttendance(groupSessionId);
+  const { data: groupData } = useGroup(groupId);
+  const { data: groupMembers = [] } = useGroupMembers(groupId);
+  const { data: existingPayments = [] } = useGroupSessionPayments(groupSessionId);
   const updateAttendance = useUpdateAttendance();
+  const completeGroupSession = useCompleteGroupSession();
 
   const [mode, setMode] = useState<"view" | "edit" | "complete">("view");
   const [notes, setNotes] = useState("");
@@ -74,6 +79,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [completePrice, setCompletePrice] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [paymentStatus, setPaymentStatus] = useState("paid_now");
+  const [groupPaymentState, setGroupPaymentState] = useState("paid_now");
+  const [groupPaymentMethod, setGroupPaymentMethod] = useState("cash");
 
   useEffect(() => {
     if (apt) {
