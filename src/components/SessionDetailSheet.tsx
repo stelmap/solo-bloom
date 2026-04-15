@@ -458,8 +458,16 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("calendar.price")}</span>
-                  <span className="font-semibold text-foreground">{cs}{Number(apt.price).toFixed(2)}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-foreground">{cs}{Number(apt.price).toFixed(2)}</span>
+                    {(apt as any).price_override_reason && <Badge variant="outline" className="text-[10px]">{t("pricing.overridden")}</Badge>}
+                  </div>
                 </div>
+                {(apt as any).price_override_reason && (
+                  <div className="bg-muted/50 rounded-md p-2">
+                    <p className="text-xs text-muted-foreground italic">💰 {(apt as any).price_override_reason}</p>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("common.payment")}</span>
                   <span className={cn("font-medium", payInfo.color)}>{payInfo.label}</span>
