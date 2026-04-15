@@ -357,8 +357,12 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
           <SheetHeader className="pb-4">
             <SheetTitle className="flex items-center gap-2 flex-wrap">
-              <span>{t("session.title")}</span>
+              {isGroupSession && <Users className="h-4 w-4" />}
+              <span>{isGroupSession ? (groupName || t("groups.groupSession")) : t("session.title")}</span>
               <Badge className={cn("text-xs", statusInfo.color)}>{statusInfo.label}</Badge>
+              {isGroupSession && (
+                <Badge variant="outline" className="text-xs border-primary/30 text-primary"><Users className="h-3 w-3 mr-1" />{t("groups.groupSession")}</Badge>
+              )}
               {apt.recurring_rule_id && (
                 <Badge variant="outline" className="text-xs"><Repeat className="h-3 w-3 mr-1" />{t("recurring.badge")}</Badge>
               )}
@@ -369,10 +373,17 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
             <div className="space-y-5">
               {/* Session info */}
               <div className="bg-muted/50 rounded-lg p-4 space-y-2.5 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("calendar.client")}</span>
-                  <span className="font-medium text-foreground">{apt.clients?.name}</span>
-                </div>
+                {isGroupSession ? (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{t("groups.group")}</span>
+                    <span className="font-medium text-foreground">{groupName || "—"}</span>
+                  </div>
+                ) : (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{t("calendar.client")}</span>
+                    <span className="font-medium text-foreground">{apt.clients?.name}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("calendar.service")}</span>
                   <span className="font-medium text-foreground">{apt.services?.name}</span>
