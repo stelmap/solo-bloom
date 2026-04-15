@@ -161,8 +161,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   };
   const confirmInfo = CONFIRMATION_STYLES[apt.confirmation_status] || CONFIRMATION_STYLES.not_required;
 
-  // Group session detection
-  const isGroupSession = !!apt.group_session_id;
+  // Group session detection (isGroupSession already declared above early return)
   const groupName = (apt as any).group_sessions?.groups?.name;
 
   // Determine if client requires confirmation
