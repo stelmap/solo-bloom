@@ -685,6 +685,12 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 <Label>{t("calendar.price")} ({cs})</Label>
                 <Input type="number" step="0.01" value={editForm.price} onChange={e => setEditForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} />
               </div>
+              {editForm.price !== Number(apt.price) && (
+                <div className="space-y-2">
+                  <Label>{t("pricing.overrideReason")}</Label>
+                  <Input placeholder={t("pricing.overrideReason")} value={editForm.price_override_reason} onChange={e => setEditForm(f => ({ ...f, price_override_reason: e.target.value }))} />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label>{t("session.notes")}</Label>
                 <Textarea value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} className="min-h-[100px]" />
