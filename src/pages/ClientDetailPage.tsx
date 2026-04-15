@@ -12,6 +12,7 @@ import {
   useClient, useUpdateClient, useDeleteClient,
   useClientAppointments, useClientNotes, useCreateClientNote, useDeleteClientNote,
   useClientAttachments, useUploadAttachment, useDeleteAttachment, useProfile,
+  useClientPriceHistory, useCreatePriceChange,
 } from "@/hooks/useData";
 import { supabase } from "@/integrations/supabase/client";
 import {
