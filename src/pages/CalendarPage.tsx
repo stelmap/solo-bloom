@@ -583,8 +583,8 @@ export default function CalendarPage() {
                   </div>
 
                   <Button onClick={handleCreate} className="w-full"
-                    disabled={createAppointment.isPending || createRecurringRule.isPending || (!isRecurring && !!createValidation)}>
-                    {(createAppointment.isPending || createRecurringRule.isPending) ? t("calendar.creating") : (isRecurring ? t("recurring.seriesCreated").split(" ")[0] + "..." : t("calendar.createAppointment"))}
+                    disabled={createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending || (!isRecurring && !isGroupSession && !!createValidation) || (isGroupSession && (!groupId || groupMembers.length === 0))}>
+                    {(createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending) ? t("calendar.creating") : (isGroupSession ? t("groups.groupSession") : isRecurring ? t("recurring.seriesCreated").split(" ")[0] + "..." : t("calendar.createAppointment"))}
                   </Button>
                 </div>
               </DialogContent>
