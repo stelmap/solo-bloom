@@ -7,12 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   ArrowLeft, Pencil, Users, UserPlus, UserMinus, Calendar,
-  Check, X, MinusCircle, BarChart3, Save,
+  Check, X, MinusCircle, BarChart3, Save, Trash2,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  useGroup, useUpdateGroup, useGroupMembers, useAddGroupMember,
+  useGroup, useUpdateGroup, useDeleteGroup, useGroupMembers, useAddGroupMember,
   useRemoveGroupMember, useGroupSessions, useGroupAttendance,
   useUpdateAttendance, useGroupAllAttendance,
 } from "@/hooks/useGroups";
@@ -39,6 +39,7 @@ export default function GroupDetailPage() {
   const { data: allAttendance = [] } = useGroupAllAttendance(id);
   const { data: allClients = [] } = useClients();
   const updateGroup = useUpdateGroup();
+  const deleteGroup = useDeleteGroup();
   const addMember = useAddGroupMember();
   const removeMember = useRemoveGroupMember();
 
@@ -49,6 +50,7 @@ export default function GroupDetailPage() {
   const [selectedClientId, setSelectedClientId] = useState("");
   const [removeMemberId, setRemoveMemberId] = useState<string | null>(null);
   const [attendanceSessionId, setAttendanceSessionId] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   // Clients not yet in this group
   const availableClients = useMemo(() => {
