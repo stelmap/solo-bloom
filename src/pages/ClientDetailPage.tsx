@@ -114,6 +114,8 @@ export default function ClientDetailPage() {
       notes: client.notes || "", telegram: (client as any).telegram || "",
       notification_preference: (client as any).notification_preference || "no_reminder",
       confirmation_required: (client as any).confirmation_required || false,
+      pricing_mode: (client as any).pricing_mode || "fixed",
+      base_price: (client as any).base_price != null ? String((client as any).base_price) : "",
     });
     setEditOpen(true);
   };
@@ -121,7 +123,30 @@ export default function ClientDetailPage() {
   const handleSaveEdit = async () => {
     if (!editForm.name.trim()) return;
     try {
-      await updateClient.mutateAsync({ id: client.id, ...editForm });
+      const oldBasePrice = (client as any).base_price;
+      const newBasePrice = editForm.base_price ? Number(editForm.base_price) : null;
+      const basePriceChanged = oldBasePrice !== newBasePrice && newBasePrice !== null;
+
+      await updateClient.mutateAsync({
+        id: client.id,
+        name: editForm.name, phone: editForm.phone, email: editForm.email,
+        notes: editForm.notes, telegram: editForm.telegram,
+        notification_preference: editForm.notification_preference,
+        confirmation_required: editForm.confirmation_required,
+        pricing_mode: editForm.pricing_mode,
+        base_price: newBasePrice,
+      });
+
+      if (basePriceChanged) {
+        await createPriceChange.mutateAsync({
+          client_id: client.id,
+          old_price: oldBasePrice ?? undefined,
+          new_price: newBasePrice!,
+          reason: "Base price updated",
+          change_type: "base_price_change",
+        });
+      }
+
       setEditOpen(false);
       toast({ title: t("toast.clientUpdated") });
     } catch (e: any) {
