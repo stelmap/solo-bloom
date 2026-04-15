@@ -416,7 +416,10 @@ export default function ClientDetailPage() {
                             <p className="text-xs text-muted-foreground">{apt.duration_minutes} {t("common.min")}</p>
                           </div>
                           <div className="flex flex-col items-end gap-1">
-                            <span className="text-sm font-semibold text-foreground">{cs}{Number(apt.price).toFixed(0)}</span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-sm font-semibold text-foreground">{cs}{Number(apt.price).toFixed(0)}</span>
+                              {apt.price_override_reason && <Badge variant="outline" className="text-[10px] px-1 py-0">{t("pricing.overridden")}</Badge>}
+                            </div>
                             <div className="flex gap-1">
                               {statusBadge(apt.status)}
                               {paymentBadge(apt.payment_status)}
