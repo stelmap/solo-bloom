@@ -50,7 +50,7 @@ export function setStoredLang(lang: Language) {
 
 const LanguageContext = createContext<LanguageContextType>({
   lang: "en",
-  t: (key) => key,
+  t: (key) => translateFor("en", key),
   setLang: () => {},
 });
 
