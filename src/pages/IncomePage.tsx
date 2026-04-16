@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Trash2, DollarSign, CheckCircle, Download } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
-import { useIncome, useCreateIncome, useDeleteIncome, useExpectedPayments, useMarkExpectedPaymentPaid } from "@/hooks/useData";
+import { useIncome, useCreateIncome, useDeleteIncome, useExpectedPayments, useMarkExpectedPaymentPaid, useClients } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
@@ -27,6 +27,7 @@ export default function IncomePage() {
   const pageSize = incomeResult?.pageSize ?? 50;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const { data: expectedPayments = [], isLoading: epLoading } = useExpectedPayments();
+  const { data: clients = [] } = useClients();
   const createIncome = useCreateIncome();
   const deleteIncome = useDeleteIncome();
   const markPaid = useMarkExpectedPaymentPaid();
@@ -38,7 +39,7 @@ export default function IncomePage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [payDialog, setPayDialog] = useState<any>(null);
   const [payMethod, setPayMethod] = useState("cash");
-  const [form, setForm] = useState({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash" });
+  const [form, setForm] = useState({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash", client_id: "" });
 
   // Filters
   const initialRange = searchParams.get("range") || "month";
@@ -69,8 +70,12 @@ export default function IncomePage() {
   const handleCreate = async () => {
     if (!form.amount) return;
     try {
-      await createIncome.mutateAsync({ ...form, source: "manual" });
-      setForm({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash" });
+      await createIncome.mutateAsync({
+        ...form,
+        source: "manual",
+        client_id: form.client_id || null,
+      });
+      setForm({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash", client_id: "" });
       setOpen(false);
       toast({ title: t("toast.incomeAdded") });
     } catch (e: any) {
@@ -128,6 +133,16 @@ export default function IncomePage() {
                 <div className="space-y-2"><Label>{t("common.amount")} *</Label><Input type="number" step="0.01" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} /></div>
                 <div className="space-y-2"><Label>{t("common.date")}</Label><Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>{t("common.description")}</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
+                <div className="space-y-2">
+                  <Label>{t("income.paidBy")}</Label>
+                  <Select value={form.client_id} onValueChange={v => setForm(f => ({ ...f, client_id: v === "__none__" ? "" : v }))}>
+                    <SelectTrigger><SelectValue placeholder={t("income.selectClient")} /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">{t("income.noClient")}</SelectItem>
+                      {(clients as any[]).map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="space-y-2">
                   <Label>{t("calendar.paymentMethod")}</Label>
                   <Select value={form.payment_method} onValueChange={v => setForm(f => ({ ...f, payment_method: v }))}>

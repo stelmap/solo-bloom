@@ -12,11 +12,11 @@ import {
   useClient, useUpdateClient, useDeleteClient,
   useClientAppointments, useClientNotes, useCreateClientNote, useDeleteClientNote,
   useClientAttachments, useUploadAttachment, useDeleteAttachment, useProfile,
-  useClientPriceHistory, useCreatePriceChange,
+  useClientPriceHistory, useCreatePriceChange, useClientIncome,
 } from "@/hooks/useData";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  ArrowLeft, Phone, Mail, Send, Calendar, Pencil, Trash2, Plus, Paperclip, FileText, Image, Download, X, Bell, DollarSign, History,
+  ArrowLeft, Phone, Mail, Send, Calendar, Pencil, Trash2, Plus, Paperclip, FileText, Image, Download, X, Bell, DollarSign, History, CreditCard,
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -49,6 +49,7 @@ export default function ClientDetailPage() {
   const { data: profile } = useProfile();
   const { data: priceHistory = [] } = useClientPriceHistory(id);
   const createPriceChange = useCreatePriceChange();
+  const { data: clientIncome = [] } = useClientIncome(id);
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -96,17 +97,40 @@ export default function ClientDetailPage() {
     return { sortedAppointments: sorted, nextUpcomingId: upcoming.length > 0 ? upcoming[0].id : null };
   }, [appointments]);
 
+  const totalSessions = appointments.length;
+  const completedSessions = (appointments as any[]).filter((a: any) => a.status === "completed").length;
+  const paidSessions = (appointments as any[]).filter((a: any) => a.payment_status === "paid_now" || a.payment_status === "paid_in_advance").length;
+  const cancelledSessions = (appointments as any[]).filter((a: any) => a.status === "cancelled" || a.status === "no-show").length;
+  const pendingPayments = (appointments as any[]).filter((a: any) => a.payment_status === "waiting_for_payment").length;
+
+  // Calculate prepaid sessions from manual client income
+  const { paidSessionsFromIncome, prepaidSessions } = useMemo(() => {
+    if (!client) return { paidSessionsFromIncome: 0, prepaidSessions: 0 };
+    const basePrice = (client as any)?.base_price ? Number((client as any).base_price) : null;
+    const completedPrices = (appointments as any[])
+      .filter((a: any) => a.status === "completed" && Number(a.price) > 0)
+      .map((a: any) => Number(a.price));
+    const avgPrice = basePrice ?? (completedPrices.length > 0
+      ? completedPrices.reduce((s, p) => s + p, 0) / completedPrices.length
+      : 0);
+
+    if (avgPrice <= 0) return { paidSessionsFromIncome: 0, prepaidSessions: 0 };
+
+    const totalClientIncome = (clientIncome as any[]).reduce((s: number, i: any) => s + Number(i.amount), 0);
+    const sessionsFromManualIncome = Math.floor(totalClientIncome / avgPrice);
+
+    const totalPaidSessions = paidSessions + sessionsFromManualIncome;
+    const prepaid = Math.max(totalPaidSessions - completedSessions, 0);
+
+    return { paidSessionsFromIncome: sessionsFromManualIncome, prepaidSessions: prepaid };
+  }, [appointments, clientIncome, client, paidSessions, completedSessions]);
+
   if (isLoading) {
     return <AppLayout><div className="flex items-center justify-center h-64 text-muted-foreground">{t("clientDetail.loading")}</div></AppLayout>;
   }
   if (!client) {
     return <AppLayout><div className="text-center py-16 text-muted-foreground">{t("clientDetail.notFound")}</div></AppLayout>;
   }
-
-  const totalSessions = appointments.length;
-  const paidSessions = appointments.filter((a: any) => a.payment_status === "paid_now" || a.payment_status === "paid_in_advance").length;
-  const cancelledSessions = appointments.filter((a: any) => a.status === "cancelled" || a.status === "no-show").length;
-  const pendingPayments = appointments.filter((a: any) => a.payment_status === "waiting_for_payment").length;
 
   const openEdit = () => {
     setEditForm({
@@ -220,7 +244,7 @@ export default function ClientDetailPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           <div className="bg-card rounded-xl border border-border p-4 text-center">
             <p className="text-2xl font-bold text-foreground">{totalSessions}</p>
             <p className="text-xs text-muted-foreground">{t("clientDetail.totalSessions")}</p>
@@ -236,6 +260,17 @@ export default function ClientDetailPage() {
           <div className="bg-card rounded-xl border border-border p-4 text-center">
             <p className="text-2xl font-bold text-warning">{pendingPayments}</p>
             <p className="text-xs text-muted-foreground">{t("clientDetail.pendingPayments")}</p>
+          </div>
+          <div className="bg-card rounded-xl border border-primary/30 p-4 text-center">
+            <div className="flex items-center justify-center gap-1">
+              <CreditCard className="h-4 w-4 text-primary" />
+              <p className="text-2xl font-bold text-primary">{paidSessions + paidSessionsFromIncome}</p>
+            </div>
+            <p className="text-xs text-muted-foreground">{t("clientDetail.paidSessions")}</p>
+          </div>
+          <div className="bg-card rounded-xl border border-success/30 p-4 text-center">
+            <p className={cn("text-2xl font-bold", prepaidSessions > 0 ? "text-success" : "text-muted-foreground")}>{prepaidSessions}</p>
+            <p className="text-xs text-muted-foreground">{t("clientDetail.prepaidSessions")}</p>
           </div>
         </div>
 

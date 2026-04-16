@@ -604,12 +604,30 @@ export function useCreateIncome() {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async (income: { amount: number; date: string; description?: string; source?: string; appointment_id?: string; payment_method?: string }) => {
+    mutationFn: async (income: { amount: number; date: string; description?: string; source?: string; appointment_id?: string; payment_method?: string; client_id?: string | null }) => {
       const { data, error } = await supabase.from("income").insert({ ...income, user_id: user!.id } as any).select().single();
       if (error) throw error;
       return data;
     },
-    onSuccess: () => { ["income", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { ["income", "dashboard-stats", "client-income"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+  });
+}
+
+// Client Income (for paid/prepaid session calculation)
+export function useClientIncome(clientId: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["client-income", clientId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("income")
+        .select("*")
+        .eq("client_id", clientId!)
+        .order("date", { ascending: false });
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!user && !!clientId,
   });
 }
 
