@@ -276,6 +276,10 @@ export type Database = {
       clients: {
         Row: {
           base_price: number | null
+          billing_address: string | null
+          billing_company_name: string | null
+          billing_country: string | null
+          billing_tax_id: string | null
           confirmation_required: boolean
           created_at: string
           email: string | null
@@ -291,6 +295,10 @@ export type Database = {
         }
         Insert: {
           base_price?: number | null
+          billing_address?: string | null
+          billing_company_name?: string | null
+          billing_country?: string | null
+          billing_tax_id?: string | null
           confirmation_required?: boolean
           created_at?: string
           email?: string | null
@@ -306,6 +314,10 @@ export type Database = {
         }
         Update: {
           base_price?: number | null
+          billing_address?: string | null
+          billing_company_name?: string | null
+          billing_country?: string | null
+          billing_tax_id?: string | null
           confirmation_required?: boolean
           created_at?: string
           email?: string | null
@@ -839,8 +851,124 @@ export type Database = {
           },
         ]
       }
+      invoices: {
+        Row: {
+          appointment_id: string | null
+          client_billing_address: string | null
+          client_billing_company: string | null
+          client_billing_country: string | null
+          client_billing_tax_id: string | null
+          client_email: string | null
+          client_id: string | null
+          client_name: string
+          client_phone: string | null
+          created_at: string
+          currency: string
+          id: string
+          invoice_date: string
+          invoice_number: string
+          language: string
+          net_amount: number
+          payment_note: string | null
+          provider_address: string | null
+          provider_business_id: string | null
+          provider_email: string | null
+          provider_name: string | null
+          provider_phone: string | null
+          service_name: string
+          session_date: string
+          total_amount: number
+          updated_at: string
+          user_id: string
+          vat_amount: number
+          vat_mode: string
+          vat_rate: number
+        }
+        Insert: {
+          appointment_id?: string | null
+          client_billing_address?: string | null
+          client_billing_company?: string | null
+          client_billing_country?: string | null
+          client_billing_tax_id?: string | null
+          client_email?: string | null
+          client_id?: string | null
+          client_name: string
+          client_phone?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_date?: string
+          invoice_number: string
+          language?: string
+          net_amount?: number
+          payment_note?: string | null
+          provider_address?: string | null
+          provider_business_id?: string | null
+          provider_email?: string | null
+          provider_name?: string | null
+          provider_phone?: string | null
+          service_name: string
+          session_date: string
+          total_amount?: number
+          updated_at?: string
+          user_id: string
+          vat_amount?: number
+          vat_mode?: string
+          vat_rate?: number
+        }
+        Update: {
+          appointment_id?: string | null
+          client_billing_address?: string | null
+          client_billing_company?: string | null
+          client_billing_country?: string | null
+          client_billing_tax_id?: string | null
+          client_email?: string | null
+          client_id?: string | null
+          client_name?: string
+          client_phone?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          language?: string
+          net_amount?: number
+          payment_note?: string | null
+          provider_address?: string | null
+          provider_business_id?: string | null
+          provider_email?: string | null
+          provider_name?: string | null
+          provider_phone?: string | null
+          service_name?: string
+          session_date?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+          vat_amount?: number
+          vat_mode?: string
+          vat_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
+          business_address: string | null
+          business_id: string | null
           business_name: string | null
           created_at: string
           currency: string
@@ -855,11 +983,15 @@ export type Database = {
           time_format: string
           updated_at: string
           user_id: string
+          vat_mode: string
+          vat_rate: number
           work_hours_end: string
           work_hours_start: string
           working_days_per_week: number
         }
         Insert: {
+          business_address?: string | null
+          business_id?: string | null
           business_name?: string | null
           created_at?: string
           currency?: string
@@ -874,11 +1006,15 @@ export type Database = {
           time_format?: string
           updated_at?: string
           user_id: string
+          vat_mode?: string
+          vat_rate?: number
           work_hours_end?: string
           work_hours_start?: string
           working_days_per_week?: number
         }
         Update: {
+          business_address?: string | null
+          business_id?: string | null
           business_name?: string | null
           created_at?: string
           currency?: string
@@ -893,6 +1029,8 @@ export type Database = {
           time_format?: string
           updated_at?: string
           user_id?: string
+          vat_mode?: string
+          vat_rate?: number
           work_hours_end?: string
           work_hours_start?: string
           working_days_per_week?: number
@@ -1172,6 +1310,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      generate_invoice_number: { Args: { p_user_id: string }; Returns: string }
       move_to_dlq: {
         Args: {
           dlq_name: string
