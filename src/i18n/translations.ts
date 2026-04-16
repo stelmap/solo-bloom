@@ -939,58 +939,45 @@ export const translations = {
   "supervision.deleteDesc": { en: "This will permanently remove the supervision record.", uk: "Це назавжди видалить запис супервізії.", fr: "Cela supprimera définitivement l'enregistrement de supervision." },
   "supervision.allClients": { en: "All Clients", uk: "Всі клієнти", fr: "Tous les clients" },
 
-  // Confirmation keys
-  "confirmation.confirmed": { en: "Confirmed", uk: "Підтверджено", fr: "Confirmé" },
+  // Missing confirmation keys
   "confirmation.noEmail": { en: "Client has no email", uk: "Клієнт не має email", fr: "Le client n'a pas d'email" },
-  "confirmation.notRequired": { en: "Not required", uk: "Не потрібно", fr: "Non requis" },
-  "confirmation.pending": { en: "Pending", uk: "Очікує", fr: "En attente" },
   "confirmation.reminderSent": { en: "Reminder sent", uk: "Нагадування надіслано", fr: "Rappel envoyé" },
   "confirmation.reminderFailed": { en: "Failed to send reminder", uk: "Не вдалося надіслати нагадування", fr: "Échec de l'envoi du rappel" },
   "confirmation.requestConfirmation": { en: "Request Confirmation", uk: "Запросити підтвердження", fr: "Demander confirmation" },
   "confirmation.sendReminder": { en: "Send Reminder", uk: "Надіслати нагадування", fr: "Envoyer un rappel" },
-  "confirmation.status": { en: "Confirmation Status", uk: "Статус підтвердження", fr: "Statut de confirmation" },
-  "confirmation.timestamp": { en: "Confirmed at", uk: "Підтверджено о", fr: "Confirmé le" },
 
   // Status
   "status.reminderSent": { en: "Reminder sent", uk: "Нагадування надіслано", fr: "Rappel envoyé" },
 
-  // Goals / Breakeven
+  // Missing goals keys
   "goals.actuals": { en: "Actuals", uk: "Фактичні", fr: "Réels" },
   "goals.averageProgress": { en: "Average Progress", uk: "Середній прогрес", fr: "Progrès moyen" },
-  "goals.buffer": { en: "Buffer", uk: "Буфер", fr: "Réserve" },
-  "goals.defaultDesc1": { en: "Cover all fixed costs", uk: "Покрити всі фіксовані витрати", fr: "Couvrir tous les frais fixes" },
-  "goals.defaultDesc2": { en: "Comfortable income level", uk: "Комфортний рівень доходу", fr: "Niveau de revenu confortable" },
-  "goals.defaultDesc3": { en: "Growth target", uk: "Ціль зростання", fr: "Objectif de croissance" },
-  "goals.desiredIncome": { en: "Desired Income", uk: "Бажаний дохід", fr: "Revenu souhaité" },
-  "goals.drillDown": { en: "Drill Down", uk: "Деталізація", fr: "Détails" },
-  "goals.explanation1": { en: "How much you need to cover costs", uk: "Скільки потрібно для покриття витрат", fr: "Combien pour couvrir les coûts" },
-  "goals.explanation2": { en: "Income that covers costs + desired income", uk: "Дохід, що покриває витрати + бажаний дохід", fr: "Revenu couvrant les coûts + revenu souhaité" },
-  "goals.explanation3": { en: "Target with safety buffer", uk: "Ціль з буфером безпеки", fr: "Objectif avec réserve de sécurité" },
-  "goals.fixedExpenses": { en: "Fixed Expenses", uk: "Фіксовані витрати", fr: "Dépenses fixes" },
   "goals.forecast": { en: "Forecast", uk: "Прогноз", fr: "Prévision" },
-  "goals.goal": { en: "Goal", uk: "Ціль", fr: "Objectif" },
-  "goals.goalDescription": { en: "Goal Description", uk: "Опис цілі", fr: "Description de l'objectif" },
-  "goals.goalLabel": { en: "Goal Label", uk: "Назва цілі", fr: "Libellé de l'objectif" },
   "goals.goalType": { en: "Goal Type", uk: "Тип цілі", fr: "Type d'objectif" },
-  "goals.howItWorks": { en: "How it works", uk: "Як це працює", fr: "Comment ça marche" },
-  "goals.monthlyBreakdown": { en: "Monthly Breakdown", uk: "Помісячна розбивка", fr: "Répartition mensuelle" },
   "goals.monthlyGoal": { en: "Monthly", uk: "Місячна", fr: "Mensuel" },
   "goals.monthsToGoal": { en: "Months to Goal", uk: "Місяців до цілі", fr: "Mois avant l'objectif" },
-  "goals.noGoals": { en: "No goals set", uk: "Цілі не встановлені", fr: "Aucun objectif défini" },
-  "goals.progress": { en: "Progress", uk: "Прогрес", fr: "Progrès" },
-  "goals.reached": { en: "Reached", uk: "Досягнуто", fr: "Atteint" },
-  "goals.saveGoals": { en: "Save Goals", uk: "Зберегти цілі", fr: "Enregistrer les objectifs" },
-  "goals.saved": { en: "Goals saved", uk: "Цілі збережено", fr: "Objectifs enregistrés" },
-  "goals.sessionsNeeded": { en: "Sessions Needed", uk: "Потрібно сеансів", fr: "Séances nécessaires" },
-  "goals.subtitle": { en: "Track your financial goals", uk: "Відстежуйте фінансові цілі", fr: "Suivez vos objectifs financiers" },
-  "goals.targetAmount": { en: "Target Amount", uk: "Цільова сума", fr: "Montant cible" },
-  "goals.title": { en: "Breakeven Goals", uk: "Цілі беззбитковості", fr: "Objectifs de rentabilité" },
   "goals.trendUp": { en: "Trending up", uk: "Зростає", fr: "En hausse" },
   "goals.trendDown": { en: "Trending down", uk: "Знижується", fr: "En baisse" },
   "goals.trendFlat": { en: "Flat", uk: "Стабільно", fr: "Stable" },
   "goals.variance": { en: "Variance", uk: "Відхилення", fr: "Écart" },
-  "goals.wizard": { en: "Goal Wizard", uk: "Майстер цілей", fr: "Assistant d'objectifs" },
   "goals.yearlyGoal": { en: "Yearly", uk: "Річна", fr: "Annuel" },
+
+  // Day off keys
+  "dayOff.cancelReason": { en: "Cancellation reason", uk: "Причина скасування", fr: "Raison de l'annulation" },
+  "dayOff.cancelTitle": { en: "Cancel sessions?", uk: "Скасувати сеанси?", fr: "Annuler les séances ?" },
+  "dayOff.cancelDesc": { en: "There are sessions on this day. What would you like to do?", uk: "В цей день є сеанси. Що ви бажаєте зробити?", fr: "Il y a des séances ce jour. Que souhaitez-vous faire ?" },
+  "dayOff.keepSessions": { en: "Keep sessions", uk: "Залишити сеанси", fr: "Garder les séances" },
+  "dayOff.cancelConfirm": { en: "Cancel sessions", uk: "Скасувати сеанси", fr: "Annuler les séances" },
+
+  // Toast
+  "toast.sessionsCancelled": { en: "Sessions cancelled", uk: "Сеанси скасовано", fr: "Séances annulées" },
+
+  // Tax keys
+  "tax.autoGenerated": { en: "Auto-generated", uk: "Автоматично", fr: "Généré automatiquement" },
+  "tax.percentageExpenses": { en: "% of expenses", uk: "% від витрат", fr: "% des dépenses" },
+  "tax.percentageProfit": { en: "% of profit", uk: "% від прибутку", fr: "% du bénéfice" },
+  "tax.startCalculationDate": { en: "Start calculation date", uk: "Дата початку розрахунку", fr: "Date de début de calcul" },
+  "tax.startCalculationDateHint": { en: "Tax will be calculated from this date", uk: "Податок буде розраховуватись з цієї дати", fr: "L'impôt sera calculé à partir de cette date" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;
