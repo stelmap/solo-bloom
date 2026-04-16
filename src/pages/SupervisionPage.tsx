@@ -71,13 +71,19 @@ export default function SupervisionPage() {
         content: n.content,
         created_at: n.created_at,
         appointment_id: n.appointment_id,
+        source: n.source,
+        service_name: n.service_name,
       }));
+      // Only mark actual client_notes (not appointment-sourced notes)
+      const clientNoteIds = unusedNotes
+        .filter((n: any) => n.source === "client_note")
+        .map((n: any) => n.id);
       await createSupervision.mutateAsync({
         client_id: createForm.client_id,
         supervision_date: createForm.supervision_date,
         paid_amount: Number(createForm.paid_amount),
         imported_notes_snapshot: snapshot,
-        note_ids: unusedNotes.map((n: any) => n.id),
+        note_ids: clientNoteIds,
       });
       toast({ title: t("supervision.created") });
       setCreateOpen(false);
