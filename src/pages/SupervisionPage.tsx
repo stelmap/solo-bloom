@@ -232,6 +232,7 @@ export default function SupervisionPage() {
                           <div key={note.id || i} className="bg-background rounded-lg p-3 border border-border">
                             <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
                             <p className="text-xs text-muted-foreground mt-1">
+                              {note.service_name && <span className="font-medium">{note.service_name} · </span>}
                               {t("supervision.notesFromSession")} {format(new Date(note.created_at), "MMM d, yyyy")}
                             </p>
                           </div>
