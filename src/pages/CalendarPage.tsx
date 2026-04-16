@@ -129,6 +129,7 @@ export default function CalendarPage() {
   const [dayOffConfirm, setDayOffConfirm] = useState<{ date: Date; affectedApts: any[] } | null>(null);
 
   const [form, setForm] = useState({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
+  const [serviceError, setServiceError] = useState(false);
 
   // Group session state
   const [isGroupSession, setIsGroupSession] = useState(false);
