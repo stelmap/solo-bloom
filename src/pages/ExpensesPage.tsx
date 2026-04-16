@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Pencil, Trash2, Download, Check, X } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
-import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense, useUpdateExpensePaymentStatus } from "@/hooks/useData";
+import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense, useUpdateExpensePaymentStatus, useUpdateExpenseSeries } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
