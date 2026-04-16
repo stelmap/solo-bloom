@@ -103,18 +103,36 @@ export default function GroupDetailPage() {
     }
   };
 
-  const handleAddMember = async () => {
-    if (!id || !selectedClientId) return;
+  const toggleClientSelection = useCallback((clientId: string) => {
+    setSelectedClientIds(prev => {
+      const next = new Set(prev);
+      if (next.has(clientId)) next.delete(clientId);
+      else next.add(clientId);
+      return next;
+    });
+  }, []);
+
+  const handleAddMembers = async () => {
+    if (!id || selectedClientIds.size === 0) return;
     try {
-      await addMember.mutateAsync({ groupId: id, clientId: selectedClientId });
+      for (const clientId of selectedClientIds) {
+        await addMember.mutateAsync({ groupId: id, clientId });
+      }
       toast({ title: t("groups.memberAdded") });
-      setSelectedClientId("");
+      setSelectedClientIds(new Set());
+      setMemberSearch("");
       setAddMemberOpen(false);
     } catch (e: any) {
       const isDupe = e.message?.includes("duplicate") || e.message?.includes("unique");
       toast({ title: t("common.error"), description: isDupe ? t("groups.memberAlreadyExists") : e.message, variant: "destructive" });
     }
   };
+
+  const filteredAvailableClients = useMemo(() => {
+    if (!memberSearch.trim()) return availableClients;
+    const q = memberSearch.toLowerCase();
+    return availableClients.filter(c => c.name.toLowerCase().includes(q));
+  }, [availableClients, memberSearch]);
 
   const handleRemoveMember = async () => {
     if (!removeMemberId || !id) return;
