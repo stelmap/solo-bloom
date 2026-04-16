@@ -64,14 +64,28 @@ export default function ExpensesPage() {
     const now = new Date();
     const todayStr = format(now, "yyyy-MM-dd");
     let from = "";
-    if (dateRange === "today") from = todayStr;
-    else if (dateRange === "week") from = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
-    else if (dateRange === "month") from = format(startOfMonth(now), "yyyy-MM-dd");
-    else if (dateRange === "quarter") from = format(startOfQuarter(now), "yyyy-MM-dd");
-    else if (dateRange === "last3") from = format(subMonths(now, 3), "yyyy-MM-dd");
-    else if (dateRange === "last12") from = format(subMonths(now, 12), "yyyy-MM-dd");
+    let to = "";
+    if (dateRange === "today") {
+      from = todayStr;
+      to = todayStr;
+    } else if (dateRange === "week") {
+      from = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
+      to = format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
+    } else if (dateRange === "month") {
+      from = format(startOfMonth(now), "yyyy-MM-dd");
+      to = format(endOfMonth(now), "yyyy-MM-dd");
+    } else if (dateRange === "quarter") {
+      from = format(startOfQuarter(now), "yyyy-MM-dd");
+      to = format(endOfQuarter(now), "yyyy-MM-dd");
+    } else if (dateRange === "last3") {
+      from = format(subMonths(now, 3), "yyyy-MM-dd");
+      to = todayStr;
+    } else if (dateRange === "last12") {
+      from = format(subMonths(now, 12), "yyyy-MM-dd");
+      to = todayStr;
+    }
 
-    let result = from ? expenses.filter(e => e.date >= from) : expenses;
+    let result = from ? expenses.filter(e => e.date >= from && e.date <= to) : expenses;
     if (catFilter !== "all") result = result.filter(e => e.category === catFilter);
     return result;
   }, [expenses, dateRange, catFilter]);
