@@ -535,17 +535,18 @@ export function useCreateExpense() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (expense: { category: string; amount: number; date: string; description?: string; is_recurring?: boolean; recurring_start_date?: string | null }) => {
-      const base = { ...expense, user_id: user!.id };
+      const base: any = { ...expense, user_id: user!.id };
       if (!base.is_recurring) {
         base.recurring_start_date = null;
-        const { data, error } = await supabase.from("expenses").insert(base as any).select().single();
+        const { data, error } = await supabase.from("expenses").insert(base).select().single();
         if (error) throw error;
         return data;
       }
-      // For recurring monthly expenses, generate 12 records
+      // For recurring monthly expenses, generate 12 records with shared recurring_group_id
       const startDate = base.recurring_start_date || base.date;
       if (!startDate) throw new Error("Recurring start date is required");
       base.recurring_start_date = startDate;
+      const groupId = crypto.randomUUID();
       const [year, month, day] = startDate.split("-").map(Number);
       const records: any[] = [];
       for (let i = 0; i < 12; i++) {
@@ -553,7 +554,7 @@ export function useCreateExpense() {
         const maxDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
         const actualDay = Math.min(day, maxDay);
         const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(actualDay).padStart(2, "0")}`;
-        records.push({ ...base, date: dateStr });
+        records.push({ ...base, date: dateStr, recurring_group_id: groupId });
       }
       const { data, error } = await supabase.from("expenses").insert(records).select();
       if (error) throw error;
@@ -567,11 +568,21 @@ export function useUpdateExpense() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; category?: string; amount?: number; date?: string; description?: string; is_recurring?: boolean; recurring_start_date?: string | null }) => {
-      // Clear recurring_start_date if is_recurring is being set to false
       if (updates.is_recurring === false) {
         updates.recurring_start_date = null;
       }
       const { error } = await supabase.from("expenses").update(updates).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+  });
+}
+
+export function useUpdateExpenseSeries() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ recurring_group_id, ...updates }: { recurring_group_id: string; category?: string; amount?: number; description?: string }) => {
+      const { error } = await (supabase.from("expenses") as any).update(updates).eq("recurring_group_id", recurring_group_id);
       if (error) throw error;
     },
     onSuccess: () => { ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },

@@ -511,6 +511,7 @@ export type Database = {
           id: string
           is_recurring: boolean
           payment_status: string
+          recurring_group_id: string | null
           recurring_start_date: string | null
           tax_setting_id: string | null
           updated_at: string
@@ -525,6 +526,7 @@ export type Database = {
           id?: string
           is_recurring?: boolean
           payment_status?: string
+          recurring_group_id?: string | null
           recurring_start_date?: string | null
           tax_setting_id?: string | null
           updated_at?: string
@@ -539,6 +541,7 @@ export type Database = {
           id?: string
           is_recurring?: boolean
           payment_status?: string
+          recurring_group_id?: string | null
           recurring_start_date?: string | null
           tax_setting_id?: string | null
           updated_at?: string

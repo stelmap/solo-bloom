@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Pencil, Trash2, Download, Check, X } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
-import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense, useUpdateExpensePaymentStatus } from "@/hooks/useData";
+import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense, useUpdateExpensePaymentStatus, useUpdateExpenseSeries } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -33,6 +33,7 @@ export default function ExpensesPage() {
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const createExpense = useCreateExpense();
   const updateExpense = useUpdateExpense();
+  const updateSeries = useUpdateExpenseSeries();
   const deleteExpense = useDeleteExpense();
   const updatePaymentStatus = useUpdateExpensePaymentStatus();
   const { toast } = useToast();
@@ -41,6 +42,9 @@ export default function ExpensesPage() {
   const [searchParams] = useSearchParams();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [editExpense, setEditExpense] = useState<any>(null);
+  const [editScopeOpen, setEditScopeOpen] = useState(false);
+  const [editScope, setEditScope] = useState<"single" | "series">("single");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState({ category: "Other", amount: 0, date: new Date().toISOString().split("T")[0], description: "", is_recurring: false, recurring_start_date: "" });
 
@@ -85,7 +89,18 @@ export default function ExpensesPage() {
   };
 
   const openEdit = (exp: any) => {
+    setEditExpense(exp);
+    if (exp.is_recurring && exp.recurring_group_id) {
+      // Show scope choice dialog
+      setEditScopeOpen(true);
+      return;
+    }
+    startEdit(exp, "single");
+  };
+
+  const startEdit = (exp: any, scope: "single" | "series") => {
     setEditId(exp.id);
+    setEditScope(scope);
     setForm({ category: exp.category, amount: Number(exp.amount), date: exp.date, description: exp.description || "", is_recurring: exp.is_recurring, recurring_start_date: exp.recurring_start_date || exp.date });
     setOpen(true);
   };
@@ -105,7 +120,16 @@ export default function ExpensesPage() {
     }
     try {
       if (editId) {
-        await updateExpense.mutateAsync({ id: editId, ...form });
+        if (editScope === "series" && editExpense?.recurring_group_id) {
+          await updateSeries.mutateAsync({
+            recurring_group_id: editExpense.recurring_group_id,
+            category: form.category,
+            amount: form.amount,
+            description: form.description,
+          });
+        } else {
+          await updateExpense.mutateAsync({ id: editId, ...form });
+        }
         toast({ title: t("toast.expenseUpdated") });
       } else {
         await createExpense.mutateAsync(form);
@@ -346,6 +370,32 @@ export default function ExpensesPage() {
         title={t("expenses.deleteTitle")} description={t("expenses.deleteDesc")}
         loading={deleteExpense.isPending}
       />
+
+      {/* Edit scope choice dialog for recurring expenses */}
+      <Dialog open={editScopeOpen} onOpenChange={setEditScopeOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("expenses.editRecurring") || "Edit Recurring Expense"}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            {t("expenses.editRecurringDesc") || "This expense is part of a recurring series. How would you like to apply your changes?"}
+          </p>
+          <div className="flex flex-col gap-2 mt-2">
+            <Button variant="outline" onClick={() => {
+              setEditScopeOpen(false);
+              if (editExpense) startEdit(editExpense, "single");
+            }}>
+              {t("expenses.editThisOnly") || "Edit only this record"}
+            </Button>
+            <Button onClick={() => {
+              setEditScopeOpen(false);
+              if (editExpense) startEdit(editExpense, "series");
+            }}>
+              {t("expenses.editEntireSeries") || "Edit entire series"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
