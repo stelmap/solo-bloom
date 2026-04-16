@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import type { Language } from "@/i18n/translations";
-import { robotoRegularBase64, robotoBoldBase64 } from "./robotoFont";
+import { notoSansRegularBase64, notoSansBoldBase64 } from "./notoSansFont";
 
 interface InvoiceData {
   invoice_number: string;
