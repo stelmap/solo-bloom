@@ -80,9 +80,9 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
   let y = margin;
 
   // Colors
-  const primary = [41, 98, 255]; // blue
-  const dark = [30, 30, 30];
-  const gray = [120, 120, 120];
+  const primary: [number, number, number] = [41, 98, 255];
+  const dark: [number, number, number] = [30, 30, 30];
+  const gray: [number, number, number] = [120, 120, 120];
 
   // Title
   doc.setFontSize(28);

@@ -898,6 +898,30 @@ export const translations = {
   "pricing.priceUpdated": { en: "Price updated", uk: "Ціну оновлено" },
   "pricing.notSet": { en: "Not set", uk: "Не встановлено" },
   "pricing.overridden": { en: "Overridden", uk: "Змінено" },
+
+  // Invoice
+  "invoice.generate": { en: "Generate Invoice", uk: "Створити рахунок" },
+  "invoice.generated": { en: "Invoice generated", uk: "Рахунок створено" },
+  "invoice.download": { en: "Download Invoice", uk: "Завантажити рахунок" },
+  "invoice.history": { en: "Invoice History", uk: "Історія рахунків" },
+  "invoice.title": { en: "Invoices", uk: "Рахунки" },
+
+  // Settings - Billing
+  "settings.billing": { en: "Billing & Invoice", uk: "Білінг та рахунки" },
+  "settings.businessId": { en: "Business ID (VAT/SIRET/FOP)", uk: "ІПН / ЄДРПОУ / ФОП" },
+  "settings.businessAddress": { en: "Business Address", uk: "Адреса бізнесу" },
+  "settings.vatMode": { en: "VAT Mode", uk: "Режим ПДВ" },
+  "settings.vatRate": { en: "VAT Rate (%)", uk: "Ставка ПДВ (%)" },
+  "settings.vatNone": { en: "No VAT", uk: "Без ПДВ" },
+  "settings.vatIncluded": { en: "Included in price", uk: "Включено в ціну" },
+  "settings.vatExcluded": { en: "Excluded from price", uk: "Не включено в ціну" },
+
+  // Client billing fields
+  "client.billingAddress": { en: "Billing Address", uk: "Адреса для рахунку" },
+  "client.billingCountry": { en: "Country", uk: "Країна" },
+  "client.billingTaxId": { en: "Tax ID", uk: "ІПН / ЄДРПОУ" },
+  "client.billingCompany": { en: "Company Name", uk: "Назва компанії" },
+  "client.billingDetails": { en: "Billing Details", uk: "Деталі для рахунку" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;
