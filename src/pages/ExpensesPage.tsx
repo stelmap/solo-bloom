@@ -120,7 +120,16 @@ export default function ExpensesPage() {
     }
     try {
       if (editId) {
-        await updateExpense.mutateAsync({ id: editId, ...form });
+        if (editScope === "series" && editExpense?.recurring_group_id) {
+          await updateSeries.mutateAsync({
+            recurring_group_id: editExpense.recurring_group_id,
+            category: form.category,
+            amount: form.amount,
+            description: form.description,
+          });
+        } else {
+          await updateExpense.mutateAsync({ id: editId, ...form });
+        }
         toast({ title: t("toast.expenseUpdated") });
       } else {
         await createExpense.mutateAsync(form);
