@@ -394,7 +394,7 @@ export default function GroupDetailPage() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder={t("groups.searchClients") || "Search clients..."}
+                    placeholder={t("groups.searchPlaceholder")}
                     value={memberSearch}
                     onChange={e => setMemberSearch(e.target.value)}
                     className="pl-9"
