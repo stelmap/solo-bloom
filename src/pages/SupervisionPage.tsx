@@ -327,7 +327,10 @@ export default function SupervisionPage() {
                     unusedNotes.map((n: any) => (
                       <div key={n.id} className="bg-background rounded p-2 border border-border text-sm">
                         <p className="text-foreground whitespace-pre-wrap">{n.content}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{format(new Date(n.created_at), "MMM d, yyyy")}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {n.service_name && <span className="font-medium">{n.service_name} · </span>}
+                          {format(new Date(n.created_at), "MMM d, yyyy")}
+                        </p>
                       </div>
                     ))
                   )}
