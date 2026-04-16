@@ -54,6 +54,8 @@ export default function ClientsPage() {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "" });
 
   const debouncedSearch = useDebouncedValue(search, 200);
