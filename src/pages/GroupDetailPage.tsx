@@ -8,9 +8,9 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import {
   ArrowLeft, Pencil, Users, UserPlus, UserMinus, Calendar,
-  Check, X, MinusCircle, BarChart3, Save, Trash2, Receipt,
+  Check, X, MinusCircle, BarChart3, Save, Trash2, Receipt, Search,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   useGroup, useUpdateGroup, useDeleteGroup, useGroupMembers, useAddGroupMember,
@@ -50,7 +50,8 @@ export default function GroupDetailPage() {
   const [editForm, setEditForm] = useState({ name: "", description: "", status: "active", bill_present: true, bill_absent: false, bill_skipped: false });
   const [editSaving, setEditSaving] = useState(false);
   const [addMemberOpen, setAddMemberOpen] = useState(false);
-  const [selectedClientId, setSelectedClientId] = useState("");
+  const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(new Set());
+  const [memberSearch, setMemberSearch] = useState("");
   const [removeMemberId, setRemoveMemberId] = useState<string | null>(null);
   const [attendanceSessionId, setAttendanceSessionId] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -102,18 +103,36 @@ export default function GroupDetailPage() {
     }
   };
 
-  const handleAddMember = async () => {
-    if (!id || !selectedClientId) return;
+  const toggleClientSelection = useCallback((clientId: string) => {
+    setSelectedClientIds(prev => {
+      const next = new Set(prev);
+      if (next.has(clientId)) next.delete(clientId);
+      else next.add(clientId);
+      return next;
+    });
+  }, []);
+
+  const handleAddMembers = async () => {
+    if (!id || selectedClientIds.size === 0) return;
     try {
-      await addMember.mutateAsync({ groupId: id, clientId: selectedClientId });
+      for (const clientId of selectedClientIds) {
+        await addMember.mutateAsync({ groupId: id, clientId });
+      }
       toast({ title: t("groups.memberAdded") });
-      setSelectedClientId("");
+      setSelectedClientIds(new Set());
+      setMemberSearch("");
       setAddMemberOpen(false);
     } catch (e: any) {
       const isDupe = e.message?.includes("duplicate") || e.message?.includes("unique");
       toast({ title: t("common.error"), description: isDupe ? t("groups.memberAlreadyExists") : e.message, variant: "destructive" });
     }
   };
+
+  const filteredAvailableClients = useMemo(() => {
+    if (!memberSearch.trim()) return availableClients;
+    const q = memberSearch.toLowerCase();
+    return availableClients.filter(c => c.name.toLowerCase().includes(q));
+  }, [availableClients, memberSearch]);
 
   const handleRemoveMember = async () => {
     if (!removeMemberId || !id) return;
@@ -360,28 +379,74 @@ export default function GroupDetailPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Add Member Dialog */}
-      <Dialog open={addMemberOpen} onOpenChange={setAddMemberOpen}>
-        <DialogContent>
+      {/* Add Members Dialog */}
+      <Dialog open={addMemberOpen} onOpenChange={(open) => {
+        setAddMemberOpen(open);
+        if (!open) { setSelectedClientIds(new Set()); setMemberSearch(""); }
+      }}>
+        <DialogContent className="max-h-[85vh] flex flex-col">
           <DialogHeader><DialogTitle>{t("groups.addMember")}</DialogTitle></DialogHeader>
-          <div className="space-y-4">
+          <div className="flex flex-col gap-3 flex-1 min-h-0">
             {availableClients.length === 0 ? (
               <p className="text-muted-foreground text-sm text-center py-4">{t("groups.noAvailableClients")}</p>
             ) : (
               <>
-                <div className="space-y-2">
-                  <Label>{t("groups.selectClient")}</Label>
-                  <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-                    <SelectTrigger><SelectValue placeholder={t("groups.selectClient")} /></SelectTrigger>
-                    <SelectContent>
-                      {availableClients.map(c => (
-                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder={t("groups.searchPlaceholder")}
+                    value={memberSearch}
+                    onChange={e => setMemberSearch(e.target.value)}
+                    className="pl-9"
+                  />
                 </div>
-                <Button onClick={handleAddMember} className="w-full" disabled={!selectedClientId || addMember.isPending}>
-                  {addMember.isPending ? t("common.saving") : t("groups.addMember")}
+                {selectedClientIds.size > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {Array.from(selectedClientIds).map(cid => {
+                      const client = allClients.find(c => c.id === cid);
+                      return client ? (
+                        <Badge key={cid} variant="secondary" className="gap-1 cursor-pointer" onClick={() => toggleClientSelection(cid)}>
+                          {client.name}
+                          <X className="h-3 w-3" />
+                        </Badge>
+                      ) : null;
+                    })}
+                  </div>
+                )}
+                <div className="flex-1 min-h-0 overflow-y-auto max-h-[40vh] border rounded-lg divide-y divide-border">
+                  {filteredAvailableClients.length === 0 ? (
+                    <p className="text-muted-foreground text-sm text-center py-4">{t("groups.noResults") || "No clients found"}</p>
+                  ) : (
+                    filteredAvailableClients.map(c => {
+                      const selected = selectedClientIds.has(c.id);
+                      return (
+                        <div
+                          key={c.id}
+                          onClick={() => toggleClientSelection(c.id)}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors",
+                            selected ? "bg-primary/10" : "hover:bg-muted/50"
+                          )}
+                        >
+                          <div className={cn(
+                            "h-5 w-5 rounded border flex items-center justify-center shrink-0 transition-colors",
+                            selected ? "bg-primary border-primary text-primary-foreground" : "border-border"
+                          )}>
+                            {selected && <Check className="h-3 w-3" />}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium truncate">{c.name}</p>
+                            {(c.phone || c.email) && (
+                              <p className="text-xs text-muted-foreground truncate">{c.phone || c.email}</p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+                <Button onClick={handleAddMembers} className="w-full" disabled={selectedClientIds.size === 0 || addMember.isPending}>
+                  {addMember.isPending ? t("common.saving") : `${t("groups.addMember")} (${selectedClientIds.size})`}
                 </Button>
               </>
             )}
