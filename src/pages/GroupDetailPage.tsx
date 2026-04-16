@@ -50,7 +50,8 @@ export default function GroupDetailPage() {
   const [editForm, setEditForm] = useState({ name: "", description: "", status: "active", bill_present: true, bill_absent: false, bill_skipped: false });
   const [editSaving, setEditSaving] = useState(false);
   const [addMemberOpen, setAddMemberOpen] = useState(false);
-  const [selectedClientId, setSelectedClientId] = useState("");
+  const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(new Set());
+  const [memberSearch, setMemberSearch] = useState("");
   const [removeMemberId, setRemoveMemberId] = useState<string | null>(null);
   const [attendanceSessionId, setAttendanceSessionId] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
