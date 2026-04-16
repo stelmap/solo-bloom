@@ -68,6 +68,9 @@ function formatDate(dateStr: string, lang: Language): string {
     ];
     return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
   }
+  if (lang === "fr") {
+    return d.toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" });
+  }
   return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 }
 

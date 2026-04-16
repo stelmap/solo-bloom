@@ -36,6 +36,7 @@ export function getStoredLang(): Language {
   try {
     const stored = localStorage.getItem(LANG_STORAGE_KEY) || localStorage.getItem("landing_lang");
     if (stored === "uk") return "uk";
+    if (stored === "fr") return "fr";
   } catch {}
   return "en";
 }
