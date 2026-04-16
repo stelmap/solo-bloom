@@ -575,7 +575,7 @@ export default function SettingsPage() {
           <h2 className="font-semibold text-foreground">{t("settings.language")}</h2>
           <div className="max-w-xs space-y-2">
             <Label>{t("settings.displayLanguage")}</Label>
-            <Select value={form.language} onValueChange={v => setForm(f => ({ ...f, language: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="en">English</SelectItem><SelectItem value="uk">Українська</SelectItem></SelectContent></Select>
+            <Select value={form.language} onValueChange={v => setForm(f => ({ ...f, language: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="en">English</SelectItem><SelectItem value="uk">Українська</SelectItem><SelectItem value="fr">Français</SelectItem></SelectContent></Select>
           </div>
         </div>
 
