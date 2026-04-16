@@ -55,7 +55,7 @@ export default function ClientDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "", notification_preference: "no_reminder", confirmation_required: false, pricing_mode: "fixed", base_price: "" });
+  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "", notification_preference: "no_reminder", confirmation_required: false, pricing_mode: "fixed", base_price: "", billing_address: "", billing_country: "", billing_tax_id: "", billing_company_name: "" });
   const [sessionApt, setSessionApt] = useState<any>(null);
   const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
   const use12h = (profile as any)?.time_format === "12h";
@@ -140,6 +140,10 @@ export default function ClientDetailPage() {
       confirmation_required: (client as any).confirmation_required || false,
       pricing_mode: (client as any).pricing_mode || "fixed",
       base_price: (client as any).base_price != null ? String((client as any).base_price) : "",
+      billing_address: (client as any).billing_address || "",
+      billing_country: (client as any).billing_country || "",
+      billing_tax_id: (client as any).billing_tax_id || "",
+      billing_company_name: (client as any).billing_company_name || "",
     });
     setEditOpen(true);
   };
