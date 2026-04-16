@@ -1,9 +1,11 @@
+import { useState } from "react";
 import {
   TrendingUp, TrendingDown, Target, AlertTriangle,
   CalendarCheck, Zap, CheckCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { translations, Language } from "@/i18n/translations";
+import { Button } from "@/components/ui/button";
 
 export type InsightType = "success" | "info" | "warning" | "risk";
 
@@ -106,14 +108,55 @@ export function generateInsights(data: SmartInsightsProps, lang: Language = "en"
   return insights;
 }
 
-export function SmartInsights({ insights }: { insights: Insight[] }) {
+export type TimeRange = "today" | "week" | "month" | "all";
+
+export function SmartInsights({ 
+  insights, 
+  onRangeChange,
+  currentRange = "month"
+}: { 
+  insights: Insight[];
+  onRangeChange?: (range: TimeRange) => void;
+  currentRange?: TimeRange;
+}) {
+  const [selectedRange, setSelectedRange] = useState<TimeRange>(currentRange);
+
   if (insights.length === 0) return null;
+
+  const handleRangeChange = (range: TimeRange) => {
+    setSelectedRange(range);
+    onRangeChange?.(range);
+  };
+
+  const rangeLabels: Record<TimeRange, string> = {
+    today: translations["filter.today"]?.en ?? "Today",
+    week: translations["filter.thisWeek"]?.en ?? "This Week",
+    month: translations["filter.thisMonth"]?.en ?? "This Month",
+    all: translations["filter.allTime"]?.en ?? "All Time",
+  };
 
   return (
     <div className="space-y-3 animate-fade-in">
-      <div className="flex items-center gap-2">
-        <Zap className="h-5 w-5 text-primary" />
-        <h3 className="font-semibold text-foreground">{translations["insights.title"]?.en ?? "Smart Insights"}</h3>
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-2">
+          <Zap className="h-5 w-5 text-primary" />
+          <h3 className="font-semibold text-foreground">{translations["insights.title"]?.en ?? "Smart Insights"}</h3>
+        </div>
+        {onRangeChange && (
+          <div className="flex gap-1 flex-wrap">
+            {(["today", "week", "month", "all"] as TimeRange[]).map((range) => (
+              <Button
+                key={range}
+                variant={selectedRange === range ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleRangeChange(range)}
+                className="text-xs h-7"
+              >
+                {rangeLabels[range]}
+              </Button>
+            ))}
+          </div>
+        )}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {insights.map((insight) => (
