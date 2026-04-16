@@ -520,7 +520,7 @@ export function useExpenses(page = 0) {
       const { data, error, count } = await supabase
         .from("expenses")
         .select("*", { count: "exact" })
-        .order("date", { ascending: false })
+        .order("date", { ascending: true })
         .range(from, to);
       if (error) throw error;
       return { data: data ?? [], totalCount: count ?? 0, pageSize: EXPENSES_PAGE_SIZE };
