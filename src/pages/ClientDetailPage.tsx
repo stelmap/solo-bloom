@@ -55,7 +55,7 @@ export default function ClientDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "", notification_preference: "no_reminder", confirmation_required: false, pricing_mode: "fixed", base_price: "" });
+  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "", notification_preference: "no_reminder", confirmation_required: false, pricing_mode: "fixed", base_price: "", billing_address: "", billing_country: "", billing_tax_id: "", billing_company_name: "" });
   const [sessionApt, setSessionApt] = useState<any>(null);
   const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
   const use12h = (profile as any)?.time_format === "12h";
@@ -140,6 +140,10 @@ export default function ClientDetailPage() {
       confirmation_required: (client as any).confirmation_required || false,
       pricing_mode: (client as any).pricing_mode || "fixed",
       base_price: (client as any).base_price != null ? String((client as any).base_price) : "",
+      billing_address: (client as any).billing_address || "",
+      billing_country: (client as any).billing_country || "",
+      billing_tax_id: (client as any).billing_tax_id || "",
+      billing_company_name: (client as any).billing_company_name || "",
     });
     setEditOpen(true);
   };
@@ -159,7 +163,11 @@ export default function ClientDetailPage() {
         confirmation_required: editForm.confirmation_required,
         pricing_mode: editForm.pricing_mode,
         base_price: newBasePrice,
-      });
+        billing_address: editForm.billing_address || undefined,
+        billing_country: editForm.billing_country || undefined,
+        billing_tax_id: editForm.billing_tax_id || undefined,
+        billing_company_name: editForm.billing_company_name || undefined,
+      } as any);
 
       if (basePriceChanged) {
         await createPriceChange.mutateAsync({
@@ -486,6 +494,14 @@ export default function ClientDetailPage() {
             <div className="space-y-2"><Label>{t("common.telegram")}</Label><Input placeholder="username" value={editForm.telegram} onChange={e => setEditForm(f => ({ ...f, telegram: e.target.value }))} /></div>
             <div className="space-y-2"><Label>{t("common.generalNotes")}</Label><Textarea value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} /></div>
             
+            <div className="border-t border-border pt-4 space-y-4">
+              <h4 className="text-sm font-medium flex items-center gap-2"><FileText className="h-4 w-4" /> {t("client.billingDetails")}</h4>
+              <div className="space-y-2"><Label>{t("client.billingCompany")}</Label><Input value={editForm.billing_company_name} onChange={e => setEditForm(f => ({ ...f, billing_company_name: e.target.value }))} /></div>
+              <div className="space-y-2"><Label>{t("client.billingTaxId")}</Label><Input value={editForm.billing_tax_id} onChange={e => setEditForm(f => ({ ...f, billing_tax_id: e.target.value }))} /></div>
+              <div className="space-y-2"><Label>{t("client.billingAddress")}</Label><Input value={editForm.billing_address} onChange={e => setEditForm(f => ({ ...f, billing_address: e.target.value }))} /></div>
+              <div className="space-y-2"><Label>{t("client.billingCountry")}</Label><Input value={editForm.billing_country} onChange={e => setEditForm(f => ({ ...f, billing_country: e.target.value }))} /></div>
+            </div>
+
             <div className="border-t border-border pt-4 space-y-4">
               <h4 className="text-sm font-medium flex items-center gap-2"><Bell className="h-4 w-4" /> {t("notification.title")}</h4>
               <div className="space-y-2">
