@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Trash2, DollarSign, CheckCircle, Download } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
-import { useIncome, useCreateIncome, useDeleteIncome, useExpectedPayments, useMarkExpectedPaymentPaid } from "@/hooks/useData";
+import { useIncome, useCreateIncome, useDeleteIncome, useExpectedPayments, useMarkExpectedPaymentPaid, useClients } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
@@ -27,6 +27,7 @@ export default function IncomePage() {
   const pageSize = incomeResult?.pageSize ?? 50;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const { data: expectedPayments = [], isLoading: epLoading } = useExpectedPayments();
+  const { data: clients = [] } = useClients();
   const createIncome = useCreateIncome();
   const deleteIncome = useDeleteIncome();
   const markPaid = useMarkExpectedPaymentPaid();
@@ -38,7 +39,7 @@ export default function IncomePage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [payDialog, setPayDialog] = useState<any>(null);
   const [payMethod, setPayMethod] = useState("cash");
-  const [form, setForm] = useState({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash" });
+  const [form, setForm] = useState({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash", client_id: "" });
 
   // Filters
   const initialRange = searchParams.get("range") || "month";
@@ -69,8 +70,12 @@ export default function IncomePage() {
   const handleCreate = async () => {
     if (!form.amount) return;
     try {
-      await createIncome.mutateAsync({ ...form, source: "manual" });
-      setForm({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash" });
+      await createIncome.mutateAsync({
+        ...form,
+        source: "manual",
+        client_id: form.client_id || null,
+      });
+      setForm({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash", client_id: "" });
       setOpen(false);
       toast({ title: t("toast.incomeAdded") });
     } catch (e: any) {
