@@ -101,8 +101,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       const memberPrice = member?.price_per_session != null ? Number(member.price_per_session) : sessionPrice;
       const billable =
         (att.status === "attended" && groupData.bill_present) ||
-        (att.status === "absent" && groupData.bill_absent) ||
-        (att.status === "skipped" && groupData.bill_skipped);
+        ((att.status === "absent" || att.status === "skipped") && groupData.bill_absent);
       return {
         clientId: att.client_id,
         clientName: att.clients?.name || "Unknown",
