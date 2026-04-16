@@ -629,10 +629,13 @@ export default function CalendarPage() {
                   )}
                   <div className="space-y-2">
                     <Label>{t("calendar.service")} *</Label>
-                    <Select value={form.service_id} onValueChange={v => setForm(f => ({ ...f, service_id: v }))}>
-                      <SelectTrigger><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
+                    <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); }}>
+                      <SelectTrigger className={serviceError ? "border-destructive" : ""}><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
                       <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                     </Select>
+                    {serviceError && (
+                      <p className="text-sm text-destructive">⚠️ {t("calendar.service")} is required</p>
+                    )}
                   </div>
                   <DateTimePicker
                     date={form.date}
