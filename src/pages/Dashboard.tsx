@@ -1,13 +1,13 @@
+import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { MetricCard } from "@/components/MetricCard";
 import { BreakevenProgress } from "@/components/BreakevenProgress";
-import { SmartInsights, generateInsights } from "@/components/SmartInsights";
+import { SmartInsights, generateInsights, TimeRange } from "@/components/SmartInsights";
 import { Progress } from "@/components/ui/progress";
 import { DollarSign, Users, TrendingUp, TrendingDown, Clock, Target, AlertTriangle, Receipt } from "lucide-react";
-import { useDashboardStats, useBreakevenGoals, useServices, useTaxSettings, useExpectedPayments, useProfile } from "@/hooks/useData";
-import { format } from "date-fns";
+import { useDashboardStats, useBreakevenGoals, useServices, useTaxSettings, useExpectedPayments, useProfile, useIncome } from "@/hooks/useData";
+import { format, startOfWeek, startOfMonth, startOfDay } from "date-fns";
 import { formatScheduledTime } from "@/lib/timeFormat";
-import { useMemo } from "react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { cn } from "@/lib/utils";
@@ -21,10 +21,14 @@ export default function Dashboard() {
   const { data: taxSettings = [] } = useTaxSettings();
   const { data: expectedPayments = [] } = useExpectedPayments();
   const { data: profile } = useProfile();
+  const { data: incomeResult } = useIncome();
+  const allIncome = (incomeResult as any)?.data ?? incomeResult ?? [];
   const { t, lang } = useLanguage();
   const { symbol: cs } = useCurrency();
   const navigate = useNavigate();
   const use12h = (profile as any)?.time_format === "12h";
+  
+  const [insightsRange, setInsightsRange] = useState<TimeRange>("month");
 
   const s = stats ?? {
     todayIncome: 0, monthlyIncome: 0, monthlyExpenses: 0, netProfit: 0,
@@ -57,16 +61,60 @@ export default function Dashboard() {
   const netAfterTax = s.monthlyIncome - monthlyTaxEstimate;
   const netProfit = netAfterTax - s.monthlyExpenses;
 
+  // Calculate filtered income based on selected range
+  const filteredIncomeData = useMemo(() => {
+    const now = new Date();
+    const todayStr = format(now, "yyyy-MM-dd");
+    let fromDate = "";
+    
+    if (insightsRange === "today") {
+      fromDate = todayStr;
+    } else if (insightsRange === "week") {
+      fromDate = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
+    } else if (insightsRange === "month") {
+      fromDate = format(startOfMonth(now), "yyyy-MM-dd");
+    }
+    
+    const filtered = insightsRange === "all" 
+      ? allIncome 
+      : allIncome.filter((i: any) => i.date >= fromDate);
+    
+    const totalIncome = filtered.reduce((sum: number, i: any) => sum + Number(i.amount), 0);
+    
+    // Calculate previous period for comparison
+    let prevIncome = 0;
+    if (insightsRange === "week") {
+      const lastWeekStart = format(new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000), "yyyy-MM-dd");
+      const lastWeekEnd = format(new Date(startOfWeek(now, { weekStartsOn: 1 }).getTime() - 1), "yyyy-MM-dd");
+      prevIncome = allIncome
+        .filter((i: any) => i.date >= lastWeekStart && i.date <= lastWeekEnd)
+        .reduce((sum: number, i: any) => sum + Number(i.amount), 0);
+    } else if (insightsRange === "month") {
+      const lastMonthStart = format(new Date(now.getFullYear(), now.getMonth() - 1, 1), "yyyy-MM-dd");
+      const lastMonthEnd = format(new Date(now.getFullYear(), now.getMonth(), 0), "yyyy-MM-dd");
+      prevIncome = allIncome
+        .filter((i: any) => i.date >= lastMonthStart && i.date <= lastMonthEnd)
+        .reduce((sum: number, i: any) => sum + Number(i.amount), 0);
+    } else if (insightsRange === "today") {
+      const yesterday = format(new Date(now.getTime() - 24 * 60 * 60 * 1000), "yyyy-MM-dd");
+      prevIncome = allIncome
+        .filter((i: any) => i.date === yesterday)
+        .reduce((sum: number, i: any) => sum + Number(i.amount), 0);
+    }
+    
+    return { totalIncome, prevIncome };
+  }, [allIncome, insightsRange]);
+
   const insights = useMemo(() => generateInsights({
-    monthlyIncome: s.monthlyIncome,
+    monthlyIncome: insightsRange === "month" ? filteredIncomeData.totalIncome : s.monthlyIncome,
     monthlyExpenses: s.monthlyExpenses,
-    lastWeekIncome: s.lastWeekIncome,
-    thisWeekIncome: s.thisWeekIncome,
+    lastWeekIncome: filteredIncomeData.prevIncome,
+    thisWeekIncome: filteredIncomeData.totalIncome,
     monthlyAppointments: s.monthlyAppointments,
     maxMonthlyCapacity: s.maxMonthlyCapacity,
     daysLeftInMonth: s.daysLeftInMonth,
     daysPastInMonth: s.daysPastInMonth,
-  }, lang, cs), [s, lang, cs]);
+  }, lang, cs), [filteredIncomeData, s, lang, cs, insightsRange]);
 
   const goalTargets = (goals as any[]).map((g: any) => ({
     ...g,
@@ -126,7 +174,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        <SmartInsights insights={insights} />
+        <SmartInsights insights={insights} onRangeChange={setInsightsRange} currentRange={insightsRange} />
 
         {/* Goal progress on dashboard */}
         {goalTargets.length > 0 && (
