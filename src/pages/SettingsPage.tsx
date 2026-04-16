@@ -83,6 +83,10 @@ export default function SettingsPage() {
         time_format: (profile as any).time_format || "24h",
         default_duration: (profile as any).default_duration || 60,
         currency: (profile as any).currency || "EUR",
+        business_id: (profile as any).business_id || "",
+        business_address: (profile as any).business_address || "",
+        vat_mode: (profile as any).vat_mode || "none",
+        vat_rate: Number((profile as any).vat_rate) || 0,
       });
     }
   }, [profile]);
