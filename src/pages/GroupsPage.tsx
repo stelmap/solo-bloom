@@ -161,10 +161,31 @@ export default function GroupsPage() {
             <p className="text-muted-foreground">{groups.length === 0 ? t("groups.noGroups") : t("groups.noResults")}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map(group => (
-              <GroupCard key={group.id} group={group} onNavigate={id => navigate(`/groups/${id}`)} t={t} />
-            ))}
+          <div className="space-y-6">
+            {activeGroups.length > 0 && (
+              <div>
+                {inactiveGroups.length > 0 && (
+                  <h2 className="text-sm font-medium text-muted-foreground mb-3">{t("groups.active")}</h2>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {activeGroups.map(group => (
+                    <GroupCard key={group.id} group={group} onNavigate={id => navigate(`/groups/${id}`)} />
+                  ))}
+                </div>
+              </div>
+            )}
+            {inactiveGroups.length > 0 && (
+              <div>
+                {activeGroups.length > 0 && (
+                  <h2 className="text-sm font-medium text-muted-foreground mb-3">{t("groups.inactive")}</h2>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {inactiveGroups.map(group => (
+                    <GroupCard key={group.id} group={group} onNavigate={id => navigate(`/groups/${id}`)} inactive />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
