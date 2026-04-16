@@ -199,6 +199,8 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          included_in_supervision: boolean
+          supervision_id: string | null
           updated_at: string
           user_id: string
         }
@@ -208,6 +210,8 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          included_in_supervision?: boolean
+          supervision_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -217,6 +221,8 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          included_in_supervision?: boolean
+          supervision_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -233,6 +239,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_notes_supervision_id_fkey"
+            columns: ["supervision_id"]
+            isOneToOne: false
+            referencedRelation: "supervisions"
             referencedColumns: ["id"]
           },
         ]
@@ -1194,6 +1207,66 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      supervisions: {
+        Row: {
+          client_id: string
+          created_at: string
+          expense_id: string | null
+          id: string
+          imported_notes_snapshot: Json
+          next_steps: string | null
+          paid_amount: number
+          supervision_date: string
+          supervision_outcome: string | null
+          supervisor_feedback: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          expense_id?: string | null
+          id?: string
+          imported_notes_snapshot?: Json
+          next_steps?: string | null
+          paid_amount?: number
+          supervision_date?: string
+          supervision_outcome?: string | null
+          supervisor_feedback?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          expense_id?: string | null
+          id?: string
+          imported_notes_snapshot?: Json
+          next_steps?: string | null
+          paid_amount?: number
+          supervision_date?: string
+          supervision_outcome?: string | null
+          supervisor_feedback?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supervisions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supervisions_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       suppressed_emails: {
         Row: {
