@@ -32,6 +32,7 @@ const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
 const ConfirmSessionPage = lazy(() => import("./pages/ConfirmSessionPage"));
 const UnsubscribePage = lazy(() => import("./pages/UnsubscribePage"));
+const SupervisionPage = lazy(() => import("./pages/SupervisionPage"));
 
 const queryClient = new QueryClient();
 
@@ -73,6 +74,7 @@ const App = () => (
                 <Route path="/breakeven" element={<ProtectedRoute><BreakevenPage /></ProtectedRoute>} />
                 <Route path="/financial" element={<ProtectedRoute><FinancialOverviewPage /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+                <Route path="/supervision" element={<ProtectedRoute><SupervisionPage /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
