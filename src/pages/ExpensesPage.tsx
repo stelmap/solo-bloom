@@ -33,6 +33,7 @@ export default function ExpensesPage() {
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const createExpense = useCreateExpense();
   const updateExpense = useUpdateExpense();
+  const updateSeries = useUpdateExpenseSeries();
   const deleteExpense = useDeleteExpense();
   const updatePaymentStatus = useUpdateExpensePaymentStatus();
   const { toast } = useToast();
@@ -41,6 +42,9 @@ export default function ExpensesPage() {
   const [searchParams] = useSearchParams();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [editExpense, setEditExpense] = useState<any>(null);
+  const [editScopeOpen, setEditScopeOpen] = useState(false);
+  const [editScope, setEditScope] = useState<"single" | "series">("single");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState({ category: "Other", amount: 0, date: new Date().toISOString().split("T")[0], description: "", is_recurring: false, recurring_start_date: "" });
 
