@@ -370,6 +370,32 @@ export default function ExpensesPage() {
         title={t("expenses.deleteTitle")} description={t("expenses.deleteDesc")}
         loading={deleteExpense.isPending}
       />
+
+      {/* Edit scope choice dialog for recurring expenses */}
+      <Dialog open={editScopeOpen} onOpenChange={setEditScopeOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("expenses.editRecurring") || "Edit Recurring Expense"}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            {t("expenses.editRecurringDesc") || "This expense is part of a recurring series. How would you like to apply your changes?"}
+          </p>
+          <div className="flex flex-col gap-2 mt-2">
+            <Button variant="outline" onClick={() => {
+              setEditScopeOpen(false);
+              if (editExpense) startEdit(editExpense, "single");
+            }}>
+              {t("expenses.editThisOnly") || "Edit only this record"}
+            </Button>
+            <Button onClick={() => {
+              setEditScopeOpen(false);
+              if (editExpense) startEdit(editExpense, "series");
+            }}>
+              {t("expenses.editEntireSeries") || "Edit entire series"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
