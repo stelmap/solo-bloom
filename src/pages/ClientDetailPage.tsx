@@ -97,22 +97,15 @@ export default function ClientDetailPage() {
     return { sortedAppointments: sorted, nextUpcomingId: upcoming.length > 0 ? upcoming[0].id : null };
   }, [appointments]);
 
-  if (isLoading) {
-    return <AppLayout><div className="flex items-center justify-center h-64 text-muted-foreground">{t("clientDetail.loading")}</div></AppLayout>;
-  }
-  if (!client) {
-    return <AppLayout><div className="text-center py-16 text-muted-foreground">{t("clientDetail.notFound")}</div></AppLayout>;
-  }
-
   const totalSessions = appointments.length;
-  const completedSessions = appointments.filter((a: any) => a.status === "completed").length;
-  const paidSessions = appointments.filter((a: any) => a.payment_status === "paid_now" || a.payment_status === "paid_in_advance").length;
-  const cancelledSessions = appointments.filter((a: any) => a.status === "cancelled" || a.status === "no-show").length;
-  const pendingPayments = appointments.filter((a: any) => a.payment_status === "waiting_for_payment").length;
+  const completedSessions = (appointments as any[]).filter((a: any) => a.status === "completed").length;
+  const paidSessions = (appointments as any[]).filter((a: any) => a.payment_status === "paid_now" || a.payment_status === "paid_in_advance").length;
+  const cancelledSessions = (appointments as any[]).filter((a: any) => a.status === "cancelled" || a.status === "no-show").length;
+  const pendingPayments = (appointments as any[]).filter((a: any) => a.payment_status === "waiting_for_payment").length;
 
   // Calculate prepaid sessions from manual client income
   const { paidSessionsFromIncome, prepaidSessions } = useMemo(() => {
-    // Get the session price: use client base_price or average from appointments
+    if (!client) return { paidSessionsFromIncome: 0, prepaidSessions: 0 };
     const basePrice = (client as any)?.base_price ? Number((client as any).base_price) : null;
     const completedPrices = (appointments as any[])
       .filter((a: any) => a.status === "completed" && Number(a.price) > 0)
@@ -123,16 +116,21 @@ export default function ClientDetailPage() {
 
     if (avgPrice <= 0) return { paidSessionsFromIncome: 0, prepaidSessions: 0 };
 
-    // Total manual income linked to this client
     const totalClientIncome = (clientIncome as any[]).reduce((s: number, i: any) => s + Number(i.amount), 0);
     const sessionsFromManualIncome = Math.floor(totalClientIncome / avgPrice);
 
-    // Prepaid = sessions paid (from manual income + appointment payments) minus completed sessions
     const totalPaidSessions = paidSessions + sessionsFromManualIncome;
     const prepaid = Math.max(totalPaidSessions - completedSessions, 0);
 
     return { paidSessionsFromIncome: sessionsFromManualIncome, prepaidSessions: prepaid };
   }, [appointments, clientIncome, client, paidSessions, completedSessions]);
+
+  if (isLoading) {
+    return <AppLayout><div className="flex items-center justify-center h-64 text-muted-foreground">{t("clientDetail.loading")}</div></AppLayout>;
+  }
+  if (!client) {
+    return <AppLayout><div className="text-center py-16 text-muted-foreground">{t("clientDetail.notFound")}</div></AppLayout>;
+  }
 
   const openEdit = () => {
     setEditForm({
