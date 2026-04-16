@@ -3,8 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Users, Calendar, Pencil } from "lucide-react";
+import { Plus, Search, Users } from "lucide-react";
 import { useState, useMemo, memo } from "react";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useNavigate } from "react-router-dom";
@@ -14,26 +13,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 
-const GroupCard = memo(({ group, onNavigate, t }: { group: any; onNavigate: (id: string) => void; t: any }) => (
+const GroupCard = memo(({ group, onNavigate, inactive }: { group: any; onNavigate: (id: string) => void; inactive?: boolean }) => (
   <div
     onClick={() => onNavigate(group.id)}
-    className="bg-card rounded-xl border border-border p-5 animate-fade-in group/card relative cursor-pointer hover:border-primary/30 hover:shadow-md transition-all"
+    className={`bg-card rounded-xl border p-5 animate-fade-in cursor-pointer transition-all ${
+      inactive
+        ? "border-border/50 opacity-50 grayscale hover:opacity-70"
+        : "border-border hover:border-primary/30 hover:shadow-md"
+    }`}
   >
-    <div className="flex items-start justify-between mb-3">
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-          <Users className="h-5 w-5" />
-        </div>
-        <div className="min-w-0">
-          <h3 className="font-semibold text-foreground truncate">{group.name}</h3>
-          {group.description && (
-            <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{group.description}</p>
-          )}
-        </div>
+    <div className="flex items-center gap-3">
+      <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
+        inactive ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"
+      }`}>
+        <Users className="h-5 w-5" />
       </div>
-      <Badge variant={group.status === "active" ? "default" : "secondary"} className="text-xs shrink-0">
-        {group.status === "active" ? t("groups.active") : t("groups.inactive")}
-      </Badge>
+      <div className="min-w-0 flex-1">
+        <h3 className="font-semibold text-foreground break-words">{group.name}</h3>
+        {group.description && (
+          <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{group.description}</p>
+        )}
+      </div>
     </div>
   </div>
 ));
@@ -63,6 +63,9 @@ export default function GroupsPage() {
     }
     return result;
   }, [groups, debouncedSearch, statusFilter]);
+
+  const activeGroups = useMemo(() => filtered.filter(g => g.status === "active"), [filtered]);
+  const inactiveGroups = useMemo(() => filtered.filter(g => g.status !== "active"), [filtered]);
 
   const handleCreate = async () => {
     if (!form.name.trim() || submitting) return;
@@ -157,10 +160,31 @@ export default function GroupsPage() {
             <p className="text-muted-foreground">{groups.length === 0 ? t("groups.noGroups") : t("groups.noResults")}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map(group => (
-              <GroupCard key={group.id} group={group} onNavigate={id => navigate(`/groups/${id}`)} t={t} />
-            ))}
+          <div className="space-y-6">
+            {activeGroups.length > 0 && (
+              <div>
+                {inactiveGroups.length > 0 && (
+                  <h2 className="text-sm font-medium text-muted-foreground mb-3">{t("groups.active")}</h2>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {activeGroups.map(group => (
+                    <GroupCard key={group.id} group={group} onNavigate={id => navigate(`/groups/${id}`)} />
+                  ))}
+                </div>
+              </div>
+            )}
+            {inactiveGroups.length > 0 && (
+              <div>
+                {activeGroups.length > 0 && (
+                  <h2 className="text-sm font-medium text-muted-foreground mb-3">{t("groups.inactive")}</h2>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {inactiveGroups.map(group => (
+                    <GroupCard key={group.id} group={group} onNavigate={id => navigate(`/groups/${id}`)} inactive />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
