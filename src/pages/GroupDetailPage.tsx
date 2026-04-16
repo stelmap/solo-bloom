@@ -10,7 +10,7 @@ import {
   ArrowLeft, Pencil, Users, UserPlus, UserMinus, Calendar,
   Check, X, MinusCircle, BarChart3, Save, Trash2, Receipt,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   useGroup, useUpdateGroup, useDeleteGroup, useGroupMembers, useAddGroupMember,
