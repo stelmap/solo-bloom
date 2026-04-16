@@ -618,6 +618,20 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 </div>
               )}
 
+              {/* Invoice */}
+              {apt.status === "completed" && !isGroupSession && (
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-1.5">
+                    <FileText className="h-3.5 w-3.5" /> {t("invoice.title")}
+                  </Label>
+                  <InvoiceButton
+                    appointment={apt}
+                    client={clients.find(c => c.id === apt.client_id)}
+                    service={services.find(s => s.id === apt.service_id)}
+                  />
+                </div>
+              )}
+
               {/* Session notes */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
