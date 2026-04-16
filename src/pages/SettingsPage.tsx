@@ -315,6 +315,43 @@ export default function SettingsPage() {
 
         <Separator />
 
+        {/* Billing & Invoice Settings */}
+        <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <Receipt className="h-5 w-5 text-muted-foreground" />
+            <h2 className="font-semibold text-foreground">{t("settings.billing")}</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>{t("settings.businessId")}</Label>
+              <Input value={form.business_id} onChange={e => setForm(f => ({ ...f, business_id: e.target.value }))} placeholder="e.g. UA1234567890" />
+            </div>
+            <div className="space-y-2">
+              <Label>{t("settings.businessAddress")}</Label>
+              <Input value={form.business_address} onChange={e => setForm(f => ({ ...f, business_address: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <Label>{t("settings.vatMode")}</Label>
+              <Select value={form.vat_mode} onValueChange={v => setForm(f => ({ ...f, vat_mode: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t("settings.vatNone")}</SelectItem>
+                  <SelectItem value="included">{t("settings.vatIncluded")}</SelectItem>
+                  <SelectItem value="excluded">{t("settings.vatExcluded")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {form.vat_mode !== "none" && (
+              <div className="space-y-2">
+                <Label>{t("settings.vatRate")}</Label>
+                <Input type="number" min={0} max={100} value={form.vat_rate} onChange={e => setForm(f => ({ ...f, vat_rate: Number(e.target.value) }))} />
+              </div>
+            )}
+          </div>
+        </div>
+
+        <Separator />
+
         <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
           <h2 className="font-semibold text-foreground">{t("settings.calendar")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
