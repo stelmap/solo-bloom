@@ -84,7 +84,49 @@ export default function ClientsPage() {
     }
   };
 
-  return (
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows: any[] = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+      if (rows.length === 0) {
+        toast({ title: t("common.error"), description: "No data found in file", variant: "destructive" });
+        return;
+      }
+
+      const normalize = (row: any, keys: string[]) => {
+        for (const k of keys) {
+          const found = Object.keys(row).find(rk => rk.toLowerCase().trim() === k.toLowerCase());
+          if (found) return String(row[found]).trim();
+        }
+        return "";
+      };
+
+      let imported = 0;
+      for (const row of rows) {
+        const name = normalize(row, ["name", "имя", "фио", "клиент", "client"]);
+        if (!name) continue;
+        const phone = normalize(row, ["phone", "телефон", "тел"]);
+        const email = normalize(row, ["email", "e-mail", "почта", "емейл"]);
+        const telegram = normalize(row, ["telegram", "телеграм", "tg"]);
+        const notes = normalize(row, ["notes", "заметки", "примечание", "комментарий"]);
+        await createClient.mutateAsync({ name, phone, email, telegram, notes });
+        imported++;
+      }
+
+      toast({ title: t("toast.clientAdded"), description: `${imported} clients imported` });
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
     <AppLayout>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
