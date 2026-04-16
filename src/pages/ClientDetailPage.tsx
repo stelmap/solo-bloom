@@ -51,6 +51,8 @@ export default function ClientDetailPage() {
   const { data: priceHistory = [] } = useClientPriceHistory(id);
   const createPriceChange = useCreatePriceChange();
   const { data: clientIncome = [] } = useClientIncome(id);
+  const { data: supervisionCount = 0 } = useSupervisionCount(id);
+  const { data: clientSupervisions = [] } = useSupervisions(id);
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
