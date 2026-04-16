@@ -741,6 +741,10 @@ export default function CalendarPage() {
                             const dateStr = format(day, "yyyy-MM-dd");
                             const timeStr = `${hour.toString().padStart(2, "0")}:00`;
                             setForm(f => ({ ...f, date: dateStr, time: timeStr }));
+                            // Preselect the weekday for recurrence (1=Mon..7=Sun)
+                            const dow = day.getDay();
+                            setRecurDays([dow === 0 ? 7 : dow]);
+                            setServiceError(false);
                             setCreateOpen(true);
                           }}
                           onDragOver={(e) => handleDragOver(e, day, hour)}
