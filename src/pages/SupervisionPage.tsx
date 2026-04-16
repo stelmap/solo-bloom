@@ -71,13 +71,19 @@ export default function SupervisionPage() {
         content: n.content,
         created_at: n.created_at,
         appointment_id: n.appointment_id,
+        source: n.source,
+        service_name: n.service_name,
       }));
+      // Only mark actual client_notes (not appointment-sourced notes)
+      const clientNoteIds = unusedNotes
+        .filter((n: any) => n.source === "client_note")
+        .map((n: any) => n.id);
       await createSupervision.mutateAsync({
         client_id: createForm.client_id,
         supervision_date: createForm.supervision_date,
         paid_amount: Number(createForm.paid_amount),
         imported_notes_snapshot: snapshot,
-        note_ids: unusedNotes.map((n: any) => n.id),
+        note_ids: clientNoteIds,
       });
       toast({ title: t("supervision.created") });
       setCreateOpen(false);
@@ -226,6 +232,7 @@ export default function SupervisionPage() {
                           <div key={note.id || i} className="bg-background rounded-lg p-3 border border-border">
                             <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
                             <p className="text-xs text-muted-foreground mt-1">
+                              {note.service_name && <span className="font-medium">{note.service_name} · </span>}
                               {t("supervision.notesFromSession")} {format(new Date(note.created_at), "MMM d, yyyy")}
                             </p>
                           </div>
@@ -320,7 +327,10 @@ export default function SupervisionPage() {
                     unusedNotes.map((n: any) => (
                       <div key={n.id} className="bg-background rounded p-2 border border-border text-sm">
                         <p className="text-foreground whitespace-pre-wrap">{n.content}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{format(new Date(n.created_at), "MMM d, yyyy")}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {n.service_name && <span className="font-medium">{n.service_name} · </span>}
+                          {format(new Date(n.created_at), "MMM d, yyyy")}
+                        </p>
                       </div>
                     ))
                   )}

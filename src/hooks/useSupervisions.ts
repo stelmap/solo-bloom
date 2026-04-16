@@ -60,14 +60,60 @@ export function useUnusedClientNotes(clientId: string | undefined) {
   return useQuery({
     queryKey: ["unused-client-notes", clientId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // 1. Fetch unused client_notes
+      const { data: clientNotes, error: cnErr } = await supabase
         .from("client_notes")
         .select("*")
         .eq("client_id", clientId!)
         .eq("included_in_supervision", false as any)
         .order("created_at", { ascending: true });
-      if (error) throw error;
-      return data as any[];
+      if (cnErr) throw cnErr;
+
+      // 2. Fetch appointments with notes for this client
+      const { data: appointments, error: apErr } = await supabase
+        .from("appointments")
+        .select("id, notes, scheduled_at, status, services(name)")
+        .eq("client_id", clientId!)
+        .not("notes", "is", null)
+        .neq("notes", "")
+        .order("scheduled_at", { ascending: true });
+      if (apErr) throw apErr;
+
+      // 3. Get all supervisions for this client to find already-used appointment IDs
+      const { data: supervisions, error: supErr } = await supabase
+        .from("supervisions" as any)
+        .select("imported_notes_snapshot")
+        .eq("client_id", clientId!);
+      if (supErr) throw supErr;
+
+      const usedAppointmentIds = new Set<string>();
+      (supervisions || []).forEach((sup: any) => {
+        const snapshot = sup.imported_notes_snapshot || [];
+        snapshot.forEach((n: any) => {
+          if (n.appointment_id) usedAppointmentIds.add(n.appointment_id);
+        });
+      });
+
+      // 4. Filter out already-used appointment notes and group session markers
+      const unusedAppointmentNotes = (appointments || [])
+        .filter((a: any) => !usedAppointmentIds.has(a.id))
+        .filter((a: any) => !a.notes?.startsWith("[Group:"))
+        .map((a: any) => ({
+          id: `appt-${a.id}`,
+          appointment_id: a.id,
+          content: a.notes,
+          created_at: a.scheduled_at,
+          source: "appointment" as const,
+          service_name: a.services?.name,
+        }));
+
+      // 5. Merge both sources
+      const allNotes = [
+        ...(clientNotes || []).map((n: any) => ({ ...n, source: "client_note" as const })),
+        ...unusedAppointmentNotes,
+      ].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+
+      return allNotes;
     },
     enabled: !!user && !!clientId,
   });
