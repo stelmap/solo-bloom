@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import type { Language } from "@/i18n/translations";
+import { notoSansRegularBase64, notoSansBoldBase64 } from "./notoSansFont";
 
 interface InvoiceData {
   invoice_number: string;
@@ -76,6 +77,14 @@ function formatDate(dateStr: string, lang: Language): string {
 
 export function generateInvoicePdf(data: InvoiceData): jsPDF {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
+
+  // Register NotoSans font for Cyrillic + Latin + French support
+  doc.addFileToVFS("NotoSans-Regular.ttf", notoSansRegularBase64);
+  doc.addFont("NotoSans-Regular.ttf", "NotoSans", "normal");
+  doc.addFileToVFS("NotoSans-Bold.ttf", notoSansBoldBase64);
+  doc.addFont("NotoSans-Bold.ttf", "NotoSans", "bold");
+  doc.setFont("NotoSans", "normal");
+
   const lang = data.language;
   const pageW = 210;
   const margin = 20;
