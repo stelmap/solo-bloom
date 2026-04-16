@@ -1,13 +1,13 @@
-import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { MetricCard } from "@/components/MetricCard";
 import { BreakevenProgress } from "@/components/BreakevenProgress";
-import { SmartInsights, generateInsights, TimeRange } from "@/components/SmartInsights";
+import { SmartInsights, generateInsights } from "@/components/SmartInsights";
 import { Progress } from "@/components/ui/progress";
 import { DollarSign, Users, TrendingUp, TrendingDown, Clock, Target, AlertTriangle, Receipt } from "lucide-react";
-import { useDashboardStats, useBreakevenGoals, useServices, useTaxSettings, useExpectedPayments, useProfile, useIncome } from "@/hooks/useData";
-import { format, startOfWeek, startOfMonth, startOfDay } from "date-fns";
+import { useDashboardStats, useBreakevenGoals, useServices, useTaxSettings, useExpectedPayments, useProfile } from "@/hooks/useData";
+import { format } from "date-fns";
 import { formatScheduledTime } from "@/lib/timeFormat";
+import { useMemo } from "react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { cn } from "@/lib/utils";
