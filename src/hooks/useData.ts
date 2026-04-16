@@ -535,15 +535,27 @@ export function useCreateExpense() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (expense: { category: string; amount: number; date: string; description?: string; is_recurring?: boolean; recurring_start_date?: string | null }) => {
-      const payload = { ...expense, user_id: user!.id };
-      // Auto-set recurring_start_date when is_recurring is true and no start date provided
-      if (payload.is_recurring && !payload.recurring_start_date) {
-        payload.recurring_start_date = payload.date;
+      const base = { ...expense, user_id: user!.id };
+      if (!base.is_recurring) {
+        base.recurring_start_date = null;
+        const { data, error } = await supabase.from("expenses").insert(base as any).select().single();
+        if (error) throw error;
+        return data;
       }
-      if (!payload.is_recurring) {
-        payload.recurring_start_date = null;
+      // For recurring monthly expenses, generate 12 records
+      const startDate = base.recurring_start_date || base.date;
+      if (!startDate) throw new Error("Recurring start date is required");
+      base.recurring_start_date = startDate;
+      const [year, month, day] = startDate.split("-").map(Number);
+      const records: any[] = [];
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(year, month - 1 + i, 1);
+        const maxDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+        const actualDay = Math.min(day, maxDay);
+        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(actualDay).padStart(2, "0")}`;
+        records.push({ ...base, date: dateStr });
       }
-      const { data, error } = await supabase.from("expenses").insert(payload as any).select().single();
+      const { data, error } = await supabase.from("expenses").insert(records).select();
       if (error) throw error;
       return data;
     },
