@@ -582,7 +582,7 @@ export function useUpdateExpenseSeries() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ recurring_group_id, ...updates }: { recurring_group_id: string; category?: string; amount?: number; description?: string }) => {
-      const { error } = await supabase.from("expenses").update(updates).eq("recurring_group_id" as any, recurring_group_id);
+      const { error } = await (supabase.from("expenses") as any).update(updates).eq("recurring_group_id", recurring_group_id);
       if (error) throw error;
     },
     onSuccess: () => { ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
