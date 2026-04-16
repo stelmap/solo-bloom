@@ -2,9 +2,10 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Phone, Mail, Send, Trash2, Download } from "lucide-react";
+import { Plus, Search, Phone, Mail, Send, Trash2, Download, Upload } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
-import { useState, memo } from "react";
+import { useState, memo, useRef } from "react";
+import * as XLSX from "xlsx";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useNavigate } from "react-router-dom";
 import { useClients, useCreateClient, useDeleteClient } from "@/hooks/useData";
@@ -53,6 +54,8 @@ export default function ClientsPage() {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "" });
 
   const debouncedSearch = useDebouncedValue(search, 200);
@@ -81,6 +84,49 @@ export default function ClientsPage() {
     }
   };
 
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows: any[] = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+      if (rows.length === 0) {
+        toast({ title: t("common.error"), description: "No data found in file", variant: "destructive" });
+        return;
+      }
+
+      const normalize = (row: any, keys: string[]) => {
+        for (const k of keys) {
+          const found = Object.keys(row).find(rk => rk.toLowerCase().trim() === k.toLowerCase());
+          if (found) return String(row[found]).trim();
+        }
+        return "";
+      };
+
+      let imported = 0;
+      for (const row of rows) {
+        const name = normalize(row, ["name", "имя", "фио", "клиент", "client"]);
+        if (!name) continue;
+        const phone = normalize(row, ["phone", "телефон", "тел"]);
+        const email = normalize(row, ["email", "e-mail", "почта", "емейл"]);
+        const telegram = normalize(row, ["telegram", "телеграм", "tg"]);
+        const notes = normalize(row, ["notes", "заметки", "примечание", "комментарий"]);
+        await createClient.mutateAsync({ name, phone, email, telegram, notes });
+        imported++;
+      }
+
+      toast({ title: t("toast.clientAdded"), description: `${imported} clients imported` });
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -96,6 +142,10 @@ export default function ClientsPage() {
                 clients.map(c => [c.name, c.phone || "", c.email || "", c.telegram || "", c.notes || ""])
               );
             }}><Download className="h-4 w-4 mr-1" /> {t("export.csv")}</Button>
+            <input type="file" ref={fileInputRef} accept=".xlsx,.xls,.csv" className="hidden" onChange={handleImportExcel} />
+            <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing}>
+              <Upload className="h-4 w-4 mr-1" /> {importing ? "..." : "Import"}
+            </Button>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 mr-1" /> {t("clients.addClient")}</Button>
