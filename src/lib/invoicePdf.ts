@@ -77,6 +77,14 @@ function formatDate(dateStr: string, lang: Language): string {
 
 export function generateInvoicePdf(data: InvoiceData): jsPDF {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
+
+  // Register Roboto font for Cyrillic + Latin support
+  doc.addFileToVFS("Roboto-Regular.ttf", robotoRegularBase64);
+  doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
+  doc.addFileToVFS("Roboto-Bold.ttf", robotoBoldBase64);
+  doc.addFont("Roboto-Bold.ttf", "Roboto", "bold");
+  doc.setFont("Roboto", "normal");
+
   const lang = data.language;
   const pageW = 210;
   const margin = 20;
