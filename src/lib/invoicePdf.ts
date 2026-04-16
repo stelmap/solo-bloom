@@ -29,22 +29,22 @@ interface InvoiceData {
 }
 
 const labels: Record<string, Record<Language, string>> = {
-  invoice: { en: "INVOICE", uk: "РАХУНОК" },
-  invoiceNumber: { en: "Invoice #", uk: "Рахунок №" },
-  date: { en: "Date", uk: "Дата" },
-  sessionDate: { en: "Session Date", uk: "Дата сеансу" },
-  billTo: { en: "Bill To", uk: "Платник" },
-  from: { en: "From", uk: "Від" },
-  description: { en: "Description", uk: "Опис" },
-  amount: { en: "Amount", uk: "Сума" },
-  subtotal: { en: "Subtotal", uk: "Проміжний підсумок" },
-  vat: { en: "VAT", uk: "ПДВ" },
-  vatIncluded: { en: "VAT included", uk: "ПДВ включено" },
-  total: { en: "Total", uk: "Разом" },
-  paymentNote: { en: "Payment Note", uk: "Примітка до оплати" },
-  taxId: { en: "Tax ID", uk: "ЄДРПОУ/ІПН" },
-  phone: { en: "Phone", uk: "Телефон" },
-  email: { en: "Email", uk: "Email" },
+  invoice: { en: "INVOICE", uk: "РАХУНОК", fr: "FACTURE" },
+  invoiceNumber: { en: "Invoice #", uk: "Рахунок №", fr: "Facture n°" },
+  date: { en: "Date", uk: "Дата", fr: "Date" },
+  sessionDate: { en: "Session Date", uk: "Дата сеансу", fr: "Date de séance" },
+  billTo: { en: "Bill To", uk: "Платник", fr: "Facturer à" },
+  from: { en: "From", uk: "Від", fr: "De" },
+  description: { en: "Description", uk: "Опис", fr: "Description" },
+  amount: { en: "Amount", uk: "Сума", fr: "Montant" },
+  subtotal: { en: "Subtotal", uk: "Проміжний підсумок", fr: "Sous-total" },
+  vat: { en: "VAT", uk: "ПДВ", fr: "TVA" },
+  vatIncluded: { en: "VAT included", uk: "ПДВ включено", fr: "TVA incluse" },
+  total: { en: "Total", uk: "Разом", fr: "Total" },
+  paymentNote: { en: "Payment Note", uk: "Примітка до оплати", fr: "Note de paiement" },
+  taxId: { en: "Tax ID", uk: "ЄДРПОУ/ІПН", fr: "N° TVA" },
+  phone: { en: "Phone", uk: "Телефон", fr: "Téléphone" },
+  email: { en: "Email", uk: "Email", fr: "Email" },
 };
 
 function t(key: string, lang: Language): string {
