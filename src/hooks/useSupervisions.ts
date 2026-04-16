@@ -164,10 +164,10 @@ export function useDeleteSupervision() {
         await supabase.from("expenses").delete().eq("id", expenseId);
       }
       // Unmark notes
-      await supabase
+      await (supabase
         .from("client_notes")
-        .update({ included_in_supervision: false, supervision_id: null } as any)
-        .eq("supervision_id" as any, id);
+        .update({ included_in_supervision: false, supervision_id: null } as any) as any)
+        .eq("supervision_id", id);
       // Delete supervision
       const { error } = await supabase.from("supervisions" as any).delete().eq("id", id);
       if (error) throw error;
