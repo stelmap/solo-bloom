@@ -89,7 +89,18 @@ export default function ExpensesPage() {
   };
 
   const openEdit = (exp: any) => {
+    setEditExpense(exp);
+    if (exp.is_recurring && exp.recurring_group_id) {
+      // Show scope choice dialog
+      setEditScopeOpen(true);
+      return;
+    }
+    startEdit(exp, "single");
+  };
+
+  const startEdit = (exp: any, scope: "single" | "series") => {
     setEditId(exp.id);
+    setEditScope(scope);
     setForm({ category: exp.category, amount: Number(exp.amount), date: exp.date, description: exp.description || "", is_recurring: exp.is_recurring, recurring_start_date: exp.recurring_start_date || exp.date });
     setOpen(true);
   };
