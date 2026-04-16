@@ -169,36 +169,86 @@ export default function CalendarPage() {
   const handleCreate = async () => {
     if (isGroupSession) {
       if (!groupId || !form.service_id || !form.date) return;
-      if (createValidation) return;
+      if (createValidation && !isRecurring) return;
       const service = services.find(s => s.id === form.service_id);
-      // For group sessions, use first member as client_id placeholder (required by appointments table)
       const firstMember = groupMembers[0];
       if (!firstMember) {
         toast({ title: t("common.error"), description: t("groups.noMembers"), variant: "destructive" });
         return;
       }
-      try {
-        const apt = await createAppointment.mutateAsync({
-          client_id: firstMember.client_id,
-          service_id: form.service_id,
-          scheduled_at: `${form.date}T${form.time}:00Z`,
-          duration_minutes: service?.duration_minutes ?? 60,
-          price: Number(service?.price ?? 0),
-          notes: `[Group: ${activeGroups.find(g => g.id === groupId)?.name}] ${form.notes || ""}`.trim(),
-        });
-        await createGroupSession.mutateAsync({
-          groupId,
-          appointmentId: (apt as any).id,
-          notes: form.notes || "",
-          memberClientIds: groupMembers.map((m: any) => m.client_id),
-        });
-        setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
-        setIsGroupSession(false);
-        setGroupId("");
-        setCreateOpen(false);
-        toast({ title: t("groups.groupSessionCreated") });
-      } catch (e: any) {
-        toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      const groupName = activeGroups.find(g => g.id === groupId)?.name || "";
+      const memberClientIds = groupMembers.map((m: any) => m.client_id);
+
+      if (isRecurring) {
+        // Recurring group session: create rule, generate appointments, link each as group session
+        try {
+          const result = await createRecurringRule.mutateAsync({
+            client_id: firstMember.client_id,
+            service_id: form.service_id,
+            time: form.time,
+            duration_minutes: service?.duration_minutes ?? 60,
+            price: Number(service?.price ?? 0),
+            notes: form.notes || undefined,
+            recurrence_type: "weekly",
+            interval_weeks: recurInterval,
+            days_of_week: recurDays.length > 0 ? recurDays : [new Date(form.date).getDay() || 7],
+            start_date: form.date,
+            end_date: recurEndDate || undefined,
+          });
+          // Now fetch all appointments created by this rule and create group sessions for each
+          const ruleId = (result as any).rule?.id;
+          if (ruleId) {
+            const { data: ruleApts } = await supabase.from("appointments")
+              .select("id").eq("recurring_rule_id", ruleId).order("scheduled_at");
+            if (ruleApts && ruleApts.length > 0) {
+              // Update notes on all appointments
+              await supabase.from("appointments")
+                .update({ notes: `[Group: ${groupName}] ${form.notes || ""}`.trim() } as any)
+                .eq("recurring_rule_id", ruleId);
+              // Create group sessions for each appointment
+              for (const apt of ruleApts) {
+                await createGroupSession.mutateAsync({
+                  groupId,
+                  appointmentId: apt.id,
+                  notes: form.notes || "",
+                  memberClientIds,
+                });
+              }
+            }
+          }
+          setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
+          setIsGroupSession(false); setIsRecurring(false);
+          setGroupId(""); setRecurInterval(1); setRecurDays([1]); setRecurEndDate("");
+          setCreateOpen(false);
+          toast({ title: t("recurring.seriesCreated"), description: t("recurring.seriesCreatedDesc", { count: (result as any).count }) });
+        } catch (e: any) {
+          toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+        }
+      } else {
+        // Single group session
+        try {
+          const apt = await createAppointment.mutateAsync({
+            client_id: firstMember.client_id,
+            service_id: form.service_id,
+            scheduled_at: `${form.date}T${form.time}:00Z`,
+            duration_minutes: service?.duration_minutes ?? 60,
+            price: Number(service?.price ?? 0),
+            notes: `[Group: ${groupName}] ${form.notes || ""}`.trim(),
+          });
+          await createGroupSession.mutateAsync({
+            groupId,
+            appointmentId: (apt as any).id,
+            notes: form.notes || "",
+            memberClientIds,
+          });
+          setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
+          setIsGroupSession(false);
+          setGroupId("");
+          setCreateOpen(false);
+          toast({ title: t("groups.groupSessionCreated") });
+        } catch (e: any) {
+          toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+        }
       }
       return;
     }
