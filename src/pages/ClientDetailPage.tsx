@@ -14,9 +14,10 @@ import {
   useClientAttachments, useUploadAttachment, useDeleteAttachment, useProfile,
   useClientPriceHistory, useCreatePriceChange, useClientIncome,
 } from "@/hooks/useData";
+import { useSupervisions, useSupervisionCount } from "@/hooks/useSupervisions";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  ArrowLeft, Phone, Mail, Send, Calendar, Pencil, Trash2, Plus, Paperclip, FileText, Image, Download, X, Bell, DollarSign, History, CreditCard,
+  ArrowLeft, Phone, Mail, Send, Calendar, Pencil, Trash2, Plus, Paperclip, FileText, Image, Download, X, Bell, DollarSign, History, CreditCard, ClipboardList,
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -50,6 +51,8 @@ export default function ClientDetailPage() {
   const { data: priceHistory = [] } = useClientPriceHistory(id);
   const createPriceChange = useCreatePriceChange();
   const { data: clientIncome = [] } = useClientIncome(id);
+  const { data: supervisionCount = 0 } = useSupervisionCount(id);
+  const { data: clientSupervisions = [] } = useSupervisions(id);
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -252,7 +255,7 @@ export default function ClientDetailPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
           <div className="bg-card rounded-xl border border-border p-4 text-center">
             <p className="text-2xl font-bold text-foreground">{totalSessions}</p>
             <p className="text-xs text-muted-foreground">{t("clientDetail.totalSessions")}</p>
@@ -279,6 +282,13 @@ export default function ClientDetailPage() {
           <div className="bg-card rounded-xl border border-success/30 p-4 text-center">
             <p className={cn("text-2xl font-bold", prepaidSessions > 0 ? "text-success" : "text-muted-foreground")}>{prepaidSessions}</p>
             <p className="text-xs text-muted-foreground">{t("clientDetail.prepaidSessions")}</p>
+          </div>
+          <div className="bg-card rounded-xl border border-primary/20 p-4 text-center">
+            <div className="flex items-center justify-center gap-1">
+              <ClipboardList className="h-4 w-4 text-primary" />
+              <p className="text-2xl font-bold text-primary">{supervisionCount}</p>
+            </div>
+            <p className="text-xs text-muted-foreground">{t("supervision.count")}</p>
           </div>
         </div>
 
@@ -421,6 +431,29 @@ export default function ClientDetailPage() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Supervision History */}
+            <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <ClipboardList className="h-4 w-4 text-primary" /> {t("supervision.history")}
+                <span className="text-xs text-muted-foreground ml-auto">{supervisionCount}</span>
+              </h3>
+              {clientSupervisions.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-4">{t("supervision.noSupervisions")}</p>
+              ) : (
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {clientSupervisions.map((sup: any) => (
+                    <div key={sup.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border text-sm cursor-pointer hover:ring-1 hover:ring-ring/20" onClick={() => navigate("/supervision")}>
+                      <div>
+                        <p className="font-medium text-foreground">{format(new Date(sup.supervision_date + "T00:00:00"), "MMM d, yyyy")}</p>
+                        <p className="text-xs text-muted-foreground">{(sup.imported_notes_snapshot || []).length} notes</p>
+                      </div>
+                      <span className="font-semibold text-foreground">{cs}{Number(sup.paid_amount).toFixed(0)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
