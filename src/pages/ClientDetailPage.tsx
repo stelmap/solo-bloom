@@ -432,6 +432,29 @@ export default function ClientDetailPage() {
                 ))}
               </div>
             </div>
+
+            {/* Supervision History */}
+            <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <ClipboardList className="h-4 w-4 text-primary" /> {t("supervision.history")}
+                <span className="text-xs text-muted-foreground ml-auto">{supervisionCount}</span>
+              </h3>
+              {clientSupervisions.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-4">{t("supervision.noSupervisions")}</p>
+              ) : (
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {clientSupervisions.map((sup: any) => (
+                    <div key={sup.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border text-sm cursor-pointer hover:ring-1 hover:ring-ring/20" onClick={() => navigate("/supervision")}>
+                      <div>
+                        <p className="font-medium text-foreground">{format(new Date(sup.supervision_date + "T00:00:00"), "MMM d, yyyy")}</p>
+                        <p className="text-xs text-muted-foreground">{(sup.imported_notes_snapshot || []).length} notes</p>
+                      </div>
+                      <span className="font-semibold text-foreground">{cs}{Number(sup.paid_amount).toFixed(0)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="lg:col-span-2">
