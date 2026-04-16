@@ -244,7 +244,7 @@ export default function ClientDetailPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           <div className="bg-card rounded-xl border border-border p-4 text-center">
             <p className="text-2xl font-bold text-foreground">{totalSessions}</p>
             <p className="text-xs text-muted-foreground">{t("clientDetail.totalSessions")}</p>
@@ -260,6 +260,17 @@ export default function ClientDetailPage() {
           <div className="bg-card rounded-xl border border-border p-4 text-center">
             <p className="text-2xl font-bold text-warning">{pendingPayments}</p>
             <p className="text-xs text-muted-foreground">{t("clientDetail.pendingPayments")}</p>
+          </div>
+          <div className="bg-card rounded-xl border border-primary/30 p-4 text-center">
+            <div className="flex items-center justify-center gap-1">
+              <CreditCard className="h-4 w-4 text-primary" />
+              <p className="text-2xl font-bold text-primary">{paidSessions + paidSessionsFromIncome}</p>
+            </div>
+            <p className="text-xs text-muted-foreground">{t("clientDetail.paidSessions")}</p>
+          </div>
+          <div className="bg-card rounded-xl border border-success/30 p-4 text-center">
+            <p className={cn("text-2xl font-bold", prepaidSessions > 0 ? "text-success" : "text-muted-foreground")}>{prepaidSessions}</p>
+            <p className="text-xs text-muted-foreground">{t("clientDetail.prepaidSessions")}</p>
           </div>
         </div>
 
