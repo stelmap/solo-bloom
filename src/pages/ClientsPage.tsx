@@ -127,6 +127,7 @@ export default function ClientsPage() {
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
+  return (
     <AppLayout>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
