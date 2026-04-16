@@ -99,6 +99,10 @@ export default function ExpensesPage() {
 
   const handleSubmit = async () => {
     if (!form.amount) return;
+    if (form.is_recurring && !form.recurring_start_date) {
+      toast({ title: t("common.error"), description: "Recurring start date is required", variant: "destructive" });
+      return;
+    }
     try {
       if (editId) {
         await updateExpense.mutateAsync({ id: editId, ...form });
