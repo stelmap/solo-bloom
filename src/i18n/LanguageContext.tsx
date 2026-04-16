@@ -17,7 +17,11 @@ export function translateFor(
   params?: Record<string, string | number>,
 ): string {
   const entry = translations[key];
-  if (!entry) return key;
+  if (!entry) {
+    // Fallback: extract readable label from key (e.g. "nav.dashboard" → "Dashboard")
+    const fallback = key.includes(".") ? key.split(".").pop() ?? key : key;
+    return fallback.charAt(0).toUpperCase() + fallback.slice(1).replace(/([A-Z])/g, " $1");
+  }
   let text: string = entry[lang] || entry.en;
   if (params) {
     Object.entries(params).forEach(([k, v]) => {
