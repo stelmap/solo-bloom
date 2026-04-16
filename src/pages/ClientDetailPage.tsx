@@ -163,7 +163,11 @@ export default function ClientDetailPage() {
         confirmation_required: editForm.confirmation_required,
         pricing_mode: editForm.pricing_mode,
         base_price: newBasePrice,
-      });
+        billing_address: editForm.billing_address || undefined,
+        billing_country: editForm.billing_country || undefined,
+        billing_tax_id: editForm.billing_tax_id || undefined,
+        billing_company_name: editForm.billing_company_name || undefined,
+      } as any);
 
       if (basePriceChanged) {
         await createPriceChange.mutateAsync({
