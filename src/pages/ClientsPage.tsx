@@ -142,6 +142,10 @@ export default function ClientsPage() {
                 clients.map(c => [c.name, c.phone || "", c.email || "", c.telegram || "", c.notes || ""])
               );
             }}><Download className="h-4 w-4 mr-1" /> {t("export.csv")}</Button>
+            <input type="file" ref={fileInputRef} accept=".xlsx,.xls,.csv" className="hidden" onChange={handleImportExcel} />
+            <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing}>
+              <Upload className="h-4 w-4 mr-1" /> {importing ? "..." : "Import"}
+            </Button>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 mr-1" /> {t("clients.addClient")}</Button>
