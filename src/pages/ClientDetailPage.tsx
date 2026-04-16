@@ -12,11 +12,11 @@ import {
   useClient, useUpdateClient, useDeleteClient,
   useClientAppointments, useClientNotes, useCreateClientNote, useDeleteClientNote,
   useClientAttachments, useUploadAttachment, useDeleteAttachment, useProfile,
-  useClientPriceHistory, useCreatePriceChange,
+  useClientPriceHistory, useCreatePriceChange, useClientIncome,
 } from "@/hooks/useData";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  ArrowLeft, Phone, Mail, Send, Calendar, Pencil, Trash2, Plus, Paperclip, FileText, Image, Download, X, Bell, DollarSign, History,
+  ArrowLeft, Phone, Mail, Send, Calendar, Pencil, Trash2, Plus, Paperclip, FileText, Image, Download, X, Bell, DollarSign, History, CreditCard,
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -49,6 +49,7 @@ export default function ClientDetailPage() {
   const { data: profile } = useProfile();
   const { data: priceHistory = [] } = useClientPriceHistory(id);
   const createPriceChange = useCreatePriceChange();
+  const { data: clientIncome = [] } = useClientIncome(id);
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
