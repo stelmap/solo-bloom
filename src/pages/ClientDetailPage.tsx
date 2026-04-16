@@ -495,6 +495,14 @@ export default function ClientDetailPage() {
             <div className="space-y-2"><Label>{t("common.generalNotes")}</Label><Textarea value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} /></div>
             
             <div className="border-t border-border pt-4 space-y-4">
+              <h4 className="text-sm font-medium flex items-center gap-2"><FileText className="h-4 w-4" /> {t("client.billingDetails")}</h4>
+              <div className="space-y-2"><Label>{t("client.billingCompany")}</Label><Input value={editForm.billing_company_name} onChange={e => setEditForm(f => ({ ...f, billing_company_name: e.target.value }))} /></div>
+              <div className="space-y-2"><Label>{t("client.billingTaxId")}</Label><Input value={editForm.billing_tax_id} onChange={e => setEditForm(f => ({ ...f, billing_tax_id: e.target.value }))} /></div>
+              <div className="space-y-2"><Label>{t("client.billingAddress")}</Label><Input value={editForm.billing_address} onChange={e => setEditForm(f => ({ ...f, billing_address: e.target.value }))} /></div>
+              <div className="space-y-2"><Label>{t("client.billingCountry")}</Label><Input value={editForm.billing_country} onChange={e => setEditForm(f => ({ ...f, billing_country: e.target.value }))} /></div>
+            </div>
+
+            <div className="border-t border-border pt-4 space-y-4">
               <h4 className="text-sm font-medium flex items-center gap-2"><Bell className="h-4 w-4" /> {t("notification.title")}</h4>
               <div className="space-y-2">
                 <Label>{t("notification.channel")}</Label>
