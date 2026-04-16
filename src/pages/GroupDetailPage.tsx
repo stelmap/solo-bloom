@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import {
   ArrowLeft, Pencil, Users, UserPlus, UserMinus, Calendar,
-  Check, X, MinusCircle, BarChart3, Save, Trash2, Receipt,
+  Check, X, MinusCircle, BarChart3, Save, Trash2, Receipt, Search,
 } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
