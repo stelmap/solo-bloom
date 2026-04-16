@@ -17,7 +17,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { TranslationKey } from "@/i18n/translations";
 import { useSearchParams } from "react-router-dom";
-import { startOfWeek, startOfMonth, startOfQuarter, subMonths, format } from "date-fns";
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, subMonths, format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_CATEGORIES = ["Rent", "Materials", "Insurance", "Equipment", "Marketing", "Utilities", "Laundry", "Software", "Tax", "Other"];
