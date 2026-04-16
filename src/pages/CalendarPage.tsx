@@ -129,6 +129,7 @@ export default function CalendarPage() {
   const [dayOffConfirm, setDayOffConfirm] = useState<{ date: Date; affectedApts: any[] } | null>(null);
 
   const [form, setForm] = useState({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
+  const [serviceError, setServiceError] = useState(false);
 
   // Group session state
   const [isGroupSession, setIsGroupSession] = useState(false);
@@ -167,8 +168,14 @@ export default function CalendarPage() {
   }, [form.date, form.time, form.service_id, services, appointments, scheduleMap, daysOffSet]);
 
   const handleCreate = async () => {
+    // Validate service selection
+    if (!form.service_id) {
+      setServiceError(true);
+      return;
+    }
+
     if (isGroupSession) {
-      if (!groupId || !form.service_id || !form.date) return;
+      if (!groupId || !form.date) return;
       if (createValidation && !isRecurring) return;
       const service = services.find(s => s.id === form.service_id);
       const firstMember = groupMembers[0];
@@ -180,47 +187,76 @@ export default function CalendarPage() {
       const memberClientIds = groupMembers.map((m: any) => m.client_id);
 
       if (isRecurring) {
-        // Recurring group session: create rule, generate appointments, link each as group session
         try {
-          const result = await createRecurringRule.mutateAsync({
+          // Create the first appointment immediately
+          const firstApt = await createAppointment.mutateAsync({
             client_id: firstMember.client_id,
             service_id: form.service_id,
-            time: form.time,
+            scheduled_at: `${form.date}T${form.time}:00Z`,
             duration_minutes: service?.duration_minutes ?? 60,
             price: Number(service?.price ?? 0),
-            notes: form.notes || undefined,
-            recurrence_type: "weekly",
-            interval_weeks: recurInterval,
-            days_of_week: recurDays.length > 0 ? recurDays : [new Date(form.date).getDay() || 7],
-            start_date: form.date,
-            end_date: recurEndDate || undefined,
+            notes: `[Group: ${groupName}] ${form.notes || ""}`.trim(),
           });
-          // Now fetch all appointments created by this rule and create group sessions for each
-          const ruleId = (result as any).rule?.id;
-          if (ruleId) {
-            const { data: ruleApts } = await supabase.from("appointments")
-              .select("id").eq("recurring_rule_id", ruleId).order("scheduled_at");
-            if (ruleApts && ruleApts.length > 0) {
-              // Update notes on all appointments
-              await supabase.from("appointments")
-                .update({ notes: `[Group: ${groupName}] ${form.notes || ""}`.trim() } as any)
-                .eq("recurring_rule_id", ruleId);
-              // Create group sessions for each appointment
-              for (const apt of ruleApts) {
-                await createGroupSession.mutateAsync({
-                  groupId,
-                  appointmentId: apt.id,
-                  notes: form.notes || "",
-                  memberClientIds,
-                });
-              }
-            }
-          }
+          await createGroupSession.mutateAsync({
+            groupId,
+            appointmentId: (firstApt as any).id,
+            notes: form.notes || "",
+            memberClientIds,
+          });
+
+          // Close modal immediately
+          const savedForm = { ...form };
+          const savedRecurDays = [...recurDays];
+          const savedRecurInterval = recurInterval;
+          const savedRecurEndDate = recurEndDate;
+          const savedNotes = form.notes;
           setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
           setIsGroupSession(false); setIsRecurring(false);
           setGroupId(""); setRecurInterval(1); setRecurDays([1]); setRecurEndDate("");
+          setServiceError(false);
           setCreateOpen(false);
-          toast({ title: t("recurring.seriesCreated"), description: t("recurring.seriesCreatedDesc", { count: (result as any).count }) });
+          toast({ title: t("groups.groupSessionCreated"), description: "Creating remaining sessions..." });
+
+          // Background: create recurring rule and remaining group sessions
+          (async () => {
+            try {
+              const result = await createRecurringRule.mutateAsync({
+                client_id: firstMember.client_id,
+                service_id: savedForm.service_id,
+                time: savedForm.time,
+                duration_minutes: service?.duration_minutes ?? 60,
+                price: Number(service?.price ?? 0),
+                notes: savedNotes || undefined,
+                recurrence_type: "weekly",
+                interval_weeks: savedRecurInterval,
+                days_of_week: savedRecurDays.length > 0 ? savedRecurDays : [new Date(savedForm.date).getDay() || 7],
+                start_date: savedForm.date,
+                end_date: savedRecurEndDate || undefined,
+              });
+              const ruleId = (result as any).rule?.id;
+              if (ruleId) {
+                const { data: ruleApts } = await supabase.from("appointments")
+                  .select("id").eq("recurring_rule_id", ruleId).order("scheduled_at");
+                if (ruleApts && ruleApts.length > 0) {
+                  await supabase.from("appointments")
+                    .update({ notes: `[Group: ${groupName}] ${savedNotes || ""}`.trim() } as any)
+                    .eq("recurring_rule_id", ruleId);
+                  for (const apt of ruleApts) {
+                    await createGroupSession.mutateAsync({
+                      groupId,
+                      appointmentId: apt.id,
+                      notes: savedNotes || "",
+                      memberClientIds,
+                    });
+                  }
+                }
+              }
+              qc.invalidateQueries({ queryKey: ["appointments"] });
+              toast({ title: t("recurring.seriesCreated"), description: t("recurring.seriesCreatedDesc", { count: (result as any).count }) });
+            } catch (e: any) {
+              toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+            }
+          })();
         } catch (e: any) {
           toast({ title: t("common.error"), description: e.message, variant: "destructive" });
         }
@@ -244,6 +280,7 @@ export default function CalendarPage() {
           setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
           setIsGroupSession(false);
           setGroupId("");
+          setServiceError(false);
           setCreateOpen(false);
           toast({ title: t("groups.groupSessionCreated") });
         } catch (e: any) {
@@ -253,24 +290,49 @@ export default function CalendarPage() {
       return;
     }
 
-    if (!form.client_id || !form.service_id || !form.date) return;
+    if (!form.client_id || !form.date) return;
     if (createValidation && !isRecurring) return;
     const service = services.find(s => s.id === form.service_id);
 
     if (isRecurring) {
       try {
-        const result = await createRecurringRule.mutateAsync({
+        // Create the first appointment immediately
+        await createAppointment.mutateAsync({
           client_id: form.client_id, service_id: form.service_id,
-          time: form.time, duration_minutes: service?.duration_minutes ?? 60,
-          price: Number(service?.price ?? 0), notes: form.notes || undefined,
-          recurrence_type: "weekly", interval_weeks: recurInterval,
-          days_of_week: recurDays.length > 0 ? recurDays : [new Date(form.date).getDay() || 7],
-          start_date: form.date, end_date: recurEndDate || undefined,
+          scheduled_at: `${form.date}T${form.time}:00Z`,
+          duration_minutes: service?.duration_minutes ?? 60,
+          price: Number(service?.price ?? 0),
+          notes: form.notes || undefined,
         });
+
+        // Close modal immediately
+        const savedForm = { ...form };
+        const savedRecurDays = [...recurDays];
+        const savedRecurInterval = recurInterval;
+        const savedRecurEndDate = recurEndDate;
         setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
         setIsRecurring(false); setRecurInterval(1); setRecurDays([1]); setRecurEndDate("");
+        setServiceError(false);
         setCreateOpen(false);
-        toast({ title: t("recurring.seriesCreated"), description: t("recurring.seriesCreatedDesc", { count: (result as any).count }) });
+        toast({ title: t("toast.appointmentCreated"), description: "Creating remaining sessions..." });
+
+        // Background: create remaining recurring appointments
+        (async () => {
+          try {
+            const result = await createRecurringRule.mutateAsync({
+              client_id: savedForm.client_id, service_id: savedForm.service_id,
+              time: savedForm.time, duration_minutes: service?.duration_minutes ?? 60,
+              price: Number(service?.price ?? 0), notes: savedForm.notes || undefined,
+              recurrence_type: "weekly", interval_weeks: savedRecurInterval,
+              days_of_week: savedRecurDays.length > 0 ? savedRecurDays : [new Date(savedForm.date).getDay() || 7],
+              start_date: savedForm.date, end_date: savedRecurEndDate || undefined,
+            });
+            qc.invalidateQueries({ queryKey: ["appointments"] });
+            toast({ title: t("recurring.seriesCreated"), description: t("recurring.seriesCreatedDesc", { count: (result as any).count }) });
+          } catch (e: any) {
+            toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+          }
+        })();
       } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
     } else {
       try {
@@ -282,6 +344,7 @@ export default function CalendarPage() {
           notes: form.notes || undefined,
         });
         setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
+        setServiceError(false);
         setCreateOpen(false);
         toast({ title: t("toast.appointmentCreated") });
       } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
@@ -566,10 +629,13 @@ export default function CalendarPage() {
                   )}
                   <div className="space-y-2">
                     <Label>{t("calendar.service")} *</Label>
-                    <Select value={form.service_id} onValueChange={v => setForm(f => ({ ...f, service_id: v }))}>
-                      <SelectTrigger><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
+                    <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); }}>
+                      <SelectTrigger className={serviceError ? "border-destructive" : ""}><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
                       <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                     </Select>
+                    {serviceError && (
+                      <p className="text-sm text-destructive">⚠️ {t("calendar.service")} is required</p>
+                    )}
                   </div>
                   <DateTimePicker
                     date={form.date}
@@ -740,6 +806,10 @@ export default function CalendarPage() {
                             const dateStr = format(day, "yyyy-MM-dd");
                             const timeStr = `${hour.toString().padStart(2, "0")}:00`;
                             setForm(f => ({ ...f, date: dateStr, time: timeStr }));
+                            // Preselect the weekday for recurrence (1=Mon..7=Sun)
+                            const dow = day.getDay();
+                            setRecurDays([dow === 0 ? 7 : dow]);
+                            setServiceError(false);
                             setCreateOpen(true);
                           }}
                           onDragOver={(e) => handleDragOver(e, day, hour)}
