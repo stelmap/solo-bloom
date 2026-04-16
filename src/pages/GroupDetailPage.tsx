@@ -47,7 +47,7 @@ export default function GroupDetailPage() {
   const updateMemberPrice = useUpdateGroupMemberPrice();
 
   const [editOpen, setEditOpen] = useState(false);
-  const [editForm, setEditForm] = useState({ name: "", description: "", status: "active", bill_present: true, bill_absent: false, bill_skipped: false });
+  const [editForm, setEditForm] = useState({ name: "", description: "", status: "active", bill_present: true, bill_absent: false });
   const [editSaving, setEditSaving] = useState(false);
   const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(new Set());
@@ -85,7 +85,7 @@ export default function GroupDetailPage() {
 
   const openEdit = () => {
     if (!group) return;
-    setEditForm({ name: group.name, description: group.description || "", status: group.status, bill_present: group.bill_present ?? true, bill_absent: group.bill_absent ?? false, bill_skipped: group.bill_skipped ?? false });
+    setEditForm({ name: group.name, description: group.description || "", status: group.status, bill_present: group.bill_present ?? true, bill_absent: group.bill_absent ?? false });
     setEditOpen(true);
   };
 
@@ -93,7 +93,7 @@ export default function GroupDetailPage() {
     if (!id || !editForm.name.trim() || editSaving) return;
     setEditSaving(true);
     try {
-      await updateGroup.mutateAsync({ id, name: editForm.name.trim(), description: editForm.description.trim(), status: editForm.status, bill_present: editForm.bill_present, bill_absent: editForm.bill_absent, bill_skipped: editForm.bill_skipped });
+      await updateGroup.mutateAsync({ id, name: editForm.name.trim(), description: editForm.description.trim(), status: editForm.status, bill_present: editForm.bill_present, bill_absent: editForm.bill_absent });
       toast({ title: t("groups.updated") });
       setEditOpen(false);
     } catch (e: any) {
@@ -366,10 +366,6 @@ export default function GroupDetailPage() {
               <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
                 <span className="text-sm">{t("groups.billAbsent")}</span>
                 <Switch checked={editForm.bill_absent} onCheckedChange={v => setEditForm(f => ({ ...f, bill_absent: v }))} />
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                <span className="text-sm">{t("groups.billSkipped")}</span>
-                <Switch checked={editForm.bill_skipped} onCheckedChange={v => setEditForm(f => ({ ...f, bill_skipped: v }))} />
               </div>
             </div>
             <Button onClick={handleSaveEdit} className="w-full" disabled={!editForm.name.trim() || editSaving}>

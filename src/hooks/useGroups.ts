@@ -145,7 +145,7 @@ export function useCreateGroup() {
 export function useUpdateGroup() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; description?: string; status?: string; bill_present?: boolean; bill_absent?: boolean; bill_skipped?: boolean }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; name?: string; description?: string; status?: string; bill_present?: boolean; bill_absent?: boolean }) => {
       const { error } = await supabase
         .from("groups" as any)
         .update(updates)
