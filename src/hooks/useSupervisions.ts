@@ -64,7 +64,7 @@ export function useUnusedClientNotes(clientId: string | undefined) {
         .from("client_notes")
         .select("*")
         .eq("client_id", clientId!)
-        .eq("included_in_supervision" as any, false)
+        .eq("included_in_supervision", false as any)
         .order("created_at", { ascending: true });
       if (error) throw error;
       return data as any[];
