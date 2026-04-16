@@ -134,6 +134,16 @@ export default function IncomePage() {
                 <div className="space-y-2"><Label>{t("common.date")}</Label><Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>{t("common.description")}</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
                 <div className="space-y-2">
+                  <Label>{t("income.paidBy")}</Label>
+                  <Select value={form.client_id} onValueChange={v => setForm(f => ({ ...f, client_id: v === "__none__" ? "" : v }))}>
+                    <SelectTrigger><SelectValue placeholder={t("income.selectClient")} /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">{t("income.noClient")}</SelectItem>
+                      {(clients as any[]).map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
                   <Label>{t("calendar.paymentMethod")}</Label>
                   <Select value={form.payment_method} onValueChange={v => setForm(f => ({ ...f, payment_method: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
