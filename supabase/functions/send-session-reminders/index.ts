@@ -11,39 +11,37 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-function parseJwtClaims(token: string | undefined): Record<string, unknown> | null {
-  if (!token) return null
-  const parts = token.split('.')
-  if (parts.length !== 3) return null
-  try {
-    const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/')
-    const padded = payload + '='.repeat((4 - (payload.length % 4)) % 4)
-    return JSON.parse(atob(padded))
-  } catch {
-    return null
-  }
-}
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
-  // Require service_role bearer token (pg_cron supplies this)
+  // With verify_jwt = true, Supabase gateway has already verified the JWT signature.
+  // We still enforce that only service_role tokens (used by pg_cron) can invoke.
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+  const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+
   const authHeader = req.headers.get('Authorization') || ''
   const bearer = authHeader.toLowerCase().startsWith('bearer ')
     ? authHeader.slice(7).trim()
     : ''
-  const claims = parseJwtClaims(bearer)
-  if (!claims || claims.role !== 'service_role') {
+
+  try {
+    const verifier = createClient(supabaseUrl, supabaseAnonKey)
+    const { data, error } = await verifier.auth.getClaims(bearer)
+    if (error || data?.claims?.role !== 'service_role') {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+  } catch {
     return new Response(JSON.stringify({ error: 'Forbidden' }), {
       status: 403,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
-
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
   if (!supabaseUrl || !supabaseServiceKey) {
     console.error('Missing env vars')
