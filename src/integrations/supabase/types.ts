@@ -1375,6 +1375,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      confirm_session_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          already_confirmed: boolean
+          success: boolean
+        }[]
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -1384,6 +1391,17 @@ export type Database = {
         Returns: number
       }
       generate_invoice_number: { Args: { p_user_id: string }; Returns: string }
+      get_session_confirmation: {
+        Args: { p_token: string }
+        Returns: {
+          appointment_id: string
+          client_name: string
+          confirmed_at: string
+          id: string
+          scheduled_at: string
+          service_name: string
+        }[]
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
