@@ -27,30 +27,27 @@ export default function ConfirmSessionPage() {
 
   async function validateToken() {
     try {
-      const { data, error } = await supabase
-        .from("session_confirmations")
-        .select("*, appointments(scheduled_at, clients(name), services(name))")
-        .eq("token", token!)
-        .maybeSingle();
+      const { data, error } = await (supabase.rpc as any)("get_session_confirmation", {
+        p_token: token!,
+      });
 
-      if (error || !data) {
+      if (error || !data || data.length === 0) {
         setStatus("invalid");
         return;
       }
 
-      if (data.confirmed_at) {
+      const row = data[0] as any;
+
+      if (row.confirmed_at) {
         setStatus("already_confirmed");
         return;
       }
 
-      const apt = data.appointments as any;
-      if (apt) {
-        setSessionInfo({
-          scheduledAt: apt.scheduled_at,
-          serviceName: apt.services?.name,
-          clientName: apt.clients?.name,
-        });
-      }
+      setSessionInfo({
+        scheduledAt: row.scheduled_at,
+        serviceName: row.service_name,
+        clientName: row.client_name,
+      });
 
       setStatus("valid");
     } catch {
@@ -62,29 +59,24 @@ export default function ConfirmSessionPage() {
     if (!token) return;
     setConfirming(true);
     try {
-      // Update confirmation record
-      const { data: conf, error: confError } = await supabase
-        .from("session_confirmations")
-        .update({ confirmed_at: new Date().toISOString() })
-        .eq("token", token)
-        .is("confirmed_at", null)
-        .select("appointment_id")
-        .single();
+      const { data, error } = await (supabase.rpc as any)("confirm_session_by_token", {
+        p_token: token,
+      });
 
-      if (confError || !conf) {
-        setStatus("already_confirmed");
+      if (error || !data || data.length === 0) {
+        setStatus("error");
         return;
       }
 
-      // Update the appointment
-      await supabase
-        .from("appointments")
-        .update({
-          status: "confirmed",
-          confirmation_status: "confirmed",
-          confirmation_timestamp: new Date().toISOString(),
-        } as any)
-        .eq("id", conf.appointment_id);
+      const row = data[0] as any;
+      if (row.already_confirmed) {
+        setStatus("already_confirmed");
+        return;
+      }
+      if (!row.success) {
+        setStatus("invalid");
+        return;
+      }
 
       setStatus("confirmed");
     } catch {

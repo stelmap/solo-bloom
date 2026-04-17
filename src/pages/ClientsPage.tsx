@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Search, Phone, Mail, Send, Trash2, Download, Upload } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { useState, memo, useRef } from "react";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useNavigate } from "react-router-dom";
 import { useClients, useCreateClient, useDeleteClient } from "@/hooks/useData";
@@ -90,9 +90,35 @@ export default function ClientsPage() {
     setImporting(true);
     try {
       const data = await file.arrayBuffer();
-      const workbook = XLSX.read(data);
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows: any[] = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(data);
+      const sheet = workbook.worksheets[0];
+      if (!sheet) {
+        toast({ title: t("common.error"), description: "No data found in file", variant: "destructive" });
+        return;
+      }
+
+      // Build rows as objects keyed by header row
+      const headerRow = sheet.getRow(1);
+      const headers: string[] = [];
+      headerRow.eachCell((cell, col) => {
+        headers[col] = String(cell.value ?? "").trim();
+      });
+
+      const rows: Record<string, any>[] = [];
+      for (let r = 2; r <= sheet.rowCount; r++) {
+        const row = sheet.getRow(r);
+        const obj: Record<string, any> = {};
+        let hasValue = false;
+        row.eachCell((cell, col) => {
+          const key = headers[col];
+          if (!key) return;
+          const v = cell.value;
+          obj[key] = v == null ? "" : (typeof v === "object" && "text" in (v as any) ? (v as any).text : v);
+          if (obj[key] !== "") hasValue = true;
+        });
+        if (hasValue) rows.push(obj);
+      }
 
       if (rows.length === 0) {
         toast({ title: t("common.error"), description: "No data found in file", variant: "destructive" });
