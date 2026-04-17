@@ -102,13 +102,17 @@ export default function OnboardingPage() {
         if (eErr) throw eErr;
       }
 
-      // Mark onboarding completed + save work setup
+      // Mark onboarding completed + save work setup + persist chosen language
+      const storedLang = (typeof window !== "undefined"
+        ? localStorage.getItem("app_lang") || localStorage.getItem("landing_lang")
+        : null) || "en";
       const { error: pErr } = await supabase
         .from("profiles")
         .update({
           onboarding_completed: true,
           working_days_per_week: workingDays,
           sessions_per_day: sessionsPerDay,
+          language: storedLang,
         } as any)
         .eq("user_id", user.id);
       if (pErr) throw pErr;
@@ -130,9 +134,12 @@ export default function OnboardingPage() {
     if (!user) return;
     setSaving(true);
     try {
+      const storedLang = (typeof window !== "undefined"
+        ? localStorage.getItem("app_lang") || localStorage.getItem("landing_lang")
+        : null) || "en";
       await supabase
         .from("profiles")
-        .update({ onboarding_completed: true } as any)
+        .update({ onboarding_completed: true, language: storedLang } as any)
         .eq("user_id", user.id);
       qc.invalidateQueries({ queryKey: ["profile"] });
       navigate("/");

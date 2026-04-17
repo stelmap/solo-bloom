@@ -22,12 +22,15 @@ function useLandingLang() {
   return useContext(LandingLangContext);
 }
 
+const LANG_CYCLE: Language[] = ["en", "fr", "uk"];
+
 function LandingLangProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLang] = useState<Language>(() => getStoredLang());
 
   const toggle = useCallback(() => {
     setLang((prev) => {
-      const next = prev === "en" ? "uk" : "en";
+      const idx = LANG_CYCLE.indexOf(prev);
+      const next = LANG_CYCLE[(idx + 1) % LANG_CYCLE.length];
       setStoredLang(next);
       return next;
     });
@@ -78,8 +81,9 @@ function LandingNav() {
             onClick={toggle}
             className="px-2.5 py-1 rounded-md border border-border text-sm font-medium text-foreground hover:bg-accent transition-colors"
             aria-label="Switch language"
+            title={`Language: ${lang.toUpperCase()}`}
           >
-            {lang === "en" ? "🇺🇦 UA" : "🇬🇧 EN"}
+            {lang === "en" ? "🇬🇧 EN" : lang === "fr" ? "🇫🇷 FR" : "🇺🇦 UA"}
           </button>
           <Link to="/auth">
             <Button variant="ghost" size="sm">{t("landing.nav.login")}</Button>

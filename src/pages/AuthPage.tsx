@@ -300,12 +300,15 @@ export default function AuthPage() {
     );
   };
 
+  const LANG_CYCLE: Language[] = ["en", "fr", "uk"];
   const toggleLang = () => {
     const current = getStoredLang();
-    const next: Language = current === "en" ? "uk" : "en";
+    const idx = LANG_CYCLE.indexOf(current);
+    const next: Language = LANG_CYCLE[(idx + 1) % LANG_CYCLE.length];
     setStoredLang(next);
     window.location.reload();
   };
+  const langLabel = lang === "en" ? "EN" : lang === "fr" ? "FR" : "UA";
 
   return (
     <div className="min-h-screen flex relative">
@@ -316,7 +319,7 @@ export default function AuthPage() {
         title={t("settings.language")}
       >
         <Globe className="h-4 w-4" />
-        {lang === "en" ? "UA" : "EN"}
+        {langLabel}
       </button>
 
       {/* Left panel — dark hero */}
