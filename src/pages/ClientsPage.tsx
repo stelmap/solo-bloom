@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Search, Phone, Mail, Send, Trash2, Download, Upload } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { useState, memo, useRef } from "react";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useNavigate } from "react-router-dom";
 import { useClients, useCreateClient, useDeleteClient } from "@/hooks/useData";
