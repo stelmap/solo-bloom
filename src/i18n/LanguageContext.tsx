@@ -1,8 +1,9 @@
-import { createContext, useContext, ReactNode, useCallback, useEffect } from "react";
+import { createContext, useContext, ReactNode, useCallback, useEffect, useState } from "react";
 import { translations, Language, TranslationKey } from "./translations";
 import { useProfile } from "@/hooks/useData";
 
 const LANG_STORAGE_KEY = "app_lang";
+const LANG_CHANGE_EVENT = "app_lang_change";
 
 interface LanguageContextType {
   lang: Language;
