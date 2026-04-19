@@ -47,6 +47,7 @@ export function setStoredLang(lang: Language) {
   try {
     localStorage.setItem(LANG_STORAGE_KEY, lang);
     localStorage.setItem("landing_lang", lang); // keep landing page in sync
+    window.dispatchEvent(new CustomEvent(LANG_CHANGE_EVENT, { detail: lang }));
   } catch {}
 }
 
@@ -58,10 +59,26 @@ const LanguageContext = createContext<LanguageContextType>({
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const { data: profile } = useProfile();
+  const [storedLang, setStoredLangState] = useState<Language>(() => getStoredLang());
+
+  // Listen for in-app language changes (e.g. from landing page toggle)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<Language>).detail;
+      if (detail) setStoredLangState(detail);
+    };
+    const storageHandler = () => setStoredLangState(getStoredLang());
+    window.addEventListener(LANG_CHANGE_EVENT, handler);
+    window.addEventListener("storage", storageHandler);
+    return () => {
+      window.removeEventListener(LANG_CHANGE_EVENT, handler);
+      window.removeEventListener("storage", storageHandler);
+    };
+  }, []);
 
   // Priority: profile language > localStorage > "en"
   const profileLang = profile?.language as Language | undefined;
-  const lang: Language = profileLang || getStoredLang();
+  const lang: Language = profileLang || storedLang;
 
   // Keep localStorage in sync when profile language changes
   useEffect(() => {
@@ -78,8 +95,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const setLang = useCallback((newLang: Language) => {
     setStoredLang(newLang);
-    // Force re-render by reloading — since lang is derived from profile or storage
-    window.location.reload();
+    setStoredLangState(newLang);
   }, []);
 
   return (
