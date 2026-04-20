@@ -68,6 +68,7 @@ serve(async (req) => {
       subscription_data: {
         trial_period_days: 7,
       },
+      allow_promotion_codes: true,
       success_url: `${origin}/settings?checkout=success`,
       cancel_url: `${origin}/settings?checkout=cancel`,
     });
