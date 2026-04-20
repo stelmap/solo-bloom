@@ -31,7 +31,7 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    const { priceId } = await req.json();
+    const { priceId, withTrial = true } = await req.json();
     const validPrices = Object.values(PRICE_IDS);
     if (!priceId || !validPrices.includes(priceId)) {
       throw new Error("Invalid price ID");
