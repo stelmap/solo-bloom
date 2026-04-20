@@ -21,6 +21,7 @@ export function SubscriptionSection() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [withTrial, setWithTrial] = useState(true);
 
   const currentPlan = PLANS.find((p) => p.priceId === subscription.price_id);
 
@@ -28,7 +29,7 @@ export function SubscriptionSection() {
     setLoadingPlan(priceId);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId },
+        body: { priceId, withTrial },
       });
       if (error) throw error;
       if (data?.url) {
@@ -117,7 +118,31 @@ export function SubscriptionSection() {
         </div>
       ) : (
         <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">Start your 7-day free trial. No credit card required upfront.</p>
+          <p className="text-sm text-muted-foreground">
+            {withTrial
+              ? "Start your 7-day free trial. Cancel anytime."
+              : "Subscribe immediately — no trial, billed today."}
+          </p>
+          <div className="inline-flex rounded-lg border border-border bg-background p-1">
+            <button
+              type="button"
+              onClick={() => setWithTrial(true)}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                withTrial ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              7-day free trial
+            </button>
+            <button
+              type="button"
+              onClick={() => setWithTrial(false)}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                !withTrial ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Subscribe now
+            </button>
+          </div>
           <div className="grid sm:grid-cols-3 gap-3">
             {PLANS.map((plan) => (
               <button
@@ -128,7 +153,9 @@ export function SubscriptionSection() {
               >
                 <p className="font-medium text-foreground">{plan.label}</p>
                 <p className="text-lg font-bold text-primary mt-1">{plan.price}</p>
-                <p className="text-xs text-muted-foreground mt-1">7-day free trial</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {withTrial ? "7-day free trial" : "Billed today"}
+                </p>
                 {loadingPlan === plan.priceId && (
                   <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-xl">
                     <Loader2 className="h-5 w-5 animate-spin text-primary" />

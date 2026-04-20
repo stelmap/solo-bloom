@@ -31,7 +31,7 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    const { priceId } = await req.json();
+    const { priceId, withTrial = true } = await req.json();
     const validPrices = Object.values(PRICE_IDS);
     if (!priceId || !validPrices.includes(priceId)) {
       throw new Error("Invalid price ID");
@@ -65,9 +65,7 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
-      subscription_data: {
-        trial_period_days: 7,
-      },
+      ...(withTrial ? { subscription_data: { trial_period_days: 7 } } : {}),
       allow_promotion_codes: true,
       success_url: `${origin}/settings?checkout=success`,
       cancel_url: `${origin}/settings?checkout=cancel`,
