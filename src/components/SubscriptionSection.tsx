@@ -9,7 +9,17 @@ import { CreditCard, RefreshCw, Loader2, Check, Sparkles, Shield, Zap } from "lu
 import { format } from "date-fns";
 import { fr as frLocale, uk as ukLocale } from "date-fns/locale";
 
-const PLANS = [
+type Plan = {
+  id: string;
+  priceId: string;
+  labelKey: string;
+  priceKey: string;
+  perMonth: number;
+  badgeKey: string | null;
+  savePct: number | null;
+};
+
+const PLANS: Plan[] = [
   {
     id: "monthly",
     priceId: "price_1TL8IORxXuU3N5IFvjohq4sk",
@@ -17,6 +27,7 @@ const PLANS = [
     priceKey: "sub.priceMonthly",
     perMonth: 20,
     badgeKey: null,
+    savePct: null,
   },
   {
     id: "quarterly",
@@ -36,7 +47,7 @@ const PLANS = [
     badgeKey: "sub.bestValue",
     savePct: 17,
   },
-] as const;
+];
 
 export function SubscriptionSection() {
   const { subscription, refreshSubscription } = useAuth();
