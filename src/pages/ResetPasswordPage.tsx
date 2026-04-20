@@ -103,7 +103,7 @@ export default function ResetPasswordPage() {
           <p className="text-sm text-foreground">{t("auth.mustSetNewPassword")}</p>
         </div>
 
-        <div className="space-y-1">
+        <div className="space-y-2">
           <h2 className="text-xl font-bold text-foreground">{t("auth.setNewPassword")}</h2>
           <p className="text-sm text-muted-foreground">{t("auth.setNewPasswordDesc")}</p>
         </div>
