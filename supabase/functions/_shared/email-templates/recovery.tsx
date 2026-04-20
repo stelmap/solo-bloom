@@ -4,7 +4,6 @@ import * as React from 'npm:react@18.3.1'
 
 import {
   Body,
-  Button,
   Container,
   Head,
   Heading,
@@ -16,13 +15,14 @@ import {
 
 interface RecoveryEmailProps {
   siteName: string
-  confirmationUrl: string
+  token?: string
+  confirmationUrl?: string
 }
 
-export const RecoveryEmail = ({ siteName, confirmationUrl }: RecoveryEmailProps) => (
+export const RecoveryEmail = ({ token }: RecoveryEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Reset your password for Solo.Biz</Preview>
+    <Preview>Your Solo.Biz password reset code</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
@@ -30,11 +30,11 @@ export const RecoveryEmail = ({ siteName, confirmationUrl }: RecoveryEmailProps)
         </Section>
         <Heading style={h1}>Reset your password</Heading>
         <Text style={text}>
-          We received a request to reset your password for Solo.Biz. Click the button below to choose a new password.
+          We received a request to reset your password. Enter the 6-digit code below in the app to continue.
         </Text>
-        <Button style={button} href={confirmationUrl}>Reset Password</Button>
-        <Text style={footer}>
-          If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.
+        <Text style={codeStyle}>{token}</Text>
+        <Text style={helper}>
+          This code is single-use and expires shortly. If you didn't request a password reset, you can safely ignore this email — your password will not be changed.
         </Text>
       </Container>
     </Body>
@@ -50,5 +50,5 @@ const logo = { fontSize: '28px', fontWeight: 'bold' as const, color: '#0f172a', 
 const logoDot = { color: '#FF9900' }
 const h1 = { fontSize: '22px', fontWeight: 'bold' as const, color: '#0f172a', margin: '0 0 16px' }
 const text = { fontSize: '15px', color: '#6b7280', lineHeight: '1.6', margin: '0 0 20px' }
-const button = { backgroundColor: '#FF9900', color: '#0f172a', fontSize: '15px', fontWeight: 'bold' as const, borderRadius: '12px', padding: '14px 28px', textDecoration: 'none' }
-const footer = { fontSize: '12px', color: '#9ca3af', margin: '32px 0 0' }
+const codeStyle = { fontFamily: "'DM Sans', Courier, monospace", fontSize: '32px', fontWeight: 'bold' as const, color: '#FF9900', letterSpacing: '6px', margin: '0 0 30px', textAlign: 'center' as const }
+const helper = { fontSize: '13px', color: '#9ca3af', lineHeight: '1.6', margin: '24px 0 0' }

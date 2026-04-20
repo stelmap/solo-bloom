@@ -145,25 +145,30 @@ export default function AuthPage() {
     }
   };
 
+  const renderHeader = (title: string, subtitle: string, onBack?: () => void) => (
+    <div className="space-y-2">
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          {t("auth.backToLogin")}
+        </button>
+      )}
+      <h2 className="text-xl font-bold text-foreground">{title}</h2>
+      <p className="text-sm text-muted-foreground">{subtitle}</p>
+    </div>
+  );
+
   const renderForm = () => {
     if (mode === "otp") {
       return (
         <>
-          <div className="space-y-1">
-            <button
-              onClick={() => { setMode("forgot"); setOtpValue(""); }}
-              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {t("auth.backToLogin")}
-            </button>
-            <h2 className="text-xl font-bold text-foreground">{t("auth.enterOtp")}</h2>
-            <p className="text-sm text-muted-foreground">
-              {t("auth.otpDescription")}
-            </p>
-          </div>
-          <form onSubmit={handleVerifyOtp} className="space-y-6">
-            <div className="flex justify-center">
+          {renderHeader(t("auth.enterOtp"), t("auth.otpDescription"), () => { setMode("forgot"); setOtpValue(""); })}
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
+            <div className="flex justify-center py-2">
               <InputOTP maxLength={6} value={otpValue} onChange={setOtpValue}>
                 <InputOTPGroup>
                   <InputOTPSlot index={0} />
@@ -187,17 +192,7 @@ export default function AuthPage() {
     if (mode === "forgot") {
       return (
         <>
-          <div className="space-y-1">
-            <button
-              onClick={() => setMode("login")}
-              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {t("auth.backToLogin")}
-            </button>
-            <h2 className="text-xl font-bold text-foreground">{t("auth.resetPassword")}</h2>
-            <p className="text-sm text-muted-foreground">{t("auth.resetPasswordOtpDesc")}</p>
-          </div>
+          {renderHeader(t("auth.resetPassword"), t("auth.resetPasswordOtpDesc"), () => setMode("login"))}
           <form onSubmit={handleForgotPassword} className="space-y-4">
             <div className="space-y-2">
               <Label>{t("common.email")}</Label>
@@ -219,14 +214,10 @@ export default function AuthPage() {
 
     return (
       <>
-        <div className="space-y-1">
-          <h2 className="text-xl font-bold text-foreground">
-            {mode === "login" ? t("auth.welcomeBack") : t("auth.createAccount")}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {mode === "login" ? t("auth.signInToManage") : t("auth.getStarted")}
-          </p>
-        </div>
+        {renderHeader(
+          mode === "login" ? t("auth.welcomeBack") : t("auth.createAccount"),
+          mode === "login" ? t("auth.signInToManage") : t("auth.getStarted"),
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === "signup" && (
