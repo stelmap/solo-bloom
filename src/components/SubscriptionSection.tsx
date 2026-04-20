@@ -51,7 +51,8 @@ const PLANS: Plan[] = [
 
 export function SubscriptionSection() {
   const { subscription, refreshSubscription } = useAuth();
-  const { t, lang } = useLanguage();
+  const { t: tStrict, lang } = useLanguage();
+  const t = tStrict as (key: string, params?: Record<string, string>) => string;
   const { toast } = useToast();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
