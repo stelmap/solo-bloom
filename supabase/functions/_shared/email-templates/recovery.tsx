@@ -30,7 +30,7 @@ export const RecoveryEmail = ({ token }: RecoveryEmailProps) => (
         </Section>
         <Heading style={h1}>Reset your password</Heading>
         <Text style={text}>
-          We received a request to reset your password. Enter the 6-digit code below in the app to continue.
+          We received a request to reset your password. Enter the code below in the app to continue.
         </Text>
         <Text style={codeStyle}>{token}</Text>
         <Text style={helper}>
