@@ -169,7 +169,7 @@ export default function AuthPage() {
           {renderHeader(t("auth.enterOtp"), t("auth.otpDescription"), () => { setMode("forgot"); setOtpValue(""); })}
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <div className="flex justify-center py-2">
-              <InputOTP maxLength={6} value={otpValue} onChange={setOtpValue}>
+              <InputOTP maxLength={8} value={otpValue} onChange={setOtpValue}>
                 <InputOTPGroup>
                   <InputOTPSlot index={0} />
                   <InputOTPSlot index={1} />
@@ -177,10 +177,12 @@ export default function AuthPage() {
                   <InputOTPSlot index={3} />
                   <InputOTPSlot index={4} />
                   <InputOTPSlot index={5} />
+                  <InputOTPSlot index={6} />
+                  <InputOTPSlot index={7} />
                 </InputOTPGroup>
               </InputOTP>
             </div>
-            <Button type="submit" className="w-full" disabled={loading || otpValue.length !== 6}>
+            <Button type="submit" className="w-full" disabled={loading || otpValue.length !== 8}>
               {loading ? t("auth.verifying") : t("auth.verifyCode")}
             </Button>
             <p className="text-center text-xs text-muted-foreground">{t("auth.otpExpiry")}</p>
