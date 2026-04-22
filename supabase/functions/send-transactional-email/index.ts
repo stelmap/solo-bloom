@@ -64,16 +64,51 @@ Deno.serve(async (req) => {
     })
   }
   const token = authHeader.replace('Bearer ', '')
+
+  // Log JWT algorithm + gateway-verification posture for diagnostics.
+  // verify_jwt is configured to false in supabase/config.toml for this function,
+  // so the gateway does NOT verify the token; we validate in code via getClaims().
+  console.log('[send-transactional-email] Gateway verify_jwt=false (bypassed); performing in-code JWT validation')
+  try {
+    const headerB64 = token.split('.')[0]
+    if (headerB64) {
+      // base64url -> base64
+      const padded = headerB64.replace(/-/g, '+').replace(/_/g, '/').padEnd(
+        headerB64.length + ((4 - (headerB64.length % 4)) % 4),
+        '=',
+      )
+      const headerJson = JSON.parse(atob(padded))
+      console.log('[send-transactional-email] JWT header', {
+        alg: headerJson.alg,
+        kid: headerJson.kid,
+        typ: headerJson.typ,
+      })
+    } else {
+      console.warn('[send-transactional-email] Unable to parse JWT header')
+    }
+  } catch (e) {
+    console.warn('[send-transactional-email] Failed to decode JWT header for logging', {
+      error: (e as Error).message,
+    })
+  }
+
   const authClient = createClient(supabaseUrl, supabaseAnonKey, {
     global: { headers: { Authorization: authHeader } },
   })
   const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token)
   if (claimsError || !claimsData?.claims) {
+    console.error('[send-transactional-email] In-code JWT validation failed', {
+      error: claimsError?.message,
+    })
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
+  console.log('[send-transactional-email] JWT validated', {
+    sub: claimsData.claims.sub,
+    role: claimsData.claims.role,
+  })
 
   // Parse request body
   let templateName: string
