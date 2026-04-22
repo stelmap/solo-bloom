@@ -331,7 +331,7 @@ export default function PlansPage() {
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => setConfirmClearOpen(true)}
+                onClick={requestClearDemo}
                 disabled={clearing}
               >
                 <Trash2 className="h-4 w-4" />
