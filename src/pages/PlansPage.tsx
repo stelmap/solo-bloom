@@ -78,15 +78,57 @@ export default function PlansPage() {
   const isPaid = subscription.subscribed || subscription.on_trial;
   const canClearDemo = !isPaid && Boolean(hasDemoData);
 
+  const checkHasRealData = async (): Promise<boolean> => {
+    const tables = ["clients", "appointments", "income", "expenses"] as const;
+    const results = await Promise.all(
+      tables.map((t) =>
+        supabase.from(t).select("id", { count: "exact", head: true }).eq("is_demo", false),
+      ),
+    );
+    return results.some((r) => (r.count ?? 0) > 0);
+  };
+
+  const requestClearDemo = async () => {
+    if (!user?.id) return;
+    setClearing(true);
+    try {
+      const hasReal = await checkHasRealData();
+      if (hasReal) {
+        toast({
+          title: "Can't clear demo data",
+          description:
+            "Your workspace contains real records you created. Demo cleanup is blocked to protect them.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setConfirmClearOpen(true);
+    } catch (e: any) {
+      toast({ title: "Check failed", description: e?.message ?? String(e), variant: "destructive" });
+    } finally {
+      setClearing(false);
+    }
+  };
+
   const handleClearDemo = async () => {
     if (!user?.id) return;
     setClearing(true);
     try {
+      // Re-check at confirm time to avoid races
+      const hasReal = await checkHasRealData();
+      if (hasReal) {
+        toast({
+          title: "Can't clear demo data",
+          description: "Real records were detected. Cleanup aborted.",
+          variant: "destructive",
+        });
+        setConfirmClearOpen(false);
+        return;
+      }
       const { error } = await supabase.rpc("cleanup_demo_workspace", { p_user_id: user.id });
       if (error) throw error;
       toast({ title: "Demo data cleared", description: "Your workspace is now empty." });
       qc.invalidateQueries();
-      // Reset session flag so auto-seed won't re-run this session
       sessionStorage.setItem(`demo_seed_attempted:${user.id}`, "1");
     } catch (e: any) {
       toast({ title: "Failed to clear demo data", description: e?.message ?? String(e), variant: "destructive" });
