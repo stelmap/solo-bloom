@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Loader2, Sparkles, ArrowLeft } from "lucide-react";
+import { Check, Loader2, Sparkles, ArrowLeft, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { useHasDemoData } from "@/hooks/useDemoWorkspace";
+import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 
 type Plan = {
   id: string;
@@ -59,12 +63,38 @@ function formatPrice(amount: number, currency: string) {
 export default function PlansPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, subscription } = useAuth();
+  const qc = useQueryClient();
+  const { data: hasDemoData } = useHasDemoData();
   const [loading, setLoading] = useState(true);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [prices, setPrices] = useState<PlanPrice[]>([]);
   const [period, setPeriod] = useState<BillingPeriod>("monthly");
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [continuing, setContinuing] = useState(false);
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
+  const [clearing, setClearing] = useState(false);
+
+  const isPaid = subscription.subscribed || subscription.on_trial;
+  const canClearDemo = !isPaid && Boolean(hasDemoData);
+
+  const handleClearDemo = async () => {
+    if (!user?.id) return;
+    setClearing(true);
+    try {
+      const { error } = await supabase.rpc("cleanup_demo_workspace", { p_user_id: user.id });
+      if (error) throw error;
+      toast({ title: "Demo data cleared", description: "Your workspace is now empty." });
+      qc.invalidateQueries();
+      // Reset session flag so auto-seed won't re-run this session
+      sessionStorage.setItem(`demo_seed_attempted:${user.id}`, "1");
+    } catch (e: any) {
+      toast({ title: "Failed to clear demo data", description: e?.message ?? String(e), variant: "destructive" });
+    } finally {
+      setClearing(false);
+      setConfirmClearOpen(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -254,20 +284,42 @@ export default function PlansPage() {
           <p className="text-xs text-muted-foreground">
             Prices and features shown are placeholders while pricing is being finalised.
           </p>
-          <Button
-            size="lg"
-            disabled={!selectedPlanId || continuing}
-            onClick={handleContinue}
-            className="min-w-[180px]"
-          >
-            {continuing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>Continue {selectedPlanId ? "" : "— select a plan"}</>
+          <div className="flex items-center gap-3">
+            {canClearDemo && (
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setConfirmClearOpen(true)}
+                disabled={clearing}
+              >
+                <Trash2 className="h-4 w-4" />
+                {clearing ? "Clearing…" : "Clear demo data"}
+              </Button>
             )}
-          </Button>
+            <Button
+              size="lg"
+              disabled={!selectedPlanId || continuing}
+              onClick={handleContinue}
+              className="min-w-[180px]"
+            >
+              {continuing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>Continue {selectedPlanId ? "" : "— select a plan"}</>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
+
+      <ConfirmDeleteDialog
+        open={confirmClearOpen}
+        onOpenChange={setConfirmClearOpen}
+        onConfirm={handleClearDemo}
+        loading={clearing}
+        title="Clear demo workspace?"
+        description="This will permanently remove all demo clients, sessions, income, expenses, and other demo records. Your account, settings, and any real records you created will be kept."
+      />
     </AppLayout>
   );
 }
