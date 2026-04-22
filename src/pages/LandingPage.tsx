@@ -344,7 +344,7 @@ function PricingSection() {
   ];
 
   return (
-    <section id="pricing" className="py-20 px-4 sm:px-6">
+    <section id="pricing" ref={sectionRef} className="py-20 px-4 sm:px-6">
       <div className="max-w-5xl mx-auto text-center">
         <p className="text-base font-medium text-primary mb-3">{t("landing.pricing.label")}</p>
         <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
@@ -447,6 +447,11 @@ function Footer() {
 // ── Page ─────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
+  // Analytics: landing page mounted
+  useEffect(() => {
+    track("landing_view");
+  }, []);
+
   return (
     <LandingLangProvider>
       <div className="min-h-screen bg-background">
