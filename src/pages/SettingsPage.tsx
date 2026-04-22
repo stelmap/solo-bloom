@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { useProfile, useUpdateProfile, useWorkingSchedule, useUpsertWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff, useTaxSettings, useCreateTaxSetting, useUpdateTaxSetting, useDeleteTaxSetting } from "@/hooks/useData";
+import { useProfile, useUpdateProfile, useWorkingSchedule, useUpsertWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff, useTaxSettings, useCreateTaxSetting, useUpdateTaxSetting, useDeleteTaxSetting, useBulkCancelForDayOff } from "@/hooks/useData";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
