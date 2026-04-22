@@ -2,20 +2,22 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Calendar, Users, Scissors, DollarSign,
   TrendingDown, Settings, Target, Menu, X, LogOut, BarChart3, UsersRound, ClipboardList,
-  Wallet, ChevronDown,
+  Wallet, ChevronDown, Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { TranslationKey } from "@/i18n/translations";
+import { useEntitlements, type FeatureCode } from "@/hooks/useEntitlements";
 
-type LeafItem = { kind: "leaf"; icon: any; labelKey: TranslationKey; path: string };
+type LeafItem = { kind: "leaf"; icon: any; labelKey: TranslationKey; path: string; requires?: FeatureCode };
 type GroupItem = {
   kind: "group";
   icon: any;
   labelKey: TranslationKey;
   basePath: string;
+  requires?: FeatureCode;
   children: { icon: any; labelKey: TranslationKey; path: string }[];
 };
 type NavItem = LeafItem | GroupItem;
@@ -31,6 +33,7 @@ const navItems: NavItem[] = [
     icon: Wallet,
     labelKey: "nav.finances",
     basePath: "/finances",
+    requires: "financial_access",
     children: [
       { icon: BarChart3, labelKey: "nav.financesDashboard", path: "/finances" },
       { icon: DollarSign, labelKey: "nav.income", path: "/finances/income" },
@@ -38,7 +41,7 @@ const navItems: NavItem[] = [
       { icon: Target, labelKey: "nav.breakeven", path: "/finances/breakeven" },
     ],
   },
-  { kind: "leaf", icon: ClipboardList, labelKey: "nav.supervision", path: "/supervision" },
+  { kind: "leaf", icon: ClipboardList, labelKey: "nav.supervision", path: "/supervision", requires: "premium_access" },
   { kind: "leaf", icon: Settings, labelKey: "nav.settings", path: "/settings" },
 ];
 
@@ -47,6 +50,16 @@ export function AppSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, signOut } = useAuth();
   const { t } = useLanguage();
+  const { has, loading: entLoading } = useEntitlements();
+
+  const visibleNavItems = useMemo(
+    () => navItems.filter((it) => !it.requires || has(it.requires)),
+    [has]
+  );
+  const lockedCount = useMemo(
+    () => (entLoading ? 0 : navItems.filter((it) => it.requires && !has(it.requires)).length),
+    [entLoading, has]
+  );
 
   // Auto-open the Finances group when the user is somewhere inside it
   const inFinances = useMemo(
@@ -89,7 +102,7 @@ export function AppSidebar() {
         </div>
 
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             if (item.kind === "leaf") {
               const isActive = isExactActive(item.path);
               return (
@@ -160,6 +173,21 @@ export function AppSidebar() {
               </div>
             );
           })}
+
+          {lockedCount > 0 && (
+            <Link
+              to="/plans"
+              onClick={() => setMobileOpen(false)}
+              className="mt-3 flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium border border-dashed border-sidebar-border text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground transition-colors"
+              title="Upgrade to unlock more features"
+            >
+              <Lock className="h-4 w-4 shrink-0" />
+              <span className="flex-1 text-left">Unlock more</span>
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-sidebar-primary/15 text-sidebar-primary">
+                {lockedCount}
+              </span>
+            </Link>
+          )}
         </nav>
 
         <div className="p-4 border-t border-sidebar-border">
