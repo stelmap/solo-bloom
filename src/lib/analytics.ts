@@ -100,16 +100,118 @@ export type AnalyticsEvent =
   | "subscription_active"
   | "subscription_canceled";
 
+// In-memory diagnostics for the current browser session.
+// Survives only until page reload — purely a debugging aid.
+export interface AnalyticsDiagnostics {
+  enabled: boolean;
+  initialized: boolean;
+  host: string;
+  distinctId: string | null;
+  sessionId: string | null;
+  totalEvents: number;
+  lastEvent: { name: string; at: string } | null;
+  countsByEvent: Record<string, number>;
+  recentEvents: Array<{ name: string; at: string; props?: Record<string, unknown> }>;
+}
+
+const diagnostics = {
+  totalEvents: 0,
+  lastEventName: null as string | null,
+  lastEventAt: null as string | null,
+  countsByEvent: {} as Record<string, number>,
+  recentEvents: [] as Array<{ name: string; at: string; props?: Record<string, unknown> }>,
+};
+
+type DiagListener = () => void;
+const listeners = new Set<DiagListener>();
+function notify() {
+  listeners.forEach((l) => {
+    try {
+      l();
+    } catch {
+      /* noop */
+    }
+  });
+}
+
+export function subscribeDiagnostics(listener: DiagListener): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+export function getDiagnostics(): AnalyticsDiagnostics {
+  let distinctId: string | null = null;
+  let sessionId: string | null = null;
+  if (enabled) {
+    try {
+      distinctId = posthog.get_distinct_id?.() ?? null;
+      sessionId = posthog.get_session_id?.() ?? null;
+    } catch {
+      /* noop */
+    }
+  }
+  return {
+    enabled,
+    initialized,
+    host: typeof window !== "undefined" ? window.location.hostname : "",
+    distinctId,
+    sessionId,
+    totalEvents: diagnostics.totalEvents,
+    lastEvent:
+      diagnostics.lastEventName && diagnostics.lastEventAt
+        ? { name: diagnostics.lastEventName, at: diagnostics.lastEventAt }
+        : null,
+    countsByEvent: { ...diagnostics.countsByEvent },
+    recentEvents: [...diagnostics.recentEvents],
+  };
+}
+
+function recordDiagnostic(name: string, props?: Record<string, unknown>) {
+  const at = new Date().toISOString();
+  diagnostics.totalEvents += 1;
+  diagnostics.lastEventName = name;
+  diagnostics.lastEventAt = at;
+  diagnostics.countsByEvent[name] = (diagnostics.countsByEvent[name] ?? 0) + 1;
+  diagnostics.recentEvents.unshift({ name, at, props });
+  if (diagnostics.recentEvents.length > 25) diagnostics.recentEvents.length = 25;
+  notify();
+}
+
 export function track(event: AnalyticsEvent, props: BaseEventProps = {}): void {
   if (!initialized) initAnalytics();
-  if (!enabled) return;
   const enriched: BaseEventProps = {
     device_type: deviceType(),
     source_page: typeof window !== "undefined" ? window.location.pathname : undefined,
     locale: typeof navigator !== "undefined" ? navigator.language : undefined,
     ...props,
   };
+  // Always record the attempt locally so diagnostics work in dev/preview too.
+  recordDiagnostic(event, enriched);
+  if (!enabled) return;
   posthog.capture(event, enriched);
+}
+
+// Fire an arbitrary diagnostic event (not part of the typed AnalyticsEvent union).
+// Used by the in-app diagnostics page to verify delivery without polluting product events.
+export function trackDiagnosticPing(): { name: string; at: string } {
+  const name = "diagnostics_ping";
+  const at = new Date().toISOString();
+  const props = {
+    device_type: deviceType(),
+    source_page: typeof window !== "undefined" ? window.location.pathname : undefined,
+    sent_at: at,
+  };
+  recordDiagnostic(name, props);
+  if (enabled) {
+    try {
+      posthog.capture(name, props);
+    } catch {
+      /* noop */
+    }
+  }
+  return { name, at };
 }
 
 // Identify the logged-in user with their internal Supabase user ID.
