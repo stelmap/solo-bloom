@@ -1375,6 +1375,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_client_revenue_consistency: {
+        Args: never
+        Returns: {
+          client_id: string
+          difference: number
+          direct_total: number
+          issue: string
+          via_appointment_total: number
+        }[]
+      }
       confirm_session_by_token: {
         Args: { p_token: string }
         Returns: {
