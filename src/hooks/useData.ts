@@ -565,7 +565,8 @@ export function useCreateExpense() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => { ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    // Analytics: a new expense was created (recurring or one-off)
+    onSuccess: (_d, vars) => { track("expense_created", { is_recurring: !!vars.is_recurring }); ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -637,7 +638,8 @@ export function useCreateIncome() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => { ["income", "dashboard-stats", "client-income"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    // Analytics: a new income entry was created
+    onSuccess: (_d, vars) => { track("income_created", { source: vars.source }); ["income", "dashboard-stats", "client-income"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
