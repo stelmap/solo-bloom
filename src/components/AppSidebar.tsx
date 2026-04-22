@@ -2,20 +2,22 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Calendar, Users, Scissors, DollarSign,
   TrendingDown, Settings, Target, Menu, X, LogOut, BarChart3, UsersRound, ClipboardList,
-  Wallet, ChevronDown,
+  Wallet, ChevronDown, Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { TranslationKey } from "@/i18n/translations";
+import { useEntitlements, type FeatureCode } from "@/hooks/useEntitlements";
 
-type LeafItem = { kind: "leaf"; icon: any; labelKey: TranslationKey; path: string };
+type LeafItem = { kind: "leaf"; icon: any; labelKey: TranslationKey; path: string; requires?: FeatureCode };
 type GroupItem = {
   kind: "group";
   icon: any;
   labelKey: TranslationKey;
   basePath: string;
+  requires?: FeatureCode;
   children: { icon: any; labelKey: TranslationKey; path: string }[];
 };
 type NavItem = LeafItem | GroupItem;
@@ -31,6 +33,7 @@ const navItems: NavItem[] = [
     icon: Wallet,
     labelKey: "nav.finances",
     basePath: "/finances",
+    requires: "financial_access",
     children: [
       { icon: BarChart3, labelKey: "nav.financesDashboard", path: "/finances" },
       { icon: DollarSign, labelKey: "nav.income", path: "/finances/income" },
@@ -38,7 +41,7 @@ const navItems: NavItem[] = [
       { icon: Target, labelKey: "nav.breakeven", path: "/finances/breakeven" },
     ],
   },
-  { kind: "leaf", icon: ClipboardList, labelKey: "nav.supervision", path: "/supervision" },
+  { kind: "leaf", icon: ClipboardList, labelKey: "nav.supervision", path: "/supervision", requires: "premium_access" },
   { kind: "leaf", icon: Settings, labelKey: "nav.settings", path: "/settings" },
 ];
 
@@ -47,6 +50,16 @@ export function AppSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, signOut } = useAuth();
   const { t } = useLanguage();
+  const { has, loading: entLoading } = useEntitlements();
+
+  const visibleNavItems = useMemo(
+    () => navItems.filter((it) => !it.requires || has(it.requires)),
+    [has]
+  );
+  const lockedCount = useMemo(
+    () => (entLoading ? 0 : navItems.filter((it) => it.requires && !has(it.requires)).length),
+    [entLoading, has]
+  );
 
   // Auto-open the Finances group when the user is somewhere inside it
   const inFinances = useMemo(
