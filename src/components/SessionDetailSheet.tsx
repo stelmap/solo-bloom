@@ -193,7 +193,12 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
           .select("token")
           .single();
         if (!confError && confirmation) {
-          const appUrl = window.location.origin;
+          // Always use the published app URL for confirmation links so emails
+          // sent from the preview environment still resolve to a public,
+          // unauthenticated page that the client can open.
+          const origin = window.location.origin;
+          const isPreview = /lovable(project)?\.app|lovableproject\.com|localhost/i.test(origin);
+          const appUrl = isPreview ? "https://solo-bizz-app.lovable.app" : origin;
           confirmationUrl = `${appUrl}/confirm-session?token=${confirmation.token}`;
         }
         // Mark confirmation_status as pending
