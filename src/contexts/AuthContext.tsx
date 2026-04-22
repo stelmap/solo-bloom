@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { identifyUser, resetAnalytics } from "@/lib/analytics";
 
 export interface SubscriptionStatus {
   subscribed: boolean;
@@ -82,10 +83,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       setLoading(false);
 
+      // Analytics: identify by Supabase user ID only (no PII)
+      if (session?.user?.id) {
+        identifyUser(session.user.id);
+      }
+
       if (event === "PASSWORD_RECOVERY") {
         setIsRecovery(true);
       } else if (event === "SIGNED_OUT") {
         setIsRecovery(false);
+        // Analytics: clear identity on sign-out
+        resetAnalytics();
       }
     });
 
@@ -93,6 +101,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      // Analytics: identify on initial session restore
+      if (session?.user?.id) identifyUser(session.user.id);
     });
 
     return () => authSub.unsubscribe();

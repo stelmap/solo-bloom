@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { Eye, EyeOff, Lock, ShieldAlert } from "lucide-react";
+import { track } from "@/lib/analytics";
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -64,6 +65,8 @@ export default function ResetPasswordPage() {
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
+      // Analytics: password reset flow finished successfully
+      track("password_reset_completed");
       clearRecovery();
       toast({ title: t("auth.passwordUpdated"), description: t("auth.passwordUpdatedDesc") });
        navigate("/auth", { replace: true });

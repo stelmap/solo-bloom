@@ -11,6 +11,7 @@ import { getStoredLang, setStoredLang } from "@/i18n/LanguageContext";
 import { Language } from "@/i18n/translations";
 import { Eye, EyeOff, ArrowLeft, Globe } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { track } from "@/lib/analytics";
 
 const PLAN_PRICE_MAP: Record<string, string> = {
   monthly: "price_1TL8IORxXuU3N5IFvjohq4sk",
@@ -41,6 +42,8 @@ export default function AuthPage() {
       checkoutTriggeredRef.current = true;
       const startCheckout = async () => {
         try {
+          // Analytics: user reached checkout via plan param after auth
+          track("checkout_started", { plan_type: planParam });
           const { data, error } = await supabase.functions.invoke("create-checkout", {
             body: { priceId: PLAN_PRICE_MAP[planParam] },
           });
@@ -80,8 +83,12 @@ export default function AuthPage() {
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        // Analytics: successful password login
+        track("login_completed", { plan_type: planParam ?? undefined });
         // Navigation handled by useEffect (auto-checkout if plan param) or Navigate component
       } else if (mode === "signup") {
+        // Analytics: sign-up form submitted (attempt)
+        track("sign_up_started", { plan_type: planParam ?? undefined });
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -91,6 +98,8 @@ export default function AuthPage() {
           },
         });
         if (error) throw error;
+        // Analytics: sign-up succeeded (email verification may still be pending)
+        track("sign_up_completed", { plan_type: planParam ?? undefined });
         toast({ title: t("auth.accountCreated"), description: t("auth.checkEmail") });
       }
     } catch (error: any) {
@@ -104,6 +113,8 @@ export default function AuthPage() {
     e.preventDefault();
     setLoading(true);
     try {
+      // Analytics: user requested a password reset email
+      track("password_reset_started");
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateCapacity } from "@/lib/capacity";
+import { track } from "@/lib/analytics";
 
 const INVALIDATE_APPOINTMENTS = ["appointments", "dashboard-stats", "client-appointments"];
 const INVALIDATE_FINANCIAL = ["income", "expenses", "expected-payments", "dashboard-stats"];
@@ -48,7 +49,8 @@ export function useCreateClient() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["clients"] }),
+    // Analytics: a new client was created
+    onSuccess: () => { track("client_created"); qc.invalidateQueries({ queryKey: ["clients"] }); },
   });
 }
 
@@ -253,7 +255,8 @@ export function useCreateService() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["services"] }),
+    // Analytics: a new service was created
+    onSuccess: () => { track("service_created"); qc.invalidateQueries({ queryKey: ["services"] }); },
   });
 }
 
@@ -309,7 +312,8 @@ export function useCreateAppointment() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    // Analytics: a session/appointment was scheduled
+    onSuccess: () => { track("session_created"); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -375,7 +379,8 @@ export function useCompleteAppointment() {
         if (epErr) throw epErr;
       }
     },
-    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    // Analytics: a session was marked complete (with payment outcome)
+    onSuccess: (_d, vars) => { track("session_completed", { payment_status: vars.paymentStatus }); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -560,7 +565,8 @@ export function useCreateExpense() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => { ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    // Analytics: a new expense was created (recurring or one-off)
+    onSuccess: (_d, vars) => { track("expense_created", { is_recurring: !!vars.is_recurring }); ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -632,7 +638,8 @@ export function useCreateIncome() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => { ["income", "dashboard-stats", "client-income"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    // Analytics: a new income entry was created
+    onSuccess: (_d, vars) => { track("income_created", { source: vars.source }); ["income", "dashboard-stats", "client-income"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
