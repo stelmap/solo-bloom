@@ -405,6 +405,11 @@ export const translations = {
   "toast.paymentRecordedDesc": { en: "€{amount} recorded as income.", uk: "€{amount} записано як дохід.", fr: "€{amount} enregistré comme revenu." },
   "toast.dayOffAdded": { en: "Day off added", uk: "Вихідний додано", fr: "Jour de repos ajouté" },
   "toast.dayOffRemoved": { en: "Day off removed", uk: "Вихідний знято", fr: "Jour de repos retiré" },
+  "toast.dayOffCancelledSessions": {
+    en: "{count} session(s) were cancelled and notification emails were sent.",
+    uk: "Скасовано сеансів: {count}. Клієнтів повідомлено електронною поштою.",
+    fr: "{count} séance(s) annulée(s) et e-mails de notification envoyés.",
+  },
   "toast.scheduleSaved": { en: "Working schedule saved", uk: "Робочий графік збережено", fr: "Emploi du temps enregistré" },
 
   // Export
