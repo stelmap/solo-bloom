@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { CreditCard, RefreshCw, Loader2, Check, Sparkles, Shield, Zap } from "lucide-react";
+import { CreditCard, RefreshCw, Loader2, Check, Sparkles, Shield, Zap, LayoutGrid } from "lucide-react";
 import { format } from "date-fns";
 import { fr as frLocale, uk as ukLocale } from "date-fns/locale";
 import { track } from "@/lib/analytics";
@@ -204,9 +205,17 @@ export function SubscriptionSection() {
             </h2>
             <p className="text-sm text-muted-foreground">{t("sub.subheadline")}</p>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link to="/plans">
+                <LayoutGrid className="h-4 w-4 mr-2" />
+                Compare plans
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleRefresh} disabled={refreshing}>
+              <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+            </Button>
+          </div>
         </div>
 
         {/* Trial / Pay-now toggle */}
