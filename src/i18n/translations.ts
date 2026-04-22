@@ -307,6 +307,7 @@ export const translations = {
   "common.adding": { en: "Adding...", uk: "Додавання...", fr: "Ajout..." },
   "common.deleting": { en: "Deleting...", uk: "Видалення...", fr: "Suppression..." },
   "common.cancel": { en: "Cancel", uk: "Скасувати", fr: "Annuler" },
+  "common.confirm": { en: "Confirm", uk: "Підтвердити", fr: "Confirmer" },
   "common.loading": { en: "Loading...", uk: "Завантаження...", fr: "Chargement..." },
   "common.error": { en: "Error", uk: "Помилка", fr: "Erreur" },
   "common.min": { en: "min", uk: "хв", fr: "min" },
