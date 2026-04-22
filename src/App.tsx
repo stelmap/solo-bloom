@@ -38,6 +38,7 @@ const UnsubscribePage = lazy(() => import("./pages/UnsubscribePage"));
 const SupervisionPage = lazy(() => import("./pages/SupervisionPage"));
 const DiagnosticsPage = lazy(() => import("./pages/DiagnosticsPage"));
 const PlansPage = lazy(() => import("./pages/PlansPage"));
+const PurchaseSuccessPage = lazy(() => import("./pages/PurchaseSuccessPage"));
 
 const queryClient = new QueryClient();
 
@@ -93,6 +94,7 @@ const App = () => (
                 <Route path="/supervision" element={<ProtectedRoute><EntitlementGate feature="premium_access"><SupervisionPage /></EntitlementGate></ProtectedRoute>} />
                 <Route path="/diagnostics" element={<ProtectedRoute><DiagnosticsPage /></ProtectedRoute>} />
                 <Route path="/plans" element={<ProtectedRoute><PlansPage /></ProtectedRoute>} />
+                <Route path="/purchase-success" element={<ProtectedRoute><PurchaseSuccessPage /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
