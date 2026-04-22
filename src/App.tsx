@@ -33,6 +33,7 @@ const TermsPage = lazy(() => import("./pages/TermsPage"));
 const ConfirmSessionPage = lazy(() => import("./pages/ConfirmSessionPage"));
 const UnsubscribePage = lazy(() => import("./pages/UnsubscribePage"));
 const SupervisionPage = lazy(() => import("./pages/SupervisionPage"));
+const DiagnosticsPage = lazy(() => import("./pages/DiagnosticsPage"));
 
 const queryClient = new QueryClient();
 
