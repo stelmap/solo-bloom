@@ -307,6 +307,7 @@ export const translations = {
   "common.adding": { en: "Adding...", uk: "Додавання...", fr: "Ajout..." },
   "common.deleting": { en: "Deleting...", uk: "Видалення...", fr: "Suppression..." },
   "common.cancel": { en: "Cancel", uk: "Скасувати", fr: "Annuler" },
+  "common.confirm": { en: "Confirm", uk: "Підтвердити", fr: "Confirmer" },
   "common.loading": { en: "Loading...", uk: "Завантаження...", fr: "Chargement..." },
   "common.error": { en: "Error", uk: "Помилка", fr: "Erreur" },
   "common.min": { en: "min", uk: "хв", fr: "min" },
@@ -404,6 +405,11 @@ export const translations = {
   "toast.paymentRecordedDesc": { en: "€{amount} recorded as income.", uk: "€{amount} записано як дохід.", fr: "€{amount} enregistré comme revenu." },
   "toast.dayOffAdded": { en: "Day off added", uk: "Вихідний додано", fr: "Jour de repos ajouté" },
   "toast.dayOffRemoved": { en: "Day off removed", uk: "Вихідний знято", fr: "Jour de repos retiré" },
+  "toast.dayOffCancelledSessions": {
+    en: "{count} session(s) were cancelled and notification emails were sent.",
+    uk: "Скасовано сеансів: {count}. Клієнтів повідомлено електронною поштою.",
+    fr: "{count} séance(s) annulée(s) et e-mails de notification envoyés.",
+  },
   "toast.scheduleSaved": { en: "Working schedule saved", uk: "Робочий графік збережено", fr: "Emploi du temps enregistré" },
 
   // Export
@@ -437,6 +443,21 @@ export const translations = {
   "settings.holiday": { en: "Holiday", uk: "Свято", fr: "Jour férié" },
   "settings.sickDay": { en: "Sick day", uk: "Лікарняний", fr: "Congé maladie" },
   "settings.dayOffLabel": { en: "Label (optional)", uk: "Підпис (необов'язково)", fr: "Libellé (facultatif)" },
+  "settings.dayOffConfirmTitle": {
+    en: "Cancel sessions for this day?",
+    uk: "Скасувати сеанси цього дня?",
+    fr: "Annuler les séances de ce jour ?",
+  },
+  "settings.dayOffConfirmDesc": {
+    en: "All {count} session(s) scheduled for this day will be cancelled and affected clients will be notified by email.",
+    uk: "Усі заплановані сеанси ({count}) на цей день будуть скасовані, а клієнти отримають повідомлення електронною поштою.",
+    fr: "Les {count} séance(s) prévues ce jour seront annulées et les clients concernés seront informés par e-mail.",
+  },
+  "settings.dayOffConfirmNone": {
+    en: "No sessions are scheduled for this day. The day off will simply be saved.",
+    uk: "На цей день сеансів не заплановано. Вихідний буде просто збережено.",
+    fr: "Aucune séance n'est prévue ce jour. Le jour de repos sera simplement enregistré.",
+  },
 
   // Capacity
   "capacity.title": { en: "Weekly Capacity", uk: "Тижнева завантаженість", fr: "Capacité hebdomadaire" },

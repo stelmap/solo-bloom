@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { useProfile, useUpdateProfile, useWorkingSchedule, useUpsertWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff, useTaxSettings, useCreateTaxSetting, useUpdateTaxSetting, useDeleteTaxSetting } from "@/hooks/useData";
+import { useProfile, useUpdateProfile, useWorkingSchedule, useUpsertWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff, useTaxSettings, useCreateTaxSetting, useUpdateTaxSetting, useDeleteTaxSetting, useBulkCancelForDayOff } from "@/hooks/useData";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -39,6 +40,7 @@ export default function SettingsPage() {
   const { data: daysOff = [] } = useDaysOff();
   const createDayOff = useCreateDayOff();
   const deleteDayOff = useDeleteDayOff();
+  const bulkCancelForDayOff = useBulkCancelForDayOff();
   const { data: taxSettings = [] } = useTaxSettings();
   const createTax = useCreateTaxSetting();
   const updateTax = useUpdateTaxSetting();
@@ -60,6 +62,9 @@ export default function SettingsPage() {
   const [schedule, setSchedule] = useState(DEFAULT_SCHEDULE);
   const [dayOffOpen, setDayOffOpen] = useState(false);
   const [dayOffForm, setDayOffForm] = useState({ date: "", type: "day_off", label: "" });
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [affectedAppointments, setAffectedAppointments] = useState<string[]>([]);
+  const [checkingAffected, setCheckingAffected] = useState(false);
 
   // Tax form
   const [taxOpen, setTaxOpen] = useState(false);
@@ -144,13 +149,62 @@ export default function SettingsPage() {
     }
   };
 
+  // Step 1: User clicks "Add Day Off" -> we look up affected appointments and open confirmation
   const handleAddDayOff = async () => {
     if (!dayOffForm.date) return;
+    setCheckingAffected(true);
     try {
-      await createDayOff.mutateAsync({ date: dayOffForm.date, type: dayOffForm.type, label: dayOffForm.label || undefined, is_non_working: true });
-      toast({ title: t("toast.dayOffAdded") });
-      setDayOffForm({ date: "", type: "day_off", label: "" });
+      // Build [day start, day end) in local time, send as ISO so the DB can compare timestamptz correctly
+      const [y, m, d] = dayOffForm.date.split("-").map(Number);
+      const dayStart = new Date(y, (m ?? 1) - 1, d ?? 1, 0, 0, 0, 0);
+      const dayEnd = new Date(y, (m ?? 1) - 1, d ?? 1, 23, 59, 59, 999);
+      const { data, error } = await supabase
+        .from("appointments")
+        .select("id")
+        .eq("user_id", user!.id)
+        .gte("scheduled_at", dayStart.toISOString())
+        .lte("scheduled_at", dayEnd.toISOString())
+        .not("status", "in", "(cancelled,no-show)");
+      if (error) throw error;
+      setAffectedAppointments((data ?? []).map((a: any) => a.id));
       setDayOffOpen(false);
+      setConfirmOpen(true);
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    } finally {
+      setCheckingAffected(false);
+    }
+  };
+
+  // Step 2: User confirms -> create the day off, then bulk-cancel & email
+  const handleConfirmDayOff = async () => {
+    try {
+      // Use the type label as the cancellation reason (e.g. "Sick day"), fall back to user-entered label
+      const reason = dayOffForm.label?.trim()
+        ? dayOffForm.label.trim()
+        : dayOffTypeLabel(dayOffForm.type);
+      await createDayOff.mutateAsync({
+        date: dayOffForm.date,
+        type: dayOffForm.type,
+        label: dayOffForm.label || undefined,
+        is_non_working: true,
+      });
+      if (affectedAppointments.length > 0) {
+        await bulkCancelForDayOff.mutateAsync({
+          appointmentIds: affectedAppointments,
+          reason,
+        });
+      }
+      const cancelled = affectedAppointments.length;
+      toast({
+        title: t("toast.dayOffAdded"),
+        description: cancelled > 0
+          ? t("toast.dayOffCancelledSessions").replace("{count}", String(cancelled))
+          : undefined,
+      });
+      setDayOffForm({ date: "", type: "day_off", label: "" });
+      setAffectedAppointments([]);
+      setConfirmOpen(false);
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
@@ -421,12 +475,32 @@ export default function SettingsPage() {
                     <Select value={dayOffForm.type} onValueChange={v => setDayOffForm(f => ({ ...f, type: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="day_off">{t("settings.dayOff")}</SelectItem><SelectItem value="vacation">{t("settings.vacation")}</SelectItem><SelectItem value="holiday">{t("settings.holiday")}</SelectItem><SelectItem value="sick">{t("settings.sickDay")}</SelectItem></SelectContent></Select>
                   </div>
                   <div className="space-y-2"><Label>{t("settings.dayOffLabel")}</Label><Input value={dayOffForm.label} onChange={e => setDayOffForm(f => ({ ...f, label: e.target.value }))} placeholder="e.g. Christmas" /></div>
-                  <Button onClick={handleAddDayOff} className="w-full" disabled={createDayOff.isPending || !dayOffForm.date}>
-                    {createDayOff.isPending ? t("common.adding") : t("settings.addDayOff")}
+                  <Button onClick={handleAddDayOff} className="w-full" disabled={checkingAffected || !dayOffForm.date}>
+                    {checkingAffected ? t("common.adding") : t("settings.addDayOff")}
                   </Button>
                 </div>
               </DialogContent>
             </Dialog>
+            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t("settings.dayOffConfirmTitle")}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {affectedAppointments.length > 0
+                      ? t("settings.dayOffConfirmDesc").replace("{count}", String(affectedAppointments.length))
+                      : t("settings.dayOffConfirmNone")}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={createDayOff.isPending || bulkCancelForDayOff.isPending}>
+                    {t("common.cancel")}
+                  </AlertDialogCancel>
+                  <AlertDialogAction onClick={handleConfirmDayOff} disabled={createDayOff.isPending || bulkCancelForDayOff.isPending}>
+                    {createDayOff.isPending || bulkCancelForDayOff.isPending ? t("common.saving") : t("common.confirm")}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
           {(daysOff as any[]).length === 0 ? (
             <div className="text-center py-6 text-sm text-muted-foreground"><CalendarOff className="h-8 w-8 mx-auto mb-2 opacity-40" />{t("settings.noDaysOff")}</div>
