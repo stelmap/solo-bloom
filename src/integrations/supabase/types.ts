@@ -24,12 +24,15 @@ export type Database = {
           duration_minutes: number
           group_session_id: string | null
           id: string
+          is_demo: boolean
           notes: string | null
           payment_status: string
           price: number
           price_override_reason: string | null
           recurring_rule_id: string | null
           scheduled_at: string
+          seed_batch_id: string | null
+          seed_source: string | null
           service_id: string
           status: string
           updated_at: string
@@ -44,12 +47,15 @@ export type Database = {
           duration_minutes?: number
           group_session_id?: string | null
           id?: string
+          is_demo?: boolean
           notes?: string | null
           payment_status?: string
           price?: number
           price_override_reason?: string | null
           recurring_rule_id?: string | null
           scheduled_at: string
+          seed_batch_id?: string | null
+          seed_source?: string | null
           service_id: string
           status?: string
           updated_at?: string
@@ -64,12 +70,15 @@ export type Database = {
           duration_minutes?: number
           group_session_id?: string | null
           id?: string
+          is_demo?: boolean
           notes?: string | null
           payment_status?: string
           price?: number
           price_override_reason?: string | null
           recurring_rule_id?: string | null
           scheduled_at?: string
+          seed_batch_id?: string | null
+          seed_source?: string | null
           service_id?: string
           status?: string
           updated_at?: string
@@ -109,7 +118,10 @@ export type Database = {
           goal_number: number
           goal_type: string
           id: string
+          is_demo: boolean
           label: string
+          seed_batch_id: string | null
+          seed_source: string | null
           updated_at: string
           user_id: string
         }
@@ -122,7 +134,10 @@ export type Database = {
           goal_number?: number
           goal_type?: string
           id?: string
+          is_demo?: boolean
           label?: string
+          seed_batch_id?: string | null
+          seed_source?: string | null
           updated_at?: string
           user_id: string
         }
@@ -135,7 +150,10 @@ export type Database = {
           goal_number?: number
           goal_type?: string
           id?: string
+          is_demo?: boolean
           label?: string
+          seed_batch_id?: string | null
+          seed_source?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -200,6 +218,9 @@ export type Database = {
           created_at: string
           id: string
           included_in_supervision: boolean
+          is_demo: boolean
+          seed_batch_id: string | null
+          seed_source: string | null
           supervision_id: string | null
           updated_at: string
           user_id: string
@@ -211,6 +232,9 @@ export type Database = {
           created_at?: string
           id?: string
           included_in_supervision?: boolean
+          is_demo?: boolean
+          seed_batch_id?: string | null
+          seed_source?: string | null
           supervision_id?: string | null
           updated_at?: string
           user_id: string
@@ -222,6 +246,9 @@ export type Database = {
           created_at?: string
           id?: string
           included_in_supervision?: boolean
+          is_demo?: boolean
+          seed_batch_id?: string | null
+          seed_source?: string | null
           supervision_id?: string | null
           updated_at?: string
           user_id?: string
@@ -297,11 +324,14 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          is_demo: boolean
           name: string
           notes: string | null
           notification_preference: string
           phone: string | null
           pricing_mode: string
+          seed_batch_id: string | null
+          seed_source: string | null
           telegram: string | null
           updated_at: string
           user_id: string
@@ -316,11 +346,14 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          is_demo?: boolean
           name: string
           notes?: string | null
           notification_preference?: string
           phone?: string | null
           pricing_mode?: string
+          seed_batch_id?: string | null
+          seed_source?: string | null
           telegram?: string | null
           updated_at?: string
           user_id: string
@@ -335,11 +368,14 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          is_demo?: boolean
           name?: string
           notes?: string | null
           notification_preference?: string
           phone?: string | null
           pricing_mode?: string
+          seed_batch_id?: string | null
+          seed_source?: string | null
           telegram?: string | null
           updated_at?: string
           user_id?: string
@@ -381,6 +417,33 @@ export type Database = {
           label?: string | null
           type?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      demo_workspace_audit: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          seed_batch_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          seed_batch_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          seed_batch_id?: string | null
           user_id?: string
         }
         Relationships: []
@@ -518,8 +581,11 @@ export type Database = {
           client_id: string
           created_at: string
           id: string
+          is_demo: boolean
           paid_at: string | null
           payment_method: string | null
+          seed_batch_id: string | null
+          seed_source: string | null
           status: string
           updated_at: string
           user_id: string
@@ -530,8 +596,11 @@ export type Database = {
           client_id: string
           created_at?: string
           id?: string
+          is_demo?: boolean
           paid_at?: string | null
           payment_method?: string | null
+          seed_batch_id?: string | null
+          seed_source?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -542,8 +611,11 @@ export type Database = {
           client_id?: string
           created_at?: string
           id?: string
+          is_demo?: boolean
           paid_at?: string | null
           payment_method?: string | null
+          seed_batch_id?: string | null
+          seed_source?: string | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -573,10 +645,13 @@ export type Database = {
           date: string
           description: string | null
           id: string
+          is_demo: boolean
           is_recurring: boolean
           payment_status: string
           recurring_group_id: string | null
           recurring_start_date: string | null
+          seed_batch_id: string | null
+          seed_source: string | null
           tax_setting_id: string | null
           updated_at: string
           user_id: string
@@ -588,10 +663,13 @@ export type Database = {
           date?: string
           description?: string | null
           id?: string
+          is_demo?: boolean
           is_recurring?: boolean
           payment_status?: string
           recurring_group_id?: string | null
           recurring_start_date?: string | null
+          seed_batch_id?: string | null
+          seed_source?: string | null
           tax_setting_id?: string | null
           updated_at?: string
           user_id: string
@@ -603,10 +681,13 @@ export type Database = {
           date?: string
           description?: string | null
           id?: string
+          is_demo?: boolean
           is_recurring?: boolean
           payment_status?: string
           recurring_group_id?: string | null
           recurring_start_date?: string | null
+          seed_batch_id?: string | null
+          seed_source?: string | null
           tax_setting_id?: string | null
           updated_at?: string
           user_id?: string
@@ -627,6 +708,9 @@ export type Database = {
           created_at: string
           group_session_id: string
           id: string
+          is_demo: boolean
+          seed_batch_id: string | null
+          seed_source: string | null
           status: string
           updated_at: string
           user_id: string
@@ -636,6 +720,9 @@ export type Database = {
           created_at?: string
           group_session_id: string
           id?: string
+          is_demo?: boolean
+          seed_batch_id?: string | null
+          seed_source?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -645,6 +732,9 @@ export type Database = {
           created_at?: string
           group_session_id?: string
           id?: string
+          is_demo?: boolean
+          seed_batch_id?: string | null
+          seed_source?: string | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -672,8 +762,11 @@ export type Database = {
           created_at: string
           group_id: string
           id: string
+          is_demo: boolean
           joined_at: string
           price_per_session: number | null
+          seed_batch_id: string | null
+          seed_source: string | null
           user_id: string
         }
         Insert: {
@@ -681,8 +774,11 @@ export type Database = {
           created_at?: string
           group_id: string
           id?: string
+          is_demo?: boolean
           joined_at?: string
           price_per_session?: number | null
+          seed_batch_id?: string | null
+          seed_source?: string | null
           user_id: string
         }
         Update: {
@@ -690,8 +786,11 @@ export type Database = {
           created_at?: string
           group_id?: string
           id?: string
+          is_demo?: boolean
           joined_at?: string
           price_per_session?: number | null
+          seed_batch_id?: string | null
+          seed_source?: string | null
           user_id?: string
         }
         Relationships: [
@@ -768,7 +867,10 @@ export type Database = {
           created_at: string
           group_id: string
           id: string
+          is_demo: boolean
           notes: string | null
+          seed_batch_id: string | null
+          seed_source: string | null
           updated_at: string
           user_id: string
         }
@@ -777,7 +879,10 @@ export type Database = {
           created_at?: string
           group_id: string
           id?: string
+          is_demo?: boolean
           notes?: string | null
+          seed_batch_id?: string | null
+          seed_source?: string | null
           updated_at?: string
           user_id: string
         }
@@ -786,7 +891,10 @@ export type Database = {
           created_at?: string
           group_id?: string
           id?: string
+          is_demo?: boolean
           notes?: string | null
+          seed_batch_id?: string | null
+          seed_source?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -815,7 +923,10 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_demo: boolean
           name: string
+          seed_batch_id: string | null
+          seed_source: string | null
           status: string
           updated_at: string
           user_id: string
@@ -827,7 +938,10 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_demo?: boolean
           name: string
+          seed_batch_id?: string | null
+          seed_source?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -839,7 +953,10 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_demo?: boolean
           name?: string
+          seed_batch_id?: string | null
+          seed_source?: string | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -855,7 +972,10 @@ export type Database = {
           date: string
           description: string | null
           id: string
+          is_demo: boolean
           payment_method: string
+          seed_batch_id: string | null
+          seed_source: string | null
           source: string
           updated_at: string
           user_id: string
@@ -868,7 +988,10 @@ export type Database = {
           date?: string
           description?: string | null
           id?: string
+          is_demo?: boolean
           payment_method?: string
+          seed_batch_id?: string | null
+          seed_source?: string | null
           source?: string
           updated_at?: string
           user_id: string
@@ -881,7 +1004,10 @@ export type Database = {
           date?: string
           description?: string | null
           id?: string
+          is_demo?: boolean
           payment_method?: string
+          seed_batch_id?: string | null
+          seed_source?: string | null
           source?: string
           updated_at?: string
           user_id?: string
@@ -1258,8 +1384,11 @@ export type Database = {
           created_at: string
           duration_minutes: number
           id: string
+          is_demo: boolean
           name: string
           price: number
+          seed_batch_id: string | null
+          seed_source: string | null
           updated_at: string
           user_id: string
         }
@@ -1267,8 +1396,11 @@ export type Database = {
           created_at?: string
           duration_minutes?: number
           id?: string
+          is_demo?: boolean
           name: string
           price?: number
+          seed_batch_id?: string | null
+          seed_source?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1276,8 +1408,11 @@ export type Database = {
           created_at?: string
           duration_minutes?: number
           id?: string
+          is_demo?: boolean
           name?: string
           price?: number
+          seed_batch_id?: string | null
+          seed_source?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -1430,8 +1565,11 @@ export type Database = {
           expense_id: string | null
           id: string
           imported_notes_snapshot: Json
+          is_demo: boolean
           next_steps: string | null
           paid_amount: number
+          seed_batch_id: string | null
+          seed_source: string | null
           supervision_date: string
           supervision_outcome: string | null
           supervisor_feedback: string | null
@@ -1444,8 +1582,11 @@ export type Database = {
           expense_id?: string | null
           id?: string
           imported_notes_snapshot?: Json
+          is_demo?: boolean
           next_steps?: string | null
           paid_amount?: number
+          seed_batch_id?: string | null
+          seed_source?: string | null
           supervision_date?: string
           supervision_outcome?: string | null
           supervisor_feedback?: string | null
@@ -1458,8 +1599,11 @@ export type Database = {
           expense_id?: string | null
           id?: string
           imported_notes_snapshot?: Json
+          is_demo?: boolean
           next_steps?: string | null
           paid_amount?: number
+          seed_batch_id?: string | null
+          seed_source?: string | null
           supervision_date?: string
           supervision_outcome?: string | null
           supervisor_feedback?: string | null
@@ -1641,6 +1785,7 @@ export type Database = {
           via_appointment_total: number
         }[]
       }
+      cleanup_demo_workspace: { Args: { p_user_id: string }; Returns: Json }
       confirm_session_by_token: {
         Args: { p_token: string }
         Returns: {
@@ -1687,6 +1832,8 @@ export type Database = {
           read_ct: number
         }[]
       }
+      seed_demo_workspace: { Args: { p_user_id: string }; Returns: Json }
+      user_has_demo_data: { Args: { p_user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
