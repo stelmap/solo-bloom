@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -11,26 +11,32 @@ import { Eye, EyeOff, Lock, ShieldAlert } from "lucide-react";
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { t } = useLanguage();
-  const { user, isRecovery, clearRecovery } = useAuth();
+  const { user, session, isRecovery, beginRecovery, clearRecovery } = useAuth();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
+  const recoveryVerified = Boolean((location.state as { recoveryVerified?: boolean } | null)?.recoveryVerified);
 
   useEffect(() => {
     // Check URL hash for recovery token (from email link click)
     const hash = window.location.hash;
     if (hash && hash.includes("type=recovery")) {
+      beginRecovery();
       setReady(true);
       return;
     }
 
     // If user is in recovery mode from OTP verification
-    if (isRecovery && user) {
+    if ((isRecovery || recoveryVerified) && (user || session)) {
+      if (recoveryVerified && !isRecovery) {
+        beginRecovery();
+      }
       setReady(true);
       return;
     }
@@ -38,9 +44,9 @@ export default function ResetPasswordPage() {
     // Give a moment for auth state to settle
     const timeout = setTimeout(() => setReady(true), 1500);
     return () => clearTimeout(timeout);
-  }, [isRecovery, user]);
+  }, [beginRecovery, isRecovery, recoveryVerified, session, user]);
 
-  const isAuthorized = isRecovery || (window.location.hash && window.location.hash.includes("type=recovery"));
+  const isAuthorized = Boolean(isRecovery || recoveryVerified || (window.location.hash && window.location.hash.includes("type=recovery")));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +66,7 @@ export default function ResetPasswordPage() {
       if (error) throw error;
       clearRecovery();
       toast({ title: t("auth.passwordUpdated"), description: t("auth.passwordUpdatedDesc") });
-      navigate("/");
+       navigate("/auth", { replace: true });
     } catch (error: any) {
       toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     } finally {
