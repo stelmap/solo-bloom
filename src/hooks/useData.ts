@@ -381,6 +381,10 @@ export function useCompleteAppointment() {
     },
     // Analytics: a session was marked complete (with payment outcome)
     onSuccess: (_d, vars) => { track("session_completed", { payment_status: vars.paymentStatus }); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+  });
+}
+
+// Cancel/no-show
 export function useCancelAppointment() {
   const qc = useQueryClient();
   const { user } = useAuth();
