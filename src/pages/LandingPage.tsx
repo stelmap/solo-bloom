@@ -311,6 +311,26 @@ function FounderSection() {
 
 function PricingSection() {
   const { t } = useLandingLang();
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const trackedRef = useRef(false);
+
+  // Analytics: fire pricing_view once when the pricing section enters the viewport
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || trackedRef.current) return;
+    const obs = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting && !trackedRef.current) {
+          trackedRef.current = true;
+          track("pricing_view");
+          obs.disconnect();
+          break;
+        }
+      }
+    }, { threshold: 0.3 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   const PLANS = [
     { name: t("landing.pricing.monthly"), price: "20€", period: t("landing.pricing.perMonth"), savings: null, popular: false, planId: "monthly" },
