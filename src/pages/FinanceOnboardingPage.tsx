@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +32,7 @@ export default function FinanceOnboardingPage() {
 
   // If the user re-enters with setup already done, send them straight to dashboard
   if (status?.completed) {
-    return <NavigateToFinances />;
+    return <Navigate to="/finances" replace />;
   }
 
   const next = () => setStep((s) => Math.min(s + 1, TOTAL_STEPS));
@@ -215,17 +215,3 @@ export default function FinanceOnboardingPage() {
   );
 }
 
-function NavigateToFinances() {
-  const navigate = useNavigate();
-  // Use effect-less redirect via Navigate component
-  return <RedirectTo path="/finances" />;
-}
-
-function RedirectTo({ path }: { path: string }) {
-  const navigate = useNavigate();
-  // immediate redirect
-  if (typeof window !== "undefined") {
-    queueMicrotask(() => navigate(path, { replace: true }));
-  }
-  return null;
-}
