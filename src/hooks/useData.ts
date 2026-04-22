@@ -759,7 +759,10 @@ export function useCreateDayOff() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["days-off"] }),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["days-off"] });
+      await qc.refetchQueries({ queryKey: ["days-off"], type: "active" });
+    },
   });
 }
 
@@ -770,7 +773,10 @@ export function useDeleteDayOff() {
       const { error } = await supabase.from("days_off").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["days-off"] }),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["days-off"] });
+      await qc.refetchQueries({ queryKey: ["days-off"], type: "active" });
+    },
   });
 }
 
