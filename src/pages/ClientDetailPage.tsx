@@ -518,73 +518,90 @@ export default function ClientDetailPage() {
       </div>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>{t("clientDetail.editClient")}</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label>{t("common.name")} *</Label><Input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} /></div>
-            <div className="space-y-2"><Label>{t("common.phone")}</Label><Input value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} /></div>
-            <div className="space-y-2"><Label>{t("common.email")}</Label><Input type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} /></div>
-            <div className="space-y-2"><Label>{t("common.telegram")}</Label><Input placeholder="username" value={editForm.telegram} onChange={e => setEditForm(f => ({ ...f, telegram: e.target.value }))} /></div>
-            <div className="space-y-2"><Label>{t("common.generalNotes")}</Label><Textarea value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} /></div>
-            
-            <div className="border-t border-border pt-4 space-y-4">
-              <h4 className="text-sm font-medium flex items-center gap-2"><FileText className="h-4 w-4" /> {t("client.billingDetails")}</h4>
-              <div className="space-y-2"><Label>{t("client.billingCompany")}</Label><Input value={editForm.billing_company_name} onChange={e => setEditForm(f => ({ ...f, billing_company_name: e.target.value }))} /></div>
-              <div className="space-y-2"><Label>{t("client.billingTaxId")}</Label><Input value={editForm.billing_tax_id} onChange={e => setEditForm(f => ({ ...f, billing_tax_id: e.target.value }))} /></div>
-              <div className="space-y-2"><Label>{t("client.billingAddress")}</Label><Input value={editForm.billing_address} onChange={e => setEditForm(f => ({ ...f, billing_address: e.target.value }))} /></div>
-              <div className="space-y-2"><Label>{t("client.billingCountry")}</Label><Input value={editForm.billing_country} onChange={e => setEditForm(f => ({ ...f, billing_country: e.target.value }))} /></div>
-            </div>
-
-            <div className="border-t border-border pt-4 space-y-4">
-              <h4 className="text-sm font-medium flex items-center gap-2"><Bell className="h-4 w-4" /> {t("notification.title")}</h4>
-              <div className="space-y-2">
-                <Label>{t("notification.channel")}</Label>
-                <Select value={editForm.notification_preference} onValueChange={v => setEditForm(f => ({ ...f, notification_preference: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="no_reminder">{t("notification.noReminder")}</SelectItem>
-                    <SelectItem value="email_only">{t("notification.emailOnly")}</SelectItem>
-                    <SelectItem value="telegram_only">{t("notification.telegramOnly")}</SelectItem>
-                    <SelectItem value="email_and_telegram">{t("notification.emailAndTelegram")}</SelectItem>
-                  </SelectContent>
-                </Select>
+        <DialogContent className="max-w-3xl w-[calc(100vw-2rem)] max-h-[90vh] p-0 gap-0 flex flex-col overflow-hidden">
+          <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
+            <DialogTitle>{t("clientDetail.editClient")}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+            {/* Contact info */}
+            <section className="space-y-4">
+              <h4 className="text-sm font-semibold text-foreground">{t("clientDetail.profile")}</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2 sm:col-span-2"><Label>{t("common.name")} *</Label><Input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>{t("common.phone")}</Label><Input value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>{t("common.email")}</Label><Input type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} /></div>
+                <div className="space-y-2 sm:col-span-2"><Label>{t("common.telegram")}</Label><Input placeholder="username" value={editForm.telegram} onChange={e => setEditForm(f => ({ ...f, telegram: e.target.value }))} /></div>
+                <div className="space-y-2 sm:col-span-2"><Label>{t("common.generalNotes")}</Label><Textarea rows={3} value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} /></div>
               </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>{t("notification.confirmationRequired")}</Label>
-                  <p className="text-xs text-muted-foreground">{t("notification.confirmationRequiredDesc")}</p>
+            </section>
+
+            <section className="border-t border-border pt-5 space-y-4">
+              <h4 className="text-sm font-semibold flex items-center gap-2"><FileText className="h-4 w-4" /> {t("client.billingDetails")}</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2"><Label>{t("client.billingCompany")}</Label><Input value={editForm.billing_company_name} onChange={e => setEditForm(f => ({ ...f, billing_company_name: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>{t("client.billingTaxId")}</Label><Input value={editForm.billing_tax_id} onChange={e => setEditForm(f => ({ ...f, billing_tax_id: e.target.value }))} /></div>
+                <div className="space-y-2 sm:col-span-2"><Label>{t("client.billingAddress")}</Label><Input value={editForm.billing_address} onChange={e => setEditForm(f => ({ ...f, billing_address: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>{t("client.billingCountry")}</Label><Input value={editForm.billing_country} onChange={e => setEditForm(f => ({ ...f, billing_country: e.target.value }))} /></div>
+              </div>
+            </section>
+
+            <section className="border-t border-border pt-5 space-y-4">
+              <h4 className="text-sm font-semibold flex items-center gap-2"><Bell className="h-4 w-4" /> {t("notification.title")}</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                <div className="space-y-2">
+                  <Label>{t("notification.channel")}</Label>
+                  <Select value={editForm.notification_preference} onValueChange={v => setEditForm(f => ({ ...f, notification_preference: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="no_reminder">{t("notification.noReminder")}</SelectItem>
+                      <SelectItem value="email_only">{t("notification.emailOnly")}</SelectItem>
+                      <SelectItem value="telegram_only">{t("notification.telegramOnly")}</SelectItem>
+                      <SelectItem value="email_and_telegram">{t("notification.emailAndTelegram")}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <Switch checked={editForm.confirmation_required} onCheckedChange={v => setEditForm(f => ({ ...f, confirmation_required: v }))} />
+                <div className="flex items-center justify-between gap-4 rounded-lg border border-border p-3">
+                  <div className="min-w-0">
+                    <Label>{t("notification.confirmationRequired")}</Label>
+                    <p className="text-xs text-muted-foreground mt-1">{t("notification.confirmationRequiredDesc")}</p>
+                  </div>
+                  <Switch checked={editForm.confirmation_required} onCheckedChange={v => setEditForm(f => ({ ...f, confirmation_required: v }))} />
+                </div>
               </div>
-            </div>
+            </section>
 
-            <div className="border-t border-border pt-4 space-y-4">
-              <h4 className="text-sm font-medium flex items-center gap-2"><DollarSign className="h-4 w-4" /> {t("pricing.title")}</h4>
+            <section className="border-t border-border pt-5 space-y-4">
+              <h4 className="text-sm font-semibold flex items-center gap-2"><DollarSign className="h-4 w-4" /> {t("pricing.title")}</h4>
               <div className="space-y-2">
                 <Label>{t("pricing.mode")}</Label>
-                <RadioGroup value={editForm.pricing_mode} onValueChange={v => setEditForm(f => ({ ...f, pricing_mode: v }))} className="flex gap-4">
-                  <div className="flex items-center gap-2">
-                    <RadioGroupItem value="fixed" id="pricing-fixed" />
+                <RadioGroup value={editForm.pricing_mode} onValueChange={v => setEditForm(f => ({ ...f, pricing_mode: v }))} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="flex items-start gap-2 rounded-lg border border-border p-3">
+                    <RadioGroupItem value="fixed" id="pricing-fixed" className="mt-0.5" />
                     <Label htmlFor="pricing-fixed" className="font-normal cursor-pointer">
                       {t("pricing.fixed")}
-                      <span className="text-xs text-muted-foreground ml-1">— {t("pricing.fixedDesc")}</span>
+                      <span className="block text-xs text-muted-foreground mt-0.5">{t("pricing.fixedDesc")}</span>
                     </Label>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <RadioGroupItem value="dynamic" id="pricing-dynamic" />
+                  <div className="flex items-start gap-2 rounded-lg border border-border p-3">
+                    <RadioGroupItem value="dynamic" id="pricing-dynamic" className="mt-0.5" />
                     <Label htmlFor="pricing-dynamic" className="font-normal cursor-pointer">
                       {t("pricing.dynamic")}
-                      <span className="text-xs text-muted-foreground ml-1">— {t("pricing.dynamicDesc")}</span>
+                      <span className="block text-xs text-muted-foreground mt-0.5">{t("pricing.dynamicDesc")}</span>
                     </Label>
                   </div>
                 </RadioGroup>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 max-w-xs">
                 <Label>{t("pricing.basePrice")}</Label>
                 <Input type="number" min="0" step="1" placeholder="0" value={editForm.base_price} onChange={e => setEditForm(f => ({ ...f, base_price: e.target.value }))} />
               </div>
-            </div>
-            <Button onClick={handleSaveEdit} className="w-full" disabled={updateClient.isPending}>
+            </section>
+          </div>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 px-6 py-4 border-t border-border bg-background shrink-0">
+            <Button variant="outline" onClick={() => setEditOpen(false)} disabled={updateClient.isPending}>
+              {t("common.cancel")}
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={updateClient.isPending || !editForm.name.trim()}>
               {updateClient.isPending ? t("common.saving") : t("common.save")}
             </Button>
           </div>
