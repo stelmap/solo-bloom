@@ -149,13 +149,62 @@ export default function SettingsPage() {
     }
   };
 
+  // Step 1: User clicks "Add Day Off" -> we look up affected appointments and open confirmation
   const handleAddDayOff = async () => {
     if (!dayOffForm.date) return;
+    setCheckingAffected(true);
     try {
-      await createDayOff.mutateAsync({ date: dayOffForm.date, type: dayOffForm.type, label: dayOffForm.label || undefined, is_non_working: true });
-      toast({ title: t("toast.dayOffAdded") });
-      setDayOffForm({ date: "", type: "day_off", label: "" });
+      // Build [day start, day end) in local time, send as ISO so the DB can compare timestamptz correctly
+      const [y, m, d] = dayOffForm.date.split("-").map(Number);
+      const dayStart = new Date(y, (m ?? 1) - 1, d ?? 1, 0, 0, 0, 0);
+      const dayEnd = new Date(y, (m ?? 1) - 1, d ?? 1, 23, 59, 59, 999);
+      const { data, error } = await supabase
+        .from("appointments")
+        .select("id")
+        .eq("user_id", user!.id)
+        .gte("scheduled_at", dayStart.toISOString())
+        .lte("scheduled_at", dayEnd.toISOString())
+        .not("status", "in", "(cancelled,no-show)");
+      if (error) throw error;
+      setAffectedAppointments((data ?? []).map((a: any) => a.id));
       setDayOffOpen(false);
+      setConfirmOpen(true);
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    } finally {
+      setCheckingAffected(false);
+    }
+  };
+
+  // Step 2: User confirms -> create the day off, then bulk-cancel & email
+  const handleConfirmDayOff = async () => {
+    try {
+      // Use the type label as the cancellation reason (e.g. "Sick day"), fall back to user-entered label
+      const reason = dayOffForm.label?.trim()
+        ? dayOffForm.label.trim()
+        : dayOffTypeLabel(dayOffForm.type);
+      await createDayOff.mutateAsync({
+        date: dayOffForm.date,
+        type: dayOffForm.type,
+        label: dayOffForm.label || undefined,
+        is_non_working: true,
+      });
+      if (affectedAppointments.length > 0) {
+        await bulkCancelForDayOff.mutateAsync({
+          appointmentIds: affectedAppointments,
+          reason,
+        });
+      }
+      const cancelled = affectedAppointments.length;
+      toast({
+        title: t("toast.dayOffAdded"),
+        description: cancelled > 0
+          ? t("toast.dayOffCancelledSessions").replace("{count}", String(cancelled))
+          : undefined,
+      });
+      setDayOffForm({ date: "", type: "day_off", label: "" });
+      setAffectedAppointments([]);
+      setConfirmOpen(false);
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
