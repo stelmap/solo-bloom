@@ -61,7 +61,7 @@ export default function DiagnosticsPage() {
           <CardContent className="space-y-3 text-sm">
             <Row label="Status">
               {diag.enabled ? (
-                <Badge className="bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/15">Enabled — sending to PostHog</Badge>
+                <Badge>Enabled — sending to PostHog</Badge>
               ) : (
                 <Badge variant="secondary">Disabled (non-production host)</Badge>
               )}
