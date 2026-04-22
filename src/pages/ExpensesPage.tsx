@@ -94,7 +94,7 @@ export default function ExpensesPage() {
   const taxTotal = filtered.filter(e => e.category === "Tax").reduce((s, e) => s + Number(e.amount), 0);
   const expensesExTax = totalFiltered - taxTotal;
   const recurringTotal = filtered.filter(e => e.is_recurring).reduce((s, e) => s + Number(e.amount), 0);
-  const unpaidTotal = filtered.filter(e => (e as any).payment_status === "unpaid" && e.category === "Tax").reduce((s, e) => s + Number(e.amount), 0);
+  const unpaidTotal = filtered.filter(e => (e as any).payment_status === "unpaid").reduce((s, e) => s + Number(e.amount), 0);
 
   const catLabel = (cat: string) => {
     const key = `category.${cat}` as TranslationKey;
