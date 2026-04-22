@@ -62,6 +62,9 @@ export default function SettingsPage() {
   const [schedule, setSchedule] = useState(DEFAULT_SCHEDULE);
   const [dayOffOpen, setDayOffOpen] = useState(false);
   const [dayOffForm, setDayOffForm] = useState({ date: "", type: "day_off", label: "" });
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [affectedAppointments, setAffectedAppointments] = useState<string[]>([]);
+  const [checkingAffected, setCheckingAffected] = useState(false);
 
   // Tax form
   const [taxOpen, setTaxOpen] = useState(false);
