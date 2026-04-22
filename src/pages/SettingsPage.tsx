@@ -40,6 +40,7 @@ export default function SettingsPage() {
   const { data: daysOff = [] } = useDaysOff();
   const createDayOff = useCreateDayOff();
   const deleteDayOff = useDeleteDayOff();
+  const bulkCancelForDayOff = useBulkCancelForDayOff();
   const { data: taxSettings = [] } = useTaxSettings();
   const createTax = useCreateTaxSetting();
   const updateTax = useUpdateTaxSetting();
