@@ -284,20 +284,42 @@ export default function PlansPage() {
           <p className="text-xs text-muted-foreground">
             Prices and features shown are placeholders while pricing is being finalised.
           </p>
-          <Button
-            size="lg"
-            disabled={!selectedPlanId || continuing}
-            onClick={handleContinue}
-            className="min-w-[180px]"
-          >
-            {continuing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>Continue {selectedPlanId ? "" : "— select a plan"}</>
+          <div className="flex items-center gap-3">
+            {canClearDemo && (
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setConfirmClearOpen(true)}
+                disabled={clearing}
+              >
+                <Trash2 className="h-4 w-4" />
+                {clearing ? "Clearing…" : "Clear demo data"}
+              </Button>
             )}
-          </Button>
+            <Button
+              size="lg"
+              disabled={!selectedPlanId || continuing}
+              onClick={handleContinue}
+              className="min-w-[180px]"
+            >
+              {continuing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>Continue {selectedPlanId ? "" : "— select a plan"}</>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
+
+      <ConfirmDeleteDialog
+        open={confirmClearOpen}
+        onOpenChange={setConfirmClearOpen}
+        onConfirm={handleClearDemo}
+        loading={clearing}
+        title="Clear demo workspace?"
+        description="This will permanently remove all demo clients, sessions, income, expenses, and other demo records. Your account, settings, and any real records you created will be kept."
+      />
     </AppLayout>
   );
 }
