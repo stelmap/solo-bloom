@@ -472,6 +472,45 @@ export type Database = {
         }
         Relationships: []
       }
+      entitlements: {
+        Row: {
+          active_from: string
+          active_until: string | null
+          created_at: string
+          feature_code: string
+          id: string
+          is_active: boolean
+          source_ref: string | null
+          source_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active_from?: string
+          active_until?: string | null
+          created_at?: string
+          feature_code: string
+          id?: string
+          is_active?: boolean
+          source_ref?: string | null
+          source_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active_from?: string
+          active_until?: string | null
+          created_at?: string
+          feature_code?: string
+          id?: string
+          is_active?: boolean
+          source_ref?: string | null
+          source_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       expected_payments: {
         Row: {
           amount: number
@@ -978,6 +1017,80 @@ export type Database = {
           },
         ]
       }
+      plan_prices: {
+        Row: {
+          billing_period: string
+          created_at: string
+          currency: string
+          id: string
+          is_active: boolean
+          plan_id: string
+          price: number
+          stripe_price_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          billing_period: string
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          plan_id: string
+          price?: number
+          stripe_price_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          billing_period?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          plan_id?: string
+          price?: number
+          stripe_price_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_prices_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plans: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           business_address: string | null
@@ -1047,6 +1160,42 @@ export type Database = {
           work_hours_end?: string
           work_hours_start?: string
           working_days_per_week?: number
+        }
+        Relationships: []
+      }
+      promotions: {
+        Row: {
+          code: string
+          created_at: string
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          starts_at: string | null
+          type: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          starts_at?: string | null
+          type: string
+          updated_at?: string
+          value?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          starts_at?: string | null
+          type?: string
+          updated_at?: string
+          value?: number
         }
         Relationships: []
       }
@@ -1208,6 +1357,72 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          current_plan_id: string | null
+          current_price_id: string | null
+          id: string
+          legacy_access_until: string | null
+          legacy_full_access: boolean
+          migrated_at: string | null
+          migration_version: number | null
+          status: string
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          current_plan_id?: string | null
+          current_price_id?: string | null
+          id?: string
+          legacy_access_until?: string | null
+          legacy_full_access?: boolean
+          migrated_at?: string | null
+          migration_version?: number | null
+          status?: string
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          current_plan_id?: string | null
+          current_price_id?: string | null
+          id?: string
+          legacy_access_until?: string | null
+          legacy_full_access?: boolean
+          migrated_at?: string | null
+          migration_version?: number | null
+          status?: string
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_current_plan_id_fkey"
+            columns: ["current_plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_current_price_id_fkey"
+            columns: ["current_price_id"]
+            isOneToOne: false
+            referencedRelation: "plan_prices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supervisions: {
         Row: {
           client_id: string
@@ -1337,6 +1552,47 @@ export type Database = {
         }
         Relationships: []
       }
+      user_plan_history: {
+        Row: {
+          change_reason: string
+          created_at: string
+          effective_from: string
+          id: string
+          new_plan_id: string | null
+          previous_entitlement_snapshot: Json | null
+          previous_plan_snapshot: Json | null
+          user_id: string
+        }
+        Insert: {
+          change_reason: string
+          created_at?: string
+          effective_from?: string
+          id?: string
+          new_plan_id?: string | null
+          previous_entitlement_snapshot?: Json | null
+          previous_plan_snapshot?: Json | null
+          user_id: string
+        }
+        Update: {
+          change_reason?: string
+          created_at?: string
+          effective_from?: string
+          id?: string
+          new_plan_id?: string | null
+          previous_entitlement_snapshot?: Json | null
+          previous_plan_snapshot?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_plan_history_new_plan_id_fkey"
+            columns: ["new_plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       working_schedule: {
         Row: {
           created_at: string
@@ -1412,6 +1668,8 @@ export type Database = {
           service_name: string
         }[]
       }
+      migrate_all_legacy_users: { Args: never; Returns: Json }
+      migrate_legacy_user: { Args: { p_user_id: string }; Returns: Json }
       move_to_dlq: {
         Args: {
           dlq_name: string
