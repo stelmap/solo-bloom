@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CreditCard, RefreshCw, Loader2, Check, Sparkles, Shield, Zap } from "lucide-react";
 import { format } from "date-fns";
 import { fr as frLocale, uk as ukLocale } from "date-fns/locale";
+import { track } from "@/lib/analytics";
 
 type Plan = {
   id: string;
@@ -64,9 +65,33 @@ export function SubscriptionSection() {
 
   const currentPlan = PLANS.find((p) => p.priceId === subscription.price_id);
 
+  // Analytics: detect subscription state transitions and emit lifecycle events
+  const lastStateRef = useRef<{ subscribed: boolean; cancel: boolean } | null>(null);
+  useEffect(() => {
+    if (subscription.loading) return;
+    const prev = lastStateRef.current;
+    const curr = { subscribed: subscription.subscribed, cancel: subscription.cancel_at_period_end };
+    if (prev) {
+      // Transition: not subscribed → subscribed (checkout finished + active)
+      if (!prev.subscribed && curr.subscribed) {
+        track("checkout_completed", { plan_type: currentPlan?.id, is_trial: subscription.on_trial });
+        track("subscription_active", { plan_type: currentPlan?.id, is_trial: subscription.on_trial });
+      }
+      // Transition: cancel scheduled (user canceled in Stripe portal)
+      if (!prev.cancel && curr.cancel) {
+        track("subscription_canceled", { plan_type: currentPlan?.id });
+      }
+    }
+    lastStateRef.current = curr;
+  }, [subscription.loading, subscription.subscribed, subscription.cancel_at_period_end, subscription.on_trial, currentPlan?.id]);
+
+
   const handleCheckout = async (priceId: string) => {
     setLoadingPlan(priceId);
     try {
+      const planType = PLANS.find(p => p.priceId === priceId)?.id;
+      // Analytics: user clicked subscribe → opening Stripe checkout
+      track("checkout_started", { plan_type: planType, is_trial: withTrial });
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { priceId, withTrial },
       });
