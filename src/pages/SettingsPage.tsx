@@ -475,12 +475,32 @@ export default function SettingsPage() {
                     <Select value={dayOffForm.type} onValueChange={v => setDayOffForm(f => ({ ...f, type: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="day_off">{t("settings.dayOff")}</SelectItem><SelectItem value="vacation">{t("settings.vacation")}</SelectItem><SelectItem value="holiday">{t("settings.holiday")}</SelectItem><SelectItem value="sick">{t("settings.sickDay")}</SelectItem></SelectContent></Select>
                   </div>
                   <div className="space-y-2"><Label>{t("settings.dayOffLabel")}</Label><Input value={dayOffForm.label} onChange={e => setDayOffForm(f => ({ ...f, label: e.target.value }))} placeholder="e.g. Christmas" /></div>
-                  <Button onClick={handleAddDayOff} className="w-full" disabled={createDayOff.isPending || !dayOffForm.date}>
-                    {createDayOff.isPending ? t("common.adding") : t("settings.addDayOff")}
+                  <Button onClick={handleAddDayOff} className="w-full" disabled={checkingAffected || !dayOffForm.date}>
+                    {checkingAffected ? t("common.adding") : t("settings.addDayOff")}
                   </Button>
                 </div>
               </DialogContent>
             </Dialog>
+            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t("settings.dayOffConfirmTitle")}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {affectedAppointments.length > 0
+                      ? t("settings.dayOffConfirmDesc").replace("{count}", String(affectedAppointments.length))
+                      : t("settings.dayOffConfirmNone")}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={createDayOff.isPending || bulkCancelForDayOff.isPending}>
+                    {t("common.cancel")}
+                  </AlertDialogCancel>
+                  <AlertDialogAction onClick={handleConfirmDayOff} disabled={createDayOff.isPending || bulkCancelForDayOff.isPending}>
+                    {createDayOff.isPending || bulkCancelForDayOff.isPending ? t("common.saving") : t("common.confirm")}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
           {(daysOff as any[]).length === 0 ? (
             <div className="text-center py-6 text-sm text-muted-foreground"><CalendarOff className="h-8 w-8 mx-auto mb-2 opacity-40" />{t("settings.noDaysOff")}</div>
