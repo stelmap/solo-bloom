@@ -1,11 +1,12 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { FinanceGate } from "@/components/FinanceGate";
 import { lazy, Suspense } from "react";
 
 // Eagerly loaded (landing + auth — needed immediately)
@@ -26,6 +27,7 @@ const IncomePage = lazy(() => import("./pages/IncomePage"));
 const ExpensesPage = lazy(() => import("./pages/ExpensesPage"));
 const BreakevenPage = lazy(() => import("./pages/BreakevenPage"));
 const FinancialOverviewPage = lazy(() => import("./pages/FinancialOverviewPage"));
+const FinanceOnboardingPage = lazy(() => import("./pages/FinanceOnboardingPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
@@ -63,6 +65,7 @@ const App = () => (
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="/confirm-session" element={<ConfirmSessionPage />} />
                 <Route path="/unsubscribe" element={<UnsubscribePage />} />
+
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
                 <Route path="/clients" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
@@ -70,10 +73,20 @@ const App = () => (
                 <Route path="/groups" element={<ProtectedRoute><GroupsPage /></ProtectedRoute>} />
                 <Route path="/groups/:id" element={<ProtectedRoute><GroupDetailPage /></ProtectedRoute>} />
                 <Route path="/services" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
-                <Route path="/income" element={<ProtectedRoute><IncomePage /></ProtectedRoute>} />
-                <Route path="/expenses" element={<ProtectedRoute><ExpensesPage /></ProtectedRoute>} />
-                <Route path="/breakeven" element={<ProtectedRoute><BreakevenPage /></ProtectedRoute>} />
-                <Route path="/financial" element={<ProtectedRoute><FinancialOverviewPage /></ProtectedRoute>} />
+
+                {/* Finances module (gated by setup completion) */}
+                <Route path="/finances/onboarding" element={<ProtectedRoute><FinanceOnboardingPage /></ProtectedRoute>} />
+                <Route path="/finances" element={<ProtectedRoute><FinanceGate><FinancialOverviewPage /></FinanceGate></ProtectedRoute>} />
+                <Route path="/finances/income" element={<ProtectedRoute><FinanceGate><IncomePage /></FinanceGate></ProtectedRoute>} />
+                <Route path="/finances/expenses" element={<ProtectedRoute><FinanceGate><ExpensesPage /></FinanceGate></ProtectedRoute>} />
+                <Route path="/finances/breakeven" element={<ProtectedRoute><FinanceGate><BreakevenPage /></FinanceGate></ProtectedRoute>} />
+
+                {/* Backwards-compatible redirects from old top-level routes */}
+                <Route path="/income" element={<Navigate to="/finances/income" replace />} />
+                <Route path="/expenses" element={<Navigate to="/finances/expenses" replace />} />
+                <Route path="/breakeven" element={<Navigate to="/finances/breakeven" replace />} />
+                <Route path="/financial" element={<Navigate to="/finances" replace />} />
+
                 <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
                 <Route path="/supervision" element={<ProtectedRoute><SupervisionPage /></ProtectedRoute>} />
                 <Route path="/diagnostics" element={<ProtectedRoute><DiagnosticsPage /></ProtectedRoute>} />
