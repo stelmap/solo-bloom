@@ -11,12 +11,13 @@ import { useExpenses, useIncome, useServices, useAppointments, useBreakevenGoals
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { calculateCapacity, sessionsNeededForTarget } from "@/lib/capacity";
 import { buildGoalForecast } from "@/lib/forecasting";
 import { format, startOfMonth, subMonths } from "date-fns";
+import { track } from "@/lib/analytics";
 
 interface GoalForm {
   goal_number: number;
@@ -35,6 +36,8 @@ const defaultGoals = (t: any): GoalForm[] => [
 ];
 
 export default function BreakevenPage() {
+  // Analytics: user opened the breakeven view
+  useEffect(() => { track("breakeven_viewed"); }, []);
   const { data: expenseResult } = useExpenses();
   const expenses = (expenseResult as any)?.data ?? expenseResult ?? [];
   const { data: incomeResult } = useIncome();
