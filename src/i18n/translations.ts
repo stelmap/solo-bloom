@@ -443,6 +443,21 @@ export const translations = {
   "settings.holiday": { en: "Holiday", uk: "Свято", fr: "Jour férié" },
   "settings.sickDay": { en: "Sick day", uk: "Лікарняний", fr: "Congé maladie" },
   "settings.dayOffLabel": { en: "Label (optional)", uk: "Підпис (необов'язково)", fr: "Libellé (facultatif)" },
+  "settings.dayOffConfirmTitle": {
+    en: "Cancel sessions for this day?",
+    uk: "Скасувати сеанси цього дня?",
+    fr: "Annuler les séances de ce jour ?",
+  },
+  "settings.dayOffConfirmDesc": {
+    en: "All {count} session(s) scheduled for this day will be cancelled and affected clients will be notified by email.",
+    uk: "Усі заплановані сеанси ({count}) на цей день будуть скасовані, а клієнти отримають повідомлення електронною поштою.",
+    fr: "Les {count} séance(s) prévues ce jour seront annulées et les clients concernés seront informés par e-mail.",
+  },
+  "settings.dayOffConfirmNone": {
+    en: "No sessions are scheduled for this day. The day off will simply be saved.",
+    uk: "На цей день сеансів не заплановано. Вихідний буде просто збережено.",
+    fr: "Aucune séance n'est prévue ce jour. Le jour de repos sera simplement enregistré.",
+  },
 
   // Capacity
   "capacity.title": { en: "Weekly Capacity", uk: "Тижнева завантаженість", fr: "Capacité hebdomadaire" },
