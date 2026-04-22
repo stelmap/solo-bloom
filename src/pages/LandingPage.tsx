@@ -1,8 +1,9 @@
-import { useState, useCallback, createContext, useContext } from "react";
+import { useState, useCallback, createContext, useContext, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { translations, Language, TranslationKey } from "@/i18n/translations";
 import { getStoredLang, setStoredLang } from "@/i18n/LanguageContext";
+import { track } from "@/lib/analytics";
 import {
   LayoutDashboard, Users, Calendar, DollarSign, Target,
   CheckCircle2, ArrowRight, MessageSquareQuote, Zap,
@@ -116,7 +117,7 @@ function HeroSection() {
           {t("landing.hero.subtitle")}
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link to="/auth">
+          <Link to="/auth" onClick={() => track("cta_clicked", { source_page: "/", cta: "hero" })}>
             <Button size="lg" className="text-base px-8 h-12 gap-2">
               {t("landing.hero.cta")} <ArrowRight className="h-4 w-4" />
             </Button>
@@ -363,7 +364,7 @@ function PricingSection() {
                   </li>
                 ))}
               </ul>
-              <Link to={`/auth?plan=${plan.planId}`}>
+              <Link to={`/auth?plan=${plan.planId}`} onClick={() => track("cta_clicked", { source_page: "/#pricing", cta: "pricing_plan", plan_type: plan.planId })}>
                 <Button className={`w-full h-11 text-base gap-2`} variant={plan.popular ? "default" : "outline"}>
                   {t("landing.hero.cta")} <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -390,7 +391,7 @@ function FinalCTA() {
         <p className="text-lg text-secondary-foreground/70 mb-8">
           {t("landing.cta.subtitle")}
         </p>
-        <Link to="/auth">
+        <Link to="/auth" onClick={() => track("cta_clicked", { source_page: "/", cta: "final" })}>
           <Button size="lg" className="text-base px-8 h-12 gap-2">
             {t("landing.hero.cta")} <ArrowRight className="h-4 w-4" />
           </Button>
