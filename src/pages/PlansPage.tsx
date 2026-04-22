@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Loader2, Sparkles, ArrowLeft } from "lucide-react";
+import { Check, Loader2, Sparkles, ArrowLeft, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { useHasDemoData } from "@/hooks/useDemoWorkspace";
+import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 
 type Plan = {
   id: string;
