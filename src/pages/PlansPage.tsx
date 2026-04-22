@@ -63,12 +63,38 @@ function formatPrice(amount: number, currency: string) {
 export default function PlansPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, subscription } = useAuth();
+  const qc = useQueryClient();
+  const { data: hasDemoData } = useHasDemoData();
   const [loading, setLoading] = useState(true);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [prices, setPrices] = useState<PlanPrice[]>([]);
   const [period, setPeriod] = useState<BillingPeriod>("monthly");
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [continuing, setContinuing] = useState(false);
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
+  const [clearing, setClearing] = useState(false);
+
+  const isPaid = subscription.subscribed || subscription.on_trial;
+  const canClearDemo = !isPaid && Boolean(hasDemoData);
+
+  const handleClearDemo = async () => {
+    if (!user?.id) return;
+    setClearing(true);
+    try {
+      const { error } = await supabase.rpc("cleanup_demo_workspace", { p_user_id: user.id });
+      if (error) throw error;
+      toast({ title: "Demo data cleared", description: "Your workspace is now empty." });
+      qc.invalidateQueries();
+      // Reset session flag so auto-seed won't re-run this session
+      sessionStorage.setItem(`demo_seed_attempted:${user.id}`, "1");
+    } catch (e: any) {
+      toast({ title: "Failed to clear demo data", description: e?.message ?? String(e), variant: "destructive" });
+    } finally {
+      setClearing(false);
+      setConfirmClearOpen(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
