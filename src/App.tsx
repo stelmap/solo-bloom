@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { FinanceGate } from "@/components/FinanceGate";
+import { EntitlementGate } from "@/components/EntitlementGate";
 import { lazy, Suspense } from "react";
 
 // Eagerly loaded (landing + auth — needed immediately)
@@ -75,12 +76,12 @@ const App = () => (
                 <Route path="/groups/:id" element={<ProtectedRoute><GroupDetailPage /></ProtectedRoute>} />
                 <Route path="/services" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
 
-                {/* Finances module (gated by setup completion) */}
-                <Route path="/finances/onboarding" element={<ProtectedRoute><FinanceOnboardingPage /></ProtectedRoute>} />
-                <Route path="/finances" element={<ProtectedRoute><FinanceGate><FinancialOverviewPage /></FinanceGate></ProtectedRoute>} />
-                <Route path="/finances/income" element={<ProtectedRoute><FinanceGate><IncomePage /></FinanceGate></ProtectedRoute>} />
-                <Route path="/finances/expenses" element={<ProtectedRoute><FinanceGate><ExpensesPage /></FinanceGate></ProtectedRoute>} />
-                <Route path="/finances/breakeven" element={<ProtectedRoute><FinanceGate><BreakevenPage /></FinanceGate></ProtectedRoute>} />
+                {/* Finances module (gated by entitlement + setup completion) */}
+                <Route path="/finances/onboarding" element={<ProtectedRoute><EntitlementGate feature="financial_access"><FinanceOnboardingPage /></EntitlementGate></ProtectedRoute>} />
+                <Route path="/finances" element={<ProtectedRoute><EntitlementGate feature="financial_access"><FinanceGate><FinancialOverviewPage /></FinanceGate></EntitlementGate></ProtectedRoute>} />
+                <Route path="/finances/income" element={<ProtectedRoute><EntitlementGate feature="financial_access"><FinanceGate><IncomePage /></FinanceGate></EntitlementGate></ProtectedRoute>} />
+                <Route path="/finances/expenses" element={<ProtectedRoute><EntitlementGate feature="financial_access"><FinanceGate><ExpensesPage /></FinanceGate></EntitlementGate></ProtectedRoute>} />
+                <Route path="/finances/breakeven" element={<ProtectedRoute><EntitlementGate feature="financial_access"><FinanceGate><BreakevenPage /></FinanceGate></EntitlementGate></ProtectedRoute>} />
 
                 {/* Backwards-compatible redirects from old top-level routes */}
                 <Route path="/income" element={<Navigate to="/finances/income" replace />} />
@@ -89,7 +90,7 @@ const App = () => (
                 <Route path="/financial" element={<Navigate to="/finances" replace />} />
 
                 <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-                <Route path="/supervision" element={<ProtectedRoute><SupervisionPage /></ProtectedRoute>} />
+                <Route path="/supervision" element={<ProtectedRoute><EntitlementGate feature="premium_access"><SupervisionPage /></EntitlementGate></ProtectedRoute>} />
                 <Route path="/diagnostics" element={<ProtectedRoute><DiagnosticsPage /></ProtectedRoute>} />
                 <Route path="/plans" element={<ProtectedRoute><PlansPage /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
