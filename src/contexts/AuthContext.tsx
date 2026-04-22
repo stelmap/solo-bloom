@@ -17,6 +17,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isRecovery: boolean;
+  beginRecovery: () => void;
   clearRecovery: () => void;
   signOut: () => Promise<void>;
   subscription: SubscriptionStatus;
@@ -38,6 +39,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   isRecovery: false,
+  beginRecovery: () => {},
   clearRecovery: () => {},
   signOut: async () => {},
   subscription: defaultSubscription,
@@ -82,6 +84,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (event === "PASSWORD_RECOVERY") {
         setIsRecovery(true);
+      } else if (event === "SIGNED_OUT") {
+        setIsRecovery(false);
       }
     });
 
@@ -110,6 +114,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [session, refreshSubscription]);
 
+  const beginRecovery = () => setIsRecovery(true);
+
   const clearRecovery = () => setIsRecovery(false);
 
   const signOut = async () => {
@@ -118,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isRecovery, clearRecovery, signOut, subscription, refreshSubscription }}>
+    <AuthContext.Provider value={{ user, session, loading, isRecovery, beginRecovery, clearRecovery, signOut, subscription, refreshSubscription }}>
       {children}
     </AuthContext.Provider>
   );

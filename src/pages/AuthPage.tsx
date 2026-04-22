@@ -19,7 +19,7 @@ const PLAN_PRICE_MAP: Record<string, string> = {
 };
 
 export default function AuthPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, beginRecovery } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const planParam = searchParams.get("plan");
@@ -120,23 +120,34 @@ export default function AuthPage() {
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otpValue.length !== 6) return;
+    if (otpValue.length !== 8) return;
     setLoading(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({
+      const { data, error } = await supabase.auth.verifyOtp({
         email: resetEmailRef.current,
-        token: otpValue,
+        token: otpValue.trim(),
         type: "recovery",
       });
       if (error) {
-        if (error.message.toLowerCase().includes("expired")) {
+        const message = error.message.toLowerCase();
+        if (message.includes("expired")) {
           throw new Error(t("auth.otpExpired"));
+        }
+        if (message.includes("used")) {
+          throw new Error(t("auth.otpAlreadyUsed"));
+        }
+        if (message.includes("invalid") || message.includes("token") || message.includes("code")) {
+          throw new Error(t("auth.invalidOtp"));
         }
         throw error;
       }
-      // PASSWORD_RECOVERY event fires in AuthContext → isRecovery = true
-      // ProtectedRoute will redirect to /reset-password
-      navigate("/reset-password");
+
+      if (!data?.session && !data?.user) {
+        throw new Error(t("auth.invalidOtp"));
+      }
+
+      beginRecovery();
+      navigate("/reset-password", { replace: true, state: { recoveryVerified: true } });
     } catch (error: any) {
       toast({ title: t("common.error"), description: error.message, variant: "destructive" });
       setOtpValue("");

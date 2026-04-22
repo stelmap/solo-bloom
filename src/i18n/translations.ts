@@ -644,6 +644,8 @@ export const translations = {
   "auth.verifyCode": { en: "Verify Code", uk: "Підтвердити код", fr: "Vérifier le code" },
   "auth.verifying": { en: "Verifying...", uk: "Перевірка...", fr: "Vérification..." },
   "auth.otpExpiry": { en: "This code is single-use and expires after a limited time.", uk: "Цей код одноразовий і діє обмежений час.", fr: "Ce code est à usage unique et expire après un temps limité." },
+  "auth.invalidOtp": { en: "Invalid code. Please check it and try again.", uk: "Недійсний код. Перевірте його та спробуйте ще раз.", fr: "Code invalide. Vérifiez-le et réessayez." },
+  "auth.otpAlreadyUsed": { en: "This code has already been used. Please request a new one.", uk: "Цей код уже використано. Будь ласка, запросіть новий.", fr: "Ce code a déjà été utilisé. Veuillez en demander un nouveau." },
   "auth.otpExpired": { en: "This code has expired. Please request a new one.", uk: "Цей код закінчився. Будь ласка, запросіть новий.", fr: "Ce code a expiré. Veuillez en demander un nouveau." },
   "auth.setNewPassword": { en: "Set New Password", uk: "Встановити новий пароль", fr: "Définir un nouveau mot de passe" },
   "auth.setNewPasswordDesc": { en: "Enter your new password below.", uk: "Введіть новий пароль нижче.", fr: "Entrez votre nouveau mot de passe ci-dessous." },
