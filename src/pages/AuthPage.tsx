@@ -44,29 +44,42 @@ export default function AuthPage() {
   const { toast } = useToast();
   const { t, lang } = useLanguage();
 
-  // If user is already logged in and a plan was selected, auto-start checkout
+  // If user is already logged in and a plan was selected, auto-start checkout.
+  // Redirect in the SAME tab to avoid popup blockers and the "flicker" caused by
+  // opening a new tab and immediately navigating the current one to /dashboard.
+  const [checkoutRedirecting, setCheckoutRedirecting] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
+  const startPlanCheckout = async (plan: string) => {
+    const priceId = PLAN_PRICE_MAP[plan];
+    if (!priceId) return;
+    setCheckoutError(null);
+    setCheckoutRedirecting(true);
+    try {
+      track("checkout_started", { plan_type: plan });
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId, withTrial: true },
+      });
+      if (error) throw error;
+      if (!data?.url) throw new Error("No checkout URL returned");
+      // Same-tab redirect — single, clean handoff to Stripe.
+      window.location.href = data.url;
+    } catch (err: any) {
+      const msg = err?.message || "Failed to start checkout";
+      setCheckoutError(msg);
+      setCheckoutRedirecting(false);
+      checkoutTriggeredRef.current = false;
+      toast({ title: t("common.error"), description: msg, variant: "destructive" });
+    }
+  };
+
   useEffect(() => {
     if (user && planParam && PLAN_PRICE_MAP[planParam] && !checkoutTriggeredRef.current) {
       checkoutTriggeredRef.current = true;
-      const startCheckout = async () => {
-        try {
-          // Analytics: user reached checkout via plan param after auth
-          track("checkout_started", { plan_type: planParam });
-          const { data, error } = await supabase.functions.invoke("create-checkout", {
-            body: { priceId: PLAN_PRICE_MAP[planParam] },
-          });
-          if (error) throw error;
-          if (data?.url) {
-            window.open(data.url, "_blank");
-          }
-        } catch (err: any) {
-          toast({ title: "Error", description: err.message || "Failed to start checkout", variant: "destructive" });
-        }
-        navigate("/dashboard", { replace: true });
-      };
-      startCheckout();
+      startPlanCheckout(planParam);
     }
-  }, [user, planParam, navigate, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, planParam]);
 
   if (authLoading) {
     return (
@@ -80,8 +93,36 @@ export default function AuthPage() {
     return <Navigate to="/dashboard" replace />;
   }
 
-  if (user && planParam && checkoutTriggeredRef.current) {
-    return <Navigate to="/dashboard" replace />;
+  // While auto-checkout is in progress, show a clear loading state in the SAME tab.
+  // No more navigating to /dashboard before checkout — that was the source of the
+  // "blink/flicker" the user reported.
+  if (user && planParam && (checkoutRedirecting || checkoutTriggeredRef.current) && !checkoutError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="max-w-sm w-full text-center space-y-4">
+          <div className="mx-auto h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          <h2 className="text-lg font-semibold text-foreground">Redirecting to secure payment page…</h2>
+          <p className="text-sm text-muted-foreground">Please don't close this tab.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (user && planParam && checkoutError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="max-w-sm w-full text-center space-y-4">
+          <h2 className="text-lg font-semibold text-foreground">We couldn't open the payment page</h2>
+          <p className="text-sm text-muted-foreground">{checkoutError}</p>
+          <div className="flex gap-2 justify-center">
+            <Button onClick={() => startPlanCheckout(planParam)}>Try again</Button>
+            <Button variant="outline" onClick={() => navigate("/dashboard", { replace: true })}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
