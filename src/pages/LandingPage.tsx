@@ -153,6 +153,12 @@ function LandingLangProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// ── Billing cycle context (shared with pricing + CTA analytics) ───────
+
+type Cycle = "monthly" | "quarterly" | "yearly";
+const BillingCycleContext = createContext<Cycle>("monthly");
+const useBillingCycle = () => useContext(BillingCycleContext);
+
 // ── Reusable CTA helper ───────────────────────────────────────────────
 
 function PrimaryCta({
@@ -161,15 +167,24 @@ function PrimaryCta({
   cta,
   size = "lg",
   className = "",
+  extra,
 }: {
   label: string;
   source: string;
   cta: string;
   size?: "sm" | "lg" | "default";
   className?: string;
+  extra?: Record<string, unknown>;
 }) {
+  const { lang } = useLandingLang();
+  const billing_cycle = useBillingCycle();
   return (
-    <Link to="/auth" onClick={() => track("cta_clicked", { source_page: source, cta })}>
+    <Link
+      to="/auth"
+      onClick={() =>
+        track("cta_clicked", { source_page: source, cta, lang, billing_cycle, ...extra })
+      }
+    >
       <Button size={size} className={`gap-2 ${className}`}>
         {label} <ArrowRight className="h-4 w-4" />
       </Button>
@@ -212,7 +227,7 @@ function LandingNav() {
           <Link to="/auth" className="hidden sm:block">
             <Button variant="ghost" size="sm">{t("navLogin")}</Button>
           </Link>
-          <Link to="/auth" onClick={() => track("cta_clicked", { source_page: "/", cta: "nav" })}>
+          <Link to="/auth" onClick={() => track("cta_clicked", { source_page: "/", cta: "nav", lang })}>
             <Button size="sm">{t("navTry")}</Button>
           </Link>
         </div>
@@ -444,8 +459,6 @@ function HowSection() {
 
 // ── Pricing ───────────────────────────────────────────────────────────
 
-type Cycle = "monthly" | "quarterly" | "yearly";
-
 function PricingSection() {
   const { t } = useLandingLang();
   const [cycle, setCycle] = useState<Cycle>("monthly");
@@ -469,6 +482,7 @@ function PricingSection() {
   ];
 
   return (
+    <BillingCycleContext.Provider value={cycle}>
     <section id="pricing" className="py-20 px-4 sm:px-6 bg-muted/40">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10">
@@ -484,7 +498,10 @@ function PricingSection() {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setCycle(tab.id)}
+                  onClick={() => {
+                    setCycle(tab.id);
+                    track("pricing_cycle_changed", { billing_cycle: tab.id });
+                  }}
                   className={`relative px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                     active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
@@ -507,6 +524,7 @@ function PricingSection() {
         <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
           {/* Solo */}
           <PlanCard
+            plan="solo"
             name={t("soloName")}
             desc={t("soloDesc")}
             price={data.solo}
@@ -514,10 +532,10 @@ function PricingSection() {
             billed={data.billed}
             features={[t("soloF1"), t("soloF2"), t("soloF3"), t("soloF4")]}
             cta={t("startTrial")}
-            ctaSource={`/#pricing-${cycle}-solo`}
           />
           {/* Pro */}
           <PlanCard
+            plan="pro"
             name={t("proName")}
             desc={t("proDesc")}
             price={data.pro}
@@ -525,23 +543,26 @@ function PricingSection() {
             billed={data.billed}
             features={[t("proF1"), t("proF2"), t("proF3"), t("proF4")]}
             cta={t("startTrial")}
-            ctaSource={`/#pricing-${cycle}-pro`}
             popular
             popularLabel={t("popular")}
           />
         </div>
       </div>
     </section>
+    </BillingCycleContext.Provider>
   );
 }
 
 function PlanCard({
-  name, desc, price, perMonth, billed, features, cta, ctaSource, popular, popularLabel,
+  plan, name, desc, price, perMonth, billed, features, cta, popular, popularLabel,
 }: {
+  plan: "solo" | "pro";
   name: string; desc: string; price: number; perMonth: string; billed: string;
-  features: string[]; cta: string; ctaSource: string;
+  features: string[]; cta: string;
   popular?: boolean; popularLabel?: string;
 }) {
+  const { lang } = useLandingLang();
+  const billing_cycle = useBillingCycle();
   return (
     <div className={`relative p-7 rounded-2xl bg-card border-2 ${
       popular ? "border-primary shadow-lg" : "border-border"
@@ -566,7 +587,19 @@ function PlanCard({
           </li>
         ))}
       </ul>
-      <Link to="/auth" onClick={() => track("cta_clicked", { source_page: ctaSource, cta: "pricing_plan" })} className="block">
+      <Link
+        to="/auth"
+        onClick={() =>
+          track("cta_clicked", {
+            source_page: `/#pricing-${billing_cycle}-${plan}`,
+            cta: "pricing_plan",
+            plan_type: plan,
+            billing_cycle,
+            lang,
+          })
+        }
+        className="block"
+      >
         <Button className="w-full h-11 gap-2" variant={popular ? "default" : "outline"}>
           {cta} <ArrowRight className="h-4 w-4" />
         </Button>
