@@ -233,8 +233,8 @@ function DashboardPreview() {
         {/* Window chrome */}
         <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border bg-muted/40">
           <span className="h-2.5 w-2.5 rounded-full bg-destructive/60" />
-          <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/70" />
-          <span className="h-2.5 w-2.5 rounded-full bg-green-500/70" />
+          <span className="h-2.5 w-2.5 rounded-full bg-primary/40" />
+          <span className="h-2.5 w-2.5 rounded-full bg-primary/70" />
           <span className="ml-3 text-xs text-muted-foreground">solo-bizz.com / dashboard</span>
         </div>
 
