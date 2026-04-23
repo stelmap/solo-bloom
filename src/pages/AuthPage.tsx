@@ -44,29 +44,42 @@ export default function AuthPage() {
   const { toast } = useToast();
   const { t, lang } = useLanguage();
 
-  // If user is already logged in and a plan was selected, auto-start checkout
+  // If user is already logged in and a plan was selected, auto-start checkout.
+  // Redirect in the SAME tab to avoid popup blockers and the "flicker" caused by
+  // opening a new tab and immediately navigating the current one to /dashboard.
+  const [checkoutRedirecting, setCheckoutRedirecting] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
+  const startPlanCheckout = async (plan: string) => {
+    const priceId = PLAN_PRICE_MAP[plan];
+    if (!priceId) return;
+    setCheckoutError(null);
+    setCheckoutRedirecting(true);
+    try {
+      track("checkout_started", { plan_type: plan });
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId, withTrial: true },
+      });
+      if (error) throw error;
+      if (!data?.url) throw new Error("No checkout URL returned");
+      // Same-tab redirect — single, clean handoff to Stripe.
+      window.location.href = data.url;
+    } catch (err: any) {
+      const msg = err?.message || "Failed to start checkout";
+      setCheckoutError(msg);
+      setCheckoutRedirecting(false);
+      checkoutTriggeredRef.current = false;
+      toast({ title: t("common.error"), description: msg, variant: "destructive" });
+    }
+  };
+
   useEffect(() => {
     if (user && planParam && PLAN_PRICE_MAP[planParam] && !checkoutTriggeredRef.current) {
       checkoutTriggeredRef.current = true;
-      const startCheckout = async () => {
-        try {
-          // Analytics: user reached checkout via plan param after auth
-          track("checkout_started", { plan_type: planParam });
-          const { data, error } = await supabase.functions.invoke("create-checkout", {
-            body: { priceId: PLAN_PRICE_MAP[planParam] },
-          });
-          if (error) throw error;
-          if (data?.url) {
-            window.open(data.url, "_blank");
-          }
-        } catch (err: any) {
-          toast({ title: "Error", description: err.message || "Failed to start checkout", variant: "destructive" });
-        }
-        navigate("/dashboard", { replace: true });
-      };
-      startCheckout();
+      startPlanCheckout(planParam);
     }
-  }, [user, planParam, navigate, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, planParam]);
 
   if (authLoading) {
     return (
