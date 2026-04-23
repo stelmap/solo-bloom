@@ -482,6 +482,7 @@ function PricingSection() {
   ];
 
   return (
+    <BillingCycleContext.Provider value={cycle}>
     <section id="pricing" className="py-20 px-4 sm:px-6 bg-muted/40">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10">
@@ -497,7 +498,10 @@ function PricingSection() {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setCycle(tab.id)}
+                  onClick={() => {
+                    setCycle(tab.id);
+                    track("pricing_cycle_changed", { billing_cycle: tab.id });
+                  }}
                   className={`relative px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                     active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
@@ -520,6 +524,7 @@ function PricingSection() {
         <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
           {/* Solo */}
           <PlanCard
+            plan="solo"
             name={t("soloName")}
             desc={t("soloDesc")}
             price={data.solo}
@@ -527,10 +532,10 @@ function PricingSection() {
             billed={data.billed}
             features={[t("soloF1"), t("soloF2"), t("soloF3"), t("soloF4")]}
             cta={t("startTrial")}
-            ctaSource={`/#pricing-${cycle}-solo`}
           />
           {/* Pro */}
           <PlanCard
+            plan="pro"
             name={t("proName")}
             desc={t("proDesc")}
             price={data.pro}
@@ -538,13 +543,13 @@ function PricingSection() {
             billed={data.billed}
             features={[t("proF1"), t("proF2"), t("proF3"), t("proF4")]}
             cta={t("startTrial")}
-            ctaSource={`/#pricing-${cycle}-pro`}
             popular
             popularLabel={t("popular")}
           />
         </div>
       </div>
     </section>
+    </BillingCycleContext.Provider>
   );
 }
 
