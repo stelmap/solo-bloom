@@ -588,7 +588,7 @@ function PlanCard({
         ))}
       </ul>
       <Link
-        to="/auth"
+        to={`/auth?plan=${billing_cycle}`}
         onClick={() =>
           track("cta_clicked", {
             source_page: `/#pricing-${billing_cycle}-${plan}`,
