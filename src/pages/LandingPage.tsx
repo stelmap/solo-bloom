@@ -246,7 +246,7 @@ function DashboardPreview() {
               <Users className="h-4 w-4 text-primary" />
             </div>
             <div className="text-2xl font-bold text-foreground">24</div>
-            <div className="text-xs text-green-600 dark:text-green-400 mt-1">+3 this month</div>
+            <div className="text-xs text-primary mt-1">+3 this month</div>
           </div>
           <div className="rounded-xl border border-border bg-background p-4">
             <div className="flex items-center justify-between mb-2">
@@ -262,7 +262,7 @@ function DashboardPreview() {
               <TrendingUp className="h-4 w-4 text-primary" />
             </div>
             <div className="text-2xl font-bold text-foreground">€4,820</div>
-            <div className="text-xs text-green-600 dark:text-green-400 mt-1">+12% vs last</div>
+            <div className="text-xs text-primary mt-1">+12% vs last</div>
           </div>
         </div>
 
@@ -286,7 +286,7 @@ function DashboardPreview() {
                   <span className="text-xs text-muted-foreground">{row.time}</span>
                   <span className="text-sm font-semibold text-foreground">{row.price}</span>
                   <span className={`text-[10px] uppercase tracking-wide font-semibold px-2 py-0.5 rounded-full ${
-                    row.paid ? "bg-green-500/10 text-green-600 dark:text-green-400" : "bg-yellow-400/10 text-yellow-600 dark:text-yellow-400"
+                    row.paid ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
                   }`}>
                     {row.paid ? t("dpPaid") : t("dpPending")}
                   </span>
