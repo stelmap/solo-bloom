@@ -459,8 +459,6 @@ function HowSection() {
 
 // ── Pricing ───────────────────────────────────────────────────────────
 
-type Cycle = "monthly" | "quarterly" | "yearly";
-
 function PricingSection() {
   const { t } = useLandingLang();
   const [cycle, setCycle] = useState<Cycle>("monthly");
