@@ -14,9 +14,9 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { track } from "@/lib/analytics";
 
 const PLAN_PRICE_MAP: Record<string, string> = {
-  monthly: "price_1TL8IORxXuU3N5IFvjohq4sk",
-  quarterly: "price_1TL8IORxXuU3N5IFlwMslTtE",
-  yearly: "price_1TL8INRxXuU3N5IF8bJlwGyr",
+  monthly: "price_1TPOfCRxXuU3N5IFkCAuboUA",
+  quarterly: "price_1TPOgmRxXuU3N5IF29Xx9tkY",
+  yearly: "price_1TPOhXRxXuU3N5IFZbRRa61A",
 };
 
 export default function AuthPage() {
