@@ -15,7 +15,7 @@ import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 type Plan = {
   id: string;
   name: string;
-  code: "medium" | "gold" | "premium" | string;
+  code: "solo" | "pro" | string;
   description: string | null;
 };
 
@@ -25,39 +25,66 @@ type PlanPrice = {
   billing_period: "monthly" | "quarterly" | "yearly";
   price: number;
   currency: string;
+  stripe_price_id: string | null;
 };
 
 type BillingPeriod = "monthly" | "quarterly" | "yearly";
 
-// Placeholder feature lists per plan code (UI-only; real entitlements live in DB)
+// Feature lists per plan code (UI-only; real entitlements live in DB)
 const PLAN_FEATURES: Record<string, string[]> = {
-  medium: [
+  solo: [
     "Calendar & appointments",
     "Clients & groups",
     "Services catalog",
-    "Email reminders",
+    "Email reminders & confirmations",
+    "Recurring sessions",
   ],
-  gold: [
-    "Everything in Medium",
+  pro: [
+    "Everything in Solo",
     "Income & expenses tracking",
-    "Break-even goals",
+    "Break-even goals & forecasting",
     "Invoices & VAT",
-  ],
-  premium: [
-    "Everything in Gold",
     "Supervision workspace",
-    "Advanced analytics",
-    "Priority support",
+    "Advanced analytics & insights",
   ],
 };
 
-const PLAN_ORDER = ["medium", "gold", "premium"];
-const HIGHLIGHTED_CODE = "gold";
+const PLAN_ORDER = ["solo", "pro"];
+const HIGHLIGHTED_CODE = "pro";
+
+const PERIOD_LABELS: Record<BillingPeriod, string> = {
+  monthly: "Monthly",
+  quarterly: "Quarterly",
+  yearly: "Yearly",
+};
+
+const PERIOD_SUFFIX: Record<BillingPeriod, string> = {
+  monthly: "month",
+  quarterly: "3 months",
+  yearly: "year",
+};
 
 function formatPrice(amount: number, currency: string) {
   const symbol = currency === "EUR" ? "€" : currency === "USD" ? "$" : currency + " ";
   if (amount === 0) return `${symbol}—`;
   return `${symbol}${amount.toFixed(amount % 1 === 0 ? 0 : 2)}`;
+}
+
+// Compute savings vs paying monthly for the same total period
+function savingsVsMonthly(
+  prices: PlanPrice[],
+  planId: string,
+  period: BillingPeriod,
+): number | null {
+  if (period === "monthly") return null;
+  const monthly = prices.find((p) => p.plan_id === planId && p.billing_period === "monthly");
+  const target = prices.find((p) => p.plan_id === planId && p.billing_period === period);
+  if (!monthly || !target) return null;
+  const months = period === "quarterly" ? 3 : 12;
+  const baseline = Number(monthly.price) * months;
+  if (baseline <= 0) return null;
+  const pct = Math.round(((baseline - Number(target.price)) / baseline) * 100);
+  return pct > 0 ? pct : null;
 }
 
 export default function PlansPage() {
@@ -69,7 +96,7 @@ export default function PlansPage() {
   const [loading, setLoading] = useState(true);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [prices, setPrices] = useState<PlanPrice[]>([]);
-  const [period, setPeriod] = useState<BillingPeriod>("monthly");
+  const [period, setPeriod] = useState<BillingPeriod>("yearly");
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [continuing, setContinuing] = useState(false);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
@@ -114,7 +141,6 @@ export default function PlansPage() {
     if (!user?.id) return;
     setClearing(true);
     try {
-      // Re-check at confirm time to avoid races
       const hasReal = await checkHasRealData();
       if (hasReal) {
         toast({
@@ -144,7 +170,10 @@ export default function PlansPage() {
       setLoading(true);
       const [plansRes, pricesRes] = await Promise.all([
         supabase.from("plans").select("id,name,code,description").eq("is_active", true),
-        supabase.from("plan_prices").select("id,plan_id,billing_period,price,currency").eq("is_active", true),
+        supabase
+          .from("plan_prices")
+          .select("id,plan_id,billing_period,price,currency,stripe_price_id")
+          .eq("is_active", true),
       ]);
       if (cancelled) return;
       if (plansRes.error) toast({ title: "Failed to load plans", description: plansRes.error.message, variant: "destructive" });
@@ -158,7 +187,7 @@ export default function PlansPage() {
     };
   }, [toast]);
 
-  // Sort plans by predefined order so Medium → Gold → Premium
+  // Sort plans by predefined order: Solo → Pro
   const orderedPlans = useMemo(() => {
     const sorted = [...plans].sort((a, b) => {
       const ai = PLAN_ORDER.indexOf(a.code);
@@ -171,7 +200,6 @@ export default function PlansPage() {
   const priceFor = (planId: string, p: BillingPeriod) =>
     prices.find((pr) => pr.plan_id === planId && pr.billing_period === p);
 
-  // Available billing periods (only show toggles that have at least one price)
   const availablePeriods = useMemo<BillingPeriod[]>(() => {
     const set = new Set<BillingPeriod>();
     prices.forEach((p) => set.add(p.billing_period));
@@ -184,18 +212,36 @@ export default function PlansPage() {
     if (!availablePeriods.includes(period)) setPeriod(availablePeriods[0]);
   }, [availablePeriods, period]);
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!selectedPlanId) return;
-    const plan = orderedPlans.find((p) => p.id === selectedPlanId);
     const price = priceFor(selectedPlanId, period);
+    if (!price?.stripe_price_id) {
+      toast({
+        title: "Checkout unavailable",
+        description: "This plan is not yet available for purchase. Please try another billing period.",
+        variant: "destructive",
+      });
+      return;
+    }
     setContinuing(true);
-    // Placeholder: prices are €0 today, so we don't trigger Stripe. When real
-    // prices and stripe_price_id are filled in, wire create-checkout here.
-    toast({
-      title: "Plan selected",
-      description: `${plan?.name ?? "Plan"} · ${period}${price ? ` · ${formatPrice(price.price, price.currency)}` : ""}. Checkout will be enabled once pricing is configured.`,
-    });
-    setTimeout(() => setContinuing(false), 600);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId: price.stripe_price_id, withTrial: true },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+        return;
+      }
+      throw new Error("No checkout URL returned");
+    } catch (e: any) {
+      toast({
+        title: "Couldn't start checkout",
+        description: e?.message ?? String(e),
+        variant: "destructive",
+      });
+      setContinuing(false);
+    }
   };
 
   return (
@@ -226,21 +272,31 @@ export default function PlansPage() {
         {availablePeriods.length > 1 && (
           <div className="flex justify-center">
             <div className="inline-flex rounded-xl border border-border bg-muted/40 p-1">
-              {availablePeriods.map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setPeriod(p)}
-                  className={cn(
-                    "px-4 py-2 text-sm font-medium rounded-lg transition-all capitalize",
-                    period === p
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {p}
-                </button>
-              ))}
+              {availablePeriods.map((p) => {
+                const isActive = period === p;
+                // Show savings for the longest period (yearly) hint
+                const showSave = p === "yearly";
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPeriod(p)}
+                    className={cn(
+                      "relative px-4 py-2 text-sm font-medium rounded-lg transition-all",
+                      isActive
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {PERIOD_LABELS[p]}
+                    {showSave && (
+                      <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-primary/15 text-primary">
+                        Save ~40%
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -255,12 +311,13 @@ export default function PlansPage() {
             <p className="text-muted-foreground">No active plans available yet.</p>
           </div>
         ) : (
-          <div className="grid sm:grid-cols-3 gap-5">
+          <div className="grid sm:grid-cols-2 gap-5 max-w-4xl mx-auto">
             {orderedPlans.map((plan) => {
               const price = priceFor(plan.id, period);
               const isHighlighted = plan.code === HIGHLIGHTED_CODE;
               const isSelected = selectedPlanId === plan.id;
               const features = PLAN_FEATURES[plan.code] ?? [];
+              const savings = price ? savingsVsMonthly(prices, plan.id, period) : null;
 
               return (
                 <button
@@ -294,11 +351,13 @@ export default function PlansPage() {
                         <span className="text-3xl font-bold text-foreground">
                           {price ? formatPrice(price.price, price.currency) : "—"}
                         </span>
-                        <span className="text-sm text-muted-foreground">/ {period.replace("ly", "")}</span>
+                        <span className="text-sm text-muted-foreground">
+                          / {PERIOD_SUFFIX[period]}
+                        </span>
                       </div>
-                      {price && price.price === 0 && (
+                      {savings !== null && (
                         <Badge variant="secondary" className="mt-2 text-[10px]">
-                          Placeholder price
+                          Save {savings}% vs monthly
                         </Badge>
                       )}
                     </div>
@@ -330,7 +389,7 @@ export default function PlansPage() {
         {/* Footer CTA */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
           <p className="text-xs text-muted-foreground">
-            Prices and features shown are placeholders while pricing is being finalised.
+            Secure checkout via Stripe. Cancel anytime from Settings.
           </p>
           <div className="flex items-center gap-3">
             {canClearDemo && (
