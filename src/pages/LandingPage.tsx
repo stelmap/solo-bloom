@@ -554,12 +554,15 @@ function PricingSection() {
 }
 
 function PlanCard({
-  name, desc, price, perMonth, billed, features, cta, ctaSource, popular, popularLabel,
+  plan, name, desc, price, perMonth, billed, features, cta, popular, popularLabel,
 }: {
+  plan: "solo" | "pro";
   name: string; desc: string; price: number; perMonth: string; billed: string;
-  features: string[]; cta: string; ctaSource: string;
+  features: string[]; cta: string;
   popular?: boolean; popularLabel?: string;
 }) {
+  const { lang } = useLandingLang();
+  const billing_cycle = useBillingCycle();
   return (
     <div className={`relative p-7 rounded-2xl bg-card border-2 ${
       popular ? "border-primary shadow-lg" : "border-border"
@@ -584,7 +587,19 @@ function PlanCard({
           </li>
         ))}
       </ul>
-      <Link to="/auth" onClick={() => track("cta_clicked", { source_page: ctaSource, cta: "pricing_plan" })} className="block">
+      <Link
+        to="/auth"
+        onClick={() =>
+          track("cta_clicked", {
+            source_page: `/#pricing-${billing_cycle}-${plan}`,
+            cta: "pricing_plan",
+            plan_type: plan,
+            billing_cycle,
+            lang,
+          })
+        }
+        className="block"
+      >
         <Button className="w-full h-11 gap-2" variant={popular ? "default" : "outline"}>
           {cta} <ArrowRight className="h-4 w-4" />
         </Button>

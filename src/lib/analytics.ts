@@ -83,6 +83,7 @@ export type AnalyticsEvent =
   | "landing_view"
   | "pricing_view"
   | "cta_clicked"
+  | "pricing_cycle_changed"
   | "sign_up_started"
   | "sign_up_completed"
   | "login_completed"
