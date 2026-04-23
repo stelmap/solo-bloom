@@ -9,9 +9,14 @@ const corsHeaders = {
 };
 
 const PRICE_IDS = {
-  monthly: "price_1TPOfCRxXuU3N5IFkCAuboUA",
-  quarterly: "price_1TPOgmRxXuU3N5IF29Xx9tkY",
-  yearly: "price_1TPOhXRxXuU3N5IFZbRRa61A",
+  // Solo plan
+  solo_monthly: "price_1TPQ3DRxXuU3N5IFMcxZCvva",
+  solo_quarterly: "price_1TPQ5FRxXuU3N5IF5ufGLkV1",
+  solo_yearly: "price_1TPQ60RxXuU3N5IFBiGOuz8f",
+  // Pro plan
+  pro_monthly: "price_1TPQahRxXuU3N5IF3umwA0Bd",
+  pro_quarterly: "price_1TPQbIRxXuU3N5IFPVrvG60z",
+  pro_yearly: "price_1TPQbmRxXuU3N5IFirrjnqdi",
 };
 
 serve(async (req) => {
