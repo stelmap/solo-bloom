@@ -180,7 +180,7 @@ function PrimaryCta({
   const billing_cycle = useBillingCycle();
   return (
     <Link
-      to="/auth"
+      to={`/auth?plan=${billing_cycle}`}
       onClick={() =>
         track("cta_clicked", { source_page: source, cta, lang, billing_cycle, ...extra })
       }
