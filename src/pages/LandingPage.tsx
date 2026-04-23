@@ -227,7 +227,7 @@ function LandingNav() {
           <Link to="/auth" className="hidden sm:block">
             <Button variant="ghost" size="sm">{t("navLogin")}</Button>
           </Link>
-          <Link to="/auth" onClick={() => track("cta_clicked", { source_page: "/", cta: "nav" })}>
+          <Link to="/auth" onClick={() => track("cta_clicked", { source_page: "/", cta: "nav", lang })}>
             <Button size="sm">{t("navTry")}</Button>
           </Link>
         </div>
