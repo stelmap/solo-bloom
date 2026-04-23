@@ -101,8 +101,8 @@ export default function AuthPage() {
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="max-w-sm w-full text-center space-y-4">
           <div className="mx-auto h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-          <h2 className="text-lg font-semibold text-foreground">{t("auth.redirectingToCheckout") || "Redirecting to secure payment page…"}</h2>
-          <p className="text-sm text-muted-foreground">{t("auth.dontClose") || "Please don't close this tab."}</p>
+          <h2 className="text-lg font-semibold text-foreground">Redirecting to secure payment page…</h2>
+          <p className="text-sm text-muted-foreground">Please don't close this tab.</p>
         </div>
       </div>
     );
@@ -112,12 +112,12 @@ export default function AuthPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="max-w-sm w-full text-center space-y-4">
-          <h2 className="text-lg font-semibold text-foreground">{t("auth.checkoutFailed") || "We couldn't open the payment page"}</h2>
+          <h2 className="text-lg font-semibold text-foreground">We couldn't open the payment page</h2>
           <p className="text-sm text-muted-foreground">{checkoutError}</p>
           <div className="flex gap-2 justify-center">
-            <Button onClick={() => startPlanCheckout(planParam)}>{t("common.retry") || "Try again"}</Button>
+            <Button onClick={() => startPlanCheckout(planParam)}>Try again</Button>
             <Button variant="outline" onClick={() => navigate("/dashboard", { replace: true })}>
-              {t("common.cancel") || "Cancel"}
+              Cancel
             </Button>
           </div>
         </div>
