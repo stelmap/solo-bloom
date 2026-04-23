@@ -48,8 +48,9 @@ const navItems: NavItem[] = [
 export function AppSidebar() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, signOut, subscription } = useAuth();
   const { t } = useLanguage();
+  const isTrial = !subscription.loading && subscription.on_trial && !subscription.subscribed;
   const { has, loading: entLoading } = useEntitlements();
 
   const visibleNavItems = useMemo(
@@ -95,9 +96,16 @@ export function AppSidebar() {
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="p-6 border-b border-sidebar-border">
-          <h1 className="text-xl font-bold text-sidebar-foreground tracking-tight">
-            Solo<span className="text-sidebar-primary">Bizz</span>
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold text-sidebar-foreground tracking-tight">
+              Solo<span className="text-sidebar-primary">Bizz</span>
+            </h1>
+            {isTrial && (
+              <span className="inline-flex items-center rounded-full bg-sidebar-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sidebar-primary">
+                Demo
+              </span>
+            )}
+          </div>
           <p className="text-xs text-sidebar-foreground/50 mt-0.5">Business Manager</p>
         </div>
 
