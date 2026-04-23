@@ -153,6 +153,12 @@ function LandingLangProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// ── Billing cycle context (shared with pricing + CTA analytics) ───────
+
+type Cycle = "monthly" | "quarterly" | "yearly";
+const BillingCycleContext = createContext<Cycle>("monthly");
+const useBillingCycle = () => useContext(BillingCycleContext);
+
 // ── Reusable CTA helper ───────────────────────────────────────────────
 
 function PrimaryCta({
@@ -161,15 +167,24 @@ function PrimaryCta({
   cta,
   size = "lg",
   className = "",
+  extra,
 }: {
   label: string;
   source: string;
   cta: string;
   size?: "sm" | "lg" | "default";
   className?: string;
+  extra?: Record<string, unknown>;
 }) {
+  const { lang } = useLandingLang();
+  const billing_cycle = useBillingCycle();
   return (
-    <Link to="/auth" onClick={() => track("cta_clicked", { source_page: source, cta })}>
+    <Link
+      to="/auth"
+      onClick={() =>
+        track("cta_clicked", { source_page: source, cta, lang, billing_cycle, ...extra })
+      }
+    >
       <Button size={size} className={`gap-2 ${className}`}>
         {label} <ArrowRight className="h-4 w-4" />
       </Button>
