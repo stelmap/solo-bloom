@@ -93,8 +93,36 @@ export default function AuthPage() {
     return <Navigate to="/dashboard" replace />;
   }
 
-  if (user && planParam && checkoutTriggeredRef.current) {
-    return <Navigate to="/dashboard" replace />;
+  // While auto-checkout is in progress, show a clear loading state in the SAME tab.
+  // No more navigating to /dashboard before checkout — that was the source of the
+  // "blink/flicker" the user reported.
+  if (user && planParam && (checkoutRedirecting || checkoutTriggeredRef.current) && !checkoutError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="max-w-sm w-full text-center space-y-4">
+          <div className="mx-auto h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          <h2 className="text-lg font-semibold text-foreground">{t("auth.redirectingToCheckout") || "Redirecting to secure payment page…"}</h2>
+          <p className="text-sm text-muted-foreground">{t("auth.dontClose") || "Please don't close this tab."}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (user && planParam && checkoutError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="max-w-sm w-full text-center space-y-4">
+          <h2 className="text-lg font-semibold text-foreground">{t("auth.checkoutFailed") || "We couldn't open the payment page"}</h2>
+          <p className="text-sm text-muted-foreground">{checkoutError}</p>
+          <div className="flex gap-2 justify-center">
+            <Button onClick={() => startPlanCheckout(planParam)}>{t("common.retry") || "Try again"}</Button>
+            <Button variant="outline" onClick={() => navigate("/dashboard", { replace: true })}>
+              {t("common.cancel") || "Cancel"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
