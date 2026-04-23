@@ -213,7 +213,7 @@ export default function PlansPage() {
   }, [availablePeriods, period]);
 
   const handleContinue = async () => {
-    if (!selectedPlanId) return;
+    if (!selectedPlanId || continuing) return; // guard against double-click
     const price = priceFor(selectedPlanId, period);
     if (!price?.stripe_price_id) {
       toast({
@@ -228,8 +228,22 @@ export default function PlansPage() {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { priceId: price.stripe_price_id, withTrial: true },
       });
-      if (error) throw error;
+      // Edge-function returns non-2xx as `error` with a `context` containing the JSON body.
+      if (error) {
+        let serverMsg: string | undefined;
+        try {
+          const ctx: any = (error as any).context;
+          if (ctx && typeof ctx.json === "function") {
+            const j = await ctx.json();
+            serverMsg = j?.error;
+          }
+        } catch {
+          // ignore — fall back to error.message
+        }
+        throw new Error(serverMsg || error.message || "Checkout failed");
+      }
       if (data?.url) {
+        // Single, same-tab redirect to Stripe.
         window.location.href = data.url;
         return;
       }
