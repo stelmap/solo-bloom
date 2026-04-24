@@ -44,11 +44,17 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: claimsData, error: claimsError } = await supabaseUser.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) throw new Error("Authentication failed");
+    const { data: userData, error: userError } = await supabaseUser.auth.getUser(token);
+    if (userError || !userData?.user) {
+      logStep("Authentication failed", { message: userError?.message });
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
 
-    const userId = claimsData.claims.sub as string;
-    const userEmail = claimsData.claims.email as string;
+    const userId = userData.user.id;
+    const userEmail = userData.user.email;
     if (!userEmail) throw new Error("User email not available");
     logStep("User authenticated", { email: userEmail });
 
