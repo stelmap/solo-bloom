@@ -6,7 +6,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Loader2, Sparkles, ArrowLeft, Trash2 } from "lucide-react";
+import { AlertCircle, Check, Loader2, Sparkles, ArrowLeft, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHasDemoData } from "@/hooks/useDemoWorkspace";
@@ -90,7 +90,7 @@ function savingsVsMonthly(
 export default function PlansPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, subscription } = useAuth();
+  const { user, subscription, subscriptionError } = useAuth();
   const qc = useQueryClient();
   const { data: hasDemoData } = useHasDemoData();
   const [loading, setLoading] = useState(true);
@@ -281,6 +281,18 @@ export default function PlansPage() {
             </span>
           </div>
         </header>
+
+        {subscriptionError && (
+          <div className="mx-auto max-w-4xl rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+              <div className="space-y-1">
+                <p className="text-sm font-semibold">Billing status couldn't be refreshed</p>
+                <p className="text-sm text-destructive/90">{subscriptionError}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Billing period toggle */}
         {availablePeriods.length > 1 && (
