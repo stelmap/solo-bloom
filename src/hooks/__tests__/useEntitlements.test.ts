@@ -1,4 +1,59 @@
-import { describe, it, expect } from "vitest";
+import { createElement, type ReactNode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, it, expect, vi } from "vitest";
+
+const mockAuthState = vi.hoisted(() => ({
+  current: {
+    user: { id: "user-pro-trial" },
+    subscription: {
+      subscribed: false,
+      on_trial: false,
+      subscription_end: null,
+      trial_end: null,
+      price_id: null,
+      cancel_at_period_end: false,
+      loading: false,
+    },
+  },
+}));
+
+const mockDbState = vi.hoisted(() => ({
+  entitlements: [] as { feature_code: FeatureCode; source_type: string; active_until: string | null; is_active: boolean }[],
+  subscriptionRow: null as { legacy_full_access: boolean; legacy_access_until: string | null; status: string } | null,
+}));
+
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => mockAuthState.current,
+}));
+
+vi.mock("@/integrations/supabase/client", () => ({
+  supabase: {
+    from: vi.fn((table: string) => {
+      if (table === "entitlements") {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => Promise.resolve({ data: mockDbState.entitlements, error: null })),
+          })),
+        };
+      }
+
+      if (table === "subscriptions") {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              maybeSingle: vi.fn(() => Promise.resolve({ data: mockDbState.subscriptionRow, error: null })),
+            })),
+          })),
+        };
+      }
+
+      throw new Error(`Unexpected table ${table}`);
+    }),
+  },
+}));
+
+import { useEntitlements } from "@/hooks/useEntitlements";
 
 /**
  * Regression tests for the entitlement-tier hierarchy logic used in
@@ -12,6 +67,34 @@ import { describe, it, expect } from "vitest";
  */
 
 type FeatureCode = "operational_access" | "financial_access" | "premium_access";
+
+const defaultSubscription = {
+  subscribed: false,
+  on_trial: false,
+  subscription_end: null,
+  trial_end: null,
+  price_id: null,
+  cancel_at_period_end: false,
+  loading: false,
+};
+
+function createWrapper() {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
+
+  return ({ children }: { children: ReactNode }) =>
+    createElement(QueryClientProvider, { client: queryClient }, children);
+}
+
+beforeEach(() => {
+  mockAuthState.current = {
+    user: { id: "user-pro-trial" },
+    subscription: { ...defaultSubscription },
+  };
+  mockDbState.entitlements = [];
+  mockDbState.subscriptionRow = null;
+});
 
 function applyHierarchy(input: {
   rows: { feature_code: FeatureCode }[];
