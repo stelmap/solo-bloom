@@ -23,7 +23,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   subscription: SubscriptionStatus;
   subscriptionError: string | null;
-  refreshSubscription: () => Promise<void>;
+  refreshSubscription: (options?: { force?: boolean }) => Promise<void>;
 }
 
 const defaultSubscription: SubscriptionStatus = {
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [subscription, setSubscription] = useState<SubscriptionStatus>(defaultSubscription);
   const [subscriptionError, setSubscriptionError] = useState<string | null>(null);
 
-  const refreshSubscription = useCallback(async () => {
+  const refreshSubscription = useCallback(async (options?: { force?: boolean }) => {
     if (!session?.access_token) {
       setSubscription({ ...defaultSubscription, loading: false });
       return;
@@ -76,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
+        body: options?.force ? { force: true } : undefined,
       });
 
       if (!error) {
@@ -137,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Check subscription when session changes
   useEffect(() => {
     if (session) {
-      refreshSubscription();
+      refreshSubscription({ force: true });
     } else {
       setSubscriptionError(null);
       setSubscription({ ...defaultSubscription, loading: false });
