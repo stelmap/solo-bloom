@@ -22,6 +22,7 @@ interface AuthContextType {
   clearRecovery: () => void;
   signOut: () => Promise<void>;
   subscription: SubscriptionStatus;
+  subscriptionError: string | null;
   refreshSubscription: () => Promise<void>;
 }
 
@@ -48,6 +49,7 @@ const AuthContext = createContext<AuthContextType>({
   clearRecovery: () => {},
   signOut: async () => {},
   subscription: defaultSubscription,
+  subscriptionError: null,
   refreshSubscription: async () => {},
 });
 
@@ -57,6 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isRecovery, setIsRecovery] = useState(false);
   const [subscription, setSubscription] = useState<SubscriptionStatus>(defaultSubscription);
+  const [subscriptionError, setSubscriptionError] = useState<string | null>(null);
 
   const refreshSubscription = useCallback(async () => {
     if (!session?.access_token) {
@@ -76,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (!error) {
+        setSubscriptionError(null);
         setSubscription({
           subscribed: data.subscribed ?? false,
           on_trial: data.on_trial ?? false,
@@ -95,6 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     console.error("Failed to check subscription after retries:", lastError);
+    setSubscriptionError("We couldn't confirm your billing status right now. Please try refreshing in a moment.");
     setSubscription({ ...defaultSubscription, loading: false });
   }, [session]);
 
@@ -134,6 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (session) {
       refreshSubscription();
     } else {
+      setSubscriptionError(null);
       setSubscription({ ...defaultSubscription, loading: false });
     }
   }, [session, refreshSubscription]);
@@ -155,7 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isRecovery, beginRecovery, clearRecovery, signOut, subscription, refreshSubscription }}>
+    <AuthContext.Provider value={{ user, session, loading, isRecovery, beginRecovery, clearRecovery, signOut, subscription, subscriptionError, refreshSubscription }}>
       {children}
     </AuthContext.Provider>
   );
