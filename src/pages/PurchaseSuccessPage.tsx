@@ -27,7 +27,7 @@ export default function PurchaseSuccessPage() {
       if (!user?.id) return;
       try {
         // Force subscription refresh so the cache reflects the new plan
-        await refreshSubscription();
+        await refreshSubscription({ force: true });
 
         // Cleanup demo data — server is authoritative; webhook may have done
         // this already, but the RPC is idempotent.
