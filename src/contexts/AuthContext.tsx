@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, useCallback, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { identifyUser, resetAnalytics } from "@/lib/analytics";
@@ -60,12 +60,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isRecovery, setIsRecovery] = useState(false);
   const [subscription, setSubscription] = useState<SubscriptionStatus>(defaultSubscription);
   const [subscriptionError, setSubscriptionError] = useState<string | null>(null);
+  const subscriptionRefreshInFlight = useRef<Promise<void> | null>(null);
 
   const refreshSubscription = useCallback(async (options?: { force?: boolean }) => {
     if (!session?.access_token) {
       setSubscription({ ...defaultSubscription, loading: false });
       return;
     }
+
+    if (subscriptionRefreshInFlight.current) {
+      return subscriptionRefreshInFlight.current;
+    }
+
+    const run = (async () => {
 
     let lastError: unknown;
     for (let attempt = 0; attempt <= SUBSCRIPTION_RETRY_DELAYS_MS.length; attempt += 1) {
@@ -102,6 +109,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.error("Failed to check subscription after retries:", lastError);
     setSubscriptionError("We couldn't confirm your billing status right now. Please try refreshing in a moment.");
     setSubscription({ ...defaultSubscription, loading: false });
+    })();
+
+    subscriptionRefreshInFlight.current = run;
+    try {
+      await run;
+    } finally {
+      if (subscriptionRefreshInFlight.current === run) {
+        subscriptionRefreshInFlight.current = null;
+      }
+    }
   }, [session]);
 
   useEffect(() => {
