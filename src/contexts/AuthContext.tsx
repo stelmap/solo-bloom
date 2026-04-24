@@ -35,6 +35,10 @@ const defaultSubscription: SubscriptionStatus = {
   loading: true,
 };
 
+const SUBSCRIPTION_RETRY_DELAYS_MS = [500, 1_000, 2_000];
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
@@ -59,26 +63,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSubscription({ ...defaultSubscription, loading: false });
       return;
     }
-    try {
+
+    let lastError: unknown;
+    for (let attempt = 0; attempt <= SUBSCRIPTION_RETRY_DELAYS_MS.length; attempt += 1) {
+      const { data: latestSessionData } = await supabase.auth.getSession();
+      const accessToken = latestSessionData.session?.access_token ?? session.access_token;
+
       const { data, error } = await supabase.functions.invoke("check-subscription", {
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
-      if (error) throw error;
-      setSubscription({
-        subscribed: data.subscribed ?? false,
-        on_trial: data.on_trial ?? false,
-        subscription_end: data.subscription_end ?? null,
-        trial_end: data.trial_end ?? null,
-        price_id: data.price_id ?? null,
-        cancel_at_period_end: data.cancel_at_period_end ?? false,
-        loading: false,
-      });
-    } catch (err) {
-      console.error("Failed to check subscription:", err);
-      setSubscription({ ...defaultSubscription, loading: false });
+
+      if (!error) {
+        setSubscription({
+          subscribed: data.subscribed ?? false,
+          on_trial: data.on_trial ?? false,
+          subscription_end: data.subscription_end ?? null,
+          trial_end: data.trial_end ?? null,
+          price_id: data.price_id ?? null,
+          cancel_at_period_end: data.cancel_at_period_end ?? false,
+          loading: false,
+        });
+        return;
+      }
+
+      lastError = error;
+      const delay = SUBSCRIPTION_RETRY_DELAYS_MS[attempt];
+      if (delay === undefined) break;
+      await wait(delay);
     }
+
+    console.error("Failed to check subscription after retries:", lastError);
+    setSubscription({ ...defaultSubscription, loading: false });
   }, [session]);
 
   useEffect(() => {
