@@ -98,7 +98,7 @@ async function syncPlanRecords(
     .eq("source_type", "stripe")
     .eq("is_active", true);
 
-  await supabaseAdmin.from("entitlements").upsert(
+  await supabaseAdmin.from("entitlements").insert(
     features.map((featureCode) => ({
       user_id: userId,
       feature_code: featureCode,
