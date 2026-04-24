@@ -152,4 +152,57 @@ describe("entitlement hierarchy", () => {
     const c = applyHierarchy({ rows: [], subscribed: false, on_trial: false });
     expect(c.size).toBe(0);
   });
+
+  it("active Pro trial unlocks Pro features after checkout and remains unlocked after re-login", async () => {
+    mockAuthState.current.subscription = {
+      ...defaultSubscription,
+      subscribed: true,
+      on_trial: true,
+      trial_end: "2099-05-01T09:16:56.000Z",
+      price_id: "price_1TPQbmRxXuU3N5IFirrjnqdi",
+    };
+
+    const { result, unmount } = renderHook(() => useEntitlements(), { wrapper: createWrapper() });
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.hasPremium).toBe(true);
+    expect(result.current.hasFinancial).toBe(true);
+    expect(result.current.hasOperational).toBe(true);
+    expect(result.current.has("premium_access")).toBe(true);
+
+    unmount();
+
+    const relogin = renderHook(() => useEntitlements(), { wrapper: createWrapper() });
+
+    await waitFor(() => expect(relogin.result.current.loading).toBe(false));
+    expect(relogin.result.current.hasPremium).toBe(true);
+    expect(relogin.result.current.hasFinancial).toBe(true);
+    expect(relogin.result.current.hasOperational).toBe(true);
+  });
+
+  it("expired Pro trial relocks Pro features after login", async () => {
+    mockAuthState.current.subscription = {
+      ...defaultSubscription,
+      subscribed: false,
+      on_trial: false,
+      trial_end: "2020-05-01T09:16:56.000Z",
+      price_id: "price_1TPQbmRxXuU3N5IFirrjnqdi",
+    };
+    mockDbState.entitlements = [
+      {
+        feature_code: "premium_access",
+        source_type: "stripe",
+        active_until: "2020-05-01T09:16:56.000Z",
+        is_active: true,
+      },
+    ];
+
+    const { result } = renderHook(() => useEntitlements(), { wrapper: createWrapper() });
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.hasPremium).toBe(false);
+    expect(result.current.hasFinancial).toBe(false);
+    expect(result.current.hasOperational).toBe(false);
+    expect(result.current.has("premium_access")).toBe(false);
+  });
 });
