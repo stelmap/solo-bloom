@@ -102,11 +102,16 @@ export function AppSidebar() {
             </h1>
             {isTrial && (
               <span className="inline-flex items-center rounded-full bg-sidebar-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sidebar-primary">
-                Demo
+                Trial
               </span>
             )}
           </div>
           <p className="text-xs text-sidebar-foreground/50 mt-0.5">Business Manager</p>
+          {isTrial && (
+            <div className="mt-4 rounded-lg border border-sidebar-primary/25 bg-sidebar-primary/10 px-3 py-2 text-xs font-medium text-sidebar-primary">
+              Trial account active
+            </div>
+          )}
         </div>
 
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
