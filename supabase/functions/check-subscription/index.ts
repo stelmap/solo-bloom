@@ -177,6 +177,13 @@ serve(async (req) => {
         const cacheAge = Date.now() - new Date(cached.checked_at).getTime();
         if (cacheAge < CACHE_TTL_MS) {
           logStep("Returning cached result", { cacheAgeMs: cacheAge });
+          await syncPlanRecords(supabaseAdmin, userId, null, {
+            subscribed: cached.subscribed,
+            on_trial: cached.on_trial,
+            subscription_end: cached.subscription_end,
+            trial_end: cached.trial_end,
+            price_id: cached.price_id,
+          });
           return new Response(
             JSON.stringify({
               subscribed: cached.subscribed,
@@ -205,6 +212,7 @@ serve(async (req) => {
         ...result,
         checked_at: new Date().toISOString(),
       }, { onConflict: "user_id" });
+      await syncPlanRecords(supabaseAdmin, userId, null, result);
 
       return new Response(JSON.stringify(result), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
@@ -264,6 +272,7 @@ serve(async (req) => {
       ...result,
       checked_at: new Date().toISOString(),
     }, { onConflict: "user_id" });
+    await syncPlanRecords(supabaseAdmin, userId, subscription ?? null, result);
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
