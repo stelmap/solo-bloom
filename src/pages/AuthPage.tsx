@@ -29,7 +29,6 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const planParam = searchParams.get("plan");
-  const nextParam = searchParams.get("next");
   const [mode, setMode] = useState<"login" | "signup">(searchParams.get("mode") === "signup" ? "signup" : "login");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
