@@ -947,11 +947,13 @@ export function useDeleteTaxSetting() {
 export function useGenerateTaxExpenses() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ taxSettingId, entries }: {
       taxSettingId: string;
       entries: Array<{ date: string; amount: number; description: string }>;
     }) => {
+      assertCanWrite();
       // Delete existing generated entries for this tax
       await supabase.from("expenses").delete()
         .eq("tax_setting_id", taxSettingId)
@@ -984,8 +986,10 @@ export function useGenerateTaxExpenses() {
 // Update expense payment status
 export function useUpdateExpensePaymentStatus() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, payment_status }: { id: string; payment_status: string }) => {
+      assertCanWrite();
       const { error } = await supabase.from("expenses").update({ payment_status } as any).eq("id", id);
       if (error) throw error;
     },
@@ -1011,12 +1015,14 @@ export function useRecurringRules() {
 export function useCreateRecurringRule() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (rule: {
       client_id: string; service_id: string; time: string; duration_minutes: number;
       price: number; notes?: string; recurrence_type: string; interval_weeks: number;
       days_of_week: number[]; start_date: string; end_date?: string;
     }) => {
+      assertCanWrite();
       const { data: ruleData, error: ruleErr } = await supabase.from("recurring_rules")
         .insert({ ...rule, user_id: user!.id } as any).select().single();
       if (ruleErr) throw ruleErr;
