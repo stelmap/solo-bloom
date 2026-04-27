@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
+import { useDemoMode, useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
 
 const STALE_MEDIUM = 60_000;
 const INVALIDATE_GROUPS = ["groups", "group-detail", "group-members", "group-sessions", "group-attendance"];
-const attachDemoFlag = <T extends Record<string, any>>(payload: T): T => ({ ...payload, is_demo: true });
+const attachDemoFlag = <T extends Record<string, any>>(payload: T, isDemoMode: boolean): T => (
+  isDemoMode ? { ...payload, is_demo: true } : payload
+);
 
 // Groups list
 export function useGroups() {
@@ -130,11 +132,12 @@ export function useGroupAllAttendance(groupId: string | undefined) {
 export function useCreateGroup() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const { isDemoMode } = useDemoMode();
   return useMutation({
     mutationFn: async (group: { name: string; description?: string; status?: string }) => {
       const { data, error } = await supabase
         .from("groups" as any)
-        .insert(attachDemoFlag({ ...group, user_id: user!.id }))
+        .insert(attachDemoFlag({ ...group, user_id: user!.id }, isDemoMode))
         .select()
         .single();
       if (error) throw error;
