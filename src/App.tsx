@@ -33,6 +33,7 @@ const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
+const CookiePolicyPage = lazy(() => import("./pages/CookiePolicyPage"));
 const ConfirmSessionPage = lazy(() => import("./pages/ConfirmSessionPage"));
 const UnsubscribePage = lazy(() => import("./pages/UnsubscribePage"));
 const SupervisionPage = lazy(() => import("./pages/SupervisionPage"));
@@ -66,6 +67,7 @@ const App = () => (
                 <Route path="/onboarding" element={<OnboardingPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />
+                <Route path="/cookie-policy" element={<CookiePolicyPage />} />
                 <Route path="/confirm-session" element={<ConfirmSessionPage />} />
                 <Route path="/unsubscribe" element={<UnsubscribePage />} />
 

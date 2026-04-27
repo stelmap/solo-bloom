@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { Eye, EyeOff, Lock, ShieldAlert } from "lucide-react";
 import { track } from "@/lib/analytics";
+import { PublicFooter } from "@/components/PublicFooter";
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -99,8 +100,9 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-background">
-      <div className="w-full max-w-sm space-y-6">
+    <div className="min-h-screen flex flex-col bg-background">
+      <div className="flex flex-1 items-center justify-center p-6">
+        <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold text-foreground">
             Solo<span className="text-primary">.Biz</span>
@@ -164,7 +166,9 @@ export default function ResetPasswordPage() {
             {loading ? t("auth.updating") : t("auth.updatePassword")}
           </Button>
         </form>
+        </div>
       </div>
+      <PublicFooter />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useState, useCallback, createContext, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { PublicFooter } from "@/components/PublicFooter";
 import { Button } from "@/components/ui/button";
 import { getStoredLang, setStoredLang } from "@/i18n/LanguageContext";
 import type { Language } from "@/i18n/translations";
@@ -654,29 +655,6 @@ function FinalCTA() {
   );
 }
 
-// ── Footer ────────────────────────────────────────────────────────────
-
-function Footer() {
-  const { t } = useLandingLang();
-  return (
-    <footer className="py-10 px-4 sm:px-6 border-t border-border bg-background">
-      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="text-sm text-muted-foreground">
-          © {new Date().getFullYear()} SoloBizz. {t("rights")}
-        </p>
-        <div className="flex items-center gap-6">
-          <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            {t("privacy")}
-          </Link>
-          <Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            {t("terms")}
-          </Link>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
 // ── Page ──────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
@@ -696,7 +674,7 @@ export default function LandingPage() {
         <PricingSection />
         <TrustSection />
         <FinalCTA />
-        <Footer />
+        <PublicFooter />
       </div>
     </LandingLangProvider>
   );
