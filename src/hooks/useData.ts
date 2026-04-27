@@ -1041,6 +1041,7 @@ export function useCreateRecurringRule() {
 export function useEditRecurringAppointments() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ ruleId, scope, appointmentId, updates, deltaMs, recurrenceUpdates }: {
       ruleId: string; scope: "this" | "following" | "all"; appointmentId: string;
@@ -1048,6 +1049,7 @@ export function useEditRecurringAppointments() {
       deltaMs?: number;
       recurrenceUpdates?: { days_of_week?: number[]; interval_weeks?: number };
     }) => {
+      assertCanWrite();
       const fieldUpdates: Record<string, any> = {};
       if (updates.client_id !== undefined) fieldUpdates.client_id = updates.client_id;
       if (updates.service_id !== undefined) fieldUpdates.service_id = updates.service_id;
@@ -1149,8 +1151,10 @@ export function useEditRecurringAppointments() {
 
 export function useDeleteRecurringAppointments() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ ruleId, scope, appointmentId }: { ruleId: string; scope: "this" | "following" | "all"; appointmentId?: string }) => {
+      assertCanWrite();
       if (scope === "all") {
         const { data: apts } = await supabase.from("appointments").select("id").eq("recurring_rule_id", ruleId);
         for (const apt of apts || []) {
