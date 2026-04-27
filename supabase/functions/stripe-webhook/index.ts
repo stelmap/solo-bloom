@@ -136,7 +136,7 @@ async function extractCustomerEmail(stripe: Stripe, event: Stripe.Event): Promis
 }
 
 async function findUserIdByEmail(
-  supabaseAdmin: ReturnType<typeof createClient>,
+  supabaseAdmin: any,
   email: string
 ): Promise<string | null> {
   // Use admin auth API to find user by email
