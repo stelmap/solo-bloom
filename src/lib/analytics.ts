@@ -99,7 +99,15 @@ export type AnalyticsEvent =
   | "checkout_started"
   | "checkout_completed"
   | "subscription_active"
-  | "subscription_canceled";
+  | "subscription_canceled"
+  | "onboarding_started"
+  | "onboarding_step_viewed"
+  | "onboarding_option_selected"
+  | "onboarding_client_added"
+  | "onboarding_session_created"
+  | "onboarding_price_set"
+  | "onboarding_completed"
+  | "onboarding_dropped";
 
 // In-memory diagnostics for the current browser session.
 // Survives only until page reload — purely a debugging aid.
