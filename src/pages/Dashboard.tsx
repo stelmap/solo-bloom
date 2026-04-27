@@ -112,7 +112,9 @@ export default function Dashboard() {
     };
   }, [todayAppointments]);
 
-  const completedTotal = todayAppointments.filter((apt) => apt.status === "completed").length;
+  const completedPaidTotal = todayAppointments.filter(
+    (apt) => apt.status === "completed" && PAID_STATUSES.has(apt.payment_status),
+  ).length;
   const cancelledTotal = todayAppointments.filter((apt) => apt.status === "cancelled").length;
   const completedUnpaidTotal = todayAppointments.filter(
     (apt) => apt.status === "completed" && UNPAID_STATUSES.has(apt.payment_status),
@@ -149,7 +151,7 @@ export default function Dashboard() {
             <OverviewTile icon={Hourglass} label={t("ops.remainingToday")} value={summary.remaining.toString()} tone="warning" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
-            <OverviewTile icon={CheckCircle2} label="Done sessions" value={completedTotal.toString()} tone="success" />
+            <OverviewTile icon={CheckCircle2} label="Done paid" value={completedPaidTotal.toString()} tone="success" />
             <OverviewTile icon={Hourglass} label="Done not paid" value={completedUnpaidTotal.toString()} tone="warning" />
             <OverviewTile icon={XCircle} label="Cancelled sessions" value={cancelledTotal.toString()} />
           </div>
