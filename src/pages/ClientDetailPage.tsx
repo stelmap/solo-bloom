@@ -30,6 +30,7 @@ import { formatScheduledTime } from "@/lib/timeFormat";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useDemoMode } from "@/hooks/useDemoWorkspace";
 
 export default function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -37,6 +38,7 @@ export default function ClientDetailPage() {
   const { toast } = useToast();
   const { t } = useLanguage();
   const { symbol: cs } = useCurrency();
+  const { isDemoMode } = useDemoMode();
   const { data: client, isLoading } = useClient(id);
   const updateClient = useUpdateClient();
   const deleteClient = useDeleteClient();
@@ -249,10 +251,12 @@ export default function ClientDetailPage() {
             <h1 className="text-2xl font-bold text-foreground">{client.name}</h1>
             <p className="text-sm text-muted-foreground">{t("clientDetail.profile")}</p>
           </div>
-          <Button variant="outline" size="sm" onClick={openEdit}><Pencil className="h-3.5 w-3.5 mr-1" /> {t("common.edit")}</Button>
-          <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteOpen(true)}>
-            <Trash2 className="h-3.5 w-3.5 mr-1" /> {t("common.delete")}
-          </Button>
+          {!isDemoMode && <>
+            <Button variant="outline" size="sm" onClick={openEdit}><Pencil className="h-3.5 w-3.5 mr-1" /> {t("common.edit")}</Button>
+            <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteOpen(true)}>
+              <Trash2 className="h-3.5 w-3.5 mr-1" /> {t("common.delete")}
+            </Button>
+          </>}
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
@@ -387,19 +391,19 @@ export default function ClientDetailPage() {
 
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2"><FileText className="h-4 w-4 text-primary" /> {t("clientDetail.notes")}</h3>
-              <div className="flex gap-2">
+              {!isDemoMode && <div className="flex gap-2">
                 <Textarea placeholder={t("clientDetail.addNote")} value={noteText} onChange={e => setNoteText(e.target.value)} className="min-h-[60px] text-sm" />
                 <Button size="sm" onClick={handleAddNote} disabled={!noteText.trim() || createNote.isPending}><Plus className="h-4 w-4" /></Button>
-              </div>
+              </div>}
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {(notes as any[]).length === 0 && <p className="text-xs text-muted-foreground text-center py-2">{t("clientDetail.noNotes")}</p>}
                 {(notes as any[]).map((note: any) => (
                   <div key={note.id} className="bg-muted/50 rounded-lg p-3 group relative">
                     <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
                     <p className="text-xs text-muted-foreground mt-1">{format(new Date(note.created_at), "MMM d, yyyy")} · {formatScheduledTime(note.created_at, use12h)}</p>
-                    <button onClick={() => deleteNote.mutate({ id: note.id, clientId: client.id })} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all">
+                    {!isDemoMode && <button onClick={() => deleteNote.mutate({ id: note.id, clientId: client.id })} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all">
                       <X className="h-3 w-3" />
-                    </button>
+                    </button>}
                   </div>
                 ))}
               </div>
@@ -407,10 +411,12 @@ export default function ClientDetailPage() {
 
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2"><Paperclip className="h-4 w-4 text-primary" /> {t("clientDetail.attachments")}</h3>
-              <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
-              <Button variant="outline" size="sm" className="w-full" onClick={() => fileInputRef.current?.click()} disabled={uploadAttachment.isPending}>
-                <Plus className="h-4 w-4 mr-1" /> {uploadAttachment.isPending ? t("clientDetail.uploading") : t("clientDetail.uploadFile")}
-              </Button>
+              {!isDemoMode && <>
+                <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
+                <Button variant="outline" size="sm" className="w-full" onClick={() => fileInputRef.current?.click()} disabled={uploadAttachment.isPending}>
+                  <Plus className="h-4 w-4 mr-1" /> {uploadAttachment.isPending ? t("clientDetail.uploading") : t("clientDetail.uploadFile")}
+                </Button>
+              </>}
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {(attachments as any[]).length === 0 && <p className="text-xs text-muted-foreground text-center py-2">{t("clientDetail.noAttachments")}</p>}
                 {(attachments as any[]).map((att: any) => (
@@ -424,9 +430,9 @@ export default function ClientDetailPage() {
                       }} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground">
                         <Download className="h-3.5 w-3.5" />
                       </button>
-                      <button onClick={() => deleteAttachment.mutate({ id: att.id, filePath: att.file_path, clientId: client.id })} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
+                      {!isDemoMode && <button onClick={() => deleteAttachment.mutate({ id: att.id, filePath: att.file_path, clientId: client.id })} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
                         <Trash2 className="h-3.5 w-3.5" />
-                      </button>
+                      </button>}
                     </div>
                   </div>
                 ))}
