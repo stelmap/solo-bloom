@@ -4,6 +4,7 @@ export const TEST_EMAIL = process.env.TEST_EMAIL || "";
 export const TEST_PASSWORD = process.env.TEST_PASSWORD || "";
 export const TEST_USER_ID = process.env.TEST_USER_ID || "";
 export const TEST_ACCESS_TOKEN = process.env.TEST_ACCESS_TOKEN || "";
+export const SUPABASE_AUTH_STORAGE_KEY = "sb-rxculneqqaziutulnocs-auth-token";
 
 export function uniqueEmail(prefix = "e2e") {
   return `${prefix}+${Date.now()}@example.com`;
@@ -59,6 +60,7 @@ export async function installRegressionAuth(page: Page) {
         },
       };
       localStorage.setItem("sb-e2e-auth-token", JSON.stringify(authState));
+      localStorage.setItem("sb-rxculneqqaziutulnocs-auth-token", JSON.stringify(authState));
     }, { userId: TEST_USER_ID, accessToken: TEST_ACCESS_TOKEN });
     return;
   }
