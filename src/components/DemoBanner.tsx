@@ -58,9 +58,9 @@ export function DemoBanner() {
             Demo Mode
           </span>
           <p className="text-sm text-foreground min-w-0">
-            <span className="font-semibold">Demo Mode — view-only workspace.</span>{" "}
+            <span className="font-semibold">Demo Mode — try scheduling, groups, supervision, and payments.</span>{" "}
             <span className="text-muted-foreground hidden md:inline">
-              Choose a subscription to unlock editing and create your own data.
+              Choose Solo or Pro to edit clients and services.
             </span>
           </p>
         </div>

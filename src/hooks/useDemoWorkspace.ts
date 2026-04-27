@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const SEED_ATTEMPT_KEY = "demo_seed_attempted";
 const DEMO_MODE_KEY = "demo_mode_enabled";
-export const DEMO_ACTION_MESSAGE = "This action is available after choosing a subscription.";
+export const DEMO_ACTION_MESSAGE = "Editing clients and services is available after choosing a Solo or Pro subscription.";
 
 const getDemoModeStorageKey = (userId?: string) => `${DEMO_MODE_KEY}:${userId ?? "anonymous"}`;
 
