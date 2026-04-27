@@ -205,28 +205,55 @@ export default function AuthPage() {
             </div>
             {sent ? (
               <div className="space-y-4 text-center">
-                <h2 className="text-xl font-bold text-foreground">{t("auth.checkEmailToContinue")}</h2>
-                <p className="text-sm text-muted-foreground">{t("auth.checkEmail")}</p>
+                <h2 className="text-xl font-bold text-foreground">{t("auth.resetLinkSent")}</h2>
+                <p className="text-sm text-muted-foreground">{t("auth.checkEmailForReset")}</p>
+                <Button variant="outline" className="w-full" onClick={() => resetMode("login")}>{t("auth.backToLogin")}</Button>
               </div>
             ) : (
               <>
                 <div className="space-y-2">
-                  <h2 className="text-xl font-bold text-foreground">{mode === "login" ? t("auth.welcomeBack") : t("auth.createAccount")}</h2>
-                  <p className="text-sm text-muted-foreground">{mode === "login" ? t("auth.signInToManage") : t("auth.getStarted")}</p>
+                  <h2 className="text-xl font-bold text-foreground">{modeCopy.title}</h2>
+                  <p className="text-sm text-muted-foreground">{modeCopy.subtitle}</p>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <Label>{t("common.email")}</Label>
-                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" autoComplete="email" />
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>{loading ? t("common.loading") : mode === "login" ? t("auth.signIn") : t("auth.signUp")}</Button>
+                  {mode !== "forgot" && (
+                    <div className="space-y-2">
+                      <Label>{t("auth.password")}</Label>
+                      <div className="relative">
+                        <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" autoComplete={mode === "login" ? "current-password" : "new-password"} className="pr-10" />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label={showPassword ? t("password.hidePassword") : t("password.showPassword")}>
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {mode === "signup" && (
+                    <div className="space-y-2">
+                      <Label>{t("auth.confirmPassword")}</Label>
+                      <div className="relative">
+                        <Input type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" autoComplete="new-password" className="pr-10" />
+                        <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label={showConfirmPassword ? t("password.hidePassword") : t("password.showPassword")}>
+                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {formError && <p className="text-sm text-destructive" role="alert">{formError}</p>}
+                  <Button type="submit" className="w-full" disabled={loading}>{loading ? t("common.loading") : modeCopy.button}</Button>
                 </form>
-                <p className="text-center text-sm text-muted-foreground">
-                  {mode === "login" ? t("auth.noAccount") : t("auth.haveAccount")} {" "}
-                  <button onClick={() => setMode(mode === "login" ? "signup" : "login")} className="text-primary font-medium hover:underline">
-                    {mode === "login" ? t("auth.signUp") : t("auth.signIn")}
-                  </button>
-                </p>
+                <div className="space-y-3 text-center text-sm text-muted-foreground">
+                  {mode === "login" && <button onClick={() => resetMode("forgot")} className="text-primary font-medium hover:underline">{t("auth.forgotPassword")}</button>}
+                  <p>
+                    {mode === "login" ? t("auth.noAccount") : t("auth.haveAccount")} {" "}
+                    <button onClick={() => resetMode(mode === "login" ? "signup" : "login")} className="text-primary font-medium hover:underline">
+                      {mode === "login" ? t("auth.registerHere") : t("auth.signIn")}
+                    </button>
+                  </p>
+                </div>
               </>
             )}
           </div>
