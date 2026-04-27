@@ -23,6 +23,12 @@ type GroupItem = {
 };
 type NavItem = LeafItem | GroupItem;
 
+const ProBadge = () => (
+  <span className="ml-auto inline-flex items-center rounded-full border border-sidebar-primary/25 bg-sidebar-primary/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sidebar-primary">
+    Pro
+  </span>
+);
+
 const navItems: NavItem[] = [
   { kind: "leaf", icon: LayoutDashboard, labelKey: "nav.dashboard", path: "/dashboard" },
   { kind: "leaf", icon: Calendar, labelKey: "nav.calendar", path: "/calendar" },
@@ -143,7 +149,8 @@ export function AppSidebar() {
                   )}
                 >
                   <item.icon className="h-4.5 w-4.5 shrink-0" />
-                  {t(item.labelKey)}
+                  <span className="flex-1 truncate">{t(item.labelKey)}</span>
+                  {item.requires && <ProBadge />}
                 </Link>
               );
             }
@@ -165,6 +172,7 @@ export function AppSidebar() {
                 >
                   <item.icon className="h-4.5 w-4.5 shrink-0" />
                   <span className="flex-1 text-left">{t(item.labelKey)}</span>
+                  {item.requires && <ProBadge />}
                   <ChevronDown
                     className={cn(
                       "h-4 w-4 transition-transform shrink-0",
