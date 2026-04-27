@@ -346,6 +346,7 @@ export function useRemoveGroupMember() {
 export function useCreateGroupSession() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ groupId, appointmentId, notes, memberClientIds }: {
       groupId: string;
@@ -353,6 +354,7 @@ export function useCreateGroupSession() {
       notes?: string;
       memberClientIds: string[];
     }) => {
+      assertCanWrite();
       // Create the group session
       const { data: gs, error: gsErr } = await supabase
         .from("group_sessions" as any)
@@ -392,8 +394,10 @@ export function useCreateGroupSession() {
 
 export function useUpdateAttendance() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, status, groupSessionId }: { id: string; status: string; groupSessionId: string }) => {
+      assertCanWrite();
       const { error } = await supabase
         .from("group_attendance" as any)
         .update({ status })
