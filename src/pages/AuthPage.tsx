@@ -236,11 +236,33 @@ export default function AuthPage() {
               <h1 className="text-2xl font-bold text-foreground">Solo<span className="text-primary">Bizz</span></h1>
             </div>
             {sent ? (
-              <div className="space-y-4 text-center">
-                <h2 className="text-xl font-bold text-foreground">{mode === "forgot" ? t("auth.resetLinkSent") : t("auth.checkEmailToContinue")}</h2>
-                <p className="text-sm text-muted-foreground">{mode === "forgot" ? t("auth.checkEmailForReset") : t("auth.checkEmail")}</p>
-                <Button variant="outline" className="w-full" onClick={() => resetMode("login")}>{t("auth.backToLogin")}</Button>
-              </div>
+              mode === "forgot" ? (
+                <div className="space-y-5">
+                  <div className="space-y-2 text-center">
+                    <h2 className="text-xl font-bold text-foreground">{t("auth.enterOtp")}</h2>
+                    <p className="text-sm text-muted-foreground">{t("auth.otpDescription")}</p>
+                  </div>
+                  <form onSubmit={handleVerifyRecoveryCode} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>{t("auth.recoveryCode")}</Label>
+                      <Input value={recoveryCode} onChange={(e) => setRecoveryCode(e.target.value)} placeholder="123456" autoComplete="one-time-code" />
+                      <p className="text-xs text-muted-foreground">{t("auth.otpExpiry")}</p>
+                    </div>
+                    {formError && <p className="text-sm text-destructive" role="alert">{formError}</p>}
+                    <Button type="submit" className="w-full" disabled={loading}>{loading ? t("auth.verifying") : t("auth.verifyCode")}</Button>
+                  </form>
+                  <div className="space-y-3 text-center text-sm">
+                    <button onClick={handleSubmit as any} className="text-primary font-medium hover:underline">{t("auth.sendOtp")}</button>
+                    <div><Button variant="outline" className="w-full" onClick={() => resetMode("login")}>{t("auth.backToLogin")}</Button></div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4 text-center">
+                  <h2 className="text-xl font-bold text-foreground">{t("auth.checkEmailToContinue")}</h2>
+                  <p className="text-sm text-muted-foreground">{t("auth.checkEmail")}</p>
+                  <Button variant="outline" className="w-full" onClick={() => resetMode("login")}>{t("auth.backToLogin")}</Button>
+                </div>
+              )
             ) : (
               <>
                 <div className="space-y-2">
