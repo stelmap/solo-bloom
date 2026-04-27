@@ -368,10 +368,12 @@ export function useDeleteAppointment() {
 export function useCompleteAppointment() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ appointmentId, clientId, price, paymentMethod, paymentStatus }: {
       appointmentId: string; clientId: string; price: number; paymentMethod: string; paymentStatus: string;
     }) => {
+      assertCanWrite();
       const { error: aptErr } = await supabase
         .from("appointments")
         .update({ status: "completed", price, payment_status: paymentStatus } as any)
@@ -407,8 +409,10 @@ export function useCompleteAppointment() {
 export function useCancelAppointment() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, status, clientId, price, cancellationReason }: { id: string; status: "cancelled" | "no-show"; clientId?: string; price?: number; cancellationReason?: string }) => {
+      assertCanWrite();
       await supabase.from("income").delete().eq("appointment_id", id);
       await supabase.from("expected_payments").delete().eq("appointment_id", id);
 
@@ -438,8 +442,10 @@ export function useCancelAppointment() {
 // Bulk cancel appointments for day-off + send cancellation emails
 export function useBulkCancelForDayOff() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ appointmentIds, reason }: { appointmentIds: string[]; reason: string }) => {
+      assertCanWrite();
       for (const id of appointmentIds) {
         // Fetch appointment details for the cancellation email
         const { data: apt } = await supabase
