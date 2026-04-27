@@ -69,7 +69,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-foreground">11. Contact</h2>
-            <p className="text-muted-foreground leading-relaxed">For questions about these terms, contact us at support@solobizz.app.</p>
+            <p className="text-muted-foreground leading-relaxed">For questions about these terms, contact us at solobizz75@gmail.com.</p>
           </section>
         </div>
       </div>
