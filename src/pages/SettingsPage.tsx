@@ -46,7 +46,7 @@ export default function SettingsPage() {
   const updateTax = useUpdateTaxSetting();
   const deleteTax = useDeleteTaxSetting();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, setLang } = useLanguage();
 
   const [form, setForm] = useState({
     full_name: "", business_name: "", phone: "", language: "en", reminder_minutes: 1440,
@@ -114,6 +114,7 @@ export default function SettingsPage() {
         updateProfile.mutateAsync(form),
         upsertSchedule.mutateAsync(schedule),
       ]);
+      setLang(newLang);
       toast({ title: translateFor(newLang, "settings.saved") });
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });

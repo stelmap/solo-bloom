@@ -2,7 +2,7 @@ import { useState, useCallback, createContext, useContext, useEffect } from "rea
 import { Link } from "react-router-dom";
 import { PublicFooter } from "@/components/PublicFooter";
 import { Button } from "@/components/ui/button";
-import { getStoredLang, setStoredLang } from "@/i18n/LanguageContext";
+import { getStoredLang, setPreLoginLang } from "@/i18n/LanguageContext";
 import type { Language } from "@/i18n/translations";
 import { track } from "@/lib/analytics";
 import {
@@ -134,7 +134,7 @@ function LandingLangProvider({ children }: { children: React.ReactNode }) {
     setLang((prev) => {
       const idx = LANG_CYCLE.indexOf(prev);
       const next = LANG_CYCLE[(idx + 1) % LANG_CYCLE.length];
-      setStoredLang(next);
+      setPreLoginLang(next);
       return next;
     });
   }, []);
