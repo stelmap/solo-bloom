@@ -858,8 +858,10 @@ export function useBreakevenGoals() {
 export function useUpsertBreakevenGoals() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (goals: Array<{ goal_number: number; label: string; description: string; fixed_expenses: number; desired_income: number; buffer: number; goal_type?: string }>) => {
+      assertCanWrite();
       await supabase.from("breakeven_goals").delete().eq("user_id", user!.id);
       if (goals.length > 0) {
         const { error } = await supabase.from("breakeven_goals").insert(
@@ -894,12 +896,14 @@ export function useTaxSettings() {
 export function useCreateTaxSetting() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (tax: {
       tax_name: string; tax_type: string; tax_rate?: number;
       fixed_amount?: number; frequency?: string; calculate_on?: string;
       start_calculation_date?: string;
     }) => {
+      assertCanWrite();
       const { data, error } = await supabase.from("tax_settings")
         .insert({ ...tax, user_id: user!.id } as any).select().single();
       if (error) throw error;
@@ -911,12 +915,14 @@ export function useCreateTaxSetting() {
 
 export function useUpdateTaxSetting() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, ...updates }: {
       id: string; tax_name?: string; tax_type?: string; tax_rate?: number;
       fixed_amount?: number; frequency?: string; is_active?: boolean; calculate_on?: string;
       start_calculation_date?: string;
     }) => {
+      assertCanWrite();
       const { error } = await supabase.from("tax_settings").update(updates as any).eq("id", id);
       if (error) throw error;
     },
@@ -926,8 +932,10 @@ export function useUpdateTaxSetting() {
 
 export function useDeleteTaxSetting() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (id: string) => {
+      assertCanWrite();
       const { error } = await supabase.from("tax_settings").delete().eq("id", id);
       if (error) throw error;
     },
