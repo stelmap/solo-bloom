@@ -40,6 +40,11 @@ const SUBSCRIPTION_RETRY_DELAYS_MS = [500, 1_000, 2_000];
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const getFunctionErrorStatus = (error: unknown) => {
+  const context = (error as { context?: { status?: number } })?.context;
+  return context?.status;
+};
+
 const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
@@ -77,11 +82,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let lastError: unknown;
     for (let attempt = 0; attempt <= SUBSCRIPTION_RETRY_DELAYS_MS.length; attempt += 1) {
       const { data: latestSessionData } = await supabase.auth.getSession();
-      const accessToken = latestSessionData.session?.access_token ?? session.access_token;
+      let latestSession = latestSessionData.session;
+
+      if (!latestSession?.access_token) {
+        setSubscription({ ...defaultSubscription, loading: false });
+        return;
+      }
+
+      if (latestSession.expires_at && latestSession.expires_at * 1000 <= Date.now() + 30_000) {
+        const { data: refreshedSessionData, error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError || !refreshedSessionData.session?.access_token) {
+          await supabase.auth.signOut();
+          setSubscription({ ...defaultSubscription, loading: false });
+          return;
+        }
+        latestSession = refreshedSessionData.session;
+      }
 
       const { data, error } = await supabase.functions.invoke("check-subscription", {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${latestSession.access_token}`,
         },
         body: options?.force ? { force: true } : undefined,
       });
@@ -101,6 +121,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       lastError = error;
+      const status = getFunctionErrorStatus(error);
+      if (status === 401 || status === 403) {
+        await supabase.auth.signOut();
+        setSubscriptionError(null);
+        setSubscription({ ...defaultSubscription, loading: false });
+        return;
+      }
       const delay = SUBSCRIPTION_RETRY_DELAYS_MS[attempt];
       if (delay === undefined) break;
       await wait(delay);

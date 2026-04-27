@@ -25,7 +25,7 @@ const logStep = (step: string, details?: any) => {
 };
 
 async function syncPlanRecords(
-  supabaseAdmin: ReturnType<typeof createClient>,
+  supabaseAdmin: any,
   userId: string,
   subscription: Stripe.Subscription | null,
   result: {
@@ -34,6 +34,7 @@ async function syncPlanRecords(
     subscription_end: string | null;
     trial_end: string | null;
     price_id: string | null;
+    cancel_at_period_end?: boolean;
   },
 ) {
   if (!result.subscribed && !result.on_trial) {
@@ -118,7 +119,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseAdmin = createClient(
+  const supabaseAdmin = createClient<any>(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     { auth: { persistSession: false } }
@@ -136,7 +137,7 @@ serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
 
     // Use a user-context client to validate the JWT
-    const supabaseUser = createClient(
+    const supabaseUser = createClient<any>(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
       { global: { headers: { Authorization: authHeader } } }
