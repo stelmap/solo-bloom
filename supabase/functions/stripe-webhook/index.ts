@@ -145,7 +145,7 @@ async function findUserIdByEmail(
     console.error("listUsers failed:", error);
     return null;
   }
-  const match = data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+  const match = data.users.find((u: { email?: string; id?: string }) => u.email?.toLowerCase() === email.toLowerCase());
   return match?.id ?? null;
 }
 
