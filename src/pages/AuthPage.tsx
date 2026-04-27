@@ -12,6 +12,7 @@ import { Language } from "@/i18n/translations";
 import { Eye, EyeOff, ArrowLeft, Globe } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { track } from "@/lib/analytics";
+import { PublicFooter } from "@/components/PublicFooter";
 
 const PLAN_PRICE_MAP: Record<string, string> = {
   // New: tier_cycle keys
@@ -424,7 +425,8 @@ export default function AuthPage() {
       </div>
 
       {/* Right panel — form */}
-      <div className="flex-1 flex items-center justify-center p-6 bg-background">
+      <div className="flex-1 flex flex-col bg-background">
+        <div className="flex flex-1 items-center justify-center p-6">
         <div className="w-full max-w-sm space-y-6">
           <div className="text-center space-y-2 lg:hidden">
             <h1 className="text-2xl font-bold text-foreground">
@@ -433,6 +435,8 @@ export default function AuthPage() {
           </div>
           {renderForm()}
         </div>
+        </div>
+        <PublicFooter />
       </div>
     </div>
   );
