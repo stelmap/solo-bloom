@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHasDemoData } from "@/hooks/useDemoWorkspace";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type Plan = {
   id: string;
@@ -30,39 +31,8 @@ type PlanPrice = {
 
 type BillingPeriod = "monthly" | "quarterly" | "yearly";
 
-// Feature lists per plan code (UI-only; real entitlements live in DB)
-const PLAN_FEATURES: Record<string, string[]> = {
-  solo: [
-    "Calendar & appointments",
-    "Clients & groups",
-    "Services catalog",
-    "Email reminders & confirmations",
-    "Recurring sessions",
-  ],
-  pro: [
-    "Everything in Solo",
-    "Income & expenses tracking",
-    "Break-even goals & forecasting",
-    "Invoices & VAT",
-    "Supervision workspace",
-    "Advanced analytics & insights",
-  ],
-};
-
 const PLAN_ORDER = ["solo", "pro"];
 const HIGHLIGHTED_CODE = "pro";
-
-const PERIOD_LABELS: Record<BillingPeriod, string> = {
-  monthly: "Monthly",
-  quarterly: "Quarterly",
-  yearly: "Yearly",
-};
-
-const PERIOD_SUFFIX: Record<BillingPeriod, string> = {
-  monthly: "month",
-  quarterly: "3 months",
-  yearly: "year",
-};
 
 function formatPrice(amount: number, currency: string) {
   const symbol = currency === "EUR" ? "€" : currency === "USD" ? "$" : currency + " ";
