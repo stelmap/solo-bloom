@@ -33,6 +33,7 @@ export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [recoveryCode, setRecoveryCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -48,7 +49,7 @@ export default function AuthPage() {
 
   const modeCopy = useMemo(() => {
     if (mode === "signup") return { title: t("auth.createAccount"), subtitle: t("auth.registerDesc"), button: t("auth.createAccountButton") };
-    if (mode === "forgot") return { title: t("auth.resetPassword"), subtitle: t("auth.resetPasswordDesc"), button: t("auth.sendResetLink") };
+    if (mode === "forgot") return { title: t("auth.resetPassword"), subtitle: t("auth.resetPasswordOtpDesc"), button: t("auth.sendOtp") };
     return { title: t("auth.welcomeBack"), subtitle: t("auth.signInToManage"), button: t("auth.signIn") };
   }, [mode, t]);
 
@@ -56,6 +57,7 @@ export default function AuthPage() {
     setMode(nextMode);
     setPassword("");
     setConfirmPassword("");
+    setRecoveryCode("");
     setFormError(null);
     setSent(false);
   };
@@ -153,7 +155,7 @@ export default function AuthPage() {
         if (error) throw error;
         track("password_reset_started", { lang });
         setSent(true);
-        toast({ title: t("auth.resetLinkSent"), description: t("auth.checkEmailForReset") });
+        toast({ title: t("auth.otpSent"), description: t("auth.otpSentDesc") });
       } else if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
@@ -179,6 +181,32 @@ export default function AuthPage() {
       }
     } catch (error: any) {
       const message = mode === "login" ? t("auth.incorrectEmailOrPassword") : error.message;
+      setFormError(message);
+      toast({ title: t("common.error"), description: message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyRecoveryCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+    if (!recoveryCode.trim()) {
+      setFormError(t("auth.recoveryCodeRequired"));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token: recoveryCode.trim(),
+        type: "recovery",
+      });
+      if (error) throw error;
+      navigate("/reset-password", { replace: true, state: { recoveryVerified: true } });
+    } catch (error: any) {
+      const message = error?.message?.toLowerCase?.().includes("expired") ? t("auth.otpExpired") : t("auth.invalidOtp");
       setFormError(message);
       toast({ title: t("common.error"), description: message, variant: "destructive" });
     } finally {
