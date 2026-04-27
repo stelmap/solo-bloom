@@ -13,19 +13,20 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useDemoMode } from "@/hooks/useDemoWorkspace";
 
 const ClientCard = memo(({ client, onNavigate, onDelete, t }: {
-  client: any; onNavigate: (id: string) => void; onDelete: (id: string) => void; t: any;
+  client: any; onNavigate: (id: string) => void; onDelete?: (id: string) => void; t: any;
 }) => (
   <div
     onClick={() => onNavigate(client.id)}
     className="bg-card rounded-xl border border-border p-5 animate-fade-in group relative cursor-pointer hover:border-primary/30 hover:shadow-md transition-all"
   >
-    <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+    {onDelete && <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
       <button onClick={(e) => { e.stopPropagation(); onDelete(client.id); }} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
         <Trash2 className="h-3.5 w-3.5" />
       </button>
-    </div>
+    </div>}
     <div className="flex items-start gap-3 mb-3">
       <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
         {client.name.split(" ").map((n: string) => n[0]).join("").toUpperCase()}
@@ -51,6 +52,7 @@ export default function ClientsPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { isDemoMode } = useDemoMode();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -168,14 +170,16 @@ export default function ClientsPage() {
                 clients.map(c => [c.name, c.phone || "", c.email || "", c.telegram || "", c.notes || ""])
               );
             }}><Download className="h-4 w-4 mr-1" /> {t("export.csv")}</Button>
-            <input type="file" ref={fileInputRef} accept=".xlsx,.xls,.csv" className="hidden" onChange={handleImportExcel} />
-            <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing}>
-              <Upload className="h-4 w-4 mr-1" /> {importing ? "..." : "Import"}
-            </Button>
+            {!isDemoMode && <>
+              <input type="file" ref={fileInputRef} accept=".xlsx,.xls,.csv" className="hidden" onChange={handleImportExcel} />
+              <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing}>
+                <Upload className="h-4 w-4 mr-1" /> {importing ? "..." : "Import"}
+              </Button>
+            </>}
             <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
+              {!isDemoMode && <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 mr-1" /> {t("clients.addClient")}</Button>
-              </DialogTrigger>
+              </DialogTrigger>}
             <DialogContent>
               <DialogHeader><DialogTitle>{t("clients.addClient")}</DialogTitle></DialogHeader>
               <div className="space-y-4">
@@ -209,7 +213,7 @@ export default function ClientsPage() {
                 key={client.id}
                 client={client}
                 onNavigate={(id) => navigate(`/clients/${id}`)}
-                onDelete={(id) => setDeleteId(id)}
+                onDelete={isDemoMode ? undefined : (id) => setDeleteId(id)}
                 t={t}
               />
             ))}

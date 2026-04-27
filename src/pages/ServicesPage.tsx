@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useDemoMode } from "@/hooks/useDemoWorkspace";
 
 export default function ServicesPage() {
   const { data: services = [], isLoading } = useServices();
@@ -19,6 +20,7 @@ export default function ServicesPage() {
   const { toast } = useToast();
   const { t } = useLanguage();
   const { symbol: cs } = useCurrency();
+  const { isDemoMode } = useDemoMode();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -74,9 +76,9 @@ export default function ServicesPage() {
             <p className="text-muted-foreground mt-1">{t("services.subtitle")}</p>
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
+            {!isDemoMode && <DialogTrigger asChild>
               <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> {t("services.addService")}</Button>
-            </DialogTrigger>
+            </DialogTrigger>}
             <DialogContent>
               <DialogHeader><DialogTitle>{editId ? t("services.editService") : t("services.addService")}</DialogTitle></DialogHeader>
               <div className="space-y-4">
@@ -98,15 +100,15 @@ export default function ServicesPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {services.map((service) => (
-              <div key={service.id} onClick={() => openEdit(service)} className="bg-card rounded-xl border border-border p-5 animate-fade-in group relative cursor-pointer hover:border-primary/30 hover:shadow-md transition-all">
-                <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div key={service.id} onClick={() => { if (!isDemoMode) openEdit(service); }} className="bg-card rounded-xl border border-border p-5 animate-fade-in group relative hover:border-primary/30 hover:shadow-md transition-all">
+                {!isDemoMode && <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button onClick={() => openEdit(service)} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
                   <button onClick={() => setDeleteId(service.id)} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
-                </div>
+                </div>}
                 <h3 className="font-semibold text-foreground text-lg mb-3">{service.name}</h3>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1.5 text-muted-foreground"><Clock className="h-4 w-4" /><span className="text-sm">{service.duration_minutes} {t("common.min")}</span></div>
