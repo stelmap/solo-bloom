@@ -186,6 +186,7 @@ export function useUpdateGroupMemberPrice() {
 export function useCompleteGroupSession() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ appointmentId, groupId, groupSessionId, participants, paymentState, paymentMethod }: {
       appointmentId: string;
@@ -195,6 +196,7 @@ export function useCompleteGroupSession() {
       paymentState: string;
       paymentMethod: string;
     }) => {
+      assertCanWrite();
       // Mark appointment as completed
       const { error: aptErr } = await supabase
         .from("appointments")
@@ -279,8 +281,10 @@ export function useGroupSessionPayments(groupSessionId: string | undefined) {
 
 export function useDeleteGroup() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (id: string) => {
+      assertCanWrite();
       // Check if group has sessions — if so, soft-delete by setting status to inactive
       const { data: sessions } = await supabase
         .from("group_sessions" as any)
@@ -306,8 +310,10 @@ export function useDeleteGroup() {
 export function useAddGroupMember() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ groupId, clientId }: { groupId: string; clientId: string }) => {
+      assertCanWrite();
       const { data, error } = await supabase
         .from("group_members" as any)
         .insert({ group_id: groupId, client_id: clientId, user_id: user!.id })
@@ -322,8 +328,10 @@ export function useAddGroupMember() {
 
 export function useRemoveGroupMember() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, groupId }: { id: string; groupId: string }) => {
+      assertCanWrite();
       const { error } = await supabase
         .from("group_members" as any)
         .delete()
