@@ -1014,19 +1014,19 @@ export function useRecurringRules() {
 export function useCreateRecurringRule() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const assertCanWrite = useDemoWriteGuard();
+  const { isDemoMode } = useDemoMode();
   return useMutation({
     mutationFn: async (rule: {
       client_id: string; service_id: string; time: string; duration_minutes: number;
       price: number; notes?: string; recurrence_type: string; interval_weeks: number;
       days_of_week: number[]; start_date: string; end_date?: string;
     }) => {
-      assertCanWrite();
       const { data: ruleData, error: ruleErr } = await supabase.from("recurring_rules")
         .insert({ ...rule, user_id: user!.id } as any).select().single();
       if (ruleErr) throw ruleErr;
 
-      const appointments = generateRecurringAppointments(ruleData as any, user!.id);
+      const appointments = generateRecurringAppointments(ruleData as any, user!.id)
+        .map((apt) => attachDemoFlag(apt, isDemoMode));
       if (appointments.length > 0) {
         const { error: aptErr } = await supabase.from("appointments").insert(appointments as any);
         if (aptErr) throw aptErr;
@@ -1040,7 +1040,7 @@ export function useCreateRecurringRule() {
 export function useEditRecurringAppointments() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const assertCanWrite = useDemoWriteGuard();
+  const { isDemoMode } = useDemoMode();
   return useMutation({
     mutationFn: async ({ ruleId, scope, appointmentId, updates, deltaMs, recurrenceUpdates }: {
       ruleId: string; scope: "this" | "following" | "all"; appointmentId: string;
@@ -1048,7 +1048,6 @@ export function useEditRecurringAppointments() {
       deltaMs?: number;
       recurrenceUpdates?: { days_of_week?: number[]; interval_weeks?: number };
     }) => {
-      assertCanWrite();
       const fieldUpdates: Record<string, any> = {};
       if (updates.client_id !== undefined) fieldUpdates.client_id = updates.client_id;
       if (updates.service_id !== undefined) fieldUpdates.service_id = updates.service_id;
@@ -1110,7 +1109,8 @@ export function useEditRecurringAppointments() {
           const y = cutoff.getUTCFullYear(), m = cutoff.getUTCMonth() + 1, d = cutoff.getUTCDate();
           ruleForGen.start_date = `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
         }
-        const newApts = generateRecurringAppointments(ruleForGen, user!.id);
+        const newApts = generateRecurringAppointments(ruleForGen, user!.id)
+          .map((apt) => attachDemoFlag(apt, isDemoMode));
         if (newApts.length > 0) {
           const { error: insErr } = await supabase.from("appointments").insert(newApts as any);
           if (insErr) throw insErr;
