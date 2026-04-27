@@ -97,8 +97,12 @@ export function useClientPriceHistory(clientId: string | undefined) {
 export function useCreatePriceChange() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const { isDemoMode } = useDemoMode();
   return useMutation({
     mutationFn: async (change: { client_id: string; appointment_id?: string; old_price?: number; new_price: number; reason?: string; change_type: string }) => {
+      if (isDemoMode && change.change_type === "base_price_change") {
+        throw new Error(DEMO_ACTION_MESSAGE);
+      }
       const { data, error } = await supabase
         .from("client_price_changes" as any)
         .insert({ ...change, user_id: user!.id } as any)
