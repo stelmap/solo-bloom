@@ -345,7 +345,6 @@ export function useRemoveGroupMember() {
 export function useCreateGroupSession() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ groupId, appointmentId, notes, memberClientIds }: {
       groupId: string;
@@ -353,11 +352,10 @@ export function useCreateGroupSession() {
       notes?: string;
       memberClientIds: string[];
     }) => {
-      assertCanWrite();
       // Create the group session
       const { data: gs, error: gsErr } = await supabase
         .from("group_sessions" as any)
-        .insert({ group_id: groupId, appointment_id: appointmentId, user_id: user!.id, notes: notes || "" })
+        .insert(attachDemoFlag({ group_id: groupId, appointment_id: appointmentId, user_id: user!.id, notes: notes || "" }))
         .select()
         .single();
       if (gsErr) throw gsErr;
@@ -375,6 +373,7 @@ export function useCreateGroupSession() {
           client_id: clientId,
           user_id: user!.id,
           status: "attended",
+          is_demo: true,
         }));
         const { error: attErr } = await supabase
           .from("group_attendance" as any)
