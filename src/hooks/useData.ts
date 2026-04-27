@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateCapacity } from "@/lib/capacity";
 import { track } from "@/lib/analytics";
-import { useDemoMode, useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
+import { DEMO_ACTION_MESSAGE, useDemoMode, useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
 
 const INVALIDATE_APPOINTMENTS = ["appointments", "dashboard-stats", "client-appointments"];
 const INVALIDATE_FINANCIAL = ["income", "expenses", "expected-payments", "dashboard-stats"];
