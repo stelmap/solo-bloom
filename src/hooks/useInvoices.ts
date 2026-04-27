@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
 
 export function useInvoices() {
   const { user } = useAuth();
@@ -38,8 +39,10 @@ export function useInvoicesByAppointment(appointmentId: string | undefined) {
 export function useCreateInvoice() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (invoice: Record<string, any>) => {
+      assertCanWrite();
       // Generate invoice number
       const { data: numData, error: numError } = await supabase
         .rpc("generate_invoice_number", { p_user_id: user!.id });
