@@ -17,5 +17,9 @@ export default function Index() {
     return <Navigate to="/dashboard" replace />;
   }
 
+  if (typeof window !== "undefined") {
+    return <Navigate to="/onboarding" replace />;
+  }
+
   return <LandingPage />;
 }
