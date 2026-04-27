@@ -185,7 +185,6 @@ export function useUpdateGroupMemberPrice() {
 export function useCompleteGroupSession() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ appointmentId, groupId, groupSessionId, participants, paymentState, paymentMethod }: {
       appointmentId: string;
@@ -195,7 +194,6 @@ export function useCompleteGroupSession() {
       paymentState: string;
       paymentMethod: string;
     }) => {
-      assertCanWrite();
       // Mark appointment as completed
       const { error: aptErr } = await supabase
         .from("appointments")
@@ -222,6 +220,7 @@ export function useCompleteGroupSession() {
               user_id: user!.id, appointment_id: appointmentId,
               amount: p.amount, date: today, source: "group_session",
               payment_method: paymentMethod, description: `Group session`,
+              is_demo: true,
             } as any).select("id").single();
             if (incErr) throw incErr;
             incomeId = inc?.id || null;
@@ -229,6 +228,7 @@ export function useCompleteGroupSession() {
             const { data: ep, error: epErr } = await supabase.from("expected_payments").insert({
               user_id: user!.id, appointment_id: appointmentId,
               client_id: p.clientId, amount: p.amount, status: "pending",
+              is_demo: true,
             } as any).select("id").single();
             if (epErr) throw epErr;
             expectedPaymentId = ep?.id || null;
