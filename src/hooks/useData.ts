@@ -521,10 +521,12 @@ export function useExpectedPayments() {
 export function useMarkExpectedPaymentPaid() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, appointmentId, amount, paymentMethod }: {
       id: string; appointmentId: string; amount: number; paymentMethod: string;
     }) => {
+      assertCanWrite();
       const { error: epErr } = await supabase
         .from("expected_payments")
         .update({ status: "paid", paid_at: new Date().toISOString(), payment_method: paymentMethod } as any)
@@ -571,8 +573,10 @@ export function useExpenses(page = 0) {
 export function useCreateExpense() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (expense: { category: string; amount: number; date: string; description?: string; is_recurring?: boolean; recurring_start_date?: string | null }) => {
+      assertCanWrite();
       const base: any = { ...expense, user_id: user!.id };
       if (!base.is_recurring) {
         base.recurring_start_date = null;
@@ -605,8 +609,10 @@ export function useCreateExpense() {
 
 export function useUpdateExpense() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; category?: string; amount?: number; date?: string; description?: string; is_recurring?: boolean; recurring_start_date?: string | null }) => {
+      assertCanWrite();
       if (updates.is_recurring === false) {
         updates.recurring_start_date = null;
       }
@@ -630,8 +636,10 @@ export function useUpdateExpenseSeries() {
 
 export function useDeleteExpense() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (id: string) => {
+      assertCanWrite();
       const { error } = await supabase.from("expenses").delete().eq("id", id);
       if (error) throw error;
     },
