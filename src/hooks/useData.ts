@@ -256,8 +256,10 @@ export function useServices() {
 export function useCreateService() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (service: { name: string; duration_minutes: number; price: number }) => {
+      assertCanWrite();
       const { data, error } = await supabase.from("services").insert({ ...service, user_id: user!.id }).select().single();
       if (error) throw error;
       return data;
@@ -269,8 +271,10 @@ export function useCreateService() {
 
 export function useUpdateService() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; name?: string; duration_minutes?: number; price?: number }) => {
+      assertCanWrite();
       const { error } = await supabase.from("services").update(updates).eq("id", id);
       if (error) throw error;
     },
@@ -280,8 +284,10 @@ export function useUpdateService() {
 
 export function useDeleteService() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (id: string) => {
+      assertCanWrite();
       const { error } = await supabase.from("services").delete().eq("id", id);
       if (error) throw error;
     },
