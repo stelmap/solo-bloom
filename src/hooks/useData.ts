@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateCapacity } from "@/lib/capacity";
 import { track } from "@/lib/analytics";
+import { useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
 
 const INVALIDATE_APPOINTMENTS = ["appointments", "dashboard-stats", "client-appointments"];
 const INVALIDATE_FINANCIAL = ["income", "expenses", "expected-payments", "dashboard-stats"];
@@ -43,8 +44,10 @@ export function useClient(id: string | undefined) {
 export function useCreateClient() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (client: { name: string; phone?: string; email?: string; notes?: string; telegram?: string }) => {
+      assertCanWrite();
       const { data, error } = await supabase.from("clients").insert({ ...client, user_id: user!.id } as any).select().single();
       if (error) throw error;
       return data;
@@ -56,8 +59,10 @@ export function useCreateClient() {
 
 export function useUpdateClient() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; name?: string; phone?: string; email?: string; notes?: string; telegram?: string; notification_preference?: string; confirmation_required?: boolean; pricing_mode?: string; base_price?: number | null }) => {
+      assertCanWrite();
       const { error } = await supabase.from("clients").update(updates as any).eq("id", id);
       if (error) throw error;
     },
@@ -105,8 +110,10 @@ export function useCreatePriceChange() {
 
 export function useDeleteClient() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (id: string) => {
+      assertCanWrite();
       const { error } = await supabase.from("clients").delete().eq("id", id);
       if (error) throw error;
     },
