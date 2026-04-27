@@ -151,7 +151,7 @@ export default function AuthPage() {
           redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
-        track("password_reset_requested", { lang });
+        track("password_reset_started", { lang });
         setSent(true);
         toast({ title: t("auth.resetLinkSent"), description: t("auth.checkEmailForReset") });
       } else if (mode === "signup") {
