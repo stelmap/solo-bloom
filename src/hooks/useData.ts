@@ -142,8 +142,10 @@ export function useClientNotes(clientId: string | undefined) {
 export function useCreateClientNote() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (note: { client_id: string; content: string; appointment_id?: string }) => {
+      assertCanWrite();
       const { data, error } = await supabase.from("client_notes").insert({ ...note, user_id: user!.id } as any).select().single();
       if (error) throw error;
       return data;
@@ -154,8 +156,10 @@ export function useCreateClientNote() {
 
 export function useDeleteClientNote() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, clientId }: { id: string; clientId: string }) => {
+      assertCanWrite();
       const { error } = await supabase.from("client_notes").delete().eq("id", id);
       if (error) throw error;
       return clientId;
@@ -185,8 +189,10 @@ export function useClientAttachments(clientId: string | undefined) {
 export function useUploadAttachment() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ file, clientId, appointmentId }: { file: File; clientId: string; appointmentId?: string }) => {
+      assertCanWrite();
       const filePath = `${user!.id}/${clientId}/${Date.now()}_${file.name}`;
       const { error: uploadError } = await supabase.storage.from("client-attachments").upload(filePath, file);
       if (uploadError) throw uploadError;
@@ -209,8 +215,10 @@ export function useUploadAttachment() {
 
 export function useDeleteAttachment() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, filePath, clientId }: { id: string; filePath: string; clientId: string }) => {
+      assertCanWrite();
       await supabase.storage.from("client-attachments").remove([filePath]);
       const { error } = await supabase.from("client_attachments").delete().eq("id", id);
       if (error) throw error;
