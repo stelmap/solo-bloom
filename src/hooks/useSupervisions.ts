@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
 
 export function useSupervisions(clientId?: string) {
   const { user } = useAuth();
@@ -122,6 +123,7 @@ export function useUnusedClientNotes(clientId: string | undefined) {
 export function useCreateSupervision() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (params: {
       client_id: string;
@@ -130,6 +132,7 @@ export function useCreateSupervision() {
       imported_notes_snapshot: any[];
       note_ids: string[];
     }) => {
+      assertCanWrite();
       const { note_ids, ...supervisionData } = params;
 
       // 1. Create expense record
@@ -186,8 +189,10 @@ export function useCreateSupervision() {
 
 export function useUpdateSupervision() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; supervision_outcome?: string; supervisor_feedback?: string; next_steps?: string }) => {
+      assertCanWrite();
       const { error } = await supabase
         .from("supervisions" as any)
         .update(updates)
@@ -203,8 +208,10 @@ export function useUpdateSupervision() {
 
 export function useDeleteSupervision() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, expenseId }: { id: string; expenseId?: string }) => {
+      assertCanWrite();
       // Delete linked expense if exists
       if (expenseId) {
         await supabase.from("expenses").delete().eq("id", expenseId);
