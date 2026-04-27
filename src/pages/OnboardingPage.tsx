@@ -272,15 +272,15 @@ export default function OnboardingPage() {
           )}
 
           {stage === "setup" && substep === 0 && (
-            <ChoiceScreen title="Who are you?" icon={<Users className="h-8 w-8" />} options={practiceOptions} value={practiceType} onChange={setPracticeType} />
+            <ChoiceScreen title="Who are you?" icon={<Users className="h-8 w-8" />} options={practiceOptions} value={practiceType} onChange={(value) => setPracticeType(value)} />
           )}
 
           {stage === "setup" && substep === 1 && (
-            <ChoiceScreen title="Biggest pain?" icon={<Zap className="h-8 w-8" />} options={painOptions} value={painPoint} onChange={setPainPoint} />
+            <ChoiceScreen title="Biggest pain?" icon={<Zap className="h-8 w-8" />} options={painOptions} value={painPoint} onChange={(value) => setPainPoint(value)} />
           )}
 
           {stage === "setup" && substep === 2 && (
-            <ChoiceScreen title="What do you want?" icon={<Target className="h-8 w-8" />} options={goalOptions} value={goal} onChange={setGoal} />
+            <ChoiceScreen title="What do you want?" icon={<Target className="h-8 w-8" />} options={goalOptions} value={goal} onChange={(value) => setGoal(value)} />
           )}
 
           {stage === "action" && substep === 0 && (

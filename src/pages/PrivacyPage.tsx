@@ -57,7 +57,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-foreground">8. Your Rights</h2>
-            <p className="text-muted-foreground leading-relaxed">You have the right to access, correct, export, or delete your personal data at any time. Contact us at support@solobizz.app for any data-related requests.</p>
+            <p className="text-muted-foreground leading-relaxed">You have the right to access, correct, export, or delete your personal data at any time. Contact us at solobizz75@gmail.com for any data-related requests.</p>
           </section>
 
           <section>
@@ -67,7 +67,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-foreground">10. Contact</h2>
-            <p className="text-muted-foreground leading-relaxed">If you have questions about this Privacy Policy, contact us at support@solobizz.app.</p>
+            <p className="text-muted-foreground leading-relaxed">If you have questions about this Privacy Policy, contact us at solobizz75@gmail.com.</p>
           </section>
         </div>
       </div>
