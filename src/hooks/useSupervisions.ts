@@ -123,7 +123,6 @@ export function useUnusedClientNotes(clientId: string | undefined) {
 export function useCreateSupervision() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (params: {
       client_id: string;
@@ -132,7 +131,6 @@ export function useCreateSupervision() {
       imported_notes_snapshot: any[];
       note_ids: string[];
     }) => {
-      assertCanWrite();
       const { note_ids, ...supervisionData } = params;
 
       // 1. Create expense record
@@ -146,6 +144,7 @@ export function useCreateSupervision() {
           description: `Supervision for client`,
           is_recurring: false,
           payment_status: "paid",
+          is_demo: true,
         } as any)
         .select()
         .single();
@@ -158,6 +157,7 @@ export function useCreateSupervision() {
           ...supervisionData,
           user_id: user!.id,
           expense_id: expense.id,
+          is_demo: true,
         })
         .select()
         .single();
