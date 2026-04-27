@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Sparkles, ArrowRight, Clock } from "lucide-react";
+import { Sparkles, ArrowRight, Clock, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemoMode } from "@/hooks/useDemoWorkspace";
 import { Button } from "@/components/ui/button";
@@ -50,13 +50,16 @@ export function DemoBanner() {
   if (!isDemoMode) return null;
 
   return (
-    <div className="border-b border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
+    <div className="sticky top-0 z-30 border-b border-primary/25 bg-background/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/85">
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-2.5 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2 min-w-0">
-          <Sparkles className="h-4 w-4 text-primary shrink-0" />
-          <p className="text-sm text-foreground truncate">
-            <span className="font-medium">Demo Mode — view-only workspace.</span>{" "}
-            <span className="text-muted-foreground hidden sm:inline">
+        <div className="flex items-center gap-2 min-w-0 md:pl-0 pl-12">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/15 px-3 py-1 text-xs font-bold uppercase text-primary whitespace-nowrap">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            Demo Mode
+          </span>
+          <p className="text-sm text-foreground min-w-0">
+            <span className="font-semibold">Demo Mode — view-only workspace.</span>{" "}
+            <span className="text-muted-foreground hidden md:inline">
               Choose a subscription to unlock editing and create your own data.
             </span>
           </p>
