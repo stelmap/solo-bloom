@@ -209,8 +209,8 @@ export default function AuthPage() {
             </div>
             {sent ? (
               <div className="space-y-4 text-center">
-                <h2 className="text-xl font-bold text-foreground">{t("auth.resetLinkSent")}</h2>
-                <p className="text-sm text-muted-foreground">{t("auth.checkEmailForReset")}</p>
+                <h2 className="text-xl font-bold text-foreground">{mode === "forgot" ? t("auth.resetLinkSent") : t("auth.checkEmailToContinue")}</h2>
+                <p className="text-sm text-muted-foreground">{mode === "forgot" ? t("auth.checkEmailForReset") : t("auth.checkEmail")}</p>
                 <Button variant="outline" className="w-full" onClick={() => resetMode("login")}>{t("auth.backToLogin")}</Button>
               </div>
             ) : (
