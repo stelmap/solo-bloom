@@ -625,8 +625,10 @@ export function useUpdateExpense() {
 
 export function useUpdateExpenseSeries() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ recurring_group_id, ...updates }: { recurring_group_id: string; category?: string; amount?: number; description?: string }) => {
+      assertCanWrite();
       const { error } = await (supabase.from("expenses") as any).update(updates).eq("recurring_group_id", recurring_group_id);
       if (error) throw error;
     },
