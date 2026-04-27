@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { TranslationKey } from "@/i18n/translations";
 import { useEntitlements, type FeatureCode } from "@/hooks/useEntitlements";
+import { useDemoMode } from "@/hooks/useDemoWorkspace";
 
 type LeafItem = { kind: "leaf"; icon: any; labelKey: TranslationKey; path: string; requires?: FeatureCode };
 type GroupItem = {
@@ -51,6 +52,7 @@ export function AppSidebar() {
   const { user, signOut, subscription } = useAuth();
   const { t } = useLanguage();
   const isTrial = !subscription.loading && subscription.on_trial && !subscription.subscribed;
+  const { isDemoMode } = useDemoMode();
   const { has, loading: entLoading } = useEntitlements();
 
   const visibleNavItems = useMemo(
@@ -105,11 +107,21 @@ export function AppSidebar() {
                 Trial
               </span>
             )}
+            {isDemoMode && (
+              <span className="inline-flex items-center rounded-full bg-sidebar-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sidebar-primary">
+                Demo
+              </span>
+            )}
           </div>
           <p className="text-xs text-sidebar-foreground/50 mt-0.5">Business Manager</p>
           {isTrial && (
             <div className="mt-4 rounded-lg border border-sidebar-primary/25 bg-sidebar-primary/10 px-3 py-2 text-xs font-medium text-sidebar-primary">
               Trial account active
+            </div>
+          )}
+          {isDemoMode && (
+            <div className="mt-4 rounded-lg border border-sidebar-primary/25 bg-sidebar-primary/10 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-sidebar-primary">
+              Demo Mode — view-only workspace
             </div>
           )}
         </div>
