@@ -1150,10 +1150,8 @@ export function useEditRecurringAppointments() {
 
 export function useDeleteRecurringAppointments() {
   const qc = useQueryClient();
-  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ ruleId, scope, appointmentId }: { ruleId: string; scope: "this" | "following" | "all"; appointmentId?: string }) => {
-      assertCanWrite();
       if (scope === "all") {
         const { data: apts } = await supabase.from("appointments").select("id").eq("recurring_rule_id", ruleId);
         for (const apt of apts || []) {
