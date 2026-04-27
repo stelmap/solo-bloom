@@ -56,12 +56,12 @@ export function AppSidebar() {
   const { has, loading: entLoading } = useEntitlements();
 
   const visibleNavItems = useMemo(
-    () => navItems.filter((it) => !it.requires || has(it.requires)),
-    [has]
+    () => navItems.filter((it) => !it.requires || has(it.requires) || isDemoMode),
+    [has, isDemoMode]
   );
   const lockedCount = useMemo(
-    () => (entLoading ? 0 : navItems.filter((it) => it.requires && !has(it.requires)).length),
-    [entLoading, has]
+    () => (entLoading || isDemoMode ? 0 : navItems.filter((it) => it.requires && !has(it.requires)).length),
+    [entLoading, has, isDemoMode]
   );
 
   // Auto-open the Finances group when the user is somewhere inside it
