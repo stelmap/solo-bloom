@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,8 +29,13 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const planParam = searchParams.get("plan");
-  const [mode, setMode] = useState<"login" | "signup">(searchParams.get("mode") === "signup" ? "signup" : "login");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">(searchParams.get("mode") === "signup" ? "signup" : "login");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const checkoutTriggeredRef = useRef(false);
@@ -38,6 +43,31 @@ export default function AuthPage() {
   const { t } = useLanguage();
   const [checkoutRedirecting, setCheckoutRedirecting] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
+  const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
+  const modeCopy = useMemo(() => {
+    if (mode === "signup") return { title: t("auth.createAccount"), subtitle: t("auth.registerDesc"), button: t("auth.createAccountButton") };
+    if (mode === "forgot") return { title: t("auth.resetPassword"), subtitle: t("auth.resetPasswordDesc"), button: t("auth.sendResetLink") };
+    return { title: t("auth.welcomeBack"), subtitle: t("auth.signInToManage"), button: t("auth.signIn") };
+  }, [mode, t]);
+
+  const resetMode = (nextMode: "login" | "signup" | "forgot") => {
+    setMode(nextMode);
+    setPassword("");
+    setConfirmPassword("");
+    setFormError(null);
+    setSent(false);
+  };
+
+  const validateForm = () => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) return t("auth.emailRequired");
+    if (!isValidEmail(trimmedEmail)) return t("auth.invalidEmail");
+    if (mode !== "forgot" && !password) return t("auth.passwordRequired");
+    if (mode === "signup" && password !== confirmPassword) return t("auth.passwordsMismatch");
+    return null;
+  };
 
   const startPlanCheckout = async (plan: string) => {
     const priceId = PLAN_PRICE_MAP[plan];
