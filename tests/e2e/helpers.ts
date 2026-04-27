@@ -15,9 +15,16 @@ export function uniqueEmail(prefix = "e2e") {
  * Skips the test if TEST_EMAIL / TEST_PASSWORD are not provided.
  */
 export async function signInWithSeeded(page: Page) {
+  if (TEST_USER_ID && TEST_ACCESS_TOKEN) {
+    await installRegressionAuth(page);
+    await page.goto("/dashboard");
+    await page.waitForURL(/\/dashboard/, { timeout: 15000 });
+    return;
+  }
+
   if (!TEST_EMAIL || !TEST_PASSWORD) {
     throw new Error(
-      "TEST_EMAIL / TEST_PASSWORD not set — seeded-account tests require these env vars."
+      "TEST_USER_ID / TEST_ACCESS_TOKEN not set — seeded-account tests require token env vars."
     );
   }
   await page.goto("/auth");
@@ -33,11 +40,11 @@ export async function expectAuthenticated(page: Page) {
 }
 
 export function hasSeededAccount() {
-  return Boolean(TEST_EMAIL && TEST_PASSWORD);
+  return Boolean(TEST_USER_ID && TEST_ACCESS_TOKEN);
 }
 
 export function hasRegressionAuth() {
-  return hasSeededAccount() || Boolean(TEST_USER_ID && TEST_ACCESS_TOKEN);
+  return hasSeededAccount();
 }
 
 export async function installRegressionAuth(page: Page) {
@@ -65,5 +72,5 @@ export async function installRegressionAuth(page: Page) {
     return;
   }
 
-  await signInWithSeeded(page);
+  throw new Error("TEST_USER_ID / TEST_ACCESS_TOKEN are required for authenticated regression tests.");
 }
