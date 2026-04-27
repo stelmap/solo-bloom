@@ -155,7 +155,7 @@ export default function AuthPage() {
         setSent(true);
         toast({ title: t("auth.resetLinkSent"), description: t("auth.checkEmailForReset") });
       } else if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: {
@@ -166,7 +166,11 @@ export default function AuthPage() {
         if (error) throw error;
         track("sign_up_started", { plan_type: planParam ?? undefined, lang });
         toast({ title: t("auth.accountCreated"), description: t("auth.checkEmail") });
-        navigate(planParam ? `/auth?plan=${encodeURIComponent(planParam)}` : "/dashboard", { replace: true });
+        if (data.session) {
+          navigate(planParam ? `/auth?plan=${encodeURIComponent(planParam)}` : "/dashboard", { replace: true });
+        } else {
+          setSent(true);
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
