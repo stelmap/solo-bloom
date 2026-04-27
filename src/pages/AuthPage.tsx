@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,8 +29,13 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const planParam = searchParams.get("plan");
-  const [mode, setMode] = useState<"login" | "signup">(searchParams.get("mode") === "signup" ? "signup" : "login");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">(searchParams.get("mode") === "signup" ? "signup" : "login");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const checkoutTriggeredRef = useRef(false);
@@ -38,6 +43,31 @@ export default function AuthPage() {
   const { t } = useLanguage();
   const [checkoutRedirecting, setCheckoutRedirecting] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
+  const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
+  const modeCopy = useMemo(() => {
+    if (mode === "signup") return { title: t("auth.createAccount"), subtitle: t("auth.registerDesc"), button: t("auth.createAccountButton") };
+    if (mode === "forgot") return { title: t("auth.resetPassword"), subtitle: t("auth.resetPasswordDesc"), button: t("auth.sendResetLink") };
+    return { title: t("auth.welcomeBack"), subtitle: t("auth.signInToManage"), button: t("auth.signIn") };
+  }, [mode, t]);
+
+  const resetMode = (nextMode: "login" | "signup" | "forgot") => {
+    setMode(nextMode);
+    setPassword("");
+    setConfirmPassword("");
+    setFormError(null);
+    setSent(false);
+  };
+
+  const validateForm = () => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) return t("auth.emailRequired");
+    if (!isValidEmail(trimmedEmail)) return t("auth.invalidEmail");
+    if (mode !== "forgot" && !password) return t("auth.passwordRequired");
+    if (mode === "signup" && password !== confirmPassword) return t("auth.passwordsMismatch");
+    return null;
+  };
 
   const startPlanCheckout = async (plan: string) => {
     const priceId = PLAN_PRICE_MAP[plan];
@@ -106,23 +136,51 @@ export default function AuthPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
+    const validationError = validateForm();
+    if (validationError) {
+      setFormError(validationError);
+      return;
+    }
+
     setLoading(true);
     try {
       const lang = getStoredLang();
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: window.location.origin,
-          data: { language: lang },
-          shouldCreateUser: mode === "signup",
-        },
-      });
-      if (error) throw error;
-      track(mode === "signup" ? "sign_up_started" : "login_completed", { plan_type: planParam ?? undefined, lang });
-      setSent(true);
-      toast({ title: t("auth.checkEmailToContinue"), description: t("auth.checkEmail") });
+      if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        track("password_reset_started", { lang });
+        setSent(true);
+        toast({ title: t("auth.resetLinkSent"), description: t("auth.checkEmailForReset") });
+      } else if (mode === "signup") {
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: { language: lang },
+          },
+        });
+        if (error) throw error;
+        track("sign_up_started", { plan_type: planParam ?? undefined, lang });
+        toast({ title: t("auth.accountCreated"), description: t("auth.checkEmail") });
+        if (data.session) {
+          navigate(planParam ? `/auth?plan=${encodeURIComponent(planParam)}` : "/dashboard", { replace: true });
+        } else {
+          setSent(true);
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        if (error) throw error;
+        track("login_completed", { plan_type: planParam ?? undefined, lang });
+        navigate(planParam ? `/auth?plan=${encodeURIComponent(planParam)}` : "/dashboard", { replace: true });
+      }
     } catch (error: any) {
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      const message = mode === "login" ? t("auth.incorrectEmailOrPassword") : error.message;
+      setFormError(message);
+      toast({ title: t("common.error"), description: message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -151,28 +209,55 @@ export default function AuthPage() {
             </div>
             {sent ? (
               <div className="space-y-4 text-center">
-                <h2 className="text-xl font-bold text-foreground">{t("auth.checkEmailToContinue")}</h2>
-                <p className="text-sm text-muted-foreground">{t("auth.checkEmail")}</p>
+                <h2 className="text-xl font-bold text-foreground">{mode === "forgot" ? t("auth.resetLinkSent") : t("auth.checkEmailToContinue")}</h2>
+                <p className="text-sm text-muted-foreground">{mode === "forgot" ? t("auth.checkEmailForReset") : t("auth.checkEmail")}</p>
+                <Button variant="outline" className="w-full" onClick={() => resetMode("login")}>{t("auth.backToLogin")}</Button>
               </div>
             ) : (
               <>
                 <div className="space-y-2">
-                  <h2 className="text-xl font-bold text-foreground">{mode === "login" ? t("auth.welcomeBack") : t("auth.createAccount")}</h2>
-                  <p className="text-sm text-muted-foreground">{mode === "login" ? t("auth.signInToManage") : t("auth.getStarted")}</p>
+                  <h2 className="text-xl font-bold text-foreground">{modeCopy.title}</h2>
+                  <p className="text-sm text-muted-foreground">{modeCopy.subtitle}</p>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <Label>{t("common.email")}</Label>
-                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" autoComplete="email" />
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>{loading ? t("common.loading") : mode === "login" ? t("auth.signIn") : t("auth.signUp")}</Button>
+                  {mode !== "forgot" && (
+                    <div className="space-y-2">
+                      <Label>{t("auth.password")}</Label>
+                      <div className="relative">
+                        <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" autoComplete={mode === "login" ? "current-password" : "new-password"} className="pr-10" />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label={showPassword ? t("password.hidePassword") : t("password.showPassword")}>
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {mode === "signup" && (
+                    <div className="space-y-2">
+                      <Label>{t("auth.confirmPassword")}</Label>
+                      <div className="relative">
+                        <Input type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" autoComplete="new-password" className="pr-10" />
+                        <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label={showConfirmPassword ? t("password.hidePassword") : t("password.showPassword")}>
+                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {formError && <p className="text-sm text-destructive" role="alert">{formError}</p>}
+                  <Button type="submit" className="w-full" disabled={loading}>{loading ? t("common.loading") : modeCopy.button}</Button>
                 </form>
-                <p className="text-center text-sm text-muted-foreground">
-                  {mode === "login" ? t("auth.noAccount") : t("auth.haveAccount")} {" "}
-                  <button onClick={() => setMode(mode === "login" ? "signup" : "login")} className="text-primary font-medium hover:underline">
-                    {mode === "login" ? t("auth.signUp") : t("auth.signIn")}
-                  </button>
-                </p>
+                <div className="space-y-3 text-center text-sm text-muted-foreground">
+                  {mode === "login" && <button onClick={() => resetMode("forgot")} className="text-primary font-medium hover:underline">{t("auth.forgotPassword")}</button>}
+                  <p>
+                    {mode === "login" ? t("auth.noAccount") : t("auth.haveAccount")} {" "}
+                    <button onClick={() => resetMode(mode === "login" ? "signup" : "login")} className="text-primary font-medium hover:underline">
+                      {mode === "login" ? t("auth.registerHere") : t("auth.signIn")}
+                    </button>
+                  </p>
+                </div>
               </>
             )}
           </div>
