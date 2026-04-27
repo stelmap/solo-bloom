@@ -374,6 +374,7 @@ export function useDeleteAppointment() {
 export function useCompleteAppointment() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const { isDemoMode } = useDemoMode();
   return useMutation({
     mutationFn: async ({ appointmentId, clientId, price, paymentMethod, paymentStatus }: {
       appointmentId: string; clientId: string; price: number; paymentMethod: string; paymentStatus: string;
@@ -394,14 +395,14 @@ export function useCompleteAppointment() {
           user_id: user!.id, appointment_id: appointmentId,
           amount: price, date: today, source: "appointment",
           payment_method: paymentMethod,
-          is_demo: true,
+          ...(isDemoMode ? { is_demo: true } : {}),
         } as any);
         if (incErr) throw incErr;
       } else if (paymentStatus === "waiting_for_payment") {
         const { error: epErr } = await supabase.from("expected_payments").insert({
           user_id: user!.id, appointment_id: appointmentId,
           client_id: clientId, amount: price, status: "pending",
-          is_demo: true,
+          ...(isDemoMode ? { is_demo: true } : {}),
         } as any);
         if (epErr) throw epErr;
       }
@@ -415,6 +416,7 @@ export function useCompleteAppointment() {
 export function useCancelAppointment() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const { isDemoMode } = useDemoMode();
   return useMutation({
     mutationFn: async ({ id, status, clientId, price, cancellationReason }: { id: string; status: "cancelled" | "no-show"; clientId?: string; price?: number; cancellationReason?: string }) => {
       await supabase.from("income").delete().eq("appointment_id", id);
@@ -429,7 +431,7 @@ export function useCancelAppointment() {
         const { error: epErr } = await supabase.from("expected_payments").insert({
           user_id: user!.id, appointment_id: id,
           client_id: clientId, amount: price, status: "pending",
-          is_demo: true,
+          ...(isDemoMode ? { is_demo: true } : {}),
         } as any);
         if (epErr) throw epErr;
       } else {
@@ -516,6 +518,7 @@ export function useExpectedPayments() {
 export function useMarkExpectedPaymentPaid() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const { isDemoMode } = useDemoMode();
   return useMutation({
     mutationFn: async ({ id, appointmentId, amount, paymentMethod }: {
       id: string; appointmentId: string; amount: number; paymentMethod: string;
@@ -533,7 +536,7 @@ export function useMarkExpectedPaymentPaid() {
         user_id: user!.id, appointment_id: appointmentId,
         amount, date: today, source: "appointment",
         payment_method: paymentMethod,
-        is_demo: true,
+        ...(isDemoMode ? { is_demo: true } : {}),
       } as any);
       if (incErr) throw incErr;
     },
