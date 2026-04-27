@@ -1072,7 +1072,6 @@ export const translations = {
 
 
   // Psychologist onboarding / paywall
-  "common.name": { en: "Name", uk: "Ім’я", fr: "Nom" },
   "plans.monthly": { en: "Monthly", uk: "Щомісяця", fr: "Mensuel" },
   "plans.quarterly": { en: "Quarterly", uk: "Щокварталу", fr: "Trimestriel" },
   "plans.yearly": { en: "Yearly", uk: "Щороку", fr: "Annuel" },
