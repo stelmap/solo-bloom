@@ -643,6 +643,8 @@ export const translations = {
   "auth.checkEmailForReset": { en: "Check your email for the password reset link.", uk: "Перевірте email для отримання посилання скидання пароля.", fr: "Vérifiez votre e-mail pour le lien de réinitialisation." },
   "auth.backToLogin": { en: "Back to login", uk: "Повернутися до входу", fr: "Retour à la connexion" },
   "auth.enterOtp": { en: "Enter Recovery Code", uk: "Введіть код відновлення", fr: "Entrez le code de récupération" },
+  "auth.recoveryCode": { en: "Recovery code", uk: "Код відновлення", fr: "Code de récupération" },
+  "auth.recoveryCodeRequired": { en: "Recovery code is required.", uk: "Код відновлення обов’язковий.", fr: "Le code de récupération est obligatoire." },
   "auth.otpDescription": { en: "Enter the 8-character code we sent to your email. It is single-use and expires shortly.", uk: "Введіть 8-символьний код, надісланий на ваш email. Код одноразовий і діє обмежений час.", fr: "Entrez le code à 8 caractères envoyé à votre e-mail. Il est à usage unique et expire rapidement." },
   "auth.verifyCode": { en: "Verify Code", uk: "Підтвердити код", fr: "Vérifier le code" },
   "auth.verifying": { en: "Verifying...", uk: "Перевірка...", fr: "Vérification..." },

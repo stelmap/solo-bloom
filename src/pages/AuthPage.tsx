@@ -33,6 +33,7 @@ export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [recoveryCode, setRecoveryCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -48,7 +49,7 @@ export default function AuthPage() {
 
   const modeCopy = useMemo(() => {
     if (mode === "signup") return { title: t("auth.createAccount"), subtitle: t("auth.registerDesc"), button: t("auth.createAccountButton") };
-    if (mode === "forgot") return { title: t("auth.resetPassword"), subtitle: t("auth.resetPasswordDesc"), button: t("auth.sendResetLink") };
+    if (mode === "forgot") return { title: t("auth.resetPassword"), subtitle: t("auth.resetPasswordOtpDesc"), button: t("auth.sendOtp") };
     return { title: t("auth.welcomeBack"), subtitle: t("auth.signInToManage"), button: t("auth.signIn") };
   }, [mode, t]);
 
@@ -56,6 +57,7 @@ export default function AuthPage() {
     setMode(nextMode);
     setPassword("");
     setConfirmPassword("");
+    setRecoveryCode("");
     setFormError(null);
     setSent(false);
   };
@@ -153,7 +155,7 @@ export default function AuthPage() {
         if (error) throw error;
         track("password_reset_started", { lang });
         setSent(true);
-        toast({ title: t("auth.resetLinkSent"), description: t("auth.checkEmailForReset") });
+        toast({ title: t("auth.otpSent"), description: t("auth.otpSentDesc") });
       } else if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
@@ -186,6 +188,32 @@ export default function AuthPage() {
     }
   };
 
+  const handleVerifyRecoveryCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+    if (!recoveryCode.trim()) {
+      setFormError(t("auth.recoveryCodeRequired"));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token: recoveryCode.trim(),
+        type: "recovery",
+      });
+      if (error) throw error;
+      navigate("/reset-password", { replace: true, state: { recoveryVerified: true } });
+    } catch (error: any) {
+      const message = error?.message?.toLowerCase?.().includes("expired") ? t("auth.otpExpired") : t("auth.invalidOtp");
+      setFormError(message);
+      toast({ title: t("common.error"), description: message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex relative">
       <Link to="/" className="absolute top-4 left-4 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/80 hover:bg-muted text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
@@ -208,11 +236,33 @@ export default function AuthPage() {
               <h1 className="text-2xl font-bold text-foreground">Solo<span className="text-primary">Bizz</span></h1>
             </div>
             {sent ? (
-              <div className="space-y-4 text-center">
-                <h2 className="text-xl font-bold text-foreground">{mode === "forgot" ? t("auth.resetLinkSent") : t("auth.checkEmailToContinue")}</h2>
-                <p className="text-sm text-muted-foreground">{mode === "forgot" ? t("auth.checkEmailForReset") : t("auth.checkEmail")}</p>
-                <Button variant="outline" className="w-full" onClick={() => resetMode("login")}>{t("auth.backToLogin")}</Button>
-              </div>
+              mode === "forgot" ? (
+                <div className="space-y-5">
+                  <div className="space-y-2 text-center">
+                    <h2 className="text-xl font-bold text-foreground">{t("auth.enterOtp")}</h2>
+                    <p className="text-sm text-muted-foreground">{t("auth.otpDescription")}</p>
+                  </div>
+                  <form onSubmit={handleVerifyRecoveryCode} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>{t("auth.recoveryCode")}</Label>
+                      <Input value={recoveryCode} onChange={(e) => setRecoveryCode(e.target.value)} placeholder="123456" autoComplete="one-time-code" />
+                      <p className="text-xs text-muted-foreground">{t("auth.otpExpiry")}</p>
+                    </div>
+                    {formError && <p className="text-sm text-destructive" role="alert">{formError}</p>}
+                    <Button type="submit" className="w-full" disabled={loading}>{loading ? t("auth.verifying") : t("auth.verifyCode")}</Button>
+                  </form>
+                  <div className="space-y-3 text-center text-sm">
+                    <button onClick={handleSubmit as any} className="text-primary font-medium hover:underline">{t("auth.sendOtp")}</button>
+                    <div><Button variant="outline" className="w-full" onClick={() => resetMode("login")}>{t("auth.backToLogin")}</Button></div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4 text-center">
+                  <h2 className="text-xl font-bold text-foreground">{t("auth.checkEmailToContinue")}</h2>
+                  <p className="text-sm text-muted-foreground">{t("auth.checkEmail")}</p>
+                  <Button variant="outline" className="w-full" onClick={() => resetMode("login")}>{t("auth.backToLogin")}</Button>
+                </div>
+              )
             ) : (
               <>
                 <div className="space-y-2">
