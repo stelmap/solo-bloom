@@ -48,7 +48,8 @@ export function useDemoMode() {
   const { data: hasDemoData = false, isLoading } = useHasDemoData();
   const [persistedDemoMode, setPersistedDemoMode] = useState(() => readPersistedDemoMode(user?.id));
   const isPaid = subscription.subscribed || subscription.on_trial;
-  const isDemoMode = !subscription.loading && !isPaid && (hasDemoData || persistedDemoMode);
+  const isUnpaidUser = !!user?.id && !subscription.loading && !isPaid;
+  const isDemoMode = isUnpaidUser || (!subscription.loading && !isPaid && (hasDemoData || persistedDemoMode));
 
   useEffect(() => {
     setPersistedDemoMode(readPersistedDemoMode(user?.id));
@@ -56,7 +57,7 @@ export function useDemoMode() {
 
   useEffect(() => {
     if (!user?.id || subscription.loading || isLoading) return;
-    const nextPersistedDemoMode = !isPaid && hasDemoData;
+    const nextPersistedDemoMode = !isPaid;
     persistDemoMode(user.id, nextPersistedDemoMode);
     setPersistedDemoMode(nextPersistedDemoMode);
   }, [user?.id, subscription.loading, isLoading, isPaid, hasDemoData]);
