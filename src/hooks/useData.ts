@@ -673,8 +673,10 @@ export function useIncome(page = 0) {
 export function useCreateIncome() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (income: { amount: number; date: string; description?: string; source?: string; appointment_id?: string; payment_method?: string; client_id?: string | null }) => {
+      assertCanWrite();
       const { data, error } = await supabase.from("income").insert({ ...income, user_id: user!.id } as any).select().single();
       if (error) throw error;
       return data;
@@ -704,8 +706,10 @@ export function useClientIncome(clientId: string | undefined) {
 
 export function useDeleteIncome() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (id: string) => {
+      assertCanWrite();
       const { error } = await supabase.from("income").delete().eq("id", id);
       if (error) throw error;
     },
@@ -731,8 +735,10 @@ export function useProfile() {
 export function useUpdateProfile() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (updates: { full_name?: string; business_name?: string; phone?: string; language?: string; reminder_minutes?: number; work_hours_start?: string; work_hours_end?: string; time_format?: string; default_duration?: number }) => {
+      if (Object.keys(updates).some((key) => key !== "language")) assertCanWrite();
       const { error } = await supabase.from("profiles").update(updates as any).eq("user_id", user!.id);
       if (error) throw error;
     },
