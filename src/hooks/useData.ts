@@ -3,11 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateCapacity } from "@/lib/capacity";
 import { track } from "@/lib/analytics";
-import { useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
+import { useDemoMode, useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
 
 const INVALIDATE_APPOINTMENTS = ["appointments", "dashboard-stats", "client-appointments"];
 const INVALIDATE_FINANCIAL = ["income", "expenses", "expected-payments", "dashboard-stats"];
-const attachDemoFlag = <T extends Record<string, any>>(payload: T): T => ({ ...payload, is_demo: true });
+const attachDemoFlag = <T extends Record<string, any>>(payload: T, isDemoMode: boolean): T => (
+  isDemoMode ? { ...payload, is_demo: true } : payload
+);
 
 // Stale times to avoid redundant refetches on navigation
 const STALE_SHORT = 30_000;  // 30s for dashboard/frequently changing data
@@ -325,12 +327,13 @@ export function useAppointments() {
 export function useCreateAppointment() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const { isDemoMode } = useDemoMode();
   return useMutation({
     mutationFn: async (apt: {
       client_id: string; service_id: string; scheduled_at: string;
       duration_minutes: number; price: number; notes?: string;
     }) => {
-      const { data, error } = await supabase.from("appointments").insert(attachDemoFlag({ ...apt, user_id: user!.id })).select().single();
+      const { data, error } = await supabase.from("appointments").insert(attachDemoFlag({ ...apt, user_id: user!.id }, isDemoMode)).select().single();
       if (error) throw error;
       return data;
     },
