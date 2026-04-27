@@ -5,6 +5,7 @@ import { useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
 
 const STALE_MEDIUM = 60_000;
 const INVALIDATE_GROUPS = ["groups", "group-detail", "group-members", "group-sessions", "group-attendance"];
+const attachDemoFlag = <T extends Record<string, any>>(payload: T): T => ({ ...payload, is_demo: true });
 
 // Groups list
 export function useGroups() {
@@ -129,13 +130,11 @@ export function useGroupAllAttendance(groupId: string | undefined) {
 export function useCreateGroup() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (group: { name: string; description?: string; status?: string }) => {
-      assertCanWrite();
       const { data, error } = await supabase
         .from("groups" as any)
-        .insert({ ...group, user_id: user!.id })
+        .insert(attachDemoFlag({ ...group, user_id: user!.id }))
         .select()
         .single();
       if (error) throw error;
