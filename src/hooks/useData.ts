@@ -767,8 +767,10 @@ export function useWorkingSchedule() {
 export function useUpsertWorkingSchedule() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (days: Array<{ day_of_week: number; is_working: boolean; start_time: string; end_time: string }>) => {
+      assertCanWrite();
       await supabase.from("working_schedule").delete().eq("user_id", user!.id);
       if (days.length > 0) {
         const { error } = await supabase.from("working_schedule").insert(
@@ -803,11 +805,13 @@ export function useDaysOff() {
 export function useCreateDayOff() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (dayOff: {
       date: string; type: string; label?: string;
       custom_start_time?: string; custom_end_time?: string; is_non_working?: boolean;
     }) => {
+      assertCanWrite();
       const { data, error } = await supabase.from("days_off")
         .insert({ ...dayOff, user_id: user!.id } as any).select().single();
       if (error) throw error;
@@ -822,8 +826,10 @@ export function useCreateDayOff() {
 
 export function useDeleteDayOff() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (id: string) => {
+      assertCanWrite();
       const { error } = await supabase.from("days_off").delete().eq("id", id);
       if (error) throw error;
     },
