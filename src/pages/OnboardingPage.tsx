@@ -337,7 +337,7 @@ export default function OnboardingPage() {
               options={[
                 { value: "new", label: t("onboarding.entryNew") },
                 { value: "existing", label: t("onboarding.entryExisting") },
-              ]}
+              ] as Array<{ value: "new" | "existing"; label: string }>}
               value={null}
               onChange={(value) => {
                 recordOption("entry_choice", value);
