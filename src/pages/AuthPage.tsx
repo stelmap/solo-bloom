@@ -75,7 +75,7 @@ export default function AuthPage() {
   }
 
   if (user && !planParam) {
-    return <Navigate to={nextParam === "onboarding" ? "/onboarding" : "/dashboard"} replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   if (user && planParam && (checkoutRedirecting || checkoutTriggeredRef.current) && !checkoutError) {
@@ -110,11 +110,10 @@ export default function AuthPage() {
     setLoading(true);
     try {
       const lang = getStoredLang();
-      const redirectTo = nextParam === "onboarding" ? `${window.location.origin}/onboarding` : window.location.origin;
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: redirectTo,
+          emailRedirectTo: window.location.origin,
           data: { language: lang },
           shouldCreateUser: mode === "signup",
         },
