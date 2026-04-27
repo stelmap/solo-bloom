@@ -61,6 +61,7 @@ export default function PlansPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, subscription, subscriptionError } = useAuth();
+  const { t } = useLanguage();
   const qc = useQueryClient();
   const { data: hasDemoData } = useHasDemoData();
   const [loading, setLoading] = useState(true);
@@ -74,6 +75,12 @@ export default function PlansPage() {
 
   const isPaid = subscription.subscribed || subscription.on_trial;
   const canClearDemo = !isPaid && Boolean(hasDemoData);
+  const periodLabels: Record<BillingPeriod, string> = { monthly: t("plans.monthly"), quarterly: t("plans.quarterly"), yearly: t("plans.yearly") };
+  const periodSuffix: Record<BillingPeriod, string> = { monthly: t("plans.month" as any), quarterly: t("plans.threeMonths" as any), yearly: t("plans.year" as any) };
+  const planFeatures: Record<string, string[]> = {
+    solo: [t("plans.soloFeatureCalendar" as any), t("plans.soloFeatureClients" as any), t("plans.soloFeatureServices" as any), t("plans.soloFeatureReminders" as any), t("plans.soloFeatureRecurring" as any)],
+    pro: [t("plans.proFeatureEverything" as any), t("plans.proFeatureFinance" as any), t("plans.proFeatureBreakeven" as any), t("plans.proFeatureInvoices" as any), t("plans.proFeatureSupervision" as any), t("plans.proFeatureAnalytics" as any)],
+  };
 
   const checkHasRealData = async (): Promise<boolean> => {
     const tables = ["clients", "appointments", "income", "expenses"] as const;
