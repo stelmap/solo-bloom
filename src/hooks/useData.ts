@@ -513,12 +513,10 @@ export function useExpectedPayments() {
 export function useMarkExpectedPaymentPaid() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, appointmentId, amount, paymentMethod }: {
       id: string; appointmentId: string; amount: number; paymentMethod: string;
     }) => {
-      assertCanWrite();
       const { error: epErr } = await supabase
         .from("expected_payments")
         .update({ status: "paid", paid_at: new Date().toISOString(), payment_method: paymentMethod } as any)
@@ -532,6 +530,7 @@ export function useMarkExpectedPaymentPaid() {
         user_id: user!.id, appointment_id: appointmentId,
         amount, date: today, source: "appointment",
         payment_method: paymentMethod,
+        is_demo: true,
       } as any);
       if (incErr) throw incErr;
     },
