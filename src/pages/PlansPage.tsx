@@ -291,7 +291,7 @@ export default function PlansPage() {
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    {PERIOD_LABELS[p]}
+                    {periodLabels[p]}
                     {showSave && (
                       <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-primary/15 text-primary">
                         Save ~40%
@@ -319,7 +319,7 @@ export default function PlansPage() {
               const price = priceFor(plan.id, period);
               const isHighlighted = plan.code === HIGHLIGHTED_CODE;
               const isSelected = selectedPlanId === plan.id;
-              const features = PLAN_FEATURES[plan.code] ?? [];
+              const features = planFeatures[plan.code] ?? [];
               const savings = price ? savingsVsMonthly(prices, plan.id, period) : null;
 
               return (
@@ -355,7 +355,7 @@ export default function PlansPage() {
                           {price ? formatPrice(price.price, price.currency) : "—"}
                         </span>
                         <span className="text-sm text-muted-foreground">
-                          / {PERIOD_SUFFIX[period]}
+                          / {periodSuffix[period]}
                         </span>
                       </div>
                       {savings !== null && (
