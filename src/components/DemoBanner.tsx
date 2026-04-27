@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Sparkles, ArrowRight, Clock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useHasDemoData } from "@/hooks/useDemoWorkspace";
+import { useDemoMode } from "@/hooks/useDemoWorkspace";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
  */
 export function DemoBanner() {
   const { subscription } = useAuth();
-  const { data: hasDemo } = useHasDemoData();
+  const { isDemoMode } = useDemoMode();
 
   if (subscription.loading) return null;
 
@@ -47,7 +47,7 @@ export function DemoBanner() {
   }
 
   if (subscription.subscribed) return null;
-  if (!hasDemo) return null;
+  if (!isDemoMode) return null;
 
   return (
     <div className="border-b border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
@@ -55,9 +55,9 @@ export function DemoBanner() {
         <div className="flex items-center gap-2 min-w-0">
           <Sparkles className="h-4 w-4 text-primary shrink-0" />
           <p className="text-sm text-foreground truncate">
-            <span className="font-medium">You're viewing demo data.</span>{" "}
+            <span className="font-medium">Demo Mode — view-only workspace.</span>{" "}
             <span className="text-muted-foreground hidden sm:inline">
-              Purchase a plan to start with your own clean workspace.
+              Choose a subscription to unlock editing and create your own data.
             </span>
           </p>
         </div>
