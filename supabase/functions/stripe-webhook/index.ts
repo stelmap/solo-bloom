@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -136,7 +136,7 @@ async function extractCustomerEmail(stripe: Stripe, event: Stripe.Event): Promis
 }
 
 async function findUserIdByEmail(
-  supabaseAdmin: ReturnType<typeof createClient>,
+  supabaseAdmin: any,
   email: string
 ): Promise<string | null> {
   // Use admin auth API to find user by email
@@ -145,7 +145,7 @@ async function findUserIdByEmail(
     console.error("listUsers failed:", error);
     return null;
   }
-  const match = data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+  const match = data.users.find((u: { email?: string; id?: string }) => u.email?.toLowerCase() === email.toLowerCase());
   return match?.id ?? null;
 }
 

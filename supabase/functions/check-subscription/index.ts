@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -142,17 +142,17 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: userData, error: userError } = await supabaseUser.auth.getUser(token);
-    if (userError || !userData?.user) {
-      logStep("Authentication failed", { message: userError?.message });
+    const { data: claimsData, error: claimsError } = await supabaseUser.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      logStep("Authentication failed", { message: claimsError?.message });
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 401,
       });
     }
 
-    const userId = userData.user.id;
-    const userEmail = userData.user.email;
+    const userId = claimsData.claims.sub;
+    const userEmail = claimsData.claims.email as string | undefined;
     if (!userEmail) throw new Error("User email not available");
     logStep("User authenticated", { email: userEmail });
 
