@@ -1,9 +1,24 @@
 import { createContext, useContext, ReactNode, useCallback, useEffect, useState } from "react";
 import { translations, Language, TranslationKey } from "./translations";
-import { useProfile } from "@/hooks/useData";
+import { useProfile, useUpdateProfile } from "@/hooks/useData";
 
 const LANG_STORAGE_KEY = "app_lang";
+const PRE_LOGIN_LANG_KEY = "pre_login_lang";
 const LANG_CHANGE_EVENT = "app_lang_change";
+
+function normalizeLang(value: string | null | undefined): Language | null {
+  if (value === "uk" || value === "fr" || value === "en") return value;
+  return null;
+}
+
+function getBrowserLang(): Language {
+  try {
+    const browserLang = navigator.language.toLowerCase();
+    if (browserLang.startsWith("uk")) return "uk";
+    if (browserLang.startsWith("fr")) return "fr";
+  } catch {}
+  return "en";
+}
 
 interface LanguageContextType {
   lang: Language;
@@ -35,11 +50,17 @@ export function translateFor(
 /** Read the language stored in localStorage (used before profile loads) */
 export function getStoredLang(): Language {
   try {
-    const stored = localStorage.getItem(LANG_STORAGE_KEY) || localStorage.getItem("landing_lang");
-    if (stored === "uk") return "uk";
-    if (stored === "fr") return "fr";
+    const stored = normalizeLang(localStorage.getItem(LANG_STORAGE_KEY) || localStorage.getItem("landing_lang"));
+    if (stored) return stored;
   } catch {}
-  return "en";
+  return getBrowserLang();
+}
+
+export function getPreLoginLang(): Language | null {
+  try {
+    return normalizeLang(localStorage.getItem(PRE_LOGIN_LANG_KEY));
+  } catch {}
+  return null;
 }
 
 /** Persist language choice to localStorage */
@@ -51,6 +72,20 @@ export function setStoredLang(lang: Language) {
   } catch {}
 }
 
+/** Persist the explicit language chosen before authentication. */
+export function setPreLoginLang(lang: Language) {
+  try {
+    localStorage.setItem(PRE_LOGIN_LANG_KEY, lang);
+  } catch {}
+  setStoredLang(lang);
+}
+
+export function clearPreLoginLang() {
+  try {
+    localStorage.removeItem(PRE_LOGIN_LANG_KEY);
+  } catch {}
+}
+
 const LanguageContext = createContext<LanguageContextType>({
   lang: "en",
   t: (key) => translateFor("en", key),
@@ -59,15 +94,23 @@ const LanguageContext = createContext<LanguageContextType>({
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const { data: profile } = useProfile();
+  const updateProfile = useUpdateProfile();
   const [storedLang, setStoredLangState] = useState<Language>(() => getStoredLang());
+  const [preLoginLang, setPreLoginLangState] = useState<Language | null>(() => getPreLoginLang());
 
   // Listen for in-app language changes (e.g. from landing page toggle)
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<Language>).detail;
-      if (detail) setStoredLangState(detail);
+      if (detail) {
+        setStoredLangState(detail);
+        setPreLoginLangState(getPreLoginLang());
+      }
     };
-    const storageHandler = () => setStoredLangState(getStoredLang());
+    const storageHandler = () => {
+      setStoredLangState(getStoredLang());
+      setPreLoginLangState(getPreLoginLang());
+    };
     window.addEventListener(LANG_CHANGE_EVENT, handler);
     window.addEventListener("storage", storageHandler);
     return () => {
@@ -76,16 +119,29 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Priority: profile language > localStorage > "en"
+  // Priority after login: explicit pre-login choice > saved profile > active/browser fallback.
   const profileLang = profile?.language as Language | undefined;
-  const lang: Language = profileLang || storedLang;
+  const lang: Language = preLoginLang || profileLang || storedLang;
 
-  // Keep localStorage in sync when profile language changes
+  // Keep localStorage in sync with saved preferences unless a pre-login choice is being applied.
   useEffect(() => {
-    if (profileLang) {
+    if (profileLang && !preLoginLang) {
       setStoredLang(profileLang);
     }
-  }, [profileLang]);
+  }, [profileLang, preLoginLang]);
+
+  // Apply the explicit pre-login language to the authenticated profile, then release the override.
+  useEffect(() => {
+    if (!profile || !preLoginLang) return;
+    if (profileLang === preLoginLang) {
+      clearPreLoginLang();
+      setPreLoginLangState(null);
+      return;
+    }
+    if (!updateProfile.isPending) {
+      updateProfile.mutate({ language: preLoginLang });
+    }
+  }, [profile, profileLang, preLoginLang, updateProfile]);
 
   const t = useCallback(
     (key: TranslationKey, params?: Record<string, string | number>): string =>
@@ -94,8 +150,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   );
 
   const setLang = useCallback((newLang: Language) => {
+    clearPreLoginLang();
     setStoredLang(newLang);
     setStoredLangState(newLang);
+    setPreLoginLangState(null);
   }, []);
 
   return (
