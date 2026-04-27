@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { AppLayout } from "./AppLayout";
 import { Button } from "@/components/ui/button";
 import { useEntitlements, type FeatureCode } from "@/hooks/useEntitlements";
+import { useDemoMode } from "@/hooks/useDemoWorkspace";
 
 interface Props {
   feature: FeatureCode;
@@ -18,6 +19,7 @@ interface Props {
  */
 export function EntitlementGate({ feature, children, redirect = false }: Props) {
   const { loading, has } = useEntitlements();
+  const { isDemoMode } = useDemoMode();
   const location = useLocation();
 
   if (loading) {
@@ -30,7 +32,7 @@ export function EntitlementGate({ feature, children, redirect = false }: Props) 
     );
   }
 
-  if (!has(feature)) {
+  if (!has(feature) && !isDemoMode) {
     if (redirect) {
       return <Navigate to="/plans" replace state={{ from: location.pathname, feature }} />;
     }

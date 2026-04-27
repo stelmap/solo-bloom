@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 const SEED_ATTEMPT_KEY = "demo_seed_attempted";
+export const DEMO_ACTION_MESSAGE = "This action is available after choosing a subscription.";
 
 /**
  * Returns whether the current user has any demo records in their workspace.
@@ -26,6 +27,26 @@ export function useHasDemoData() {
       return Boolean(data);
     },
   });
+}
+
+export function useDemoMode() {
+  const { subscription } = useAuth();
+  const { data: hasDemoData = false, isLoading } = useHasDemoData();
+  const isPaid = subscription.subscribed || subscription.on_trial;
+  const isDemoMode = !subscription.loading && !isPaid && hasDemoData;
+
+  return {
+    isDemoMode,
+    loading: subscription.loading || isLoading,
+    message: DEMO_ACTION_MESSAGE,
+  };
+}
+
+export function useDemoWriteGuard() {
+  const { isDemoMode } = useDemoMode();
+  return () => {
+    if (isDemoMode) throw new Error(DEMO_ACTION_MESSAGE);
+  };
 }
 
 /**

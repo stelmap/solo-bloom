@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
 
 const STALE_MEDIUM = 60_000;
 const INVALIDATE_GROUPS = ["groups", "group-detail", "group-members", "group-sessions", "group-attendance"];
@@ -128,8 +129,10 @@ export function useGroupAllAttendance(groupId: string | undefined) {
 export function useCreateGroup() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (group: { name: string; description?: string; status?: string }) => {
+      assertCanWrite();
       const { data, error } = await supabase
         .from("groups" as any)
         .insert({ ...group, user_id: user!.id })
@@ -144,8 +147,10 @@ export function useCreateGroup() {
 
 export function useUpdateGroup() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; name?: string; description?: string; status?: string; bill_present?: boolean; bill_absent?: boolean }) => {
+      assertCanWrite();
       const { error } = await supabase
         .from("groups" as any)
         .update(updates)
@@ -162,8 +167,10 @@ export function useUpdateGroup() {
 // Update member price
 export function useUpdateGroupMemberPrice() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, pricePerSession, groupId }: { id: string; pricePerSession: number | null; groupId: string }) => {
+      assertCanWrite();
       const { error } = await supabase
         .from("group_members" as any)
         .update({ price_per_session: pricePerSession })
@@ -179,6 +186,7 @@ export function useUpdateGroupMemberPrice() {
 export function useCompleteGroupSession() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ appointmentId, groupId, groupSessionId, participants, paymentState, paymentMethod }: {
       appointmentId: string;
@@ -188,6 +196,7 @@ export function useCompleteGroupSession() {
       paymentState: string;
       paymentMethod: string;
     }) => {
+      assertCanWrite();
       // Mark appointment as completed
       const { error: aptErr } = await supabase
         .from("appointments")
@@ -272,8 +281,10 @@ export function useGroupSessionPayments(groupSessionId: string | undefined) {
 
 export function useDeleteGroup() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (id: string) => {
+      assertCanWrite();
       // Check if group has sessions — if so, soft-delete by setting status to inactive
       const { data: sessions } = await supabase
         .from("group_sessions" as any)
@@ -299,8 +310,10 @@ export function useDeleteGroup() {
 export function useAddGroupMember() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ groupId, clientId }: { groupId: string; clientId: string }) => {
+      assertCanWrite();
       const { data, error } = await supabase
         .from("group_members" as any)
         .insert({ group_id: groupId, client_id: clientId, user_id: user!.id })
@@ -315,8 +328,10 @@ export function useAddGroupMember() {
 
 export function useRemoveGroupMember() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, groupId }: { id: string; groupId: string }) => {
+      assertCanWrite();
       const { error } = await supabase
         .from("group_members" as any)
         .delete()
@@ -331,6 +346,7 @@ export function useRemoveGroupMember() {
 export function useCreateGroupSession() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ groupId, appointmentId, notes, memberClientIds }: {
       groupId: string;
@@ -338,6 +354,7 @@ export function useCreateGroupSession() {
       notes?: string;
       memberClientIds: string[];
     }) => {
+      assertCanWrite();
       // Create the group session
       const { data: gs, error: gsErr } = await supabase
         .from("group_sessions" as any)
@@ -377,8 +394,10 @@ export function useCreateGroupSession() {
 
 export function useUpdateAttendance() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, status, groupSessionId }: { id: string; status: string; groupSessionId: string }) => {
+      assertCanWrite();
       const { error } = await supabase
         .from("group_attendance" as any)
         .update({ status })
