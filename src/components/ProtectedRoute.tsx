@@ -26,10 +26,5 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/reset-password" replace />;
   }
 
-  // Redirect to onboarding if not completed
-  if (profile && !(profile as any).onboarding_completed) {
-    return <Navigate to="/onboarding" replace />;
-  }
-
   return <>{children}</>;
 }
