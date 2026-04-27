@@ -16,7 +16,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useDemoMode } from "@/hooks/useDemoWorkspace";
 
 const ClientCard = memo(({ client, onNavigate, onDelete, t }: {
-  client: any; onNavigate: (id: string) => void; onDelete: (id: string) => void; t: any;
+  client: any; onNavigate: (id: string) => void; onDelete?: (id: string) => void; t: any;
 }) => (
   <div
     onClick={() => onNavigate(client.id)}
