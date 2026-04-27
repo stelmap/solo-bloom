@@ -34,6 +34,7 @@ async function syncPlanRecords(
     subscription_end: string | null;
     trial_end: string | null;
     price_id: string | null;
+    cancel_at_period_end?: boolean;
   },
 ) {
   if (!result.subscribed && !result.on_trial) {
