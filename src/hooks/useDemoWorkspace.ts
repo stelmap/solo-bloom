@@ -42,6 +42,13 @@ export function useDemoMode() {
   };
 }
 
+export function useDemoWriteGuard() {
+  const { isDemoMode } = useDemoMode();
+  return () => {
+    if (isDemoMode) throw new Error(DEMO_ACTION_MESSAGE);
+  };
+}
+
 /**
  * On first login, if the user has no real data and no demo data yet, seed
  * a curated demo workspace. Runs at most once per session per user.
