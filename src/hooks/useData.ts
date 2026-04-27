@@ -316,11 +316,13 @@ export function useAppointments() {
 export function useCreateAppointment() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (apt: {
       client_id: string; service_id: string; scheduled_at: string;
       duration_minutes: number; price: number; notes?: string;
     }) => {
+      assertCanWrite();
       const { data, error } = await supabase.from("appointments").insert({ ...apt, user_id: user!.id }).select().single();
       if (error) throw error;
       return data;
@@ -332,12 +334,14 @@ export function useCreateAppointment() {
 
 export function useUpdateAppointment() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, ...updates }: {
       id: string; status?: string; notes?: string; scheduled_at?: string;
       price?: number; client_id?: string; service_id?: string; duration_minutes?: number;
       payment_status?: string; price_override_reason?: string;
     }) => {
+      assertCanWrite();
       const { error } = await supabase.from("appointments").update(updates as any).eq("id", id);
       if (error) throw error;
     },
@@ -347,8 +351,10 @@ export function useUpdateAppointment() {
 
 export function useDeleteAppointment() {
   const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (id: string) => {
+      assertCanWrite();
       await supabase.from("income").delete().eq("appointment_id", id);
       await supabase.from("expected_payments").delete().eq("appointment_id", id);
       const { error } = await supabase.from("appointments").delete().eq("id", id);
