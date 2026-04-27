@@ -6,7 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { FinanceGate } from "@/components/FinanceGate";
 import { EntitlementGate } from "@/components/EntitlementGate";
 import { lazy, Suspense } from "react";
 
@@ -28,9 +27,7 @@ const IncomePage = lazy(() => import("./pages/IncomePage"));
 const ExpensesPage = lazy(() => import("./pages/ExpensesPage"));
 const BreakevenPage = lazy(() => import("./pages/BreakevenPage"));
 const FinancialOverviewPage = lazy(() => import("./pages/FinancialOverviewPage"));
-const FinanceOnboardingPage = lazy(() => import("./pages/FinanceOnboardingPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
-const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
 const CookiePolicyPage = lazy(() => import("./pages/CookiePolicyPage"));
@@ -64,7 +61,6 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
-                <Route path="/onboarding" element={<OnboardingPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="/cookie-policy" element={<CookiePolicyPage />} />
@@ -79,12 +75,11 @@ const App = () => (
                 <Route path="/groups/:id" element={<ProtectedRoute><GroupDetailPage /></ProtectedRoute>} />
                 <Route path="/services" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
 
-                {/* Finances module (gated by entitlement + setup completion) */}
-                <Route path="/finances/onboarding" element={<ProtectedRoute><EntitlementGate feature="financial_access"><FinanceOnboardingPage /></EntitlementGate></ProtectedRoute>} />
-                <Route path="/finances" element={<ProtectedRoute><EntitlementGate feature="financial_access"><FinanceGate><FinancialOverviewPage /></FinanceGate></EntitlementGate></ProtectedRoute>} />
-                <Route path="/finances/income" element={<ProtectedRoute><EntitlementGate feature="financial_access"><FinanceGate><IncomePage /></FinanceGate></EntitlementGate></ProtectedRoute>} />
-                <Route path="/finances/expenses" element={<ProtectedRoute><EntitlementGate feature="financial_access"><FinanceGate><ExpensesPage /></FinanceGate></EntitlementGate></ProtectedRoute>} />
-                <Route path="/finances/breakeven" element={<ProtectedRoute><EntitlementGate feature="financial_access"><FinanceGate><BreakevenPage /></FinanceGate></EntitlementGate></ProtectedRoute>} />
+                {/* Finances module (gated by entitlement) */}
+                <Route path="/finances" element={<ProtectedRoute><EntitlementGate feature="financial_access"><FinancialOverviewPage /></EntitlementGate></ProtectedRoute>} />
+                <Route path="/finances/income" element={<ProtectedRoute><EntitlementGate feature="financial_access"><IncomePage /></EntitlementGate></ProtectedRoute>} />
+                <Route path="/finances/expenses" element={<ProtectedRoute><EntitlementGate feature="financial_access"><ExpensesPage /></EntitlementGate></ProtectedRoute>} />
+                <Route path="/finances/breakeven" element={<ProtectedRoute><EntitlementGate feature="financial_access"><BreakevenPage /></EntitlementGate></ProtectedRoute>} />
 
                 {/* Backwards-compatible redirects from old top-level routes */}
                 <Route path="/income" element={<Navigate to="/finances/income" replace />} />
