@@ -192,7 +192,7 @@ Deno.serve(async (req) => {
 
     for (let i = 0; i < emailMessages.length; i++) {
       const msg = emailMessages[i]
-      const payload = msg.message
+      const payload = msg.message as Record<string, any>
       const failedAttempts =
         payload?.message_id && typeof payload.message_id === 'string'
           ? (failedAttemptsByMessageId.get(payload.message_id) ?? 0)
@@ -200,7 +200,7 @@ Deno.serve(async (req) => {
 
       // Drop expired messages (TTL exceeded)
       if (payload.queued_at) {
-        const ageMs = Date.now() - new Date(payload.queued_at).getTime()
+        const ageMs = Date.now() - new Date(String(payload.queued_at)).getTime()
         const maxAgeMs = ttlMinutes[queue] * 60 * 1000
         if (ageMs > maxAgeMs) {
           console.warn('Email expired (TTL exceeded)', {
