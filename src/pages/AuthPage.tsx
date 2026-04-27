@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, Navigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,10 +7,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { getStoredLang, setStoredLang } from "@/i18n/LanguageContext";
-import { Language } from "@/i18n/translations";
-import { Eye, EyeOff, ArrowLeft, Globe } from "lucide-react";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { getStoredLang } from "@/i18n/LanguageContext";
+import { ArrowLeft } from "lucide-react";
 import { track } from "@/lib/analytics";
 import { PublicFooter } from "@/components/PublicFooter";
 
@@ -33,17 +31,14 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const planParam = searchParams.get("plan");
-  const [mode, setMode] = useState<"login" | "signup" | "forgot" | "otp">("login");
+  const nextParam = searchParams.get("next");
+  const initialMode = searchParams.get("mode") === "signup" ? "signup" : "login";
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">(initialMode);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [otpValue, setOtpValue] = useState("");
-  const resetEmailRef = useRef("");
   const checkoutTriggeredRef = useRef(false);
   const { toast } = useToast();
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   // If user is already logged in and a plan was selected, auto-start checkout.
   // Redirect in the SAME tab to avoid popup blockers and the "flicker" caused by
