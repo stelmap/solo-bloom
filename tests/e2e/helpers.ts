@@ -1,7 +1,5 @@
 import { Page, expect } from "@playwright/test";
 
-export const TEST_EMAIL = process.env.TEST_EMAIL || "";
-export const TEST_PASSWORD = process.env.TEST_PASSWORD || "";
 export const TEST_USER_ID = process.env.TEST_USER_ID || "";
 export const TEST_ACCESS_TOKEN = process.env.TEST_ACCESS_TOKEN || "";
 export const SUPABASE_AUTH_STORAGE_KEY = "sb-rxculneqqaziutulnocs-auth-token";
@@ -11,8 +9,8 @@ export function uniqueEmail(prefix = "e2e") {
 }
 
 /**
- * Sign in via the AuthPage form. Requires an already-onboarded seeded account.
- * Skips the test if TEST_EMAIL / TEST_PASSWORD are not provided.
+ * Install a pre-created session for authenticated E2E tests.
+ * Requires TEST_USER_ID / TEST_ACCESS_TOKEN env vars.
  */
 export async function signInWithSeeded(page: Page) {
   if (TEST_USER_ID && TEST_ACCESS_TOKEN) {
@@ -22,21 +20,11 @@ export async function signInWithSeeded(page: Page) {
     return;
   }
 
-  if (!TEST_EMAIL || !TEST_PASSWORD) {
-    throw new Error(
-      "TEST_USER_ID / TEST_ACCESS_TOKEN not set — seeded-account tests require token env vars."
-    );
-  }
-  await page.goto("/auth");
-  await page.getByPlaceholder("you@example.com").fill(TEST_EMAIL);
-  await page.locator('input[type="password"]').fill(TEST_PASSWORD);
-  await page.getByRole("button", { name: /sign in|увійти/i }).click();
-  // Wait for redirect off /auth (to /dashboard or /onboarding)
-  await page.waitForURL((u) => !u.pathname.startsWith("/auth"), { timeout: 15000 });
+  throw new Error("TEST_USER_ID / TEST_ACCESS_TOKEN not set — authenticated tests require token env vars.");
 }
 
 export async function expectAuthenticated(page: Page) {
-  await expect(page).toHaveURL(/\/(dashboard|onboarding)/);
+  await expect(page).toHaveURL(/\/dashboard/);
 }
 
 export function hasSeededAccount() {
