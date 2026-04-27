@@ -188,6 +188,7 @@ export function useUpdateGroupMemberPrice() {
 export function useCompleteGroupSession() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const { isDemoMode } = useDemoMode();
   return useMutation({
     mutationFn: async ({ appointmentId, groupId, groupSessionId, participants, paymentState, paymentMethod }: {
       appointmentId: string;
@@ -223,7 +224,7 @@ export function useCompleteGroupSession() {
               user_id: user!.id, appointment_id: appointmentId,
               amount: p.amount, date: today, source: "group_session",
               payment_method: paymentMethod, description: `Group session`,
-              is_demo: true,
+              ...(isDemoMode ? { is_demo: true } : {}),
             } as any).select("id").single();
             if (incErr) throw incErr;
             incomeId = inc?.id || null;
@@ -231,7 +232,7 @@ export function useCompleteGroupSession() {
             const { data: ep, error: epErr } = await supabase.from("expected_payments").insert({
               user_id: user!.id, appointment_id: appointmentId,
               client_id: p.clientId, amount: p.amount, status: "pending",
-              is_demo: true,
+              ...(isDemoMode ? { is_demo: true } : {}),
             } as any).select("id").single();
             if (epErr) throw epErr;
             expectedPaymentId = ep?.id || null;
@@ -348,6 +349,7 @@ export function useRemoveGroupMember() {
 export function useCreateGroupSession() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const { isDemoMode } = useDemoMode();
   return useMutation({
     mutationFn: async ({ groupId, appointmentId, notes, memberClientIds }: {
       groupId: string;
@@ -358,7 +360,7 @@ export function useCreateGroupSession() {
       // Create the group session
       const { data: gs, error: gsErr } = await supabase
         .from("group_sessions" as any)
-        .insert(attachDemoFlag({ group_id: groupId, appointment_id: appointmentId, user_id: user!.id, notes: notes || "" }))
+        .insert(attachDemoFlag({ group_id: groupId, appointment_id: appointmentId, user_id: user!.id, notes: notes || "" }, isDemoMode))
         .select()
         .single();
       if (gsErr) throw gsErr;
@@ -376,7 +378,7 @@ export function useCreateGroupSession() {
           client_id: clientId,
           user_id: user!.id,
           status: "attended",
-          is_demo: true,
+          ...(isDemoMode ? { is_demo: true } : {}),
         }));
         const { error: attErr } = await supabase
           .from("group_attendance" as any)
