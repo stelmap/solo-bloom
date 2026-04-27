@@ -3,10 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateCapacity } from "@/lib/capacity";
 import { track } from "@/lib/analytics";
-import { useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
+import { useDemoMode, useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
 
 const INVALIDATE_APPOINTMENTS = ["appointments", "dashboard-stats", "client-appointments"];
 const INVALIDATE_FINANCIAL = ["income", "expenses", "expected-payments", "dashboard-stats"];
+const attachDemoFlag = <T extends Record<string, any>>(payload: T, isDemoMode: boolean): T => (
+  isDemoMode ? { ...payload, is_demo: true } : payload
+);
 
 // Stale times to avoid redundant refetches on navigation
 const STALE_SHORT = 30_000;  // 30s for dashboard/frequently changing data
@@ -324,14 +327,13 @@ export function useAppointments() {
 export function useCreateAppointment() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const assertCanWrite = useDemoWriteGuard();
+  const { isDemoMode } = useDemoMode();
   return useMutation({
     mutationFn: async (apt: {
       client_id: string; service_id: string; scheduled_at: string;
       duration_minutes: number; price: number; notes?: string;
     }) => {
-      assertCanWrite();
-      const { data, error } = await supabase.from("appointments").insert({ ...apt, user_id: user!.id }).select().single();
+      const { data, error } = await supabase.from("appointments").insert(attachDemoFlag({ ...apt, user_id: user!.id }, isDemoMode)).select().single();
       if (error) throw error;
       return data;
     },
@@ -342,14 +344,12 @@ export function useCreateAppointment() {
 
 export function useUpdateAppointment() {
   const qc = useQueryClient();
-  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, ...updates }: {
       id: string; status?: string; notes?: string; scheduled_at?: string;
       price?: number; client_id?: string; service_id?: string; duration_minutes?: number;
       payment_status?: string; price_override_reason?: string;
     }) => {
-      assertCanWrite();
       const { error } = await supabase.from("appointments").update(updates as any).eq("id", id);
       if (error) throw error;
     },
@@ -359,10 +359,8 @@ export function useUpdateAppointment() {
 
 export function useDeleteAppointment() {
   const qc = useQueryClient();
-  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (id: string) => {
-      assertCanWrite();
       await supabase.from("income").delete().eq("appointment_id", id);
       await supabase.from("expected_payments").delete().eq("appointment_id", id);
       const { error } = await supabase.from("appointments").delete().eq("id", id);
@@ -376,12 +374,11 @@ export function useDeleteAppointment() {
 export function useCompleteAppointment() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const assertCanWrite = useDemoWriteGuard();
+  const { isDemoMode } = useDemoMode();
   return useMutation({
     mutationFn: async ({ appointmentId, clientId, price, paymentMethod, paymentStatus }: {
       appointmentId: string; clientId: string; price: number; paymentMethod: string; paymentStatus: string;
     }) => {
-      assertCanWrite();
       const { error: aptErr } = await supabase
         .from("appointments")
         .update({ status: "completed", price, payment_status: paymentStatus } as any)
@@ -398,12 +395,14 @@ export function useCompleteAppointment() {
           user_id: user!.id, appointment_id: appointmentId,
           amount: price, date: today, source: "appointment",
           payment_method: paymentMethod,
+          ...(isDemoMode ? { is_demo: true } : {}),
         } as any);
         if (incErr) throw incErr;
       } else if (paymentStatus === "waiting_for_payment") {
         const { error: epErr } = await supabase.from("expected_payments").insert({
           user_id: user!.id, appointment_id: appointmentId,
           client_id: clientId, amount: price, status: "pending",
+          ...(isDemoMode ? { is_demo: true } : {}),
         } as any);
         if (epErr) throw epErr;
       }
@@ -417,10 +416,9 @@ export function useCompleteAppointment() {
 export function useCancelAppointment() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const assertCanWrite = useDemoWriteGuard();
+  const { isDemoMode } = useDemoMode();
   return useMutation({
     mutationFn: async ({ id, status, clientId, price, cancellationReason }: { id: string; status: "cancelled" | "no-show"; clientId?: string; price?: number; cancellationReason?: string }) => {
-      assertCanWrite();
       await supabase.from("income").delete().eq("appointment_id", id);
       await supabase.from("expected_payments").delete().eq("appointment_id", id);
 
@@ -433,6 +431,7 @@ export function useCancelAppointment() {
         const { error: epErr } = await supabase.from("expected_payments").insert({
           user_id: user!.id, appointment_id: id,
           client_id: clientId, amount: price, status: "pending",
+          ...(isDemoMode ? { is_demo: true } : {}),
         } as any);
         if (epErr) throw epErr;
       } else {
@@ -450,10 +449,8 @@ export function useCancelAppointment() {
 // Bulk cancel appointments for day-off + send cancellation emails
 export function useBulkCancelForDayOff() {
   const qc = useQueryClient();
-  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ appointmentIds, reason }: { appointmentIds: string[]; reason: string }) => {
-      assertCanWrite();
       for (const id of appointmentIds) {
         // Fetch appointment details for the cancellation email
         const { data: apt } = await supabase
@@ -521,12 +518,11 @@ export function useExpectedPayments() {
 export function useMarkExpectedPaymentPaid() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const assertCanWrite = useDemoWriteGuard();
+  const { isDemoMode } = useDemoMode();
   return useMutation({
     mutationFn: async ({ id, appointmentId, amount, paymentMethod }: {
       id: string; appointmentId: string; amount: number; paymentMethod: string;
     }) => {
-      assertCanWrite();
       const { error: epErr } = await supabase
         .from("expected_payments")
         .update({ status: "paid", paid_at: new Date().toISOString(), payment_method: paymentMethod } as any)
@@ -540,6 +536,7 @@ export function useMarkExpectedPaymentPaid() {
         user_id: user!.id, appointment_id: appointmentId,
         amount, date: today, source: "appointment",
         payment_method: paymentMethod,
+        ...(isDemoMode ? { is_demo: true } : {}),
       } as any);
       if (incErr) throw incErr;
     },
