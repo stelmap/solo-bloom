@@ -4,7 +4,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 const SEED_ATTEMPT_KEY = "demo_seed_attempted";
+const DEMO_MODE_KEY = "demo_mode_enabled";
 export const DEMO_ACTION_MESSAGE = "This action is available after choosing a subscription.";
+
+const getDemoModeStorageKey = (userId?: string) => `${DEMO_MODE_KEY}:${userId ?? "anonymous"}`;
+
+const readPersistedDemoMode = (userId?: string) => {
+  if (typeof window === "undefined" || !userId) return false;
+  return localStorage.getItem(getDemoModeStorageKey(userId)) === "1";
+};
+
+const persistDemoMode = (userId: string, enabled: boolean) => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(getDemoModeStorageKey(userId), enabled ? "1" : "0");
+};
 
 /**
  * Returns whether the current user has any demo records in their workspace.
@@ -30,10 +43,23 @@ export function useHasDemoData() {
 }
 
 export function useDemoMode() {
+  const { user } = useAuth();
   const { subscription } = useAuth();
   const { data: hasDemoData = false, isLoading } = useHasDemoData();
+  const [persistedDemoMode, setPersistedDemoMode] = useState(() => readPersistedDemoMode(user?.id));
   const isPaid = subscription.subscribed || subscription.on_trial;
-  const isDemoMode = !subscription.loading && !isPaid && hasDemoData;
+  const isDemoMode = !subscription.loading && !isPaid && (hasDemoData || persistedDemoMode);
+
+  useEffect(() => {
+    setPersistedDemoMode(readPersistedDemoMode(user?.id));
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id || subscription.loading || isLoading) return;
+    const nextPersistedDemoMode = !isPaid && hasDemoData;
+    persistDemoMode(user.id, nextPersistedDemoMode);
+    setPersistedDemoMode(nextPersistedDemoMode);
+  }, [user?.id, subscription.loading, isLoading, isPaid, hasDemoData]);
 
   return {
     isDemoMode,
