@@ -136,23 +136,47 @@ export default function AuthPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
+    const validationError = validateForm();
+    if (validationError) {
+      setFormError(validationError);
+      return;
+    }
+
     setLoading(true);
     try {
       const lang = getStoredLang();
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: window.location.origin,
-          data: { language: lang },
-          shouldCreateUser: mode === "signup",
-        },
-      });
-      if (error) throw error;
-      track(mode === "signup" ? "sign_up_started" : "login_completed", { plan_type: planParam ?? undefined, lang });
-      setSent(true);
-      toast({ title: t("auth.checkEmailToContinue"), description: t("auth.checkEmail") });
+      if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        track("password_reset_requested", { lang });
+        setSent(true);
+        toast({ title: t("auth.resetLinkSent"), description: t("auth.checkEmailForReset") });
+      } else if (mode === "signup") {
+        const { error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: { language: lang },
+          },
+        });
+        if (error) throw error;
+        track("sign_up_started", { plan_type: planParam ?? undefined, lang });
+        toast({ title: t("auth.accountCreated"), description: t("auth.checkEmail") });
+        navigate(planParam ? `/auth?plan=${encodeURIComponent(planParam)}` : "/dashboard", { replace: true });
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        if (error) throw error;
+        track("login_completed", { plan_type: planParam ?? undefined, lang });
+        navigate(planParam ? `/auth?plan=${encodeURIComponent(planParam)}` : "/dashboard", { replace: true });
+      }
     } catch (error: any) {
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      const message = mode === "login" ? t("auth.incorrectEmailOrPassword") : error.message;
+      setFormError(message);
+      toast({ title: t("common.error"), description: message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
