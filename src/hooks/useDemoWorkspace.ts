@@ -107,22 +107,12 @@ export function useAutoSeedDemo() {
     let cancelled = false;
     (async () => {
       try {
-        // Quick check: do we already have demo data?
-        const { data: hasDemo } = await supabase.rpc("user_has_demo_data", {
-          p_user_id: user.id,
-        });
-        if (cancelled) return;
-        if (hasDemo) {
-          sessionStorage.setItem(attemptKey, "1");
-          setDone(true);
-          return;
-        }
-
         // Check if the user has any real records of their own. If they do,
-        // don't seed — they're already using the app.
+        // don't seed — they're already using the app. Demo records are ignored
+        // here so existing demo workspaces can be refreshed by the idempotent RPC.
         const [{ count: clientCount }, { count: aptCount }] = await Promise.all([
-          supabase.from("clients").select("id", { count: "exact", head: true }),
-          supabase.from("appointments").select("id", { count: "exact", head: true }),
+          supabase.from("clients").select("id", { count: "exact", head: true }).eq("is_demo", false),
+          supabase.from("appointments").select("id", { count: "exact", head: true }).eq("is_demo", false),
         ]);
         if (cancelled) return;
         if ((clientCount ?? 0) > 0 || (aptCount ?? 0) > 0) {
