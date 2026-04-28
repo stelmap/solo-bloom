@@ -2,7 +2,7 @@ import { test, expect } from "../../playwright-fixture";
 import { hasSeededAccount, signInWithSeeded } from "./helpers";
 
 test.describe("Plans checkout contract", () => {
-  test("checkout sends plan selection, not a raw Stripe price id", async ({ page }) => {
+  test("authenticated checkout sends plan selection, not a raw Stripe price id", async ({ page }) => {
     await page.addInitScript(() => {
       const authState = {
         access_token: "e2e-token",
