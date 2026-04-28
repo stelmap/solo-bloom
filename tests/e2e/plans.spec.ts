@@ -48,8 +48,10 @@ test.describe("Plans checkout contract", () => {
 
     await page.goto("/plans");
     await expect(page.getByRole("heading", { name: /choose your plan/i })).toBeVisible();
-    await page.getByText(/^Pro$/i).first().click();
-    await page.getByRole("button", { name: /continue/i }).click();
+    await page.getByRole("button", { name: /Pro plan/i }).click();
+    const continueButton = page.getByRole("button", { name: /continue/i });
+    await expect(continueButton).toBeEnabled();
+    await continueButton.click();
 
     await expect.poll(() => checkoutBody).toMatchObject({ planCode: "pro", billingPeriod: "yearly", withTrial: true });
     expect(checkoutBody).not.toHaveProperty("priceId");
