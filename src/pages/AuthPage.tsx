@@ -12,16 +12,16 @@ import { getStoredLang } from "@/i18n/LanguageContext";
 import { track } from "@/lib/analytics";
 import { PublicFooter } from "@/components/PublicFooter";
 
-const PLAN_PRICE_MAP: Record<string, string> = {
-  solo_monthly: "price_1TPQ3DRxXuU3N5IFMcxZCvva",
-  solo_quarterly: "price_1TPQ5FRxXuU3N5IF5ufGLkV1",
-  solo_yearly: "price_1TPQ60RxXuU3N5IFBiGOuz8f",
-  pro_monthly: "price_1TPQahRxXuU3N5IF3umwA0Bd",
-  pro_quarterly: "price_1TPQbIRxXuU3N5IFPVrvG60z",
-  pro_yearly: "price_1TPQbmRxXuU3N5IFirrjnqdi",
-  monthly: "price_1TPQ3DRxXuU3N5IFMcxZCvva",
-  quarterly: "price_1TPQ5FRxXuU3N5IF5ufGLkV1",
-  yearly: "price_1TPQ60RxXuU3N5IFBiGOuz8f",
+const PLAN_SELECTION_MAP: Record<string, { planCode: "solo" | "pro"; billingPeriod: "monthly" | "quarterly" | "yearly" }> = {
+  solo_monthly: { planCode: "solo", billingPeriod: "monthly" },
+  solo_quarterly: { planCode: "solo", billingPeriod: "quarterly" },
+  solo_yearly: { planCode: "solo", billingPeriod: "yearly" },
+  pro_monthly: { planCode: "pro", billingPeriod: "monthly" },
+  pro_quarterly: { planCode: "pro", billingPeriod: "quarterly" },
+  pro_yearly: { planCode: "pro", billingPeriod: "yearly" },
+  monthly: { planCode: "solo", billingPeriod: "monthly" },
+  quarterly: { planCode: "solo", billingPeriod: "quarterly" },
+  yearly: { planCode: "solo", billingPeriod: "yearly" },
 };
 
 export default function AuthPage() {
@@ -72,14 +72,14 @@ export default function AuthPage() {
   };
 
   const startPlanCheckout = async (plan: string) => {
-    const priceId = PLAN_PRICE_MAP[plan];
-    if (!priceId) return;
+    const selection = PLAN_SELECTION_MAP[plan];
+    if (!selection) return;
     setCheckoutError(null);
     setCheckoutRedirecting(true);
     try {
       track("checkout_started", { plan_type: plan });
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId, withTrial: true },
+        body: { ...selection, withTrial: true },
       });
       if (error) throw error;
       if (!data?.url) throw new Error("No checkout URL returned");
@@ -94,7 +94,7 @@ export default function AuthPage() {
   };
 
   useEffect(() => {
-    if (user && planParam && PLAN_PRICE_MAP[planParam] && !checkoutTriggeredRef.current) {
+    if (user && planParam && PLAN_SELECTION_MAP[planParam] && !checkoutTriggeredRef.current) {
       checkoutTriggeredRef.current = true;
       startPlanCheckout(planParam);
     }

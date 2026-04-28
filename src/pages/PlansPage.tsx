@@ -191,11 +191,11 @@ export default function PlansPage() {
 
   const handleContinue = async () => {
     if (!selectedPlanId || continuing) return; // guard against double-click
-    const price = priceFor(selectedPlanId, period);
-    if (!price?.stripe_price_id) {
+    const selectedPlan = plans.find((plan) => plan.id === selectedPlanId);
+    if (!selectedPlan) {
       toast({
         title: "Checkout unavailable",
-        description: "This plan is not yet available for purchase. Please try another billing period.",
+        description: "Please choose a plan again.",
         variant: "destructive",
       });
       return;
@@ -203,7 +203,7 @@ export default function PlansPage() {
     setContinuing(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId: price.stripe_price_id, withTrial: true },
+        body: { planCode: selectedPlan.code, billingPeriod: period, withTrial: true },
       });
       // Edge-function returns non-2xx as `error` with a `context` containing the JSON body.
       if (error) {

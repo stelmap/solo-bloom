@@ -8,15 +8,16 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const PRICE_IDS = {
-  // Solo plan
-  solo_monthly: "price_1TPQ3DRxXuU3N5IFMcxZCvva",
-  solo_quarterly: "price_1TPQ5FRxXuU3N5IF5ufGLkV1",
-  solo_yearly: "price_1TPQ60RxXuU3N5IFBiGOuz8f",
-  // Pro plan
-  pro_monthly: "price_1TPQahRxXuU3N5IF3umwA0Bd",
-  pro_quarterly: "price_1TPQbIRxXuU3N5IFPVrvG60z",
-  pro_yearly: "price_1TPQbmRxXuU3N5IFirrjnqdi",
+const VALID_PLAN_CODES = new Set(["solo", "pro"]);
+const VALID_BILLING_PERIODS = new Set(["monthly", "quarterly", "yearly"]);
+
+const LEGACY_PRICE_TO_SELECTION: Record<string, { planCode: string; billingPeriod: string }> = {
+  price_1TPQ3DRxXuU3N5IFMcxZCvva: { planCode: "solo", billingPeriod: "monthly" },
+  price_1TPQ5FRxXuU3N5IF5ufGLkV1: { planCode: "solo", billingPeriod: "quarterly" },
+  price_1TPQ60RxXuU3N5IFBiGOuz8f: { planCode: "solo", billingPeriod: "yearly" },
+  price_1TPQahRxXuU3N5IF3umwA0Bd: { planCode: "pro", billingPeriod: "monthly" },
+  price_1TPQbIRxXuU3N5IFPVrvG60z: { planCode: "pro", billingPeriod: "quarterly" },
+  price_1TPQbmRxXuU3N5IFirrjnqdi: { planCode: "pro", billingPeriod: "yearly" },
 };
 
 const log = (step: string, details?: unknown) => {
@@ -38,12 +39,6 @@ serve(async (req) => {
   try {
     log("Function started");
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) {
-      log("STRIPE_SECRET_KEY missing");
-      return json({ error: "Server is not configured for payments. Please contact support." }, 500);
-    }
-
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
@@ -62,21 +57,62 @@ serve(async (req) => {
     }
     log("User authenticated", { userId: user.id, email: user.email });
 
-    let body: { priceId?: string; withTrial?: boolean } = {};
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) {
+      log("STRIPE_SECRET_KEY missing");
+      return json({ error: "Server is not configured for payments. Please contact support." }, 500);
+    }
+
+    let body: { planCode?: string; billingPeriod?: string; priceId?: string; withTrial?: boolean } = {};
     try {
       body = await req.json();
     } catch {
       return json({ error: "Invalid request body." }, 400);
     }
-    const { priceId, withTrial = true } = body;
-    const validPrices = Object.values(PRICE_IDS);
-    if (!priceId || !validPrices.includes(priceId)) {
-      log("Invalid price ID", { priceId });
-      return json({ error: "Invalid plan selected. Please refresh and try again." }, 400);
+    const { withTrial = true } = body;
+    const legacySelection = body.priceId ? LEGACY_PRICE_TO_SELECTION[body.priceId] : undefined;
+    const planCode = body.planCode ?? legacySelection?.planCode;
+    const billingPeriod = body.billingPeriod ?? legacySelection?.billingPeriod;
+    if (!planCode || !VALID_PLAN_CODES.has(planCode) || !billingPeriod || !VALID_BILLING_PERIODS.has(billingPeriod)) {
+      log("Unavailable plan selection", { planCode, billingPeriod, legacyPriceIdReceived: Boolean(body.priceId) });
+      return json({ error: "This plan is currently unavailable. Please refresh and choose a plan again." }, 400);
     }
-    log("Price validated", { priceId, withTrial });
+
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
+    const { data: priceRow, error: priceError } = await supabaseAdmin
+      .from("plan_prices")
+      .select("stripe_price_id, plans!inner(code, is_active)")
+      .eq("billing_period", billingPeriod)
+      .eq("is_active", true)
+      .eq("plans.code", planCode)
+      .eq("plans.is_active", true)
+      .maybeSingle();
+
+    const priceId = (priceRow as any)?.stripe_price_id as string | undefined;
+    if (priceError || !priceId) {
+      log("Active Stripe price lookup failed", { planCode, billingPeriod, message: priceError?.message });
+      return json({ error: "This plan is currently unavailable. Please refresh and choose a plan again." }, 400);
+    }
+    log("Active price resolved", { planCode, billingPeriod, priceId, withTrial });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+
+    try {
+      const stripePrice = await stripe.prices.retrieve(priceId);
+      if (!stripePrice.active || stripePrice.type !== "recurring") {
+        log("Stripe price is not active recurring", { priceId, active: stripePrice.active, type: stripePrice.type });
+        return json({ error: "This plan is currently unavailable. Please refresh and choose a plan again." }, 400);
+      }
+    } catch (stripeErr) {
+      const msg = stripeErr instanceof Error ? stripeErr.message : String(stripeErr);
+      log("Stripe price validation failed", { priceId, message: msg });
+      return json({ error: "This plan is currently unavailable. Please refresh and choose a plan again." }, 400);
+    }
 
     // Look up existing customer (idempotent: matching on email is fine for most accounts).
     let customerId: string | undefined;
