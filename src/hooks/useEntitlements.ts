@@ -15,6 +15,15 @@ export interface EntitlementsState {
   hasPremium: boolean;
 }
 
+const PRICE_TO_PLAN_CODE: Record<string, "solo" | "pro"> = {
+  price_1TPQ3DRxXuU3N5IFMcxZCvva: "solo",
+  price_1TPQ5FRxXuU3N5IF5ufGLkV1: "solo",
+  price_1TPQ60RxXuU3N5IFBiGOuz8f: "solo",
+  price_1TPQahRxXuU3N5IF3umwA0Bd: "pro",
+  price_1TPQbIRxXuU3N5IFPVrvG60z: "pro",
+  price_1TPQbmRxXuU3N5IFirrjnqdi: "pro",
+};
+
 /**
  * Reads active entitlements for the current user.
  *
@@ -71,11 +80,18 @@ export function useEntitlements(): EntitlementsState {
 
   const codes = new Set<FeatureCode>(data?.codes ?? []);
 
-  // Paying user fallback (subscription_cache via AuthContext) — grant premium
-  // until DB migration assigns a real plan. Keeps current users unblocked.
+  // Paying user fallback (subscription_cache via AuthContext) — preserve tier
+  // based on the Stripe price while DB entitlements are syncing.
   const hasActivePaidAccess =
     !subscription.loading && (subscription.subscribed || subscription.on_trial);
-  if (hasActivePaidAccess) codes.add("premium_access");
+  if (hasActivePaidAccess) {
+    const planCode = subscription.price_id ? PRICE_TO_PLAN_CODE[subscription.price_id] : undefined;
+    if (planCode === "pro") {
+      codes.add("premium_access");
+    } else {
+      codes.add("operational_access");
+    }
+  }
 
   // Hierarchy: premium implies the rest; financial implies operational.
   if (codes.has("premium_access")) {
