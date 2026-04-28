@@ -15,7 +15,9 @@ export default defineConfig({
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
-        channel: process.env.PLAYWRIGHT_CHROMIUM_CHANNEL ?? "chromium",
+        launchOptions: {
+          executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE ?? "/bin/chromium",
+        },
       },
     },
   ],
