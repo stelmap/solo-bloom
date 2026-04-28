@@ -45,4 +45,28 @@ test.describe("Plans page", () => {
     await page.getByText(/^Pro$/i).first().click();
     await expect(cta).toBeEnabled();
   });
+
+  test("checkout sends plan selection, not a raw Stripe price id", async ({ page }) => {
+    let checkoutBody: any = null;
+
+    await page.route("**/functions/v1/create-checkout", async (route) => {
+      checkoutBody = JSON.parse(route.request().postData() ?? "{}");
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ url: "https://checkout.stripe.test/session" }),
+      });
+    });
+
+    await page.getByRole("button", { name: /Yearly/ }).click();
+    await page.getByText(/^Pro$/i).first().click();
+    await page.getByRole("button", { name: /continue/i }).click();
+
+    await expect.poll(() => checkoutBody).toMatchObject({
+      planCode: "pro",
+      billingPeriod: "yearly",
+      withTrial: true,
+    });
+    expect(checkoutBody).not.toHaveProperty("priceId");
+  });
 });
