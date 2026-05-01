@@ -19,3 +19,5 @@ project_id = "rxculneqqaziutulnocs"
     verify_jwt = true
   [functions.stripe-webhook]
     verify_jwt = false
+  [functions.admin-preview-auth-email]
+    verify_jwt = true
