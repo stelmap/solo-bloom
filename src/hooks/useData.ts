@@ -738,10 +738,10 @@ export function useProfile() {
 export function useUpdateProfile() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
-    mutationFn: async (updates: { full_name?: string; business_name?: string; phone?: string; language?: string; reminder_minutes?: number; work_hours_start?: string; work_hours_end?: string; time_format?: string; default_duration?: number }) => {
-      if (Object.keys(updates).some((key) => key !== "language")) assertCanWrite();
+    // Personal/account settings (language, currency, profile info, working preferences)
+    // must always be editable regardless of subscription/demo state.
+    mutationFn: async (updates: { full_name?: string; business_name?: string; phone?: string; language?: string; reminder_minutes?: number; work_hours_start?: string; work_hours_end?: string; time_format?: string; default_duration?: number; currency?: string; business_id?: string; business_address?: string; vat_mode?: string; vat_rate?: number; onboarding_completed?: boolean }) => {
       const { error } = await supabase.from("profiles").update(updates as any).eq("user_id", user!.id);
       if (error) throw error;
     },
