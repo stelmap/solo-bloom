@@ -574,11 +574,10 @@ export function useExpenses(page = 0) {
 export function useCreateExpense() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const assertCanWrite = useDemoWriteGuard();
+  const { isDemoMode } = useDemoMode();
   return useMutation({
     mutationFn: async (expense: { category: string; amount: number; date: string; description?: string; is_recurring?: boolean; recurring_start_date?: string | null }) => {
-      assertCanWrite();
-      const base: any = { ...expense, user_id: user!.id };
+      const base: any = attachDemoFlag({ ...expense, user_id: user!.id }, isDemoMode);
       if (!base.is_recurring) {
         base.recurring_start_date = null;
         const { data, error } = await supabase.from("expenses").insert(base).select().single();
@@ -610,10 +609,8 @@ export function useCreateExpense() {
 
 export function useUpdateExpense() {
   const qc = useQueryClient();
-  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; category?: string; amount?: number; date?: string; description?: string; is_recurring?: boolean; recurring_start_date?: string | null }) => {
-      assertCanWrite();
       if (updates.is_recurring === false) {
         updates.recurring_start_date = null;
       }
@@ -626,10 +623,8 @@ export function useUpdateExpense() {
 
 export function useUpdateExpenseSeries() {
   const qc = useQueryClient();
-  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ recurring_group_id, ...updates }: { recurring_group_id: string; category?: string; amount?: number; description?: string }) => {
-      assertCanWrite();
       const { error } = await (supabase.from("expenses") as any).update(updates).eq("recurring_group_id", recurring_group_id);
       if (error) throw error;
     },
@@ -639,10 +634,8 @@ export function useUpdateExpenseSeries() {
 
 export function useDeleteExpense() {
   const qc = useQueryClient();
-  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async (id: string) => {
-      assertCanWrite();
       const { error } = await supabase.from("expenses").delete().eq("id", id);
       if (error) throw error;
     },
