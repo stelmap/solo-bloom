@@ -226,7 +226,7 @@ export default function PlansPage() {
       throw new Error("No checkout URL returned");
     } catch (e: any) {
       toast({
-        title: "Couldn't start checkout",
+        title: t("plans.checkoutFailed"),
         description: e?.message ?? String(e),
         variant: "destructive",
       });
