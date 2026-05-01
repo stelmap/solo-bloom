@@ -26,12 +26,12 @@ test.describe("Polish locale rendering", () => {
     const toggle = page.getByRole("button", { name: /switch language/i });
     await expect(toggle).toContainText("PL");
 
-    // Polish nav items
-    await expect(page.getByRole("link", { name: "Funkcje" }).first()).toBeVisible();
+    // Polish nav items rendered in the landing nav
     await expect(page.getByRole("link", { name: "Cennik" }).first()).toBeVisible();
+    await expect(page.getByText("Co się zmieni").first()).toBeVisible();
 
     // Polish hero copy
-    await expect(page.getByText("Prowadź swój jednoosobowy biznes.")).toBeVisible();
+    await expect(page.getByText("Nie jesteś zły w biznesie.")).toBeVisible();
   });
 
   test("toggle cycles into Polish from English", async ({ page }) => {
