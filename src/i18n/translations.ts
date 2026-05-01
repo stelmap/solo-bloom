@@ -271,6 +271,36 @@ export const translations = {
     fr: "Cette action n’est pas disponible en mode démo.",
     pl: "Ta akcja nie jest dostępna w trybie demo.",
   },
+  "demo.badge": {
+    en: "Demo Mode",
+    uk: "Демо-режим",
+    fr: "Mode démo",
+    pl: "Tryb demo",
+  },
+  "demo.bannerHeadline": {
+    en: "Demo Mode — try scheduling, groups, supervision, and payments.",
+    uk: "Демо-режим — спробуйте планування, групи, супервізію та платежі.",
+    fr: "Mode démo — essayez la planification, les groupes, la supervision et les paiements.",
+    pl: "Tryb demo — wypróbuj planowanie, grupy, superwizję i płatności.",
+  },
+  "demo.bannerSub": {
+    en: "Choose Solo or Pro to edit clients and services.",
+    uk: "Оберіть план Solo або Pro, щоб редагувати клієнтів і послуги.",
+    fr: "Choisissez Solo ou Pro pour modifier les clients et les services.",
+    pl: "Wybierz plan Solo lub Pro, aby edytować klientów i usługi.",
+  },
+  "demo.choosePlan": {
+    en: "Choose a plan",
+    uk: "Обрати план",
+    fr: "Choisir un plan",
+    pl: "Wybierz plan",
+  },
+  "demo.sidebarBadge": {
+    en: "Demo Mode — view-only workspace",
+    uk: "Демо-режим — робочий простір лише для перегляду",
+    fr: "Mode démo — espace en lecture seule",
+    pl: "Tryb demo — obszar roboczy tylko do odczytu",
+  },
 
   // Subscription / Billing
   "sub.headline": { en: "Choose your plan", uk: "Оберіть свій план", fr: "Choisissez votre formule" , pl: "Wybierz plan" },
