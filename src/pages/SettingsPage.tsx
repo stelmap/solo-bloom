@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { useProfile, useUpdateProfile, useWorkingSchedule, useUpsertWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff, useTaxSettings, useCreateTaxSetting, useUpdateTaxSetting, useDeleteTaxSetting, useBulkCancelForDayOff } from "@/hooks/useData";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -108,16 +109,25 @@ export default function SettingsPage() {
   }, [workingSchedule]);
 
   const handleSave = async () => {
+    const newLang = (form.language as Language) || "en";
+    const langChanged = newLang !== (profile?.language as Language);
     try {
-      const newLang = (form.language as Language) || "en";
       await Promise.all([
         updateProfile.mutateAsync(form),
         upsertSchedule.mutateAsync(schedule),
       ]);
       setLang(newLang);
-      toast({ title: translateFor(newLang, "settings.saved") });
+      toast({
+        title: langChanged
+          ? translateFor(newLang, "language.updated")
+          : translateFor(newLang, "settings.saved"),
+      });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({
+        title: t("common.error"),
+        description: langChanged ? translateFor(newLang, "language.updateError") : e.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -648,11 +658,41 @@ export default function SettingsPage() {
         <Separator />
 
         <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
-          <h2 className="font-semibold text-foreground">{t("settings.language")}</h2>
-          <div className="max-w-xs space-y-2">
-            <Label>{t("settings.displayLanguage")}</Label>
-            <Select value={form.language} onValueChange={v => setForm(f => ({ ...f, language: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="en">English</SelectItem><SelectItem value="uk">Українська</SelectItem><SelectItem value="fr">Français</SelectItem></SelectContent></Select>
+          <div className="space-y-1">
+            <h2 className="font-semibold text-foreground">{t("language.dialogTitle")}</h2>
+            <p className="text-sm text-muted-foreground">{t("language.dialogDescription")}</p>
           </div>
+          <RadioGroup
+            value={form.language}
+            onValueChange={(v) => setForm((f) => ({ ...f, language: v }))}
+            className="grid gap-2 sm:grid-cols-2"
+          >
+            {(["en", "uk", "fr", "pl"] as const).map((code) => {
+              const isCurrent = form.language === code;
+              const native: Record<string, string> = { en: "English", uk: "Українська", fr: "Français", pl: "Polski" };
+              const flag: Record<string, string> = { en: "🇬🇧", uk: "🇺🇦", fr: "🇫🇷", pl: "🇵🇱" };
+              return (
+                <Label
+                  key={code}
+                  htmlFor={`lang-${code}`}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors",
+                    isCurrent ? "border-primary bg-primary/5" : "border-border hover:bg-accent",
+                  )}
+                >
+                  <RadioGroupItem id={`lang-${code}`} value={code} />
+                  <span className="text-xl" aria-hidden>{flag[code]}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-foreground">{native[code]}</div>
+                    <div className="text-xs text-muted-foreground uppercase">{code}</div>
+                  </div>
+                  {isCurrent && (
+                    <Badge variant="secondary" className="shrink-0">{t("language.current")}</Badge>
+                  )}
+                </Label>
+              );
+            })}
+          </RadioGroup>
         </div>
 
         <Separator />
