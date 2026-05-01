@@ -263,7 +263,7 @@ export default function PlansPage() {
             <div className="flex items-start gap-3">
               <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
               <div className="space-y-1">
-                <p className="text-sm font-semibold">Billing status couldn't be refreshed</p>
+                <p className="text-sm font-semibold">{t("plans.billingError")}</p>
                 <p className="text-sm text-destructive/90">{subscriptionError}</p>
               </div>
             </div>
