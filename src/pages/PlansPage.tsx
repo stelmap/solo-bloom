@@ -426,8 +426,8 @@ export default function PlansPage() {
         onOpenChange={setConfirmClearOpen}
         onConfirm={handleClearDemo}
         loading={clearing}
-        title="Clear demo workspace?"
-        description="This will permanently remove all demo clients, sessions, income, expenses, and other demo records. Your account, settings, and any real records you created will be kept."
+        title={t("plans.confirmClearTitle")}
+        description={t("plans.confirmClearDesc")}
       />
     </AppLayout>
   );
