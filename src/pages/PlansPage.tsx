@@ -99,16 +99,15 @@ export default function PlansPage() {
       const hasReal = await checkHasRealData();
       if (hasReal) {
         toast({
-          title: "Can't clear demo data",
-          description:
-            "Your workspace contains real records you created. Demo cleanup is blocked to protect them.",
+          title: t("plans.cantClearTitle"),
+          description: t("plans.cantClearDesc"),
           variant: "destructive",
         });
         return;
       }
       setConfirmClearOpen(true);
     } catch (e: any) {
-      toast({ title: "Check failed", description: e?.message ?? String(e), variant: "destructive" });
+      toast({ title: t("plans.checkFailed"), description: e?.message ?? String(e), variant: "destructive" });
     } finally {
       setClearing(false);
     }
@@ -121,8 +120,8 @@ export default function PlansPage() {
       const hasReal = await checkHasRealData();
       if (hasReal) {
         toast({
-          title: "Can't clear demo data",
-          description: "Real records were detected. Cleanup aborted.",
+          title: t("plans.cantClearTitle"),
+          description: t("plans.cantClearAborted"),
           variant: "destructive",
         });
         setConfirmClearOpen(false);
@@ -130,11 +129,11 @@ export default function PlansPage() {
       }
       const { error } = await supabase.rpc("cleanup_demo_workspace", { p_user_id: user.id });
       if (error) throw error;
-      toast({ title: "Demo data cleared", description: "Your workspace is now empty." });
+      toast({ title: t("plans.demoCleared"), description: t("plans.demoClearedDesc") });
       qc.invalidateQueries();
       sessionStorage.setItem(`demo_seed_attempted:${user.id}`, "1");
     } catch (e: any) {
-      toast({ title: "Failed to clear demo data", description: e?.message ?? String(e), variant: "destructive" });
+      toast({ title: t("plans.failedClear"), description: e?.message ?? String(e), variant: "destructive" });
     } finally {
       setClearing(false);
       setConfirmClearOpen(false);
@@ -153,8 +152,8 @@ export default function PlansPage() {
           .eq("is_active", true),
       ]);
       if (cancelled) return;
-      if (plansRes.error) toast({ title: "Failed to load plans", description: plansRes.error.message, variant: "destructive" });
-      if (pricesRes.error) toast({ title: "Failed to load prices", description: pricesRes.error.message, variant: "destructive" });
+      if (plansRes.error) toast({ title: t("plans.failedLoadPlans"), description: plansRes.error.message, variant: "destructive" });
+      if (pricesRes.error) toast({ title: t("plans.failedLoadPrices"), description: pricesRes.error.message, variant: "destructive" });
       setPlans((plansRes.data ?? []) as Plan[]);
       setPrices((pricesRes.data ?? []) as PlanPrice[]);
       setLoading(false);
@@ -194,8 +193,8 @@ export default function PlansPage() {
     const selectedPlan = plans.find((plan) => plan.id === selectedPlanId);
     if (!selectedPlan) {
       toast({
-        title: "Checkout unavailable",
-        description: "Please choose a plan again.",
+        title: t("plans.checkoutUnavailable"),
+        description: t("plans.checkoutChooseAgain"),
         variant: "destructive",
       });
       return;
@@ -227,7 +226,7 @@ export default function PlansPage() {
       throw new Error("No checkout URL returned");
     } catch (e: any) {
       toast({
-        title: "Couldn't start checkout",
+        title: t("plans.checkoutFailed"),
         description: e?.message ?? String(e),
         variant: "destructive",
       });
@@ -243,18 +242,18 @@ export default function PlansPage() {
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Settings
+          {t("plans.backToSettings")}
         </button>
 
         <header className="space-y-3 text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">Choose your plan</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">{t("plans.title")}</h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Pick the package that fits your practice. You can change or cancel anytime.
+            {t("plans.subtitle")}
           </p>
           <div className="flex justify-center">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
               <Sparkles className="h-3.5 w-3.5" />
-              Start with a 7-day free trial — no charge until it ends
+              {t("plans.trialBadge")}
             </span>
           </div>
         </header>
@@ -264,7 +263,7 @@ export default function PlansPage() {
             <div className="flex items-start gap-3">
               <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
               <div className="space-y-1">
-                <p className="text-sm font-semibold">Billing status couldn't be refreshed</p>
+                <p className="text-sm font-semibold">{t("plans.billingError")}</p>
                 <p className="text-sm text-destructive/90">{subscriptionError}</p>
               </div>
             </div>
@@ -294,7 +293,7 @@ export default function PlansPage() {
                     {periodLabels[p]}
                     {showSave && (
                       <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-primary/15 text-primary">
-                        Save ~40%
+                        {t("plans.saveBadge")}
                       </span>
                     )}
                   </button>
@@ -311,7 +310,7 @@ export default function PlansPage() {
           </div>
         ) : orderedPlans.length === 0 ? (
           <div className="text-center py-16 bg-card border border-border rounded-2xl">
-            <p className="text-muted-foreground">No active plans available yet.</p>
+            <p className="text-muted-foreground">{t("plans.loadingNone")}</p>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 gap-5 max-w-4xl mx-auto">
@@ -340,7 +339,7 @@ export default function PlansPage() {
                     <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-primary text-primary-foreground">
                         <Sparkles className="h-3 w-3" />
-                        Most popular
+                        {t("plans.mostPopular")}
                       </span>
                     </div>
                   )}
@@ -360,7 +359,7 @@ export default function PlansPage() {
                       </div>
                       {savings !== null && (
                         <Badge variant="secondary" className="mt-2 text-[10px]">
-                          Save {savings}% vs monthly
+                          {t("plans.savePctVsMonthly", { pct: savings })}
                         </Badge>
                       )}
                     </div>
@@ -392,7 +391,7 @@ export default function PlansPage() {
         {/* Footer CTA */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
           <p className="text-xs text-muted-foreground">
-            Secure checkout via Stripe. Cancel anytime from Settings.
+            {t("plans.footerSecure")}
           </p>
           <div className="flex items-center gap-3">
             {canClearDemo && (
@@ -403,7 +402,7 @@ export default function PlansPage() {
                 disabled={clearing}
               >
                 <Trash2 className="h-4 w-4" />
-                {clearing ? "Clearing…" : "Clear demo data"}
+                {clearing ? t("plans.clearing") : t("plans.clearDemo")}
               </Button>
             )}
             <Button
@@ -415,7 +414,7 @@ export default function PlansPage() {
               {continuing ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <>Continue {selectedPlanId ? "" : "— select a plan"}</>
+                <>{selectedPlanId ? t("plans.continue") : t("plans.continueSelect")}</>
               )}
             </Button>
           </div>
@@ -427,8 +426,8 @@ export default function PlansPage() {
         onOpenChange={setConfirmClearOpen}
         onConfirm={handleClearDemo}
         loading={clearing}
-        title="Clear demo workspace?"
-        description="This will permanently remove all demo clients, sessions, income, expenses, and other demo records. Your account, settings, and any real records you created will be kept."
+        title={t("plans.confirmClearTitle")}
+        description={t("plans.confirmClearDesc")}
       />
     </AppLayout>
   );
