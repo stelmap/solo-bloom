@@ -14,36 +14,39 @@ import {
   Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
+import { getStrings, type Lang } from './i18n.ts'
 
 interface EmailChangeEmailProps {
   siteName: string
   email: string
   newEmail: string
   confirmationUrl: string
+  lang?: Lang | string
 }
 
-export const EmailChangeEmail = ({ siteName, email, newEmail, confirmationUrl }: EmailChangeEmailProps) => (
-  <Html lang="en" dir="ltr">
+export const EmailChangeEmail = ({ email, newEmail, confirmationUrl, lang }: EmailChangeEmailProps) => {
+  const s = getStrings(lang).emailChange
+  return (
+  <Html lang={lang || 'en'} dir="ltr">
     <Head />
-    <Preview>Confirm your email change for Solo.Biz</Preview>
+    <Preview>{s.preview}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
           <Text style={logo}>Solo<span style={logoDot}>.Biz</span></Text>
         </Section>
-        <Heading style={h1}>Confirm your email change</Heading>
+        <Heading style={h1}>{s.heading}</Heading>
         <Text style={text}>
-          You requested to change your email address for Solo.Biz from{' '}
-          <Link href={`mailto:${email}`} style={link}>{email}</Link>{' '}to{' '}
-          <Link href={`mailto:${newEmail}`} style={link}>{newEmail}</Link>.
+          {s.body(email, newEmail)}
         </Text>
-        <Text style={text}>Click the button below to confirm this change:</Text>
-        <Button style={button} href={confirmationUrl}>Confirm Email Change</Button>
-        <Text style={footer}>If you didn't request this change, please secure your account immediately.</Text>
+        <Text style={text}>{s.confirmIntro}</Text>
+        <Button style={button} href={confirmationUrl}>{s.cta}</Button>
+        <Text style={footer}>{s.warning}</Text>
       </Container>
     </Body>
   </Html>
-)
+  )
+}
 
 export default EmailChangeEmail
 

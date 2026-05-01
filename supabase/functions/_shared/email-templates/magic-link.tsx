@@ -13,29 +13,34 @@ import {
   Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
+import { getStrings, type Lang } from './i18n.ts'
 
 interface MagicLinkEmailProps {
   siteName: string
   confirmationUrl: string
+  lang?: Lang | string
 }
 
-export const MagicLinkEmail = ({ siteName, confirmationUrl }: MagicLinkEmailProps) => (
-  <Html lang="en" dir="ltr">
+export const MagicLinkEmail = ({ siteName, confirmationUrl, lang }: MagicLinkEmailProps) => {
+  const s = getStrings(lang).magicLink
+  return (
+  <Html lang={lang || 'en'} dir="ltr">
     <Head />
-    <Preview>Your login link for Solo.Biz</Preview>
+    <Preview>{s.preview}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
           <Text style={logo}>Solo<span style={logoDot}>.Biz</span></Text>
         </Section>
-        <Heading style={h1}>Your login link</Heading>
-        <Text style={text}>Click the button below to log in to Solo.Biz. This link will expire shortly.</Text>
-        <Button style={button} href={confirmationUrl}>Log In</Button>
-        <Text style={footer}>If you didn't request this link, you can safely ignore this email.</Text>
+        <Heading style={h1}>{s.heading}</Heading>
+        <Text style={text}>{s.body(siteName)}</Text>
+        <Button style={button} href={confirmationUrl}>{s.cta}</Button>
+        <Text style={footer}>{s.ignore}</Text>
       </Container>
     </Body>
   </Html>
-)
+  )
+}
 
 export default MagicLinkEmail
 

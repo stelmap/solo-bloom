@@ -14,12 +14,14 @@ import {
   Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
+import { getStrings, type Lang } from './i18n.ts'
 
 interface SignupEmailProps {
   siteName: string
   siteUrl: string
   recipient: string
   confirmationUrl: string
+  lang?: Lang | string
 }
 
 export const SignupEmail = ({
@@ -27,35 +29,35 @@ export const SignupEmail = ({
   siteUrl,
   recipient,
   confirmationUrl,
-}: SignupEmailProps) => (
-  <Html lang="en" dir="ltr">
+  lang,
+}: SignupEmailProps) => {
+  const s = getStrings(lang).signup
+  return (
+  <Html lang={lang || 'en'} dir="ltr">
     <Head />
-    <Preview>Welcome to Solo.Biz — confirm your email</Preview>
+    <Preview>{s.preview}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
           <Text style={logo}>Solo<span style={logoDot}>.Biz</span></Text>
         </Section>
-        <Heading style={h1}>Welcome aboard! 👋</Heading>
+        <Heading style={h1}>{s.heading}</Heading>
         <Text style={text}>
-          Thanks for signing up for{' '}
-          <Link href={siteUrl} style={link}><strong>Solo.Biz</strong></Link>!
+          {s.intro(siteName)}{' '}
+          <Link href={siteUrl} style={link}><strong>Solo.Biz</strong></Link>
         </Text>
         <Text style={text}>
-          Please confirm your email address (
-          <Link href={`mailto:${recipient}`} style={link}>{recipient}</Link>
-          ) by clicking the button below:
+          {s.confirmIntro(recipient)}
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Verify Email
+          {s.cta}
         </Button>
-        <Text style={footer}>
-          If you didn't create an account, you can safely ignore this email.
-        </Text>
+        <Text style={footer}>{s.ignore}</Text>
       </Container>
     </Body>
   </Html>
-)
+  )
+}
 
 export default SignupEmail
 

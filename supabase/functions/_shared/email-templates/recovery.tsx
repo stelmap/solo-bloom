@@ -12,34 +12,35 @@ import {
   Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
+import { getStrings, type Lang } from './i18n.ts'
 
 interface RecoveryEmailProps {
   siteName: string
   token?: string
   confirmationUrl?: string
+  lang?: Lang | string
 }
 
-export const RecoveryEmail = ({ token }: RecoveryEmailProps) => (
-  <Html lang="en" dir="ltr">
+export const RecoveryEmail = ({ token, lang }: RecoveryEmailProps) => {
+  const s = getStrings(lang).recovery
+  return (
+  <Html lang={lang || 'en'} dir="ltr">
     <Head />
-    <Preview>Your Solo.Biz password reset code</Preview>
+    <Preview>{s.preview}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
           <Text style={logo}>Solo<span style={logoDot}>.Biz</span></Text>
         </Section>
-        <Heading style={h1}>Reset your password</Heading>
-        <Text style={text}>
-          We received a request to reset your password. Enter the code below in the app to continue.
-        </Text>
+        <Heading style={h1}>{s.heading}</Heading>
+        <Text style={text}>{s.intro}</Text>
         <Text style={codeStyle}>{token}</Text>
-        <Text style={helper}>
-          This code is single-use and expires shortly. If you didn't request a password reset, you can safely ignore this email — your password will not be changed.
-        </Text>
+        <Text style={helper}>{s.helper}</Text>
       </Container>
     </Body>
   </Html>
-)
+  )
+}
 
 export default RecoveryEmail
 
