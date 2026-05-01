@@ -151,9 +151,9 @@ export default function Dashboard() {
             <OverviewTile icon={Hourglass} label={t("ops.remainingToday")} value={summary.remaining.toString()} tone="warning" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
-            <OverviewTile icon={CheckCircle2} label="Done paid" value={completedPaidTotal.toString()} tone="success" />
-            <OverviewTile icon={Hourglass} label="Done not paid" value={completedUnpaidTotal.toString()} tone="warning" />
-            <OverviewTile icon={XCircle} label="Cancelled sessions" value={cancelledTotal.toString()} />
+            <OverviewTile icon={CheckCircle2} label={t("ops.donePaid")} value={completedPaidTotal.toString()} tone="success" />
+            <OverviewTile icon={Hourglass} label={t("ops.doneNotPaid")} value={completedUnpaidTotal.toString()} tone="warning" />
+            <OverviewTile icon={XCircle} label={t("ops.cancelledSessions")} value={cancelledTotal.toString()} />
           </div>
         </section>
 
