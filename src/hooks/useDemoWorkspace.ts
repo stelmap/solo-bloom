@@ -3,9 +3,26 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
+import { getStoredLang, translateFor } from "@/i18n/LanguageContext";
+
 const SEED_ATTEMPT_KEY = "demo_seed_attempted";
 const DEMO_MODE_KEY = "demo_mode_enabled";
-export const DEMO_ACTION_MESSAGE = "Editing clients and services is available after choosing a Solo or Pro subscription.";
+
+/**
+ * Localized restriction message for business-data writes (clients, services, groups, etc.)
+ * blocked in demo mode. Personal/account settings (language, currency, profile, schedule)
+ * must NEVER throw this — they are always editable.
+ */
+export function getDemoActionMessage(): string {
+  try {
+    return translateFor(getStoredLang(), "demo.restrictedBusiness");
+  } catch {
+    return "Editing clients and services is available only after registration.";
+  }
+}
+
+/** @deprecated Prefer getDemoActionMessage() so the message is localized. */
+export const DEMO_ACTION_MESSAGE = "Editing clients and services is available only after registration.";
 
 const getDemoModeStorageKey = (userId?: string) => `${DEMO_MODE_KEY}:${userId ?? "anonymous"}`;
 
