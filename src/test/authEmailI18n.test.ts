@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 // Pure TS module — no Deno-only deps — safe to import in vitest.
-// @ts-expect-error — lives outside tsconfig include (supabase/functions/), vitest resolves it fine
 import {
   getStrings,
   getSubject,
