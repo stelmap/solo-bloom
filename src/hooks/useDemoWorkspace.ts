@@ -82,14 +82,14 @@ export function useDemoMode() {
   return {
     isDemoMode,
     loading: subscription.loading || isLoading,
-    message: DEMO_ACTION_MESSAGE,
+    message: getDemoActionMessage(),
   };
 }
 
 export function useDemoWriteGuard() {
   const { isDemoMode } = useDemoMode();
   return () => {
-    if (isDemoMode) throw new Error(DEMO_ACTION_MESSAGE);
+    if (isDemoMode) throw new Error(getDemoActionMessage());
   };
 }
 
