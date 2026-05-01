@@ -293,7 +293,7 @@ export default function PlansPage() {
                     {periodLabels[p]}
                     {showSave && (
                       <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-primary/15 text-primary">
-                        Save ~40%
+                        {t("plans.saveBadge")}
                       </span>
                     )}
                   </button>
