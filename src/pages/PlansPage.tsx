@@ -242,18 +242,18 @@ export default function PlansPage() {
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Settings
+          {t("plans.backToSettings")}
         </button>
 
         <header className="space-y-3 text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">Choose your plan</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">{t("plans.title")}</h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Pick the package that fits your practice. You can change or cancel anytime.
+            {t("plans.subtitle")}
           </p>
           <div className="flex justify-center">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
               <Sparkles className="h-3.5 w-3.5" />
-              Start with a 7-day free trial — no charge until it ends
+              {t("plans.trialBadge")}
             </span>
           </div>
         </header>
