@@ -391,7 +391,7 @@ export default function PlansPage() {
         {/* Footer CTA */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
           <p className="text-xs text-muted-foreground">
-            Secure checkout via Stripe. Cancel anytime from Settings.
+            {t("plans.footerSecure")}
           </p>
           <div className="flex items-center gap-3">
             {canClearDemo && (
@@ -402,7 +402,7 @@ export default function PlansPage() {
                 disabled={clearing}
               >
                 <Trash2 className="h-4 w-4" />
-                {clearing ? "Clearing…" : "Clear demo data"}
+                {clearing ? t("plans.clearing") : t("plans.clearDemo")}
               </Button>
             )}
             <Button
@@ -414,7 +414,7 @@ export default function PlansPage() {
               {continuing ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <>Continue {selectedPlanId ? "" : "— select a plan"}</>
+                <>{selectedPlanId ? t("plans.continue") : t("plans.continueSelect")}</>
               )}
             </Button>
           </div>
