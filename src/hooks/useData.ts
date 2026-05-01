@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateCapacity } from "@/lib/capacity";
 import { track } from "@/lib/analytics";
-import { DEMO_ACTION_MESSAGE, useDemoMode, useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
+import { getDemoActionMessage, useDemoMode, useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
 
 const INVALIDATE_APPOINTMENTS = ["appointments", "dashboard-stats", "client-appointments"];
 const INVALIDATE_FINANCIAL = ["income", "expenses", "expected-payments", "dashboard-stats"];
@@ -101,7 +101,7 @@ export function useCreatePriceChange() {
   return useMutation({
     mutationFn: async (change: { client_id: string; appointment_id?: string; old_price?: number; new_price: number; reason?: string; change_type: string }) => {
       if (isDemoMode && change.change_type === "base_price_change") {
-        throw new Error(DEMO_ACTION_MESSAGE);
+        throw new Error(getDemoActionMessage());
       }
       const { data, error } = await supabase
         .from("client_price_changes" as any)
@@ -738,10 +738,10 @@ export function useProfile() {
 export function useUpdateProfile() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
-    mutationFn: async (updates: { full_name?: string; business_name?: string; phone?: string; language?: string; reminder_minutes?: number; work_hours_start?: string; work_hours_end?: string; time_format?: string; default_duration?: number }) => {
-      if (Object.keys(updates).some((key) => key !== "language")) assertCanWrite();
+    // Personal/account settings (language, currency, profile info, working preferences)
+    // must always be editable regardless of subscription/demo state.
+    mutationFn: async (updates: { full_name?: string; business_name?: string; phone?: string; language?: string; reminder_minutes?: number; work_hours_start?: string; work_hours_end?: string; time_format?: string; default_duration?: number; currency?: string; business_id?: string; business_address?: string; vat_mode?: string; vat_rate?: number; onboarding_completed?: boolean }) => {
       const { error } = await supabase.from("profiles").update(updates as any).eq("user_id", user!.id);
       if (error) throw error;
     },
@@ -770,10 +770,9 @@ export function useWorkingSchedule() {
 export function useUpsertWorkingSchedule() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
+    // Working schedule is a personal preference — always editable.
     mutationFn: async (days: Array<{ day_of_week: number; is_working: boolean; start_time: string; end_time: string }>) => {
-      assertCanWrite();
       await supabase.from("working_schedule").delete().eq("user_id", user!.id);
       if (days.length > 0) {
         const { error } = await supabase.from("working_schedule").insert(

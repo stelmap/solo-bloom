@@ -250,6 +250,18 @@ export const translations = {
   "settings.manageBilling": { en: "Manage Billing", uk: "Керування оплатою", fr: "Gérer la facturation" , pl: "Zarządzaj płatnościami" },
   "settings.comingSoon": { en: "Stripe integration coming soon", uk: "Інтеграція зі Stripe скоро", fr: "Intégration Stripe bientôt disponible" , pl: "Integracja ze Stripe wkrótce" },
   "settings.saved": { en: "Settings saved", uk: "Налаштування збережено", fr: "Paramètres enregistrés" , pl: "Ustawienia zapisane" },
+  "demo.restrictedBusiness": {
+    en: "Editing clients and services is available only after registration.",
+    uk: "Редагування клієнтів і послуг доступне лише після реєстрації.",
+    fr: "La modification des clients et des services est disponible uniquement après l’inscription.",
+    pl: "Edytowanie klientów i usług jest dostępne dopiero po rejestracji.",
+  },
+  "demo.notAvailable": {
+    en: "This action is not available in demo mode.",
+    uk: "Ця дія недоступна в демо-режимі.",
+    fr: "Cette action n’est pas disponible en mode démo.",
+    pl: "Ta akcja nie jest dostępna w trybie demo.",
+  },
 
   // Subscription / Billing
   "sub.headline": { en: "Choose your plan", uk: "Оберіть свій план", fr: "Choisissez votre formule" , pl: "Wybierz plan" },

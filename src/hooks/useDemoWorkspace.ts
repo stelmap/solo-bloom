@@ -3,9 +3,36 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
+import { translations, type Language } from "@/i18n/translations";
+
 const SEED_ATTEMPT_KEY = "demo_seed_attempted";
 const DEMO_MODE_KEY = "demo_mode_enabled";
-export const DEMO_ACTION_MESSAGE = "Editing clients and services is available after choosing a Solo or Pro subscription.";
+
+function readLangFromStorage(): Language {
+  try {
+    const raw = (localStorage.getItem("app_lang") || localStorage.getItem("landing_lang") || "").toLowerCase();
+    if (raw === "uk" || raw === "fr" || raw === "pl" || raw === "en") return raw as Language;
+    const browser = (navigator?.language || "").toLowerCase();
+    if (browser.startsWith("uk")) return "uk";
+    if (browser.startsWith("fr")) return "fr";
+    if (browser.startsWith("pl")) return "pl";
+  } catch {}
+  return "en";
+}
+
+/**
+ * Localized restriction message for business-data writes (clients, services, groups, etc.)
+ * blocked in demo mode. Personal/account settings (language, currency, profile, schedule)
+ * must NEVER throw this — they are always editable.
+ */
+export function getDemoActionMessage(): string {
+  const lang = readLangFromStorage();
+  const entry = translations["demo.restrictedBusiness"];
+  return entry?.[lang] || entry?.en || "Editing clients and services is available only after registration.";
+}
+
+/** @deprecated Prefer getDemoActionMessage() so the message is localized. */
+export const DEMO_ACTION_MESSAGE = "Editing clients and services is available only after registration.";
 
 const getDemoModeStorageKey = (userId?: string) => `${DEMO_MODE_KEY}:${userId ?? "anonymous"}`;
 
@@ -65,14 +92,14 @@ export function useDemoMode() {
   return {
     isDemoMode,
     loading: subscription.loading || isLoading,
-    message: DEMO_ACTION_MESSAGE,
+    message: getDemoActionMessage(),
   };
 }
 
 export function useDemoWriteGuard() {
   const { isDemoMode } = useDemoMode();
   return () => {
-    if (isDemoMode) throw new Error(DEMO_ACTION_MESSAGE);
+    if (isDemoMode) throw new Error(getDemoActionMessage());
   };
 }
 
