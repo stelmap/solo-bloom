@@ -101,7 +101,7 @@ export function useCreatePriceChange() {
   return useMutation({
     mutationFn: async (change: { client_id: string; appointment_id?: string; old_price?: number; new_price: number; reason?: string; change_type: string }) => {
       if (isDemoMode && change.change_type === "base_price_change") {
-        throw new Error(DEMO_ACTION_MESSAGE);
+        throw new Error(getDemoActionMessage());
       }
       const { data, error } = await supabase
         .from("client_price_changes" as any)
