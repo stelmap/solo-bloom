@@ -648,11 +648,41 @@ export default function SettingsPage() {
         <Separator />
 
         <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
-          <h2 className="font-semibold text-foreground">{t("settings.language")}</h2>
-          <div className="max-w-xs space-y-2">
-            <Label>{t("settings.displayLanguage")}</Label>
-            <Select value={form.language} onValueChange={v => setForm(f => ({ ...f, language: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="en">English</SelectItem><SelectItem value="uk">Українська</SelectItem><SelectItem value="fr">Français</SelectItem></SelectContent></Select>
+          <div className="space-y-1">
+            <h2 className="font-semibold text-foreground">{t("language.dialogTitle")}</h2>
+            <p className="text-sm text-muted-foreground">{t("language.dialogDescription")}</p>
           </div>
+          <RadioGroup
+            value={form.language}
+            onValueChange={(v) => setForm((f) => ({ ...f, language: v }))}
+            className="grid gap-2 sm:grid-cols-2"
+          >
+            {(["en", "uk", "fr", "pl"] as const).map((code) => {
+              const isCurrent = form.language === code;
+              const native: Record<string, string> = { en: "English", uk: "Українська", fr: "Français", pl: "Polski" };
+              const flag: Record<string, string> = { en: "🇬🇧", uk: "🇺🇦", fr: "🇫🇷", pl: "🇵🇱" };
+              return (
+                <Label
+                  key={code}
+                  htmlFor={`lang-${code}`}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors",
+                    isCurrent ? "border-primary bg-primary/5" : "border-border hover:bg-accent",
+                  )}
+                >
+                  <RadioGroupItem id={`lang-${code}`} value={code} />
+                  <span className="text-xl" aria-hidden>{flag[code]}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-foreground">{native[code]}</div>
+                    <div className="text-xs text-muted-foreground uppercase">{code}</div>
+                  </div>
+                  {isCurrent && (
+                    <Badge variant="secondary" className="shrink-0">{t("language.current")}</Badge>
+                  )}
+                </Label>
+              );
+            })}
+          </RadioGroup>
         </div>
 
         <Separator />
