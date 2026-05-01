@@ -3,6 +3,7 @@ import { Sparkles, ArrowRight, Clock, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemoMode } from "@/hooks/useDemoWorkspace";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 /**
  * Persistent banner shown at the top of authenticated pages.
