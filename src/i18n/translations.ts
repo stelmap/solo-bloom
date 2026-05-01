@@ -672,6 +672,7 @@ export const translations = {
   "settings.currencyWarning": { en: "Currency label will change, but existing values will not be converted.", uk: "Символ валюти зміниться, але існуючі значення не будуть конвертовані.", fr: "Le symbole de la devise changera, mais les valeurs existantes ne seront pas converties." , pl: "Etykieta waluty zostanie zmieniona, ale istniejące wartości nie zostaną przeliczone." },
   "currency.EUR": { en: "EUR (€) — Euro", uk: "EUR (€) — Євро", fr: "EUR (€) — Euro" , pl: "EUR (€) — Euro" },
   "currency.UAH": { en: "UAH (₴) — Ukrainian Hryvnia", uk: "UAH (₴) — Українська гривня", fr: "UAH (₴) — Hryvnia ukrainienne" , pl: "UAH (₴) — Hrywna ukraińska" },
+  "currency.PLN": { en: "PLN (zł) — Polish Złoty", uk: "PLN (zł) — Польський злотий", fr: "PLN (zł) — Złoty polonais" , pl: "PLN (zł) — Polski złoty" },
 
   // Landing page
   "landing.nav.features": { en: "Features", uk: "Можливості", fr: "Fonctionnalités" , pl: "Funkcje" },
