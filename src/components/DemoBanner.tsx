@@ -13,6 +13,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 export function DemoBanner() {
   const { subscription } = useAuth();
   const { isDemoMode } = useDemoMode();
+  const { t } = useLanguage();
 
   if (subscription.loading) return null;
 
