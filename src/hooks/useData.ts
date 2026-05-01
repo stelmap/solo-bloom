@@ -770,10 +770,9 @@ export function useWorkingSchedule() {
 export function useUpsertWorkingSchedule() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
+    // Working schedule is a personal preference — always editable.
     mutationFn: async (days: Array<{ day_of_week: number; is_working: boolean; start_time: string; end_time: string }>) => {
-      assertCanWrite();
       await supabase.from("working_schedule").delete().eq("user_id", user!.id);
       if (days.length > 0) {
         const { error } = await supabase.from("working_schedule").insert(
