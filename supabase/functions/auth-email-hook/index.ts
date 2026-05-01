@@ -219,6 +219,33 @@ async function handleWebhook(req: Request): Promise<Response> {
     )
   }
 
+  // Resolve recipient language: prefer auth user_metadata.language (set at signup),
+  // then fall back to the saved profiles.language for the recipient, then English.
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  )
+
+  let lang: Lang = 'en'
+  const metaLang =
+    payload?.data?.user?.user_metadata?.language ??
+    payload?.data?.user_metadata?.language ??
+    payload?.data?.metadata?.language
+  if (metaLang) {
+    lang = normalizeLang(metaLang)
+  } else if (payload?.data?.email) {
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('language')
+        .eq('email', payload.data.email)
+        .maybeSingle()
+      if (profile?.language) lang = normalizeLang(profile.language)
+    } catch (e) {
+      console.warn('Could not look up recipient language from profile', { e })
+    }
+  }
+
   // Build template props from payload.data (HookData structure)
   const templateProps = {
     siteName: SITE_NAME,
@@ -228,6 +255,7 @@ async function handleWebhook(req: Request): Promise<Response> {
     token: payload.data.token,
     email: payload.data.email,
     newEmail: payload.data.new_email,
+    lang,
   }
 
   // Render React Email to HTML and plain text
@@ -235,12 +263,6 @@ async function handleWebhook(req: Request): Promise<Response> {
   const text = await renderAsync(React.createElement(EmailTemplate, templateProps), {
     plainText: true,
   })
-
-  // Enqueue email for async processing by the dispatcher (process-email-queue).
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  )
 
   const messageId = crypto.randomUUID()
 
@@ -260,7 +282,7 @@ async function handleWebhook(req: Request): Promise<Response> {
       to: payload.data.email,
       from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
       sender_domain: SENDER_DOMAIN,
-      subject: EMAIL_SUBJECTS[emailType] || 'Notification',
+      subject: getSubject(emailType as SubjectKey, lang),
       html,
       text,
       purpose: 'transactional',
