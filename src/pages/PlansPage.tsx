@@ -339,7 +339,7 @@ export default function PlansPage() {
                     <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-primary text-primary-foreground">
                         <Sparkles className="h-3 w-3" />
-                        Most popular
+                        {t("plans.mostPopular")}
                       </span>
                     </div>
                   )}
