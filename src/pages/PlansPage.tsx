@@ -193,8 +193,8 @@ export default function PlansPage() {
     const selectedPlan = plans.find((plan) => plan.id === selectedPlanId);
     if (!selectedPlan) {
       toast({
-        title: "Checkout unavailable",
-        description: "Please choose a plan again.",
+        title: t("plans.checkoutUnavailable"),
+        description: t("plans.checkoutChooseAgain"),
         variant: "destructive",
       });
       return;
