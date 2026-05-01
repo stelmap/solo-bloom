@@ -549,7 +549,7 @@ export default function SettingsPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-foreground">{tax.tax_name}</span>
                       <Badge variant="outline" className={cn("text-xs", tax.is_active ? "border-warning text-warning" : "")}>
-                        {tax.tax_type === "percentage" ? `${tax.tax_rate}%` : `${(profile as any)?.currency === "UAH" ? "₴" : "€"}${Number(tax.fixed_amount).toLocaleString()}`}
+                        {tax.tax_type === "percentage" ? `${tax.tax_rate}%` : `${(profile as any)?.currency === "UAH" ? "₴" : (profile as any)?.currency === "PLN" ? "zł" : "€"}${Number(tax.fixed_amount).toLocaleString()}`}
                       </Badge>
                       <Badge variant="secondary" className="text-xs">
                         {tax.frequency === "quarterly" ? t("tax.quarterly") : t("tax.monthly")}
@@ -636,6 +636,7 @@ export default function SettingsPage() {
               <SelectContent>
                 <SelectItem value="EUR">{t("currency.EUR")}</SelectItem>
                 <SelectItem value="UAH">{t("currency.UAH")}</SelectItem>
+                <SelectItem value="PLN">{t("currency.PLN")}</SelectItem>
               </SelectContent>
             </Select>
             {form.currency !== ((profile as any)?.currency || "EUR") && (
