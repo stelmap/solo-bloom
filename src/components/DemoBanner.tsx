@@ -3,6 +3,7 @@ import { Sparkles, ArrowRight, Clock, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemoMode } from "@/hooks/useDemoWorkspace";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 /**
  * Persistent banner shown at the top of authenticated pages.
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button";
 export function DemoBanner() {
   const { subscription } = useAuth();
   const { isDemoMode } = useDemoMode();
+  const { t } = useLanguage();
 
   if (subscription.loading) return null;
 
@@ -55,18 +57,18 @@ export function DemoBanner() {
         <div className="flex items-center gap-2 min-w-0 md:pl-0 pl-12">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/15 px-3 py-1 text-xs font-bold uppercase text-primary whitespace-nowrap">
             <ShieldCheck className="h-3.5 w-3.5" />
-            Demo Mode
+            {t("demo.badge")}
           </span>
           <p className="text-sm text-foreground min-w-0">
-            <span className="font-semibold">Demo Mode — try scheduling, groups, supervision, and payments.</span>{" "}
+            <span className="font-semibold">{t("demo.bannerHeadline")}</span>{" "}
             <span className="text-muted-foreground hidden md:inline">
-              Choose Solo or Pro to edit clients and services.
+              {t("demo.bannerSub")}
             </span>
           </p>
         </div>
         <Button asChild size="sm" variant="default" className="shrink-0">
           <Link to="/plans">
-            Choose a plan
+            {t("demo.choosePlan")}
             <ArrowRight className="ml-1 h-3.5 w-3.5" />
           </Link>
         </Button>
