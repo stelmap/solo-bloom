@@ -359,7 +359,7 @@ export default function PlansPage() {
                       </div>
                       {savings !== null && (
                         <Badge variant="secondary" className="mt-2 text-[10px]">
-                          Save {savings}% vs monthly
+                          {t("plans.savePctVsMonthly", { pct: savings })}
                         </Badge>
                       )}
                     </div>
