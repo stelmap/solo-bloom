@@ -109,16 +109,25 @@ export default function SettingsPage() {
   }, [workingSchedule]);
 
   const handleSave = async () => {
+    const newLang = (form.language as Language) || "en";
+    const langChanged = newLang !== (profile?.language as Language);
     try {
-      const newLang = (form.language as Language) || "en";
       await Promise.all([
         updateProfile.mutateAsync(form),
         upsertSchedule.mutateAsync(schedule),
       ]);
       setLang(newLang);
-      toast({ title: translateFor(newLang, "settings.saved") });
+      toast({
+        title: langChanged
+          ? translateFor(newLang, "language.updated")
+          : translateFor(newLang, "settings.saved"),
+      });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({
+        title: t("common.error"),
+        description: langChanged ? translateFor(newLang, "language.updateError") : e.message,
+        variant: "destructive",
+      });
     }
   };
 
