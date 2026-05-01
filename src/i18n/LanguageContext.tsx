@@ -7,7 +7,7 @@ const PRE_LOGIN_LANG_KEY = "pre_login_lang";
 const LANG_CHANGE_EVENT = "app_lang_change";
 
 function normalizeLang(value: string | null | undefined): Language | null {
-  if (value === "uk" || value === "fr" || value === "en") return value;
+  if (value === "uk" || value === "fr" || value === "en" || value === "pl") return value;
   return null;
 }
 
@@ -16,6 +16,7 @@ function getBrowserLang(): Language {
     const browserLang = navigator.language.toLowerCase();
     if (browserLang.startsWith("uk")) return "uk";
     if (browserLang.startsWith("fr")) return "fr";
+    if (browserLang.startsWith("pl")) return "pl";
   } catch {}
   return "en";
 }

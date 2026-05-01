@@ -16,99 +16,99 @@ import {
 type Copy = Record<Language, string>;
 const C = {
   // Nav
-  navFeatures: { en: "What changes", fr: "Ce qui change", uk: "Що змінюється" },
-  navPricing: { en: "Pricing", fr: "Tarifs", uk: "Ціни" },
-  navHow: { en: "How it works", fr: "Comment ça marche", uk: "Як це працює" },
-  navLogin: { en: "Log in", fr: "Connexion", uk: "Увійти" },
-  navTry: { en: "Try free", fr: "Essai gratuit", uk: "Спробувати" },
+  navFeatures: { en: "What changes", fr: "Ce qui change", uk: "Що змінюється" , pl: "Co się zmieni" },
+  navPricing: { en: "Pricing", fr: "Tarifs", uk: "Ціни" , pl: "Cennik" },
+  navHow: { en: "How it works", fr: "Comment ça marche", uk: "Як це працює" , pl: "Jak to działa" },
+  navLogin: { en: "Log in", fr: "Connexion", uk: "Увійти" , pl: "Zaloguj się" },
+  navTry: { en: "Try free", fr: "Essai gratuit", uk: "Спробувати" , pl: "Wypróbuj za darmo" },
 
   // Hero
-  heroBadge: { en: "For psychologists & solo professionals", fr: "Pour psychologues & indépendants", uk: "Для психологів та самозайнятих" },
-  heroTitle1: { en: "You're not bad at business.", fr: "Vous n'êtes pas mauvais en business.", uk: "Ви не погані у бізнесі." },
-  heroTitle2: { en: "You just don't see your numbers.", fr: "Vous ne voyez juste pas vos chiffres.", uk: "Ви просто не бачите своїх цифр." },
-  heroSub: { en: "Clients, sessions, and income — finally in one clear system.", fr: "Clients, séances et revenus — enfin dans un seul système clair.", uk: "Клієнти, сесії та дохід — нарешті в одній зрозумілій системі." },
-  heroCta: { en: "See your practice in 1 minute", fr: "Voyez votre cabinet en 1 minute", uk: "Побачте свою практику за 1 хвилину" },
-  heroSubCta: { en: "No credit card. No setup. Just try.", fr: "Sans carte bancaire. Sans configuration. Essayez.", uk: "Без картки. Без налаштувань. Просто спробуйте." },
+  heroBadge: { en: "For psychologists & solo professionals", fr: "Pour psychologues & indépendants", uk: "Для психологів та самозайнятих" , pl: "Dla psychologów i solowych profesjonalistów" },
+  heroTitle1: { en: "You're not bad at business.", fr: "Vous n'êtes pas mauvais en business.", uk: "Ви не погані у бізнесі." , pl: "Nie jesteś zły w biznesie." },
+  heroTitle2: { en: "You just don't see your numbers.", fr: "Vous ne voyez juste pas vos chiffres.", uk: "Ви просто не бачите своїх цифр." , pl: "Po prostu nie widzisz swoich liczb." },
+  heroSub: { en: "Clients, sessions, and income — finally in one clear system.", fr: "Clients, séances et revenus — enfin dans un seul système clair.", uk: "Клієнти, сесії та дохід — нарешті в одній зрозумілій системі." , pl: "Klienci, sesje i dochody — wreszcie w jednym przejrzystym systemie." },
+  heroCta: { en: "See your practice in 1 minute", fr: "Voyez votre cabinet en 1 minute", uk: "Побачте свою практику за 1 хвилину" , pl: "Zobacz swoją praktykę w minutę" },
+  heroSubCta: { en: "No credit card. No setup. Just try.", fr: "Sans carte bancaire. Sans configuration. Essayez.", uk: "Без картки. Без налаштувань. Просто спробуйте." , pl: "Bez karty kredytowej. Bez konfiguracji. Po prostu wypróbuj." },
 
   // Dashboard preview
-  dpClients: { en: "Active clients", fr: "Clients actifs", uk: "Активні клієнти" },
-  dpSessions: { en: "Sessions this week", fr: "Séances cette semaine", uk: "Сесій цього тижня" },
-  dpIncome: { en: "Income this month", fr: "Revenus ce mois", uk: "Дохід цього місяця" },
-  dpUpcoming: { en: "Upcoming sessions", fr: "Séances à venir", uk: "Найближчі сесії" },
-  dpPaid: { en: "Paid", fr: "Payé", uk: "Оплачено" },
-  dpPending: { en: "Pending", fr: "En attente", uk: "Очікує" },
+  dpClients: { en: "Active clients", fr: "Clients actifs", uk: "Активні клієнти" , pl: "Aktywni klienci" },
+  dpSessions: { en: "Sessions this week", fr: "Séances cette semaine", uk: "Сесій цього тижня" , pl: "Sesje w tym tygodniu" },
+  dpIncome: { en: "Income this month", fr: "Revenus ce mois", uk: "Дохід цього місяця" , pl: "Przychód w tym miesiącu" },
+  dpUpcoming: { en: "Upcoming sessions", fr: "Séances à venir", uk: "Найближчі сесії" , pl: "Nadchodzące sesje" },
+  dpPaid: { en: "Paid", fr: "Payé", uk: "Оплачено" , pl: "Opłacone" },
+  dpPending: { en: "Pending", fr: "En attente", uk: "Очікує" , pl: "Oczekujące" },
 
   // Pain
-  painTitle: { en: "This is probably happening to you:", fr: "Voilà ce qui vous arrive sûrement :", uk: "Ймовірно, це відбувається з вами:" },
-  pain1: { en: "You don't know your real monthly income", fr: "Vous ignorez vos vrais revenus mensuels", uk: "Ви не знаєте реального місячного доходу" },
-  pain2: { en: "You track everything manually — or not at all", fr: "Vous suivez tout à la main — ou pas du tout", uk: "Ви ведете все вручну — або ніяк" },
-  pain3: { en: "You forget sessions or payments", fr: "Vous oubliez des séances ou des paiements", uk: "Ви забуваєте про сесії або оплати" },
-  pain4: { en: "You feel busy — but not in control", fr: "Vous êtes occupé — mais pas aux commandes", uk: "Ви зайняті — але не контролюєте процес" },
-  painBottom1: { en: "This is not a productivity issue.", fr: "Ce n'est pas un problème de productivité.", uk: "Це не проблема продуктивності." },
-  painBottom2: { en: "This is lack of system.", fr: "C'est un manque de système.", uk: "Це відсутність системи." },
-  painCta: { en: "Fix this in 5 minutes", fr: "Réglez ça en 5 minutes", uk: "Виправити за 5 хвилин" },
+  painTitle: { en: "This is probably happening to you:", fr: "Voilà ce qui vous arrive sûrement :", uk: "Ймовірно, це відбувається з вами:" , pl: "Prawdopodobnie dotyczy Cię to:" },
+  pain1: { en: "You don't know your real monthly income", fr: "Vous ignorez vos vrais revenus mensuels", uk: "Ви не знаєте реального місячного доходу" , pl: "Nie znasz swoich rzeczywistych miesięcznych dochodów" },
+  pain2: { en: "You track everything manually — or not at all", fr: "Vous suivez tout à la main — ou pas du tout", uk: "Ви ведете все вручну — або ніяк" , pl: "Śledzisz wszystko ręcznie — albo wcale" },
+  pain3: { en: "You forget sessions or payments", fr: "Vous oubliez des séances ou des paiements", uk: "Ви забуваєте про сесії або оплати" , pl: "Zapominasz o sesjach lub płatnościach" },
+  pain4: { en: "You feel busy — but not in control", fr: "Vous êtes occupé — mais pas aux commandes", uk: "Ви зайняті — але не контролюєте процес" , pl: "Czujesz się zajęty — ale nie masz kontroli" },
+  painBottom1: { en: "This is not a productivity issue.", fr: "Ce n'est pas un problème de productivité.", uk: "Це не проблема продуктивності." , pl: "To nie jest problem z produktywnością." },
+  painBottom2: { en: "This is lack of system.", fr: "C'est un manque de système.", uk: "Це відсутність системи." , pl: "To brak systemu." },
+  painCta: { en: "Fix this in 5 minutes", fr: "Réglez ça en 5 minutes", uk: "Виправити за 5 хвилин" , pl: "Napraw to w 5 minut" },
 
   // Solution
-  solTitle: { en: "This is what changes:", fr: "Voici ce qui change :", uk: "Ось що змінюється:" },
-  sol1: { en: "Open one screen → see all your clients", fr: "Un seul écran → tous vos clients", uk: "Один екран → усі ваші клієнти" },
-  sol2: { en: "Know exactly how much you earned", fr: "Sachez exactement combien vous avez gagné", uk: "Точно знайте, скільки ви заробили" },
-  sol3: { en: "Stop guessing — start controlling your business", fr: "Arrêtez de deviner — pilotez votre activité", uk: "Перестаньте здогадуватися — почніть керувати" },
-  sol4: { en: "Spend time with clients, not spreadsheets", fr: "Du temps pour vos clients, pas pour Excel", uk: "Час на клієнтів, а не на таблиці" },
-  solCta: { en: "Try with demo data", fr: "Essayer avec des données démo", uk: "Спробувати з демо-даними" },
+  solTitle: { en: "This is what changes:", fr: "Voici ce qui change :", uk: "Ось що змінюється:" , pl: "Oto co się zmieni:" },
+  sol1: { en: "Open one screen → see all your clients", fr: "Un seul écran → tous vos clients", uk: "Один екран → усі ваші клієнти" , pl: "Otwórz jeden ekran → zobacz wszystkich swoich klientów" },
+  sol2: { en: "Know exactly how much you earned", fr: "Sachez exactement combien vous avez gagné", uk: "Точно знайте, скільки ви заробили" , pl: "Wiedz dokładnie, ile zarobiłeś" },
+  sol3: { en: "Stop guessing — start controlling your business", fr: "Arrêtez de deviner — pilotez votre activité", uk: "Перестаньте здогадуватися — почніть керувати" , pl: "Przestań zgadywać — zacznij kontrolować swój biznes" },
+  sol4: { en: "Spend time with clients, not spreadsheets", fr: "Du temps pour vos clients, pas pour Excel", uk: "Час на клієнтів, а не на таблиці" , pl: "Spędzaj czas z klientami, a nie z arkuszami kalkulacyjnymi" },
+  solCta: { en: "Try with demo data", fr: "Essayer avec des données démo", uk: "Спробувати з демо-даними" , pl: "Wypróbuj z danymi demonstracyjnymi" },
 
   // Demo / Wow
-  demoTitle: { en: "See how your practice could look in 60 seconds", fr: "Voyez à quoi votre cabinet peut ressembler en 60 secondes", uk: "Подивіться, якою може бути ваша практика за 60 секунд" },
-  demoText: { en: "This is a demo workspace with real data. No setup needed.", fr: "Un espace de démo avec de vraies données. Aucune configuration.", uk: "Це демо-простір з реальними даними. Без налаштувань." },
-  demoCta: { en: "Open demo workspace", fr: "Ouvrir l'espace démo", uk: "Відкрити демо-простір" },
+  demoTitle: { en: "See how your practice could look in 60 seconds", fr: "Voyez à quoi votre cabinet peut ressembler en 60 secondes", uk: "Подивіться, якою може бути ваша практика за 60 секунд" , pl: "Zobacz, jak Twoja praktyka mogłaby wyglądać w 60 sekund" },
+  demoText: { en: "This is a demo workspace with real data. No setup needed.", fr: "Un espace de démo avec de vraies données. Aucune configuration.", uk: "Це демо-простір з реальними даними. Без налаштувань." , pl: "To jest demo przestrzeń robocza z prawdziwymi danymi. Nie wymaga konfiguracji." },
+  demoCta: { en: "Open demo workspace", fr: "Ouvrir l'espace démo", uk: "Відкрити демо-простір" , pl: "Otwórz przestrzeń roboczą demo" },
 
   // How it works
-  howTitle: { en: "Start in minutes", fr: "Démarrez en quelques minutes", uk: "Почніть за лічені хвилини" },
-  how1: { en: "Add a client", fr: "Ajoutez un client", uk: "Додайте клієнта" },
-  how2: { en: "Schedule a session", fr: "Planifiez une séance", uk: "Заплануйте сесію" },
-  how3: { en: "See your income clearly", fr: "Voyez vos revenus clairement", uk: "Бачте дохід чітко" },
+  howTitle: { en: "Start in minutes", fr: "Démarrez en quelques minutes", uk: "Почніть за лічені хвилини" , pl: "Rozpocznij w kilka minut" },
+  how1: { en: "Add a client", fr: "Ajoutez un client", uk: "Додайте клієнта" , pl: "Dodaj klienta" },
+  how2: { en: "Schedule a session", fr: "Planifiez une séance", uk: "Заплануйте сесію" , pl: "Zaplanuj sesję" },
+  how3: { en: "See your income clearly", fr: "Voyez vos revenus clairement", uk: "Бачте дохід чітко" , pl: "Zobacz swoje dochody wyraźnie" },
 
   // Pricing
-  pricingTitle: { en: "Choose your practice", fr: "Choisissez votre formule", uk: "Оберіть свою практику" },
-  pricingSub: { en: "Both plans start with a free trial. No credit card.", fr: "Les deux formules démarrent par un essai gratuit. Sans carte.", uk: "Обидва плани починаються з безкоштовного періоду. Без картки." },
-  monthly: { en: "Monthly", fr: "Mensuel", uk: "Щомісяця" },
-  quarterly: { en: "Quarterly", fr: "Trimestriel", uk: "Щокварталу" },
-  yearly: { en: "Yearly", fr: "Annuel", uk: "Щороку" },
-  save20: { en: "Save 20%", fr: "−20 %", uk: "−20%" },
-  save40: { en: "Save 40%", fr: "−40 %", uk: "−40%" },
-  perMonth: { en: "/month", fr: "/mois", uk: "/міс" },
-  billedMo: { en: "Billed monthly", fr: "Facturé mensuellement", uk: "Оплата щомісяця" },
-  billedQ: { en: "Billed every 3 months", fr: "Facturé tous les 3 mois", uk: "Оплата раз на 3 місяці" },
-  billedY: { en: "Billed yearly", fr: "Facturé annuellement", uk: "Оплата раз на рік" },
-  soloName: { en: "Solo Practice", fr: "Pratique Solo", uk: "Solo-практика" },
-  soloDesc: { en: "For control and clarity", fr: "Pour le contrôle et la clarté", uk: "Для контролю та ясності" },
-  soloF1: { en: "Clients", fr: "Clients", uk: "Клієнти" },
-  soloF2: { en: "Sessions", fr: "Séances", uk: "Сесії" },
-  soloF3: { en: "Calendar", fr: "Calendrier", uk: "Календар" },
-  soloF4: { en: "Basic finances", fr: "Finances de base", uk: "Базові фінанси" },
-  proName: { en: "Pro Practice", fr: "Pratique Pro", uk: "Pro-практика" },
-  proDesc: { en: "For growth and stable income", fr: "Pour la croissance et un revenu stable", uk: "Для зростання та стабільного доходу" },
-  popular: { en: "Most popular", fr: "Le plus populaire", uk: "Найпопулярніший" },
-  proF1: { en: "Everything in Solo", fr: "Tout de Solo", uk: "Усе з Solo" },
-  proF2: { en: "Supervision", fr: "Supervision", uk: "Супервізія" },
-  proF3: { en: "Group sessions", fr: "Séances de groupe", uk: "Групові сесії" },
-  proF4: { en: "Advanced financial tracking", fr: "Suivi financier avancé", uk: "Розширений фінансовий облік" },
-  startTrial: { en: "Start free trial", fr: "Démarrer l'essai gratuit", uk: "Почати безкоштовний період" },
+  pricingTitle: { en: "Choose your practice", fr: "Choisissez votre formule", uk: "Оберіть свою практику" , pl: "Wybierz swoją praktykę" },
+  pricingSub: { en: "Both plans start with a free trial. No credit card.", fr: "Les deux formules démarrent par un essai gratuit. Sans carte.", uk: "Обидва плани починаються з безкоштовного періоду. Без картки." , pl: "Oba plany zaczynają się od bezpłatnego okresu próbnego. Bez karty kredytowej." },
+  monthly: { en: "Monthly", fr: "Mensuel", uk: "Щомісяця" , pl: "Miesięcznie" },
+  quarterly: { en: "Quarterly", fr: "Trimestriel", uk: "Щокварталу" , pl: "Kwartalnie" },
+  yearly: { en: "Yearly", fr: "Annuel", uk: "Щороку" , pl: "Rocznie" },
+  save20: { en: "Save 20%", fr: "−20 %", uk: "−20%" , pl: "Oszczędź 20%" },
+  save40: { en: "Save 40%", fr: "−40 %", uk: "−40%" , pl: "Oszczędź 40%" },
+  perMonth: { en: "/month", fr: "/mois", uk: "/міс" , pl: "/miesiąc" },
+  billedMo: { en: "Billed monthly", fr: "Facturé mensuellement", uk: "Оплата щомісяця" , pl: "Rozliczane co miesiąc" },
+  billedQ: { en: "Billed every 3 months", fr: "Facturé tous les 3 mois", uk: "Оплата раз на 3 місяці" , pl: "Rozliczane co 3 miesiące" },
+  billedY: { en: "Billed yearly", fr: "Facturé annuellement", uk: "Оплата раз на рік" , pl: "Rozliczane co rok" },
+  soloName: { en: "Solo Practice", fr: "Pratique Solo", uk: "Solo-практика" , pl: "Solo Practice" },
+  soloDesc: { en: "For control and clarity", fr: "Pour le contrôle et la clarté", uk: "Для контролю та ясності" , pl: "Dla kontroli i przejrzystości" },
+  soloF1: { en: "Clients", fr: "Clients", uk: "Клієнти" , pl: "Klienci" },
+  soloF2: { en: "Sessions", fr: "Séances", uk: "Сесії" , pl: "Sesje" },
+  soloF3: { en: "Calendar", fr: "Calendrier", uk: "Календар" , pl: "Kalendarz" },
+  soloF4: { en: "Basic finances", fr: "Finances de base", uk: "Базові фінанси" , pl: "Podstawowe finanse" },
+  proName: { en: "Pro Practice", fr: "Pratique Pro", uk: "Pro-практика" , pl: "Pro Practice" },
+  proDesc: { en: "For growth and stable income", fr: "Pour la croissance et un revenu stable", uk: "Для зростання та стабільного доходу" , pl: "Dla rozwoju i stabilnego dochodu" },
+  popular: { en: "Most popular", fr: "Le plus populaire", uk: "Найпопулярніший" , pl: "Najpopularniejszy wybór" },
+  proF1: { en: "Everything in Solo", fr: "Tout de Solo", uk: "Усе з Solo" , pl: "Wszystko w Solo" },
+  proF2: { en: "Supervision", fr: "Supervision", uk: "Супервізія" , pl: "Superwizja" },
+  proF3: { en: "Group sessions", fr: "Séances de groupe", uk: "Групові сесії" , pl: "Sesje grupowe" },
+  proF4: { en: "Advanced financial tracking", fr: "Suivi financier avancé", uk: "Розширений фінансовий облік" , pl: "Zaawansowane śledzenie finansów" },
+  startTrial: { en: "Start free trial", fr: "Démarrer l'essai gratuit", uk: "Почати безкоштовний період" , pl: "Rozpocznij bezpłatny okres próbny" },
 
   // Trust
-  trustTitle: { en: "Try it without overthinking", fr: "Essayez sans réfléchir", uk: "Спробуйте без зайвих сумнівів" },
-  trust1: { en: "No credit card required", fr: "Sans carte bancaire", uk: "Без банківської картки" },
-  trust2: { en: "Cancel anytime", fr: "Annulable à tout moment", uk: "Скасування будь-коли" },
-  trust3: { en: "Takes less than 2 minutes to start", fr: "Moins de 2 minutes pour démarrer", uk: "Менше 2 хвилин, щоб почати" },
-  trustCta: { en: "Try it now", fr: "Essayer maintenant", uk: "Спробувати зараз" },
+  trustTitle: { en: "Try it without overthinking", fr: "Essayez sans réfléchir", uk: "Спробуйте без зайвих сумнівів" , pl: "Wypróbuj bez zastanowienia" },
+  trust1: { en: "No credit card required", fr: "Sans carte bancaire", uk: "Без банківської картки" , pl: "Karta kredytowa nie jest wymagana" },
+  trust2: { en: "Cancel anytime", fr: "Annulable à tout moment", uk: "Скасування будь-коли" , pl: "Anuluj w dowolnym momencie" },
+  trust3: { en: "Takes less than 2 minutes to start", fr: "Moins de 2 minutes pour démarrer", uk: "Менше 2 хвилин, щоб почати" , pl: "Uruchomienie zajmuje mniej niż 2 minuty" },
+  trustCta: { en: "Try it now", fr: "Essayer maintenant", uk: "Спробувати зараз" , pl: "Wypróbuj teraz" },
 
   // Final
-  finalTitle1: { en: "You can keep working in chaos.", fr: "Vous pouvez continuer dans le chaos.", uk: "Можна й далі працювати в хаосі." },
-  finalTitle2: { en: "Or take control today.", fr: "Ou prendre le contrôle aujourd'hui.", uk: "Або взяти контроль уже сьогодні." },
+  finalTitle1: { en: "You can keep working in chaos.", fr: "Vous pouvez continuer dans le chaos.", uk: "Можна й далі працювати в хаосі." , pl: "Możesz dalej pracować w chaosie." },
+  finalTitle2: { en: "Or take control today.", fr: "Ou prendre le contrôle aujourd'hui.", uk: "Або взяти контроль уже сьогодні." , pl: "Albo przejąć kontrolę już dziś." },
 
   // Footer
-  rights: { en: "All rights reserved.", fr: "Tous droits réservés.", uk: "Усі права захищено." },
-  privacy: { en: "Privacy", fr: "Confidentialité", uk: "Конфіденційність" },
-  terms: { en: "Terms", fr: "Conditions", uk: "Умови" },
+  rights: { en: "All rights reserved.", fr: "Tous droits réservés.", uk: "Усі права захищено." , pl: "Wszystkie prawa zastrzeżone." },
+  privacy: { en: "Privacy", fr: "Confidentialité", uk: "Конфіденційність" , pl: "Prywatność" },
+  terms: { en: "Terms", fr: "Conditions", uk: "Умови" , pl: "Warunki" },
 } satisfies Record<string, Copy>;
 
 type CopyKey = keyof typeof C;
@@ -125,7 +125,7 @@ function useLandingLang() {
   return useContext(LandingLangContext);
 }
 
-const LANG_CYCLE: Language[] = ["en", "fr", "uk"];
+const LANG_CYCLE: Language[] = ["en", "fr", "uk", "pl"];
 
 function LandingLangProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLang] = useState<Language>(() => getStoredLang());
@@ -223,7 +223,7 @@ function LandingNav() {
             aria-label="Switch language"
             title={`Language: ${lang.toUpperCase()}`}
           >
-            {lang === "en" ? "🇬🇧 EN" : lang === "fr" ? "🇫🇷 FR" : "🇺🇦 UA"}
+            {lang === "en" ? "🇬🇧 EN" : lang === "fr" ? "🇫🇷 FR" : lang === "pl" ? "🇵🇱 PL" : "🇺🇦 UA"}
           </button>
           <Link to="/auth" className="hidden sm:block">
             <Button variant="ghost" size="sm">{t("navLogin")}</Button>
