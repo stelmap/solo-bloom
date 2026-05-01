@@ -99,16 +99,15 @@ export default function PlansPage() {
       const hasReal = await checkHasRealData();
       if (hasReal) {
         toast({
-          title: "Can't clear demo data",
-          description:
-            "Your workspace contains real records you created. Demo cleanup is blocked to protect them.",
+          title: t("plans.cantClearTitle"),
+          description: t("plans.cantClearDesc"),
           variant: "destructive",
         });
         return;
       }
       setConfirmClearOpen(true);
     } catch (e: any) {
-      toast({ title: "Check failed", description: e?.message ?? String(e), variant: "destructive" });
+      toast({ title: t("plans.checkFailed"), description: e?.message ?? String(e), variant: "destructive" });
     } finally {
       setClearing(false);
     }
@@ -121,8 +120,8 @@ export default function PlansPage() {
       const hasReal = await checkHasRealData();
       if (hasReal) {
         toast({
-          title: "Can't clear demo data",
-          description: "Real records were detected. Cleanup aborted.",
+          title: t("plans.cantClearTitle"),
+          description: t("plans.cantClearAborted"),
           variant: "destructive",
         });
         setConfirmClearOpen(false);
@@ -130,11 +129,11 @@ export default function PlansPage() {
       }
       const { error } = await supabase.rpc("cleanup_demo_workspace", { p_user_id: user.id });
       if (error) throw error;
-      toast({ title: "Demo data cleared", description: "Your workspace is now empty." });
+      toast({ title: t("plans.demoCleared"), description: t("plans.demoClearedDesc") });
       qc.invalidateQueries();
       sessionStorage.setItem(`demo_seed_attempted:${user.id}`, "1");
     } catch (e: any) {
-      toast({ title: "Failed to clear demo data", description: e?.message ?? String(e), variant: "destructive" });
+      toast({ title: t("plans.failedClear"), description: e?.message ?? String(e), variant: "destructive" });
     } finally {
       setClearing(false);
       setConfirmClearOpen(false);
