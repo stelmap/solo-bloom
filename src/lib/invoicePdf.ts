@@ -53,8 +53,8 @@ function t(key: string, lang: Language): string {
 }
 
 function formatCurrency(amount: number, currency: string, lang: Language): string {
-  const symbol = currency === "UAH" ? "₴" : "€";
-  if (lang === "uk") {
+  const symbol = currency === "UAH" ? "₴" : currency === "PLN" ? "zł" : "€";
+  if (lang === "uk" || lang === "pl" || currency === "PLN" || currency === "UAH") {
     return `${amount.toFixed(2).replace(".", ",")} ${symbol}`;
   }
   return `${symbol}${amount.toFixed(2)}`;
