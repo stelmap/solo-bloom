@@ -981,10 +981,8 @@ export function useGenerateTaxExpenses() {
 // Update expense payment status
 export function useUpdateExpensePaymentStatus() {
   const qc = useQueryClient();
-  const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ id, payment_status }: { id: string; payment_status: string }) => {
-      assertCanWrite();
       const { error } = await supabase.from("expenses").update({ payment_status } as any).eq("id", id);
       if (error) throw error;
     },
