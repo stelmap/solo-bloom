@@ -12,28 +12,33 @@ import {
   Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
+import { getStrings, type Lang } from './i18n.ts'
 
 interface ReauthenticationEmailProps {
   token: string
+  lang?: Lang | string
 }
 
-export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
-  <Html lang="en" dir="ltr">
+export const ReauthenticationEmail = ({ token, lang }: ReauthenticationEmailProps) => {
+  const s = getStrings(lang).reauthentication
+  return (
+  <Html lang={lang || 'en'} dir="ltr">
     <Head />
-    <Preview>Your Solo.Biz verification code</Preview>
+    <Preview>{s.preview}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
           <Text style={logo}>Solo<span style={logoDot}>.Biz</span></Text>
         </Section>
-        <Heading style={h1}>Confirm your identity</Heading>
-        <Text style={text}>Use the code below to verify it's you:</Text>
+        <Heading style={h1}>{s.heading}</Heading>
+        <Text style={text}>{s.intro}</Text>
         <Text style={codeStyle}>{token}</Text>
-        <Text style={footer}>This code will expire shortly. If you didn't request this, you can safely ignore this email.</Text>
+        <Text style={footer}>{s.footer}</Text>
       </Container>
     </Body>
   </Html>
-)
+  )
+}
 
 export default ReauthenticationEmail
 
