@@ -310,7 +310,7 @@ export default function PlansPage() {
           </div>
         ) : orderedPlans.length === 0 ? (
           <div className="text-center py-16 bg-card border border-border rounded-2xl">
-            <p className="text-muted-foreground">No active plans available yet.</p>
+            <p className="text-muted-foreground">{t("plans.loadingNone")}</p>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 gap-5 max-w-4xl mx-auto">
