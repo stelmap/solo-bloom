@@ -63,11 +63,11 @@ test.describe("Polish locale rendering", () => {
         currencyPLN: new Intl.NumberFormat("pl-PL", {
           style: "currency",
           currency: "PLN",
-        }).format(1234.5),
+        }).format(12345.5),
         currencyEUR: new Intl.NumberFormat("pl-PL", {
           style: "currency",
           currency: "EUR",
-        }).format(1234.5),
+        }).format(12345.5),
         dateLong: new Intl.DateTimeFormat("pl-PL", {
           day: "numeric",
           month: "long",
@@ -80,11 +80,11 @@ test.describe("Polish locale rendering", () => {
     // Polish uses non-breaking spaces (\u00A0) as group separators and a comma decimal.
     expect(result.number.replace(/\u00A0/g, " ")).toBe("1 234 567,89");
 
-    // PLN currency: "1234,50 zł" (with non-breaking space before zł).
-    expect(result.currencyPLN.replace(/\u00A0/g, " ")).toMatch(/1[\s ]234,50\s?zł/);
+    // PLN currency: "12 345,50 zł" (with non-breaking spaces).
+    expect(result.currencyPLN.replace(/\u00A0/g, " ")).toBe("12 345,50 zł");
 
-    // EUR in pl-PL format: "1234,50 €".
-    expect(result.currencyEUR.replace(/\u00A0/g, " ")).toMatch(/1[\s ]234,50\s?€/);
+    // EUR in pl-PL format: "12 345,50 €".
+    expect(result.currencyEUR.replace(/\u00A0/g, " ")).toBe("12 345,50 €");
 
     // Polish month name for January is "styczeń"; in date context it's "stycznia".
     expect(result.dateLong).toBe("31 stycznia 2026");
