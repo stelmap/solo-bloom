@@ -101,9 +101,11 @@ async function handlePreview(req: Request): Promise<Response> {
   }
 
   let type: string
+  let lang: Lang = 'en'
   try {
     const body = await req.json()
     type = body.type
+    if (body.lang) lang = normalizeLang(body.lang)
   } catch (error) {
     return new Response(JSON.stringify({ error: 'Invalid JSON in request body' }), {
       status: 400,
@@ -120,7 +122,7 @@ async function handlePreview(req: Request): Promise<Response> {
     })
   }
 
-  const sampleData = SAMPLE_DATA[type] || {}
+  const sampleData = { ...(SAMPLE_DATA[type] || {}), lang }
   const html = await renderAsync(React.createElement(EmailTemplate, sampleData))
 
   return new Response(html, {
