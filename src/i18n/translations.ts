@@ -1149,6 +1149,9 @@ export const translations = {
   "ops.supervisionType": { en: "Supervision", uk: "Супервізія", fr: "Supervision" , pl: "Nadzór" },
   "ops.unpaid": { en: "Unpaid", uk: "Не оплачено", fr: "Impayé" , pl: "Nieopłacone" },
   "ops.empty": { en: "Nothing scheduled today — enjoy the day!", uk: "На сьогодні нічого не заплановано — відпочивайте!", fr: "Rien de prévu aujourd'hui — profitez !" , pl: "Brak zaplanowanych spotkań na dziś – miłego dnia!" },
+  "ops.donePaid": { en: "Done paid", uk: "Завершено та оплачено", fr: "Terminé payé", pl: "Zakończone opłacone" },
+  "ops.doneNotPaid": { en: "Done not paid", uk: "Завершено без оплати", fr: "Terminé impayé", pl: "Zakończone nieopłacone" },
+  "ops.cancelledSessions": { en: "Cancelled sessions", uk: "Скасовані сеанси", fr: "Séances annulées", pl: "Anulowane sesje" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;
