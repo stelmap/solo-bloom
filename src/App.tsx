@@ -38,6 +38,8 @@ const DiagnosticsPage = lazy(() => import("./pages/DiagnosticsPage"));
 const PlansPage = lazy(() => import("./pages/PlansPage"));
 const PurchaseSuccessPage = lazy(() => import("./pages/PurchaseSuccessPage"));
 
+const AdminEmailPreviewPage = lazy(() => import("./pages/AdminEmailPreviewPage"));
+
 const queryClient = new QueryClient();
 
 function PageFallback() {
@@ -92,6 +94,7 @@ const App = () => (
                 <Route path="/diagnostics" element={<ProtectedRoute><DiagnosticsPage /></ProtectedRoute>} />
                 <Route path="/plans" element={<ProtectedRoute><PlansPage /></ProtectedRoute>} />
                 <Route path="/purchase-success" element={<ProtectedRoute><PurchaseSuccessPage /></ProtectedRoute>} />
+                <Route path="/admin/email-preview" element={<ProtectedRoute><AdminEmailPreviewPage /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
