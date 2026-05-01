@@ -152,8 +152,8 @@ export default function PlansPage() {
           .eq("is_active", true),
       ]);
       if (cancelled) return;
-      if (plansRes.error) toast({ title: "Failed to load plans", description: plansRes.error.message, variant: "destructive" });
-      if (pricesRes.error) toast({ title: "Failed to load prices", description: pricesRes.error.message, variant: "destructive" });
+      if (plansRes.error) toast({ title: t("plans.failedLoadPlans"), description: plansRes.error.message, variant: "destructive" });
+      if (pricesRes.error) toast({ title: t("plans.failedLoadPrices"), description: pricesRes.error.message, variant: "destructive" });
       setPlans((plansRes.data ?? []) as Plan[]);
       setPrices((pricesRes.data ?? []) as PlanPrice[]);
       setLoading(false);
