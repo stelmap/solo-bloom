@@ -296,6 +296,10 @@ export default function IncomePage() {
                 <div className="flex justify-between"><span className="text-muted-foreground">{t("common.amount")}</span><span className="font-semibold text-foreground">{cs}{Number(payDialog.amount).toFixed(2)}</span></div>
               </div>
               <div className="space-y-2">
+                <Label>{t("common.paymentDate")}</Label>
+                <Input type="date" value={payDate} onChange={e => setPayDate(e.target.value)} />
+              </div>
+              <div className="space-y-2">
                 <Label>{t("calendar.paymentMethod")}</Label>
                 <div className="grid grid-cols-3 gap-2">
                   {PAYMENT_METHODS.map(m => (
