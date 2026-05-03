@@ -60,6 +60,10 @@ export default function BreakevenPage() {
   const today = new Date().toISOString().split("T")[0];
   const monthStart = today.substring(0, 7) + "-01";
 
+  const incomeDateField: "date" | "session_date" =
+    (profile as any)?.income_recognition_method === "session_date" ? "session_date" : "date";
+  const incomeDateOf = (i: any) => i[incomeDateField] || i.date;
+
   // Build monthly maps for forecasting
   const { incomeByMonth, expensesByMonth, taxByMonth, sessionsByMonth } = useMemo(() => {
     const incMap = new Map<string, number>();
@@ -68,7 +72,9 @@ export default function BreakevenPage() {
     const sesMap = new Map<string, number>();
 
     for (const inc of income) {
-      const key = inc.date.substring(0, 7);
+      const d = incomeDateOf(inc);
+      if (!d) continue;
+      const key = (d as string).substring(0, 7);
       incMap.set(key, (incMap.get(key) || 0) + Number(inc.amount));
     }
     for (const exp of expenses) {
@@ -86,7 +92,7 @@ export default function BreakevenPage() {
       }
     }
     return { incomeByMonth: incMap, expensesByMonth: expMap, taxByMonth: taxMap, sessionsByMonth: sesMap };
-  }, [income, expenses, appointments]);
+  }, [income, expenses, appointments, incomeDateField]);
 
   const monthlyExpenses = expenses.filter((e: any) => {
     if (e.is_recurring) {
