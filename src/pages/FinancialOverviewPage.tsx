@@ -186,7 +186,7 @@ export default function FinancialOverviewPage() {
         incomeItems: monthIncome.map((i: any) => ({
           description: i.description || (i.appointments?.clients?.name ? `${i.appointments.clients.name} — ${i.appointments.services?.name}` : "Manual"),
           amount: Number(i.amount),
-          date: format(new Date(i.date), "MMM d"),
+          date: format(new Date(incomeDateOf(i)), "MMM d"),
           type: "confirmed" as const,
         })),
         expenseItems: monthExpenses.map((e: any) => ({
