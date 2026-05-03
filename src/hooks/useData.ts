@@ -380,9 +380,19 @@ export function useCompleteAppointment() {
   const { user } = useAuth();
   const { isDemoMode } = useDemoMode();
   return useMutation({
-    mutationFn: async ({ appointmentId, clientId, price, paymentMethod, paymentStatus }: {
-      appointmentId: string; clientId: string; price: number; paymentMethod: string; paymentStatus: string;
+    mutationFn: async ({ appointmentId, clientId, price, paymentMethod, paymentStatus, paymentDate }: {
+      appointmentId: string; clientId: string; price: number; paymentMethod: string; paymentStatus: string; paymentDate?: string;
     }) => {
+      // Fetch session date for storing on income row
+      const { data: aptData } = await supabase
+        .from("appointments")
+        .select("scheduled_at")
+        .eq("id", appointmentId)
+        .single();
+      const sessionDate = aptData?.scheduled_at
+        ? new Date(aptData.scheduled_at).toISOString().split("T")[0]
+        : undefined;
+
       const { error: aptErr } = await supabase
         .from("appointments")
         .update({ status: "completed", price, payment_status: paymentStatus } as any)
@@ -393,11 +403,12 @@ export function useCompleteAppointment() {
       await supabase.from("expected_payments").delete().eq("appointment_id", appointmentId);
 
       const today = new Date().toISOString().split("T")[0];
+      const payDate = paymentDate || today;
 
       if (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") {
         const { error: incErr } = await supabase.from("income").insert({
           user_id: user!.id, appointment_id: appointmentId,
-          amount: price, date: today, source: "appointment",
+          amount: price, date: payDate, session_date: sessionDate ?? payDate, source: "appointment",
           payment_method: paymentMethod,
           ...(isDemoMode ? { is_demo: true } : {}),
         } as any);
