@@ -53,6 +53,7 @@ export default function SettingsPage() {
     full_name: "", business_name: "", phone: "", language: "en", reminder_minutes: 1440,
     work_hours_start: "09:00", work_hours_end: "18:00", time_format: "24h", default_duration: 60,
     currency: "EUR", business_id: "", business_address: "", vat_mode: "none", vat_rate: 0,
+    income_recognition_method: "payment_date",
   });
 
   // Password change state
