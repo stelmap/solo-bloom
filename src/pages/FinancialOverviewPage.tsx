@@ -46,6 +46,10 @@ export default function FinancialOverviewPage() {
   const { data: allAppointments = [] } = useAppointments();
   const { data: taxSettings = [] } = useTaxSettings();
   const { data: expectedPayments = [] } = useExpectedPayments();
+  const { data: profile } = useProfile();
+  const incomeDateField: "date" | "session_date" =
+    (profile as any)?.income_recognition_method === "session_date" ? "session_date" : "date";
+  const incomeDateOf = (i: any) => i[incomeDateField] || i.date;
 
   const now = new Date();
   const currentMonth = now.getMonth();
