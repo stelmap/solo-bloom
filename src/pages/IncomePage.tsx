@@ -100,7 +100,7 @@ export default function IncomePage() {
     try {
       await markPaid.mutateAsync({
         id: payDialog.id, appointmentId: payDialog.appointment_id,
-        amount: Number(payDialog.amount), paymentMethod: payMethod,
+        amount: Number(payDialog.amount), paymentMethod: payMethod, paymentDate: payDate,
       });
       setPayDialog(null);
       toast({ title: t("toast.paymentReceived"), description: t("toast.paymentRecordedDesc", { amount: Number(payDialog.amount).toFixed(2) }) });
