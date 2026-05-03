@@ -152,7 +152,7 @@ export default function FinancialOverviewPage() {
       }
 
       // Past/current: actual data only
-      const monthIncome = (allIncome as any[]).filter(i => i.date?.startsWith(mKey));
+      const monthIncome = (allIncome as any[]).filter(i => (incomeDateOf(i) as string)?.startsWith(mKey));
       const monthExpenses = (allExpenses as any[]).filter(e => e.date?.startsWith(mKey));
       const totalIncome = monthIncome.reduce((s, i) => s + Number(i.amount), 0);
 
