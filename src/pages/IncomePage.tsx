@@ -39,6 +39,7 @@ export default function IncomePage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [payDialog, setPayDialog] = useState<any>(null);
   const [payMethod, setPayMethod] = useState("cash");
+  const [payDate, setPayDate] = useState(new Date().toISOString().split("T")[0]);
   const [form, setForm] = useState({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash", client_id: "" });
 
   // Filters
@@ -99,7 +100,7 @@ export default function IncomePage() {
     try {
       await markPaid.mutateAsync({
         id: payDialog.id, appointmentId: payDialog.appointment_id,
-        amount: Number(payDialog.amount), paymentMethod: payMethod,
+        amount: Number(payDialog.amount), paymentMethod: payMethod, paymentDate: payDate,
       });
       setPayDialog(null);
       toast({ title: t("toast.paymentReceived"), description: t("toast.paymentRecordedDesc", { amount: Number(payDialog.amount).toFixed(2) }) });
@@ -273,7 +274,7 @@ export default function IncomePage() {
                       </p>
                     </div>
                     <p className="text-lg font-bold text-warning">{cs}{Number(ep.amount).toFixed(2)}</p>
-                    <Button size="sm" onClick={() => { setPayDialog(ep); setPayMethod("cash"); }}>
+                    <Button size="sm" onClick={() => { setPayDialog(ep); setPayMethod("cash"); setPayDate(new Date().toISOString().split("T")[0]); }}>
                       <CheckCircle className="h-4 w-4 mr-1" /> {t("income.markPaid")}
                     </Button>
                   </div>
@@ -293,6 +294,10 @@ export default function IncomePage() {
               <div className="bg-muted/50 rounded-lg p-4 space-y-1 text-sm">
                 <div className="flex justify-between"><span className="text-muted-foreground">{t("calendar.client")}</span><span className="font-medium text-foreground">{payDialog.clients?.name}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">{t("common.amount")}</span><span className="font-semibold text-foreground">{cs}{Number(payDialog.amount).toFixed(2)}</span></div>
+              </div>
+              <div className="space-y-2">
+                <Label>{t("common.paymentDate")}</Label>
+                <Input type="date" value={payDate} onChange={e => setPayDate(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>{t("calendar.paymentMethod")}</Label>

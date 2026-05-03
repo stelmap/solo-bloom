@@ -976,6 +976,7 @@ export type Database = {
           payment_method: string
           seed_batch_id: string | null
           seed_source: string | null
+          session_date: string | null
           source: string
           updated_at: string
           user_id: string
@@ -992,6 +993,7 @@ export type Database = {
           payment_method?: string
           seed_batch_id?: string | null
           seed_source?: string | null
+          session_date?: string | null
           source?: string
           updated_at?: string
           user_id: string
@@ -1008,6 +1010,7 @@ export type Database = {
           payment_method?: string
           seed_batch_id?: string | null
           seed_source?: string | null
+          session_date?: string | null
           source?: string
           updated_at?: string
           user_id?: string
@@ -1227,6 +1230,7 @@ export type Database = {
           default_duration: number
           full_name: string | null
           id: string
+          income_recognition_method: string
           language: string
           onboarding_completed: boolean
           phone: string | null
@@ -1250,6 +1254,7 @@ export type Database = {
           default_duration?: number
           full_name?: string | null
           id?: string
+          income_recognition_method?: string
           language?: string
           onboarding_completed?: boolean
           phone?: string | null
@@ -1273,6 +1278,7 @@ export type Database = {
           default_duration?: number
           full_name?: string | null
           id?: string
+          income_recognition_method?: string
           language?: string
           onboarding_completed?: boolean
           phone?: string | null

@@ -81,6 +81,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [completePrice, setCompletePrice] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [paymentStatus, setPaymentStatus] = useState("paid_now");
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
   const [groupPaymentState, setGroupPaymentState] = useState("paid_now");
   const [groupPaymentMethod, setGroupPaymentMethod] = useState("cash");
 
@@ -377,7 +378,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       } else {
         await completeAppointment.mutateAsync({
           appointmentId: apt.id, clientId: apt.client_id,
-          price: completePrice, paymentMethod, paymentStatus,
+          price: completePrice, paymentMethod, paymentStatus, paymentDate,
         });
         const msg = paymentStatus === "waiting_for_payment"
           ? t("toast.sessionCompletedExpected") : t("toast.sessionCompletedIncome", { amount: completePrice.toString() });
@@ -827,19 +828,25 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
               </div>
 
               {(paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") && (
-                <div className="space-y-2">
-                  <Label>{t("calendar.paymentMethod")}</Label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {PAYMENT_METHODS.map(m => (
-                      <button key={m.value} onClick={() => setPaymentMethod(m.value)}
-                        className={cn("p-3 rounded-lg border text-sm font-medium transition-colors text-center",
-                          paymentMethod === m.value ? "bg-primary/10 border-primary text-primary" : "bg-card border-border text-muted-foreground hover:bg-muted"
-                        )}>
-                        {m.label}
-                      </button>
-                    ))}
+                <>
+                  <div className="space-y-2">
+                    <Label>{t("common.paymentDate")}</Label>
+                    <Input type="date" value={paymentDate} onChange={e => setPaymentDate(e.target.value)} />
                   </div>
-                </div>
+                  <div className="space-y-2">
+                    <Label>{t("calendar.paymentMethod")}</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {PAYMENT_METHODS.map(m => (
+                        <button key={m.value} onClick={() => setPaymentMethod(m.value)}
+                          className={cn("p-3 rounded-lg border text-sm font-medium transition-colors text-center",
+                            paymentMethod === m.value ? "bg-primary/10 border-primary text-primary" : "bg-card border-border text-muted-foreground hover:bg-muted"
+                          )}>
+                          {m.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
               )}
 
               <div className={cn("rounded-lg p-4 flex items-center gap-3 border",

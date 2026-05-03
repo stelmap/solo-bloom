@@ -53,6 +53,7 @@ export default function SettingsPage() {
     full_name: "", business_name: "", phone: "", language: "en", reminder_minutes: 1440,
     work_hours_start: "09:00", work_hours_end: "18:00", time_format: "24h", default_duration: 60,
     currency: "EUR", business_id: "", business_address: "", vat_mode: "none", vat_rate: 0,
+    income_recognition_method: "payment_date",
   });
 
   // Password change state
@@ -93,6 +94,7 @@ export default function SettingsPage() {
         business_address: (profile as any).business_address || "",
         vat_mode: (profile as any).vat_mode || "none",
         vat_rate: Number((profile as any).vat_rate) || 0,
+        income_recognition_method: (profile as any).income_recognition_method || "payment_date",
       });
     }
   }, [profile]);
@@ -412,6 +414,46 @@ export default function SettingsPage() {
                 <Input type="number" min={0} max={100} value={form.vat_rate} onChange={e => setForm(f => ({ ...f, vat_rate: Number(e.target.value) }))} />
               </div>
             )}
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Financial analytics — Income recognition method */}
+        <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
+          <div>
+            <h2 className="font-semibold text-foreground">{t("settings.financialAnalytics")}</h2>
+            <p className="text-sm text-muted-foreground mt-1">{t("settings.incomeRecognitionDesc")}</p>
+          </div>
+          <div className="space-y-2">
+            <Label>{t("settings.incomeRecognition")}</Label>
+            <RadioGroup
+              value={form.income_recognition_method}
+              onValueChange={(v) => setForm((f) => ({ ...f, income_recognition_method: v }))}
+              className="grid gap-2"
+            >
+              {(["payment_date", "session_date"] as const).map((val) => {
+                const labelKey = val === "payment_date" ? "settings.byPaymentDate" : "settings.bySessionDate";
+                const descKey = val === "payment_date" ? "settings.byPaymentDateDesc" : "settings.bySessionDateDesc";
+                return (
+                  <Label
+                    key={val}
+                    htmlFor={`irm-${val}`}
+                    className={cn(
+                      "flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors",
+                      form.income_recognition_method === val ? "border-primary bg-primary/5" : "border-border hover:bg-muted/40"
+                    )}
+                  >
+                    <RadioGroupItem id={`irm-${val}`} value={val} className="mt-0.5" />
+                    <div className="space-y-0.5">
+                      <div className="text-sm font-medium text-foreground">{t(labelKey as any)}</div>
+                      <div className="text-xs text-muted-foreground">{t(descKey as any)}</div>
+                    </div>
+                  </Label>
+                );
+              })}
+            </RadioGroup>
+            <p className="text-xs text-muted-foreground">{t("settings.incomeRecognitionHelper")}</p>
           </div>
         </div>
 

@@ -380,9 +380,19 @@ export function useCompleteAppointment() {
   const { user } = useAuth();
   const { isDemoMode } = useDemoMode();
   return useMutation({
-    mutationFn: async ({ appointmentId, clientId, price, paymentMethod, paymentStatus }: {
-      appointmentId: string; clientId: string; price: number; paymentMethod: string; paymentStatus: string;
+    mutationFn: async ({ appointmentId, clientId, price, paymentMethod, paymentStatus, paymentDate }: {
+      appointmentId: string; clientId: string; price: number; paymentMethod: string; paymentStatus: string; paymentDate?: string;
     }) => {
+      // Fetch session date for storing on income row
+      const { data: aptData } = await supabase
+        .from("appointments")
+        .select("scheduled_at")
+        .eq("id", appointmentId)
+        .single();
+      const sessionDate = aptData?.scheduled_at
+        ? new Date(aptData.scheduled_at).toISOString().split("T")[0]
+        : undefined;
+
       const { error: aptErr } = await supabase
         .from("appointments")
         .update({ status: "completed", price, payment_status: paymentStatus } as any)
@@ -393,11 +403,12 @@ export function useCompleteAppointment() {
       await supabase.from("expected_payments").delete().eq("appointment_id", appointmentId);
 
       const today = new Date().toISOString().split("T")[0];
+      const payDate = paymentDate || today;
 
       if (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") {
         const { error: incErr } = await supabase.from("income").insert({
           user_id: user!.id, appointment_id: appointmentId,
-          amount: price, date: today, source: "appointment",
+          amount: price, date: payDate, session_date: sessionDate ?? payDate, source: "appointment",
           payment_method: paymentMethod,
           ...(isDemoMode ? { is_demo: true } : {}),
         } as any);
@@ -524,21 +535,33 @@ export function useMarkExpectedPaymentPaid() {
   const { user } = useAuth();
   const { isDemoMode } = useDemoMode();
   return useMutation({
-    mutationFn: async ({ id, appointmentId, amount, paymentMethod }: {
-      id: string; appointmentId: string; amount: number; paymentMethod: string;
+    mutationFn: async ({ id, appointmentId, amount, paymentMethod, paymentDate }: {
+      id: string; appointmentId: string; amount: number; paymentMethod: string; paymentDate?: string;
     }) => {
+      const today = new Date().toISOString().split("T")[0];
+      const payDate = paymentDate || today;
+
+      // Get session date from appointment
+      const { data: aptData } = await supabase
+        .from("appointments")
+        .select("scheduled_at")
+        .eq("id", appointmentId)
+        .single();
+      const sessionDate = aptData?.scheduled_at
+        ? new Date(aptData.scheduled_at).toISOString().split("T")[0]
+        : payDate;
+
       const { error: epErr } = await supabase
         .from("expected_payments")
-        .update({ status: "paid", paid_at: new Date().toISOString(), payment_method: paymentMethod } as any)
+        .update({ status: "paid", paid_at: new Date(payDate + "T12:00:00").toISOString(), payment_method: paymentMethod } as any)
         .eq("id", id);
       if (epErr) throw epErr;
 
       await supabase.from("appointments").update({ payment_status: "paid_now" } as any).eq("id", appointmentId);
 
-      const today = new Date().toISOString().split("T")[0];
       const { error: incErr } = await supabase.from("income").insert({
         user_id: user!.id, appointment_id: appointmentId,
-        amount, date: today, source: "appointment",
+        amount, date: payDate, session_date: sessionDate, source: "appointment",
         payment_method: paymentMethod,
         ...(isDemoMode ? { is_demo: true } : {}),
       } as any);
@@ -734,7 +757,7 @@ export function useUpdateProfile() {
   return useMutation({
     // Personal/account settings (language, currency, profile info, working preferences)
     // must always be editable regardless of subscription/demo state.
-    mutationFn: async (updates: { full_name?: string; business_name?: string; phone?: string; language?: string; reminder_minutes?: number; work_hours_start?: string; work_hours_end?: string; time_format?: string; default_duration?: number; currency?: string; business_id?: string; business_address?: string; vat_mode?: string; vat_rate?: number; onboarding_completed?: boolean }) => {
+    mutationFn: async (updates: { full_name?: string; business_name?: string; phone?: string; language?: string; reminder_minutes?: number; work_hours_start?: string; work_hours_end?: string; time_format?: string; default_duration?: number; currency?: string; business_id?: string; business_address?: string; vat_mode?: string; vat_rate?: number; onboarding_completed?: boolean; income_recognition_method?: string }) => {
       const { error } = await supabase.from("profiles").update(updates as any).eq("user_id", user!.id);
       if (error) throw error;
     },
@@ -1245,11 +1268,19 @@ export function useDashboardStats() {
   return useQuery({
     queryKey: ["dashboard-stats", user?.id, today],
     queryFn: async () => {
+      // Fetch user's income recognition method
+      const { data: profileSetting } = await supabase
+        .from("profiles")
+        .select("income_recognition_method")
+        .eq("user_id", user!.id)
+        .single();
+      const recognitionField = (profileSetting as any)?.income_recognition_method === "session_date"
+        ? "session_date"
+        : "date";
+
       const [incomeRes, lastWeekIncomeRes, expenseRes, clientRes, todayAptRes, monthAptRes, profileRes, scheduleRes, daysOffRes] = await Promise.all([
-        // Only fetch income from the start of the current month (covers monthly + today)
-        supabase.from("income").select("amount, date").gte("date", monthStart),
-        // Fetch last week's income separately (may be in previous month)
-        supabase.from("income").select("amount, date").gte("date", lastMondayStr).lte("date", lastSundayStr),
+        supabase.from("income").select(`amount, ${recognitionField}`).gte(recognitionField, monthStart),
+        supabase.from("income").select(`amount, ${recognitionField}`).gte(recognitionField, lastMondayStr).lte(recognitionField, lastSundayStr),
         supabase.from("expenses").select("amount, date, is_recurring").gte("date", monthStart),
         supabase.from("clients").select("id", { count: "exact", head: true }),
         supabase.from("appointments")
@@ -1272,12 +1303,13 @@ export function useDashboardStats() {
           .lte("date", today.substring(0, 7) + "-31"),
       ]);
 
+      const dateOf = (row: any) => row[recognitionField];
       const monthIncome = incomeRes.data ?? [];
       const allExpenses = expenseRes.data ?? [];
-      const todayIncome = monthIncome.filter(i => i.date === today).reduce((s, i) => s + Number(i.amount), 0);
-      const monthlyIncome = monthIncome.reduce((s, i) => s + Number(i.amount), 0);
+      const todayIncome = monthIncome.filter((i: any) => dateOf(i) === today).reduce((s: number, i: any) => s + Number(i.amount), 0);
+      const monthlyIncome = monthIncome.reduce((s: number, i: any) => s + Number(i.amount), 0);
       const monthlyExpenses = allExpenses.reduce((s, e) => s + Number(e.amount), 0);
-      const thisWeekIncome = monthIncome.filter(i => i.date >= thisMondayStr && i.date <= today).reduce((s, i) => s + Number(i.amount), 0);
+      const thisWeekIncome = monthIncome.filter((i: any) => dateOf(i) >= thisMondayStr && dateOf(i) <= today).reduce((s: number, i: any) => s + Number(i.amount), 0);
       const lastWeekIncome = (lastWeekIncomeRes.data ?? []).reduce((s, i) => s + Number(i.amount), 0);
 
       const profile = profileRes.data as any;

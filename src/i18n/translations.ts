@@ -987,6 +987,15 @@ export const translations = {
 
   // Settings - Billing
   "settings.billing": { en: "Billing & Invoice", uk: "Білінг та рахунки", fr: "Facturation" , pl: "Rozliczenia i faktury" },
+  "settings.financialAnalytics": { en: "Financial analytics", uk: "Фінансова аналітика", fr: "Analyse financière", pl: "Analityka finansowa" },
+  "settings.incomeRecognition": { en: "Income recognition method", uk: "Метод обліку доходу", fr: "Méthode de comptabilisation des revenus", pl: "Metoda rozpoznawania przychodu" },
+  "settings.incomeRecognitionDesc": { en: "Choose which date should be used to calculate income in financial analytics.", uk: "Оберіть, яку дату система повинна використовувати для розрахунку доходу у фінансовій аналітиці.", fr: "Choisissez quelle date doit être utilisée pour calculer les revenus dans les analyses financières.", pl: "Wybierz, która data ma być używana do obliczania przychodu w analityce." },
+  "settings.incomeRecognitionHelper": { en: "This setting defines how income is grouped in dashboards and reports.", uk: "Це налаштування визначає, як дохід групується в дашбордах і звітах.", fr: "Ce paramètre définit comment les revenus sont regroupés dans les tableaux de bord et les rapports.", pl: "To ustawienie określa, jak przychód jest grupowany w dashboardach i raportach." },
+  "settings.byPaymentDate": { en: "By actual payment date", uk: "За фактичною датою оплати", fr: "Par date réelle de paiement", pl: "Według rzeczywistej daty płatności" },
+  "settings.byPaymentDateDesc": { en: "Income is counted on the date when the payment was actually received.", uk: "Дохід враховується в дату, коли оплату фактично було отримано.", fr: "Le revenu est comptabilisé à la date réelle de réception du paiement.", pl: "Przychód liczony jest w dniu faktycznego otrzymania płatności." },
+  "settings.bySessionDate": { en: "By session date", uk: "За датою проведення сесії", fr: "Par date de séance", pl: "Według daty sesji" },
+  "settings.bySessionDateDesc": { en: "Income is counted on the date when the session was conducted, even if the payment was received later.", uk: "Дохід враховується в дату проведення сесії, навіть якщо оплату було отримано пізніше.", fr: "Le revenu est comptabilisé à la date de la séance, même si le paiement a été reçu plus tard.", pl: "Przychód liczony jest w dniu sesji, nawet jeśli płatność została otrzymana później." },
+  "common.paymentDate": { en: "Payment date", uk: "Дата оплати", fr: "Date de paiement", pl: "Data płatności" },
   "settings.businessId": { en: "Business ID (VAT/SIRET/FOP)", uk: "ІПН / ЄДРПОУ / ФОП", fr: "N° SIRET / TVA" , pl: "Identyfikator firmy (NIP/SIRET/FOP)" },
   "settings.businessAddress": { en: "Business Address", uk: "Адреса бізнесу", fr: "Adresse professionnelle" , pl: "Adres firmy" },
   "settings.vatMode": { en: "VAT Mode", uk: "Режим ПДВ", fr: "Mode TVA" , pl: "Tryb VAT" },
