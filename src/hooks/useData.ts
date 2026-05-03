@@ -757,7 +757,7 @@ export function useUpdateProfile() {
   return useMutation({
     // Personal/account settings (language, currency, profile info, working preferences)
     // must always be editable regardless of subscription/demo state.
-    mutationFn: async (updates: { full_name?: string; business_name?: string; phone?: string; language?: string; reminder_minutes?: number; work_hours_start?: string; work_hours_end?: string; time_format?: string; default_duration?: number; currency?: string; business_id?: string; business_address?: string; vat_mode?: string; vat_rate?: number; onboarding_completed?: boolean }) => {
+    mutationFn: async (updates: { full_name?: string; business_name?: string; phone?: string; language?: string; reminder_minutes?: number; work_hours_start?: string; work_hours_end?: string; time_format?: string; default_duration?: number; currency?: string; business_id?: string; business_address?: string; vat_mode?: string; vat_rate?: number; onboarding_completed?: boolean; income_recognition_method?: string }) => {
       const { error } = await supabase.from("profiles").update(updates as any).eq("user_id", user!.id);
       if (error) throw error;
     },
