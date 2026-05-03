@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
-import { useIncome, useExpenses, useAppointments, useTaxSettings, useExpectedPayments } from "@/hooks/useData";
+import { useIncome, useExpenses, useAppointments, useTaxSettings, useExpectedPayments, useProfile } from "@/hooks/useData";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { format, startOfMonth, endOfMonth, eachMonthOfInterval, isBefore, isAfter, isSameMonth } from "date-fns";
@@ -46,6 +46,10 @@ export default function FinancialOverviewPage() {
   const { data: allAppointments = [] } = useAppointments();
   const { data: taxSettings = [] } = useTaxSettings();
   const { data: expectedPayments = [] } = useExpectedPayments();
+  const { data: profile } = useProfile();
+  const incomeDateField: "date" | "session_date" =
+    (profile as any)?.income_recognition_method === "session_date" ? "session_date" : "date";
+  const incomeDateOf = (i: any) => i[incomeDateField] || i.date;
 
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -148,7 +152,7 @@ export default function FinancialOverviewPage() {
       }
 
       // Past/current: actual data only
-      const monthIncome = (allIncome as any[]).filter(i => i.date?.startsWith(mKey));
+      const monthIncome = (allIncome as any[]).filter(i => (incomeDateOf(i) as string)?.startsWith(mKey));
       const monthExpenses = (allExpenses as any[]).filter(e => e.date?.startsWith(mKey));
       const totalIncome = monthIncome.reduce((s, i) => s + Number(i.amount), 0);
 
@@ -182,7 +186,7 @@ export default function FinancialOverviewPage() {
         incomeItems: monthIncome.map((i: any) => ({
           description: i.description || (i.appointments?.clients?.name ? `${i.appointments.clients.name} — ${i.appointments.services?.name}` : "Manual"),
           amount: Number(i.amount),
-          date: format(new Date(i.date), "MMM d"),
+          date: format(new Date(incomeDateOf(i)), "MMM d"),
           type: "confirmed" as const,
         })),
         expenseItems: monthExpenses.map((e: any) => ({
@@ -194,7 +198,7 @@ export default function FinancialOverviewPage() {
         })),
       };
     });
-  }, [year, allIncome, allExpenses, allAppointments, activeTaxes, expectedPayments, currentMonth, currentYear]);
+  }, [year, allIncome, allExpenses, allAppointments, activeTaxes, expectedPayments, currentMonth, currentYear, incomeDateField]);
 
   // Yearly summaries
   const pastMonths = monthsData.filter(m => !m.isFuture && (m.income > 0 || m.expenses > 0));

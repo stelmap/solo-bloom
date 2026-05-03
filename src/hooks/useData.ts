@@ -761,7 +761,13 @@ export function useUpdateProfile() {
       const { error } = await supabase.from("profiles").update(updates as any).eq("user_id", user!.id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["profile"] }),
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["profile"] });
+      // If recognition method changed, recompute analytics that group income by date
+      if (vars.income_recognition_method !== undefined) {
+        ["dashboard-stats", "income", "client-income"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
+      }
+    },
   });
 }
 
