@@ -378,7 +378,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       } else {
         await completeAppointment.mutateAsync({
           appointmentId: apt.id, clientId: apt.client_id,
-          price: completePrice, paymentMethod, paymentStatus,
+          price: completePrice, paymentMethod, paymentStatus, paymentDate,
         });
         const msg = paymentStatus === "waiting_for_payment"
           ? t("toast.sessionCompletedExpected") : t("toast.sessionCompletedIncome", { amount: completePrice.toString() });
