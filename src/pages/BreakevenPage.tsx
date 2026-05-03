@@ -118,7 +118,7 @@ export default function BreakevenPage() {
     return e.date >= monthStart && e.category === "Tax";
   }).reduce((s: number, e: any) => s + Number(e.amount), 0);
 
-  const monthlyIncome = income.filter((i: any) => i.date >= monthStart).reduce((s: number, i: any) => s + Number(i.amount), 0);
+  const monthlyIncome = income.filter((i: any) => (incomeDateOf(i) ?? "") >= monthStart).reduce((s: number, i: any) => s + Number(i.amount), 0);
   const avgServicePrice = services.length > 0 ? services.reduce((s, sv) => s + Number(sv.price), 0) / services.length : 1;
   const sessionsCompleted = appointments.filter(a => a.status === "completed" && a.scheduled_at >= monthStart + "T00:00:00").length;
   const bookedSessions = appointments.filter(a => (a.status === "scheduled" || a.status === "confirmed") && a.scheduled_at >= today + "T00:00:00" && a.scheduled_at < today.substring(0, 7) + "-31T23:59:59").length;
