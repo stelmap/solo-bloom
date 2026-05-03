@@ -419,6 +419,46 @@ export default function SettingsPage() {
 
         <Separator />
 
+        {/* Financial analytics — Income recognition method */}
+        <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
+          <div>
+            <h2 className="font-semibold text-foreground">{t("settings.financialAnalytics")}</h2>
+            <p className="text-sm text-muted-foreground mt-1">{t("settings.incomeRecognitionDesc")}</p>
+          </div>
+          <div className="space-y-2">
+            <Label>{t("settings.incomeRecognition")}</Label>
+            <RadioGroup
+              value={form.income_recognition_method}
+              onValueChange={(v) => setForm((f) => ({ ...f, income_recognition_method: v }))}
+              className="grid gap-2"
+            >
+              {(["payment_date", "session_date"] as const).map((val) => {
+                const labelKey = val === "payment_date" ? "settings.byPaymentDate" : "settings.bySessionDate";
+                const descKey = val === "payment_date" ? "settings.byPaymentDateDesc" : "settings.bySessionDateDesc";
+                return (
+                  <Label
+                    key={val}
+                    htmlFor={`irm-${val}`}
+                    className={cn(
+                      "flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors",
+                      form.income_recognition_method === val ? "border-primary bg-primary/5" : "border-border hover:bg-muted/40"
+                    )}
+                  >
+                    <RadioGroupItem id={`irm-${val}`} value={val} className="mt-0.5" />
+                    <div className="space-y-0.5">
+                      <div className="text-sm font-medium text-foreground">{t(labelKey as any)}</div>
+                      <div className="text-xs text-muted-foreground">{t(descKey as any)}</div>
+                    </div>
+                  </Label>
+                );
+              })}
+            </RadioGroup>
+            <p className="text-xs text-muted-foreground">{t("settings.incomeRecognitionHelper")}</p>
+          </div>
+        </div>
+
+        <Separator />
+
         <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
           <h2 className="font-semibold text-foreground">{t("settings.calendar")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
