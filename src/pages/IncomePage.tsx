@@ -39,6 +39,7 @@ export default function IncomePage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [payDialog, setPayDialog] = useState<any>(null);
   const [payMethod, setPayMethod] = useState("cash");
+  const [payDate, setPayDate] = useState(new Date().toISOString().split("T")[0]);
   const [form, setForm] = useState({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash", client_id: "" });
 
   // Filters
