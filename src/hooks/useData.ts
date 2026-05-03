@@ -535,21 +535,33 @@ export function useMarkExpectedPaymentPaid() {
   const { user } = useAuth();
   const { isDemoMode } = useDemoMode();
   return useMutation({
-    mutationFn: async ({ id, appointmentId, amount, paymentMethod }: {
-      id: string; appointmentId: string; amount: number; paymentMethod: string;
+    mutationFn: async ({ id, appointmentId, amount, paymentMethod, paymentDate }: {
+      id: string; appointmentId: string; amount: number; paymentMethod: string; paymentDate?: string;
     }) => {
+      const today = new Date().toISOString().split("T")[0];
+      const payDate = paymentDate || today;
+
+      // Get session date from appointment
+      const { data: aptData } = await supabase
+        .from("appointments")
+        .select("scheduled_at")
+        .eq("id", appointmentId)
+        .single();
+      const sessionDate = aptData?.scheduled_at
+        ? new Date(aptData.scheduled_at).toISOString().split("T")[0]
+        : payDate;
+
       const { error: epErr } = await supabase
         .from("expected_payments")
-        .update({ status: "paid", paid_at: new Date().toISOString(), payment_method: paymentMethod } as any)
+        .update({ status: "paid", paid_at: new Date(payDate + "T12:00:00").toISOString(), payment_method: paymentMethod } as any)
         .eq("id", id);
       if (epErr) throw epErr;
 
       await supabase.from("appointments").update({ payment_status: "paid_now" } as any).eq("id", appointmentId);
 
-      const today = new Date().toISOString().split("T")[0];
       const { error: incErr } = await supabase.from("income").insert({
         user_id: user!.id, appointment_id: appointmentId,
-        amount, date: today, source: "appointment",
+        amount, date: payDate, session_date: sessionDate, source: "appointment",
         payment_method: paymentMethod,
         ...(isDemoMode ? { is_demo: true } : {}),
       } as any);
