@@ -1268,11 +1268,19 @@ export function useDashboardStats() {
   return useQuery({
     queryKey: ["dashboard-stats", user?.id, today],
     queryFn: async () => {
+      // Fetch user's income recognition method
+      const { data: profileSetting } = await supabase
+        .from("profiles")
+        .select("income_recognition_method")
+        .eq("user_id", user!.id)
+        .single();
+      const recognitionField = (profileSetting as any)?.income_recognition_method === "session_date"
+        ? "session_date"
+        : "date";
+
       const [incomeRes, lastWeekIncomeRes, expenseRes, clientRes, todayAptRes, monthAptRes, profileRes, scheduleRes, daysOffRes] = await Promise.all([
-        // Only fetch income from the start of the current month (covers monthly + today)
-        supabase.from("income").select("amount, date").gte("date", monthStart),
-        // Fetch last week's income separately (may be in previous month)
-        supabase.from("income").select("amount, date").gte("date", lastMondayStr).lte("date", lastSundayStr),
+        supabase.from("income").select(`amount, ${recognitionField}`).gte(recognitionField, monthStart),
+        supabase.from("income").select(`amount, ${recognitionField}`).gte(recognitionField, lastMondayStr).lte(recognitionField, lastSundayStr),
         supabase.from("expenses").select("amount, date, is_recurring").gte("date", monthStart),
         supabase.from("clients").select("id", { count: "exact", head: true }),
         supabase.from("appointments")
@@ -1295,12 +1303,13 @@ export function useDashboardStats() {
           .lte("date", today.substring(0, 7) + "-31"),
       ]);
 
+      const dateOf = (row: any) => row[recognitionField];
       const monthIncome = incomeRes.data ?? [];
       const allExpenses = expenseRes.data ?? [];
-      const todayIncome = monthIncome.filter(i => i.date === today).reduce((s, i) => s + Number(i.amount), 0);
-      const monthlyIncome = monthIncome.reduce((s, i) => s + Number(i.amount), 0);
+      const todayIncome = monthIncome.filter((i: any) => dateOf(i) === today).reduce((s: number, i: any) => s + Number(i.amount), 0);
+      const monthlyIncome = monthIncome.reduce((s: number, i: any) => s + Number(i.amount), 0);
       const monthlyExpenses = allExpenses.reduce((s, e) => s + Number(e.amount), 0);
-      const thisWeekIncome = monthIncome.filter(i => i.date >= thisMondayStr && i.date <= today).reduce((s, i) => s + Number(i.amount), 0);
+      const thisWeekIncome = monthIncome.filter((i: any) => dateOf(i) >= thisMondayStr && dateOf(i) <= today).reduce((s: number, i: any) => s + Number(i.amount), 0);
       const lastWeekIncome = (lastWeekIncomeRes.data ?? []).reduce((s, i) => s + Number(i.amount), 0);
 
       const profile = profileRes.data as any;
