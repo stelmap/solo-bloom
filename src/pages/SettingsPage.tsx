@@ -94,6 +94,7 @@ export default function SettingsPage() {
         business_address: (profile as any).business_address || "",
         vat_mode: (profile as any).vat_mode || "none",
         vat_rate: Number((profile as any).vat_rate) || 0,
+        income_recognition_method: (profile as any).income_recognition_method || "payment_date",
       });
     }
   }, [profile]);
