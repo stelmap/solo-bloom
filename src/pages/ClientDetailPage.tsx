@@ -13,7 +13,7 @@ import {
   useClientAppointments, useClientNotes, useCreateClientNote, useDeleteClientNote,
   useClientAttachments, useUploadAttachment, useDeleteAttachment, useProfile,
   useClientPriceHistory, useCreatePriceChange, useClientIncome,
-  useClientCreditBalance, useDeleteIncomeConfirmation,
+  useClientCreditBalance, useDeleteIncomeConfirmation, useClientAllocations,
 } from "@/hooks/useData";
 import { useSupervisions, useSupervisionCount } from "@/hooks/useSupervisions";
 import { IncomeConfirmationDialog } from "@/components/IncomeConfirmationDialog";
