@@ -104,37 +104,26 @@ export default function ClientDetailPage() {
     return { sortedAppointments: sorted, nextUpcomingId: upcoming.length > 0 ? upcoming[0].id : null };
   }, [appointments]);
 
+  // Predicates — single source of truth for both card counts and filtered list
+  const isCompleted = (a: any) => a.status === "completed";
+  const isPaid = (a: any) => a.payment_status === "paid_now" || a.payment_status === "paid_in_advance";
+  const isAwaiting = (a: any) =>
+    (a.status === "completed" || a.status === "scheduled" || a.status === "confirmed" || a.status === "reminder_sent") &&
+    (a.payment_status === "unpaid" || a.payment_status === "waiting_for_payment");
+  const isCancelled = (a: any) => a.status === "cancelled" || a.status === "no-show";
+  const isPrepaid = (a: any) => a.payment_status === "paid_in_advance";
+
   const totalSessions = appointments.length;
-  const completedSessions = (appointments as any[]).filter((a: any) => a.status === "completed").length;
-  const paidSessions = (appointments as any[]).filter((a: any) => a.payment_status === "paid_now" || a.payment_status === "paid_in_advance").length;
-  const cancelledSessions = (appointments as any[]).filter((a: any) => a.status === "cancelled" || a.status === "no-show").length;
-  const pendingPayments = (appointments as any[]).filter((a: any) => a.payment_status === "waiting_for_payment").length;
+  const completedSessions = (appointments as any[]).filter(isCompleted).length;
+  const paidSessions = (appointments as any[]).filter(isPaid).length;
+  const cancelledSessions = (appointments as any[]).filter(isCancelled).length;
+  const awaitingSessions = (appointments as any[]).filter(isAwaiting).length;
+  const prepaidSessions = (appointments as any[]).filter(isPrepaid).length;
 
-  // Calculate prepaid sessions from manual client income
-  const { paidSessionsFromIncome, prepaidSessions } = useMemo(() => {
-    if (!client) return { paidSessionsFromIncome: 0, prepaidSessions: 0 };
-    const basePrice = (client as any)?.base_price ? Number((client as any).base_price) : null;
-    const completedPrices = (appointments as any[])
-      .filter((a: any) => a.status === "completed" && Number(a.price) > 0)
-      .map((a: any) => Number(a.price));
-    const avgPrice = basePrice ?? (completedPrices.length > 0
-      ? completedPrices.reduce((s, p) => s + p, 0) / completedPrices.length
-      : 0);
-
-    if (avgPrice <= 0) return { paidSessionsFromIncome: 0, prepaidSessions: 0 };
-
-    const totalClientIncome = (clientIncome as any[]).reduce((s: number, i: any) => s + Number(i.amount), 0);
-    const sessionsFromManualIncome = Math.floor(totalClientIncome / avgPrice);
-
-    const totalPaidSessions = paidSessions + sessionsFromManualIncome;
-    const prepaid = Math.max(totalPaidSessions - completedSessions, 0);
-
-    return { paidSessionsFromIncome: sessionsFromManualIncome, prepaidSessions: prepaid };
-  }, [appointments, clientIncome, client, paidSessions, completedSessions]);
-
+  // Paid amount (money) — separate from "paid sessions" (count)
   const paidAmount = useMemo(() => {
     const fromAppointments = (appointments as any[])
-      .filter((a: any) => a.payment_status === "paid_now" || a.payment_status === "paid_in_advance")
+      .filter(isPaid)
       .reduce((s: number, a: any) => s + Number(a.price || 0), 0);
     const fromIncome = (clientIncome as any[]).reduce((s: number, i: any) => s + Number(i.amount || 0), 0);
     return fromAppointments + fromIncome;
@@ -144,24 +133,13 @@ export default function ClientDetailPage() {
   const filteredAppointments = useMemo(() => {
     const all = sortedAppointments as any[];
     switch (statFilter) {
-      case "completed":
-        return all.filter((a) => a.status === "completed");
-      case "paid":
-        return all.filter((a) => a.payment_status === "paid_now" || a.payment_status === "paid_in_advance");
-      case "awaiting":
-        return all.filter((a) =>
-          (a.status === "completed" || a.status === "scheduled" || a.status === "confirmed" || a.status === "reminder_sent") &&
-          (a.payment_status === "unpaid" || a.payment_status === "waiting_for_payment")
-        );
-      case "cancelled":
-        return all.filter((a) => a.status === "cancelled" || a.status === "no-show");
-      case "prepaid":
-        return all.filter((a) => a.payment_status === "paid_in_advance");
-      case "supervision":
-        // Sessions linked via client_notes flagged as included_in_supervision
-        return [];
-      default:
-        return all;
+      case "completed": return all.filter(isCompleted);
+      case "paid": return all.filter(isPaid);
+      case "awaiting": return all.filter(isAwaiting);
+      case "cancelled": return all.filter(isCancelled);
+      case "prepaid": return all.filter(isPrepaid);
+      case "supervision": return [];
+      default: return all;
     }
   }, [sortedAppointments, statFilter]);
 
@@ -308,8 +286,8 @@ export default function ClientDetailPage() {
           {([
             { key: "all", value: totalSessions, label: t("clientDetail.totalSessions"), color: "text-foreground", border: "border-border" },
             { key: "completed", value: completedSessions, label: t("clientDetail.completedSessions"), color: "text-foreground", border: "border-border" },
-            { key: "paid", value: paidSessions + paidSessionsFromIncome, label: t("clientDetail.paidSessions"), color: "text-primary", border: "border-primary/30", icon: <CreditCard className="h-4 w-4 text-primary" />, sub: `${cs}${paidAmount.toFixed(0)}` },
-            { key: "awaiting", value: pendingPayments, label: t("clientDetail.pendingPayments"), color: "text-warning", border: "border-border" },
+            { key: "paid", value: paidSessions, label: t("clientDetail.paidSessions"), color: "text-primary", border: "border-primary/30", icon: <CreditCard className="h-4 w-4 text-primary" />, sub: `${cs}${paidAmount.toFixed(0)}` },
+            { key: "awaiting", value: awaitingSessions, label: t("clientDetail.pendingPayments"), color: "text-warning", border: "border-border" },
             { key: "cancelled", value: cancelledSessions, label: t("clientDetail.cancelled"), color: "text-destructive", border: "border-border" },
             { key: "prepaid", value: prepaidSessions, label: t("clientDetail.prepaidSessions"), color: prepaidSessions > 0 ? "text-success" : "text-muted-foreground", border: "border-success/30" },
             { key: "supervision", value: supervisionCount, label: t("clientDetail.supervisionSessions"), color: "text-primary", border: "border-primary/20", icon: <ClipboardList className="h-4 w-4 text-primary" /> },
