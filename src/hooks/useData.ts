@@ -1499,3 +1499,223 @@ export function usePaymentCorrections(appointmentId: string | undefined) {
     enabled: !!user && !!appointmentId,
   });
 }
+
+// ===== Income confirmations with linked sessions =====
+export interface IncomeConfirmationAllocation {
+  appointment_id: string;
+  allocated_amount: number;
+}
+
+export interface SaveIncomeConfirmationInput {
+  income_id?: string; // existing => update
+  client_id: string;
+  amount: number;
+  date: string;
+  payment_method: string;
+  status: "confirmed" | "draft" | "cancelled";
+  comment?: string;
+  allocations: IncomeConfirmationAllocation[];
+  prepayment_amount?: number; // remainder stored as client credit
+}
+
+async function recalcAppointments(appointmentIds: string[]) {
+  const unique = Array.from(new Set(appointmentIds.filter(Boolean)));
+  for (const id of unique) {
+    await (supabase as any).rpc("recalc_appointment_payment_status", { p_appointment_id: id });
+  }
+}
+
+export function useClientAllocations(clientId: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["client-allocations", clientId],
+    queryFn: async () => {
+      // Get allocations for sessions belonging to this client
+      const { data, error } = await (supabase as any)
+        .from("income_session_allocations")
+        .select("*, income:income_id(id, status, date, payment_method, amount, comment)")
+        .eq("user_id", user!.id);
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+    enabled: !!user && !!clientId,
+  });
+}
+
+export function useAppointmentAllocations(appointmentId: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["appointment-allocations", appointmentId],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("income_session_allocations")
+        .select("*, income:income_id(id, status, date, payment_method, amount, comment, client_id)")
+        .eq("appointment_id", appointmentId!);
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+    enabled: !!user && !!appointmentId,
+  });
+}
+
+export function useClientCreditBalance(clientId: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["client-credit-balance", clientId],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("client_credits")
+        .select("amount")
+        .eq("client_id", clientId!);
+      if (error) throw error;
+      const balance = (data ?? []).reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
+      return balance as number;
+    },
+    enabled: !!user && !!clientId,
+  });
+}
+
+export function useSaveIncomeConfirmation() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  const { isDemoMode } = useDemoMode();
+  const assertCanWrite = useDemoWriteGuard();
+  return useMutation({
+    mutationFn: async (input: SaveIncomeConfirmationInput) => {
+      assertCanWrite();
+      const allocSum = input.allocations.reduce((s, a) => s + Number(a.allocated_amount || 0), 0);
+      // Validate: allocated <= amount
+      if (allocSum > Number(input.amount) + 0.001) {
+        throw new Error("Allocated amount exceeds payment amount");
+      }
+      const remainder = Math.max(Number(input.amount) - allocSum, 0);
+
+      let incomeId = input.income_id;
+      let previousAllocations: any[] = [];
+      let previousAptIds: string[] = [];
+
+      if (incomeId) {
+        // Snapshot previous
+        const { data: prevInc } = await (supabase as any)
+          .from("income").select("*").eq("id", incomeId).single();
+        const { data: prevAlloc } = await (supabase as any)
+          .from("income_session_allocations").select("*").eq("income_id", incomeId);
+        previousAllocations = prevAlloc ?? [];
+        previousAptIds = previousAllocations.map((a: any) => a.appointment_id);
+
+        // Audit
+        await (supabase as any).from("income_audit").insert({
+          user_id: user!.id, income_id: incomeId, action: "update",
+          snapshot: { previous: prevInc, previous_allocations: previousAllocations },
+        } as any);
+
+        // Update income row
+        const { error: updErr } = await (supabase as any).from("income").update({
+          client_id: input.client_id,
+          amount: input.amount,
+          date: input.date,
+          payment_method: input.payment_method,
+          status: input.status,
+          comment: input.comment ?? null,
+        }).eq("id", incomeId);
+        if (updErr) throw updErr;
+
+        // Wipe existing allocations & credits tied to this income
+        await (supabase as any).from("income_session_allocations").delete().eq("income_id", incomeId);
+        await (supabase as any).from("client_credits").delete().eq("income_id", incomeId);
+      } else {
+        // Insert new income
+        const { data: newInc, error: insErr } = await (supabase as any).from("income").insert({
+          user_id: user!.id,
+          client_id: input.client_id,
+          amount: input.amount,
+          date: input.date,
+          payment_method: input.payment_method,
+          status: input.status,
+          comment: input.comment ?? null,
+          source: "manual",
+          ...(isDemoMode ? { is_demo: true } : {}),
+        } as any).select().single();
+        if (insErr) throw insErr;
+        incomeId = newInc.id;
+        await (supabase as any).from("income_audit").insert({
+          user_id: user!.id, income_id: incomeId, action: "create",
+          snapshot: { created: newInc },
+        } as any);
+      }
+
+      // Insert allocations
+      const allocRows = input.allocations
+        .filter((a) => Number(a.allocated_amount) > 0 && a.appointment_id)
+        .map((a) => ({
+          user_id: user!.id,
+          income_id: incomeId,
+          appointment_id: a.appointment_id,
+          allocated_amount: Number(a.allocated_amount),
+        }));
+      if (allocRows.length > 0) {
+        const { error: allocErr } = await (supabase as any)
+          .from("income_session_allocations").insert(allocRows);
+        if (allocErr) throw allocErr;
+      }
+
+      // Store remainder as client credit (only if confirmed)
+      if (remainder > 0 && input.status === "confirmed") {
+        await (supabase as any).from("client_credits").insert({
+          user_id: user!.id,
+          client_id: input.client_id,
+          income_id: incomeId,
+          amount: remainder,
+          description: "Prepayment / overpayment from income confirmation",
+        } as any);
+      }
+
+      // Recalc affected appointments
+      const allAptIds = [
+        ...previousAptIds,
+        ...allocRows.map((r: any) => r.appointment_id),
+      ];
+      await recalcAppointments(allAptIds);
+
+      return incomeId;
+    },
+    onSuccess: () => {
+      ["income", "client-income", "client-allocations", "appointment-allocations",
+       "client-credit-balance", "appointments", "client-appointments",
+       "dashboard-stats", "expected-payments"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
+    },
+  });
+}
+
+export function useDeleteIncomeConfirmation() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
+  return useMutation({
+    mutationFn: async (incomeId: string) => {
+      assertCanWrite();
+      const { data: prevInc } = await (supabase as any)
+        .from("income").select("*").eq("id", incomeId).single();
+      const { data: prevAlloc } = await (supabase as any)
+        .from("income_session_allocations").select("*").eq("income_id", incomeId);
+      const aptIds = (prevAlloc ?? []).map((a: any) => a.appointment_id);
+
+      await (supabase as any).from("income_audit").insert({
+        user_id: user!.id, income_id: incomeId, action: "delete",
+        snapshot: { deleted: prevInc, deleted_allocations: prevAlloc },
+      } as any);
+
+      await (supabase as any).from("client_credits").delete().eq("income_id", incomeId);
+      await (supabase as any).from("income_session_allocations").delete().eq("income_id", incomeId);
+      const { error } = await (supabase as any).from("income").delete().eq("id", incomeId);
+      if (error) throw error;
+
+      await recalcAppointments(aptIds);
+    },
+    onSuccess: () => {
+      ["income", "client-income", "client-allocations", "appointment-allocations",
+       "client-credit-balance", "appointments", "client-appointments",
+       "dashboard-stats", "expected-payments"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
+    },
+  });
+}
