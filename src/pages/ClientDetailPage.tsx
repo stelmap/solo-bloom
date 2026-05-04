@@ -671,6 +671,18 @@ export default function ClientDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Payment History — full width */}
+        <PaymentHistorySection
+          clientId={id!}
+          currencySymbol={cs}
+          creditBalance={creditBalance as number}
+          clientIncome={clientIncome as any[]}
+          isDemoMode={isDemoMode}
+          onAdd={() => { setEditingIncome(null); setIncomeDialogOpen(true); }}
+          onEdit={(inc) => { setEditingIncome(inc); setIncomeDialogOpen(true); }}
+          onDelete={(id) => setDeleteIncomeId(id)}
+        />
       </div>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
