@@ -65,6 +65,9 @@ export default function ClientDetailPage() {
   const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
   type StatFilter = "all" | "completed" | "paid" | "awaiting" | "cancelled" | "prepaid" | "supervision";
   const [statFilter, setStatFilter] = useState<StatFilter>("all");
+  const PAGE_SIZE = 20;
+  const [page, setPage] = useState(1);
+  const setFilter = (f: StatFilter) => { setStatFilter(f); setPage(1); };
   const use12h = (profile as any)?.time_format === "12h";
 
   const SESSION_STATUS_STYLES: Record<string, { label: string; color: string }> = {
