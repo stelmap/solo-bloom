@@ -305,40 +305,37 @@ export default function ClientDetailPage() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
-          <div className="bg-card rounded-xl border border-border p-4 text-center">
-            <p className="text-2xl font-bold text-foreground">{totalSessions}</p>
-            <p className="text-xs text-muted-foreground">{t("clientDetail.totalSessions")}</p>
-          </div>
-          <div className="bg-card rounded-xl border border-border p-4 text-center">
-            <p className="text-2xl font-bold text-success">{paidSessions}</p>
-            <p className="text-xs text-muted-foreground">{t("clientDetail.paid")}</p>
-          </div>
-          <div className="bg-card rounded-xl border border-border p-4 text-center">
-            <p className="text-2xl font-bold text-destructive">{cancelledSessions}</p>
-            <p className="text-xs text-muted-foreground">{t("clientDetail.cancelled")}</p>
-          </div>
-          <div className="bg-card rounded-xl border border-border p-4 text-center">
-            <p className="text-2xl font-bold text-warning">{pendingPayments}</p>
-            <p className="text-xs text-muted-foreground">{t("clientDetail.pendingPayments")}</p>
-          </div>
-          <div className="bg-card rounded-xl border border-primary/30 p-4 text-center">
-            <div className="flex items-center justify-center gap-1">
-              <CreditCard className="h-4 w-4 text-primary" />
-              <p className="text-2xl font-bold text-primary">{paidSessions + paidSessionsFromIncome}</p>
-            </div>
-            <p className="text-xs text-muted-foreground">{t("clientDetail.paidSessions")}</p>
-          </div>
-          <div className="bg-card rounded-xl border border-success/30 p-4 text-center">
-            <p className={cn("text-2xl font-bold", prepaidSessions > 0 ? "text-success" : "text-muted-foreground")}>{prepaidSessions}</p>
-            <p className="text-xs text-muted-foreground">{t("clientDetail.prepaidSessions")}</p>
-          </div>
-          <div className="bg-card rounded-xl border border-primary/20 p-4 text-center">
-            <div className="flex items-center justify-center gap-1">
-              <ClipboardList className="h-4 w-4 text-primary" />
-              <p className="text-2xl font-bold text-primary">{supervisionCount}</p>
-            </div>
-            <p className="text-xs text-muted-foreground">{t("supervision.count")}</p>
-          </div>
+          {([
+            { key: "all", value: totalSessions, label: t("clientDetail.totalSessions"), color: "text-foreground", border: "border-border" },
+            { key: "completed", value: completedSessions, label: t("clientDetail.completedSessions"), color: "text-foreground", border: "border-border" },
+            { key: "paid", value: paidSessions + paidSessionsFromIncome, label: t("clientDetail.paidSessions"), color: "text-primary", border: "border-primary/30", icon: <CreditCard className="h-4 w-4 text-primary" />, sub: `${cs}${paidAmount.toFixed(0)}` },
+            { key: "awaiting", value: pendingPayments, label: t("clientDetail.pendingPayments"), color: "text-warning", border: "border-border" },
+            { key: "cancelled", value: cancelledSessions, label: t("clientDetail.cancelled"), color: "text-destructive", border: "border-border" },
+            { key: "prepaid", value: prepaidSessions, label: t("clientDetail.prepaidSessions"), color: prepaidSessions > 0 ? "text-success" : "text-muted-foreground", border: "border-success/30" },
+            { key: "supervision", value: supervisionCount, label: t("clientDetail.supervisionSessions"), color: "text-primary", border: "border-primary/20", icon: <ClipboardList className="h-4 w-4 text-primary" /> },
+          ] as Array<{ key: StatFilter; value: number; label: string; color: string; border: string; icon?: any; sub?: string }>).map((card) => {
+            const active = statFilter === card.key;
+            return (
+              <button
+                key={card.key}
+                type="button"
+                onClick={() => setStatFilter(card.key)}
+                aria-pressed={active}
+                className={cn(
+                  "bg-card rounded-xl border p-4 text-center transition-all hover:ring-2 hover:ring-ring/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  card.border,
+                  active && "ring-2 ring-primary border-primary shadow-sm"
+                )}
+              >
+                <div className="flex items-center justify-center gap-1">
+                  {card.icon}
+                  <p className={cn("text-2xl font-bold", card.color)}>{card.value}</p>
+                </div>
+                <p className="text-xs text-muted-foreground">{card.label}</p>
+                {card.sub && <p className="text-[10px] text-muted-foreground mt-0.5">{card.sub}</p>}
+              </button>
+            );
+          })}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
