@@ -842,83 +842,264 @@ function PaymentHistorySection({
     }
     return map;
   }, [allocs, clientId]);
+
+  // Fetch invoices for this client and map by appointment_id and income_id (via allocations)
+  const [invoicesByApt, setInvoicesByApt] = useState<Record<string, any>>({});
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("invoices")
+        .select("id, invoice_number, appointment_id, client_id")
+        .eq("client_id", clientId);
+      if (cancelled) return;
+      const byApt: Record<string, any> = {};
+      for (const inv of (data ?? []) as any[]) {
+        if (inv.appointment_id) byApt[inv.appointment_id] = inv;
+      }
+      setInvoicesByApt(byApt);
+    })();
+    return () => { cancelled = true; };
+  }, [clientId]);
+
+  const invoicesByIncome = useMemo(() => {
+    const byIncome: Record<string, any> = {};
+    for (const incId of Object.keys(allocsByIncome)) {
+      for (const l of allocsByIncome[incId]) {
+        if (invoicesByApt[l.appointment_id]) { byIncome[incId] = invoicesByApt[l.appointment_id]; break; }
+      }
+    }
+    return byIncome;
+  }, [allocsByIncome, invoicesByApt]);
+
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [filter, setFilter] = useState<string>("all");
+  const [sort, setSort] = useState<string>("date_desc");
 
   const methodLabel = (m: string) => {
     if (m === "cash") return t("method.cashLabel");
     if (m === "card") return t("method.cardLabel");
     if (m === "bank_transfer") return t("method.bankTransferLabel");
-    return m || "—";
+    return m || t("clientPay.methodNotSpecified");
   };
+
+  type AllocStatus = "linked" | "not_linked" | "partial" | "prepayment" | "overpayment";
+  const computeStatus = (inc: any, links: any[]): { status: AllocStatus; allocated: number; remaining: number } => {
+    const amount = Number(inc.amount || 0);
+    const allocated = links.reduce((s, l) => s + Number(l.allocated_amount || 0), 0);
+    const remaining = amount - allocated;
+    if (links.length === 0) return { status: "prepayment", allocated: 0, remaining: amount };
+    if (Math.abs(remaining) < 0.01) return { status: "linked", allocated, remaining: 0 };
+    if (remaining > 0) return { status: "partial", allocated, remaining };
+    return { status: "overpayment", allocated, remaining };
+  };
+
+  const enriched = useMemo(() => {
+    return (clientIncome as any[]).map((inc) => {
+      const links = allocsByIncome[inc.id] || [];
+      const s = computeStatus(inc, links);
+      return { ...inc, _links: links, _status: s.status, _allocated: s.allocated, _remaining: s.remaining };
+    });
+  }, [clientIncome, allocsByIncome]);
+
+  const filtered = useMemo(() => {
+    let list = enriched;
+    switch (filter) {
+      case "linked": list = list.filter((i) => i._status === "linked"); break;
+      case "not_linked": list = list.filter((i) => i._status === "prepayment" && i._links.length === 0); break;
+      case "partial": list = list.filter((i) => i._status === "partial"); break;
+      case "prepayment": list = list.filter((i) => i._status === "prepayment"); break;
+      case "confirmed": list = list.filter((i) => i.status === "confirmed"); break;
+      case "draft": list = list.filter((i) => i.status === "draft"); break;
+      case "cancelled": list = list.filter((i) => i.status === "cancelled"); break;
+    }
+    const arr = [...list];
+    arr.sort((a, b) => {
+      const da = new Date(a.date || a.created_at).getTime();
+      const db = new Date(b.date || b.created_at).getTime();
+      switch (sort) {
+        case "date_asc": return da - db;
+        case "amount_desc": return Number(b.amount) - Number(a.amount);
+        case "amount_asc": return Number(a.amount) - Number(b.amount);
+        case "date_desc":
+        default: return db - da;
+      }
+    });
+    return arr;
+  }, [enriched, filter, sort]);
+
+  const statusBadge = (s: AllocStatus) => {
+    const map: Record<AllocStatus, { label: string; cls: string }> = {
+      linked: { label: t("clientPay.badgeLinked"), cls: "bg-success/10 text-success border-success/30" },
+      not_linked: { label: t("clientPay.badgeNotLinked"), cls: "bg-warning/10 text-warning border-warning/40" },
+      partial: { label: t("clientPay.badgePartial"), cls: "bg-warning/10 text-warning border-warning/40" },
+      prepayment: { label: t("clientPay.badgePrepayment"), cls: "bg-primary/10 text-primary border-primary/30" },
+      overpayment: { label: t("clientPay.badgeOverpayment"), cls: "bg-accent text-accent-foreground border-border" },
+    };
+    const m = map[s];
+    return <Badge variant="outline" className={cn("text-[10px]", m.cls)}>{m.label}</Badge>;
+  };
+
+  const filters: { k: string; l: string }[] = [
+    { k: "all", l: t("clientPay.filterAll") },
+    { k: "linked", l: t("clientPay.filterLinked") },
+    { k: "not_linked", l: t("clientPay.filterNotLinked") },
+    { k: "partial", l: t("clientPay.filterPartial") },
+    { k: "prepayment", l: t("clientPay.filterPrepayment") },
+    { k: "confirmed", l: t("clientPay.filterConfirmed") },
+    { k: "draft", l: t("clientPay.filterDraft") },
+    { k: "cancelled", l: t("clientPay.filterCancelled") },
+  ];
 
   return (
     <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <h3 className="font-semibold text-foreground flex items-center gap-2">
           <CreditCard className="h-4 w-4 text-primary" /> {t("clientPay.title")}
         </h3>
-        {!isDemoMode && (
-          <Button size="sm" variant="outline" onClick={onAdd}>
-            <Plus className="h-4 w-4 mr-1" /> {t("clientPay.add")}
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          <div className="rounded-lg border border-success/30 bg-success/5 px-3 py-1.5 text-xs flex items-center gap-2">
+            <span className="text-muted-foreground">{t("clientPay.creditBalance")}</span>
+            <span className={cn("font-semibold", creditBalance > 0 ? "text-success" : "text-muted-foreground")}>
+              {currencySymbol}{Number(creditBalance || 0).toFixed(2)}
+            </span>
+          </div>
+          {!isDemoMode && (
+            <Button size="sm" variant="outline" onClick={onAdd}>
+              <Plus className="h-4 w-4 mr-1" /> {t("clientPay.add")}
+            </Button>
+          )}
+        </div>
       </div>
 
-      <div className="rounded-lg border border-success/30 bg-success/5 px-3 py-2 text-sm flex items-center justify-between">
-        <span className="text-muted-foreground">{t("clientPay.creditBalance")}</span>
-        <span className={cn("font-semibold", creditBalance > 0 ? "text-success" : "text-muted-foreground")}>
-          {currencySymbol}{Number(creditBalance || 0).toFixed(2)}
-        </span>
+      <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex flex-wrap gap-1.5">
+          {filters.map((f) => (
+            <button
+              key={f.k}
+              onClick={() => setFilter(f.k)}
+              className={cn(
+                "text-xs px-2.5 py-1 rounded-full border transition-colors",
+                filter === f.k
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-muted-foreground border-border hover:bg-muted"
+              )}
+            >
+              {f.l}
+            </button>
+          ))}
+        </div>
+        <div className="ml-auto">
+          <Select value={sort} onValueChange={setSort}>
+            <SelectTrigger className="h-8 w-[180px] text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date_desc">{t("clientPay.sortDateDesc")}</SelectItem>
+              <SelectItem value="date_asc">{t("clientPay.sortDateAsc")}</SelectItem>
+              <SelectItem value="amount_desc">{t("clientPay.sortAmountDesc")}</SelectItem>
+              <SelectItem value="amount_asc">{t("clientPay.sortAmountAsc")}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      {clientIncome.length === 0 ? (
-        <p className="text-xs text-muted-foreground text-center py-4">{t("clientPay.empty")}</p>
+      {filtered.length === 0 ? (
+        <p className="text-xs text-muted-foreground text-center py-8">{t("clientPay.empty")}</p>
       ) : (
-        <div className="space-y-2 max-h-[480px] overflow-y-auto">
-          {clientIncome.map((inc: any) => {
-            const links = allocsByIncome[inc.id] || [];
-            const n = links.length;
+        <div className="space-y-3">
+          {filtered.map((inc: any) => {
+            const links: any[] = inc._links;
+            const status: AllocStatus = inc._status;
             const isCancelled = inc.status === "cancelled";
             const isDraft = inc.status === "draft";
             const isOpen = !!expanded[inc.id];
+            const invoice = invoicesByIncome[inc.id];
+            const showLinkBtn = !isDemoMode && (status === "prepayment" || status === "partial" || status === "not_linked");
             return (
-              <div key={inc.id} className="rounded-lg border border-border bg-muted/40 p-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-foreground">{currencySymbol}{Number(inc.amount).toFixed(2)}</span>
-                      <span className="text-xs text-muted-foreground">{format(new Date((inc.date || inc.created_at) + (inc.date ? "T00:00:00" : "")), "MMM d, yyyy")}</span>
-                      <Badge variant="outline" className="text-[10px]">{methodLabel(inc.payment_method)}</Badge>
+              <div key={inc.id} className="rounded-xl border border-border bg-background hover:shadow-sm transition-shadow">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 p-4">
+                  {/* Summary */}
+                  <div className="lg:col-span-3 space-y-1">
+                    <div className="text-2xl font-bold text-foreground tabular-nums">
+                      {currencySymbol}{Number(inc.amount).toFixed(2)}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {format(new Date((inc.date || inc.created_at) + (inc.date ? "T00:00:00" : "")), "MMM d, yyyy")}
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
                       {isDraft && <Badge variant="outline" className="text-[10px] text-warning border-warning/40">{t("incomeConfirm.statusDraft")}</Badge>}
                       {isCancelled && <Badge variant="outline" className="text-[10px] text-destructive border-destructive/40">{t("incomeConfirm.statusCancelled")}</Badge>}
+                      {!isDraft && !isCancelled && <Badge variant="outline" className="text-[10px] text-success border-success/40">{t("incomeConfirm.statusConfirmed")}</Badge>}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setExpanded((p) => ({ ...p, [inc.id]: !p[inc.id] }))}
-                      className="mt-1 text-xs text-primary hover:underline inline-flex items-center gap-1"
-                    >
-                      {n > 0 ? t("clientPay.coversNSessions", { count: String(n) }) : t("clientPay.unlinked")}
-                      <span className="text-muted-foreground">{isOpen ? "▴" : "▾"}</span>
-                    </button>
-                    {inc.comment && <p className="mt-1 text-xs text-muted-foreground italic">"{inc.comment}"</p>}
                   </div>
-                  {!isDemoMode && (
+
+                  {/* Details */}
+                  <div className="lg:col-span-3 space-y-1.5 text-xs lg:border-l lg:border-border lg:pl-4">
                     <div className="flex gap-1">
-                      <button onClick={() => onEdit(inc)} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground" aria-label="Edit" title={t("common.edit")}>
-                        <Pencil className="h-3.5 w-3.5" />
+                      <span className="text-muted-foreground">{t("clientPay.method")}:</span>
+                      <span className="text-foreground font-medium">{methodLabel(inc.payment_method)}</span>
+                    </div>
+                    <div className="flex gap-1">
+                      <span className="text-muted-foreground">{t("clientPay.invoice")}:</span>
+                      <span className={cn("font-medium", invoice ? "text-foreground" : "text-muted-foreground italic")}>
+                        {invoice ? invoice.invoice_number : t("clientPay.invoiceNotGenerated")}
+                      </span>
+                    </div>
+                    {inc.comment && (
+                      <p className="text-muted-foreground italic line-clamp-2" title={inc.comment}>"{inc.comment}"</p>
+                    )}
+                  </div>
+
+                  {/* Linked sessions */}
+                  <div className="lg:col-span-4 space-y-1.5 lg:border-l lg:border-border lg:pl-4">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {statusBadge(status)}
+                      <span className="text-xs text-muted-foreground">
+                        {status === "prepayment" && links.length === 0 && t("clientPay.notLinkedAny")}
+                        {status === "linked" && t("clientPay.linkedToN", { count: String(links.length) })}
+                        {status === "partial" && t("clientPay.partiallyLinked", {
+                          allocated: `${currencySymbol}${inc._allocated.toFixed(2)}`,
+                          remaining: `${currencySymbol}${inc._remaining.toFixed(2)}`,
+                        })}
+                        {status === "overpayment" && `${currencySymbol}${Math.abs(inc._remaining).toFixed(2)}`}
+                      </span>
+                    </div>
+                    {links.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setExpanded((p) => ({ ...p, [inc.id]: !p[inc.id] }))}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        {isOpen ? "▴" : "▾"} {t("clientPay.viewDetails")}
                       </button>
-                      <button onClick={() => onDelete(inc.id)} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive" aria-label="Delete" title={t("common.delete")}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
+                    )}
+                    {status === "prepayment" && links.length === 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        {t("clientPay.prepayment", { amount: `${currencySymbol}${Number(inc.amount).toFixed(2)}` })}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  {!isDemoMode && (
+                    <div className="lg:col-span-2 flex lg:flex-col lg:items-end gap-1.5">
+                      <Button size="sm" variant="outline" onClick={() => onEdit(inc)} className="h-8 text-xs flex-1 lg:flex-none lg:w-full">
+                        <Pencil className="h-3 w-3 mr-1" /> {t("common.edit")}
+                      </Button>
+                      {showLinkBtn && (
+                        <Button size="sm" variant="ghost" onClick={() => onEdit(inc)} className="h-8 text-xs flex-1 lg:flex-none lg:w-full">
+                          {t("clientPay.linkSessions")}
+                        </Button>
+                      )}
+                      <Button size="sm" variant="ghost" onClick={() => onDelete(inc.id)} className="h-8 text-xs text-destructive hover:text-destructive flex-1 lg:flex-none lg:w-full">
+                        <Trash2 className="h-3 w-3 mr-1" /> {t("common.delete")}
+                      </Button>
                     </div>
                   )}
                 </div>
 
-                {isOpen && (
-                  <div className="mt-2 pt-2 border-t border-border/60 space-y-1.5">
-                    {links.length === 0 ? (
-                      <p className="text-xs text-muted-foreground">{t("clientPay.unlinked")}</p>
-                    ) : links.map((l: any) => {
+                {isOpen && links.length > 0 && (
+                  <div className="border-t border-border bg-muted/30 px-4 py-3 space-y-1.5">
+                    {links.map((l: any) => {
                       const apt = l.appointment;
                       return (
                         <div key={l.id} className="flex items-center justify-between gap-2 text-xs">
@@ -930,15 +1111,10 @@ function PaymentHistorySection({
                               </>
                             ) : <span className="text-muted-foreground">—</span>}
                           </div>
-                          <span className="text-foreground font-semibold shrink-0">{currencySymbol}{Number(l.allocated_amount).toFixed(2)}</span>
+                          <span className="text-foreground font-semibold shrink-0 tabular-nums">{currencySymbol}{Number(l.allocated_amount).toFixed(2)}</span>
                         </div>
                       );
                     })}
-                    {!isDemoMode && (
-                      <Button size="sm" variant="ghost" className="w-full mt-1 h-7 text-xs" onClick={() => onEdit(inc)}>
-                        <Pencil className="h-3 w-3 mr-1" /> {t("clientPay.editLinks")}
-                      </Button>
-                    )}
                   </div>
                 )}
               </div>
