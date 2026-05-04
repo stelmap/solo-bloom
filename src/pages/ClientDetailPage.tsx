@@ -791,13 +791,16 @@ function PaymentHistorySection({
 }) {
   const { t } = useLanguage();
   const { data: allocs = [] } = useClientAllocations(clientId);
-  const countByIncome = useMemo(() => {
-    const map: Record<string, number> = {};
+  const allocsByIncome = useMemo(() => {
+    const map: Record<string, any[]> = {};
     for (const a of allocs as any[]) {
-      if (Number(a.allocated_amount) > 0) map[a.income_id] = (map[a.income_id] || 0) + 1;
+      if (Number(a.allocated_amount) > 0 && a.income?.client_id === clientId) {
+        (map[a.income_id] ||= []).push(a);
+      }
     }
     return map;
-  }, [allocs]);
+  }, [allocs, clientId]);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const methodLabel = (m: string) => {
     if (m === "cash") return t("method.cashLabel");
@@ -829,13 +832,15 @@ function PaymentHistorySection({
       {clientIncome.length === 0 ? (
         <p className="text-xs text-muted-foreground text-center py-4">{t("clientPay.empty")}</p>
       ) : (
-        <div className="space-y-2 max-h-80 overflow-y-auto">
+        <div className="space-y-2 max-h-[480px] overflow-y-auto">
           {clientIncome.map((inc: any) => {
-            const n = countByIncome[inc.id] || 0;
+            const links = allocsByIncome[inc.id] || [];
+            const n = links.length;
             const isCancelled = inc.status === "cancelled";
             const isDraft = inc.status === "draft";
+            const isOpen = !!expanded[inc.id];
             return (
-              <div key={inc.id} className="rounded-lg border border-border bg-muted/40 p-3 group">
+              <div key={inc.id} className="rounded-lg border border-border bg-muted/40 p-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -845,22 +850,55 @@ function PaymentHistorySection({
                       {isDraft && <Badge variant="outline" className="text-[10px] text-warning border-warning/40">{t("incomeConfirm.statusDraft")}</Badge>}
                       {isCancelled && <Badge variant="outline" className="text-[10px] text-destructive border-destructive/40">{t("incomeConfirm.statusCancelled")}</Badge>}
                     </div>
-                    <div className="mt-1 text-xs text-muted-foreground">
+                    <button
+                      type="button"
+                      onClick={() => setExpanded((p) => ({ ...p, [inc.id]: !p[inc.id] }))}
+                      className="mt-1 text-xs text-primary hover:underline inline-flex items-center gap-1"
+                    >
                       {n > 0 ? t("clientPay.coversNSessions", { count: String(n) }) : t("clientPay.unlinked")}
-                    </div>
+                      <span className="text-muted-foreground">{isOpen ? "▴" : "▾"}</span>
+                    </button>
                     {inc.comment && <p className="mt-1 text-xs text-muted-foreground italic">"{inc.comment}"</p>}
                   </div>
                   {!isDemoMode && (
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => onEdit(inc)} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground" aria-label="Edit">
+                    <div className="flex gap-1">
+                      <button onClick={() => onEdit(inc)} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground" aria-label="Edit" title={t("common.edit")}>
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
-                      <button onClick={() => onDelete(inc.id)} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive" aria-label="Delete">
+                      <button onClick={() => onDelete(inc.id)} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive" aria-label="Delete" title={t("common.delete")}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   )}
                 </div>
+
+                {isOpen && (
+                  <div className="mt-2 pt-2 border-t border-border/60 space-y-1.5">
+                    {links.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">{t("clientPay.unlinked")}</p>
+                    ) : links.map((l: any) => {
+                      const apt = l.appointment;
+                      return (
+                        <div key={l.id} className="flex items-center justify-between gap-2 text-xs">
+                          <div className="min-w-0 flex-1 truncate">
+                            {apt ? (
+                              <>
+                                <span className="text-foreground font-medium">{format(new Date(apt.scheduled_at), "MMM d, yyyy")}</span>
+                                <span className="text-muted-foreground"> · {apt.service?.name || "—"}</span>
+                              </>
+                            ) : <span className="text-muted-foreground">—</span>}
+                          </div>
+                          <span className="text-foreground font-semibold shrink-0">{currencySymbol}{Number(l.allocated_amount).toFixed(2)}</span>
+                        </div>
+                      );
+                    })}
+                    {!isDemoMode && (
+                      <Button size="sm" variant="ghost" className="w-full mt-1 h-7 text-xs" onClick={() => onEdit(inc)}>
+                        <Pencil className="h-3 w-3 mr-1" /> {t("clientPay.editLinks")}
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}

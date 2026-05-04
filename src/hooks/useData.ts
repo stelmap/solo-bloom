@@ -1533,7 +1533,7 @@ export function useClientAllocations(clientId: string | undefined) {
       // Get allocations for sessions belonging to this client
       const { data, error } = await (supabase as any)
         .from("income_session_allocations")
-        .select("*, income:income_id(id, status, date, payment_method, amount, comment)")
+        .select("*, income:income_id(id, status, date, payment_method, amount, comment, client_id), appointment:appointment_id(id, scheduled_at, price, status, payment_status, service:service_id(name))")
         .eq("user_id", user!.id);
       if (error) throw error;
       return (data ?? []) as any[];
