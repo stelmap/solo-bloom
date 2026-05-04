@@ -1362,3 +1362,140 @@ export function useDashboardStats() {
     enabled: !!user,
   });
 }
+
+// ===== Payment correction (manual edit of payment status from Calendar) =====
+export interface PaymentCorrectionInput {
+  appointmentId: string;
+  clientId: string;
+  amount: number;
+  newPaymentStatus: "paid" | "unpaid";
+  newPaymentDate?: string | null;
+  newPaymentMethod?: string | null;
+  correctionComment?: string;
+}
+
+export function useCorrectPayment() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  const { isDemoMode } = useDemoMode();
+  const assertCanWrite = useDemoWriteGuard();
+  return useMutation({
+    mutationFn: async (input: PaymentCorrectionInput) => {
+      assertCanWrite();
+      const {
+        appointmentId, clientId, amount,
+        newPaymentStatus, newPaymentDate, newPaymentMethod, correctionComment,
+      } = input;
+
+      // Snapshot previous state from appointment + existing income/expected_payment
+      const { data: aptData, error: aptFetchErr } = await supabase
+        .from("appointments")
+        .select("payment_status, scheduled_at")
+        .eq("id", appointmentId)
+        .single();
+      if (aptFetchErr) throw aptFetchErr;
+
+      const previousPaymentStatus: string | null = (aptData as any)?.payment_status ?? null;
+      const sessionDate = aptData?.scheduled_at
+        ? new Date(aptData.scheduled_at).toISOString().split("T")[0]
+        : undefined;
+
+      const { data: existingIncome } = await supabase
+        .from("income")
+        .select("id, date, payment_method")
+        .eq("appointment_id", appointmentId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const previousIncome = existingIncome?.[0];
+
+      const { data: existingExpected } = await supabase
+        .from("expected_payments")
+        .select("id, payment_method, paid_at")
+        .eq("appointment_id", appointmentId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const previousExpected = existingExpected?.[0];
+
+      const previousPaymentDate: string | null =
+        (previousIncome?.date as string | undefined) ??
+        (previousExpected?.paid_at ? new Date(previousExpected.paid_at).toISOString().split("T")[0] : null) ??
+        null;
+      const previousPaymentMethod: string | null =
+        (previousIncome?.payment_method as string | undefined) ??
+        (previousExpected?.payment_method as string | undefined) ??
+        null;
+
+      // Always wipe existing income / expected payments for this appointment to prevent duplicates
+      await supabase.from("income").delete().eq("appointment_id", appointmentId);
+      await supabase.from("expected_payments").delete().eq("appointment_id", appointmentId);
+
+      const newAppointmentPaymentStatus = newPaymentStatus === "paid" ? "paid_now" : "unpaid";
+
+      const { error: aptUpdErr } = await supabase
+        .from("appointments")
+        .update({ payment_status: newAppointmentPaymentStatus } as any)
+        .eq("id", appointmentId);
+      if (aptUpdErr) throw aptUpdErr;
+
+      let storedNewPaymentDate: string | null = null;
+      let storedNewPaymentMethod: string | null = null;
+
+      if (newPaymentStatus === "paid") {
+        const today = new Date().toISOString().split("T")[0];
+        const payDate = newPaymentDate || today;
+        const method = newPaymentMethod || "cash";
+        storedNewPaymentDate = payDate;
+        storedNewPaymentMethod = method;
+        const { error: incErr } = await supabase.from("income").insert({
+          user_id: user!.id,
+          appointment_id: appointmentId,
+          client_id: clientId,
+          amount,
+          date: payDate,
+          session_date: sessionDate ?? payDate,
+          source: "appointment",
+          payment_method: method,
+          ...(isDemoMode ? { is_demo: true } : {}),
+        } as any);
+        if (incErr) throw incErr;
+      }
+
+      // Audit history record
+      const { error: histErr } = await supabase.from("payment_corrections" as any).insert({
+        user_id: user!.id,
+        appointment_id: appointmentId,
+        previous_payment_status: previousPaymentStatus,
+        new_payment_status: newAppointmentPaymentStatus,
+        previous_payment_date: previousPaymentDate,
+        new_payment_date: storedNewPaymentDate,
+        previous_payment_method: previousPaymentMethod,
+        new_payment_method: storedNewPaymentMethod,
+        correction_comment: correctionComment || null,
+      });
+      if (histErr) throw histErr;
+    },
+    onSuccess: () => {
+      track("payment_corrected");
+      [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL, "client-income"].forEach((k) =>
+        qc.invalidateQueries({ queryKey: [k] }),
+      );
+    },
+  });
+}
+
+export function usePaymentCorrections(appointmentId: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["payment-corrections", appointmentId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("payment_corrections" as any)
+        .select("*")
+        .eq("appointment_id", appointmentId!)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!user && !!appointmentId,
+  });
+}
