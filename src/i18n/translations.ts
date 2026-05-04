@@ -119,6 +119,26 @@ export const translations = {
   "payment.paidAdvance": { en: "Paid (advance)", uk: "Оплачено (заздалегідь)", fr: "Payé (avance)" , pl: "Opłacone (zaliczka)" },
   "payment.na": { en: "N/A", uk: "Н/З", fr: "N/A" , pl: "N/D" },
 
+  // Edit choice dialog (calendar)
+  "editChoice.title": { en: "What do you want to edit?", uk: "Що ви хочете редагувати?", fr: "Que voulez-vous modifier ?", pl: "Co chcesz edytować?" },
+  "editChoice.description": { en: "Choose whether you want to update the session details or correct payment information.", uk: "Оберіть, чи хочете ви оновити деталі сеансу, чи виправити інформацію про оплату.", fr: "Choisissez si vous voulez modifier les détails de la séance ou corriger les informations de paiement.", pl: "Wybierz, czy chcesz zaktualizować szczegóły sesji, czy poprawić informacje o płatności." },
+  "editChoice.session": { en: "Edit session details", uk: "Редагувати деталі сеансу", fr: "Modifier les détails de la séance", pl: "Edytuj szczegóły sesji" },
+  "editChoice.payment": { en: "Edit payment settings", uk: "Редагувати налаштування оплати", fr: "Modifier les paramètres de paiement", pl: "Edytuj ustawienia płatności" },
+
+  // Payment correction modal
+  "paymentEdit.title": { en: "Edit payment settings", uk: "Редагувати налаштування оплати", fr: "Modifier les paramètres de paiement", pl: "Edytuj ustawienia płatności" },
+  "paymentEdit.currentStatus": { en: "Current payment status", uk: "Поточний статус оплати", fr: "Statut de paiement actuel", pl: "Bieżący status płatności" },
+  "paymentEdit.paymentStatus": { en: "Payment status", uk: "Статус оплати", fr: "Statut de paiement", pl: "Status płatności" },
+  "paymentEdit.paymentDate": { en: "Payment date", uk: "Дата оплати", fr: "Date de paiement", pl: "Data płatności" },
+  "paymentEdit.paymentMethod": { en: "Payment method", uk: "Спосіб оплати", fr: "Mode de paiement", pl: "Metoda płatności" },
+  "paymentEdit.comment": { en: "Correction comment", uk: "Коментар до виправлення", fr: "Commentaire de correction", pl: "Komentarz do korekty" },
+  "paymentEdit.commentPlaceholder": { en: "Example: Payment was marked as paid by mistake", uk: "Приклад: оплату було позначено помилково", fr: "Exemple : Le paiement a été marqué comme payé par erreur", pl: "Przykład: Płatność została omyłkowo oznaczona jako opłacona" },
+  "paymentEdit.save": { en: "Save payment changes", uk: "Зберегти зміни оплати", fr: "Enregistrer les modifications", pl: "Zapisz zmiany płatności" },
+  "paymentEdit.success": { en: "Payment status updated successfully.", uk: "Статус оплати успішно оновлено.", fr: "Statut de paiement mis à jour avec succès.", pl: "Status płatności został pomyślnie zaktualizowany." },
+  "paymentEdit.errorRecalc": { en: "Payment status was saved, but financial recalculation failed. Please refresh or try again.", uk: "Статус оплати збережено, але фінансовий перерахунок не вдався. Оновіть сторінку або спробуйте ще раз.", fr: "Le statut de paiement a été enregistré, mais le recalcul financier a échoué. Veuillez rafraîchir ou réessayer.", pl: "Status płatności został zapisany, ale ponowne obliczenie finansowe nie powiodło się. Odśwież lub spróbuj ponownie." },
+  "paymentEdit.errorMissingDate": { en: "Payment date is required when status is Paid.", uk: "Дата оплати обовʼязкова, коли статус «Оплачено».", fr: "La date de paiement est requise lorsque le statut est Payé.", pl: "Data płatności jest wymagana, gdy status to Opłacone." },
+  "session.status": { en: "Status", uk: "Статус", fr: "Statut", pl: "Status" },
+
   // Payment methods
   "method.cash": { en: "💵 Cash", uk: "💵 Готівка", fr: "💵 Espèces" , pl: "💵 Gotówka" },
   "method.card": { en: "💳 Card", uk: "💳 Карта", fr: "💳 Carte" , pl: "💳 Karta" },

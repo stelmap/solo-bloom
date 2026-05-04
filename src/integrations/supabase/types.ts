@@ -1146,6 +1146,48 @@ export type Database = {
           },
         ]
       }
+      payment_corrections: {
+        Row: {
+          appointment_id: string
+          correction_comment: string | null
+          created_at: string
+          id: string
+          new_payment_date: string | null
+          new_payment_method: string | null
+          new_payment_status: string
+          previous_payment_date: string | null
+          previous_payment_method: string | null
+          previous_payment_status: string | null
+          user_id: string
+        }
+        Insert: {
+          appointment_id: string
+          correction_comment?: string | null
+          created_at?: string
+          id?: string
+          new_payment_date?: string | null
+          new_payment_method?: string | null
+          new_payment_status: string
+          previous_payment_date?: string | null
+          previous_payment_method?: string | null
+          previous_payment_status?: string | null
+          user_id: string
+        }
+        Update: {
+          appointment_id?: string
+          correction_comment?: string | null
+          created_at?: string
+          id?: string
+          new_payment_date?: string | null
+          new_payment_method?: string | null
+          new_payment_status?: string
+          previous_payment_date?: string | null
+          previous_payment_method?: string | null
+          previous_payment_status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       plan_prices: {
         Row: {
           billing_period: string

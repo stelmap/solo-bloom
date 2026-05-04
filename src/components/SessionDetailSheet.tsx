@@ -28,6 +28,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useGroupAttendance, useUpdateAttendance, useGroup, useGroupMembers, useCompleteGroupSession, useGroupSessionPayments } from "@/hooks/useGroups";
+import { PaymentEditDialog } from "@/components/PaymentEditDialog";
 
 interface SessionDetailSheetProps {
   appointment: any | null;
@@ -71,6 +72,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [recurDeleteOpen, setRecurDeleteOpen] = useState(false);
   const [recurEditScopeOpen, setRecurEditScopeOpen] = useState(false);
+  const [editChoiceOpen, setEditChoiceOpen] = useState(false);
+  const [paymentEditOpen, setPaymentEditOpen] = useState(false);
   const [noShowOpen, setNoShowOpen] = useState(false);
   const [sendingReminder, setSendingReminder] = useState(false);
 
@@ -687,7 +690,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
               )}
 
               <div className="flex gap-2 border-t border-border pt-3">
-                <Button variant="ghost" size="sm" onClick={openEdit}>
+                <Button variant="ghost" size="sm" onClick={() => setEditChoiceOpen(true)}>
                   <Pencil className="h-3.5 w-3.5 mr-1" /> {t("calendar.edit")}
                 </Button>
                 <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive"
@@ -1016,7 +1019,46 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
         </DialogContent>
       </Dialog>
 
-      {/* No-show choice */}
+      {/* Edit choice (session vs payment) */}
+      <Dialog open={editChoiceOpen} onOpenChange={setEditChoiceOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("editChoice.title")}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">{t("editChoice.description")}</p>
+          <div className="space-y-2 pt-2">
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => { setEditChoiceOpen(false); openEdit(); }}
+            >
+              <Pencil className="h-4 w-4 mr-2" /> {t("editChoice.session")}
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => { setEditChoiceOpen(false); setPaymentEditOpen(true); }}
+            >
+              <DollarSign className="h-4 w-4 mr-2" /> {t("editChoice.payment")}
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={() => setEditChoiceOpen(false)}
+            >
+              <X className="h-4 w-4 mr-2" /> {t("common.cancel")}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment correction modal */}
+      <PaymentEditDialog
+        open={paymentEditOpen}
+        onOpenChange={setPaymentEditOpen}
+        appointment={apt}
+        use12h={use12h}
+      />
       <Dialog open={noShowOpen} onOpenChange={setNoShowOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>{t("calendar.noShow")}</DialogTitle></DialogHeader>
