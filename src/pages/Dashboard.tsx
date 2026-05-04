@@ -59,7 +59,32 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const use12h = (profile as any)?.time_format === "12h";
 
-  const todayAppointments: Apt[] = (stats?.todayAppointments as Apt[]) ?? [];
+  const rawTodayAppointments: Apt[] = (stats?.todayAppointments as Apt[]) ?? [];
+
+  // Deduplicate appointments: same client + same scheduled_at = one session.
+  // For group sessions, all rows sharing group_session_id collapse to one session.
+  // When duplicates exist, prefer the most "advanced" status:
+  // completed > scheduled/confirmed > no-show > rescheduled > cancelled.
+  const todayAppointments: Apt[] = useMemo(() => {
+    const statusRank = (s: string) =>
+      s === "completed" ? 5 :
+      s === "confirmed" ? 4 :
+      s === "scheduled" ? 4 :
+      s === "no-show" ? 3 :
+      s === "rescheduled" ? 2 :
+      s === "cancelled" ? 1 : 0;
+    const map = new Map<string, Apt>();
+    for (const apt of rawTodayAppointments) {
+      const key = apt.group_session_id
+        ? `g:${apt.group_session_id}`
+        : `c:${(apt as any).client_id ?? ""}@${apt.scheduled_at}`;
+      const existing = map.get(key);
+      if (!existing || statusRank(apt.status) > statusRank(existing.status)) {
+        map.set(key, apt);
+      }
+    }
+    return Array.from(map.values());
+  }, [rawTodayAppointments]);
 
   const summary = useMemo(() => {
     const now = Date.now();
