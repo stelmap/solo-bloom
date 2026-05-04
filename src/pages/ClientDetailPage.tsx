@@ -271,21 +271,6 @@ export default function ClientDetailPage() {
     return <Badge className={cn("text-xs", s.color)}>{s.label}</Badge>;
   };
 
-  const { data: clientAllocs = [] } = useClientAllocations(id);
-  const allocByApt = useMemo(() => {
-    const map: Record<string, { paid: number; minDate: string | null }> = {};
-    for (const a of clientAllocs as any[]) {
-      if (a.income?.status !== "confirmed") continue;
-      const amt = Number(a.allocated_amount || 0);
-      if (amt <= 0) continue;
-      const cur = map[a.appointment_id] || { paid: 0, minDate: null };
-      cur.paid += amt;
-      const d = a.income?.date as string | undefined;
-      if (d && (!cur.minDate || d < cur.minDate)) cur.minDate = d;
-      map[a.appointment_id] = cur;
-    }
-    return map;
-  }, [clientAllocs]);
 
   const derivePaymentStatus = (apt: any): string => {
     if (apt.status === "cancelled" || apt.status === "no-show") return apt.payment_status || "not_applicable";
