@@ -1236,6 +1236,7 @@ export const translations = {
   "clientPay.creditBalance": { en: "Prepaid balance", uk: "Передоплачений баланс", fr: "Solde prépayé", pl: "Saldo przedpłaty" },
   "clientPay.coversNSessions": { en: "Covers {{count}} session(s)", uk: "Покриває {{count}} сеанс(ів)", fr: "Couvre {{count}} séance(s)", pl: "Pokrywa {{count}} sesji" },
   "clientPay.unlinked": { en: "Unlinked", uk: "Не привʼязано", fr: "Non liée", pl: "Niepowiązane" },
+  "clientPay.editLinks": { en: "Edit linked sessions", uk: "Редагувати привʼязані сеанси", fr: "Modifier les séances liées", pl: "Edytuj powiązane sesje" },
   "common.optional": { en: "optional", uk: "необовʼязково", fr: "facultatif", pl: "opcjonalnie" },
 } as const;
 
