@@ -509,13 +509,51 @@ export default function ClientDetailPage() {
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-primary" /> {t("clientDetail.sessionHistory")}
-                <span className="text-xs text-muted-foreground ml-auto">{totalSessions} {t("dashboard.sessions")}</span>
+                <span className="text-xs text-muted-foreground ml-auto">
+                  {statFilter === "all"
+                    ? t("clientDetail.resultCountSimple", { count: String(totalSessions), label: t("dashboard.sessions") })
+                    : t("clientDetail.resultCountSimple", { count: String(statFilter === "supervision" ? supervisionCount : filteredAppointments.length), label: filterLabelMap[statFilter].toLowerCase() })}
+                </span>
               </h3>
-              {appointments.length === 0 ? (
+
+              {statFilter !== "all" && (
+                <div className="flex items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
+                  <span className="text-xs text-foreground">
+                    {t("clientDetail.filterShowing", { filter: filterLabelMap[statFilter] })}
+                  </span>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setStatFilter("all")}>
+                    <X className="h-3 w-3 mr-1" /> {t("clientDetail.clearFilter")}
+                  </Button>
+                </div>
+              )}
+
+              {statFilter === "supervision" ? (
+                clientSupervisions.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">{t("clientDetail.noFilterResults")}</p>
+                ) : (
+                  <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+                    {clientSupervisions.map((sup: any) => (
+                      <div key={sup.id} onClick={() => navigate("/supervision")}
+                        className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/50 cursor-pointer hover:ring-2 hover:ring-ring/20">
+                        <div className="flex items-center gap-3">
+                          <ClipboardList className="h-4 w-4 text-primary" />
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{format(new Date(sup.supervision_date + "T00:00:00"), "MMM d, yyyy")}</p>
+                            <p className="text-xs text-muted-foreground">{(sup.imported_notes_snapshot || []).length} notes</p>
+                          </div>
+                        </div>
+                        <span className="text-sm font-semibold text-foreground">{cs}{Number(sup.paid_amount).toFixed(0)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )
+              ) : appointments.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">{t("clientDetail.noSessions")}</p>
+              ) : filteredAppointments.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">{t("clientDetail.noFilterResults")}</p>
               ) : (
                 <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
-                  {sortedAppointments.map((apt: any) => {
+                  {filteredAppointments.map((apt: any) => {
                     const notePreview = apt.notes ? (apt.notes.length > 80 ? apt.notes.slice(0, 80) + "…" : apt.notes) : null;
                     const isNextUpcoming = apt.id === nextUpcomingId;
                     return (
