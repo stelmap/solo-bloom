@@ -488,14 +488,26 @@ export default function ClientDetailPage() {
 
           <div className="lg:col-span-2">
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-              <h3 className="font-semibold text-foreground flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-primary" /> {t("clientDetail.sessionHistory")}
-                <span className="text-xs text-muted-foreground ml-auto">
-                  {statFilter === "all"
-                    ? t("clientDetail.resultCountSimple", { count: String(totalSessions), label: t("dashboard.sessions") })
-                    : t("clientDetail.resultCountSimple", { count: String(statFilter === "supervision" ? supervisionCount : filteredAppointments.length), label: filterLabelMap[statFilter].toLowerCase() })}
-                </span>
-              </h3>
+              {(() => {
+                const totalForFilter = statFilter === "supervision" ? (clientSupervisions as any[]).length : filteredAppointments.length;
+                const totalPages = Math.max(1, Math.ceil(totalForFilter / PAGE_SIZE));
+                const safePage = Math.min(page, totalPages);
+                const start = (safePage - 1) * PAGE_SIZE;
+                const end = Math.min(start + PAGE_SIZE, totalForFilter);
+                const shown = Math.max(end - start, 0);
+                const labelLower = (statFilter === "all" ? t("dashboard.sessions") : filterLabelMap[statFilter]).toLowerCase();
+                const countText = totalForFilter > PAGE_SIZE
+                  ? t("clientDetail.resultCount", { shown: String(shown), total: String(totalForFilter), label: labelLower })
+                  : t("clientDetail.resultCountSimple", { count: String(totalForFilter), label: labelLower });
+                return (
+                  <>
+                    <h3 className="font-semibold text-foreground flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-primary" /> {t("clientDetail.sessionHistory")}
+                      <span className="text-xs text-muted-foreground ml-auto">{countText}</span>
+                    </h3>
+                  </>
+                );
+              })()}
 
               {statFilter !== "all" && (
                 <div className="flex items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
