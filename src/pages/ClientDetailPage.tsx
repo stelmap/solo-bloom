@@ -13,7 +13,7 @@ import {
   useClientAppointments, useClientNotes, useCreateClientNote, useDeleteClientNote,
   useClientAttachments, useUploadAttachment, useDeleteAttachment, useProfile,
   useClientPriceHistory, useCreatePriceChange, useClientIncome,
-  useClientCreditBalance, useDeleteIncomeConfirmation,
+  useClientCreditBalance, useDeleteIncomeConfirmation, useClientAllocations,
 } from "@/hooks/useData";
 import { useSupervisions, useSupervisionCount } from "@/hooks/useSupervisions";
 import { IncomeConfirmationDialog } from "@/components/IncomeConfirmationDialog";
@@ -494,6 +494,18 @@ export default function ClientDetailPage() {
                 </div>
               )}
             </div>
+
+            {/* Payment History */}
+            <PaymentHistorySection
+              clientId={id!}
+              currencySymbol={cs}
+              creditBalance={creditBalance as number}
+              clientIncome={clientIncome as any[]}
+              isDemoMode={isDemoMode}
+              onAdd={() => { setEditingIncome(null); setIncomeDialogOpen(true); }}
+              onEdit={(inc) => { setEditingIncome(inc); setIncomeDialogOpen(true); }}
+              onDelete={(id) => setDeleteIncomeId(id)}
+            />
           </div>
 
           <div className="lg:col-span-2">
@@ -732,6 +744,129 @@ export default function ClientDetailPage() {
         onOpenChange={(o) => { setSessionSheetOpen(o); if (!o) setSessionApt(null); }}
         use12h={use12h}
       />
+
+      {id && (
+        <IncomeConfirmationDialog
+          open={incomeDialogOpen}
+          onOpenChange={(o) => { setIncomeDialogOpen(o); if (!o) setEditingIncome(null); }}
+          clientId={id}
+          clientName={client?.name}
+          use12h={use12h}
+          existingIncome={editingIncome}
+        />
+      )}
+
+      <ConfirmDelete2
+        open={!!deleteIncomeId}
+        onOpenChange={(o) => { if (!o) setDeleteIncomeId(null); }}
+        onConfirm={async () => {
+          if (!deleteIncomeId) return;
+          try {
+            await deleteIncomeConfirm.mutateAsync(deleteIncomeId);
+            toast({ title: t("incomeConfirm.deleted") });
+            setDeleteIncomeId(null);
+          } catch (e: any) {
+            toast({ title: t("common.error"), description: e?.message, variant: "destructive" });
+          }
+        }}
+        title={t("incomeConfirm.deleteTitle")}
+        description={t("incomeConfirm.deleteDesc")}
+        loading={deleteIncomeConfirm.isPending}
+      />
     </AppLayout>
   );
 }
+
+function PaymentHistorySection({
+  clientId, currencySymbol, creditBalance, clientIncome, isDemoMode, onAdd, onEdit, onDelete,
+}: {
+  clientId: string;
+  currencySymbol: string;
+  creditBalance: number;
+  clientIncome: any[];
+  isDemoMode: boolean;
+  onAdd: () => void;
+  onEdit: (inc: any) => void;
+  onDelete: (id: string) => void;
+}) {
+  const { t } = useLanguage();
+  const { data: allocs = [] } = useClientAllocations(clientId);
+  const countByIncome = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const a of allocs as any[]) {
+      if (Number(a.allocated_amount) > 0) map[a.income_id] = (map[a.income_id] || 0) + 1;
+    }
+    return map;
+  }, [allocs]);
+
+  const methodLabel = (m: string) => {
+    if (m === "cash") return t("method.cashLabel");
+    if (m === "card") return t("method.cardLabel");
+    if (m === "bank_transfer") return t("method.bankTransferLabel");
+    return m || "—";
+  };
+
+  return (
+    <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="font-semibold text-foreground flex items-center gap-2">
+          <CreditCard className="h-4 w-4 text-primary" /> {t("clientPay.title")}
+        </h3>
+        {!isDemoMode && (
+          <Button size="sm" variant="outline" onClick={onAdd}>
+            <Plus className="h-4 w-4 mr-1" /> {t("clientPay.add")}
+          </Button>
+        )}
+      </div>
+
+      <div className="rounded-lg border border-success/30 bg-success/5 px-3 py-2 text-sm flex items-center justify-between">
+        <span className="text-muted-foreground">{t("clientPay.creditBalance")}</span>
+        <span className={cn("font-semibold", creditBalance > 0 ? "text-success" : "text-muted-foreground")}>
+          {currencySymbol}{Number(creditBalance || 0).toFixed(2)}
+        </span>
+      </div>
+
+      {clientIncome.length === 0 ? (
+        <p className="text-xs text-muted-foreground text-center py-4">{t("clientPay.empty")}</p>
+      ) : (
+        <div className="space-y-2 max-h-80 overflow-y-auto">
+          {clientIncome.map((inc: any) => {
+            const n = countByIncome[inc.id] || 0;
+            const isCancelled = inc.status === "cancelled";
+            const isDraft = inc.status === "draft";
+            return (
+              <div key={inc.id} className="rounded-lg border border-border bg-muted/40 p-3 group">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-foreground">{currencySymbol}{Number(inc.amount).toFixed(2)}</span>
+                      <span className="text-xs text-muted-foreground">{format(new Date((inc.date || inc.created_at) + (inc.date ? "T00:00:00" : "")), "MMM d, yyyy")}</span>
+                      <Badge variant="outline" className="text-[10px]">{methodLabel(inc.payment_method)}</Badge>
+                      {isDraft && <Badge variant="outline" className="text-[10px] text-warning border-warning/40">{t("incomeConfirm.statusDraft")}</Badge>}
+                      {isCancelled && <Badge variant="outline" className="text-[10px] text-destructive border-destructive/40">{t("incomeConfirm.statusCancelled")}</Badge>}
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {n > 0 ? t("clientPay.coversNSessions", { count: String(n) }) : t("clientPay.unlinked")}
+                    </div>
+                    {inc.comment && <p className="mt-1 text-xs text-muted-foreground italic">"{inc.comment}"</p>}
+                  </div>
+                  {!isDemoMode && (
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => onEdit(inc)} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground" aria-label="Edit">
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button onClick={() => onDelete(inc.id)} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive" aria-label="Delete">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
