@@ -271,7 +271,38 @@ export default function ClientDetailPage() {
     return <Badge className={cn("text-xs", s.color)}>{s.label}</Badge>;
   };
 
-  const paymentBadge = (status: string) => {
+  const { data: clientAllocs = [] } = useClientAllocations(id);
+  const allocByApt = useMemo(() => {
+    const map: Record<string, { paid: number; minDate: string | null }> = {};
+    for (const a of clientAllocs as any[]) {
+      if (a.income?.status !== "confirmed") continue;
+      const amt = Number(a.allocated_amount || 0);
+      if (amt <= 0) continue;
+      const cur = map[a.appointment_id] || { paid: 0, minDate: null };
+      cur.paid += amt;
+      const d = a.income?.date as string | undefined;
+      if (d && (!cur.minDate || d < cur.minDate)) cur.minDate = d;
+      map[a.appointment_id] = cur;
+    }
+    return map;
+  }, [clientAllocs]);
+
+  const derivePaymentStatus = (apt: any): string => {
+    if (apt.status === "cancelled" || apt.status === "no-show") return apt.payment_status || "not_applicable";
+    const price = Number(apt.price || 0);
+    const info = allocByApt[apt.id];
+    const paid = info?.paid || 0;
+    if (paid <= 0 || price <= 0) return apt.payment_status || "unpaid";
+    if (paid + 0.001 >= price) {
+      const aptDate = (apt.scheduled_at || "").slice(0, 10);
+      if (info?.minDate && aptDate && info.minDate < aptDate) return "paid_in_advance";
+      return "paid_now";
+    }
+    return "partially_paid";
+  };
+
+  const paymentBadge = (apt: any) => {
+    const status = derivePaymentStatus(apt);
     const s = PAYMENT_STATUS_STYLES[status] || PAYMENT_STATUS_STYLES.unpaid;
     return <Badge variant="outline" className={cn("text-xs", s.color)}>{s.label}</Badge>;
   };
@@ -604,9 +635,18 @@ export default function ClientDetailPage() {
                                       <span className="text-sm font-semibold text-foreground">{cs}{Number(apt.price).toFixed(0)}</span>
                                       {apt.price_override_reason && <Badge variant="outline" className="text-[10px] px-1 py-0">{t("pricing.overridden")}</Badge>}
                                     </div>
+                                    {(() => {
+                                      const info = allocByApt[apt.id];
+                                      const paid = info?.paid || 0;
+                                      const price = Number(apt.price || 0);
+                                      if (paid > 0 && paid + 0.001 < price) {
+                                        return <span className="text-[10px] text-muted-foreground">{cs}{paid.toFixed(0)} / {cs}{price.toFixed(0)}</span>;
+                                      }
+                                      return null;
+                                    })()}
                                     <div className="flex gap-1">
                                       {statusBadge(apt.status)}
-                                      {paymentBadge(apt.payment_status)}
+                                      {paymentBadge(apt)}
                                     </div>
                                   </div>
                                 </div>
