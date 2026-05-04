@@ -132,6 +132,49 @@ export default function ClientDetailPage() {
     return { paidSessionsFromIncome: sessionsFromManualIncome, prepaidSessions: prepaid };
   }, [appointments, clientIncome, client, paidSessions, completedSessions]);
 
+  const paidAmount = useMemo(() => {
+    const fromAppointments = (appointments as any[])
+      .filter((a: any) => a.payment_status === "paid_now" || a.payment_status === "paid_in_advance")
+      .reduce((s: number, a: any) => s + Number(a.price || 0), 0);
+    const fromIncome = (clientIncome as any[]).reduce((s: number, i: any) => s + Number(i.amount || 0), 0);
+    return fromAppointments + fromIncome;
+  }, [appointments, clientIncome]);
+
+  // Apply selected statistic filter to the full appointment list
+  const filteredAppointments = useMemo(() => {
+    const all = sortedAppointments as any[];
+    switch (statFilter) {
+      case "completed":
+        return all.filter((a) => a.status === "completed");
+      case "paid":
+        return all.filter((a) => a.payment_status === "paid_now" || a.payment_status === "paid_in_advance");
+      case "awaiting":
+        return all.filter((a) =>
+          (a.status === "completed" || a.status === "scheduled" || a.status === "confirmed" || a.status === "reminder_sent") &&
+          (a.payment_status === "unpaid" || a.payment_status === "waiting_for_payment")
+        );
+      case "cancelled":
+        return all.filter((a) => a.status === "cancelled" || a.status === "no-show");
+      case "prepaid":
+        return all.filter((a) => a.payment_status === "paid_in_advance");
+      case "supervision":
+        // Sessions linked via client_notes flagged as included_in_supervision
+        return [];
+      default:
+        return all;
+    }
+  }, [sortedAppointments, statFilter]);
+
+  const filterLabelMap: Record<StatFilter, string> = {
+    all: t("clientDetail.totalSessions"),
+    completed: t("clientDetail.completedSessions"),
+    paid: t("clientDetail.paidSessions"),
+    awaiting: t("clientDetail.pendingPayments"),
+    cancelled: t("clientDetail.cancelled"),
+    prepaid: t("clientDetail.prepaidSessions"),
+    supervision: t("clientDetail.supervisionSessions"),
+  };
+
   if (isLoading) {
     return <AppLayout><div className="flex items-center justify-center h-64 text-muted-foreground">{t("clientDetail.loading")}</div></AppLayout>;
   }
