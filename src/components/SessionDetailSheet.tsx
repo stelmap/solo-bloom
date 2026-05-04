@@ -1019,7 +1019,46 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
         </DialogContent>
       </Dialog>
 
-      {/* No-show choice */}
+      {/* Edit choice (session vs payment) */}
+      <Dialog open={editChoiceOpen} onOpenChange={setEditChoiceOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("editChoice.title")}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">{t("editChoice.description")}</p>
+          <div className="space-y-2 pt-2">
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => { setEditChoiceOpen(false); openEdit(); }}
+            >
+              <Pencil className="h-4 w-4 mr-2" /> {t("editChoice.session")}
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => { setEditChoiceOpen(false); setPaymentEditOpen(true); }}
+            >
+              <DollarSign className="h-4 w-4 mr-2" /> {t("editChoice.payment")}
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={() => setEditChoiceOpen(false)}
+            >
+              <X className="h-4 w-4 mr-2" /> {t("common.cancel")}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment correction modal */}
+      <PaymentEditDialog
+        open={paymentEditOpen}
+        onOpenChange={setPaymentEditOpen}
+        appointment={apt}
+        use12h={use12h}
+      />
       <Dialog open={noShowOpen} onOpenChange={setNoShowOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>{t("calendar.noShow")}</DialogTitle></DialogHeader>
