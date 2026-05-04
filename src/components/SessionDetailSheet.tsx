@@ -71,6 +71,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [recurDeleteOpen, setRecurDeleteOpen] = useState(false);
   const [recurEditScopeOpen, setRecurEditScopeOpen] = useState(false);
+  const [editChoiceOpen, setEditChoiceOpen] = useState(false);
+  const [paymentEditOpen, setPaymentEditOpen] = useState(false);
   const [noShowOpen, setNoShowOpen] = useState(false);
   const [sendingReminder, setSendingReminder] = useState(false);
 
