@@ -63,6 +63,8 @@ export default function ClientDetailPage() {
   const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "", notification_preference: "no_reminder", confirmation_required: false, pricing_mode: "fixed", base_price: "", billing_address: "", billing_country: "", billing_tax_id: "", billing_company_name: "" });
   const [sessionApt, setSessionApt] = useState<any>(null);
   const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
+  type StatFilter = "all" | "completed" | "paid" | "awaiting" | "cancelled" | "prepaid" | "supervision";
+  const [statFilter, setStatFilter] = useState<StatFilter>("all");
   const use12h = (profile as any)?.time_format === "12h";
 
   const SESSION_STATUS_STYLES: Record<string, { label: string; color: string }> = {
@@ -129,6 +131,49 @@ export default function ClientDetailPage() {
 
     return { paidSessionsFromIncome: sessionsFromManualIncome, prepaidSessions: prepaid };
   }, [appointments, clientIncome, client, paidSessions, completedSessions]);
+
+  const paidAmount = useMemo(() => {
+    const fromAppointments = (appointments as any[])
+      .filter((a: any) => a.payment_status === "paid_now" || a.payment_status === "paid_in_advance")
+      .reduce((s: number, a: any) => s + Number(a.price || 0), 0);
+    const fromIncome = (clientIncome as any[]).reduce((s: number, i: any) => s + Number(i.amount || 0), 0);
+    return fromAppointments + fromIncome;
+  }, [appointments, clientIncome]);
+
+  // Apply selected statistic filter to the full appointment list
+  const filteredAppointments = useMemo(() => {
+    const all = sortedAppointments as any[];
+    switch (statFilter) {
+      case "completed":
+        return all.filter((a) => a.status === "completed");
+      case "paid":
+        return all.filter((a) => a.payment_status === "paid_now" || a.payment_status === "paid_in_advance");
+      case "awaiting":
+        return all.filter((a) =>
+          (a.status === "completed" || a.status === "scheduled" || a.status === "confirmed" || a.status === "reminder_sent") &&
+          (a.payment_status === "unpaid" || a.payment_status === "waiting_for_payment")
+        );
+      case "cancelled":
+        return all.filter((a) => a.status === "cancelled" || a.status === "no-show");
+      case "prepaid":
+        return all.filter((a) => a.payment_status === "paid_in_advance");
+      case "supervision":
+        // Sessions linked via client_notes flagged as included_in_supervision
+        return [];
+      default:
+        return all;
+    }
+  }, [sortedAppointments, statFilter]);
+
+  const filterLabelMap: Record<StatFilter, string> = {
+    all: t("clientDetail.totalSessions"),
+    completed: t("clientDetail.completedSessions"),
+    paid: t("clientDetail.paidSessions"),
+    awaiting: t("clientDetail.pendingPayments"),
+    cancelled: t("clientDetail.cancelled"),
+    prepaid: t("clientDetail.prepaidSessions"),
+    supervision: t("clientDetail.supervisionSessions"),
+  };
 
   if (isLoading) {
     return <AppLayout><div className="flex items-center justify-center h-64 text-muted-foreground">{t("clientDetail.loading")}</div></AppLayout>;
@@ -260,40 +305,37 @@ export default function ClientDetailPage() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
-          <div className="bg-card rounded-xl border border-border p-4 text-center">
-            <p className="text-2xl font-bold text-foreground">{totalSessions}</p>
-            <p className="text-xs text-muted-foreground">{t("clientDetail.totalSessions")}</p>
-          </div>
-          <div className="bg-card rounded-xl border border-border p-4 text-center">
-            <p className="text-2xl font-bold text-success">{paidSessions}</p>
-            <p className="text-xs text-muted-foreground">{t("clientDetail.paid")}</p>
-          </div>
-          <div className="bg-card rounded-xl border border-border p-4 text-center">
-            <p className="text-2xl font-bold text-destructive">{cancelledSessions}</p>
-            <p className="text-xs text-muted-foreground">{t("clientDetail.cancelled")}</p>
-          </div>
-          <div className="bg-card rounded-xl border border-border p-4 text-center">
-            <p className="text-2xl font-bold text-warning">{pendingPayments}</p>
-            <p className="text-xs text-muted-foreground">{t("clientDetail.pendingPayments")}</p>
-          </div>
-          <div className="bg-card rounded-xl border border-primary/30 p-4 text-center">
-            <div className="flex items-center justify-center gap-1">
-              <CreditCard className="h-4 w-4 text-primary" />
-              <p className="text-2xl font-bold text-primary">{paidSessions + paidSessionsFromIncome}</p>
-            </div>
-            <p className="text-xs text-muted-foreground">{t("clientDetail.paidSessions")}</p>
-          </div>
-          <div className="bg-card rounded-xl border border-success/30 p-4 text-center">
-            <p className={cn("text-2xl font-bold", prepaidSessions > 0 ? "text-success" : "text-muted-foreground")}>{prepaidSessions}</p>
-            <p className="text-xs text-muted-foreground">{t("clientDetail.prepaidSessions")}</p>
-          </div>
-          <div className="bg-card rounded-xl border border-primary/20 p-4 text-center">
-            <div className="flex items-center justify-center gap-1">
-              <ClipboardList className="h-4 w-4 text-primary" />
-              <p className="text-2xl font-bold text-primary">{supervisionCount}</p>
-            </div>
-            <p className="text-xs text-muted-foreground">{t("supervision.count")}</p>
-          </div>
+          {([
+            { key: "all", value: totalSessions, label: t("clientDetail.totalSessions"), color: "text-foreground", border: "border-border" },
+            { key: "completed", value: completedSessions, label: t("clientDetail.completedSessions"), color: "text-foreground", border: "border-border" },
+            { key: "paid", value: paidSessions + paidSessionsFromIncome, label: t("clientDetail.paidSessions"), color: "text-primary", border: "border-primary/30", icon: <CreditCard className="h-4 w-4 text-primary" />, sub: `${cs}${paidAmount.toFixed(0)}` },
+            { key: "awaiting", value: pendingPayments, label: t("clientDetail.pendingPayments"), color: "text-warning", border: "border-border" },
+            { key: "cancelled", value: cancelledSessions, label: t("clientDetail.cancelled"), color: "text-destructive", border: "border-border" },
+            { key: "prepaid", value: prepaidSessions, label: t("clientDetail.prepaidSessions"), color: prepaidSessions > 0 ? "text-success" : "text-muted-foreground", border: "border-success/30" },
+            { key: "supervision", value: supervisionCount, label: t("clientDetail.supervisionSessions"), color: "text-primary", border: "border-primary/20", icon: <ClipboardList className="h-4 w-4 text-primary" /> },
+          ] as Array<{ key: StatFilter; value: number; label: string; color: string; border: string; icon?: any; sub?: string }>).map((card) => {
+            const active = statFilter === card.key;
+            return (
+              <button
+                key={card.key}
+                type="button"
+                onClick={() => setStatFilter(card.key)}
+                aria-pressed={active}
+                className={cn(
+                  "bg-card rounded-xl border p-4 text-center transition-all hover:ring-2 hover:ring-ring/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  card.border,
+                  active && "ring-2 ring-primary border-primary shadow-sm"
+                )}
+              >
+                <div className="flex items-center justify-center gap-1">
+                  {card.icon}
+                  <p className={cn("text-2xl font-bold", card.color)}>{card.value}</p>
+                </div>
+                <p className="text-xs text-muted-foreground">{card.label}</p>
+                {card.sub && <p className="text-[10px] text-muted-foreground mt-0.5">{card.sub}</p>}
+              </button>
+            );
+          })}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -467,13 +509,51 @@ export default function ClientDetailPage() {
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-primary" /> {t("clientDetail.sessionHistory")}
-                <span className="text-xs text-muted-foreground ml-auto">{totalSessions} {t("dashboard.sessions")}</span>
+                <span className="text-xs text-muted-foreground ml-auto">
+                  {statFilter === "all"
+                    ? t("clientDetail.resultCountSimple", { count: String(totalSessions), label: t("dashboard.sessions") })
+                    : t("clientDetail.resultCountSimple", { count: String(statFilter === "supervision" ? supervisionCount : filteredAppointments.length), label: filterLabelMap[statFilter].toLowerCase() })}
+                </span>
               </h3>
-              {appointments.length === 0 ? (
+
+              {statFilter !== "all" && (
+                <div className="flex items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
+                  <span className="text-xs text-foreground">
+                    {t("clientDetail.filterShowing", { filter: filterLabelMap[statFilter] })}
+                  </span>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setStatFilter("all")}>
+                    <X className="h-3 w-3 mr-1" /> {t("clientDetail.clearFilter")}
+                  </Button>
+                </div>
+              )}
+
+              {statFilter === "supervision" ? (
+                clientSupervisions.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">{t("clientDetail.noFilterResults")}</p>
+                ) : (
+                  <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+                    {clientSupervisions.map((sup: any) => (
+                      <div key={sup.id} onClick={() => navigate("/supervision")}
+                        className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/50 cursor-pointer hover:ring-2 hover:ring-ring/20">
+                        <div className="flex items-center gap-3">
+                          <ClipboardList className="h-4 w-4 text-primary" />
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{format(new Date(sup.supervision_date + "T00:00:00"), "MMM d, yyyy")}</p>
+                            <p className="text-xs text-muted-foreground">{(sup.imported_notes_snapshot || []).length} notes</p>
+                          </div>
+                        </div>
+                        <span className="text-sm font-semibold text-foreground">{cs}{Number(sup.paid_amount).toFixed(0)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )
+              ) : appointments.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">{t("clientDetail.noSessions")}</p>
+              ) : filteredAppointments.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">{t("clientDetail.noFilterResults")}</p>
               ) : (
                 <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
-                  {sortedAppointments.map((apt: any) => {
+                  {filteredAppointments.map((apt: any) => {
                     const notePreview = apt.notes ? (apt.notes.length > 80 ? apt.notes.slice(0, 80) + "…" : apt.notes) : null;
                     const isNextUpcoming = apt.id === nextUpcomingId;
                     return (
