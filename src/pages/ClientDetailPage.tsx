@@ -520,77 +520,102 @@ export default function ClientDetailPage() {
                 </div>
               )}
 
-              {statFilter === "supervision" ? (
-                clientSupervisions.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">{t("clientDetail.noFilterResults")}</p>
-                ) : (
-                  <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
-                    {clientSupervisions.map((sup: any) => (
-                      <div key={sup.id} onClick={() => navigate("/supervision")}
-                        className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/50 cursor-pointer hover:ring-2 hover:ring-ring/20">
-                        <div className="flex items-center gap-3">
-                          <ClipboardList className="h-4 w-4 text-primary" />
-                          <div>
-                            <p className="text-sm font-medium text-foreground">{format(new Date(sup.supervision_date + "T00:00:00"), "MMM d, yyyy")}</p>
-                            <p className="text-xs text-muted-foreground">{(sup.imported_notes_snapshot || []).length} notes</p>
-                          </div>
+              {(() => {
+                const isSup = statFilter === "supervision";
+                const fullList: any[] = isSup ? (clientSupervisions as any[]) : filteredAppointments;
+                const total = fullList.length;
+                const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+                const safePage = Math.min(page, totalPages);
+                const start = (safePage - 1) * PAGE_SIZE;
+                const pageItems = fullList.slice(start, start + PAGE_SIZE);
+
+                if (!isSup && appointments.length === 0) {
+                  return <p className="text-sm text-muted-foreground text-center py-8">{t("clientDetail.noSessions")}</p>;
+                }
+                if (total === 0) {
+                  return <p className="text-sm text-muted-foreground text-center py-8">{t("clientDetail.noFilterResults")}</p>;
+                }
+
+                return (
+                  <>
+                    <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+                      {isSup
+                        ? pageItems.map((sup: any) => (
+                            <div key={sup.id} onClick={() => navigate("/supervision")}
+                              className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/50 cursor-pointer hover:ring-2 hover:ring-ring/20">
+                              <div className="flex items-center gap-3">
+                                <ClipboardList className="h-4 w-4 text-primary" />
+                                <div>
+                                  <p className="text-sm font-medium text-foreground">{format(new Date(sup.supervision_date + "T00:00:00"), "MMM d, yyyy")}</p>
+                                  <p className="text-xs text-muted-foreground">{(sup.imported_notes_snapshot || []).length} notes</p>
+                                </div>
+                              </div>
+                              <span className="text-sm font-semibold text-foreground">{cs}{Number(sup.paid_amount).toFixed(0)}</span>
+                            </div>
+                          ))
+                        : pageItems.map((apt: any) => {
+                            const notePreview = apt.notes ? (apt.notes.length > 80 ? apt.notes.slice(0, 80) + "…" : apt.notes) : null;
+                            const isNextUpcoming = apt.id === nextUpcomingId;
+                            return (
+                              <div key={apt.id}
+                                onClick={() => { setSessionApt(apt); setSessionSheetOpen(true); }}
+                                className={cn(
+                                  "flex flex-col gap-2 p-4 rounded-lg border transition-colors cursor-pointer hover:ring-2 hover:ring-ring/20",
+                                  isNextUpcoming ? "bg-primary/5 border-primary/30 ring-1 ring-primary/20" :
+                                  apt.status === "cancelled" || apt.status === "no-show" ? "bg-muted/30 border-border opacity-60" : "bg-muted/50 border-border"
+                                )}>
+                                <div className="flex items-center gap-4">
+                                  <div className="text-center min-w-[70px]">
+                                    <p className="text-sm font-semibold text-foreground">{format(new Date(apt.scheduled_at), "MMM d")}</p>
+                                    <p className="text-xs text-muted-foreground">{formatScheduledTime(apt.scheduled_at, use12h)}</p>
+                                  </div>
+                                  <div className="h-10 w-px bg-border" />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <p className="text-sm font-medium text-foreground truncate">{apt.services?.name}</p>
+                                      {isNextUpcoming && <Badge className="text-[10px] px-1.5 py-0 bg-primary/15 text-primary border-0">{t("status.scheduled")}</Badge>}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">{apt.duration_minutes} {t("common.min")}</p>
+                                  </div>
+                                  <div className="flex flex-col items-end gap-1">
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-sm font-semibold text-foreground">{cs}{Number(apt.price).toFixed(0)}</span>
+                                      {apt.price_override_reason && <Badge variant="outline" className="text-[10px] px-1 py-0">{t("pricing.overridden")}</Badge>}
+                                    </div>
+                                    <div className="flex gap-1">
+                                      {statusBadge(apt.status)}
+                                      {paymentBadge(apt.payment_status)}
+                                    </div>
+                                  </div>
+                                </div>
+                                {notePreview && (
+                                  <div className="pl-[86px] border-t border-border/50 pt-2">
+                                    <p className="text-xs text-muted-foreground italic">📝 {notePreview}</p>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                    </div>
+
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-between pt-3 border-t border-border">
+                        <span className="text-xs text-muted-foreground">
+                          {t("clientDetail.pageOf", { page: String(safePage), total: String(totalPages) })}
+                        </span>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" disabled={safePage <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>
+                            {t("common.previous")}
+                          </Button>
+                          <Button variant="outline" size="sm" disabled={safePage >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
+                            {t("common.next")}
+                          </Button>
                         </div>
-                        <span className="text-sm font-semibold text-foreground">{cs}{Number(sup.paid_amount).toFixed(0)}</span>
                       </div>
-                    ))}
-                  </div>
-                )
-              ) : appointments.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">{t("clientDetail.noSessions")}</p>
-              ) : filteredAppointments.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">{t("clientDetail.noFilterResults")}</p>
-              ) : (
-                <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
-                  {filteredAppointments.map((apt: any) => {
-                    const notePreview = apt.notes ? (apt.notes.length > 80 ? apt.notes.slice(0, 80) + "…" : apt.notes) : null;
-                    const isNextUpcoming = apt.id === nextUpcomingId;
-                    return (
-                      <div key={apt.id}
-                        onClick={() => { setSessionApt(apt); setSessionSheetOpen(true); }}
-                        className={cn(
-                          "flex flex-col gap-2 p-4 rounded-lg border transition-colors cursor-pointer hover:ring-2 hover:ring-ring/20",
-                          isNextUpcoming ? "bg-primary/5 border-primary/30 ring-1 ring-primary/20" :
-                          apt.status === "cancelled" || apt.status === "no-show" ? "bg-muted/30 border-border opacity-60" : "bg-muted/50 border-border"
-                        )}>
-                        <div className="flex items-center gap-4">
-                          <div className="text-center min-w-[70px]">
-                            <p className="text-sm font-semibold text-foreground">{format(new Date(apt.scheduled_at), "MMM d")}</p>
-                            <p className="text-xs text-muted-foreground">{formatScheduledTime(apt.scheduled_at, use12h)}</p>
-                          </div>
-                          <div className="h-10 w-px bg-border" />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="text-sm font-medium text-foreground truncate">{apt.services?.name}</p>
-                              {isNextUpcoming && <Badge className="text-[10px] px-1.5 py-0 bg-primary/15 text-primary border-0">{t("status.scheduled")}</Badge>}
-                            </div>
-                            <p className="text-xs text-muted-foreground">{apt.duration_minutes} {t("common.min")}</p>
-                          </div>
-                          <div className="flex flex-col items-end gap-1">
-                            <div className="flex items-center gap-1">
-                              <span className="text-sm font-semibold text-foreground">{cs}{Number(apt.price).toFixed(0)}</span>
-                              {apt.price_override_reason && <Badge variant="outline" className="text-[10px] px-1 py-0">{t("pricing.overridden")}</Badge>}
-                            </div>
-                            <div className="flex gap-1">
-                              {statusBadge(apt.status)}
-                              {paymentBadge(apt.payment_status)}
-                            </div>
-                          </div>
-                        </div>
-                        {notePreview && (
-                          <div className="pl-[86px] border-t border-border/50 pt-2">
-                            <p className="text-xs text-muted-foreground italic">📝 {notePreview}</p>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>
