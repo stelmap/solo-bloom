@@ -1475,7 +1475,7 @@ export function useCorrectPayment() {
       if (histErr) throw histErr;
     },
     onSuccess: () => {
-      track("payment_corrected");
+
       [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL, "client-income"].forEach((k) =>
         qc.invalidateQueries({ queryKey: [k] }),
       );
