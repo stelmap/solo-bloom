@@ -687,7 +687,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
               )}
 
               <div className="flex gap-2 border-t border-border pt-3">
-                <Button variant="ghost" size="sm" onClick={openEdit}>
+                <Button variant="ghost" size="sm" onClick={() => setEditChoiceOpen(true)}>
                   <Pencil className="h-3.5 w-3.5 mr-1" /> {t("calendar.edit")}
                 </Button>
                 <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive"
