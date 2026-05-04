@@ -527,18 +527,7 @@ export default function ClientDetailPage() {
               )}
             </div>
 
-            {/* Payment History */}
-            <PaymentHistorySection
-              clientId={id!}
-              currencySymbol={cs}
-              creditBalance={creditBalance as number}
-              clientIncome={clientIncome as any[]}
-              isDemoMode={isDemoMode}
-              onAdd={() => { setEditingIncome(null); setIncomeDialogOpen(true); }}
-              onEdit={(inc) => { setEditingIncome(inc); setIncomeDialogOpen(true); }}
-              onDelete={(id) => setDeleteIncomeId(id)}
-            />
-          </div>
+           </div>
 
           <div className="lg:col-span-2">
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
