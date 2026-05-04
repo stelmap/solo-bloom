@@ -13,8 +13,11 @@ import {
   useClientAppointments, useClientNotes, useCreateClientNote, useDeleteClientNote,
   useClientAttachments, useUploadAttachment, useDeleteAttachment, useProfile,
   useClientPriceHistory, useCreatePriceChange, useClientIncome,
+  useClientCreditBalance, useDeleteIncomeConfirmation,
 } from "@/hooks/useData";
 import { useSupervisions, useSupervisionCount } from "@/hooks/useSupervisions";
+import { IncomeConfirmationDialog } from "@/components/IncomeConfirmationDialog";
+import { ConfirmDeleteDialog as ConfirmDelete2 } from "@/components/ConfirmDeleteDialog";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, Phone, Mail, Send, Calendar, Pencil, Trash2, Plus, Paperclip, FileText, Image, Download, X, Bell, DollarSign, History, CreditCard, ClipboardList,
@@ -85,8 +88,15 @@ export default function ClientDetailPage() {
     waiting_for_payment: { label: t("payment.waiting"), color: "bg-warning/10 text-warning" },
     paid_now: { label: t("payment.paid"), color: "bg-success/10 text-success" },
     paid_in_advance: { label: t("payment.paidAdvance"), color: "bg-success/10 text-success" },
+    partially_paid: { label: t("incomeConfirm.partial"), color: "bg-warning/15 text-warning" },
     not_applicable: { label: t("payment.na"), color: "bg-muted text-muted-foreground" },
   };
+
+  const { data: creditBalance = 0 } = useClientCreditBalance(id);
+  const deleteIncomeConfirm = useDeleteIncomeConfirmation();
+  const [incomeDialogOpen, setIncomeDialogOpen] = useState(false);
+  const [editingIncome, setEditingIncome] = useState<any | null>(null);
+  const [deleteIncomeId, setDeleteIncomeId] = useState<string | null>(null);
 
   // Sort: upcoming (nearest first), then past (newest first)
   const { sortedAppointments, nextUpcomingId } = useMemo(() => {

@@ -210,6 +210,36 @@ export type Database = {
           },
         ]
       }
+      client_credits: {
+        Row: {
+          amount: number
+          client_id: string
+          created_at: string
+          description: string | null
+          id: string
+          income_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          client_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          income_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          income_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       client_notes: {
         Row: {
           appointment_id: string | null
@@ -968,6 +998,7 @@ export type Database = {
           amount: number
           appointment_id: string | null
           client_id: string | null
+          comment: string | null
           created_at: string
           date: string
           description: string | null
@@ -978,6 +1009,7 @@ export type Database = {
           seed_source: string | null
           session_date: string | null
           source: string
+          status: string
           updated_at: string
           user_id: string
         }
@@ -985,6 +1017,7 @@ export type Database = {
           amount: number
           appointment_id?: string | null
           client_id?: string | null
+          comment?: string | null
           created_at?: string
           date?: string
           description?: string | null
@@ -995,6 +1028,7 @@ export type Database = {
           seed_source?: string | null
           session_date?: string | null
           source?: string
+          status?: string
           updated_at?: string
           user_id: string
         }
@@ -1002,6 +1036,7 @@ export type Database = {
           amount?: number
           appointment_id?: string | null
           client_id?: string | null
+          comment?: string | null
           created_at?: string
           date?: string
           description?: string | null
@@ -1012,6 +1047,7 @@ export type Database = {
           seed_source?: string | null
           session_date?: string | null
           source?: string
+          status?: string
           updated_at?: string
           user_id?: string
         }
@@ -1031,6 +1067,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      income_audit: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          income_id: string | null
+          snapshot: Json | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          income_id?: string | null
+          snapshot?: Json | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          income_id?: string | null
+          snapshot?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      income_session_allocations: {
+        Row: {
+          allocated_amount: number
+          appointment_id: string
+          created_at: string
+          id: string
+          income_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allocated_amount?: number
+          appointment_id: string
+          created_at?: string
+          id?: string
+          income_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          allocated_amount?: number
+          appointment_id?: string
+          created_at?: string
+          id?: string
+          income_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       invoices: {
         Row: {
@@ -1907,6 +2000,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      recalc_appointment_payment_status: {
+        Args: { p_appointment_id: string }
+        Returns: undefined
       }
       seed_demo_workspace: { Args: { p_user_id: string }; Returns: Json }
       user_has_demo_data: { Args: { p_user_id: string }; Returns: boolean }
