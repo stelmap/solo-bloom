@@ -635,9 +635,18 @@ export default function ClientDetailPage() {
                                       <span className="text-sm font-semibold text-foreground">{cs}{Number(apt.price).toFixed(0)}</span>
                                       {apt.price_override_reason && <Badge variant="outline" className="text-[10px] px-1 py-0">{t("pricing.overridden")}</Badge>}
                                     </div>
+                                    {(() => {
+                                      const info = allocByApt[apt.id];
+                                      const paid = info?.paid || 0;
+                                      const price = Number(apt.price || 0);
+                                      if (paid > 0 && paid + 0.001 < price) {
+                                        return <span className="text-[10px] text-muted-foreground">{cs}{paid.toFixed(0)} / {cs}{price.toFixed(0)}</span>;
+                                      }
+                                      return null;
+                                    })()}
                                     <div className="flex gap-1">
                                       {statusBadge(apt.status)}
-                                      {paymentBadge(apt.payment_status)}
+                                      {paymentBadge(apt)}
                                     </div>
                                   </div>
                                 </div>
