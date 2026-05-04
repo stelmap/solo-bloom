@@ -300,7 +300,7 @@ export default function ClientDetailPage() {
               <button
                 key={card.key}
                 type="button"
-                onClick={() => setStatFilter(card.key)}
+                onClick={() => setFilter(card.key)}
                 aria-pressed={active}
                 className={cn(
                   "bg-card rounded-xl border p-4 text-center transition-all hover:ring-2 hover:ring-ring/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -502,7 +502,7 @@ export default function ClientDetailPage() {
                   <span className="text-xs text-foreground">
                     {t("clientDetail.filterShowing", { filter: filterLabelMap[statFilter] })}
                   </span>
-                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setStatFilter("all")}>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setFilter("all")}>
                     <X className="h-3 w-3 mr-1" /> {t("clientDetail.clearFilter")}
                   </Button>
                 </div>
