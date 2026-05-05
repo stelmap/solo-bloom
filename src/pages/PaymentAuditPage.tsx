@@ -497,6 +497,45 @@ export default function PaymentAuditPage() {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Create new payment for selected client */}
+      {clientId !== "all" && (
+        <IncomeConfirmationDialog
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          clientId={clientId}
+          clientName={(clients.find((c: any) => c.id === clientId) as any)?.name}
+        />
+      )}
+
+      {/* Edit existing income confirmation */}
+      {editIncome && editClientId && (
+        <IncomeConfirmationDialog
+          open={!!editIncome}
+          onOpenChange={(o) => { if (!o) { setEditIncome(null); setEditClientId(null); } }}
+          clientId={editClientId}
+          clientName={(clients.find((c: any) => c.id === editClientId) as any)?.name}
+          existingIncome={editIncome}
+        />
+      )}
+
+      <ConfirmDeleteDialog
+        open={!!deleteId}
+        onOpenChange={(o) => { if (!o) setDeleteId(null); }}
+        loading={deleteIncomeMut.isPending}
+        description={t("audit.deleteWarning")}
+        onConfirm={async () => {
+          if (!deleteId) return;
+          try {
+            await deleteIncomeMut.mutateAsync(deleteId);
+            toast({ title: t("audit.deleteSuccess") });
+            setDeleteId(null);
+            setOpenRow(null);
+          } catch (e: any) {
+            toast({ title: t("common.error"), description: e?.message, variant: "destructive" });
+          }
+        }}
+      />
     </AppLayout>
   );
 }
