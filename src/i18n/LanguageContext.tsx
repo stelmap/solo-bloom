@@ -33,16 +33,18 @@ export function translateFor(
   key: TranslationKey,
   params?: Record<string, string | number>,
 ): string {
-  const entry = translations[key];
-  if (!entry) {
-    // Fallback: extract readable label from key (e.g. "nav.dashboard" → "Dashboard")
+  const dict = getDict(lang);
+  let text: string | undefined = dict[key];
+  if (text === undefined) {
+    text = englishDict[key];
+  }
+  if (text === undefined) {
     const fallback = key.includes(".") ? key.split(".").pop() ?? key : key;
     return fallback.charAt(0).toUpperCase() + fallback.slice(1).replace(/([A-Z])/g, " $1");
   }
-  let text: string = entry[lang] || entry.en;
   if (params) {
     Object.entries(params).forEach(([k, v]) => {
-      text = text.replace(`{${k}}`, String(v));
+      text = (text as string).replace(`{${k}}`, String(v));
     });
   }
   return text;
