@@ -45,6 +45,7 @@ const navItems: NavItem[] = [
       { icon: BarChart3, labelKey: "nav.financesDashboard", path: "/finances" },
       { icon: DollarSign, labelKey: "nav.income", path: "/finances/income" },
       { icon: TrendingDown, labelKey: "nav.expenses", path: "/finances/expenses" },
+      { icon: ShieldCheck, labelKey: "nav.paymentAudit", path: "/finances/payment-audit" },
       { icon: Target, labelKey: "nav.breakeven", path: "/finances/breakeven" },
     ],
   },
