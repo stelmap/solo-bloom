@@ -964,6 +964,11 @@ function PaymentHistorySection({
               {currencySymbol}{Number(creditBalance || 0).toFixed(2)}
             </span>
           </div>
+          <Button size="sm" variant="ghost" asChild>
+            <a href={`/finances/payment-audit?client=${clientId}`}>
+              <ShieldCheck className="h-4 w-4 mr-1" /> {t("audit.openAuditForClient")}
+            </a>
+          </Button>
           {!isDemoMode && (
             <Button size="sm" variant="outline" onClick={onAdd}>
               <Plus className="h-4 w-4 mr-1" /> {t("clientPay.add")}
