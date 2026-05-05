@@ -196,8 +196,8 @@ export default function ExpensesPage() {
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => {
               downloadCSV("expenses.csv",
-                ["Date", "Category", "Amount", "Description", "Recurring", "Payment Status"],
-                filtered.map((e: any) => [e.date, e.category, String(e.amount), e.description || "", e.is_recurring ? "Yes" : "No", e.payment_status || "unpaid"])
+                [t("csv.header.date"), t("csv.header.category"), t("csv.header.amount"), t("csv.header.description"), t("csv.header.recurring"), t("csv.header.paymentStatus")],
+                filtered.map((e: any) => [e.date, e.category, String(e.amount), e.description || "", e.is_recurring ? t("csv.value.yes") : t("csv.value.no"), e.payment_status || "unpaid"])
               );
             }}><Download className="h-4 w-4 mr-1" /> {t("export.csv")}</Button>
             <Dialog open={open} onOpenChange={setOpen}>
