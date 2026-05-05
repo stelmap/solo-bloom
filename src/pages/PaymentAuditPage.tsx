@@ -91,6 +91,8 @@ export default function PaymentAuditPage() {
   const [openRow, setOpenRow] = useState<any>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
 
   useEffect(() => {
     if (clientId && clientId !== "all") setSearchParams({ client: clientId }, { replace: true });
