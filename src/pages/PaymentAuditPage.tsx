@@ -95,8 +95,18 @@ export default function PaymentAuditPage() {
   const [dateTo, setDateTo] = useState<string>("");
 
   useEffect(() => {
-    if (clientId && clientId !== "all") setSearchParams({ client: clientId }, { replace: true });
-    else if (searchParams.has("client")) setSearchParams({}, { replace: true });
+    const urlClient = searchParams.get("client") || "all";
+    if (urlClient !== clientId) setClientId(urlClient);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  useEffect(() => {
+    const urlClient = searchParams.get("client") || "all";
+    if (clientId !== "all" && clientId !== urlClient) {
+      setSearchParams({ client: clientId }, { replace: true });
+    } else if (clientId === "all" && searchParams.has("client")) {
+      setSearchParams({}, { replace: true });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId]);
 
