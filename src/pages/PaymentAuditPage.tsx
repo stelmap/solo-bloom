@@ -361,7 +361,8 @@ export default function PaymentAuditPage() {
 
         {/* Table */}
         <Card className="overflow-hidden">
-          <Table>
+          <div className="overflow-x-auto">
+          <Table className="min-w-[900px]">
             <TableHeader>
               <TableRow>
                 <TableHead>{t("audit.col.date")}</TableHead>
@@ -412,6 +413,7 @@ export default function PaymentAuditPage() {
               })}
             </TableBody>
           </Table>
+          </div>
           {/* Pagination */}
           <div className="flex flex-wrap items-center justify-between gap-3 px-3 py-2 border-t bg-muted/20">
             <div className="text-xs text-muted-foreground">
