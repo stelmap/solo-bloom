@@ -5,7 +5,10 @@ import en from "./locales/en";
 
 export type Language = "en" | "uk" | "fr" | "pl";
 export type TranslationDict = Record<string, string>;
-export type TranslationKey = keyof typeof en;
+// Kept as `string` (not `keyof typeof en`) to preserve historical behaviour:
+// callers may reference keys that don't yet have a translation entry, and
+// `translateFor` falls back gracefully.
+export type TranslationKey = string;
 
 export const englishDict: Readonly<Record<string, string>> = en;
 
