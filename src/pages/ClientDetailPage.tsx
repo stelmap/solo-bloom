@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { Button } from "@/components/ui/button";
@@ -683,10 +683,10 @@ export default function ClientDetailPage() {
                     <p className="text-xs text-muted-foreground">{t("audit.movedHint")}</p>
                   </div>
                 </div>
-                <Button size="sm" asChild>
-                  <a href={`/finances/payment-audit?client=${id}`}>
+                <Button size="sm" asChild disabled={!id}>
+                  <Link to={`/finances/payment-audit?client=${encodeURIComponent(id ?? "")}`}>
                     <ShieldCheck className="h-4 w-4 mr-1" /> {t("audit.openAuditForClient")}
-                  </a>
+                  </Link>
                 </Button>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
