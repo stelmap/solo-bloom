@@ -423,7 +423,14 @@ export default function PaymentAuditPage() {
                           <div className="text-sm font-medium">{a.appointments?.services?.name || "—"}</div>
                           <div className="text-xs text-muted-foreground">{a.appointments?.scheduled_at?.split("T")[0]}</div>
                         </div>
-                        <div className="text-sm tabular-nums">{cs}{Number(a.allocated_amount).toFixed(2)}</div>
+                        <div className="flex items-center gap-2">
+                          <div className="text-sm tabular-nums">{cs}{Number(a.allocated_amount).toFixed(2)}</div>
+                          {a.appointment_id && (
+                            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => navigate(`/calendar?appointment=${a.appointment_id}`)}>
+                              <ExternalLink className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
                       </li>
                     ))}
                   </ul>
