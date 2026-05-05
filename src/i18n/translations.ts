@@ -1284,6 +1284,11 @@ export const translations = {
   "audit.openClient": { en: "Open client", uk: "Відкрити клієнта", fr: "Ouvrir client", pl: "Otwórz klienta" },
   "audit.openAuditForClient": { en: "Open payment audit for this client", uk: "Відкрити аудит оплат для клієнта", fr: "Ouvrir l’audit", pl: "Otwórz audyt" },
   "audit.movedHint": { en: "Payment history has moved to Finance → Payment Audit.", uk: "Історія оплат перенесена у Фінанси → Аудит оплат.", fr: "L’historique des paiements est dans Finances → Audit des paiements.", pl: "Historia płatności została przeniesiona do Finanse → Audyt płatności." },
+  "balance.title": { en: "Balance", uk: "Баланс", fr: "Solde", pl: "Saldo" },
+  "balance.prepaid": { en: "Prepaid balance", uk: "Передоплачений баланс", fr: "Solde prépayé", pl: "Saldo przedpłaty" },
+  "balance.outstanding": { en: "Outstanding balance", uk: "Заборгованість", fr: "Solde dû", pl: "Saldo zaległe" },
+  "balance.totalPaid": { en: "Total paid", uk: "Всього оплачено", fr: "Total payé", pl: "Łącznie zapłacone" },
+  "balance.totalUnpaid": { en: "Total unpaid", uk: "Всього неоплачено", fr: "Total impayé", pl: "Łącznie niezapłacone" },
 
   "audit.f.all": { en: "All payments", uk: "Усі оплати", fr: "Tous", pl: "Wszystkie" },
   "audit.f.linked": { en: "Linked", uk: "Прив’язані", fr: "Liés", pl: "Powiązane" },
