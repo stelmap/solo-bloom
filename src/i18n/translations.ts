@@ -1283,6 +1283,7 @@ export const translations = {
   "audit.linkedSessions": { en: "Linked sessions", uk: "Прив’язані сесії", fr: "Séances liées", pl: "Powiązane sesje" },
   "audit.openClient": { en: "Open client", uk: "Відкрити клієнта", fr: "Ouvrir client", pl: "Otwórz klienta" },
   "audit.openAuditForClient": { en: "Open payment audit for this client", uk: "Відкрити аудит оплат для клієнта", fr: "Ouvrir l’audit", pl: "Otwórz audyt" },
+  "audit.movedHint": { en: "Payment history has moved to Finance → Payment Audit.", uk: "Історія оплат перенесена у Фінанси → Аудит оплат.", fr: "L’historique des paiements est dans Finances → Audit des paiements.", pl: "Historia płatności została przeniesiona do Finanse → Audyt płatności." },
 
   "audit.f.all": { en: "All payments", uk: "Усі оплати", fr: "Tous", pl: "Wszystkie" },
   "audit.f.linked": { en: "Linked", uk: "Прив’язані", fr: "Liés", pl: "Powiązane" },
