@@ -820,34 +820,6 @@ export default function ClientDetailPage() {
         use12h={use12h}
       />
 
-      {id && (
-        <IncomeConfirmationDialog
-          open={incomeDialogOpen}
-          onOpenChange={(o) => { setIncomeDialogOpen(o); if (!o) setEditingIncome(null); }}
-          clientId={id}
-          clientName={client?.name}
-          use12h={use12h}
-          existingIncome={editingIncome}
-        />
-      )}
-
-      <ConfirmDelete2
-        open={!!deleteIncomeId}
-        onOpenChange={(o) => { if (!o) setDeleteIncomeId(null); }}
-        onConfirm={async () => {
-          if (!deleteIncomeId) return;
-          try {
-            await deleteIncomeConfirm.mutateAsync(deleteIncomeId);
-            toast({ title: t("incomeConfirm.deleted") });
-            setDeleteIncomeId(null);
-          } catch (e: any) {
-            toast({ title: t("common.error"), description: e?.message, variant: "destructive" });
-          }
-        }}
-        title={t("incomeConfirm.deleteTitle")}
-        description={t("incomeConfirm.deleteDesc")}
-        loading={deleteIncomeConfirm.isPending}
-      />
     </AppLayout>
   );
 }
