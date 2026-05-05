@@ -100,6 +100,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const updateProfile = useUpdateProfile();
   const [storedLang, setStoredLangState] = useState<Language>(() => getStoredLang());
   const [preLoginLang, setPreLoginLangState] = useState<Language | null>(() => getPreLoginLang());
+  // Bumped each time a non-EN locale finishes loading so consumers re-render.
+  const [, setLocaleVersion] = useState(0);
 
   // Listen for in-app language changes (e.g. from landing page toggle)
   useEffect(() => {
