@@ -166,7 +166,7 @@ export default function ClientsPage() {
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => {
               downloadCSV("clients.csv",
-                ["Name", "Phone", "Email", "Telegram", "Notes"],
+                [t("csv.header.name"), t("csv.header.phone"), t("csv.header.email"), t("csv.header.telegram"), t("csv.header.notes")],
                 clients.map(c => [c.name, c.phone || "", c.email || "", c.telegram || "", c.notes || ""])
               );
             }}><Download className="h-4 w-4 mr-1" /> {t("export.csv")}</Button>
