@@ -289,6 +289,9 @@ export default function PaymentAuditPage() {
             <p className="text-sm text-muted-foreground">{t("audit.subtitle")}</p>
           </div>
           <div className="flex flex-wrap gap-2">
+            {clientId !== "all" && (
+              <Button onClick={() => setCreateOpen(true)} size="sm">{t("incomeConfirm.title")}</Button>
+            )}
             <Button onClick={handleExport} variant="outline" size="sm" className="gap-2"><Download className="h-4 w-4" />{t("audit.export")}</Button>
             <Button onClick={handleExportMonthly} variant="outline" size="sm" className="gap-2"><Download className="h-4 w-4" />{t("audit.exportMonthly")}</Button>
             <Button onClick={handleExportClient} variant="outline" size="sm" disabled={clientId === "all"} className="gap-2"><Download className="h-4 w-4" />{t("audit.exportClient")}</Button>
