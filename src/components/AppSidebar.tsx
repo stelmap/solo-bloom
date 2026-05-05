@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Calendar, Users, Scissors, DollarSign,
   TrendingDown, Settings, Target, Menu, X, LogOut, BarChart3, UsersRound, ClipboardList,
-  Wallet, ChevronDown, Lock,
+  Wallet, ChevronDown, Lock, ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
@@ -45,6 +45,7 @@ const navItems: NavItem[] = [
       { icon: BarChart3, labelKey: "nav.financesDashboard", path: "/finances" },
       { icon: DollarSign, labelKey: "nav.income", path: "/finances/income" },
       { icon: TrendingDown, labelKey: "nav.expenses", path: "/finances/expenses" },
+      { icon: ShieldCheck, labelKey: "nav.paymentAudit", path: "/finances/payment-audit" },
       { icon: Target, labelKey: "nav.breakeven", path: "/finances/breakeven" },
     ],
   },
