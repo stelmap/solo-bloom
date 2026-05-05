@@ -255,7 +255,11 @@ export default function PaymentAuditPage() {
             <h1 className="text-2xl font-bold">{t("audit.title")}</h1>
             <p className="text-sm text-muted-foreground">{t("audit.subtitle")}</p>
           </div>
-          <Button onClick={handleExport} variant="outline" className="gap-2"><Download className="h-4 w-4" />{t("audit.export")}</Button>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={handleExport} variant="outline" size="sm" className="gap-2"><Download className="h-4 w-4" />{t("audit.export")}</Button>
+            <Button onClick={handleExportMonthly} variant="outline" size="sm" className="gap-2"><Download className="h-4 w-4" />{t("audit.exportMonthly")}</Button>
+            <Button onClick={handleExportClient} variant="outline" size="sm" disabled={clientId === "all"} className="gap-2"><Download className="h-4 w-4" />{t("audit.exportClient")}</Button>
+          </div>
         </div>
 
         {/* Summary */}
