@@ -66,12 +66,12 @@ test.describe("Forgot Password flow", () => {
     await page.getByPlaceholder("you@example.com").fill(uniqueEmail());
     await page.getByRole("button", { name: /send|надіслати|envoyer/i }).click();
 
-    // Type 8 chars into the OTP — InputOTP listens on a hidden input
-    await page.waitForTimeout(500);
-    await page.keyboard.type("12345678");
+    // Fill the OTP input directly instead of relying on keyboard focus
+    const otpInput = page.locator('input[autocomplete="one-time-code"]');
+    await otpInput.waitFor({ state: "visible", timeout: 5000 });
+    await otpInput.fill("12345678");
 
     const confirmBtn = page.getByRole("button", { name: /verify|confirm|підтвердити|vérifier/i });
-    await expect(confirmBtn).toBeEnabled({ timeout: 5000 });
     await confirmBtn.click();
 
     // Toast with error appears, URL stays on /auth
