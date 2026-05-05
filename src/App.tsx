@@ -27,6 +27,7 @@ const IncomePage = lazy(() => import("./pages/IncomePage"));
 const ExpensesPage = lazy(() => import("./pages/ExpensesPage"));
 const BreakevenPage = lazy(() => import("./pages/BreakevenPage"));
 const FinancialOverviewPage = lazy(() => import("./pages/FinancialOverviewPage"));
+const PaymentAuditPage = lazy(() => import("./pages/PaymentAuditPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
