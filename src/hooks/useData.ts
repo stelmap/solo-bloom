@@ -1654,9 +1654,23 @@ export function useSaveIncomeConfirmation() {
           allocated_amount: Number(a.allocated_amount),
         }));
       if (allocRows.length > 0) {
+        // Guard against duplicate (income_id, appointment_id) pairs within the payload
+        const seen = new Set<string>();
+        for (const r of allocRows) {
+          const key = `${r.income_id}:${r.appointment_id}`;
+          if (seen.has(key)) {
+            throw new Error("This session is already linked to this payment confirmation.");
+          }
+          seen.add(key);
+        }
         const { error: allocErr } = await (supabase as any)
           .from("income_session_allocations").insert(allocRows);
-        if (allocErr) throw allocErr;
+        if (allocErr) {
+          if ((allocErr as any).code === "23505") {
+            throw new Error("This session is already linked to this payment confirmation.");
+          }
+          throw allocErr;
+        }
       }
 
       // Store remainder as client credit (only if confirmed)
