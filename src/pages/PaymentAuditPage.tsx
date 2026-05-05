@@ -206,25 +206,33 @@ export default function PaymentAuditPage() {
     return { confirmed, expected, prepaid, unlinked, partial, cancelled };
   }, [rows, clientId]);
 
-  const handleExport = () => {
-    const headers = ["Date","Client","Amount","Currency","Method","Invoice","Allocation","Status","Source","Linked sessions","Linked dates","Prepaid impact","Comment","Created"];
-    const body = filtered.map(r => [
-      r.date,
-      r.client_name,
-      String(r.amount),
-      cs,
-      r.method,
-      r.invoice?.invoice_number || "",
-      r.allocStatus,
-      r.paymentStatus,
-      r.source,
+  const buildCsv = (records: any[], filename: string) => {
+    const headers = ["Date","Client","Amount","Currency","Method","Invoice","Allocation","Status","Source","Linked sessions","Linked dates","Prepaid impact","Comment","Created","Updated"];
+    const body = records.map(r => [
+      r.date, r.client_name, String(r.amount), cs, r.method,
+      r.invoice?.invoice_number || "", r.allocStatus, r.paymentStatus, r.source,
       String(r.allocs.length),
       r.allocs.map((a: any) => a.appointments?.scheduled_at?.split("T")[0]).filter(Boolean).join("; "),
       String(r.allocStatus === "prepayment" ? r.remaining : r.allocStatus === "partial" ? r.remaining : 0),
       r.raw?.description || r.raw?.comment || "",
-      r.raw?.created_at || "",
+      r.raw?.created_at || "", r.raw?.updated_at || "",
     ]);
-    downloadCSV(`payment-audit-${format(new Date(), "yyyy-MM-dd")}.csv`, headers, body);
+    downloadCSV(filename, headers, body);
+  };
+
+  const handleExport = () => buildCsv(filtered, `payment-audit-${format(new Date(), "yyyy-MM-dd")}.csv`);
+
+  const handleExportMonthly = () => {
+    const monthStr = format(new Date(), "yyyy-MM");
+    const recs = filtered.filter(r => (r.date || "").startsWith(monthStr));
+    buildCsv(recs, `payment-audit-${monthStr}.csv`);
+  };
+
+  const handleExportClient = () => {
+    if (clientId === "all") return;
+    const recs = rows.filter(r => r.client_id === clientId);
+    const cName = (clients.find((c: any) => c.id === clientId) as any)?.name || "client";
+    buildCsv(recs, `payment-register-${cName}-${format(new Date(), "yyyy-MM-dd")}.csv`);
   };
 
   const quickFilters: { key: QuickFilter; label: string }[] = [
