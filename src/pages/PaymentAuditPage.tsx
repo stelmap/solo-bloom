@@ -42,6 +42,19 @@ function useAuditData() {
       if (allocRes.error) throw allocRes.error;
       const allocs = (allocRes.data || []) as any[];
       const invoices = (invRes.data || []) as any[];
+
+      // Fetch appointment metadata for allocations (no FK embed available)
+      const aptIds = Array.from(new Set(allocs.map(a => a.appointment_id).filter(Boolean)));
+      const aptById = new Map<string, any>();
+      if (aptIds.length > 0) {
+        const { data: apts } = await supabase
+          .from("appointments")
+          .select("id,scheduled_at,price,services(name)")
+          .in("id", aptIds);
+        (apts || []).forEach((a: any) => aptById.set(a.id, a));
+      }
+      allocs.forEach(a => { a.appointments = aptById.get(a.appointment_id) || null; });
+
       const allocByIncome = new Map<string, any[]>();
       allocs.forEach(a => {
         const arr = allocByIncome.get(a.income_id) || [];
