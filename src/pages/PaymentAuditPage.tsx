@@ -298,6 +298,12 @@ export default function PaymentAuditPage() {
             <Search className="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input className="pl-8 w-full" placeholder={t("audit.searchPlaceholder")} value={search} onChange={e => setSearch(e.target.value)} />
           </div>
+          <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-[150px]" aria-label={t("audit.dateFrom")} />
+          <span className="text-muted-foreground text-xs">–</span>
+          <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-[150px]" aria-label={t("audit.dateTo")} />
+          {(dateFrom || dateTo) && (
+            <Button variant="ghost" size="sm" onClick={() => { setDateFrom(""); setDateTo(""); }}>{t("audit.clearDates")}</Button>
+          )}
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
             <SelectContent>
