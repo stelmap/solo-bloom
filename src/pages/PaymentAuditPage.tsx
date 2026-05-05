@@ -240,7 +240,12 @@ export default function PaymentAuditPage() {
   }, [rows, clientId]);
 
   const buildCsv = (records: any[], filename: string) => {
-    const headers = ["Date","Client","Amount","Currency","Method","Invoice","Allocation","Status","Source","Linked sessions","Linked dates","Prepaid impact","Comment","Created","Updated"];
+    const headers = [
+      t("csv.header.date"), t("csv.header.client"), t("csv.header.amount"), t("csv.header.currency"),
+      t("csv.header.paymentMethod"), t("csv.header.invoice"), t("csv.header.allocation"), t("csv.header.status"),
+      t("csv.header.source"), t("csv.header.linkedSessions"), t("csv.header.linkedDates"),
+      t("csv.header.prepaidImpact"), t("csv.header.comment"), t("csv.header.created"), t("csv.header.updated"),
+    ];
     const body = records.map(r => [
       r.date, r.client_name, String(r.amount), cs, r.method,
       r.invoice?.invoice_number || "", r.allocStatus, r.paymentStatus, r.source,
