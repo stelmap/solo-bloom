@@ -349,6 +349,28 @@ export default function PaymentAuditPage() {
               })}
             </TableBody>
           </Table>
+          {/* Pagination */}
+          <div className="flex flex-wrap items-center justify-between gap-3 px-3 py-2 border-t bg-muted/20">
+            <div className="text-xs text-muted-foreground">
+              {filtered.length === 0
+                ? t("audit.empty")
+                : `${(currentPage - 1) * pageSize + 1}–${Math.min(currentPage * pageSize, filtered.length)} ${t("audit.of")} ${filtered.length}`}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">{t("audit.rowsPerPage")}</span>
+              <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v))}>
+                <SelectTrigger className="h-8 w-[80px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {[10, 25, 50, 100, 200].map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setPage(1)}>«</Button>
+              <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>‹</Button>
+              <span className="text-xs tabular-nums px-2">{currentPage} / {totalPages}</span>
+              <Button variant="outline" size="sm" disabled={currentPage >= totalPages} onClick={() => setPage(currentPage + 1)}>›</Button>
+              <Button variant="outline" size="sm" disabled={currentPage >= totalPages} onClick={() => setPage(totalPages)}>»</Button>
+            </div>
+          </div>
         </Card>
       </div>
 
