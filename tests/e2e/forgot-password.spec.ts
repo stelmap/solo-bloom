@@ -117,11 +117,11 @@ test.describe("Forgot Password flow", () => {
     await page.getByPlaceholder("you@example.com").fill("test@example.com");
     await page.getByRole("button", { name: /send|надіслати|envoyer/i }).click();
 
-    await page.waitForTimeout(500);
-    await page.keyboard.type("ABCD1234");
+    const otpInput = page.locator('input[autocomplete="one-time-code"]');
+    await otpInput.waitFor({ state: "visible", timeout: 5000 });
+    await otpInput.fill("ABCD1234");
 
     const confirmBtn = page.getByRole("button", { name: /verify|confirm|підтвердити|vérifier/i });
-    await expect(confirmBtn).toBeEnabled({ timeout: 5000 });
     await confirmBtn.click();
 
     // Always navigates to the new-password screen on a valid code
