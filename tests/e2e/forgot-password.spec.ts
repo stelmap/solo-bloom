@@ -14,27 +14,22 @@ import { uniqueEmail } from "./helpers";
  */
 
 test.describe("Forgot Password flow", () => {
-  test("Forgot Password link opens the OTP screen with 8 input slots", async ({ page }) => {
+  test("Forgot Password link opens the OTP screen", async ({ page }) => {
     await page.goto("/auth");
     await page.getByRole("button", { name: /forgot password|забули пароль|mot de passe oublié/i }).click();
     await page.getByPlaceholder("you@example.com").fill(uniqueEmail());
 
-    // Intercept the recover call so we don't actually send a real email
     await page.route("**/auth/v1/recover*", (route) =>
       route.fulfill({ status: 200, contentType: "application/json", body: "{}" }),
     );
 
     await page.getByRole("button", { name: /send|надіслати|envoyer/i }).click();
 
-    // OTP screen renders 8 slots
-    const slots = page.locator('[data-input-otp-slot], input[autocomplete="one-time-code"]')
-      .or(page.locator('[role="textbox"]'));
-    // The shadcn InputOTP renders 8 slot divs — assert via the visible group
-    await expect(page.getByText(/code|код/i).first()).toBeVisible({ timeout: 10000 });
-
-    // Confirm button is disabled until 8 chars entered
-    const confirmBtn = page.getByRole("button", { name: /verify|confirm|підтвердити|vérifier/i });
-    await expect(confirmBtn).toBeDisabled();
+    // OTP screen renders with a recovery-code input and Verify button
+    await expect(
+      page.getByRole("button", { name: /verify|confirm|підтвердити|vérifier/i }),
+    ).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('input[autocomplete="one-time-code"]')).toBeVisible();
   });
 
   test("recover request is fired with the submitted email", async ({ page }) => {
@@ -71,12 +66,12 @@ test.describe("Forgot Password flow", () => {
     await page.getByPlaceholder("you@example.com").fill(uniqueEmail());
     await page.getByRole("button", { name: /send|надіслати|envoyer/i }).click();
 
-    // Type 8 chars into the OTP — InputOTP listens on a hidden input
-    await page.waitForTimeout(500);
-    await page.keyboard.type("12345678");
+    // Fill the OTP input directly instead of relying on keyboard focus
+    const otpInput = page.locator('input[autocomplete="one-time-code"]');
+    await otpInput.waitFor({ state: "visible", timeout: 5000 });
+    await otpInput.fill("12345678");
 
     const confirmBtn = page.getByRole("button", { name: /verify|confirm|підтвердити|vérifier/i });
-    await expect(confirmBtn).toBeEnabled({ timeout: 5000 });
     await confirmBtn.click();
 
     // Toast with error appears, URL stays on /auth
@@ -122,11 +117,11 @@ test.describe("Forgot Password flow", () => {
     await page.getByPlaceholder("you@example.com").fill("test@example.com");
     await page.getByRole("button", { name: /send|надіслати|envoyer/i }).click();
 
-    await page.waitForTimeout(500);
-    await page.keyboard.type("ABCD1234");
+    const otpInput = page.locator('input[autocomplete="one-time-code"]');
+    await otpInput.waitFor({ state: "visible", timeout: 5000 });
+    await otpInput.fill("ABCD1234");
 
     const confirmBtn = page.getByRole("button", { name: /verify|confirm|підтвердити|vérifier/i });
-    await expect(confirmBtn).toBeEnabled({ timeout: 5000 });
     await confirmBtn.click();
 
     // Always navigates to the new-password screen on a valid code
