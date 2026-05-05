@@ -361,7 +361,8 @@ export default function PaymentAuditPage() {
 
         {/* Table */}
         <Card className="overflow-hidden">
-          <Table>
+          <div className="overflow-x-auto">
+          <Table className="min-w-[900px]">
             <TableHeader>
               <TableRow>
                 <TableHead>{t("audit.col.date")}</TableHead>
