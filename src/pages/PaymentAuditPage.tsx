@@ -147,7 +147,15 @@ export default function PaymentAuditPage() {
     if (clientId !== "all") r = r.filter(x => x.client_id === clientId);
     if (search.trim()) {
       const q = search.toLowerCase();
-      r = r.filter(x => x.client_name.toLowerCase().includes(q));
+      r = r.filter(x =>
+        x.client_name.toLowerCase().includes(q) ||
+        (x.invoice?.invoice_number || "").toLowerCase().includes(q) ||
+        (x.method || "").toLowerCase().includes(q) ||
+        String(x.amount).includes(q) ||
+        (x.raw?.description || "").toLowerCase().includes(q) ||
+        (x.raw?.comment || "").toLowerCase().includes(q) ||
+        (x.date || "").includes(q)
+      );
     }
     switch (quickFilter) {
       case "linked": r = r.filter(x => x.allocStatus === "linked"); break;
