@@ -128,6 +128,18 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const profileLang = profile?.language as Language | undefined;
   const lang: Language = preLoginLang || profileLang || storedLang;
 
+  // Lazily fetch non-English locales on first use, then trigger a re-render.
+  useEffect(() => {
+    if (lang === "en") return;
+    let cancelled = false;
+    loadLocale(lang).then(() => {
+      if (!cancelled) setLocaleVersion((v) => v + 1);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [lang]);
+
   // Keep localStorage in sync with saved preferences unless a pre-login choice is being applied.
   useEffect(() => {
     if (profileLang && !preLoginLang) {
