@@ -120,7 +120,7 @@ export default function IncomePage() {
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => {
               downloadCSV("income.csv",
-                ["Date", "Amount", "Source", "Payment Method", "Description"],
+                [t("csv.header.date"), t("csv.header.amount"), t("csv.header.source"), t("csv.header.paymentMethod"), t("csv.header.description")],
                 filtered.map((i: any) => [i.date, String(i.amount), i.source || "", i.payment_method || "", i.description || ""])
               );
             }}><Download className="h-4 w-4 mr-1" /> {t("export.csv")}</Button>
