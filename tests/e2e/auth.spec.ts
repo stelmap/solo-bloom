@@ -50,18 +50,25 @@ test.describe("Authentication", () => {
 
   test("signup with new email succeeds (or shows confirmation toast)", async ({ page }) => {
     await page.goto("/auth");
-    await page.getByRole("button", { name: /sign up|зареєструватись/i }).first().click();
-    // Fill name, email, password
-    const inputs = page.locator("input");
-    await inputs.nth(0).fill("E2E Test User");
+    await page
+      .getByRole("button", { name: /register here|sign up|зареєструватись/i })
+      .first()
+      .click();
     await page.getByPlaceholder("you@example.com").fill(uniqueEmail());
-    await page.locator('input[type="password"]').fill("Password!2345");
-    await page.getByRole("button", { name: /create account|створити обліковий запис/i }).click();
-    // Either toast (email confirm) or redirect to onboarding
+    const pwInputs = page.locator('input[type="password"]');
+    await pwInputs.nth(0).fill("Password!2345");
+    await pwInputs.nth(1).fill("Password!2345");
+    await page
+      .getByRole("button", { name: /create account|створити обліковий запис/i })
+      .click();
     await Promise.race([
       page.waitForURL(/\/(onboarding|dashboard)/, { timeout: 15000 }).catch(() => null),
-      page.locator('[role="status"], [data-sonner-toast]').first()
-        .waitFor({ state: "visible", timeout: 15000 }).catch(() => null),
+      page
+        .locator('[role="status"], [data-sonner-toast], h2')
+        .filter({ hasText: /check.*email|перевір/i })
+        .first()
+        .waitFor({ state: "visible", timeout: 15000 })
+        .catch(() => null),
     ]);
   });
 });
