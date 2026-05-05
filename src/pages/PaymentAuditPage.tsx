@@ -181,6 +181,15 @@ export default function PaymentAuditPage() {
     return sorted;
   }, [rows, clientId, quickFilter, sortBy, search]);
 
+  useEffect(() => { setPage(1); }, [clientId, quickFilter, sortBy, search, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paged = useMemo(
+    () => filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [filtered, currentPage, pageSize]
+  );
+
   const summary = useMemo(() => {
     const scope = clientId === "all" ? rows : rows.filter(r => r.client_id === clientId);
     const confirmed = scope.filter(r => r.paymentStatus === "confirmed").reduce((s, r) => s + r.amount, 0);
