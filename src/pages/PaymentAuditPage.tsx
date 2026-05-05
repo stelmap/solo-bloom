@@ -475,6 +475,20 @@ export default function PaymentAuditPage() {
                     <ExternalLink className="h-3.5 w-3.5 mr-1" />{t("audit.openClient")}
                   </Button>
                 )}
+                {openRow.kind === "income" && openRow.client_id && (
+                  <>
+                    <Button size="sm" variant="outline" onClick={() => {
+                      setEditClientId(openRow.client_id);
+                      setEditIncome(openRow.raw);
+                      setOpenRow(null);
+                    }}>
+                      <Pencil className="h-3.5 w-3.5 mr-1" />{t("common.edit")}
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-destructive" onClick={() => { setDeleteId(openRow.id); }}>
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />{t("common.delete")}
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           )}
