@@ -749,6 +749,31 @@ export default function SettingsPage() {
             <Label>{t("settings.reminderTime")}</Label>
             <Select value={form.reminder_minutes.toString()} onValueChange={v => setForm(f => ({ ...f, reminder_minutes: parseInt(v) }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="60">{t("settings.1hBefore")}</SelectItem><SelectItem value="180">{t("settings.3hBefore")}</SelectItem><SelectItem value="1440">{t("settings.24hBefore")}</SelectItem><SelectItem value="2880">{t("settings.48hBefore")}</SelectItem></SelectContent></Select>
           </div>
+          <Separator />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-4">
+              <div className="space-y-1">
+                <Label className="flex items-center gap-2"><Volume2 className="h-4 w-4" /> {t("settings.soundReminder")}</Label>
+                <p className="text-xs text-muted-foreground">{t("settings.soundReminderDesc")}</p>
+              </div>
+              <Switch checked={sound.enabled} onCheckedChange={(v) => setSound(s => ({ ...s, enabled: v }))} />
+            </div>
+            {sound.enabled && (
+              <div className="max-w-xs space-y-2">
+                <Label>{t("settings.soundLeadTime")}</Label>
+                <Select value={sound.minutesBefore.toString()} onValueChange={v => setSound(s => ({ ...s, minutesBefore: parseInt(v) }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">{t("settings.1minBefore")}</SelectItem>
+                    <SelectItem value="5">{t("settings.5minBefore")}</SelectItem>
+                    <SelectItem value="10">{t("settings.10minBefore")}</SelectItem>
+                    <SelectItem value="15">{t("settings.15minBefore")}</SelectItem>
+                    <SelectItem value="30">{t("settings.30minBefore")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="pt-2">
