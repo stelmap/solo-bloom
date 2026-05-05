@@ -147,6 +147,8 @@ export default function PaymentAuditPage() {
   const filtered = useMemo(() => {
     let r = rows;
     if (clientId !== "all") r = r.filter(x => x.client_id === clientId);
+    if (dateFrom) r = r.filter(x => (x.date || "") >= dateFrom);
+    if (dateTo) r = r.filter(x => (x.date || "") <= dateTo);
     if (search.trim()) {
       const q = search.toLowerCase();
       r = r.filter(x =>
