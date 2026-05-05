@@ -78,6 +78,9 @@ export default function SettingsPage() {
     start_calculation_date: new Date().toISOString().split("T")[0],
   });
 
+  const [sound, setSound] = useState<SoundReminderSettings>(() => readSoundReminder());
+  useEffect(() => { writeSoundReminder(sound); }, [sound]);
+
   useEffect(() => {
     if (profile) {
       setForm({
