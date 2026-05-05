@@ -1284,6 +1284,8 @@ export const translations = {
   "audit.openClient": { en: "Open client", uk: "Відкрити клієнта", fr: "Ouvrir client", pl: "Otwórz klienta" },
   "audit.openAuditForClient": { en: "Open payment audit for this client", uk: "Відкрити аудит оплат для клієнта", fr: "Ouvrir l’audit", pl: "Otwórz audyt" },
   "audit.movedHint": { en: "Payment history has moved to Finance → Payment Audit.", uk: "Історія оплат перенесена у Фінанси → Аудит оплат.", fr: "L’historique des paiements est dans Finances → Audit des paiements.", pl: "Historia płatności została przeniesiona do Finanse → Audyt płatności." },
+  "audit.deleteWarning": { en: "Deleting this income confirmation may change the payment status of linked sessions. Do you want to continue?", uk: "Видалення цього підтвердження може змінити статус оплати прив’язаних сесій. Продовжити?", fr: "La suppression de cette confirmation peut modifier le statut de paiement des séances liées. Continuer ?", pl: "Usunięcie potwierdzenia może zmienić status płatności powiązanych sesji. Kontynuować?" },
+  "audit.deleteSuccess": { en: "Income confirmation deleted and linked sessions recalculated.", uk: "Підтвердження видалено, статуси сесій оновлено.", fr: "Confirmation supprimée et séances recalculées.", pl: "Potwierdzenie usunięte, sesje przeliczone." },
   "balance.title": { en: "Balance", uk: "Баланс", fr: "Solde", pl: "Saldo" },
   "balance.prepaid": { en: "Prepaid balance", uk: "Передоплачений баланс", fr: "Solde prépayé", pl: "Saldo przedpłaty" },
   "balance.outstanding": { en: "Outstanding balance", uk: "Заборгованість", fr: "Solde dû", pl: "Saldo zaległe" },

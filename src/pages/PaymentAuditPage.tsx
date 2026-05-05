@@ -6,7 +6,11 @@ import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Download, Search, ExternalLink } from "lucide-react";
+import { Download, Search, ExternalLink, Pencil, Trash2 } from "lucide-react";
+import { IncomeConfirmationDialog } from "@/components/IncomeConfirmationDialog";
+import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
+import { useDeleteIncomeConfirmation } from "@/hooks/useData";
+import { useToast } from "@/hooks/use-toast";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -38,6 +42,19 @@ function useAuditData() {
       if (allocRes.error) throw allocRes.error;
       const allocs = (allocRes.data || []) as any[];
       const invoices = (invRes.data || []) as any[];
+
+      // Fetch appointment metadata for allocations (no FK embed available)
+      const aptIds = Array.from(new Set(allocs.map(a => a.appointment_id).filter(Boolean)));
+      const aptById = new Map<string, any>();
+      if (aptIds.length > 0) {
+        const { data: apts } = await supabase
+          .from("appointments")
+          .select("id,scheduled_at,price,services(name)")
+          .in("id", aptIds);
+        (apts || []).forEach((a: any) => aptById.set(a.id, a));
+      }
+      allocs.forEach(a => { a.appointments = aptById.get(a.appointment_id) || null; });
+
       const allocByIncome = new Map<string, any[]>();
       allocs.forEach(a => {
         const arr = allocByIncome.get(a.income_id) || [];
@@ -89,8 +106,14 @@ export default function PaymentAuditPage() {
   const [sortBy, setSortBy] = useState<string>("date_desc");
   const [search, setSearch] = useState("");
   const [openRow, setOpenRow] = useState<any>(null);
+  const [editIncome, setEditIncome] = useState<any | null>(null);
+  const [editClientId, setEditClientId] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const deleteIncomeMut = useDeleteIncomeConfirmation();
+  const { toast } = useToast();
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
 
@@ -266,6 +289,9 @@ export default function PaymentAuditPage() {
             <p className="text-sm text-muted-foreground">{t("audit.subtitle")}</p>
           </div>
           <div className="flex flex-wrap gap-2">
+            {clientId !== "all" && (
+              <Button onClick={() => setCreateOpen(true)} size="sm">{t("incomeConfirm.title")}</Button>
+            )}
             <Button onClick={handleExport} variant="outline" size="sm" className="gap-2"><Download className="h-4 w-4" />{t("audit.export")}</Button>
             <Button onClick={handleExportMonthly} variant="outline" size="sm" className="gap-2"><Download className="h-4 w-4" />{t("audit.exportMonthly")}</Button>
             <Button onClick={handleExportClient} variant="outline" size="sm" disabled={clientId === "all"} className="gap-2"><Download className="h-4 w-4" />{t("audit.exportClient")}</Button>
@@ -452,11 +478,64 @@ export default function PaymentAuditPage() {
                     <ExternalLink className="h-3.5 w-3.5 mr-1" />{t("audit.openClient")}
                   </Button>
                 )}
+                {openRow.kind === "income" && openRow.client_id && (
+                  <>
+                    <Button size="sm" variant="outline" onClick={() => {
+                      setEditClientId(openRow.client_id);
+                      setEditIncome(openRow.raw);
+                      setOpenRow(null);
+                    }}>
+                      <Pencil className="h-3.5 w-3.5 mr-1" />{t("common.edit")}
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-destructive" onClick={() => { setDeleteId(openRow.id); }}>
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />{t("common.delete")}
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Create new payment for selected client */}
+      {clientId !== "all" && (
+        <IncomeConfirmationDialog
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          clientId={clientId}
+          clientName={(clients.find((c: any) => c.id === clientId) as any)?.name}
+        />
+      )}
+
+      {/* Edit existing income confirmation */}
+      {editIncome && editClientId && (
+        <IncomeConfirmationDialog
+          open={!!editIncome}
+          onOpenChange={(o) => { if (!o) { setEditIncome(null); setEditClientId(null); } }}
+          clientId={editClientId}
+          clientName={(clients.find((c: any) => c.id === editClientId) as any)?.name}
+          existingIncome={editIncome}
+        />
+      )}
+
+      <ConfirmDeleteDialog
+        open={!!deleteId}
+        onOpenChange={(o) => { if (!o) setDeleteId(null); }}
+        loading={deleteIncomeMut.isPending}
+        description={t("audit.deleteWarning")}
+        onConfirm={async () => {
+          if (!deleteId) return;
+          try {
+            await deleteIncomeMut.mutateAsync(deleteId);
+            toast({ title: t("audit.deleteSuccess") });
+            setDeleteId(null);
+            setOpenRow(null);
+          } catch (e: any) {
+            toast({ title: t("common.error"), description: e?.message, variant: "destructive" });
+          }
+        }}
+      />
     </AppLayout>
   );
 }
