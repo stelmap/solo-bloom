@@ -14,13 +14,14 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage, translateFor } from "@/i18n/LanguageContext";
 import { Language } from "@/i18n/translations";
-import { Plus, Trash2, CalendarOff, Receipt, Pencil, Eye, EyeOff, Lock, Volume2 } from "lucide-react";
+import { Plus, Trash2, CalendarOff, Receipt, Pencil, Eye, EyeOff, Lock, Volume2, Sun, Moon, Monitor } from "lucide-react";
 import { SubscriptionSection } from "@/components/SubscriptionSection";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { readSoundReminder, writeSoundReminder, type SoundReminderSettings } from "@/hooks/useSoundReminder";
+import { useTheme, type Theme } from "@/hooks/useTheme";
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, "0")}:00`);
 
@@ -80,6 +81,7 @@ export default function SettingsPage() {
 
   const [sound, setSound] = useState<SoundReminderSettings>(() => readSoundReminder());
   useEffect(() => { writeSoundReminder(sound); }, [sound]);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     if (profile) {
@@ -739,6 +741,39 @@ export default function SettingsPage() {
               );
             })}
           </RadioGroup>
+        </div>
+
+        <Separator />
+
+        <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
+          <h2 className="font-semibold text-foreground">{t("settings.appearance")}</h2>
+          <div className="space-y-2">
+            <Label>{t("settings.theme")}</Label>
+            <p className="text-xs text-muted-foreground">{t("settings.themeDesc")}</p>
+            <div className="grid grid-cols-3 gap-2 max-w-md pt-1">
+              {([
+                { v: "light", icon: Sun, label: t("settings.themeLight") },
+                { v: "dark", icon: Moon, label: t("settings.themeDark") },
+                { v: "system", icon: Monitor, label: t("settings.themeSystem") },
+              ] as const).map(({ v, icon: Icon, label }) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setTheme(v as Theme)}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-1.5 rounded-lg border p-3 text-sm transition-colors",
+                    theme === v
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-border bg-background hover:bg-muted text-muted-foreground hover:text-foreground"
+                  )}
+                  aria-pressed={theme === v}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <Separator />
