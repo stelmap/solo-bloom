@@ -778,6 +778,8 @@ export default function SettingsPage() {
 
         <Separator />
 
+        <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
+          <h2 className="font-semibold text-foreground">{t("settings.notifications")}</h2>
           <div className="max-w-xs space-y-2">
             <Label>{t("settings.reminderTime")}</Label>
             <Select value={form.reminder_minutes.toString()} onValueChange={v => setForm(f => ({ ...f, reminder_minutes: parseInt(v) }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="60">{t("settings.1hBefore")}</SelectItem><SelectItem value="180">{t("settings.3hBefore")}</SelectItem><SelectItem value="1440">{t("settings.24hBefore")}</SelectItem><SelectItem value="2880">{t("settings.48hBefore")}</SelectItem></SelectContent></Select>
