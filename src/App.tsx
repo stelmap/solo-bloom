@@ -83,6 +83,7 @@ const App = () => (
                 <Route path="/finances/income" element={<ProtectedRoute><EntitlementGate feature="financial_access"><IncomePage /></EntitlementGate></ProtectedRoute>} />
                 <Route path="/finances/expenses" element={<ProtectedRoute><EntitlementGate feature="financial_access"><ExpensesPage /></EntitlementGate></ProtectedRoute>} />
                 <Route path="/finances/breakeven" element={<ProtectedRoute><EntitlementGate feature="financial_access"><BreakevenPage /></EntitlementGate></ProtectedRoute>} />
+                <Route path="/finances/payment-audit" element={<ProtectedRoute><EntitlementGate feature="financial_access"><PaymentAuditPage /></EntitlementGate></ProtectedRoute>} />
 
                 {/* Backwards-compatible redirects from old top-level routes */}
                 <Route path="/income" element={<Navigate to="/finances/income" replace />} />
