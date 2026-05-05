@@ -183,9 +183,9 @@ export default function PaymentAuditPage() {
       }
     });
     return sorted;
-  }, [rows, clientId, quickFilter, sortBy, search]);
+  }, [rows, clientId, quickFilter, sortBy, search, dateFrom, dateTo]);
 
-  useEffect(() => { setPage(1); }, [clientId, quickFilter, sortBy, search, pageSize]);
+  useEffect(() => { setPage(1); }, [clientId, quickFilter, sortBy, search, pageSize, dateFrom, dateTo]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
