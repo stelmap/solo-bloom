@@ -91,10 +91,6 @@ export default function ClientDetailPage() {
   };
 
   const { data: creditBalance = 0 } = useClientCreditBalance(id);
-  const deleteIncomeConfirm = useDeleteIncomeConfirmation();
-  const [incomeDialogOpen, setIncomeDialogOpen] = useState(false);
-  const [editingIncome, setEditingIncome] = useState<any | null>(null);
-  const [deleteIncomeId, setDeleteIncomeId] = useState<string | null>(null);
 
   const { data: clientAllocs = [] } = useClientAllocations(id);
   const allocByApt = useMemo(() => {
