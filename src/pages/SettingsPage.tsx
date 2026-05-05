@@ -14,12 +14,13 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage, translateFor } from "@/i18n/LanguageContext";
 import { Language } from "@/i18n/translations";
-import { Plus, Trash2, CalendarOff, Receipt, Pencil, Eye, EyeOff, Lock } from "lucide-react";
+import { Plus, Trash2, CalendarOff, Receipt, Pencil, Eye, EyeOff, Lock, Volume2 } from "lucide-react";
 import { SubscriptionSection } from "@/components/SubscriptionSection";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { readSoundReminder, writeSoundReminder, type SoundReminderSettings } from "@/hooks/useSoundReminder";
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, "0")}:00`);
 
@@ -76,6 +77,9 @@ export default function SettingsPage() {
     frequency: "monthly", calculate_on: "actual_income",
     start_calculation_date: new Date().toISOString().split("T")[0],
   });
+
+  const [sound, setSound] = useState<SoundReminderSettings>(() => readSoundReminder());
+  useEffect(() => { writeSoundReminder(sound); }, [sound]);
 
   useEffect(() => {
     if (profile) {
@@ -744,6 +748,31 @@ export default function SettingsPage() {
           <div className="max-w-xs space-y-2">
             <Label>{t("settings.reminderTime")}</Label>
             <Select value={form.reminder_minutes.toString()} onValueChange={v => setForm(f => ({ ...f, reminder_minutes: parseInt(v) }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="60">{t("settings.1hBefore")}</SelectItem><SelectItem value="180">{t("settings.3hBefore")}</SelectItem><SelectItem value="1440">{t("settings.24hBefore")}</SelectItem><SelectItem value="2880">{t("settings.48hBefore")}</SelectItem></SelectContent></Select>
+          </div>
+          <Separator />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-4">
+              <div className="space-y-1">
+                <Label className="flex items-center gap-2"><Volume2 className="h-4 w-4" /> {t("settings.soundReminder")}</Label>
+                <p className="text-xs text-muted-foreground">{t("settings.soundReminderDesc")}</p>
+              </div>
+              <Switch checked={sound.enabled} onCheckedChange={(v) => setSound(s => ({ ...s, enabled: v }))} />
+            </div>
+            {sound.enabled && (
+              <div className="max-w-xs space-y-2">
+                <Label>{t("settings.soundLeadTime")}</Label>
+                <Select value={sound.minutesBefore.toString()} onValueChange={v => setSound(s => ({ ...s, minutesBefore: parseInt(v) }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">{t("settings.1minBefore")}</SelectItem>
+                    <SelectItem value="5">{t("settings.5minBefore")}</SelectItem>
+                    <SelectItem value="10">{t("settings.10minBefore")}</SelectItem>
+                    <SelectItem value="15">{t("settings.15minBefore")}</SelectItem>
+                    <SelectItem value="30">{t("settings.30minBefore")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
         </div>
 

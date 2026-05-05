@@ -1,7 +1,9 @@
 import { AppSidebar } from "./AppSidebar";
 import { DemoBanner } from "./DemoBanner";
+import { useSoundReminder } from "@/hooks/useSoundReminder";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
+  useSoundReminder();
   return (
     <div className="min-h-screen bg-background">
       <AppSidebar />
