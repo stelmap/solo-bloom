@@ -14,12 +14,14 @@ test.describe("Authentication", () => {
     await expect(page).toHaveURL(/\/auth/, { timeout: 10000 });
   });
 
-  test("toggling to sign-up shows full name field", async ({ page }) => {
+  test("toggling to sign-up shows confirm password field", async ({ page }) => {
     await page.goto("/auth");
-    await page.getByRole("button", { name: /sign up|зареєструватись/i }).first().click();
-    await expect(
-      page.getByLabel(/full name|повне ім/i).or(page.locator('input').nth(0))
-    ).toBeVisible();
+    await page
+      .getByRole("button", { name: /register here|sign up|зареєструватись/i })
+      .first()
+      .click();
+    // Sign-up mode shows email + password + confirm password
+    await expect(page.locator('input[type="password"]')).toHaveCount(2);
   });
 
   test("login with wrong credentials shows error toast", async ({ page }) => {
