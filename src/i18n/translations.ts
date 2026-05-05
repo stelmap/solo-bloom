@@ -1342,6 +1342,11 @@ export const translations = {
   "audit.searchPlaceholder": { en: "Search by client, invoice, amount, method…", uk: "Пошук за клієнтом, рахунком, сумою, методом…", fr: "Rechercher…", pl: "Szukaj…" },
   "audit.of": { en: "of", uk: "з", fr: "sur", pl: "z" },
   "audit.rowsPerPage": { en: "Rows per page:", uk: "Рядків на сторінці:", fr: "Lignes/page:", pl: "Wierszy/strona:" },
+  "audit.exportMonthly": { en: "Export monthly audit", uk: "Експорт за місяць", fr: "Exporter le mois", pl: "Eksport miesięczny" },
+  "audit.exportClient": { en: "Export client register", uk: "Реєстр клієнта", fr: "Registre client", pl: "Rejestr klienta" },
+  "audit.dateFrom": { en: "Date from", uk: "Дата з", fr: "Du", pl: "Od" },
+  "audit.dateTo": { en: "Date to", uk: "Дата по", fr: "Au", pl: "Do" },
+  "audit.clearDates": { en: "Clear dates", uk: "Очистити", fr: "Effacer", pl: "Wyczyść" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;

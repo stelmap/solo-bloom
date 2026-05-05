@@ -91,6 +91,8 @@ export default function PaymentAuditPage() {
   const [openRow, setOpenRow] = useState<any>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
 
   useEffect(() => {
     if (clientId && clientId !== "all") setSearchParams({ client: clientId }, { replace: true });
@@ -145,6 +147,8 @@ export default function PaymentAuditPage() {
   const filtered = useMemo(() => {
     let r = rows;
     if (clientId !== "all") r = r.filter(x => x.client_id === clientId);
+    if (dateFrom) r = r.filter(x => (x.date || "") >= dateFrom);
+    if (dateTo) r = r.filter(x => (x.date || "") <= dateTo);
     if (search.trim()) {
       const q = search.toLowerCase();
       r = r.filter(x =>
@@ -179,9 +183,9 @@ export default function PaymentAuditPage() {
       }
     });
     return sorted;
-  }, [rows, clientId, quickFilter, sortBy, search]);
+  }, [rows, clientId, quickFilter, sortBy, search, dateFrom, dateTo]);
 
-  useEffect(() => { setPage(1); }, [clientId, quickFilter, sortBy, search, pageSize]);
+  useEffect(() => { setPage(1); }, [clientId, quickFilter, sortBy, search, pageSize, dateFrom, dateTo]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
@@ -202,25 +206,33 @@ export default function PaymentAuditPage() {
     return { confirmed, expected, prepaid, unlinked, partial, cancelled };
   }, [rows, clientId]);
 
-  const handleExport = () => {
-    const headers = ["Date","Client","Amount","Currency","Method","Invoice","Allocation","Status","Source","Linked sessions","Linked dates","Prepaid impact","Comment","Created"];
-    const body = filtered.map(r => [
-      r.date,
-      r.client_name,
-      String(r.amount),
-      cs,
-      r.method,
-      r.invoice?.invoice_number || "",
-      r.allocStatus,
-      r.paymentStatus,
-      r.source,
+  const buildCsv = (records: any[], filename: string) => {
+    const headers = ["Date","Client","Amount","Currency","Method","Invoice","Allocation","Status","Source","Linked sessions","Linked dates","Prepaid impact","Comment","Created","Updated"];
+    const body = records.map(r => [
+      r.date, r.client_name, String(r.amount), cs, r.method,
+      r.invoice?.invoice_number || "", r.allocStatus, r.paymentStatus, r.source,
       String(r.allocs.length),
       r.allocs.map((a: any) => a.appointments?.scheduled_at?.split("T")[0]).filter(Boolean).join("; "),
       String(r.allocStatus === "prepayment" ? r.remaining : r.allocStatus === "partial" ? r.remaining : 0),
       r.raw?.description || r.raw?.comment || "",
-      r.raw?.created_at || "",
+      r.raw?.created_at || "", r.raw?.updated_at || "",
     ]);
-    downloadCSV(`payment-audit-${format(new Date(), "yyyy-MM-dd")}.csv`, headers, body);
+    downloadCSV(filename, headers, body);
+  };
+
+  const handleExport = () => buildCsv(filtered, `payment-audit-${format(new Date(), "yyyy-MM-dd")}.csv`);
+
+  const handleExportMonthly = () => {
+    const monthStr = format(new Date(), "yyyy-MM");
+    const recs = filtered.filter(r => (r.date || "").startsWith(monthStr));
+    buildCsv(recs, `payment-audit-${monthStr}.csv`);
+  };
+
+  const handleExportClient = () => {
+    if (clientId === "all") return;
+    const recs = rows.filter(r => r.client_id === clientId);
+    const cName = (clients.find((c: any) => c.id === clientId) as any)?.name || "client";
+    buildCsv(recs, `payment-register-${cName}-${format(new Date(), "yyyy-MM-dd")}.csv`);
   };
 
   const quickFilters: { key: QuickFilter; label: string }[] = [
@@ -243,7 +255,11 @@ export default function PaymentAuditPage() {
             <h1 className="text-2xl font-bold">{t("audit.title")}</h1>
             <p className="text-sm text-muted-foreground">{t("audit.subtitle")}</p>
           </div>
-          <Button onClick={handleExport} variant="outline" className="gap-2"><Download className="h-4 w-4" />{t("audit.export")}</Button>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={handleExport} variant="outline" size="sm" className="gap-2"><Download className="h-4 w-4" />{t("audit.export")}</Button>
+            <Button onClick={handleExportMonthly} variant="outline" size="sm" className="gap-2"><Download className="h-4 w-4" />{t("audit.exportMonthly")}</Button>
+            <Button onClick={handleExportClient} variant="outline" size="sm" disabled={clientId === "all"} className="gap-2"><Download className="h-4 w-4" />{t("audit.exportClient")}</Button>
+          </div>
         </div>
 
         {/* Summary */}
@@ -282,6 +298,12 @@ export default function PaymentAuditPage() {
             <Search className="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input className="pl-8 w-full" placeholder={t("audit.searchPlaceholder")} value={search} onChange={e => setSearch(e.target.value)} />
           </div>
+          <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-[150px]" aria-label={t("audit.dateFrom")} />
+          <span className="text-muted-foreground text-xs">–</span>
+          <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-[150px]" aria-label={t("audit.dateTo")} />
+          {(dateFrom || dateTo) && (
+            <Button variant="ghost" size="sm" onClick={() => { setDateFrom(""); setDateTo(""); }}>{t("audit.clearDates")}</Button>
+          )}
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -401,7 +423,14 @@ export default function PaymentAuditPage() {
                           <div className="text-sm font-medium">{a.appointments?.services?.name || "—"}</div>
                           <div className="text-xs text-muted-foreground">{a.appointments?.scheduled_at?.split("T")[0]}</div>
                         </div>
-                        <div className="text-sm tabular-nums">{cs}{Number(a.allocated_amount).toFixed(2)}</div>
+                        <div className="flex items-center gap-2">
+                          <div className="text-sm tabular-nums">{cs}{Number(a.allocated_amount).toFixed(2)}</div>
+                          {a.appointment_id && (
+                            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => navigate(`/calendar?appointment=${a.appointment_id}`)}>
+                              <ExternalLink className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
                       </li>
                     ))}
                   </ul>
