@@ -89,6 +89,8 @@ export default function PaymentAuditPage() {
   const [sortBy, setSortBy] = useState<string>("date_desc");
   const [search, setSearch] = useState("");
   const [openRow, setOpenRow] = useState<any>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   useEffect(() => {
     if (clientId && clientId !== "all") setSearchParams({ client: clientId }, { replace: true });
@@ -145,7 +147,15 @@ export default function PaymentAuditPage() {
     if (clientId !== "all") r = r.filter(x => x.client_id === clientId);
     if (search.trim()) {
       const q = search.toLowerCase();
-      r = r.filter(x => x.client_name.toLowerCase().includes(q));
+      r = r.filter(x =>
+        x.client_name.toLowerCase().includes(q) ||
+        (x.invoice?.invoice_number || "").toLowerCase().includes(q) ||
+        (x.method || "").toLowerCase().includes(q) ||
+        String(x.amount).includes(q) ||
+        (x.raw?.description || "").toLowerCase().includes(q) ||
+        (x.raw?.comment || "").toLowerCase().includes(q) ||
+        (x.date || "").includes(q)
+      );
     }
     switch (quickFilter) {
       case "linked": r = r.filter(x => x.allocStatus === "linked"); break;
@@ -170,6 +180,15 @@ export default function PaymentAuditPage() {
     });
     return sorted;
   }, [rows, clientId, quickFilter, sortBy, search]);
+
+  useEffect(() => { setPage(1); }, [clientId, quickFilter, sortBy, search, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paged = useMemo(
+    () => filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [filtered, currentPage, pageSize]
+  );
 
   const summary = useMemo(() => {
     const scope = clientId === "all" ? rows : rows.filter(r => r.client_id === clientId);
@@ -259,9 +278,9 @@ export default function PaymentAuditPage() {
               {clients.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
             </SelectContent>
           </Select>
-          <div className="relative">
+          <div className="relative flex-1 min-w-[240px] max-w-md">
             <Search className="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input className="pl-8 w-[220px]" placeholder={t("audit.searchClient")} value={search} onChange={e => setSearch(e.target.value)} />
+            <Input className="pl-8 w-full" placeholder={t("audit.searchPlaceholder")} value={search} onChange={e => setSearch(e.target.value)} />
           </div>
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
@@ -299,7 +318,7 @@ export default function PaymentAuditPage() {
                 <TableRow><TableCell colSpan={10} className="text-center py-10 text-muted-foreground">{t("common.loading") || "Loading…"}</TableCell></TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow><TableCell colSpan={10} className="text-center py-10 text-muted-foreground">{t("audit.empty")}</TableCell></TableRow>
-              ) : filtered.map(r => {
+              ) : paged.map(r => {
                 const ab = allocBadgeVariant(r.allocStatus);
                 return (
                   <TableRow key={`${r.kind}-${r.id}`} onClick={() => setOpenRow(r)} className="cursor-pointer">
@@ -330,6 +349,28 @@ export default function PaymentAuditPage() {
               })}
             </TableBody>
           </Table>
+          {/* Pagination */}
+          <div className="flex flex-wrap items-center justify-between gap-3 px-3 py-2 border-t bg-muted/20">
+            <div className="text-xs text-muted-foreground">
+              {filtered.length === 0
+                ? t("audit.empty")
+                : `${(currentPage - 1) * pageSize + 1}–${Math.min(currentPage * pageSize, filtered.length)} ${t("audit.of")} ${filtered.length}`}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">{t("audit.rowsPerPage")}</span>
+              <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v))}>
+                <SelectTrigger className="h-8 w-[80px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {[10, 25, 50, 100, 200].map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setPage(1)}>«</Button>
+              <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>‹</Button>
+              <span className="text-xs tabular-nums px-2">{currentPage} / {totalPages}</span>
+              <Button variant="outline" size="sm" disabled={currentPage >= totalPages} onClick={() => setPage(currentPage + 1)}>›</Button>
+              <Button variant="outline" size="sm" disabled={currentPage >= totalPages} onClick={() => setPage(totalPages)}>»</Button>
+            </div>
+          </div>
         </Card>
       </div>
 

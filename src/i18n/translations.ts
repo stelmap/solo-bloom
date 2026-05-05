@@ -1339,6 +1339,9 @@ export const translations = {
   "audit.linked.none": { en: "Not linked to any session", uk: "Не прив’язано", fr: "Non lié", pl: "Niepowiązane" },
   "audit.linked.to": { en: "Linked to", uk: "Прив’язано до", fr: "Lié à", pl: "Powiązane z" },
   "audit.linked.prepay": { en: "Prepayment", uk: "Передоплата", fr: "Prépaiement", pl: "Przedpłata" },
+  "audit.searchPlaceholder": { en: "Search by client, invoice, amount, method…", uk: "Пошук за клієнтом, рахунком, сумою, методом…", fr: "Rechercher…", pl: "Szukaj…" },
+  "audit.of": { en: "of", uk: "з", fr: "sur", pl: "z" },
+  "audit.rowsPerPage": { en: "Rows per page:", uk: "Рядків на сторінці:", fr: "Lignes/page:", pl: "Wierszy/strona:" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;
