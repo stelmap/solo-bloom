@@ -14,7 +14,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage, translateFor } from "@/i18n/LanguageContext";
 import { Language } from "@/i18n/translations";
-import { Plus, Trash2, CalendarOff, Receipt, Pencil, Eye, EyeOff, Lock } from "lucide-react";
+import { Plus, Trash2, CalendarOff, Receipt, Pencil, Eye, EyeOff, Lock, Volume2 } from "lucide-react";
 import { SubscriptionSection } from "@/components/SubscriptionSection";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { format } from "date-fns";
