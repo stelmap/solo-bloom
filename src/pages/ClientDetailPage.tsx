@@ -672,17 +672,34 @@ export default function ClientDetailPage() {
           </div>
         </div>
 
-        {/* Payment History — full width */}
-        <PaymentHistorySection
-          clientId={id!}
-          currencySymbol={cs}
-          creditBalance={creditBalance as number}
-          clientIncome={clientIncome as any[]}
-          isDemoMode={isDemoMode}
-          onAdd={() => { setEditingIncome(null); setIncomeDialogOpen(true); }}
-          onEdit={(inc) => { setEditingIncome(inc); setIncomeDialogOpen(true); }}
-          onDelete={(id) => setDeleteIncomeId(id)}
-        />
+        {/* Payments — moved to Finance → Payment Audit */}
+        <div className="bg-card rounded-xl border border-border p-5 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
+            <CreditCard className="h-5 w-5 text-primary" />
+            <div>
+              <h3 className="font-semibold text-foreground">{t("clientPay.title")}</h3>
+              <p className="text-xs text-muted-foreground">{t("audit.movedHint")}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="rounded-lg border border-success/30 bg-success/5 px-3 py-1.5 text-xs flex items-center gap-2">
+              <span className="text-muted-foreground">{t("clientPay.creditBalance")}</span>
+              <span className={cn("font-semibold", (creditBalance as number) > 0 ? "text-success" : "text-muted-foreground")}>
+                {cs}{Number(creditBalance || 0).toFixed(2)}
+              </span>
+            </div>
+            {!isDemoMode && (
+              <Button size="sm" variant="outline" onClick={() => { setEditingIncome(null); setIncomeDialogOpen(true); }}>
+                <Plus className="h-4 w-4 mr-1" /> {t("clientPay.add")}
+              </Button>
+            )}
+            <Button size="sm" asChild>
+              <a href={`/finances/payment-audit?client=${id}`}>
+                <ShieldCheck className="h-4 w-4 mr-1" /> {t("audit.openAuditForClient")}
+              </a>
+            </Button>
+          </div>
+        </div>
       </div>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
