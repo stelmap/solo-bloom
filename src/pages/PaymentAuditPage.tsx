@@ -318,7 +318,7 @@ export default function PaymentAuditPage() {
                 <TableRow><TableCell colSpan={10} className="text-center py-10 text-muted-foreground">{t("common.loading") || "Loading…"}</TableCell></TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow><TableCell colSpan={10} className="text-center py-10 text-muted-foreground">{t("audit.empty")}</TableCell></TableRow>
-              ) : filtered.map(r => {
+              ) : paged.map(r => {
                 const ab = allocBadgeVariant(r.allocStatus);
                 return (
                   <TableRow key={`${r.kind}-${r.id}`} onClick={() => setOpenRow(r)} className="cursor-pointer">
