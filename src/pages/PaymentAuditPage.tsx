@@ -30,7 +30,7 @@ function useAuditData() {
     queryFn: async () => {
       const [incRes, allocRes, invRes, expRes] = await Promise.all([
         supabase.from("income").select("*, clients(id,name), appointments(id,scheduled_at,client_id,clients(id,name),services(name))").order("date", { ascending: false }),
-        supabase.from("income_session_allocations").select("*, appointments(id,scheduled_at,price,services(name))"),
+        supabase.from("income_session_allocations").select("*"),
         supabase.from("invoices").select("id,invoice_number,appointment_id,client_id"),
         supabase.from("expected_payments").select("*, clients(id,name), appointments(id,scheduled_at,services(name))").eq("status", "pending"),
       ]);
