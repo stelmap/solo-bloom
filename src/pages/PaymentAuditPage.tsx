@@ -106,8 +106,14 @@ export default function PaymentAuditPage() {
   const [sortBy, setSortBy] = useState<string>("date_desc");
   const [search, setSearch] = useState("");
   const [openRow, setOpenRow] = useState<any>(null);
+  const [editIncome, setEditIncome] = useState<any | null>(null);
+  const [editClientId, setEditClientId] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const deleteIncomeMut = useDeleteIncomeConfirmation();
+  const { toast } = useToast();
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
 
