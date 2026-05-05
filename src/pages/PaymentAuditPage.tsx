@@ -278,9 +278,9 @@ export default function PaymentAuditPage() {
               {clients.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
             </SelectContent>
           </Select>
-          <div className="relative">
+          <div className="relative flex-1 min-w-[240px] max-w-md">
             <Search className="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input className="pl-8 w-[220px]" placeholder={t("audit.searchClient")} value={search} onChange={e => setSearch(e.target.value)} />
+            <Input className="pl-8 w-full" placeholder={t("audit.searchPlaceholder")} value={search} onChange={e => setSearch(e.target.value)} />
           </div>
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
