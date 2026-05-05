@@ -13,11 +13,9 @@ import {
   useClientAppointments, useClientNotes, useCreateClientNote, useDeleteClientNote,
   useClientAttachments, useUploadAttachment, useDeleteAttachment, useProfile,
   useClientPriceHistory, useCreatePriceChange, useClientIncome,
-  useClientCreditBalance, useDeleteIncomeConfirmation, useClientAllocations,
+  useClientCreditBalance, useClientAllocations,
 } from "@/hooks/useData";
 import { useSupervisions, useSupervisionCount } from "@/hooks/useSupervisions";
-import { IncomeConfirmationDialog } from "@/components/IncomeConfirmationDialog";
-import { ConfirmDeleteDialog as ConfirmDelete2 } from "@/components/ConfirmDeleteDialog";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, Phone, Mail, Send, Calendar, Pencil, Trash2, Plus, Paperclip, FileText, Image, Download, X, Bell, DollarSign, History, CreditCard, ClipboardList, ShieldCheck,
@@ -93,10 +91,6 @@ export default function ClientDetailPage() {
   };
 
   const { data: creditBalance = 0 } = useClientCreditBalance(id);
-  const deleteIncomeConfirm = useDeleteIncomeConfirmation();
-  const [incomeDialogOpen, setIncomeDialogOpen] = useState(false);
-  const [editingIncome, setEditingIncome] = useState<any | null>(null);
-  const [deleteIncomeId, setDeleteIncomeId] = useState<string | null>(null);
 
   const { data: clientAllocs = [] } = useClientAllocations(id);
   const allocByApt = useMemo(() => {
@@ -672,34 +666,50 @@ export default function ClientDetailPage() {
           </div>
         </div>
 
-        {/* Payments — moved to Finance → Payment Audit */}
-        <div className="bg-card rounded-xl border border-border p-5 flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-3">
-            <CreditCard className="h-5 w-5 text-primary" />
-            <div>
-              <h3 className="font-semibold text-foreground">{t("clientPay.title")}</h3>
-              <p className="text-xs text-muted-foreground">{t("audit.movedHint")}</p>
+        {/* Balance — payments are managed in Finance → Payment Audit */}
+        {(() => {
+          const totalUnpaid = (appointments as any[])
+            .filter(isAwaiting)
+            .reduce((s: number, a: any) => s + Number(a.price || 0), 0);
+          const prepaid = Number(creditBalance || 0);
+          const outstanding = Math.max(0, totalUnpaid - prepaid);
+          return (
+            <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-3">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                  <div>
+                    <h3 className="font-semibold text-foreground">{t("balance.title")}</h3>
+                    <p className="text-xs text-muted-foreground">{t("audit.movedHint")}</p>
+                  </div>
+                </div>
+                <Button size="sm" asChild>
+                  <a href={`/finances/payment-audit?client=${id}`}>
+                    <ShieldCheck className="h-4 w-4 mr-1" /> {t("audit.openAuditForClient")}
+                  </a>
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="rounded-lg border border-border bg-muted/30 px-3 py-2">
+                  <div className="text-xs text-muted-foreground">{t("balance.prepaid")}</div>
+                  <div className={cn("text-base font-semibold", prepaid > 0 ? "text-success" : "text-foreground")}>{cs}{prepaid.toFixed(2)}</div>
+                </div>
+                <div className="rounded-lg border border-border bg-muted/30 px-3 py-2">
+                  <div className="text-xs text-muted-foreground">{t("balance.outstanding")}</div>
+                  <div className={cn("text-base font-semibold", outstanding > 0 ? "text-destructive" : "text-foreground")}>{cs}{outstanding.toFixed(2)}</div>
+                </div>
+                <div className="rounded-lg border border-border bg-muted/30 px-3 py-2">
+                  <div className="text-xs text-muted-foreground">{t("balance.totalPaid")}</div>
+                  <div className="text-base font-semibold text-foreground">{cs}{Number(paidAmount || 0).toFixed(2)}</div>
+                </div>
+                <div className="rounded-lg border border-border bg-muted/30 px-3 py-2">
+                  <div className="text-xs text-muted-foreground">{t("balance.totalUnpaid")}</div>
+                  <div className="text-base font-semibold text-foreground">{cs}{totalUnpaid.toFixed(2)}</div>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="rounded-lg border border-success/30 bg-success/5 px-3 py-1.5 text-xs flex items-center gap-2">
-              <span className="text-muted-foreground">{t("clientPay.creditBalance")}</span>
-              <span className={cn("font-semibold", (creditBalance as number) > 0 ? "text-success" : "text-muted-foreground")}>
-                {cs}{Number(creditBalance || 0).toFixed(2)}
-              </span>
-            </div>
-            {!isDemoMode && (
-              <Button size="sm" variant="outline" onClick={() => { setEditingIncome(null); setIncomeDialogOpen(true); }}>
-                <Plus className="h-4 w-4 mr-1" /> {t("clientPay.add")}
-              </Button>
-            )}
-            <Button size="sm" asChild>
-              <a href={`/finances/payment-audit?client=${id}`}>
-                <ShieldCheck className="h-4 w-4 mr-1" /> {t("audit.openAuditForClient")}
-              </a>
-            </Button>
-          </div>
-        </div>
+          );
+        })()}
       </div>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
@@ -804,34 +814,6 @@ export default function ClientDetailPage() {
         use12h={use12h}
       />
 
-      {id && (
-        <IncomeConfirmationDialog
-          open={incomeDialogOpen}
-          onOpenChange={(o) => { setIncomeDialogOpen(o); if (!o) setEditingIncome(null); }}
-          clientId={id}
-          clientName={client?.name}
-          use12h={use12h}
-          existingIncome={editingIncome}
-        />
-      )}
-
-      <ConfirmDelete2
-        open={!!deleteIncomeId}
-        onOpenChange={(o) => { if (!o) setDeleteIncomeId(null); }}
-        onConfirm={async () => {
-          if (!deleteIncomeId) return;
-          try {
-            await deleteIncomeConfirm.mutateAsync(deleteIncomeId);
-            toast({ title: t("incomeConfirm.deleted") });
-            setDeleteIncomeId(null);
-          } catch (e: any) {
-            toast({ title: t("common.error"), description: e?.message, variant: "destructive" });
-          }
-        }}
-        title={t("incomeConfirm.deleteTitle")}
-        description={t("incomeConfirm.deleteDesc")}
-        loading={deleteIncomeConfirm.isPending}
-      />
     </AppLayout>
   );
 }
