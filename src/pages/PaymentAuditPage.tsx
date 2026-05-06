@@ -136,7 +136,18 @@ export default function PaymentAuditPage() {
   const rows = useMemo(() => {
     if (!data) return [];
     const incomeRows = data.income.map(inc => {
-      const allocs = data.allocByIncome.get(inc.id) || [];
+      let allocs = data.allocByIncome.get(inc.id) || [];
+      // Synthesize a virtual allocation when income is directly attached to an appointment
+      // but has no rows in income_session_allocations (legacy / single-session payments).
+      if (allocs.length === 0 && inc.appointment_id) {
+        allocs = [{
+          id: `virtual-${inc.id}`,
+          income_id: inc.id,
+          appointment_id: inc.appointment_id,
+          allocated_amount: Number(inc.amount),
+          appointments: inc.appointments || null,
+        }];
+      }
       const st = statusOf(Number(inc.amount), allocs);
       const inv = inc.appointment_id ? data.invByApt.get(inc.appointment_id) : null;
       return {
