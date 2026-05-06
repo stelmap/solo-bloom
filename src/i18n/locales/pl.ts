@@ -1016,6 +1016,8 @@ export default {
   "ops.scheduleSnapshot": "Harmonogram dzisiaj",
   "ops.statusSummary": "Status sesji",
   "ops.paymentSummary": "Płatności dzisiaj",
+  "ops.paymentMethodsToday": "Dzisiejsze metody płatności",
+  "ops.noPaymentsToday": "Brak otrzymanych płatności dzisiaj",
   "ops.amountReceived": "Otrzymana kwota",
   "ops.pendingAmount": "Płatność oczekująca",
   "ops.individual": "Indywidualna",
