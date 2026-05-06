@@ -47,7 +47,8 @@ export default function CalendarPage() {
   const bulkCancel = useBulkCancelForDayOff();
   const { toast } = useToast();
   const qc = useQueryClient();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const dateLocale = getDateLocale(lang);
   const { symbol: cs } = useCurrency();
 
   // Drag-and-drop state
