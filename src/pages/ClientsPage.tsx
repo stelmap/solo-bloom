@@ -262,8 +262,9 @@ export default function ClientsPage() {
             </TabsList>
           </Tabs>
           <div className="relative max-w-sm flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder={t("clients.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder={t("clients.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+          </div>
         </div>
 
         {isLoading ? (
@@ -278,6 +279,8 @@ export default function ClientsPage() {
                 client={client}
                 onNavigate={(id) => navigate(`/clients/${id}`)}
                 onDelete={isDemoMode ? undefined : (id) => setDeleteId(id)}
+                onArchive={isDemoMode ? undefined : (c) => setArchiveTarget({ id: c.id, name: c.name })}
+                onUnarchive={isDemoMode ? undefined : handleUnarchive}
                 t={t}
               />
             ))}
