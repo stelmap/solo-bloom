@@ -297,12 +297,12 @@ export default function SupervisionPage() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>{t("supervision.selectClient")} *</Label>
-              <Select value={createForm.client_id} onValueChange={v => setCreateForm(f => ({ ...f, client_id: v }))}>
-                <SelectTrigger><SelectValue placeholder={t("supervision.selectClient")} /></SelectTrigger>
-                <SelectContent>
-                  {clients.filter((c: any) => (c.status ?? "active") === "active").map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <ClientPicker
+                clients={clients}
+                value={createForm.client_id}
+                onChange={v => setCreateForm(f => ({ ...f, client_id: v }))}
+                placeholder={t("supervision.selectClient")}
+              />
             </div>
             <div className="space-y-2">
               <Label>{t("supervision.date")} *</Label>
