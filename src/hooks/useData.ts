@@ -1129,7 +1129,7 @@ export function useTaxAccrualSync() {
   const { data: taxSettings = [] } = useTaxSettings();
   const generate = useGenerateTaxExpenses();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!user) return;
     const active = (taxSettings as any[]).filter(t => t.is_active);
     if (active.length === 0) return;
