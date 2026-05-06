@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import {
-  useClient, useUpdateClient, useDeleteClient,
+  useClient, useUpdateClient, useDeleteClient, useUnarchiveClient,
   useClientAppointments, useClientNotes, useCreateClientNote, useDeleteClientNote,
   useClientAttachments, useUploadAttachment, useDeleteAttachment, useProfile,
   useClientPriceHistory, useCreatePriceChange, useClientIncome,
@@ -18,8 +18,9 @@ import {
 import { useSupervisions, useSupervisionCount } from "@/hooks/useSupervisions";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  ArrowLeft, Phone, Mail, Send, Calendar, Pencil, Trash2, Plus, Paperclip, FileText, Image, Download, X, Bell, DollarSign, History, CreditCard, ClipboardList, ShieldCheck,
+  ArrowLeft, Phone, Mail, Send, Calendar, Pencil, Trash2, Plus, Paperclip, FileText, Image, Download, X, Bell, DollarSign, History, CreditCard, ClipboardList, ShieldCheck, Archive, ArchiveRestore,
 } from "lucide-react";
+import { ArchiveClientDialog } from "@/components/ArchiveClientDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -45,6 +46,7 @@ export default function ClientDetailPage() {
   const { data: client, isLoading } = useClient(id);
   const updateClient = useUpdateClient();
   const deleteClient = useDeleteClient();
+  const unarchiveClient = useUnarchiveClient();
   const { data: appointments = [] } = useClientAppointments(id);
   const { data: notes = [] } = useClientNotes(id);
   const createNote = useCreateClientNote();
@@ -61,6 +63,7 @@ export default function ClientDetailPage() {
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "", notification_preference: "no_reminder", confirmation_required: false, pricing_mode: "fixed", base_price: "", billing_address: "", billing_country: "", billing_tax_id: "", billing_company_name: "" });
@@ -326,16 +329,37 @@ export default function ClientDetailPage() {
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/clients")}><ArrowLeft className="h-5 w-5" /></Button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-foreground">{client.name}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-foreground">{client.name}</h1>
+              {client.status === "archived" && <Badge variant="secondary">{t("archive.badge")}</Badge>}
+            </div>
             <p className="text-sm text-muted-foreground">{t("clientDetail.profile")}</p>
           </div>
           {!isDemoMode && <>
             <Button variant="outline" size="sm" onClick={openEdit}><Pencil className="h-3.5 w-3.5 mr-1" /> {t("common.edit")}</Button>
+            {client.status === "archived" ? (
+              <Button variant="outline" size="sm" onClick={async () => {
+                try { await unarchiveClient.mutateAsync(client.id); toast({ title: t("archive.toast.unarchived") }); }
+                catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
+              }}>
+                <ArchiveRestore className="h-3.5 w-3.5 mr-1" /> {t("archive.action.unarchive")}
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" onClick={() => setArchiveOpen(true)}>
+                <Archive className="h-3.5 w-3.5 mr-1" /> {t("archive.action.archive")}
+              </Button>
+            )}
             <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteOpen(true)}>
               <Trash2 className="h-3.5 w-3.5 mr-1" /> {t("common.delete")}
             </Button>
           </>}
         </div>
+
+        {client.status === "archived" && (
+          <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+            {t("archive.banner.message")}
+          </div>
+        )}
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
           {([
@@ -838,6 +862,15 @@ export default function ClientDetailPage() {
       <ConfirmDeleteDialog open={deleteOpen} onOpenChange={setDeleteOpen} onConfirm={handleDelete}
         title={t("clientDetail.deleteClient")} description={t("clients.deleteDesc")}
         loading={deleteClient.isPending} />
+
+      {client && (
+        <ArchiveClientDialog
+          open={archiveOpen}
+          onOpenChange={setArchiveOpen}
+          clientId={client.id}
+          clientName={client.name}
+        />
+      )}
 
       <SessionDetailSheet
         appointment={sessionApt}

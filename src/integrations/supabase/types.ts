@@ -343,8 +343,45 @@ export type Database = {
         }
         Relationships: []
       }
+      client_status_audit: {
+        Row: {
+          archive_comment: string | null
+          archive_reason: string | null
+          client_id: string
+          created_at: string
+          id: string
+          new_status: string
+          old_status: string | null
+          user_id: string
+        }
+        Insert: {
+          archive_comment?: string | null
+          archive_reason?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          new_status: string
+          old_status?: string | null
+          user_id: string
+        }
+        Update: {
+          archive_comment?: string | null
+          archive_reason?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          new_status?: string
+          old_status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
+          archive_comment: string | null
+          archive_reason: string | null
+          archived_at: string | null
+          archived_by: string | null
           base_price: number | null
           billing_address: string | null
           billing_company_name: string | null
@@ -362,11 +399,17 @@ export type Database = {
           pricing_mode: string
           seed_batch_id: string | null
           seed_source: string | null
+          status: string
           telegram: string | null
+          unarchived_at: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          archive_comment?: string | null
+          archive_reason?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
           base_price?: number | null
           billing_address?: string | null
           billing_company_name?: string | null
@@ -384,11 +427,17 @@ export type Database = {
           pricing_mode?: string
           seed_batch_id?: string | null
           seed_source?: string | null
+          status?: string
           telegram?: string | null
+          unarchived_at?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          archive_comment?: string | null
+          archive_reason?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
           base_price?: number | null
           billing_address?: string | null
           billing_company_name?: string | null
@@ -406,7 +455,9 @@ export type Database = {
           pricing_mode?: string
           seed_batch_id?: string | null
           seed_source?: string | null
+          status?: string
           telegram?: string | null
+          unarchived_at?: string | null
           updated_at?: string
           user_id?: string
         }

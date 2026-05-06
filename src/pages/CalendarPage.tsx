@@ -625,7 +625,7 @@ export default function CalendarPage() {
                       <Label>{t("calendar.client")} *</Label>
                       <Select value={form.client_id} onValueChange={v => setForm(f => ({ ...f, client_id: v }))}>
                         <SelectTrigger><SelectValue placeholder={t("calendar.selectClient")} /></SelectTrigger>
-                        <SelectContent>{clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+                        <SelectContent>{clients.filter((c: any) => (c.status ?? "active") === "active").map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
                   )}

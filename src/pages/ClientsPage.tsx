@@ -2,37 +2,73 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Phone, Mail, Send, Trash2, Download, Upload } from "lucide-react";
+import { Plus, Search, Phone, Mail, Send, Trash2, Download, Upload, Archive, ArchiveRestore, MoreVertical } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { useState, memo, useRef } from "react";
 import ExcelJS from "exceljs";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useNavigate } from "react-router-dom";
-import { useClients, useCreateClient, useDeleteClient } from "@/hooks/useData";
+import { useClients, useCreateClient, useDeleteClient, useUnarchiveClient } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
+import { ArchiveClientDialog } from "@/components/ArchiveClientDialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useDemoMode } from "@/hooks/useDemoWorkspace";
 
-const ClientCard = memo(({ client, onNavigate, onDelete, t }: {
-  client: any; onNavigate: (id: string) => void; onDelete?: (id: string) => void; t: any;
-}) => (
+const ClientCard = memo(({ client, onNavigate, onDelete, onArchive, onUnarchive, t }: {
+  client: any; onNavigate: (id: string) => void;
+  onDelete?: (id: string) => void;
+  onArchive?: (client: any) => void;
+  onUnarchive?: (id: string) => void;
+  t: any;
+}) => {
+  const isArchived = client.status === "archived";
+  return (
   <div
     onClick={() => onNavigate(client.id)}
-    className="bg-card rounded-xl border border-border p-5 animate-fade-in group relative cursor-pointer hover:border-primary/30 hover:shadow-md transition-all"
+    className={`bg-card rounded-xl border border-border p-5 animate-fade-in group relative cursor-pointer hover:border-primary/30 hover:shadow-md transition-all ${isArchived ? "opacity-75" : ""}`}
   >
-    {onDelete && <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-      <button onClick={(e) => { e.stopPropagation(); onDelete(client.id); }} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
-        <Trash2 className="h-3.5 w-3.5" />
-      </button>
-    </div>}
+    {(onDelete || onArchive || onUnarchive) && (
+      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+            <button className="p-1.5 rounded hover:bg-muted text-muted-foreground transition-colors">
+              <MoreVertical className="h-3.5 w-3.5" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+            {!isArchived && onArchive && (
+              <DropdownMenuItem onClick={() => onArchive(client)}>
+                <Archive className="h-3.5 w-3.5 mr-2" /> {t("archive.action.archive")}
+              </DropdownMenuItem>
+            )}
+            {isArchived && onUnarchive && (
+              <DropdownMenuItem onClick={() => onUnarchive(client.id)}>
+                <ArchiveRestore className="h-3.5 w-3.5 mr-2" /> {t("archive.action.unarchive")}
+              </DropdownMenuItem>
+            )}
+            {onDelete && (
+              <DropdownMenuItem onClick={() => onDelete(client.id)} className="text-destructive">
+                <Trash2 className="h-3.5 w-3.5 mr-2" /> {t("common.delete")}
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    )}
     <div className="flex items-start gap-3 mb-3">
       <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
         {client.name.split(" ").map((n: string) => n[0]).join("").toUpperCase()}
       </div>
-      <div className="min-w-0">
-        <h3 className="font-semibold text-foreground truncate">{client.name}</h3>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <h3 className="font-semibold text-foreground truncate">{client.name}</h3>
+          {isArchived && <Badge variant="secondary" className="text-[10px]">{t("archive.badge")}</Badge>}
+        </div>
       </div>
     </div>
     <div className="space-y-1.5 text-sm">
@@ -42,13 +78,15 @@ const ClientCard = memo(({ client, onNavigate, onDelete, t }: {
     </div>
     {client.notes && <p className="mt-3 text-xs text-muted-foreground bg-muted/50 rounded-md p-2 line-clamp-2">📝 {client.notes}</p>}
   </div>
-));
+  );
+});
 ClientCard.displayName = "ClientCard";
 
 export default function ClientsPage() {
   const { data: clients = [], isLoading } = useClients();
   const createClient = useCreateClient();
   const deleteClient = useDeleteClient();
+  const unarchiveClient = useUnarchiveClient();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -56,12 +94,30 @@ export default function ClientsPage() {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<{ id: string; name: string } | null>(null);
+  const [statusFilter, setStatusFilter] = useState<"active" | "archived" | "all">("active");
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "" });
 
   const debouncedSearch = useDebouncedValue(search, 200);
-  const filtered = clients.filter((c) => c.name.toLowerCase().includes(debouncedSearch.toLowerCase()));
+  const counts = {
+    active: clients.filter((c: any) => (c.status ?? "active") === "active").length,
+    archived: clients.filter((c: any) => c.status === "archived").length,
+    all: clients.length,
+  };
+  const filtered = clients
+    .filter((c: any) => statusFilter === "all" ? true : (c.status ?? "active") === statusFilter)
+    .filter((c) => c.name.toLowerCase().includes(debouncedSearch.toLowerCase()));
+
+  const handleUnarchive = async (id: string) => {
+    try {
+      await unarchiveClient.mutateAsync(id);
+      toast({ title: t("archive.toast.unarchived") });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
 
   const handleCreate = async () => {
     if (!form.name.trim()) return;
@@ -197,9 +253,18 @@ export default function ClientsPage() {
           </div>
         </div>
 
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder={t("clients.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+            <TabsList>
+              <TabsTrigger value="active">{t("archive.tab.active")} ({counts.active})</TabsTrigger>
+              <TabsTrigger value="archived">{t("archive.tab.archived")} ({counts.archived})</TabsTrigger>
+              <TabsTrigger value="all">{t("archive.tab.all")} ({counts.all})</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <div className="relative max-w-sm flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder={t("clients.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+          </div>
         </div>
 
         {isLoading ? (
@@ -214,6 +279,8 @@ export default function ClientsPage() {
                 client={client}
                 onNavigate={(id) => navigate(`/clients/${id}`)}
                 onDelete={isDemoMode ? undefined : (id) => setDeleteId(id)}
+                onArchive={isDemoMode ? undefined : (c) => setArchiveTarget({ id: c.id, name: c.name })}
+                onUnarchive={isDemoMode ? undefined : handleUnarchive}
                 t={t}
               />
             ))}
@@ -224,6 +291,14 @@ export default function ClientsPage() {
       <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={handleDelete}
         title={t("clients.deleteTitle")} description={t("clients.deleteDesc")}
         loading={deleteClient.isPending} />
+      {archiveTarget && (
+        <ArchiveClientDialog
+          open={!!archiveTarget}
+          onOpenChange={(o) => !o && setArchiveTarget(null)}
+          clientId={archiveTarget.id}
+          clientName={archiveTarget.name}
+        />
+      )}
     </AppLayout>
   );
 }

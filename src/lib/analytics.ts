@@ -90,6 +90,8 @@ export type AnalyticsEvent =
   | "password_reset_started"
   | "password_reset_completed"
   | "client_created"
+  | "client_archived"
+  | "client_unarchived"
   | "service_created"
   | "session_created"
   | "session_completed"
