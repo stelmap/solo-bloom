@@ -347,7 +347,7 @@ export default function PaymentAuditPage() {
             <SelectTrigger className="w-[240px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("audit.allClients")}</SelectItem>
-              {clients.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+              {clients.filter((c: any) => (c.status ?? "active") === "active").map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
             </SelectContent>
           </Select>
           <div className="relative flex-1 min-w-[240px] max-w-md">

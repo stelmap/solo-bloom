@@ -140,7 +140,7 @@ export default function SupervisionPage() {
             <SelectTrigger className="w-[220px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("supervision.allClients")}</SelectItem>
-              {clients.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+              {clients.filter((c: any) => (c.status ?? "active") === "active").map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
@@ -299,7 +299,7 @@ export default function SupervisionPage() {
               <Select value={createForm.client_id} onValueChange={v => setCreateForm(f => ({ ...f, client_id: v }))}>
                 <SelectTrigger><SelectValue placeholder={t("supervision.selectClient")} /></SelectTrigger>
                 <SelectContent>
-                  {clients.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  {clients.filter((c: any) => (c.status ?? "active") === "active").map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
