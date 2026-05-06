@@ -44,7 +44,8 @@ export function translateFor(
   }
   if (params) {
     Object.entries(params).forEach(([k, v]) => {
-      text = (text as string).replace(`{${k}}`, String(v));
+      const re = new RegExp(`\\{\\s*${k}\\s*\\}`, "g");
+      text = (text as string).replace(re, String(v));
     });
   }
   return text;
