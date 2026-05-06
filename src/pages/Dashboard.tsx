@@ -145,6 +145,9 @@ export default function Dashboard() {
   const completedUnpaidTotal = todayAppointments.filter(
     (apt) => apt.status === "completed" && UNPAID_STATUSES.has(apt.payment_status),
   ).length;
+  const expectedRevenueToday = todayAppointments
+    .filter((apt) => apt.status !== "cancelled")
+    .reduce((s, apt) => s + Number(apt.price ?? 0), 0);
 
   if (isLoading) {
     return (
@@ -162,27 +165,7 @@ export default function Dashboard() {
           <p className="text-muted-foreground mt-1">{t("dashboard.subtitle")}</p>
         </div>
 
-        {/* A. Today Overview */}
-        <section>
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-            {t("ops.todayOverview")}
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            <OverviewTile icon={Users} label={t("ops.clientsToday")} value={summary.clientCount.toString()} />
-            <OverviewTile icon={CalendarClock} label={t("ops.sessionsPlanned")} value={(summary.planned + summary.completed).toString()} />
-            <OverviewTile icon={CheckCircle2} label={t("ops.sessionsCompleted")} value={summary.completed.toString()} tone="success" />
-            <OverviewTile icon={DollarSign} label={t("ops.paidToday")} value={`${cs}${summary.amountReceived.toLocaleString()}`} tone="success" />
-            <OverviewTile icon={Hourglass} label={t("ops.remainingToday")} value={summary.remaining.toString()} tone="warning" />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
-            <OverviewTile icon={Wallet} label={t("ops.outstandingBalance")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : undefined} />
-            <OverviewTile icon={CheckCircle2} label={t("ops.donePaid")} value={completedPaidTotal.toString()} tone="success" />
-            <OverviewTile icon={Hourglass} label={t("ops.doneNotPaid")} value={completedUnpaidTotal.toString()} tone="warning" />
-            <OverviewTile icon={XCircle} label={t("ops.cancelledSessions")} value={cancelledTotal.toString()} />
-          </div>
-        </section>
-
-        {/* A2. Monthly Overview */}
+        {/* A. Monthly Overview */}
         <section>
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
             {t("ops.monthlyOverview")}
@@ -192,7 +175,44 @@ export default function Dashboard() {
             <OverviewTile icon={UserPlus} label={t("ops.newClientsThisMonth")} value={String(stats?.newClientsThisMonth ?? 0)} tone="success" />
             <OverviewTile icon={UserCheck} label={t("ops.completedTherapyThisMonth")} value={String(stats?.completedTherapyThisMonth ?? 0)} tone="success" />
             <OverviewTile icon={UserMinus} label={t("ops.droppedTherapyThisMonth")} value={String(stats?.droppedTherapyThisMonth ?? 0)} tone="warning" />
-            <OverviewTile icon={Wallet} label={t("ops.currentClientDebt")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : undefined} />
+            <OverviewTile icon={XCircle} label={t("ops.cancelledSessionsThisMonth")} value={String((stats as any)?.cancelledSessionsThisMonth ?? 0)} />
+          </div>
+        </section>
+
+        {/* B. Daily Overview - split: Activity (left, counts) | Money (right, currency) */}
+        <section>
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+            {t("ops.todayOverview")}
+          </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* LEFT: Today's Activity (counts only) */}
+            <div className="bg-card border border-border rounded-xl p-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+                {t("ops.todaysActivity")}
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <OverviewTile icon={Users} label={t("ops.clientsToday")} value={summary.clientCount.toString()} />
+                <OverviewTile icon={CalendarClock} label={t("ops.sessionsPlanned")} value={(summary.planned + summary.completed).toString()} />
+                <OverviewTile icon={CheckCircle2} label={t("ops.sessionsCompleted")} value={summary.completed.toString()} tone="success" />
+                <OverviewTile icon={Hourglass} label={t("ops.remainingToday")} value={summary.remaining.toString()} tone="warning" />
+                <OverviewTile icon={CheckCircle2} label={t("ops.donePaid")} value={completedPaidTotal.toString()} tone="success" />
+                <OverviewTile icon={Hourglass} label={t("ops.doneNotPaid")} value={completedUnpaidTotal.toString()} tone="warning" />
+                <OverviewTile icon={XCircle} label={t("ops.cancelledSessions")} value={cancelledTotal.toString()} />
+              </div>
+            </div>
+
+            {/* RIGHT: Today's Money (currency only) */}
+            <div className="bg-card border border-border rounded-xl p-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+                {t("ops.todaysMoney")}
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                <OverviewTile icon={DollarSign} label={t("ops.paidToday")} value={`${cs}${summary.amountReceived.toLocaleString()}`} tone="success" />
+                <OverviewTile icon={Hourglass} label={t("ops.unpaidToday")} value={`${cs}${summary.amountPending.toLocaleString()}`} tone="warning" />
+                <OverviewTile icon={CalendarClock} label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} />
+                <OverviewTile icon={Wallet} label={t("ops.outstandingBalance")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : undefined} />
+              </div>
+            </div>
           </div>
         </section>
 
