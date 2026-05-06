@@ -56,7 +56,7 @@ function paymentBadgeClass(status: string) {
 export default function Dashboard() {
   const { data: stats, isLoading } = useDashboardStats();
   const { data: profile } = useProfile();
-  const { data: expectedPayments = [] } = useExpectedPayments();
+  
   const { user } = useAuth();
   const { t } = useLanguage();
   const { symbol: cs } = useCurrency();
