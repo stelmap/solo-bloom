@@ -272,7 +272,7 @@ export default function IncomePage() {
                       </p>
                     </div>
                     <p className="text-lg font-bold text-warning">{cs}{Number(ep.amount).toFixed(2)}</p>
-                    <Button size="sm" onClick={() => { setPayDialog(ep); setPayMethod("cash"); setPayDate(new Date().toISOString().split("T")[0]); }}>
+                    <Button size="sm" onClick={() => { setPayDialog(ep); setPayMethod(PAYMENT_METHODS[0]?.value || "cash"); setPayDate(new Date().toISOString().split("T")[0]); }}>
                       <CheckCircle className="h-4 w-4 mr-1" /> {t("income.markPaid")}
                     </Button>
                   </div>
