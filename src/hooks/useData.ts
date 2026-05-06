@@ -1116,7 +1116,83 @@ export function useGenerateTaxExpenses() {
   });
 }
 
-// Update expense payment status
+/**
+ * Auto-sync tax accrual expenses for all active tax rules.
+ *
+ * Pulls confirmed income (and existing non-tax expenses for profit/expense-based
+ * rules), groups them by month / quarter, and replaces the auto-generated
+ * tax expense rows for each rule. Triggered on app load via AppLayout.
+ */
+export function useTaxAccrualSync() {
+  const { user } = useAuth();
+  const { data: taxSettings = [] } = useTaxSettings();
+  const generate = useGenerateTaxExpenses();
+
+  React.useEffect(() => {
+    if (!user) return;
+    const active = (taxSettings as any[]).filter(t => t.is_active);
+    if (active.length === 0) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        // Confirmed income grouped by month + quarter
+        const { data: incomeRows } = await supabase
+          .from("income")
+          .select("amount, date, status")
+          .eq("status", "confirmed");
+        const monthIncome = new Map<string, number>();
+        const quarterIncome = new Map<string, number>();
+        for (const r of (incomeRows ?? []) as any[]) {
+          const d = new Date(r.date + "T12:00:00");
+          const mKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+          const qKey = `${d.getFullYear()}-Q${Math.ceil((d.getMonth() + 1) / 3)}`;
+          monthIncome.set(mKey, (monthIncome.get(mKey) || 0) + Number(r.amount));
+          quarterIncome.set(qKey, (quarterIncome.get(qKey) || 0) + Number(r.amount));
+        }
+
+        // Non-tax expenses for profit / expense-based calculations
+        const { data: expenseRows } = await supabase
+          .from("expenses")
+          .select("amount, date, category, tax_setting_id");
+        const monthExpense = new Map<string, number>();
+        const quarterExpense = new Map<string, number>();
+        for (const r of (expenseRows ?? []) as any[]) {
+          if (r.category === "Tax" || r.tax_setting_id) continue;
+          const d = new Date(r.date + "T12:00:00");
+          const mKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+          const qKey = `${d.getFullYear()}-Q${Math.ceil((d.getMonth() + 1) / 3)}`;
+          monthExpense.set(mKey, (monthExpense.get(mKey) || 0) + Number(r.amount));
+          quarterExpense.set(qKey, (quarterExpense.get(qKey) || 0) + Number(r.amount));
+        }
+
+        const { generateTaxExpensePeriods } = await import("@/lib/taxExpenseGenerator");
+        const today = new Date();
+        const horizon = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+
+        for (const tax of active) {
+          if (cancelled) return;
+          const incomeMap = tax.frequency === "quarterly" ? quarterIncome : monthIncome;
+          const expenseMap = tax.frequency === "quarterly" ? quarterExpense : monthExpense;
+          const periods = generateTaxExpensePeriods(tax as any, horizon, incomeMap, expenseMap);
+          // Skip rules where nothing accrued yet (e.g. configured today, no completed period)
+          await generate.mutateAsync({
+            taxSettingId: tax.id,
+            entries: periods.map(p => ({ date: p.date, amount: p.amount, description: p.description })),
+          });
+        }
+      } catch (err) {
+        // Non-fatal: surface to console but do not crash the app
+        console.warn("Tax accrual sync failed", err);
+      }
+    })();
+
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, JSON.stringify((taxSettings as any[]).map(t => [t.id, t.is_active, t.tax_rate, t.fixed_amount, t.tax_type, t.frequency, t.calculate_on, t.start_calculation_date]))]);
+}
+
+
 export function useUpdateExpensePaymentStatus() {
   const qc = useQueryClient();
   return useMutation({
