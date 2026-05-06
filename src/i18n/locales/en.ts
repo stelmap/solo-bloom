@@ -1016,6 +1016,8 @@ export default {
   "ops.scheduleSnapshot": "Today's Schedule",
   "ops.statusSummary": "Session status",
   "ops.paymentSummary": "Payments today",
+  "ops.paymentMethodsToday": "Today's Payment Methods",
+  "ops.noPaymentsToday": "No payments received today yet",
   "ops.amountReceived": "Amount received",
   "ops.pendingAmount": "Pending payment",
   "ops.individual": "Individual",
