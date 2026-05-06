@@ -130,9 +130,10 @@ export default function ClientDetailPage() {
   // Predicates — single source of truth for both card counts and filtered list
   const isCompleted = (a: any) => a.status === "completed";
   const isPaid = (a: any) => a.payment_status === "paid_now" || a.payment_status === "paid_in_advance";
+  // Awaiting = only completed sessions that aren't fully paid yet
   const isAwaiting = (a: any) =>
-    (a.status === "completed" || a.status === "scheduled" || a.status === "confirmed" || a.status === "reminder_sent") &&
-    (a.payment_status === "unpaid" || a.payment_status === "waiting_for_payment");
+    a.status === "completed" &&
+    (a.payment_status === "unpaid" || a.payment_status === "waiting_for_payment" || a.payment_status === "partially_paid");
   const isCancelled = (a: any) => a.status === "cancelled" || a.status === "no-show";
   const isPrepaid = (a: any) => a.payment_status === "paid_in_advance";
 
