@@ -14,6 +14,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
 import { useClientAppointments, useSaveIncomeConfirmation } from "@/hooks/useData";
+import { useActivePaymentMethods, localizedMethodName } from "@/hooks/usePaymentMethods";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { formatScheduledTime } from "@/lib/timeFormat";
@@ -100,11 +101,11 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
     setFilter("unpaid");
   }, [open, existingIncome?.id]);
 
-  const PAYMENT_METHODS = [
-    { value: "cash", label: t("method.cashLabel") },
-    { value: "card", label: t("method.cardLabel") },
-    { value: "bank_transfer", label: t("method.bankTransferLabel") },
-  ];
+  const { data: activeMethods = [] } = useActivePaymentMethods();
+  const PAYMENT_METHODS = activeMethods.map(m => ({ value: m.code, label: localizedMethodName(m, t) }));
+  useEffect(() => {
+    if (!method && PAYMENT_METHODS.length > 0) setMethod(PAYMENT_METHODS[0].value);
+  }, [activeMethods.length, method]);
 
   const enrichedAppointments = useMemo(() => {
     return (appointments as any[]).map((a) => {
