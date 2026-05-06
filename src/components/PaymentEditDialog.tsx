@@ -13,6 +13,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
 import { useCorrectPayment } from "@/hooks/useData";
+import { useActivePaymentMethods, localizedMethodName } from "@/hooks/usePaymentMethods";
 import { formatScheduledTime } from "@/lib/timeFormat";
 
 interface PaymentEditDialogProps {
@@ -57,11 +58,8 @@ export function PaymentEditDialog({ open, onOpenChange, appointment: apt, use12h
     apt.clients?.name || (apt as any).group_sessions?.groups?.name || (apt as any).group_name || "—";
   const serviceName = apt.services?.name || "—";
 
-  const PAYMENT_METHODS = [
-    { value: "cash", label: t("method.cash") },
-    { value: "card", label: t("method.card") },
-    { value: "bank_transfer", label: t("method.bankTransfer") },
-  ];
+  const { data: activeMethods = [] } = useActivePaymentMethods();
+  const PAYMENT_METHODS = activeMethods.map(m => ({ value: m.code, label: localizedMethodName(m, t) }));
 
   const PAYMENT_LABELS: Record<string, string> = {
     paid_now: t("payment.paid"),
