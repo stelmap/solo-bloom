@@ -18,6 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useClients } from "@/hooks/useData";
+import { usePaymentMethods, localizedMethodName } from "@/hooks/usePaymentMethods";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { downloadCSV } from "@/lib/csvExport";
