@@ -42,6 +42,7 @@ const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sa
 
 export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12h = false }: SessionDetailSheetProps) {
   const { t } = useLanguage();
+  const dateLocale = useDateLocale();
   const { symbol: cs } = useCurrency();
   const { toast } = useToast();
   const { data: clients = [] } = useClients();
