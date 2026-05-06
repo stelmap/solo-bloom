@@ -168,23 +168,27 @@ export default function PaymentAuditPage() {
         raw: inc,
       };
     });
-    const expectedRows = (data.expected || []).map(ep => ({
-      kind: "expected" as const,
-      id: ep.id,
-      date: ep.created_at?.split("T")[0] || "",
-      client_id: ep.client_id || ep.clients?.id,
-      client_name: ep.clients?.name || "—",
-      amount: Number(ep.amount),
-      method: ep.payment_method || "not_specified",
-      invoice: null as any,
-      allocStatus: "not_linked" as AllocStatus,
-      allocated: 0,
-      remaining: Number(ep.amount),
-      paymentStatus: "expected",
-      source: "session",
-      allocs: [] as any[],
-      raw: ep,
-    }));
+    const expectedRows = (data.expected || [])
+      // Only count expected payments tied to a completed session.
+      // Cancelled / no-show / future scheduled sessions should not be "Awaiting".
+      .filter((ep: any) => ep.appointments?.status === "completed")
+      .map(ep => ({
+        kind: "expected" as const,
+        id: ep.id,
+        date: ep.created_at?.split("T")[0] || "",
+        client_id: ep.client_id || ep.clients?.id,
+        client_name: ep.clients?.name || "—",
+        amount: Number(ep.amount),
+        method: ep.payment_method || "not_specified",
+        invoice: null as any,
+        allocStatus: "not_linked" as AllocStatus,
+        allocated: 0,
+        remaining: Number(ep.amount),
+        paymentStatus: "expected",
+        source: "session",
+        allocs: [] as any[],
+        raw: ep,
+      }));
     return [...incomeRows, ...expectedRows];
   }, [data]);
 
