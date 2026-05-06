@@ -292,7 +292,7 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
                     <Checkbox checked={checked} onCheckedChange={(v) => toggleApt(a, !!v)} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 text-sm">
-                        <span className="font-medium">{format(new Date(a.scheduled_at), "MMM d, yyyy")}</span>
+                        <span className="font-medium">{format(new Date(a.scheduled_at), "MMM d, yyyy", { locale: dateLocale })}</span>
                         <span className="text-muted-foreground">{formatScheduledTime(a.scheduled_at, use12h)}</span>
                         <span className="text-muted-foreground truncate">· {a.services?.name || "—"}</span>
                         {isCancelled && <Badge variant="outline" className="text-[10px]">{a.status}</Badge>}
