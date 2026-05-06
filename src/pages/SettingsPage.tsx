@@ -602,23 +602,33 @@ export default function SettingsPage() {
           ) : (
             <div className="space-y-2">
               {(taxSettings as any[]).map((tax: any) => (
-                <div key={tax.id} className={cn("flex items-center justify-between p-4 rounded-lg border", tax.is_active ? "bg-warning/5 border-warning/20" : "bg-muted/30 border-border opacity-60")}>
-                  <div className="flex-1 min-w-0">
+                <div key={tax.id} className={cn("p-4 rounded-lg border", tax.is_active ? "bg-warning/5 border-warning/20" : "bg-muted/30 border-border opacity-60")}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium text-foreground">{tax.tax_name}</span>
+                        <Badge variant="outline" className={cn("text-xs", tax.is_active ? "border-warning text-warning" : "")}>
+                          {tax.tax_type === "percentage" ? `${tax.tax_rate}%` : `${(profile as any)?.currency === "UAH" ? "₴" : (profile as any)?.currency === "PLN" ? "zł" : "€"}${Number(tax.fixed_amount).toLocaleString()}`}
+                        </Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          {tax.frequency === "quarterly" ? t("tax.quarterly") : t("tax.monthly")}
+                        </Badge>
+                      </div>
+                    </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-foreground">{tax.tax_name}</span>
-                      <Badge variant="outline" className={cn("text-xs", tax.is_active ? "border-warning text-warning" : "")}>
-                        {tax.tax_type === "percentage" ? `${tax.tax_rate}%` : `${(profile as any)?.currency === "UAH" ? "₴" : (profile as any)?.currency === "PLN" ? "zł" : "€"}${Number(tax.fixed_amount).toLocaleString()}`}
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        {tax.frequency === "quarterly" ? t("tax.quarterly") : t("tax.monthly")}
-                      </Badge>
+                      <Switch checked={tax.is_active} onCheckedChange={v => handleToggleTax(tax.id, v)} />
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditTax(tax)}><Pencil className="h-3.5 w-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDeleteTax(tax.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Switch checked={tax.is_active} onCheckedChange={v => handleToggleTax(tax.id, v)} />
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditTax(tax)}><Pencil className="h-3.5 w-3.5" /></Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDeleteTax(tax.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                  </div>
+                  {tax.is_active && (() => {
+                    const next = nextAccrualDate(tax as any);
+                    return next ? (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {t("tax.nextAccrual")}: {next.toLocaleDateString()}
+                      </p>
+                    ) : null;
+                  })()}
                 </div>
               ))}
             </div>
