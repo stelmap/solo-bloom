@@ -318,17 +318,49 @@ export default function Dashboard() {
           )}
         </section>
 
-        {/* D + E: Status & Payment summaries */}
+        {/* D + E: Payment Methods Today & Today Payments */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <section className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-            <h2 className="font-semibold text-foreground mb-4">{t("ops.statusSummary")}</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              <StatusPill icon={CalendarClock} label={t("status.scheduled")} value={summary.planned} />
-              <StatusPill icon={CheckCircle2} label={t("status.completed")} value={summary.completed} tone="success" />
-              <StatusPill icon={XCircle} label={t("status.cancelled")} value={summary.cancelled} tone="destructive" />
-              <StatusPill icon={AlertCircle} label={t("status.noShow")} value={summary.noShow} tone="warning" />
-              <StatusPill icon={RotateCcw} label={t("status.rescheduled")} value={summary.rescheduled} />
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-foreground">{t("ops.paymentMethodsToday")}</h2>
+              <span className="text-sm text-muted-foreground">{cs}{todayMethodsTotal.toLocaleString()}</span>
             </div>
+            {todayMethods.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">{t("ops.noPaymentsToday")}</p>
+            ) : (
+              <div className="space-y-2">
+                {todayMethods.map(({ method, amount }) => {
+                  const pct = todayMethodsTotal > 0 ? (amount / todayMethodsTotal) * 100 : 0;
+                  const Icon =
+                    method === "cash" ? Banknote :
+                    method === "card" ? CreditCardIcon :
+                    method === "bank_transfer" ? Landmark :
+                    Wallet;
+                  const label =
+                    method === "cash" ? t("method.cashLabel") :
+                    method === "card" ? t("method.cardLabel") :
+                    method === "bank_transfer" ? t("method.bankTransferLabel") :
+                    method.charAt(0).toUpperCase() + method.slice(1);
+                  return (
+                    <div key={method} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2 text-foreground">
+                          <Icon className="h-4 w-4 text-muted-foreground" />
+                          <span>{label}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-muted-foreground">{pct.toFixed(0)}%</span>
+                          <span className="font-semibold tabular-nums">{cs}{amount.toLocaleString()}</span>
+                        </div>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                        <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </section>
 
           <section className="bg-card rounded-xl border border-border p-5 animate-fade-in">
