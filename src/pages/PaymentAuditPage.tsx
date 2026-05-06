@@ -1,4 +1,5 @@
 import { AppLayout } from "@/components/AppLayout";
+import { ClientPicker } from "@/components/ClientPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -343,13 +344,13 @@ export default function PaymentAuditPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Select value={clientId} onValueChange={setClientId}>
-            <SelectTrigger className="w-[240px]"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("audit.allClients")}</SelectItem>
-              {clients.filter((c: any) => (c.status ?? "active") === "active").map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <ClientPicker
+            clients={clients}
+            value={clientId}
+            onChange={setClientId}
+            allOption={{ value: "all", label: t("audit.allClients") }}
+            triggerClassName="w-[240px]"
+          />
           <div className="relative flex-1 min-w-[240px] max-w-md">
             <Search className="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input className="pl-8 w-full" placeholder={t("audit.searchPlaceholder")} value={search} onChange={e => setSearch(e.target.value)} />

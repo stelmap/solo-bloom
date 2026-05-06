@@ -1203,4 +1203,5 @@ export default {
   "archive.reason.other": "Інше",
   "archive.toast.archived": "{name} архівовано.",
   "archive.toast.unarchived": "Клієнта повернуто до активних.",
+  "archive.includeArchived": "Показати архівних",
 } as const;

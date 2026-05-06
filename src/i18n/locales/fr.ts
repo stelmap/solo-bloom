@@ -1203,4 +1203,5 @@ export default {
   "archive.reason.other": "Autre",
   "archive.toast.archived": "{name} a été archivé.",
   "archive.toast.unarchived": "Le client a été restauré parmi les clients actifs.",
+  "archive.includeArchived": "Inclure les archivés",
 } as const;

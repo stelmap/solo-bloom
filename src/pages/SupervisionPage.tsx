@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
+import { ClientPicker } from "@/components/ClientPicker";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useClients } from "@/hooks/useData";
@@ -136,13 +137,13 @@ export default function SupervisionPage() {
 
         {/* Filter */}
         <div className="flex gap-3 items-center">
-          <Select value={filterClientId} onValueChange={setFilterClientId}>
-            <SelectTrigger className="w-[220px]"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("supervision.allClients")}</SelectItem>
-              {clients.filter((c: any) => (c.status ?? "active") === "active").map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <ClientPicker
+            clients={clients}
+            value={filterClientId}
+            onChange={setFilterClientId}
+            allOption={{ value: "all", label: t("supervision.allClients") }}
+            triggerClassName="w-[220px]"
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -296,12 +297,12 @@ export default function SupervisionPage() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>{t("supervision.selectClient")} *</Label>
-              <Select value={createForm.client_id} onValueChange={v => setCreateForm(f => ({ ...f, client_id: v }))}>
-                <SelectTrigger><SelectValue placeholder={t("supervision.selectClient")} /></SelectTrigger>
-                <SelectContent>
-                  {clients.filter((c: any) => (c.status ?? "active") === "active").map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <ClientPicker
+                clients={clients}
+                value={createForm.client_id}
+                onChange={v => setCreateForm(f => ({ ...f, client_id: v }))}
+                placeholder={t("supervision.selectClient")}
+              />
             </div>
             <div className="space-y-2">
               <Label>{t("supervision.date")} *</Label>
