@@ -150,11 +150,6 @@ export default function Dashboard() {
     (apt) => apt.status === "completed" && UNPAID_STATUSES.has(apt.payment_status),
   ).length;
 
-  // Only count expected payments where the underlying session is completed.
-  const pendingTotal = (expectedPayments as any[])
-    .filter((ep) => ep.appointments?.status === "completed")
-    .reduce((s, ep) => s + Number(ep.amount ?? 0), 0);
-
   if (isLoading) {
     return (
       <AppLayout>
