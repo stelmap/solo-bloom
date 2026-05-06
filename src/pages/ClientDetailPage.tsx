@@ -63,6 +63,7 @@ export default function ClientDetailPage() {
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "", notification_preference: "no_reminder", confirmation_required: false, pricing_mode: "fixed", base_price: "", billing_address: "", billing_country: "", billing_tax_id: "", billing_company_name: "" });
