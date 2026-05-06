@@ -9,6 +9,7 @@ import { formatScheduledTime } from "@/lib/timeFormat";
 import {
   Users, CalendarClock, CheckCircle2, DollarSign, Hourglass,
   PlayCircle, ArrowRight, Receipt, AlertCircle, XCircle, RotateCcw,
+  UserPlus, UserCheck, UserMinus, Wallet,
 } from "lucide-react";
 
 type Apt = {
