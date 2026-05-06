@@ -46,7 +46,7 @@ export function PaymentEditDialog({ open, onOpenChange, appointment: apt, use12h
     const incomeRow = (apt as any).income?.[0];
     const existingDate = incomeRow?.date || today;
     setPaymentDate(existingDate);
-    setPaymentMethod(incomeRow?.payment_method || "cash");
+    setPaymentMethod(incomeRow?.payment_method || "");
     setComment("");
   }, [apt?.id, open]);
 
