@@ -341,6 +341,7 @@ export default {
   "common.saving": "Збереження...",
   "common.adding": "Додавання...",
   "common.deleting": "Видалення...",
+  "common.add": "Додати",
   "common.cancel": "Скасувати",
   "common.confirm": "Підтвердити",
   "common.loading": "Завантаження...",

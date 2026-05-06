@@ -341,6 +341,7 @@ export default {
   "common.saving": "Saving...",
   "common.adding": "Adding...",
   "common.deleting": "Deleting...",
+  "common.add": "Add",
   "common.cancel": "Cancel",
   "common.confirm": "Confirm",
   "common.loading": "Loading...",

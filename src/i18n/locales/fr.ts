@@ -341,6 +341,7 @@ export default {
   "common.saving": "Enregistrement...",
   "common.adding": "Ajout...",
   "common.deleting": "Suppression...",
+  "common.add": "Ajouter",
   "common.cancel": "Annuler",
   "common.confirm": "Confirmer",
   "common.loading": "Chargement...",
