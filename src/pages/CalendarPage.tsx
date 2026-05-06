@@ -769,7 +769,7 @@ export default function CalendarPage() {
                         isSameDay(day, new Date()) ? "bg-accent" : "",
                         dayOffStatus ? "bg-destructive/5" : !working ? "bg-muted/30" : "",
                       )}>
-                        <p className="text-xs text-muted-foreground">{format(day, "EEE")}</p>
+                        <p className="text-xs text-muted-foreground">{format(day, "EEE", { locale: dateLocale })}</p>
                         <p className={cn("text-lg font-semibold", isSameDay(day, new Date()) ? "text-accent-foreground" : dayOffStatus ? "text-destructive/60" : "text-foreground")}>
                           {format(day, "d")}
                         </p>
