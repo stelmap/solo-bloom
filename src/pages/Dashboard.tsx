@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/AppLayout";
-import { useDashboardStats, useProfile, useExpectedPayments } from "@/hooks/useData";
+import { useDashboardStats, useProfile } from "@/hooks/useData";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
