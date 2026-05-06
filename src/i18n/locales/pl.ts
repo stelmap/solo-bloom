@@ -951,6 +951,7 @@ export default {
   "tax.percentageProfit": "% zysku",
   "tax.startCalculationDate": "Data rozpoczęcia obliczeń",
   "tax.startCalculationDateHint": "Podatek będzie naliczany od tej daty",
+  "tax.nextAccrual": "Następne naliczenie",
   "nav.finances": "Finanse",
   "nav.financesDashboard": "Panel finansowy",
   "finances.dashboardTitle": "Panel finansowy",

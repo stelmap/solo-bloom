@@ -3,7 +3,7 @@
  * Generates expense entries from active tax rules for display and syncing.
  */
 
-import { startOfMonth, endOfMonth, addMonths, format, startOfQuarter, addQuarters } from "date-fns";
+import { startOfMonth, endOfMonth, addMonths, format, startOfQuarter, addQuarters, endOfQuarter } from "date-fns";
 
 export interface TaxRule {
   id: string;
@@ -41,58 +41,81 @@ export function generateTaxExpensePeriods(
   periodExpenseMap?: Map<string, number>,
 ): GeneratedTaxExpense[] {
   if (!tax.is_active) return [];
-  
+
   const startDate = new Date(tax.start_calculation_date + "T12:00:00");
   const results: GeneratedTaxExpense[] = [];
-  
+  const today = new Date();
+
   if (tax.frequency === "quarterly") {
-    let current = startOfQuarter(startDate);
-    while (current <= endDate) {
-      const periodKey = format(current, "yyyy-'Q'") + Math.ceil((current.getMonth() + 1) / 3);
-      const dateStr = format(current, "yyyy-MM-dd");
-      
-      if (dateStr >= tax.start_calculation_date) {
+    // Iterate over each quarter that starts on/after the configured start date.
+    // Only emit an accrual entry once that quarter has fully ended.
+    let periodStart = startOfQuarter(startDate);
+    while (periodStart <= endDate) {
+      const periodEnd = endOfQuarter(periodStart);
+      const accrualDate = addQuarters(startOfQuarter(periodStart), 1); // first day of next quarter
+      const periodKey = format(periodStart, "yyyy-'Q'") + Math.ceil((periodStart.getMonth() + 1) / 3);
+      const periodLabel = `Q${Math.ceil((periodStart.getMonth() + 1) / 3)} ${periodStart.getFullYear()}`;
+
+      if (periodEnd < today && accrualDate <= endDate) {
         const amount = calculateTaxAmount(tax, periodKey, periodIncomeMap, periodExpenseMap);
         results.push({
           tax_setting_id: tax.id,
           tax_name: tax.tax_name,
           category: "Tax",
           amount,
-          date: dateStr,
-          description: `${tax.tax_name} — Q${Math.ceil((current.getMonth() + 1) / 3)} ${current.getFullYear()}`,
+          date: format(accrualDate, "yyyy-MM-dd"),
+          description: `${tax.tax_name} — ${periodLabel}`,
           is_recurring: true,
           frequency: "quarterly",
-          period_label: `Q${Math.ceil((current.getMonth() + 1) / 3)} ${current.getFullYear()}`,
+          period_label: periodLabel,
         });
       }
-      current = addQuarters(current, 1);
+      periodStart = addQuarters(periodStart, 1);
     }
   } else {
-    // monthly
-    let current = startOfMonth(startDate);
-    while (current <= endDate) {
-      const dateStr = format(current, "yyyy-MM-dd");
-      const periodKey = format(current, "yyyy-MM");
-      
-      if (dateStr >= format(startOfMonth(startDate), "yyyy-MM-dd")) {
+    // monthly: accrue on the first day of the next month after the period ends.
+    let periodStart = startOfMonth(startDate);
+    while (periodStart <= endDate) {
+      const periodEnd = endOfMonth(periodStart);
+      const accrualDate = addMonths(startOfMonth(periodStart), 1);
+      const periodKey = format(periodStart, "yyyy-MM");
+      const periodLabel = format(periodStart, "MMM yyyy");
+
+      if (periodEnd < today && accrualDate <= endDate) {
         const amount = calculateTaxAmount(tax, periodKey, periodIncomeMap, periodExpenseMap);
         results.push({
           tax_setting_id: tax.id,
           tax_name: tax.tax_name,
           category: "Tax",
           amount,
-          date: dateStr,
-          description: `${tax.tax_name} — ${format(current, "MMM yyyy")}`,
+          date: format(accrualDate, "yyyy-MM-dd"),
+          description: `${tax.tax_name} — ${periodLabel}`,
           is_recurring: true,
           frequency: "monthly",
-          period_label: format(current, "MMM yyyy"),
+          period_label: periodLabel,
         });
       }
-      current = addMonths(current, 1);
+      periodStart = addMonths(periodStart, 1);
     }
   }
-  
+
   return results;
+}
+
+/**
+ * Compute the next accrual date for an active tax rule (the first day of
+ * the next period after the most recent completed period). Returns null
+ * if the rule is inactive or its start date is in the future.
+ */
+export function nextAccrualDate(tax: TaxRule, now: Date = new Date()): Date | null {
+  if (!tax.is_active) return null;
+  const startDate = new Date(tax.start_calculation_date + "T12:00:00");
+  if (tax.frequency === "quarterly") {
+    const currentPeriodStart = startOfQuarter(now > startDate ? now : startDate);
+    return addQuarters(currentPeriodStart, 1);
+  }
+  const currentPeriodStart = startOfMonth(now > startDate ? now : startDate);
+  return addMonths(currentPeriodStart, 1);
 }
 
 function calculateTaxAmount(
