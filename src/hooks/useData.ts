@@ -1379,6 +1379,7 @@ export function useDashboardStats() {
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const daysPastInMonth = now.getDate();
   const daysLeftInMonth = daysInMonth - daysPastInMonth;
+  const monthEndStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(daysInMonth).padStart(2, "0")}`;
 
   return useQuery({
     queryKey: ["dashboard-stats", user?.id, today],
@@ -1393,7 +1394,11 @@ export function useDashboardStats() {
         ? "session_date"
         : "date";
 
-      const [incomeRes, lastWeekIncomeRes, expenseRes, clientRes, todayAptRes, monthAptRes, profileRes, scheduleRes, daysOffRes] = await Promise.all([
+      const [
+        incomeRes, lastWeekIncomeRes, expenseRes, clientRes,
+        todayAptRes, monthAptRes, profileRes, scheduleRes, daysOffRes,
+        outstandingAptRes, monthClientsRes, archivedThisMonthRes, allClientsRes,
+      ] = await Promise.all([
         supabase.from("income").select(`amount, ${recognitionField}`).gte(recognitionField, monthStart),
         supabase.from("income").select(`amount, ${recognitionField}`).gte(recognitionField, lastMondayStr).lte(recognitionField, lastSundayStr),
         supabase.from("expenses").select("amount, date, is_recurring").gte("date", monthStart),
@@ -1404,8 +1409,9 @@ export function useDashboardStats() {
           .lt("scheduled_at", today + "T23:59:59")
           .order("scheduled_at"),
         supabase.from("appointments")
-          .select("id")
-          .gte("scheduled_at", monthStart + "T00:00:00"),
+          .select("id, client_id, status, scheduled_at")
+          .gte("scheduled_at", monthStart + "T00:00:00")
+          .lte("scheduled_at", monthEndStr + "T23:59:59"),
         supabase.from("profiles")
           .select("working_days_per_week, sessions_per_day, default_duration")
           .eq("user_id", user!.id)
@@ -1416,6 +1422,25 @@ export function useDashboardStats() {
           .select("date, is_non_working, custom_start_time, custom_end_time")
           .gte("date", monthStart)
           .lte("date", today.substring(0, 7) + "-31"),
+        // Outstanding balance: completed payable sessions not fully paid
+        supabase.from("appointments")
+          .select("id, price, client_id")
+          .eq("status", "completed")
+          .gt("price", 0)
+          .in("payment_status", ["unpaid", "waiting_for_payment", "partially_paid"]),
+        // For "new clients this month": first scheduled session per client
+        supabase.from("appointments")
+          .select("client_id, scheduled_at")
+          .neq("status", "cancelled")
+          .order("scheduled_at", { ascending: true }),
+        // Archived this month
+        supabase.from("clients")
+          .select("id, archive_reason, archived_at")
+          .eq("status", "archived")
+          .gte("archived_at", monthStart + "T00:00:00")
+          .lte("archived_at", monthEndStr + "T23:59:59"),
+        // Fallback for new clients: created this month
+        supabase.from("clients").select("id, created_at"),
       ]);
 
       const dateOf = (row: any) => row[recognitionField];
@@ -1451,6 +1476,64 @@ export function useDashboardStats() {
       const bookedSlots = weekAppointments.length;
       const freeSlots = Math.max(capacity.weeklyCapacity - bookedSlots, 0);
 
+      // ===== Outstanding balance calculation =====
+      const outstandingApts = (outstandingAptRes.data ?? []) as Array<{ id: string; price: number; client_id: string }>;
+      let outstandingBalance = 0;
+      if (outstandingApts.length > 0) {
+        const aptIds = outstandingApts.map((a) => a.id);
+        const { data: allocs } = await supabase
+          .from("income_session_allocations")
+          .select("appointment_id, allocated_amount")
+          .in("appointment_id", aptIds);
+        const allocByApt = new Map<string, number>();
+        for (const a of allocs ?? []) {
+          allocByApt.set(a.appointment_id, (allocByApt.get(a.appointment_id) ?? 0) + Number(a.allocated_amount || 0));
+        }
+        for (const apt of outstandingApts) {
+          const paid = allocByApt.get(apt.id) ?? 0;
+          outstandingBalance += Math.max(Number(apt.price) - paid, 0);
+        }
+      }
+
+      // ===== Monthly metrics =====
+      const monthApts = (monthAptRes.data ?? []) as Array<{ client_id: string; status: string; scheduled_at: string }>;
+      const activeClientsThisMonth = new Set(monthApts.map((a) => a.client_id)).size;
+
+      // New clients: first session date in current month
+      const allApts = (monthClientsRes.data ?? []) as Array<{ client_id: string; scheduled_at: string }>;
+      const firstSessionByClient = new Map<string, string>();
+      for (const a of allApts) {
+        if (!firstSessionByClient.has(a.client_id)) {
+          firstSessionByClient.set(a.client_id, a.scheduled_at);
+        }
+      }
+      const monthStartTs = new Date(monthStart + "T00:00:00").getTime();
+      const monthEndTs = new Date(monthEndStr + "T23:59:59").getTime();
+      let newClientsThisMonth = 0;
+      const clientsWithSession = new Set<string>();
+      for (const [cid, firstAt] of firstSessionByClient) {
+        clientsWithSession.add(cid);
+        const t = new Date(firstAt).getTime();
+        if (t >= monthStartTs && t <= monthEndTs) newClientsThisMonth++;
+      }
+      // Fallback: clients with no sessions but created this month
+      for (const c of (allClientsRes.data ?? []) as Array<{ id: string; created_at: string }>) {
+        if (clientsWithSession.has(c.id)) continue;
+        const t = new Date(c.created_at).getTime();
+        if (t >= monthStartTs && t <= monthEndTs) newClientsThisMonth++;
+      }
+
+      const COMPLETED_REASONS = new Set(["therapy_completed", "training_completed", "service_completed"]);
+      const DROPPED_REASONS = new Set(["client_paused", "client_stopped", "other"]);
+      let completedTherapyThisMonth = 0;
+      let droppedTherapyThisMonth = 0;
+      for (const c of (archivedThisMonthRes.data ?? []) as Array<{ archive_reason: string | null }>) {
+        const r = c.archive_reason ?? "other";
+        if (COMPLETED_REASONS.has(r)) completedTherapyThisMonth++;
+        else if (DROPPED_REASONS.has(r)) droppedTherapyThisMonth++;
+        else droppedTherapyThisMonth++;
+      }
+
       return {
         todayIncome, monthlyIncome, monthlyExpenses,
         netProfit: monthlyIncome - monthlyExpenses,
@@ -1466,6 +1549,11 @@ export function useDashboardStats() {
         schedule,
         totalWorkingDays: capacity.totalWorkingDays,
         remainingWorkingDays: capacity.remainingWorkingDays,
+        outstandingBalance,
+        activeClientsThisMonth,
+        newClientsThisMonth,
+        completedTherapyThisMonth,
+        droppedTherapyThisMonth,
       };
     },
     enabled: !!user,
