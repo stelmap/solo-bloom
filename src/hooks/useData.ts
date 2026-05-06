@@ -1600,6 +1600,8 @@ export function useDashboardStats() {
         if (t >= monthStartTs && t <= monthEndTs) newClientsThisMonth++;
       }
 
+      const cancelledSessionsThisMonth = monthApts.filter((a) => a.status === "cancelled").length;
+
       const COMPLETED_REASONS = new Set(["therapy_completed", "training_completed", "service_completed"]);
       const DROPPED_REASONS = new Set(["client_paused", "client_stopped", "other"]);
       let completedTherapyThisMonth = 0;
@@ -1631,6 +1633,7 @@ export function useDashboardStats() {
         newClientsThisMonth,
         completedTherapyThisMonth,
         droppedTherapyThisMonth,
+        cancelledSessionsThisMonth,
       };
     },
     enabled: !!user,
