@@ -291,6 +291,14 @@ export default function ClientsPage() {
       <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={handleDelete}
         title={t("clients.deleteTitle")} description={t("clients.deleteDesc")}
         loading={deleteClient.isPending} />
+      {archiveTarget && (
+        <ArchiveClientDialog
+          open={!!archiveTarget}
+          onOpenChange={(o) => !o && setArchiveTarget(null)}
+          clientId={archiveTarget.id}
+          clientName={archiveTarget.name}
+        />
+      )}
     </AppLayout>
   );
 }
