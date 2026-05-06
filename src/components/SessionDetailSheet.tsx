@@ -518,7 +518,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 {apt.confirmation_timestamp && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t("confirmation.timestamp")}</span>
-                    <span className="font-medium text-foreground">{format(new Date(apt.confirmation_timestamp), "MMM d")} · {fmtTime(apt.confirmation_timestamp)}</span>
+                    <span className="font-medium text-foreground">{format(new Date(apt.confirmation_timestamp), "MMM d", { locale: dateLocale })} · {fmtTime(apt.confirmation_timestamp)}</span>
                   </div>
                 )}
                 {apt.cancellation_reason && (
