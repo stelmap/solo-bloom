@@ -108,12 +108,13 @@ export default function Dashboard() {
         default: planned++;
       }
 
-      const isCountableForPayment = apt.status !== "cancelled" && apt.status !== "rescheduled";
-      if (isCountableForPayment) {
+      // Only completed sessions can be counted as paid/unpaid for money totals.
+      // Planned/confirmed/cancelled/no-show/rescheduled sessions are not payable yet.
+      if (apt.status === "completed") {
         if (PAID_STATUSES.has(apt.payment_status)) {
           paidCount++;
           amountReceived += Number(apt.price ?? 0);
-        } else if (UNPAID_STATUSES.has(apt.payment_status)) {
+        } else if (UNPAID_STATUSES.has(apt.payment_status) || apt.payment_status === "partially_paid") {
           unpaidCount++;
           amountPending += Number(apt.price ?? 0);
         }
