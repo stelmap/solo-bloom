@@ -253,7 +253,15 @@ export default function ClientsPage() {
           </div>
         </div>
 
-        <div className="relative max-w-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+            <TabsList>
+              <TabsTrigger value="active">{t("archive.tab.active")} ({counts.active})</TabsTrigger>
+              <TabsTrigger value="archived">{t("archive.tab.archived")} ({counts.archived})</TabsTrigger>
+              <TabsTrigger value="all">{t("archive.tab.all")} ({counts.all})</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <div className="relative max-w-sm flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder={t("clients.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
         </div>
