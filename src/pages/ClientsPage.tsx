@@ -86,6 +86,7 @@ export default function ClientsPage() {
   const { data: clients = [], isLoading } = useClients();
   const createClient = useCreateClient();
   const deleteClient = useDeleteClient();
+  const unarchiveClient = useUnarchiveClient();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -93,12 +94,30 @@ export default function ClientsPage() {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<{ id: string; name: string } | null>(null);
+  const [statusFilter, setStatusFilter] = useState<"active" | "archived" | "all">("active");
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "" });
 
   const debouncedSearch = useDebouncedValue(search, 200);
-  const filtered = clients.filter((c) => c.name.toLowerCase().includes(debouncedSearch.toLowerCase()));
+  const counts = {
+    active: clients.filter((c: any) => (c.status ?? "active") === "active").length,
+    archived: clients.filter((c: any) => c.status === "archived").length,
+    all: clients.length,
+  };
+  const filtered = clients
+    .filter((c: any) => statusFilter === "all" ? true : (c.status ?? "active") === statusFilter)
+    .filter((c) => c.name.toLowerCase().includes(debouncedSearch.toLowerCase()));
+
+  const handleUnarchive = async (id: string) => {
+    try {
+      await unarchiveClient.mutateAsync(id);
+      toast({ title: t("archive.toast.unarchived") });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
 
   const handleCreate = async () => {
     if (!form.name.trim()) return;
