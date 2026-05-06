@@ -1016,6 +1016,8 @@ export default {
   "ops.scheduleSnapshot": "Programme du jour",
   "ops.statusSummary": "Statut des séances",
   "ops.paymentSummary": "Paiements aujourd'hui",
+  "ops.paymentMethodsToday": "Modes de paiement du jour",
+  "ops.noPaymentsToday": "Aucun paiement reçu aujourd'hui",
   "ops.amountReceived": "Montant reçu",
   "ops.pendingAmount": "Paiement en attente",
   "ops.individual": "Individuel",
