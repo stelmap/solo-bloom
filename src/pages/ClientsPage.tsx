@@ -19,24 +19,56 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useDemoMode } from "@/hooks/useDemoWorkspace";
 
-const ClientCard = memo(({ client, onNavigate, onDelete, t }: {
-  client: any; onNavigate: (id: string) => void; onDelete?: (id: string) => void; t: any;
-}) => (
+const ClientCard = memo(({ client, onNavigate, onDelete, onArchive, onUnarchive, t }: {
+  client: any; onNavigate: (id: string) => void;
+  onDelete?: (id: string) => void;
+  onArchive?: (client: any) => void;
+  onUnarchive?: (id: string) => void;
+  t: any;
+}) => {
+  const isArchived = client.status === "archived";
+  return (
   <div
     onClick={() => onNavigate(client.id)}
-    className="bg-card rounded-xl border border-border p-5 animate-fade-in group relative cursor-pointer hover:border-primary/30 hover:shadow-md transition-all"
+    className={`bg-card rounded-xl border border-border p-5 animate-fade-in group relative cursor-pointer hover:border-primary/30 hover:shadow-md transition-all ${isArchived ? "opacity-75" : ""}`}
   >
-    {onDelete && <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-      <button onClick={(e) => { e.stopPropagation(); onDelete(client.id); }} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
-        <Trash2 className="h-3.5 w-3.5" />
-      </button>
-    </div>}
+    {(onDelete || onArchive || onUnarchive) && (
+      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+            <button className="p-1.5 rounded hover:bg-muted text-muted-foreground transition-colors">
+              <MoreVertical className="h-3.5 w-3.5" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+            {!isArchived && onArchive && (
+              <DropdownMenuItem onClick={() => onArchive(client)}>
+                <Archive className="h-3.5 w-3.5 mr-2" /> {t("archive.action.archive")}
+              </DropdownMenuItem>
+            )}
+            {isArchived && onUnarchive && (
+              <DropdownMenuItem onClick={() => onUnarchive(client.id)}>
+                <ArchiveRestore className="h-3.5 w-3.5 mr-2" /> {t("archive.action.unarchive")}
+              </DropdownMenuItem>
+            )}
+            {onDelete && (
+              <DropdownMenuItem onClick={() => onDelete(client.id)} className="text-destructive">
+                <Trash2 className="h-3.5 w-3.5 mr-2" /> {t("common.delete")}
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    )}
     <div className="flex items-start gap-3 mb-3">
       <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
         {client.name.split(" ").map((n: string) => n[0]).join("").toUpperCase()}
       </div>
-      <div className="min-w-0">
-        <h3 className="font-semibold text-foreground truncate">{client.name}</h3>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <h3 className="font-semibold text-foreground truncate">{client.name}</h3>
+          {isArchived && <Badge variant="secondary" className="text-[10px]">{t("archive.badge")}</Badge>}
+        </div>
       </div>
     </div>
     <div className="space-y-1.5 text-sm">
@@ -46,7 +78,8 @@ const ClientCard = memo(({ client, onNavigate, onDelete, t }: {
     </div>
     {client.notes && <p className="mt-3 text-xs text-muted-foreground bg-muted/50 rounded-md p-2 line-clamp-2">📝 {client.notes}</p>}
   </div>
-));
+  );
+});
 ClientCard.displayName = "ClientCard";
 
 export default function ClientsPage() {
