@@ -863,6 +863,15 @@ export default function ClientDetailPage() {
         title={t("clientDetail.deleteClient")} description={t("clients.deleteDesc")}
         loading={deleteClient.isPending} />
 
+      {client && (
+        <ArchiveClientDialog
+          open={archiveOpen}
+          onOpenChange={setArchiveOpen}
+          clientId={client.id}
+          clientName={client.name}
+        />
+      )}
+
       <SessionDetailSheet
         appointment={sessionApt}
         open={sessionSheetOpen}
