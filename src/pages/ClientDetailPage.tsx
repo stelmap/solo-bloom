@@ -144,14 +144,13 @@ export default function ClientDetailPage() {
   const awaitingSessions = (appointments as any[]).filter(isAwaiting).length;
   const prepaidSessions = (appointments as any[]).filter(isPrepaid).length;
 
-  // Paid amount (money) — separate from "paid sessions" (count)
+  // Total Paid = sum of REAL payments received from this client (confirmed income only).
+  // Never derived from appointment.price.
   const paidAmount = useMemo(() => {
-    const fromAppointments = (appointments as any[])
-      .filter(isPaid)
-      .reduce((s: number, a: any) => s + Number(a.price || 0), 0);
-    const fromIncome = (clientIncome as any[]).reduce((s: number, i: any) => s + Number(i.amount || 0), 0);
-    return fromAppointments + fromIncome;
-  }, [appointments, clientIncome]);
+    return (clientIncome as any[])
+      .filter((i: any) => (i.status ?? "confirmed") === "confirmed")
+      .reduce((s: number, i: any) => s + Number(i.amount || 0), 0);
+  }, [clientIncome]);
 
   // Apply selected statistic filter to the full appointment list
   const filteredAppointments = useMemo(() => {
