@@ -284,11 +284,25 @@ export default function ClientDetailPage() {
 
 
   const derivePaymentStatus = (apt: any): string => {
-    if (apt.status === "cancelled" || apt.status === "no-show") return apt.payment_status || "not_applicable";
+    if (apt.status === "cancelled" || apt.status === "no-show" || apt.status === "rescheduled") {
+      return "not_applicable";
+    }
+    // Non-completed (planned/confirmed/reminder_sent) → not payable yet
+    if (apt.status !== "completed") {
+      const info = allocByApt[apt.id];
+      const paid = info?.paid || 0;
+      if (paid > 0) {
+        // Pre-payment exists
+        const price = Number(apt.price || 0);
+        if (price > 0 && paid + 0.001 >= price) return "paid_in_advance";
+        return "partially_paid";
+      }
+      return "not_applicable";
+    }
     const price = Number(apt.price || 0);
     const info = allocByApt[apt.id];
     const paid = info?.paid || 0;
-    if (paid <= 0 || price <= 0) return apt.payment_status || "unpaid";
+    if (paid <= 0 || price <= 0) return apt.payment_status === "not_applicable" ? "waiting_for_payment" : (apt.payment_status || "waiting_for_payment");
     if (paid + 0.001 >= price) {
       const aptDate = (apt.scheduled_at || "").slice(0, 10);
       if (info?.minDate && aptDate && info.minDate < aptDate) return "paid_in_advance";
