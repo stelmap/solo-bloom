@@ -44,7 +44,7 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
 
   const [amount, setAmount] = useState<string>("");
   const [date, setDate] = useState(today);
-  const [method, setMethod] = useState("cash");
+  const [method, setMethod] = useState("");
   const [status, setStatus] = useState<"confirmed" | "draft" | "cancelled">("confirmed");
   const [comment, setComment] = useState("");
   const [filter, setFilter] = useState<FilterKey>("unpaid");
@@ -75,7 +75,7 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
     if (isEdit && existingIncome) {
       setAmount(String(existingIncome.amount ?? ""));
       setDate(existingIncome.date ?? today);
-      setMethod(existingIncome.payment_method ?? "cash");
+      setMethod(existingIncome.payment_method ?? "");
       setStatus((existingIncome.status as any) ?? "confirmed");
       setComment(existingIncome.comment ?? "");
       (async () => {
@@ -92,7 +92,7 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
     } else {
       setAmount("");
       setDate(today);
-      setMethod("cash");
+      setMethod("");
       setStatus("confirmed");
       setComment("");
       setAllocs({});
