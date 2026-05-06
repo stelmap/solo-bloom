@@ -537,8 +537,9 @@ export default function ClientDetailPage() {
 
            </div>
 
-          <div className="lg:col-span-2">
-            <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+          <div className="lg:col-span-2 flex">
+            <div className="bg-card rounded-xl border border-border p-5 space-y-4 flex flex-col w-full">
+
               {(() => {
                 const totalForFilter = statFilter === "supervision" ? (clientSupervisions as any[]).length : filteredAppointments.length;
                 const totalPages = Math.max(1, Math.ceil(totalForFilter / PAGE_SIZE));
@@ -589,7 +590,7 @@ export default function ClientDetailPage() {
 
                 return (
                   <>
-                    <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+                    <div className="space-y-2 flex-1 min-h-0 max-h-[600px] overflow-y-auto pr-1">
                       {isSup
                         ? pageItems.map((sup: any) => (
                             <div key={sup.id} onClick={() => navigate("/supervision")}
