@@ -128,6 +128,106 @@ export function useDeleteClient() {
   });
 }
 
+export function useArchiveClient() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
+  return useMutation({
+    mutationFn: async ({ id, reason, comment, cancelFutureSessions }: {
+      id: string; reason?: string; comment?: string; cancelFutureSessions?: boolean;
+    }) => {
+      assertCanWrite();
+      const nowIso = new Date().toISOString();
+      const { data: prev } = await supabase.from("clients").select("status").eq("id", id).single();
+      const { error } = await supabase
+        .from("clients")
+        .update({
+          status: "archived",
+          archived_at: nowIso,
+          archived_by: user!.id,
+          archive_reason: reason ?? null,
+          archive_comment: comment ?? null,
+        } as any)
+        .eq("id", id);
+      if (error) throw error;
+
+      if (cancelFutureSessions) {
+        await supabase
+          .from("appointments")
+          .update({ status: "cancelled", cancellation_reason: "client_archived" } as any)
+          .eq("client_id", id)
+          .gte("scheduled_at", nowIso)
+          .in("status", ["scheduled", "confirmed"]);
+      }
+
+      await supabase.from("client_status_audit" as any).insert({
+        user_id: user!.id,
+        client_id: id,
+        old_status: (prev as any)?.status ?? "active",
+        new_status: "archived",
+        archive_reason: reason ?? null,
+        archive_comment: comment ?? null,
+      } as any);
+    },
+    onSuccess: (_, vars) => {
+      track("client_archived");
+      qc.invalidateQueries({ queryKey: ["clients"] });
+      qc.invalidateQueries({ queryKey: ["client", vars.id] });
+      qc.invalidateQueries({ queryKey: ["appointments"] });
+      qc.invalidateQueries({ queryKey: ["client-status-audit", vars.id] });
+    },
+  });
+}
+
+export function useUnarchiveClient() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      assertCanWrite();
+      const { error } = await supabase
+        .from("clients")
+        .update({
+          status: "active",
+          unarchived_at: new Date().toISOString(),
+        } as any)
+        .eq("id", id);
+      if (error) throw error;
+      await supabase.from("client_status_audit" as any).insert({
+        user_id: user!.id,
+        client_id: id,
+        old_status: "archived",
+        new_status: "active",
+      } as any);
+    },
+    onSuccess: (_, id) => {
+      track("client_unarchived");
+      qc.invalidateQueries({ queryKey: ["clients"] });
+      qc.invalidateQueries({ queryKey: ["client", id] });
+      qc.invalidateQueries({ queryKey: ["client-status-audit", id] });
+    },
+  });
+}
+
+export function useClientFutureAppointments(clientId: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["client-future-appointments", clientId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select("id, scheduled_at, status")
+        .eq("client_id", clientId!)
+        .gte("scheduled_at", new Date().toISOString())
+        .in("status", ["scheduled", "confirmed"]);
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!user && !!clientId,
+  });
+}
+
 // Client Notes
 export function useClientNotes(clientId: string | undefined) {
   const { user } = useAuth();
