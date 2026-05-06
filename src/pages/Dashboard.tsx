@@ -58,10 +58,44 @@ export default function Dashboard() {
   const { data: stats, isLoading } = useDashboardStats();
   const { data: profile } = useProfile();
   const { data: expectedPayments = [] } = useExpectedPayments();
+  const { user } = useAuth();
   const { t } = useLanguage();
   const { symbol: cs } = useCurrency();
   const navigate = useNavigate();
   const use12h = (profile as any)?.time_format === "12h";
+
+  const todayDate = useMemo(() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }, []);
+
+  const { data: todayIncome = [] } = useQuery({
+    queryKey: ["dashboard-today-income", user?.id, todayDate],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("income")
+        .select("amount, payment_method, status")
+        .eq("date", todayDate);
+      if (error) throw error;
+      return (data ?? []).filter((i: any) => (i.status ?? "confirmed") === "confirmed");
+    },
+  });
+
+  const todayMethods = useMemo(() => {
+    const totals: Record<string, number> = {};
+    for (const i of todayIncome as any[]) {
+      const m = (i.payment_method || "other").toLowerCase();
+      totals[m] = (totals[m] || 0) + Number(i.amount || 0);
+    }
+    return Object.entries(totals)
+      .map(([method, amount]) => ({ method, amount }))
+      .sort((a, b) => b.amount - a.amount);
+  }, [todayIncome]);
+  const todayMethodsTotal = todayMethods.reduce((s, m) => s + m.amount, 0);
 
   const rawTodayAppointments: Apt[] = (stats?.todayAppointments as Apt[]) ?? [];
 
