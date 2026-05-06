@@ -427,6 +427,25 @@ export function useCompleteAppointment() {
   });
 }
 
+// Reopen a finalized appointment back to scheduled, clearing income/expected/allocations
+export function useReopenAppointment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id }: { id: string }) => {
+      await supabase.from("income_session_allocations").delete().eq("appointment_id", id);
+      await supabase.from("income").delete().eq("appointment_id", id);
+      await supabase.from("expected_payments").delete().eq("appointment_id", id);
+      const { error } = await supabase.from("appointments").update({
+        status: "scheduled",
+        payment_status: "not_applicable",
+        cancellation_reason: null,
+      } as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+  });
+}
+
 // Cancel/no-show
 export function useCancelAppointment() {
   const qc = useQueryClient();
