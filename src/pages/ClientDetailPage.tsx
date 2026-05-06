@@ -329,16 +329,37 @@ export default function ClientDetailPage() {
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/clients")}><ArrowLeft className="h-5 w-5" /></Button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-foreground">{client.name}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-foreground">{client.name}</h1>
+              {client.status === "archived" && <Badge variant="secondary">{t("archive.badge")}</Badge>}
+            </div>
             <p className="text-sm text-muted-foreground">{t("clientDetail.profile")}</p>
           </div>
           {!isDemoMode && <>
             <Button variant="outline" size="sm" onClick={openEdit}><Pencil className="h-3.5 w-3.5 mr-1" /> {t("common.edit")}</Button>
+            {client.status === "archived" ? (
+              <Button variant="outline" size="sm" onClick={async () => {
+                try { await unarchiveClient.mutateAsync(client.id); toast({ title: t("archive.toast.unarchived") }); }
+                catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
+              }}>
+                <ArchiveRestore className="h-3.5 w-3.5 mr-1" /> {t("archive.action.unarchive")}
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" onClick={() => setArchiveOpen(true)}>
+                <Archive className="h-3.5 w-3.5 mr-1" /> {t("archive.action.archive")}
+              </Button>
+            )}
             <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteOpen(true)}>
               <Trash2 className="h-3.5 w-3.5 mr-1" /> {t("common.delete")}
             </Button>
           </>}
         </div>
+
+        {client.status === "archived" && (
+          <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+            {t("archive.banner.message")}
+          </div>
+        )}
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
           {([
