@@ -537,8 +537,9 @@ export default function ClientDetailPage() {
 
            </div>
 
-          <div className="lg:col-span-2">
-            <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+          <div className="lg:col-span-2 flex">
+            <div className="bg-card rounded-xl border border-border p-5 space-y-4 flex flex-col w-full">
+
               {(() => {
                 const totalForFilter = statFilter === "supervision" ? (clientSupervisions as any[]).length : filteredAppointments.length;
                 const totalPages = Math.max(1, Math.ceil(totalForFilter / PAGE_SIZE));
