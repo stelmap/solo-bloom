@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { InvoiceButton } from "@/components/InvoiceButton";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { format } from "date-fns";
+import { useDateLocale } from "@/lib/dateLocale";
 import { formatTime, formatScheduledTime } from "@/lib/timeFormat";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sa
 
 export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12h = false }: SessionDetailSheetProps) {
   const { t } = useLanguage();
+  const dateLocale = useDateLocale();
   const { symbol: cs } = useCurrency();
   const { toast } = useToast();
   const { data: clients = [] } = useClients();
@@ -476,7 +478,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("calendar.dateTime")}</span>
                   <span className="font-medium text-foreground">
-                    {format(new Date(apt.scheduled_at), "MMM d, yyyy")} · {fmtTime(apt.scheduled_at)}
+                    {format(new Date(apt.scheduled_at), "MMM d, yyyy", { locale: dateLocale })} · {fmtTime(apt.scheduled_at)}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -516,7 +518,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 {apt.confirmation_timestamp && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t("confirmation.timestamp")}</span>
-                    <span className="font-medium text-foreground">{format(new Date(apt.confirmation_timestamp), "MMM d")} · {fmtTime(apt.confirmation_timestamp)}</span>
+                    <span className="font-medium text-foreground">{format(new Date(apt.confirmation_timestamp), "MMM d", { locale: dateLocale })} · {fmtTime(apt.confirmation_timestamp)}</span>
                   </div>
                 )}
                 {apt.cancellation_reason && (

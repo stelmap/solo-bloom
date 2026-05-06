@@ -10,6 +10,7 @@ import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3, GripVe
 import { useState, useMemo, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, addDays, startOfWeek, isSameDay, isBefore, startOfDay } from "date-fns";
+import { getDateLocale } from "@/lib/dateLocale";
 import { formatTime, formatScheduledTime } from "@/lib/timeFormat";
 import {
   useAppointments, useCreateAppointment, useUpdateAppointment,
@@ -46,7 +47,8 @@ export default function CalendarPage() {
   const bulkCancel = useBulkCancelForDayOff();
   const { toast } = useToast();
   const qc = useQueryClient();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const dateLocale = getDateLocale(lang);
   const { symbol: cs } = useCurrency();
 
   // Drag-and-drop state
@@ -583,7 +585,7 @@ export default function CalendarPage() {
             <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1">
               <Button variant="ghost" size="icon" onClick={() => setCurrentDate(d => addDays(d, -7))}><ChevronLeft className="h-4 w-4" /></Button>
               <span className="text-sm font-medium px-3 text-foreground">
-                {format(weekStart, "MMM d")} – {format(addDays(weekStart, 6), "MMM d, yyyy")}
+                {format(weekStart, "MMM d", { locale: dateLocale })} – {format(addDays(weekStart, 6), "MMM d, yyyy", { locale: dateLocale })}
               </span>
               <Button variant="ghost" size="icon" onClick={() => setCurrentDate(d => addDays(d, 7))}><ChevronRight className="h-4 w-4" /></Button>
             </div>
@@ -767,7 +769,7 @@ export default function CalendarPage() {
                         isSameDay(day, new Date()) ? "bg-accent" : "",
                         dayOffStatus ? "bg-destructive/5" : !working ? "bg-muted/30" : "",
                       )}>
-                        <p className="text-xs text-muted-foreground">{format(day, "EEE")}</p>
+                        <p className="text-xs text-muted-foreground">{format(day, "EEE", { locale: dateLocale })}</p>
                         <p className={cn("text-lg font-semibold", isSameDay(day, new Date()) ? "text-accent-foreground" : dayOffStatus ? "text-destructive/60" : "text-foreground")}>
                           {format(day, "d")}
                         </p>

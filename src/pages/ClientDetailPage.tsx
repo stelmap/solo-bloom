@@ -26,6 +26,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState, useRef, useEffect } from "react";
 import { format } from "date-fns";
+import { getDateLocale } from "@/lib/dateLocale";
 import { useMemo } from "react";
 import { formatScheduledTime } from "@/lib/timeFormat";
 import { cn } from "@/lib/utils";
@@ -37,7 +38,8 @@ export default function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const dateLocale = getDateLocale(lang);
   const { symbol: cs } = useCurrency();
   const { isDemoMode } = useDemoMode();
   const { data: client, isLoading } = useClient(id);
@@ -376,7 +378,7 @@ export default function ClientDetailPage() {
                 <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">{initials}</div>
                 <div>
                   <h3 className="font-semibold text-foreground text-lg">{client.name}</h3>
-                  <p className="text-xs text-muted-foreground">{t("clientDetail.clientSince", { date: format(new Date(client.created_at), "MMM yyyy") })}</p>
+                  <p className="text-xs text-muted-foreground">{t("clientDetail.clientSince", { date: format(new Date(client.created_at), "MMM yyyy", { locale: dateLocale }) })}</p>
                 </div>
               </div>
               <div className="space-y-2 text-sm">
@@ -449,7 +451,7 @@ export default function ClientDetailPage() {
                         <span className="font-medium text-foreground">
                           {ph.change_type === "session_override" ? t("pricing.sessionOverrideLabel") : t("pricing.basePriceChange")}
                         </span>
-                        <span className="text-xs text-muted-foreground">{format(new Date(ph.created_at), "MMM d, yyyy")}</span>
+                        <span className="text-xs text-muted-foreground">{format(new Date(ph.created_at), "MMM d, yyyy", { locale: dateLocale })}</span>
                       </div>
                       <div className="flex items-center gap-2 mt-1">
                         {ph.old_price != null && <span className="text-muted-foreground line-through">{cs}{Number(ph.old_price).toFixed(0)}</span>}
@@ -473,7 +475,7 @@ export default function ClientDetailPage() {
                 {(notes as any[]).map((note: any) => (
                   <div key={note.id} className="bg-muted/50 rounded-lg p-3 group relative">
                     <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{format(new Date(note.created_at), "MMM d, yyyy")} · {formatScheduledTime(note.created_at, use12h)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{format(new Date(note.created_at), "MMM d, yyyy", { locale: dateLocale })} · {formatScheduledTime(note.created_at, use12h)}</p>
                     {!isDemoMode && <button onClick={() => deleteNote.mutate({ id: note.id, clientId: client.id })} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all">
                       <X className="h-3 w-3" />
                     </button>}
@@ -525,7 +527,7 @@ export default function ClientDetailPage() {
                   {clientSupervisions.map((sup: any) => (
                     <div key={sup.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border text-sm cursor-pointer hover:ring-1 hover:ring-ring/20" onClick={() => navigate("/supervision")}>
                       <div>
-                        <p className="font-medium text-foreground">{format(new Date(sup.supervision_date + "T00:00:00"), "MMM d, yyyy")}</p>
+                        <p className="font-medium text-foreground">{format(new Date(sup.supervision_date + "T00:00:00"), "MMM d, yyyy", { locale: dateLocale })}</p>
                         <p className="text-xs text-muted-foreground">{(sup.imported_notes_snapshot || []).length} notes</p>
                       </div>
                       <span className="font-semibold text-foreground">{cs}{Number(sup.paid_amount).toFixed(0)}</span>
@@ -598,7 +600,7 @@ export default function ClientDetailPage() {
                               <div className="flex items-center gap-3">
                                 <ClipboardList className="h-4 w-4 text-primary" />
                                 <div>
-                                  <p className="text-sm font-medium text-foreground">{format(new Date(sup.supervision_date + "T00:00:00"), "MMM d, yyyy")}</p>
+                                  <p className="text-sm font-medium text-foreground">{format(new Date(sup.supervision_date + "T00:00:00"), "MMM d, yyyy", { locale: dateLocale })}</p>
                                   <p className="text-xs text-muted-foreground">{(sup.imported_notes_snapshot || []).length} notes</p>
                                 </div>
                               </div>
@@ -628,7 +630,7 @@ export default function ClientDetailPage() {
                                   <div className="min-w-0 flex-1">
                                     <div className="flex items-center gap-2 flex-wrap">
                                       <p className="font-medium text-foreground">
-                                        {format(new Date(apt.scheduled_at), "MMM d, yyyy")}
+                                        {format(new Date(apt.scheduled_at), "MMM d, yyyy", { locale: dateLocale })}
                                       </p>
                                       <span className="text-xs text-muted-foreground">
                                         {formatScheduledTime(apt.scheduled_at, use12h)}

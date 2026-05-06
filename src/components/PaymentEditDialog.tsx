@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
+import { useDateLocale } from "@/lib/dateLocale";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ interface PaymentEditDialogProps {
 export function PaymentEditDialog({ open, onOpenChange, appointment: apt, use12h = false, onSaved }: PaymentEditDialogProps) {
   const { t } = useLanguage();
   const { symbol: cs } = useCurrency();
+  const dateLocale = useDateLocale();
   const { toast } = useToast();
   const correct = useCorrectPayment();
 
@@ -50,7 +52,7 @@ export function PaymentEditDialog({ open, onOpenChange, appointment: apt, use12h
   if (!apt) return null;
 
   const sessionTime = formatScheduledTime(apt.scheduled_at, use12h);
-  const sessionDate = format(new Date(apt.scheduled_at), "PP");
+  const sessionDate = format(new Date(apt.scheduled_at), "PP", { locale: dateLocale });
   const clientOrGroupName =
     apt.clients?.name || (apt as any).group_sessions?.groups?.name || (apt as any).group_name || "—";
   const serviceName = apt.services?.name || "—";
