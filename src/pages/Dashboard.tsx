@@ -12,7 +12,6 @@ import { formatScheduledTime } from "@/lib/timeFormat";
 import {
   Users, CalendarClock, CheckCircle2, DollarSign, Hourglass,
   PlayCircle, ArrowRight, Receipt, AlertCircle, XCircle, RotateCcw,
-  Banknote, CreditCard as CreditCardIcon, Landmark, Wallet,
 } from "lucide-react";
 
 type Apt = {
