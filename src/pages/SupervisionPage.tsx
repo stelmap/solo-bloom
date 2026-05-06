@@ -136,13 +136,13 @@ export default function SupervisionPage() {
 
         {/* Filter */}
         <div className="flex gap-3 items-center">
-          <Select value={filterClientId} onValueChange={setFilterClientId}>
-            <SelectTrigger className="w-[220px]"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("supervision.allClients")}</SelectItem>
-              {clients.filter((c: any) => (c.status ?? "active") === "active").map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <ClientPicker
+            clients={clients}
+            value={filterClientId}
+            onChange={setFilterClientId}
+            allOption={{ value: "all", label: t("supervision.allClients") }}
+            triggerClassName="w-[220px]"
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
