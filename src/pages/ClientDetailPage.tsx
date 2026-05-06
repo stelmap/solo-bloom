@@ -159,7 +159,9 @@ export default function ClientDetailPage() {
 
   // Apply selected statistic filter to the full appointment list
   const filteredAppointments = useMemo(() => {
-    const all = sortedAppointments as any[];
+    // Exclude planned/upcoming sessions from session history
+    const PLANNED = new Set(["scheduled", "confirmed", "reminder_sent"]);
+    const all = (sortedAppointments as any[]).filter((a) => !PLANNED.has(a.status));
     switch (statFilter) {
       case "completed": return all.filter(isCompleted);
       case "paid": return all.filter(isPaid);
