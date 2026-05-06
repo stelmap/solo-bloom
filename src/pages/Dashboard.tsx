@@ -297,25 +297,6 @@ function OverviewTile({
   );
 }
 
-function StatusPill({
-  icon: Icon, label, value, tone,
-}: { icon: any; label: string; value: number; tone?: "success" | "warning" | "destructive" }) {
-  const toneClass =
-    tone === "success" ? "text-success" :
-    tone === "warning" ? "text-warning" :
-    tone === "destructive" ? "text-destructive" :
-    "text-foreground";
-  return (
-    <div className="bg-muted/40 rounded-lg p-3">
-      <div className="flex items-center gap-1.5 text-muted-foreground">
-        <Icon className="h-3.5 w-3.5" />
-        <p className="text-xs truncate">{label}</p>
-      </div>
-      <p className={cn("text-xl font-bold mt-0.5", toneClass)}>{value}</p>
-    </div>
-  );
-}
-
 function NowNextCard({
   kind, title, apt, emptyText, cs, use12h, onOpen, openLabel, t,
 }: {
