@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { nextAccrualDate } from "@/lib/taxExpenseGenerator";
 import { readSoundReminder, writeSoundReminder, type SoundReminderSettings } from "@/hooks/useSoundReminder";
 import { useTheme, type Theme } from "@/hooks/useTheme";
 
