@@ -52,6 +52,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const cancelAppointment = useCancelAppointment();
   const deleteRecurring = useDeleteRecurringAppointments();
   const editRecurring = useEditRecurringAppointments();
+  const reopenAppointment = useReopenAppointment();
 
   // Group attendance hooks — must be before any early return
   const groupSessionId = apt?.group_session_id
