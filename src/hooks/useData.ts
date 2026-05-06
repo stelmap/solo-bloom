@@ -437,25 +437,15 @@ export function useCancelAppointment() {
       await supabase.from("income").delete().eq("appointment_id", id);
       await supabase.from("expected_payments").delete().eq("appointment_id", id);
 
-      if (status === "no-show" && clientId && price && price > 0) {
-        const { error } = await supabase.from("appointments").update({
-          status, payment_status: "waiting_for_payment",
-          ...(cancellationReason ? { cancellation_reason: cancellationReason } : {}),
-        } as any).eq("id", id);
-        if (error) throw error;
-        const { error: epErr } = await supabase.from("expected_payments").insert({
-          user_id: user!.id, appointment_id: id,
-          client_id: clientId, amount: price, status: "pending",
-          ...(isDemoMode ? { is_demo: true } : {}),
-        } as any);
-        if (epErr) throw epErr;
-      } else {
-        const { error } = await supabase.from("appointments").update({
-          status, payment_status: "not_applicable",
-          ...(cancellationReason ? { cancellation_reason: cancellationReason } : {}),
-        } as any).eq("id", id);
-        if (error) throw error;
-      }
+      // No-show and cancelled sessions are NOT payable by default.
+      // (Future "Charge no-show" setting can override this.)
+      const { error } = await supabase.from("appointments").update({
+        status, payment_status: "not_applicable",
+        ...(cancellationReason ? { cancellation_reason: cancellationReason } : {}),
+      } as any).eq("id", id);
+      if (error) throw error;
+      // Suppress unused-var warnings for now-unused params
+      void clientId; void price; void user; void isDemoMode;
     },
     onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
