@@ -46,6 +46,7 @@ export default function ClientDetailPage() {
   const { data: client, isLoading } = useClient(id);
   const updateClient = useUpdateClient();
   const deleteClient = useDeleteClient();
+  const unarchiveClient = useUnarchiveClient();
   const { data: appointments = [] } = useClientAppointments(id);
   const { data: notes = [] } = useClientNotes(id);
   const createNote = useCreateClientNote();
