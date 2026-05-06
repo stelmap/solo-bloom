@@ -52,7 +52,7 @@ export function PaymentEditDialog({ open, onOpenChange, appointment: apt, use12h
   if (!apt) return null;
 
   const sessionTime = formatScheduledTime(apt.scheduled_at, use12h);
-  const sessionDate = format(new Date(apt.scheduled_at), "PP");
+  const sessionDate = format(new Date(apt.scheduled_at), "PP", { locale: dateLocale });
   const clientOrGroupName =
     apt.clients?.name || (apt as any).group_sessions?.groups?.name || (apt as any).group_name || "—";
   const serviceName = apt.services?.name || "—";
