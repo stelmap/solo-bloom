@@ -38,7 +38,8 @@ export default function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const dateLocale = getDateLocale(lang);
   const { symbol: cs } = useCurrency();
   const { isDemoMode } = useDemoMode();
   const { data: client, isLoading } = useClient(id);
