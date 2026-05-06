@@ -951,6 +951,7 @@ export default {
   "tax.percentageProfit": "% du bénéfice",
   "tax.startCalculationDate": "Date de début de calcul",
   "tax.startCalculationDateHint": "L'impôt sera calculé à partir de cette date",
+  "tax.nextAccrual": "Prochaine régularisation",
   "nav.finances": "Finances",
   "nav.financesDashboard": "Tableau financier",
   "finances.dashboardTitle": "Tableau financier",

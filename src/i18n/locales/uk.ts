@@ -951,6 +951,7 @@ export default {
   "tax.percentageProfit": "% від прибутку",
   "tax.startCalculationDate": "Дата початку розрахунку",
   "tax.startCalculationDateHint": "Податок буде розраховуватись з цієї дати",
+  "tax.nextAccrual": "Наступне нарахування",
   "nav.finances": "Фінанси",
   "nav.financesDashboard": "Фінансова панель",
   "finances.dashboardTitle": "Фінансова панель",

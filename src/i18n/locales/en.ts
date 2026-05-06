@@ -951,6 +951,7 @@ export default {
   "tax.percentageProfit": "% of profit",
   "tax.startCalculationDate": "Start calculation date",
   "tax.startCalculationDateHint": "Tax will be calculated from this date",
+  "tax.nextAccrual": "Next accrual",
   "nav.finances": "Finances",
   "nav.financesDashboard": "Finance Dashboard",
   "finances.dashboardTitle": "Finance Dashboard",
