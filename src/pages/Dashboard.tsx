@@ -194,7 +194,7 @@ export default function Dashboard() {
                 <OverviewTile icon={Users} label={t("ops.clientsToday")} value={summary.clientCount.toString()} />
                 <OverviewTile icon={CalendarClock} label={t("ops.sessionsPlanned")} value={(summary.planned + summary.completed).toString()} />
                 <OverviewTile icon={CheckCircle2} label={t("ops.sessionsCompleted")} value={summary.completed.toString()} tone="success" />
-                <OverviewTile icon={Hourglass} label={t("ops.remainingToday")} value={summary.remaining.toString()} tone="warning" />
+                
                 <OverviewTile icon={CheckCircle2} label={t("ops.donePaid")} value={completedPaidTotal.toString()} tone="success" />
                 <OverviewTile icon={Hourglass} label={t("ops.doneNotPaid")} value={completedUnpaidTotal.toString()} tone="warning" />
                 <OverviewTile icon={XCircle} label={t("ops.cancelledSessions")} value={cancelledTotal.toString()} />
