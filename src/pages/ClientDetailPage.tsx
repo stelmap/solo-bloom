@@ -682,23 +682,19 @@ export default function ClientDetailPage() {
 
         {/* Balance — payments are managed in Finance → Payment Audit */}
         {(() => {
-          // Total payable from completed sessions only (price > 0)
+          // Total payable from completed sessions only (price > 0, payable)
           const totalPayableCompleted = (appointments as any[])
-            .filter((a: any) => a.status === "completed" && Number(a.price || 0) > 0)
+            .filter((a: any) =>
+              a.status === "completed" &&
+              Number(a.price || 0) > 0 &&
+              a.payment_status !== "not_applicable"
+            )
             .reduce((s: number, a: any) => s + Number(a.price || 0), 0);
 
-          // Outstanding per session: price - allocated paid (clamped at 0)
-          const totalUnpaid = (appointments as any[])
-            .filter((a: any) => a.status === "completed")
-            .reduce((s: number, a: any) => {
-              const price = Number(a.price || 0);
-              const paid = allocByApt[a.id]?.paid || 0;
-              return s + Math.max(0, price - paid);
-            }, 0);
-
-          const prepaid = Number(creditBalance || 0);
-          const outstanding = Math.max(0, totalUnpaid - prepaid);
-          const clientCredit = Math.max(0, paidAmount - totalPayableCompleted);
+          // Aggregate balance based on real received payments vs payable completed amount.
+          const outstanding = Math.max(0, totalPayableCompleted - Number(paidAmount || 0));
+          const prepaid = Math.max(0, Number(paidAmount || 0) - totalPayableCompleted);
+          const totalUnpaid = outstanding;
           return (
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
               <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -726,11 +722,11 @@ export default function ClientDetailPage() {
                 </div>
                 <div className="rounded-lg border border-border bg-muted/30 px-3 py-2">
                   <div className="text-xs text-muted-foreground">{t("balance.prepaid")}</div>
-                  <div className={cn("text-base font-semibold", (prepaid + clientCredit) > 0 ? "text-success" : "text-foreground")}>{cs}{(prepaid + clientCredit).toFixed(2)}</div>
+                  <div className={cn("text-base font-semibold", prepaid > 0 ? "text-success" : "text-foreground")}>{cs}{prepaid.toFixed(2)}</div>
                 </div>
                 <div className="rounded-lg border border-border bg-muted/30 px-3 py-2">
                   <div className="text-xs text-muted-foreground">{t("balance.totalUnpaid")}</div>
-                  <div className="text-base font-semibold text-foreground">{cs}{totalUnpaid.toFixed(2)}</div>
+                  <div className={cn("text-base font-semibold", totalUnpaid > 0 ? "text-destructive" : "text-foreground")}>{cs}{totalUnpaid.toFixed(2)}</div>
                 </div>
               </div>
             </div>
