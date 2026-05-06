@@ -750,10 +750,11 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>{t("calendar.client")} *</Label>
-                <Select value={editForm.client_id} onValueChange={v => setEditForm(f => ({ ...f, client_id: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{clients.filter((c: any) => (c.status ?? "active") === "active").map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                </Select>
+                <ClientPicker
+                  clients={clients}
+                  value={editForm.client_id}
+                  onChange={v => setEditForm(f => ({ ...f, client_id: v }))}
+                />
               </div>
               <div className="space-y-2">
                 <Label>{t("calendar.service")} *</Label>
