@@ -585,7 +585,7 @@ export default function CalendarPage() {
             <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1">
               <Button variant="ghost" size="icon" onClick={() => setCurrentDate(d => addDays(d, -7))}><ChevronLeft className="h-4 w-4" /></Button>
               <span className="text-sm font-medium px-3 text-foreground">
-                {format(weekStart, "MMM d")} – {format(addDays(weekStart, 6), "MMM d, yyyy")}
+                {format(weekStart, "MMM d", { locale: dateLocale })} – {format(addDays(weekStart, 6), "MMM d, yyyy", { locale: dateLocale })}
               </span>
               <Button variant="ghost" size="icon" onClick={() => setCurrentDate(d => addDays(d, 7))}><ChevronRight className="h-4 w-4" /></Button>
             </div>
