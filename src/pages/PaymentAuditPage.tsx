@@ -18,6 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useClients } from "@/hooks/useData";
+import { usePaymentMethods, localizedMethodName } from "@/hooks/usePaymentMethods";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { downloadCSV } from "@/lib/csvExport";
@@ -100,6 +101,12 @@ export default function PaymentAuditPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: clients = [] } = useClients();
+  const { data: paymentMethods = [] } = usePaymentMethods();
+  const methodLabel = (code: string) => {
+    const m = paymentMethods.find(pm => pm.code === code);
+    if (m) return localizedMethodName(m, t);
+    return code.replace(/_/g, " ");
+  };
   const { data, isLoading } = useAuditData();
 
   const [clientId, setClientId] = useState<string>(searchParams.get("client") || "all");
@@ -410,7 +417,7 @@ export default function PaymentAuditPage() {
                       >{r.client_name}</button>
                     </TableCell>
                     <TableCell className="text-right font-medium tabular-nums">{cs}{r.amount.toFixed(2)}</TableCell>
-                    <TableCell className="text-sm capitalize">{r.method.replace(/_/g, " ")}</TableCell>
+                    <TableCell className="text-sm">{methodLabel(r.method)}</TableCell>
                     <TableCell className="text-sm">{r.invoice?.invoice_number || <span className="text-muted-foreground">{t("audit.notGenerated")}</span>}</TableCell>
                     <TableCell><Badge variant="outline" className={cn("border", ab.cls)}>{t(ab.key as any)}</Badge></TableCell>
                     <TableCell><Badge variant="outline" className="capitalize">{t(`audit.pstatus.${r.paymentStatus}` as any) || r.paymentStatus}</Badge></TableCell>

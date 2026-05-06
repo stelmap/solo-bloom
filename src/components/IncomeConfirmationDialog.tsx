@@ -14,6 +14,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
 import { useClientAppointments, useSaveIncomeConfirmation } from "@/hooks/useData";
+import { useActivePaymentMethods, localizedMethodName } from "@/hooks/usePaymentMethods";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { formatScheduledTime } from "@/lib/timeFormat";
@@ -43,7 +44,7 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
 
   const [amount, setAmount] = useState<string>("");
   const [date, setDate] = useState(today);
-  const [method, setMethod] = useState("cash");
+  const [method, setMethod] = useState("");
   const [status, setStatus] = useState<"confirmed" | "draft" | "cancelled">("confirmed");
   const [comment, setComment] = useState("");
   const [filter, setFilter] = useState<FilterKey>("unpaid");
@@ -74,7 +75,7 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
     if (isEdit && existingIncome) {
       setAmount(String(existingIncome.amount ?? ""));
       setDate(existingIncome.date ?? today);
-      setMethod(existingIncome.payment_method ?? "cash");
+      setMethod(existingIncome.payment_method ?? "");
       setStatus((existingIncome.status as any) ?? "confirmed");
       setComment(existingIncome.comment ?? "");
       (async () => {
@@ -91,7 +92,7 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
     } else {
       setAmount("");
       setDate(today);
-      setMethod("cash");
+      setMethod("");
       setStatus("confirmed");
       setComment("");
       setAllocs({});
@@ -100,11 +101,11 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
     setFilter("unpaid");
   }, [open, existingIncome?.id]);
 
-  const PAYMENT_METHODS = [
-    { value: "cash", label: t("method.cashLabel") },
-    { value: "card", label: t("method.cardLabel") },
-    { value: "bank_transfer", label: t("method.bankTransferLabel") },
-  ];
+  const { data: activeMethods = [] } = useActivePaymentMethods();
+  const PAYMENT_METHODS = activeMethods.map(m => ({ value: m.code, label: localizedMethodName(m, t) }));
+  useEffect(() => {
+    if (!method && PAYMENT_METHODS.length > 0) setMethod(PAYMENT_METHODS[0].value);
+  }, [activeMethods.length, method]);
 
   const enrichedAppointments = useMemo(() => {
     return (appointments as any[]).map((a) => {
