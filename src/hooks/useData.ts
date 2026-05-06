@@ -519,7 +519,7 @@ export function useExpectedPayments() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("expected_payments")
-        .select("*, clients(name), appointments(scheduled_at, services(name))")
+        .select("*, clients(name), appointments(scheduled_at, status, services(name))")
         .eq("status", "pending")
         .order("created_at", { ascending: false });
       if (error) throw error;
