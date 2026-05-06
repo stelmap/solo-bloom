@@ -590,7 +590,7 @@ export default function ClientDetailPage() {
 
                 return (
                   <>
-                    <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+                    <div className="space-y-2 flex-1 min-h-0 max-h-[600px] overflow-y-auto pr-1">
                       {isSup
                         ? pageItems.map((sup: any) => (
                             <div key={sup.id} onClick={() => navigate("/supervision")}
