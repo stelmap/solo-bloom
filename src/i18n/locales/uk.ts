@@ -1016,6 +1016,8 @@ export default {
   "ops.scheduleSnapshot": "Розклад на сьогодні",
   "ops.statusSummary": "Статус сеансів",
   "ops.paymentSummary": "Оплати сьогодні",
+  "ops.paymentMethodsToday": "Способи оплати сьогодні",
+  "ops.noPaymentsToday": "Сьогодні ще не отримано оплат",
   "ops.amountReceived": "Отримано",
   "ops.pendingAmount": "Очікується оплата",
   "ops.individual": "Індивідуальний",
