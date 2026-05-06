@@ -1,9 +1,6 @@
 import { AppLayout } from "@/components/AppLayout";
 import { useDashboardStats, useProfile } from "@/hooks/useData";
 import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { cn } from "@/lib/utils";
