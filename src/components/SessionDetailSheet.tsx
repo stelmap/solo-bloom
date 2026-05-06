@@ -23,7 +23,7 @@ import {
   useUpdateAppointment, useDeleteAppointment, useCompleteAppointment,
   useCancelAppointment, useClients, useServices,
   useDeleteRecurringAppointments, useEditRecurringAppointments,
-  useProfile, useCreatePriceChange,
+  useProfile, useCreatePriceChange, useReopenAppointment,
 } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,6 +52,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const cancelAppointment = useCancelAppointment();
   const deleteRecurring = useDeleteRecurringAppointments();
   const editRecurring = useEditRecurringAppointments();
+  const reopenAppointment = useReopenAppointment();
 
   // Group attendance hooks — must be before any early return
   const groupSessionId = apt?.group_session_id
@@ -686,6 +687,48 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   <Button variant="outline" size="sm" onClick={() => setNoShowOpen(true)} className="text-warning hover:text-warning">
                     <Ban className="h-3.5 w-3.5 mr-1" /> {t("calendar.noShow")}
                   </Button>
+                </div>
+              )}
+
+              {!isActive && (
+                <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3">
+                  <p className="text-xs text-muted-foreground">{t("session.changeStatusHint") || "This session is finalized. You can reopen it or change its outcome."}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          await reopenAppointment.mutateAsync({ id: apt.id });
+                          toast({ title: t("session.reopened") || "Session reopened" });
+                          onOpenChange(false);
+                        } catch (e: any) {
+                          toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+                        }
+                      }}
+                      disabled={reopenAppointment.isPending}
+                    >
+                      <Clock className="h-3.5 w-3.5 mr-1" /> {t("session.reopen") || "Reopen session"}
+                    </Button>
+                    {apt.status !== "completed" && (
+                      <Button variant="outline" size="sm" onClick={openComplete}>
+                        <CheckCircle className="h-3.5 w-3.5 mr-1" /> {t("calendar.complete")}
+                      </Button>
+                    )}
+                    {apt.status !== "cancelled" && (
+                      <Button variant="outline" size="sm" onClick={() => handleStatusChange("cancelled")} className="text-destructive hover:text-destructive">
+                        <XCircle className="h-3.5 w-3.5 mr-1" /> {t("calendar.cancel")}
+                      </Button>
+                    )}
+                    {apt.status !== "no-show" && (
+                      <Button variant="outline" size="sm" onClick={() => setNoShowOpen(true)} className="text-warning hover:text-warning">
+                        <Ban className="h-3.5 w-3.5 mr-1" /> {t("calendar.noShow")}
+                      </Button>
+                    )}
+                    <Button variant="outline" size="sm" onClick={() => setPaymentEditOpen(true)}>
+                      <DollarSign className="h-3.5 w-3.5 mr-1" /> {t("editChoice.payment") || "Edit payment"}
+                    </Button>
+                  </div>
                 </div>
               )}
 
