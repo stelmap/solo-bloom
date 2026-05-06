@@ -1,6 +1,9 @@
 import { AppLayout } from "@/components/AppLayout";
 import { useDashboardStats, useProfile, useExpectedPayments } from "@/hooks/useData";
 import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { cn } from "@/lib/utils";
@@ -9,6 +12,7 @@ import { formatScheduledTime } from "@/lib/timeFormat";
 import {
   Users, CalendarClock, CheckCircle2, DollarSign, Hourglass,
   PlayCircle, ArrowRight, Receipt, AlertCircle, XCircle, RotateCcw,
+  Banknote, CreditCard as CreditCardIcon, Landmark, Wallet,
 } from "lucide-react";
 
 type Apt = {
