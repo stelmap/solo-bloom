@@ -3,7 +3,7 @@
  * Generates expense entries from active tax rules for display and syncing.
  */
 
-import { startOfMonth, endOfMonth, addMonths, format, startOfQuarter, addQuarters } from "date-fns";
+import { startOfMonth, endOfMonth, addMonths, format, startOfQuarter, addQuarters, endOfQuarter } from "date-fns";
 
 export interface TaxRule {
   id: string;
