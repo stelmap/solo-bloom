@@ -1,9 +1,11 @@
 import { AppSidebar } from "./AppSidebar";
 import { DemoBanner } from "./DemoBanner";
 import { useSoundReminder } from "@/hooks/useSoundReminder";
+import { useTaxAccrualSync } from "@/hooks/useData";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   useSoundReminder();
+  useTaxAccrualSync();
   return (
     <div className="min-h-screen bg-background">
       <AppSidebar />
