@@ -1,6 +1,9 @@
 import { AppLayout } from "@/components/AppLayout";
 import { useDashboardStats, useProfile, useExpectedPayments } from "@/hooks/useData";
 import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { cn } from "@/lib/utils";
@@ -9,6 +12,7 @@ import { formatScheduledTime } from "@/lib/timeFormat";
 import {
   Users, CalendarClock, CheckCircle2, DollarSign, Hourglass,
   PlayCircle, ArrowRight, Receipt, AlertCircle, XCircle, RotateCcw,
+  Banknote, CreditCard as CreditCardIcon, Landmark, Wallet,
 } from "lucide-react";
 
 type Apt = {
@@ -54,10 +58,44 @@ export default function Dashboard() {
   const { data: stats, isLoading } = useDashboardStats();
   const { data: profile } = useProfile();
   const { data: expectedPayments = [] } = useExpectedPayments();
+  const { user } = useAuth();
   const { t } = useLanguage();
   const { symbol: cs } = useCurrency();
   const navigate = useNavigate();
   const use12h = (profile as any)?.time_format === "12h";
+
+  const todayDate = useMemo(() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }, []);
+
+  const { data: todayIncome = [] } = useQuery({
+    queryKey: ["dashboard-today-income", user?.id, todayDate],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("income")
+        .select("amount, payment_method, status")
+        .eq("date", todayDate);
+      if (error) throw error;
+      return (data ?? []).filter((i: any) => (i.status ?? "confirmed") === "confirmed");
+    },
+  });
+
+  const todayMethods = useMemo(() => {
+    const totals: Record<string, number> = {};
+    for (const i of todayIncome as any[]) {
+      const m = (i.payment_method || "other").toLowerCase();
+      totals[m] = (totals[m] || 0) + Number(i.amount || 0);
+    }
+    return Object.entries(totals)
+      .map(([method, amount]) => ({ method, amount }))
+      .sort((a, b) => b.amount - a.amount);
+  }, [todayIncome]);
+  const todayMethodsTotal = todayMethods.reduce((s, m) => s + m.amount, 0);
 
   const rawTodayAppointments: Apt[] = (stats?.todayAppointments as Apt[]) ?? [];
 
@@ -280,17 +318,49 @@ export default function Dashboard() {
           )}
         </section>
 
-        {/* D + E: Status & Payment summaries */}
+        {/* D + E: Payment Methods Today & Today Payments */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <section className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-            <h2 className="font-semibold text-foreground mb-4">{t("ops.statusSummary")}</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              <StatusPill icon={CalendarClock} label={t("status.scheduled")} value={summary.planned} />
-              <StatusPill icon={CheckCircle2} label={t("status.completed")} value={summary.completed} tone="success" />
-              <StatusPill icon={XCircle} label={t("status.cancelled")} value={summary.cancelled} tone="destructive" />
-              <StatusPill icon={AlertCircle} label={t("status.noShow")} value={summary.noShow} tone="warning" />
-              <StatusPill icon={RotateCcw} label={t("status.rescheduled")} value={summary.rescheduled} />
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-foreground">{t("ops.paymentMethodsToday")}</h2>
+              <span className="text-sm text-muted-foreground">{cs}{todayMethodsTotal.toLocaleString()}</span>
             </div>
+            {todayMethods.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">{t("ops.noPaymentsToday")}</p>
+            ) : (
+              <div className="space-y-2">
+                {todayMethods.map(({ method, amount }) => {
+                  const pct = todayMethodsTotal > 0 ? (amount / todayMethodsTotal) * 100 : 0;
+                  const Icon =
+                    method === "cash" ? Banknote :
+                    method === "card" ? CreditCardIcon :
+                    method === "bank_transfer" ? Landmark :
+                    Wallet;
+                  const label =
+                    method === "cash" ? t("method.cashLabel") :
+                    method === "card" ? t("method.cardLabel") :
+                    method === "bank_transfer" ? t("method.bankTransferLabel") :
+                    method.charAt(0).toUpperCase() + method.slice(1);
+                  return (
+                    <div key={method} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2 text-foreground">
+                          <Icon className="h-4 w-4 text-muted-foreground" />
+                          <span>{label}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-muted-foreground">{pct.toFixed(0)}%</span>
+                          <span className="font-semibold tabular-nums">{cs}{amount.toLocaleString()}</span>
+                        </div>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                        <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </section>
 
           <section className="bg-card rounded-xl border border-border p-5 animate-fade-in">
