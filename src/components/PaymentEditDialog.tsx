@@ -26,6 +26,7 @@ interface PaymentEditDialogProps {
 export function PaymentEditDialog({ open, onOpenChange, appointment: apt, use12h = false, onSaved }: PaymentEditDialogProps) {
   const { t } = useLanguage();
   const { symbol: cs } = useCurrency();
+  const dateLocale = useDateLocale();
   const { toast } = useToast();
   const correct = useCorrectPayment();
 
