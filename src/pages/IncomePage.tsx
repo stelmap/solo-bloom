@@ -6,6 +6,7 @@ import { Plus, Trash2, DollarSign, CheckCircle, Download } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
 import { useIncome, useCreateIncome, useDeleteIncome, useExpectedPayments, useMarkExpectedPaymentPaid, useClients } from "@/hooks/useData";
+import { useActivePaymentMethods, localizedMethodName } from "@/hooks/usePaymentMethods";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
@@ -60,11 +61,8 @@ export default function IncomePage() {
   const total = filtered.reduce((s: number, i: any) => s + Number(i.amount), 0);
   const pendingTotal = (expectedPayments as any[]).reduce((s: number, ep: any) => s + Number(ep.amount), 0);
 
-  const PAYMENT_METHODS = [
-    { value: "cash", label: t("method.cashLabel") },
-    { value: "card", label: t("method.cardLabel") },
-    { value: "bank_transfer", label: t("method.bankTransferLabel") },
-  ];
+  const { data: activeMethods = [] } = useActivePaymentMethods();
+  const PAYMENT_METHODS = activeMethods.map(m => ({ value: m.code, label: localizedMethodName(m, t) }));
 
   const paymentLabel = (method: string) => PAYMENT_METHODS.find(m => m.value === method)?.label || method;
 
