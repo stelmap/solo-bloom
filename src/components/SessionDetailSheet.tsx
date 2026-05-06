@@ -478,7 +478,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("calendar.dateTime")}</span>
                   <span className="font-medium text-foreground">
-                    {format(new Date(apt.scheduled_at), "MMM d, yyyy")} · {fmtTime(apt.scheduled_at)}
+                    {format(new Date(apt.scheduled_at), "MMM d, yyyy", { locale: dateLocale })} · {fmtTime(apt.scheduled_at)}
                   </span>
                 </div>
                 <div className="flex justify-between">
