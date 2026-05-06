@@ -60,6 +60,9 @@ export function PaymentEditDialog({ open, onOpenChange, appointment: apt, use12h
 
   const { data: activeMethods = [] } = useActivePaymentMethods();
   const PAYMENT_METHODS = activeMethods.map(m => ({ value: m.code, label: localizedMethodName(m, t) }));
+  useEffect(() => {
+    if (!paymentMethod && PAYMENT_METHODS.length > 0) setPaymentMethod(PAYMENT_METHODS[0].value);
+  }, [activeMethods.length, paymentMethod]);
 
   const PAYMENT_LABELS: Record<string, string> = {
     paid_now: t("payment.paid"),
