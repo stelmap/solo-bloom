@@ -10,6 +10,7 @@ import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3, GripVe
 import { useState, useMemo, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, addDays, startOfWeek, isSameDay, isBefore, startOfDay } from "date-fns";
+import { getDateLocale } from "@/lib/dateLocale";
 import { formatTime, formatScheduledTime } from "@/lib/timeFormat";
 import {
   useAppointments, useCreateAppointment, useUpdateAppointment,
