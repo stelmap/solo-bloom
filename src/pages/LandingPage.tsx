@@ -19,7 +19,7 @@ import manualTrackingImg from "@/assets/manual-tracking-spreadsheet.png";
 import soloBizzPreviewImg from "@/assets/solobizz-client-profile.png";
 
 // ── Configurable external links (replace as needed) ───────────────────
-const YOUTUBE_URL = "https://www.youtube.com/";
+const YOUTUBE_URL = "https://www.youtube.com/@OneBizz_SoloBizz";
 const CONTACT_EMAIL = "info@solo-bizz.com";
 const CONTACT_OR_CALENDAR_URL = `mailto:${CONTACT_EMAIL}`;
 const BOOKING_URL = "#booking"; // [BOOKING_OR_CONTACT_FORM_URL]
