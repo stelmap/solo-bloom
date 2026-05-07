@@ -35,7 +35,7 @@ export async function deriveTelegramWebhookSecret(): Promise<string> {
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 }
 
-export const TELEGRAM_BOT_USERNAME = 'Solobizzcontact';
+export const TELEGRAM_BOT_USERNAME = 'solobizzcontact';
 
 // ---- Localization for outbound messages ----
 export type Lang = 'en' | 'fr' | 'pl' | 'uk';
