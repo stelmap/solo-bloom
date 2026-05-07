@@ -15,6 +15,16 @@ export function DemoBanner() {
   const { isDemoMode } = useDemoMode();
   const { t } = useLanguage();
 
+  // Friendly fallbacks when translation keys are missing (t returns the key itself).
+  const tx = (key: string, fallback: string) => {
+    const value = t(key as any);
+    return !value || value === key ? fallback : value;
+  };
+  const demoBadge = tx("demo.badge", "Demo data");
+  const demoHeadline = tx("demo.bannerHeadline", "You're exploring with sample data.");
+  const demoSub = tx("demo.bannerSub", "Pick a plan to start using your own clients, sessions, and finances.");
+  const demoChoosePlan = tx("demo.choosePlan", "Choose a plan");
+
   if (subscription.loading) return null;
 
   // Trial banner takes precedence
@@ -57,18 +67,18 @@ export function DemoBanner() {
         <div className="flex items-center gap-2 min-w-0 md:pl-0 pl-12">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/15 px-3 py-1 text-xs font-bold uppercase text-primary whitespace-nowrap">
             <ShieldCheck className="h-3.5 w-3.5" />
-            {t("demo.badge")}
+            {demoBadge}
           </span>
           <p className="text-sm text-foreground min-w-0">
-            <span className="font-semibold">{t("demo.bannerHeadline")}</span>{" "}
+            <span className="font-semibold">{demoHeadline}</span>{" "}
             <span className="text-muted-foreground hidden md:inline">
-              {t("demo.bannerSub")}
+              {demoSub}
             </span>
           </p>
         </div>
         <Button asChild size="sm" variant="default" className="shrink-0">
           <Link to="/plans">
-            {t("demo.choosePlan")}
+            {demoChoosePlan}
             <ArrowRight className="ml-1 h-3.5 w-3.5" />
           </Link>
         </Button>
