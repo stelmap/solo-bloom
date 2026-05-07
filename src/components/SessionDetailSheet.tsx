@@ -226,13 +226,14 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
           templateData: {
             clientName: client.name,
             specialistName,
-            sessionDate: scheduledDate.toLocaleDateString("en-US", {
+            sessionDate: scheduledDate.toLocaleDateString(emailLocale, {
               weekday: "long", year: "numeric", month: "long", day: "numeric",
             }),
-            sessionTime: scheduledDate.toLocaleTimeString("en-US", {
+            sessionTime: scheduledDate.toLocaleTimeString(emailLocale, {
               hour: "2-digit", minute: "2-digit",
             }),
             confirmationUrl,
+            language: lang,
           },
         },
       });
