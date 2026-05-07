@@ -168,14 +168,14 @@ Deno.serve(async (req) => {
     // ---------- Telegram ----------
     if (wantsTelegram && client.telegram_chat_id && client.telegram_link_status === 'connected') {
       const sessionType = (service?.name) ?? 'Session'
-      const baseText = needsConfirmation
-        ? `Hello <b>${client.name}</b>,\n\nplease confirm your upcoming session with <b>${specialistName}</b>.\n\nDate: ${sessionDate}\nTime: ${sessionTime}\nType: ${sessionType}\n\nPlease confirm your attendance.`
-        : `Hello <b>${client.name}</b>,\n\nthis is a reminder about your session with <b>${specialistName}</b>.\n\nDate: ${sessionDate}\nTime: ${sessionTime}\nType: ${sessionType}\n\nPlease contact your therapist if you need to reschedule.`
+      const T = tg(lang)
+      const params = { client: client.name, specialist: specialistName, date: sessionDate, time: sessionTime, type: sessionType }
+      const baseText = needsConfirmation ? T.confirmation(params) : T.reminder(params)
 
       const reply_markup = needsConfirmation
         ? { inline_keyboard: [[
-            { text: '✅ Confirm session', callback_data: `confirm:${apt.id}` },
-            { text: '🔄 I need to reschedule', callback_data: `reschedule:${apt.id}` },
+            { text: T.btnConfirm, callback_data: `confirm:${apt.id}` },
+            { text: T.btnReschedule, callback_data: `reschedule:${apt.id}` },
           ]] }
         : undefined
 
