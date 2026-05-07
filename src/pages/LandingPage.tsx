@@ -732,6 +732,14 @@ function ComparisonSection() {
           </div>
           <div className="p-7 rounded-2xl bg-primary/5 border-2 border-primary/30">
             <h3 className="text-xl font-semibold text-foreground mb-5">{t("cmpSolo")}</h3>
+            <div className="mb-5 rounded-lg overflow-hidden border border-primary/20 bg-background shadow-sm">
+              <img
+                src={soloBizzPreviewImg}
+                alt="Solo Bizz client profile dashboard"
+                loading="lazy"
+                className="w-full h-auto block"
+              />
+            </div>
             <ul className="space-y-3">
               {solo.map((k) => (
                 <li key={k} className="flex items-start gap-3 text-foreground">
