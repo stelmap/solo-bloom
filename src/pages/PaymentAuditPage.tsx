@@ -710,3 +710,46 @@ function LinkedSessionsCell({
     </TooltipProvider>
   );
 }
+
+function DateFilterPopover({
+  label,
+  value,
+  onChange,
+  locale,
+}: {
+  label: string;
+  value: string;                       // ISO yyyy-MM-dd or ""
+  onChange: (next: string) => void;
+  locale: import("date-fns").Locale;
+}) {
+  const selected = value ? new Date(`${value}T00:00:00`) : undefined;
+  const display = selected ? format(selected, "P", { locale }) : label;
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn(
+            "h-9 w-[170px] justify-start text-left font-normal gap-2",
+            !selected && "text-muted-foreground"
+          )}
+          aria-label={label}
+        >
+          <CalendarIcon className="h-4 w-4 shrink-0" />
+          <span className="truncate">{display}</span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={selected}
+          onSelect={(d) => onChange(d ? format(d, "yyyy-MM-dd") : "")}
+          locale={locale}
+          initialFocus
+          className={cn("p-3 pointer-events-auto")}
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
