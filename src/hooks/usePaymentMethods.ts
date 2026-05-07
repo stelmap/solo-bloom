@@ -53,12 +53,10 @@ export function usePaymentMethods() {
   // Realtime invalidation when changed elsewhere
   useEffect(() => {
     if (!user) return;
-    const ch = supabase
-      .channel(`pm-${user.id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "payment_methods", filter: `user_id=eq.${user.id}` }, () => {
-        qc.invalidateQueries({ queryKey: ["payment_methods", user.id] });
-      })
-      .subscribe();
+    const ch = supabase.channel(`pm-${user.id}-${Math.random().toString(36).slice(2)}`);
+    ch.on("postgres_changes" as any, { event: "*", schema: "public", table: "payment_methods", filter: `user_id=eq.${user.id}` }, () => {
+      qc.invalidateQueries({ queryKey: ["payment_methods", user.id] });
+    }).subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [user?.id]);
 
