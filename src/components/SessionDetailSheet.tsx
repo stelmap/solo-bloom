@@ -43,7 +43,9 @@ interface SessionDetailSheetProps {
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"];
 
 export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12h = false }: SessionDetailSheetProps) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const emailLocaleMap: Record<string, string> = { en: "en-US", fr: "fr-FR", pl: "pl-PL", uk: "uk-UA" };
+  const emailLocale = emailLocaleMap[lang] || "en-US";
   const dateLocale = useDateLocale();
   const { symbol: cs } = useCurrency();
   const { toast } = useToast();
@@ -224,13 +226,14 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
           templateData: {
             clientName: client.name,
             specialistName,
-            sessionDate: scheduledDate.toLocaleDateString("en-US", {
+            sessionDate: scheduledDate.toLocaleDateString(emailLocale, {
               weekday: "long", year: "numeric", month: "long", day: "numeric",
             }),
-            sessionTime: scheduledDate.toLocaleTimeString("en-US", {
+            sessionTime: scheduledDate.toLocaleTimeString(emailLocale, {
               hour: "2-digit", minute: "2-digit",
             }),
             confirmationUrl,
+            language: lang,
           },
         },
       });

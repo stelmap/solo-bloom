@@ -155,6 +155,7 @@ Deno.serve(async (req) => {
             sessionDate,
             sessionTime,
             confirmationUrl,
+            language: lang,
           },
         },
       })

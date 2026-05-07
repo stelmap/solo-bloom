@@ -597,6 +597,14 @@ export function useBulkCancelForDayOff() {
         const client = (apt as any)?.clients;
         if (client?.email && ['email_only', 'email_and_telegram'].includes(client.notification_preference)) {
           const scheduledDate = new Date(apt!.scheduled_at);
+          const { data: { user } } = await supabase.auth.getUser();
+          let userLang = 'en';
+          if (user) {
+            const { data: prof } = await supabase.from('profiles').select('language').eq('user_id', user.id).maybeSingle();
+            userLang = (prof as any)?.language || 'en';
+          }
+          const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', pl: 'pl-PL', uk: 'uk-UA' };
+          const emailLocale = localeMap[userLang] || 'en-US';
           supabase.functions.invoke("send-transactional-email", {
             body: {
               templateName: "session-cancellation",
@@ -604,13 +612,14 @@ export function useBulkCancelForDayOff() {
               idempotencyKey: `session-cancel-${id}`,
               templateData: {
                 clientName: client.name,
-                sessionDate: scheduledDate.toLocaleDateString("en-US", {
+                sessionDate: scheduledDate.toLocaleDateString(emailLocale, {
                   weekday: "long", year: "numeric", month: "long", day: "numeric",
                 }),
-                sessionTime: scheduledDate.toLocaleTimeString("en-US", {
+                sessionTime: scheduledDate.toLocaleTimeString(emailLocale, {
                   hour: "2-digit", minute: "2-digit",
                 }),
                 cancellationReason: reason,
+                language: userLang,
               },
             },
           }).catch(err => console.error("Failed to send cancellation email", err));
