@@ -3,11 +3,13 @@ import { CheckCircle2, XCircle, Send, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { useDateFormat } from "@/lib/dateLocale";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface Props { clientId: string }
 
 export function TelegramSendLog({ clientId }: Props) {
   const fmt = useDateFormat();
+  const { t } = useLanguage();
   const { data, isLoading } = useQuery({
     queryKey: ["telegram_send_log", clientId],
     queryFn: async () => {
