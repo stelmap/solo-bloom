@@ -1286,7 +1286,7 @@ function LandingFooter() {
       links: [
         { label: isUk ? "Про нас" : "About us", href: "#about" },
         { label: isUk ? "Контакти" : "Contacts", href: "#contacts" },
-        { label: isUk ? "Вакансії" : "Careers", href: VACANCIES_URL, external: true },
+        { label: isUk ? "Вакансії" : "Careers", href: VACANCIES_URL },
       ],
     },
     {
