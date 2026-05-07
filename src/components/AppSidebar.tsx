@@ -62,6 +62,13 @@ export function AppSidebar() {
   const isTrial = !subscription.loading && subscription.on_trial && !subscription.subscribed;
   const { isDemoMode } = useDemoMode();
   const { has, loading: entLoading } = useEntitlements();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase.rpc("has_role", { _user_id: user.id, _role: "admin" })
+      .then(({ data }) => setIsAdmin(data === true));
+  }, [user]);
 
   const visibleNavItems = useMemo(
     () => navItems.filter((it) => !it.requires || has(it.requires) || isDemoMode),
