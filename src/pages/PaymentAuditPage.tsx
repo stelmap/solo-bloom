@@ -312,18 +312,19 @@ export default function PaymentAuditPage() {
   return (
     <AppLayout>
       <div className="p-4 md:p-6 space-y-5 max-w-[1600px] mx-auto">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold">{t("audit.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("audit.subtitle")}</p>
+        {/* Header */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold tracking-tight">{t("audit.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t("audit.subtitle")}</p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
             {clientId !== "all" && (
-              <Button onClick={() => setCreateOpen(true)} size="sm">{t("incomeConfirm.title")}</Button>
+              <Button onClick={() => setCreateOpen(true)} size="sm" className="h-9">{t("incomeConfirm.title")}</Button>
             )}
-            <Button onClick={handleExport} variant="outline" size="sm" className="gap-2"><Download className="h-4 w-4" />{t("audit.export")}</Button>
-            <Button onClick={handleExportMonthly} variant="outline" size="sm" className="gap-2"><Download className="h-4 w-4" />{t("audit.exportMonthly")}</Button>
-            <Button onClick={handleExportClient} variant="outline" size="sm" disabled={clientId === "all"} className="gap-2"><Download className="h-4 w-4" />{t("audit.exportClient")}</Button>
+            <Button onClick={handleExport} variant="outline" size="sm" className="h-9 gap-2"><Download className="h-4 w-4" />{t("audit.export")}</Button>
+            <Button onClick={handleExportMonthly} variant="outline" size="sm" className="h-9 gap-2"><Download className="h-4 w-4" />{t("audit.exportMonthly")}</Button>
+            <Button onClick={handleExportClient} variant="outline" size="sm" disabled={clientId === "all"} className="h-9 gap-2"><Download className="h-4 w-4" />{t("audit.exportClient")}</Button>
           </div>
         </div>
 
@@ -337,13 +338,14 @@ export default function PaymentAuditPage() {
           <SumCard label={t("audit.sum.cancelled")} value={String(summary.cancelled)} />
         </div>
 
-        {/* Filters */}
+        {/* Quick filter chips */}
         <div className="flex flex-wrap items-center gap-2">
           {quickFilters.map(f => (
             <button key={f.key}
+              type="button"
               onClick={() => setQuickFilter(f.key)}
               className={cn(
-                "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
+                "inline-flex items-center h-8 px-3 rounded-full text-xs font-medium border transition-colors whitespace-nowrap",
                 quickFilter === f.key ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:bg-muted"
               )}>
               {f.label}
@@ -351,26 +353,27 @@ export default function PaymentAuditPage() {
           ))}
         </div>
 
+        {/* Filters row */}
         <div className="flex flex-wrap items-center gap-2">
           <ClientPicker
             clients={clients}
             value={clientId}
             onChange={setClientId}
             allOption={{ value: "all", label: t("audit.allClients") }}
-            triggerClassName="w-[240px]"
+            triggerClassName="h-9 w-[220px]"
           />
-          <div className="relative flex-1 min-w-[240px] max-w-md">
-            <Search className="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input className="pl-8 w-full" placeholder={t("audit.searchPlaceholder")} value={search} onChange={e => setSearch(e.target.value)} />
+          <div className="relative flex-1 min-w-[220px] max-w-md">
+            <Search className="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <Input className="h-9 pl-8 w-full" placeholder={t("audit.searchPlaceholder")} value={search} onChange={e => setSearch(e.target.value)} />
           </div>
-          <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-[150px]" aria-label={t("audit.dateFrom")} />
+          <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="h-9 w-[150px]" aria-label={t("audit.dateFrom")} />
           <span className="text-muted-foreground text-xs">–</span>
-          <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-[150px]" aria-label={t("audit.dateTo")} />
+          <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="h-9 w-[150px]" aria-label={t("audit.dateTo")} />
           {(dateFrom || dateTo) && (
-            <Button variant="ghost" size="sm" onClick={() => { setDateFrom(""); setDateTo(""); }}>{t("audit.clearDates")}</Button>
+            <Button variant="ghost" size="sm" className="h-9" onClick={() => { setDateFrom(""); setDateTo(""); }}>{t("audit.clearDates")}</Button>
           )}
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-9 w-[200px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="date_desc">{t("audit.sort.dateDesc")}</SelectItem>
               <SelectItem value="date_asc">{t("audit.sort.dateAsc")}</SelectItem>
@@ -380,7 +383,7 @@ export default function PaymentAuditPage() {
               <SelectItem value="client_desc">{t("audit.sort.clientDesc")}</SelectItem>
             </SelectContent>
           </Select>
-          <span className="text-xs text-muted-foreground ml-auto">{filtered.length} {t("audit.records")}</span>
+          <span className="ml-auto inline-flex items-center h-9 px-2 text-xs text-muted-foreground tabular-nums">{filtered.length} {t("audit.records")}</span>
         </div>
 
         {/* Table */}
@@ -578,9 +581,9 @@ export default function PaymentAuditPage() {
 
 function SumCard({ label, value }: { label: string; value: string }) {
   return (
-    <Card className="p-3">
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="text-lg font-semibold mt-0.5 tabular-nums">{value}</div>
+    <Card className="p-3 h-full flex flex-col justify-between min-h-[76px]">
+      <div className="text-[11px] uppercase tracking-wide text-muted-foreground line-clamp-2">{label}</div>
+      <div className="text-lg font-semibold mt-1 tabular-nums">{value}</div>
     </Card>
   );
 }
