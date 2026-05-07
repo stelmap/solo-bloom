@@ -3,11 +3,13 @@ import { CheckCircle2, XCircle, Send, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { useDateFormat } from "@/lib/dateLocale";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface Props { clientId: string }
 
 export function TelegramSendLog({ clientId }: Props) {
   const fmt = useDateFormat();
+  const { t } = useLanguage();
   const { data, isLoading } = useQuery({
     queryKey: ["telegram_send_log", clientId],
     queryFn: async () => {
@@ -25,12 +27,12 @@ export function TelegramSendLog({ clientId }: Props) {
   return (
     <div className="bg-card rounded-xl border border-border p-5 space-y-3">
       <h3 className="font-semibold text-foreground flex items-center gap-2">
-        <Send className="h-4 w-4 text-primary" /> Telegram delivery log
+        <Send className="h-4 w-4 text-primary" /> {t("telegramLog.title")}
       </h3>
       {isLoading ? (
-        <p className="text-xs text-muted-foreground">Loading…</p>
+        <p className="text-xs text-muted-foreground">{t("telegramLog.loading")}</p>
       ) : !data || data.length === 0 ? (
-        <p className="text-xs text-muted-foreground">No Telegram messages sent yet.</p>
+        <p className="text-xs text-muted-foreground">{t("telegramLog.empty")}</p>
       ) : (
         <ul className="divide-y divide-border text-sm">
           {data.map((row: any) => (
@@ -60,7 +62,7 @@ export function TelegramSendLog({ clientId }: Props) {
                     : "text-destructive border-destructive/30"
                 }
               >
-                {row.status}
+                {row.status === "sent" ? t("telegramLog.status.sent") : t("telegramLog.status.failed")}
               </Badge>
             </li>
           ))}
