@@ -5,8 +5,9 @@ import {
   Wallet, ChevronDown, Lock, ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { TranslationKey } from "@/i18n/translations";
 import { useEntitlements, type FeatureCode } from "@/hooks/useEntitlements";
@@ -61,6 +62,13 @@ export function AppSidebar() {
   const isTrial = !subscription.loading && subscription.on_trial && !subscription.subscribed;
   const { isDemoMode } = useDemoMode();
   const { has, loading: entLoading } = useEntitlements();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase.rpc("has_role", { _user_id: user.id, _role: "admin" })
+      .then(({ data }) => setIsAdmin(data === true));
+  }, [user]);
 
   const visibleNavItems = useMemo(
     () => navItems.filter((it) => !it.requires || has(it.requires) || isDemoMode),
@@ -220,6 +228,22 @@ export function AppSidebar() {
               <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-sidebar-primary/15 text-sidebar-primary">
                 {lockedCount}
               </span>
+            </Link>
+          )}
+
+          {isAdmin && (
+            <Link
+              to="/admin/booking-requests"
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                "mt-3 flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                isExactActive("/admin/booking-requests")
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+              )}
+            >
+              <ShieldCheck className="h-4.5 w-4.5 shrink-0" />
+              <span className="flex-1 truncate">Admin</span>
             </Link>
           )}
         </nav>
