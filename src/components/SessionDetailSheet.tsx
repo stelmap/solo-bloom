@@ -909,8 +909,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 <div>
                   <p className="text-sm font-semibold text-foreground">
                     {paymentStatus === "waiting_for_payment"
-                      ? t("calendar.willBeExpected", { amount: completePrice.toFixed(2) })
-                      : t("calendar.willBeIncome", { amount: completePrice.toFixed(2) })}
+                      ? t("calendar.willBeExpected", { symbol: cs, amount: completePrice.toFixed(2) })
+                      : t("calendar.willBeIncome", { symbol: cs, amount: completePrice.toFixed(2) })}
                   </p>
                 </div>
               </div>
