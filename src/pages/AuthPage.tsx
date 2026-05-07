@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { getStoredLang } from "@/i18n/LanguageContext";
 import { track } from "@/lib/analytics";
@@ -269,6 +270,15 @@ export default function AuthPage() {
                   <h2 className="text-xl font-bold text-foreground">{modeCopy.title}</h2>
                   <p className="text-sm text-muted-foreground">{modeCopy.subtitle}</p>
                 </div>
+                {mode !== "forgot" && (
+                  <div className="space-y-3">
+                    <GoogleSignInButton />
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
+                      <div className="relative flex justify-center text-xs"><span className="bg-background px-2 text-muted-foreground">{t("auth.orContinueWith")}</span></div>
+                    </div>
+                  </div>
+                )}
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <Label>{t("common.email")}</Label>
