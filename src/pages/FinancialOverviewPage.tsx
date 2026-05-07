@@ -270,6 +270,57 @@ export default function FinancialOverviewPage() {
 
   const fmt = (n: number) => `${cs}${Math.abs(n).toLocaleString("en", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
+  // Tax breakdown lines for the currently drilled month
+  const drillTaxLines = useMemo(() => {
+    if (!drillMonth || activeTaxes.length === 0 || drillMonth.taxes <= 0) return [];
+    const monthIdx = drillMonth.month;
+    const isAccrualMonth = monthIdx % 3 === 0;
+    let accruedQuarterKey: string | null = null;
+    let qLabel = "";
+    if (isAccrualMonth) {
+      const prev = monthIdx - 1;
+      if (prev < 0) {
+        accruedQuarterKey = `${year - 1}-Q4`;
+        qLabel = `Q4 ${year - 1}`;
+      } else {
+        const q = Math.floor(prev / 3) + 1;
+        accruedQuarterKey = `${year}-Q${q}`;
+        qLabel = `Q${q}`;
+      }
+    }
+    const qMap = new Map<string, number>();
+    for (const m of monthsData) {
+      const q = Math.floor(m.month / 3) + 1;
+      const key = `${year}-Q${q}`;
+      qMap.set(key, (qMap.get(key) || 0) + m.income);
+    }
+    const lines: { id: string; label: string; amount: number; isForecast?: boolean }[] = [];
+    for (const tax of activeTaxes as any[]) {
+      let amount = 0;
+      let label = tax.tax_name;
+      if (tax.frequency === "quarterly") {
+        if (!accruedQuarterKey) continue;
+        if (tax.tax_type === "percentage") {
+          const qIncome = qMap.get(accruedQuarterKey) || 0;
+          amount = qIncome * (Number(tax.tax_rate) / 100);
+        } else {
+          amount = Number(tax.fixed_amount);
+        }
+        label = `${tax.tax_name} — ${qLabel}`;
+      } else {
+        if (tax.tax_type === "percentage") {
+          amount = drillMonth.income * (Number(tax.tax_rate) / 100);
+        } else {
+          amount = Number(tax.fixed_amount);
+        }
+      }
+      amount = Math.round(amount * 100) / 100;
+      if (amount === 0) continue;
+      lines.push({ id: tax.id, label, amount, isForecast: drillMonth.isFuture });
+    }
+    return lines;
+  }, [drillMonth, activeTaxes, monthsData, year]);
+
   return (
     <AppLayout>
       <div className="space-y-6">
