@@ -1947,6 +1947,7 @@ export type Database = {
           created_at: string
           error_message: string | null
           id: string
+          idempotency_key: string | null
           message_id: string | null
           metadata: Json | null
           status: string
@@ -1960,6 +1961,7 @@ export type Database = {
           created_at?: string
           error_message?: string | null
           id?: string
+          idempotency_key?: string | null
           message_id?: string | null
           metadata?: Json | null
           status: string
@@ -1973,6 +1975,7 @@ export type Database = {
           created_at?: string
           error_message?: string | null
           id?: string
+          idempotency_key?: string | null
           message_id?: string | null
           metadata?: Json | null
           status?: string
