@@ -101,7 +101,7 @@ export default function IncomePage() {
         amount: Number(payDialog.amount), paymentMethod: payMethod, paymentDate: payDate,
       });
       setPayDialog(null);
-      toast({ title: t("toast.paymentReceived"), description: t("toast.paymentRecordedDesc", { amount: Number(payDialog.amount).toFixed(2) }) });
+      toast({ title: t("toast.paymentReceived"), description: t("toast.paymentRecordedDesc", { symbol: cs, amount: Number(payDialog.amount).toFixed(2) }) });
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
