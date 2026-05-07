@@ -1,6 +1,6 @@
 import { useState, useCallback, createContext, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { PublicFooter } from "@/components/PublicFooter";
+
 import { Button } from "@/components/ui/button";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
@@ -12,14 +12,21 @@ import {
   ArrowRight, CheckCircle2, AlertTriangle, Eye, TrendingUp,
   Calendar as CalendarIcon, Users, Sparkles, ShieldCheck,
   Play, X, Check, Briefcase, GraduationCap, UserCheck, BookOpen,
-  Quote, MessageCircle,
+  Quote, MessageCircle, Mail, Phone, MapPin, Send,
 } from "lucide-react";
 import manualTrackingImg from "@/assets/manual-tracking-spreadsheet.png";
 import soloBizzPreviewImg from "@/assets/solobizz-client-profile.png";
 
 // ── Configurable external links (replace as needed) ───────────────────
 const YOUTUBE_URL = "https://www.youtube.com/";
-const CONTACT_OR_CALENDAR_URL = "mailto:hello@solo-bizz.com";
+const CONTACT_EMAIL = "info@solo-bizz.com";
+const CONTACT_OR_CALENDAR_URL = `mailto:${CONTACT_EMAIL}`;
+const BOOKING_URL = "#booking"; // [BOOKING_OR_CONTACT_FORM_URL]
+const TELEGRAM_URL = "#telegram"; // [TELEGRAM_URL]
+const TELEGRAM_HANDLE = "@solobizz";
+const PHONE_NUMBER = "+48 000 000 000"; // [PHONE_NUMBER]
+const OFFICE_ADDRESS = "Poland, Wroclaw, Gwiadzista 16";
+const VACANCIES_URL = "#vacancies"; // [VACANCIES_URL]
 
 // ── Local landing-page copy (EN / FR / UK / PL) ───────────────────────
 
@@ -1081,22 +1088,231 @@ function FinalCTA() {
           <VideoCta label={t("heroVideo")} source="/#final" className="text-base px-8 h-12" />
         </div>
 
-        <div className="mt-14 max-w-xl mx-auto rounded-2xl border border-sidebar-border bg-accent/30 p-6 sm:p-8 text-center">
-          <h3 className="text-xl font-semibold text-secondary-foreground mb-2">{t("doubtTitle")}</h3>
-          <p className="text-base text-secondary-foreground/80 mb-5">{t("doubtText")}</p>
-          <a
-            href={CONTACT_OR_CALENDAR_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => track("cta_clicked", { source_page: "/#final", cta: "talk_to_us", lang })}
-          >
-            <Button variant="outline" size="lg" className="gap-2">
-              <MessageCircle className="h-4 w-4" /> {t("doubtCta")}
-            </Button>
-          </a>
+        <div id="contact" className="mt-14 max-w-2xl mx-auto rounded-2xl border border-sidebar-border bg-accent/30 p-6 sm:p-10 text-center">
+          <h3 className="text-2xl sm:text-3xl font-bold text-secondary-foreground mb-3">
+            {lang === "uk" ? "Залишились сумніви?" : t("doubtTitle")}
+          </h3>
+          <p className="text-base text-secondary-foreground/80 mb-3">
+            {lang === "uk"
+              ? "Запишіться на коротку розмову, і ми покажемо, як Solo Bizz може спростити вашу роботу, упорядкувати записи, оплати та допомогти краще бачити фінансову картину вашої практики."
+              : t("doubtText")}
+          </p>
+          <p className="text-sm text-secondary-foreground/70 mb-6">
+            {lang === "uk"
+              ? "Після короткої розмови ви зрозумієте, як система може підійти саме під ваш формат роботи."
+              : "After a short call you'll understand how the system can fit your way of working."}
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a
+              href={BOOKING_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => track("cta_clicked", { source_page: "/#final", cta: "book_call", lang })}
+            >
+              <Button size="lg" className="gap-2">
+                <MessageCircle className="h-4 w-4" />
+                {lang === "uk" ? "Поспілкуватися" : t("doubtCta")}
+              </Button>
+            </a>
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              onClick={() => track("cta_clicked", { source_page: "/#final", cta: "email_us", lang })}
+            >
+              <Button size="lg" variant="outline" className="gap-2">
+                <Mail className="h-4 w-4" />
+                {lang === "uk" ? "Написати нам" : "Email us"}
+              </Button>
+            </a>
+            <a
+              href={TELEGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => track("cta_clicked", { source_page: "/#final", cta: "telegram", lang })}
+            >
+              <Button size="lg" variant="outline" className="gap-2">
+                <Send className="h-4 w-4" />
+                {lang === "uk" ? "Написати в Telegram" : "Telegram"}
+              </Button>
+            </a>
+          </div>
+          <p className="text-xs text-secondary-foreground/60 mt-5">
+            {lang === "uk"
+              ? "Можете залишити заявку, написати на email або перейти в Telegram — ми відповімо зручним для вас способом."
+              : "Leave a request, email us, or message us on Telegram — we'll reply your way."}
+          </p>
         </div>
       </div>
     </section>
+  );
+}
+
+// ── About / Contacts / Footer ─────────────────────────────────────────
+
+function AboutContactsSection() {
+  const { lang } = useLandingLang();
+  const isUk = lang === "uk";
+  return (
+    <section id="about" className="py-20 px-4 sm:px-6 bg-background">
+      <div className="max-w-6xl mx-auto grid gap-10 lg:grid-cols-2 lg:gap-16">
+        {/* About */}
+        <div>
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-5">
+            {isUk ? "Про нас" : "About us"}
+          </h2>
+          <p className="text-base text-muted-foreground leading-relaxed mb-4">
+            {isUk
+              ? "Solo Bizz — це система для психологів, психотерапевтів, супервізорів, викладачів і приватних спеціалістів, які хочуть вести клієнтів, записи, оплати та бачити фінансовий результат без хаосу, Excel і ручного обліку."
+              : "Solo Bizz is a system for psychologists, psychotherapists, supervisors, teachers and solo professionals who want to manage clients, sessions, payments and see real financial results — without chaos, Excel or manual tracking."}
+          </p>
+          <p className="text-base text-muted-foreground leading-relaxed">
+            {isUk
+              ? "Ми створюємо інструмент, який допомагає перетворити приватну практику на більш системний, зрозумілий і керований бізнес."
+              : "We're building a tool that turns a private practice into a more systematic, clear and manageable business."}
+          </p>
+        </div>
+
+        {/* Contacts */}
+        <div id="contacts">
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-5">
+            {isUk ? "Контакти" : "Contacts"}
+          </h2>
+          <ul className="space-y-4">
+            <li className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
+              <MapPin className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+              <div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">
+                  {isUk ? "Локація" : "Location"}
+                </div>
+                <div className="text-foreground">{OFFICE_ADDRESS}</div>
+              </div>
+            </li>
+            <li className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
+              <Mail className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+              <div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">Email</div>
+                <a href={`mailto:${CONTACT_EMAIL}`} className="text-foreground hover:text-primary">
+                  {CONTACT_EMAIL}
+                </a>
+              </div>
+            </li>
+            <li className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
+              <Phone className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+              <div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">
+                  {isUk ? "Телефон" : "Phone"}
+                </div>
+                <a href={`tel:${PHONE_NUMBER.replace(/\s+/g, "")}`} className="text-foreground hover:text-primary">
+                  {PHONE_NUMBER}
+                </a>
+              </div>
+            </li>
+            <li className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
+              <Send className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+              <div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">Telegram</div>
+                <a
+                  href={TELEGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground hover:text-primary"
+                >
+                  {TELEGRAM_HANDLE}
+                </a>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function LandingFooter() {
+  const { lang } = useLandingLang();
+  const isUk = lang === "uk";
+  const groups = [
+    {
+      title: isUk ? "Продукт" : "Product",
+      links: [
+        { label: isUk ? "Як це працює" : "How it works", href: "#comparison" },
+        { label: isUk ? "Ціни" : "Pricing", href: "#pricing" },
+        { label: isUk ? "Демо" : "Demo", href: "#demo" },
+        { label: "FAQ", href: "#faq" },
+      ],
+    },
+    {
+      title: isUk ? "Компанія" : "Company",
+      links: [
+        { label: isUk ? "Про нас" : "About us", href: "#about" },
+        { label: isUk ? "Контакти" : "Contacts", href: "#contacts" },
+        { label: isUk ? "Вакансії" : "Careers", href: VACANCIES_URL, external: true },
+      ],
+    },
+    {
+      title: isUk ? "Зв'язок" : "Get in touch",
+      links: [
+        { label: "Email", href: `mailto:${CONTACT_EMAIL}`, external: true },
+        { label: "Telegram", href: TELEGRAM_URL, external: true },
+        { label: isUk ? "Телефон" : "Phone", href: `tel:${PHONE_NUMBER.replace(/\s+/g, "")}`, external: true },
+      ],
+    },
+  ];
+
+  return (
+    <footer className="border-t border-border bg-secondary/30 px-4 sm:px-6 py-12">
+      <div className="mx-auto max-w-6xl">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <div className="text-xl font-bold text-foreground mb-2">Solo Bizz</div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              {isUk
+                ? "CRM для приватної практики: клієнти, записи, оплати та фінанси."
+                : "CRM for private practice: clients, bookings, payments and finance."}
+            </p>
+            <p className="text-sm text-muted-foreground flex items-start gap-2">
+              <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              {OFFICE_ADDRESS}
+            </p>
+          </div>
+          {groups.map((g) => (
+            <div key={g.title}>
+              <h4 className="text-sm font-semibold text-foreground mb-3">{g.title}</h4>
+              <ul className="space-y-2">
+                {g.links.map((l) => (
+                  <li key={l.label}>
+                    <a
+                      href={l.href}
+                      target={l.external ? "_blank" : undefined}
+                      rel={l.external ? "noopener noreferrer" : undefined}
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {l.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-muted-foreground">
+            © {new Date().getFullYear()} Solo Bizz. {isUk ? "Усі права захищені." : "All rights reserved."}
+          </p>
+          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+            <Link to="/terms" className="text-xs text-muted-foreground hover:text-foreground">
+              {isUk ? "Умови" : "Terms"}
+            </Link>
+            <Link to="/privacy" className="text-xs text-muted-foreground hover:text-foreground">
+              {isUk ? "Конфіденційність" : "Privacy"}
+            </Link>
+            <Link to="/cookie-policy" className="text-xs text-muted-foreground hover:text-foreground">
+              {isUk ? "Cookies" : "Cookies"}
+            </Link>
+          </nav>
+        </div>
+      </div>
+    </footer>
   );
 }
 
@@ -1120,7 +1336,8 @@ export default function LandingPage() {
         <TestimonialsSection />
         <FaqSection />
         <FinalCTA />
-        <PublicFooter />
+        <AboutContactsSection />
+        <LandingFooter />
       </div>
     </LandingLangProvider>
   );
