@@ -250,11 +250,13 @@ const C = {
     pl: "Psycholodzy już testują Solo Bizz w swojej praktyce",
   },
   testSub: {
-    en: "Early users keep clients, sessions and payments in the system instead of spreadsheets and manual tracking.",
-    fr: "Les premiers utilisateurs gèrent clients, séances et paiements dans le système plutôt que dans des tableurs.",
-    uk: "Перші користувачі вже ведуть клієнтів, сесії та оплати в системі замість таблиць і ручного обліку.",
-    pl: "Pierwsi użytkownicy prowadzą klientów, sesje i płatności w systemie zamiast w arkuszach.",
+    en: "Original feedback from the first users who are already trying the system in their work.",
+    fr: "Retours originaux des premiers utilisateurs qui essaient déjà le système dans leur travail.",
+    uk: "Оригінальні відгуки перших користувачів, які вже пробують систему у своїй роботі.",
+    pl: "Oryginalne opinie pierwszych użytkowników, którzy już próbują systemu w swojej pracy.",
   },
+  testReadMore: { en: "Read full", fr: "Lire la suite", uk: "Читати повністю", pl: "Czytaj całość" },
+  testReadLess: { en: "Show less", fr: "Réduire", uk: "Згорнути", pl: "Zwiń" },
   test1Q: {
     en: "I finally see who paid, who owes, and how much I really earned this month.",
     fr: "Je vois enfin qui a payé, qui me doit, et combien j'ai vraiment gagné ce mois-ci.",
@@ -884,13 +886,60 @@ function PlanCard({
 
 // ── Testimonials ──────────────────────────────────────────────────────
 
+const NATALIA_PARAGRAPHS = [
+  "Справді вона бере на себе частину роботи, яку я зараз виконую вручну в блокнотику, і там все почьоркано)).",
+  "Класно, що працює нагадування і для психолога і для клієнта, правда ще не розібралась чи може клієнт бачити вільні віконечка для запису, це було би зручно.",
+  "Графіки за підсумками місяця чи року дають загальну картину куди я рухаюсь, яка динаміка, і що можна планувати на потім.",
+  "Цікава штука з прогнозуванням прибутку, це щось нове для мене, особливо сподобалось що це прогнозування дає реалістину картинку: то можу я дозволити собі навчання цього місяця чи нє?))",
+  "Загалом, виглядає що програмка дає відчуття: все серйозно, це бізнес дєтка, і це хороше відчуття, воно справді потрібне для системного розвитку.",
+  "Впевнена, це буде корисно для багатьох фахівців",
+];
+
+const SVITLANA_PARAGRAPHS = [
+  "мені подобається. Дуже корисна штука. Зразу видно на якому ти світі і що відбувається. Дякую що розширила мій всесвіт.",
+];
+
+function TestimonialCard({
+  name,
+  role,
+  paragraphs,
+  expandable = false,
+}: {
+  name: string;
+  role: string;
+  paragraphs: string[];
+  expandable?: boolean;
+}) {
+  const { t } = useLandingLang();
+  const [expanded, setExpanded] = useState(false);
+  const visible = expandable && !expanded ? paragraphs.slice(0, 1) : paragraphs;
+  return (
+    <figure className="p-6 sm:p-7 rounded-2xl bg-card border border-border flex flex-col shadow-sm">
+      <Quote className="h-6 w-6 text-primary mb-3" />
+      <blockquote className="text-base text-foreground leading-relaxed flex-1 space-y-3 whitespace-pre-line">
+        {visible.map((p, i) => (
+          <p key={i}>{p}</p>
+        ))}
+      </blockquote>
+      {expandable && paragraphs.length > 1 && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-4 self-start text-sm font-semibold text-primary hover:underline"
+        >
+          {expanded ? t("testReadLess") : t("testReadMore")}
+        </button>
+      )}
+      <figcaption className="mt-5 pt-4 border-t border-border text-sm">
+        <div className="font-semibold text-foreground">{name}</div>
+        <div className="text-muted-foreground">{role}</div>
+      </figcaption>
+    </figure>
+  );
+}
+
 function TestimonialsSection() {
   const { t } = useLandingLang();
-  const items: { q: CopyKey; a: CopyKey }[] = [
-    { q: "test1Q", a: "test1A" },
-    { q: "test2Q", a: "test2A" },
-    { q: "test3Q", a: "test3A" },
-  ];
   return (
     <section className="py-20 px-4 sm:px-6">
       <div className="max-w-5xl mx-auto">
@@ -901,18 +950,18 @@ function TestimonialsSection() {
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">{t("testTitle")}</h2>
           <p className="text-lg text-muted-foreground">{t("testSub")}</p>
         </div>
-        <div className="grid md:grid-cols-3 gap-5">
-          {items.map((it) => (
-            <figure key={it.q} className="p-6 rounded-2xl bg-card border border-border flex flex-col">
-              <Quote className="h-6 w-6 text-primary mb-3" />
-              <blockquote className="text-base text-foreground leading-relaxed flex-1">
-                {t(it.q)}
-              </blockquote>
-              <figcaption className="mt-4 text-sm text-muted-foreground font-medium">
-                — {t(it.a)}
-              </figcaption>
-            </figure>
-          ))}
+        <div className="grid md:grid-cols-2 gap-5 items-start">
+          <TestimonialCard
+            name="Наталя"
+            role="Психотерапевт"
+            paragraphs={NATALIA_PARAGRAPHS}
+            expandable
+          />
+          <TestimonialCard
+            name="Світлана"
+            role="Психолог"
+            paragraphs={SVITLANA_PARAGRAPHS}
+          />
         </div>
       </div>
     </section>
