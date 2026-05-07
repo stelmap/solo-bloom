@@ -1161,7 +1161,10 @@ function FinalCTA() {
             >
               <Button size="lg" variant="outline" className="gap-2">
                 <Mail className="h-4 w-4" />
-                {lang === "uk" ? "Написати нам" : "Email us"}
+                {lang === "uk" ? "Написати нам"
+                  : lang === "fr" ? "Nous écrire"
+                  : lang === "pl" ? "Napisz do nas"
+                  : "Email us"}
               </Button>
             </a>
             <a
@@ -1172,13 +1175,20 @@ function FinalCTA() {
             >
               <Button size="lg" variant="outline" className="gap-2">
                 <Send className="h-4 w-4" />
-                {lang === "uk" ? "Написати в Telegram" : "Telegram"}
+                {lang === "uk" ? "Написати в Telegram"
+                  : lang === "fr" ? "Écrire sur Telegram"
+                  : lang === "pl" ? "Napisz na Telegramie"
+                  : "Telegram"}
               </Button>
             </a>
           </div>
           <p className="text-xs text-secondary-foreground/60 mt-5">
             {lang === "uk"
               ? "Можете залишити заявку, написати на email або перейти в Telegram — ми відповімо зручним для вас способом."
+              : lang === "fr"
+              ? "Laissez une demande, écrivez-nous par email ou sur Telegram — nous répondrons par le canal qui vous convient."
+              : lang === "pl"
+              ? "Zostaw zgłoszenie, napisz e-mail lub na Telegramie — odpowiemy w wygodny dla Ciebie sposób."
               : "Leave a request, email us, or message us on Telegram — we'll reply your way."}
           </p>
         </div>
