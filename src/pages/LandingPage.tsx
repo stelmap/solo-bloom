@@ -1265,6 +1265,7 @@ function AboutContactsSection() {
                   href={TELEGRAM_URL}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => track("cta_clicked", { source_page: "/#contacts", cta: "telegram", lang })}
                   className="text-foreground hover:text-primary"
                 >
                   {TELEGRAM_HANDLE}
@@ -1329,18 +1330,22 @@ function LandingFooter() {
             <div key={g.title}>
               <h4 className="text-sm font-semibold text-foreground mb-3">{g.title}</h4>
               <ul className="space-y-2">
-                {g.links.map((l) => (
-                  <li key={l.label}>
-                    <a
-                      href={l.href}
-                      target={l.external ? "_blank" : undefined}
-                      rel={l.external ? "noopener noreferrer" : undefined}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {l.label}
-                    </a>
-                  </li>
-                ))}
+                {g.links.map((l) => {
+                  const isTelegram = l.href === TELEGRAM_URL;
+                  return (
+                    <li key={l.label}>
+                      <a
+                        href={l.href}
+                        target={l.external ? "_blank" : undefined}
+                        rel={l.external ? "noopener noreferrer" : undefined}
+                        onClick={isTelegram ? () => track("cta_clicked", { source_page: "/#footer", cta: "telegram", lang }) : undefined}
+                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {l.label}
+                      </a>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}
