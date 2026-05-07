@@ -31,9 +31,9 @@ const COPY = {
 } as const;
 
 export default function CareersPage() {
-  let lang: "uk" | "en" | "fr" | "pl" = "en";
-  try { lang = (useLandingLang().lang as any) ?? "en"; } catch { /* fallback */ }
-  const t = COPY[lang] ?? COPY.en;
+  const stored = getStoredLang() as any;
+  const lang: "uk" | "en" | "fr" | "pl" = (["uk","en","fr","pl"].includes(stored) ? stored : "en");
+  const t = COPY[lang];
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
