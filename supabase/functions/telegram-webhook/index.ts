@@ -38,6 +38,8 @@ Deno.serve(async (req) => {
       const [action, appointmentId] = data.split(':');
 
       if (action === 'confirm' && appointmentId) {
+        const lang = await langForAppointmentId(supabase, appointmentId);
+        const T = tg(lang);
         await supabase.from('appointments').update({
           status: 'confirmed',
           confirmation_status: 'confirmed',
@@ -47,9 +49,11 @@ Deno.serve(async (req) => {
           appointment_id: appointmentId, chat_id: chatId, template_name: 'confirmation_response',
           status: 'confirmed', metadata: { source: 'telegram' },
         });
-        await tgFetch('answerCallbackQuery', { callback_query_id: cq.id, text: 'Confirmed ✓' });
-        await tgFetch('sendMessage', { chat_id: chatId, text: 'Thank you. Your session has been confirmed.' });
+        await tgFetch('answerCallbackQuery', { callback_query_id: cq.id, text: T.cbConfirmed });
+        await tgFetch('sendMessage', { chat_id: chatId, text: T.thanksConfirmed });
       } else if (action === 'reschedule' && appointmentId) {
+        const lang = await langForAppointmentId(supabase, appointmentId);
+        const T = tg(lang);
         const { data: apt } = await supabase.from('appointments')
           .select('id, notes').eq('id', appointmentId).single();
         const note = `[${new Date().toISOString()}] Client requested reschedule via Telegram.`;
@@ -60,8 +64,8 @@ Deno.serve(async (req) => {
           appointment_id: appointmentId, chat_id: chatId, template_name: 'reschedule_request',
           status: 'reschedule_requested',
         });
-        await tgFetch('answerCallbackQuery', { callback_query_id: cq.id, text: 'Noted' });
-        await tgFetch('sendMessage', { chat_id: chatId, text: 'Thank you. Your therapist has been notified that you may need to reschedule.' });
+        await tgFetch('answerCallbackQuery', { callback_query_id: cq.id, text: T.cbNoted });
+        await tgFetch('sendMessage', { chat_id: chatId, text: T.thanksReschedule });
       }
       return new Response(JSON.stringify({ ok: true }));
     }
