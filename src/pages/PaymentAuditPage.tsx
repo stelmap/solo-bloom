@@ -101,6 +101,7 @@ const allocBadgeVariant = (s: AllocStatus): { cls: string; key: string } => {
 
 export default function PaymentAuditPage() {
   const { t } = useLanguage();
+  const dateLocale = useDateLocale();
   const { symbol: cs } = useCurrency();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
