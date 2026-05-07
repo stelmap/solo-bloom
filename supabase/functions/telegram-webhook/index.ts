@@ -1,6 +1,16 @@
 // Telegram webhook: handles /start <token> linking, confirm/reschedule callbacks.
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { tgFetch, deriveTelegramWebhookSecret } from '../_shared/telegram.ts';
+import { tgFetch, deriveTelegramWebhookSecret, tg, normalizeLang } from '../_shared/telegram.ts';
+
+async function langForUserId(supabase: any, userId: string | null | undefined) {
+  if (!userId) return 'en';
+  const { data } = await supabase.from('profiles').select('language').eq('user_id', userId).maybeSingle();
+  return normalizeLang(data?.language);
+}
+async function langForAppointmentId(supabase: any, appointmentId: string) {
+  const { data } = await supabase.from('appointments').select('user_id').eq('id', appointmentId).maybeSingle();
+  return langForUserId(supabase, data?.user_id);
+}
 
 function safeEqual(a: string | null, b: string): boolean {
   if (!a || a.length !== b.length) return false;
@@ -28,6 +38,8 @@ Deno.serve(async (req) => {
       const [action, appointmentId] = data.split(':');
 
       if (action === 'confirm' && appointmentId) {
+        const lang = await langForAppointmentId(supabase, appointmentId);
+        const T = tg(lang);
         await supabase.from('appointments').update({
           status: 'confirmed',
           confirmation_status: 'confirmed',
@@ -37,9 +49,11 @@ Deno.serve(async (req) => {
           appointment_id: appointmentId, chat_id: chatId, template_name: 'confirmation_response',
           status: 'confirmed', metadata: { source: 'telegram' },
         });
-        await tgFetch('answerCallbackQuery', { callback_query_id: cq.id, text: 'Confirmed ✓' });
-        await tgFetch('sendMessage', { chat_id: chatId, text: 'Thank you. Your session has been confirmed.' });
+        await tgFetch('answerCallbackQuery', { callback_query_id: cq.id, text: T.cbConfirmed });
+        await tgFetch('sendMessage', { chat_id: chatId, text: T.thanksConfirmed });
       } else if (action === 'reschedule' && appointmentId) {
+        const lang = await langForAppointmentId(supabase, appointmentId);
+        const T = tg(lang);
         const { data: apt } = await supabase.from('appointments')
           .select('id, notes').eq('id', appointmentId).single();
         const note = `[${new Date().toISOString()}] Client requested reschedule via Telegram.`;
@@ -50,8 +64,8 @@ Deno.serve(async (req) => {
           appointment_id: appointmentId, chat_id: chatId, template_name: 'reschedule_request',
           status: 'reschedule_requested',
         });
-        await tgFetch('answerCallbackQuery', { callback_query_id: cq.id, text: 'Noted' });
-        await tgFetch('sendMessage', { chat_id: chatId, text: 'Thank you. Your therapist has been notified that you may need to reschedule.' });
+        await tgFetch('answerCallbackQuery', { callback_query_id: cq.id, text: T.cbNoted });
+        await tgFetch('sendMessage', { chat_id: chatId, text: T.thanksReschedule });
       }
       return new Response(JSON.stringify({ ok: true }));
     }
@@ -64,21 +78,23 @@ Deno.serve(async (req) => {
       const parts = text.split(/\s+/);
       const token = parts[1];
       if (!token) {
-        await tgFetch('sendMessage', { chat_id: chatId, text: 'Welcome! Please use the personalized link from your therapist to connect.' });
+        await tgFetch('sendMessage', { chat_id: chatId, text: tg('en').welcomeNoToken });
         return new Response(JSON.stringify({ ok: true }));
       }
       const { data: client } = await supabase.from('clients')
         .select('id, name, user_id').eq('telegram_link_token', token).maybeSingle();
       if (!client) {
-        await tgFetch('sendMessage', { chat_id: chatId, text: 'This invitation link is invalid or has expired. Please request a new one from your therapist.' });
+        await tgFetch('sendMessage', { chat_id: chatId, text: tg('en').invalidToken });
         return new Response(JSON.stringify({ ok: true }));
       }
+      const lang = await langForUserId(supabase, client.user_id);
+      const T = tg(lang);
       await supabase.from('clients').update({
         telegram_chat_id: chatId.toString(),
         telegram_link_status: 'connected',
         telegram_linked_at: new Date().toISOString(),
       } as any).eq('id', client.id);
-      await tgFetch('sendMessage', { chat_id: chatId, text: `Hello ${client.name}! ✅ You are now connected. You will receive session reminders and confirmation requests here.` });
+      await tgFetch('sendMessage', { chat_id: chatId, text: T.linkedSuccess(client.name) });
       return new Response(JSON.stringify({ ok: true }));
     }
 
