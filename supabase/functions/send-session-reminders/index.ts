@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { tg, normalizeLang, formatSessionDateTime } from '../_shared/telegram.ts'
 
 /**
  * Cron-triggered edge function that runs every hour.
