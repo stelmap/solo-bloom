@@ -78,21 +78,23 @@ Deno.serve(async (req) => {
       const parts = text.split(/\s+/);
       const token = parts[1];
       if (!token) {
-        await tgFetch('sendMessage', { chat_id: chatId, text: 'Welcome! Please use the personalized link from your therapist to connect.' });
+        await tgFetch('sendMessage', { chat_id: chatId, text: tg('en').welcomeNoToken });
         return new Response(JSON.stringify({ ok: true }));
       }
       const { data: client } = await supabase.from('clients')
         .select('id, name, user_id').eq('telegram_link_token', token).maybeSingle();
       if (!client) {
-        await tgFetch('sendMessage', { chat_id: chatId, text: 'This invitation link is invalid or has expired. Please request a new one from your therapist.' });
+        await tgFetch('sendMessage', { chat_id: chatId, text: tg('en').invalidToken });
         return new Response(JSON.stringify({ ok: true }));
       }
+      const lang = await langForUserId(supabase, client.user_id);
+      const T = tg(lang);
       await supabase.from('clients').update({
         telegram_chat_id: chatId.toString(),
         telegram_link_status: 'connected',
         telegram_linked_at: new Date().toISOString(),
       } as any).eq('id', client.id);
-      await tgFetch('sendMessage', { chat_id: chatId, text: `Hello ${client.name}! ✅ You are now connected. You will receive session reminders and confirmation requests here.` });
+      await tgFetch('sendMessage', { chat_id: chatId, text: T.linkedSuccess(client.name) });
       return new Response(JSON.stringify({ ok: true }));
     }
 
