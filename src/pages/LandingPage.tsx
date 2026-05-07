@@ -1041,7 +1041,7 @@ function TestimonialCard({
 }
 
 function TestimonialsSection() {
-  const { t } = useLandingLang();
+  const { t, lang } = useLandingLang();
   return (
     <section className="py-20 px-4 sm:px-6">
       <div className="max-w-5xl mx-auto">
@@ -1055,14 +1055,14 @@ function TestimonialsSection() {
         <div className="grid md:grid-cols-2 gap-5 items-start">
           <TestimonialCard
             name="Наталя"
-            role="Психотерапевт"
-            paragraphs={NATALIA_PARAGRAPHS}
+            role={lang === "uk" ? "Психотерапевт" : lang === "fr" ? "Psychothérapeute" : lang === "pl" ? "Psychoterapeutka" : "Psychotherapist"}
+            paragraphs={NATALIA_PARAGRAPHS[lang] ?? NATALIA_PARAGRAPHS.en}
             expandable
           />
           <TestimonialCard
             name="Світлана"
-            role="Психолог"
-            paragraphs={SVITLANA_PARAGRAPHS}
+            role={lang === "uk" ? "Психолог" : lang === "fr" ? "Psychologue" : lang === "pl" ? "Psycholog" : "Psychologist"}
+            paragraphs={SVITLANA_PARAGRAPHS[lang] ?? SVITLANA_PARAGRAPHS.en}
           />
         </div>
       </div>
