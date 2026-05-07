@@ -28,10 +28,22 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(supabaseUrl, serviceKey);
   const body = await req.json();
-  const { client_id, appointment_id, template_name, text, reply_markup } = body || {};
+  const { client_id, appointment_id, template_name, text, reply_markup, idempotency_key } = body || {};
 
   if (!client_id || !template_name || !text) {
     return new Response(JSON.stringify({ error: 'client_id, template_name and text required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+  }
+
+  // Idempotency: if a successful send with this key already exists, skip.
+  if (idempotency_key) {
+    const { data: existing } = await supabase.from('telegram_send_log')
+      .select('id, message_id')
+      .eq('idempotency_key', idempotency_key)
+      .eq('status', 'sent')
+      .maybeSingle();
+    if (existing) {
+      return new Response(JSON.stringify({ ok: true, deduplicated: true, message_id: existing.message_id }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
   }
 
   const { data: client } = await supabase.from('clients')
