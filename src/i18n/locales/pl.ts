@@ -1216,6 +1216,7 @@ export default {
   "audit.sort.clientDesc": "Klient Z–A",
   "audit.linked.none": "Niepowiązane",
   "audit.linked.to": "Powiązane z",
+  "audit.sessionsCount": "sesji",
   "audit.linked.prepay": "Przedpłata",
   "audit.searchPlaceholder": "Szukaj…",
   "audit.of": "z",

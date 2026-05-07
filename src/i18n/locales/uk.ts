@@ -1216,6 +1216,7 @@ export default {
   "audit.sort.clientDesc": "Клієнт Я–А",
   "audit.linked.none": "Не прив’язано",
   "audit.linked.to": "Прив’язано до",
+  "audit.sessionsCount": "сеансів",
   "audit.linked.prepay": "Передоплата",
   "audit.searchPlaceholder": "Пошук за клієнтом, рахунком, сумою, методом…",
   "audit.of": "з",
