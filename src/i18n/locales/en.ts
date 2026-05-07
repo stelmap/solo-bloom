@@ -1240,7 +1240,7 @@ export default {
   "audit.linked.to": "Linked to",
   "audit.sessionsCount": "sessions",
   "audit.linked.prepay": "Prepayment",
-  "audit.searchPlaceholder": "Search by client, invoice, amount, method…",
+  "audit.searchPlaceholder": "Client, invoice, amount, method",
   "audit.of": "of",
   "audit.rowsPerPage": "Rows per page:",
   "audit.exportMonthly": "Export monthly audit",
@@ -1272,5 +1272,5 @@ export default {
   "archive.reason.other": "Other",
   "archive.toast.archived": "{name} has been archived.",
   "archive.toast.unarchived": "Client has been restored to active clients.",
-  "archive.includeArchived": "Include archived",
+  "archive.includeArchived": "Show archived clients",
 } as const;

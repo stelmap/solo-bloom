@@ -1240,7 +1240,7 @@ export default {
   "audit.linked.to": "Lié à",
   "audit.sessionsCount": "séances",
   "audit.linked.prepay": "Prépaiement",
-  "audit.searchPlaceholder": "Rechercher…",
+  "audit.searchPlaceholder": "Client, facture, montant, méthode",
   "audit.of": "sur",
   "audit.rowsPerPage": "Lignes/page:",
   "audit.exportMonthly": "Exporter le mois",
@@ -1272,5 +1272,5 @@ export default {
   "archive.reason.other": "Autre",
   "archive.toast.archived": "{name} a été archivé.",
   "archive.toast.unarchived": "Le client a été restauré parmi les clients actifs.",
-  "archive.includeArchived": "Inclure les archivés",
+  "archive.includeArchived": "Afficher les clients archivés",
 } as const;

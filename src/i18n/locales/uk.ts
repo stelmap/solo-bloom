@@ -1240,7 +1240,7 @@ export default {
   "audit.linked.to": "Прив’язано до",
   "audit.sessionsCount": "сеансів",
   "audit.linked.prepay": "Передоплата",
-  "audit.searchPlaceholder": "Пошук за клієнтом, рахунком, сумою, методом…",
+  "audit.searchPlaceholder": "Клієнт, рахунок, сума, метод",
   "audit.of": "з",
   "audit.rowsPerPage": "Рядків на сторінці:",
   "audit.exportMonthly": "Експорт за місяць",
@@ -1272,5 +1272,5 @@ export default {
   "archive.reason.other": "Інше",
   "archive.toast.archived": "{name} архівовано.",
   "archive.toast.unarchived": "Клієнта повернуто до активних.",
-  "archive.includeArchived": "Показати архівних",
+  "archive.includeArchived": "Показати архівних клієнтів",
 } as const;

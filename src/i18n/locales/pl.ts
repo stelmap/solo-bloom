@@ -1240,7 +1240,7 @@ export default {
   "audit.linked.to": "Powiązane z",
   "audit.sessionsCount": "sesji",
   "audit.linked.prepay": "Przedpłata",
-  "audit.searchPlaceholder": "Szukaj…",
+  "audit.searchPlaceholder": "Klient, faktura, kwota, metoda",
   "audit.of": "z",
   "audit.rowsPerPage": "Wierszy/strona:",
   "audit.exportMonthly": "Eksport miesięczny",
@@ -1272,5 +1272,5 @@ export default {
   "archive.reason.other": "Inne",
   "archive.toast.archived": "{name} został zarchiwizowany.",
   "archive.toast.unarchived": "Klient został przywrócony do aktywnych.",
-  "archive.includeArchived": "Pokaż zarchiwizowanych",
+  "archive.includeArchived": "Pokaż zarchiwizowanych klientów",
 } as const;
