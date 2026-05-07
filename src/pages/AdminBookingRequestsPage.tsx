@@ -270,6 +270,31 @@ export default function AdminBookingRequestsPage() {
                     <Badge variant="outline">{(r.language || "—").toUpperCase()}</Badge>
                   </TableCell>
                   <TableCell className="align-top">
+                    {(() => {
+                      const e = emailByBookingId[`booking-${r.id}`];
+                      if (!e) return <span className="text-xs text-muted-foreground">—</span>;
+                      const tone =
+                        e.status === "sent"
+                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                          : e.status === "pending"
+                          ? "bg-amber-500/15 text-amber-700 dark:text-amber-400"
+                          : "bg-red-500/15 text-red-700 dark:text-red-400";
+                      return (
+                        <div className="flex flex-col gap-1">
+                          <span className={`inline-flex w-fit items-center rounded-md px-2 py-0.5 text-xs font-medium ${tone}`}>
+                            {e.status}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground">{fmtDate(e.created_at)}</span>
+                          {e.error_message && (
+                            <span className="text-[11px] text-red-600 break-words" title={e.error_message}>
+                              {e.error_message.slice(0, 60)}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </TableCell>
+                  <TableCell className="align-top">
                     <div className="flex flex-col gap-1">
                       <Badge variant={STATUS_VARIANT[r.status]} className="w-fit">{STATUS_LABEL[r.status]}</Badge>
                       <Select
