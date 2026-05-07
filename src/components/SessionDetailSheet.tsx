@@ -44,8 +44,8 @@ const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sa
 
 export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12h = false }: SessionDetailSheetProps) {
   const { t, lang } = useLanguage();
-  const localeMap: Record<string, string> = { en: "en-US", fr: "fr-FR", pl: "pl-PL", uk: "uk-UA" };
-  const dateLocale = localeMap[lang] || "en-US";
+  const emailLocaleMap: Record<string, string> = { en: "en-US", fr: "fr-FR", pl: "pl-PL", uk: "uk-UA" };
+  const emailLocale = emailLocaleMap[lang] || "en-US";
   const dateLocale = useDateLocale();
   const { symbol: cs } = useCurrency();
   const { toast } = useToast();
