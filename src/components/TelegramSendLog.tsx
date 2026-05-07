@@ -27,7 +27,7 @@ export function TelegramSendLog({ clientId }: Props) {
   return (
     <div className="bg-card rounded-xl border border-border p-5 space-y-3">
       <h3 className="font-semibold text-foreground flex items-center gap-2">
-        <Send className="h-4 w-4 text-primary" /> Telegram delivery log
+        <Send className="h-4 w-4 text-primary" /> {t("telegramLog.title")}
       </h3>
       {isLoading ? (
         <p className="text-xs text-muted-foreground">Loading…</p>
