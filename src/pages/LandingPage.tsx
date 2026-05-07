@@ -14,6 +14,7 @@ import {
   Play, X, Check, Briefcase, GraduationCap, UserCheck, BookOpen,
   Quote, MessageCircle,
 } from "lucide-react";
+import manualTrackingImg from "@/assets/manual-tracking-spreadsheet.png";
 
 // ── Configurable external links (replace as needed) ───────────────────
 const YOUTUBE_URL = "https://www.youtube.com/";
