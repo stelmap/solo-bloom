@@ -447,6 +447,7 @@ export default function ClientDetailPage() {
 
             {/* Telegram Connection */}
             <TelegramConnectCard client={client} />
+            <TelegramSendLog clientId={client.id} />
 
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
