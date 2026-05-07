@@ -216,6 +216,24 @@ const C = {
   cmpS5: { en: "Clear financial result", fr: "Résultat financier clair", uk: "Зрозумілий фінансовий результат", pl: "Czytelny wynik finansowy" },
   cmpS6: { en: "Less routine, more time for practice", fr: "Moins de routine, plus de temps pour la pratique", uk: "Менше рутини, більше часу на практику", pl: "Mniej rutyny, więcej czasu na praktykę" },
   cmpCta: { en: "Try for free", fr: "Essayer gratuitement", uk: "Спробувати безкоштовно", pl: "Wypróbuj za darmo" },
+  cmpCtaNote: {
+    en: "No credit card. No complex setup.",
+    fr: "Sans carte. Sans configuration complexe.",
+    uk: "Без картки. Без складних налаштувань.",
+    pl: "Bez karty. Bez skomplikowanej konfiguracji.",
+  },
+  cmpManualBadge: {
+    en: "Before",
+    fr: "Avant",
+    uk: "До",
+    pl: "Przed",
+  },
+  cmpSoloBadge: {
+    en: "After",
+    fr: "Après",
+    uk: "Після",
+    pl: "Po",
+  },
 
   // Pricing
   pricingTitle: { en: "Choose your practice", fr: "Choisissez votre formule", uk: "Оберіть свою практику", pl: "Wybierz swoją praktykę" },
