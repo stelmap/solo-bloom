@@ -229,14 +229,15 @@ export default function AdminBookingRequestsPage() {
                 <TableHead className="w-[140px]">Дата</TableHead>
                 <TableHead>Контакт</TableHead>
                 <TableHead>Повідомлення</TableHead>
-                <TableHead className="w-[120px]">Мова</TableHead>
+                <TableHead className="w-[90px]">Мова</TableHead>
+                <TableHead className="w-[150px]">Email</TableHead>
                 <TableHead className="w-[170px]">Статус</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 && !busy && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
                     Немає заявок за вибраними фільтрами.
                   </TableCell>
                 </TableRow>
