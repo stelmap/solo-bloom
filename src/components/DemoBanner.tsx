@@ -15,6 +15,16 @@ export function DemoBanner() {
   const { isDemoMode } = useDemoMode();
   const { t } = useLanguage();
 
+  // Friendly fallbacks when translation keys are missing (t returns the key itself).
+  const tx = (key: string, fallback: string) => {
+    const value = t(key as any);
+    return !value || value === key ? fallback : value;
+  };
+  const demoBadge = tx("demo.badge", "Demo data");
+  const demoHeadline = tx("demo.bannerHeadline", "You're exploring with sample data.");
+  const demoSub = tx("demo.bannerSub", "Pick a plan to start using your own clients, sessions, and finances.");
+  const demoChoosePlan = tx("demo.choosePlan", "Choose a plan");
+
   if (subscription.loading) return null;
 
   // Trial banner takes precedence
