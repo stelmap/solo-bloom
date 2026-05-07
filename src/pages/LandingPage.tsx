@@ -388,7 +388,7 @@ function useLandingLang() {
 
 const LANG_CYCLE: Language[] = ["en", "fr", "uk", "pl"];
 
-function LandingLangProvider({ children }: { children: React.ReactNode }) {
+export function LandingLangProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLang] = useState<Language>(() => getStoredLang());
   const toggle = useCallback(() => {
     setLang((prev) => {
@@ -1414,7 +1414,7 @@ function setMeta(selector: string, attr: "content", value: string) {
   if (el) el.setAttribute(attr, value);
 }
 
-function LandingSEO() {
+export function LandingSEO() {
   const { lang } = useLandingLang();
   useEffect(() => {
     const m = SEO_META[lang] ?? SEO_META.en;
