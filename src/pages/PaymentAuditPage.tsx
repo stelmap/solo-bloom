@@ -422,10 +422,15 @@ export default function PaymentAuditPage() {
                     <TableCell><Badge variant="outline" className={cn("border", ab.cls)}>{t(ab.key as any)}</Badge></TableCell>
                     <TableCell><Badge variant="outline" className="capitalize">{t(`audit.pstatus.${r.paymentStatus}` as any) || r.paymentStatus}</Badge></TableCell>
                     <TableCell><span className="text-xs text-muted-foreground capitalize">{t(`audit.src.${r.source}` as any) || r.source}</span></TableCell>
-                    <TableCell className="text-sm">
-                      {r.allocs.length === 0
-                        ? (r.allocStatus === "prepayment" ? `${t("audit.linked.prepay")}: ${cs}${r.remaining.toFixed(2)}` : t("audit.linked.none"))
-                        : `${t("audit.linked.to")} ${r.allocs.length}`}
+                    <TableCell className="text-sm" onClick={(e) => e.stopPropagation()}>
+                      <LinkedSessionsCell
+                        allocs={r.allocs}
+                        allocStatus={r.allocStatus}
+                        remaining={r.remaining}
+                        currencySymbol={cs}
+                        t={t}
+                        onOpenAppointment={(id) => navigate(`/calendar?appointment=${id}`)}
+                      />
                     </TableCell>
                     <TableCell className="text-right text-sm tabular-nums">
                       {r.allocStatus === "prepayment" ? `+${cs}${r.remaining.toFixed(2)}` :
