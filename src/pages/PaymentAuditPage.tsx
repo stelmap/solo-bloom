@@ -24,6 +24,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { downloadCSV } from "@/lib/csvExport";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type AllocStatus = "linked" | "not_linked" | "partial" | "prepayment" | "overpayment";
 type QuickFilter = "all" | AllocStatus | "confirmed" | "expected" | "draft" | "cancelled";
@@ -590,5 +591,91 @@ function Row({ label, value }: { label: string; value: any }) {
       <span className="text-muted-foreground text-xs">{label}</span>
       <span className="text-sm font-medium text-right capitalize">{value}</span>
     </div>
+  );
+}
+
+function LinkedSessionsCell({
+  allocs, allocStatus, remaining, currencySymbol, t, onOpenAppointment,
+}: {
+  allocs: any[];
+  allocStatus: string;
+  remaining: number;
+  currencySymbol: string;
+  t: (k: any) => string;
+  onOpenAppointment: (id: string) => void;
+}) {
+  if (allocs.length === 0) {
+    if (allocStatus === "prepayment") {
+      return (
+        <span className="text-xs text-muted-foreground">
+          {t("audit.linked.prepay")}: {currencySymbol}{remaining.toFixed(2)}
+        </span>
+      );
+    }
+    return <span className="text-muted-foreground">—</span>;
+  }
+
+  const items = allocs
+    .map((a: any) => {
+      const raw = a.appointments?.scheduled_at;
+      if (!raw) return null;
+      const d = new Date(raw);
+      return {
+        id: a.appointment_id as string | null,
+        date: d,
+        dateLabel: format(d, "MMM d, yyyy"),
+        serviceName: a.appointments?.services?.name as string | undefined,
+      };
+    })
+    .filter(Boolean) as { id: string | null; date: Date; dateLabel: string; serviceName?: string }[];
+
+  if (items.length === 0) return <span className="text-muted-foreground">—</span>;
+
+  const handleClick = (id: string | null) => {
+    if (id) onOpenAppointment(id);
+  };
+
+  if (items.length <= 2) {
+    return (
+      <div className="flex flex-wrap gap-x-2 gap-y-0.5">
+        {items.map((it, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => handleClick(it.id)}
+            className={cn(
+              "text-sm tabular-nums",
+              it.id ? "text-primary hover:underline" : "text-foreground"
+            )}
+            title={it.serviceName || undefined}
+          >
+            {it.dateLabel}
+            {i < items.length - 1 ? ";" : ""}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button type="button" className="text-sm text-primary hover:underline">
+            {items.length} {t("audit.sessionsCount") || "sessions"}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-xs">
+          <ul className="space-y-1 text-xs">
+            {items.map((it, i) => (
+              <li key={i} className="tabular-nums">
+                {it.dateLabel}
+                {it.serviceName ? ` — ${it.serviceName}` : ""}
+              </li>
+            ))}
+          </ul>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
