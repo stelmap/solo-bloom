@@ -85,19 +85,17 @@ export default function AdminBookingRequestsPage() {
     () => async () => {
       if (isAdmin !== true) return;
       setBusy(true);
-      let q = supabase
-        .from("booking_requests")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(500);
-      if (statusFilter !== "all") q = q.eq("status", statusFilter);
-      if (from) q = q.gte("created_at", new Date(from).toISOString());
+      const params: Record<string, unknown> = {
+        p_status: statusFilter === "all" ? null : statusFilter,
+        p_from: from ? new Date(from).toISOString() : null,
+        p_to: null as string | null,
+      };
       if (to) {
         const end = new Date(to);
         end.setHours(23, 59, 59, 999);
-        q = q.lte("created_at", end.toISOString());
+        params.p_to = end.toISOString();
       }
-      const { data, error } = await q;
+      const { data, error } = await (supabase as any).rpc("admin_list_booking_requests", params);
       if (error) {
         setBusy(false);
         toast({ title: "Не вдалося завантажити заявки", description: error.message, variant: "destructive" });
@@ -106,17 +104,13 @@ export default function AdminBookingRequestsPage() {
       const list = (data ?? []) as BookingRequest[];
       setRows(list);
 
-      // Fetch email statuses for these bookings (deduplicated, latest per message_id)
+      // Fetch email statuses via admin-gated RPC
       if (list.length > 0) {
-        const ids = list.map((r) => `booking-${r.id}`);
-        const { data: logs } = await supabase
-          .from("email_send_log")
-          .select("message_id,status,error_message,created_at")
-          .in("message_id", ids)
-          .order("created_at", { ascending: false });
+        const { data: logs } = await (supabase as any).rpc("admin_list_booking_email_logs", {
+          p_ids: list.map((r) => r.id),
+        });
         const map: Record<string, EmailStatus> = {};
-        (logs ?? []).forEach((l: any) => {
-          // first occurrence is latest because ordered desc
+        ((logs ?? []) as any[]).forEach((l) => {
           if (l.message_id && !map[l.message_id]) {
             map[l.message_id] = {
               status: l.status,
@@ -149,7 +143,10 @@ export default function AdminBookingRequestsPage() {
   const updateStatus = async (id: string, status: BookingRequest["status"]) => {
     const prev = rows;
     setRows((r) => r.map((x) => (x.id === id ? { ...x, status } : x)));
-    const { error } = await supabase.from("booking_requests").update({ status }).eq("id", id);
+    const { error } = await (supabase as any).rpc("admin_update_booking_request_status", {
+      p_id: id,
+      p_status: status,
+    });
     if (error) {
       setRows(prev);
       toast({ title: "Помилка оновлення", description: error.message, variant: "destructive" });
