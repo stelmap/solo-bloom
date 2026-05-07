@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Calendar, Users, Scissors, DollarSign,
   TrendingDown, Settings, Target, Menu, X, LogOut, BarChart3, UsersRound, ClipboardList,
-  Wallet, ChevronDown, Lock, ShieldCheck,
+  Wallet, ChevronDown, Lock, ShieldCheck, Sparkles, Clock, BadgeCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useMemo, useEffect } from "react";
@@ -129,16 +129,22 @@ export function AppSidebar() {
             )}
           </div>
           <p className="text-xs text-sidebar-foreground/50 mt-0.5">Business Manager</p>
-          {isTrial && (
-            <div className="mt-4 rounded-lg border border-sidebar-primary/25 bg-sidebar-primary/10 px-3 py-2 text-xs font-medium text-sidebar-primary">
-              Trial account active
+          {isTrial ? (
+            <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-sidebar-primary/25 bg-sidebar-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sidebar-primary">
+              <Clock className="h-3.5 w-3.5" />
+              <span>Trial active</span>
             </div>
-          )}
-          {isDemoMode && (
-            <div className="mt-4 rounded-lg border border-sidebar-primary/25 bg-sidebar-primary/10 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-sidebar-primary">
-              {t("demo.sidebarBadge")}
+          ) : isDemoMode ? (
+            <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-sidebar-primary/25 bg-sidebar-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sidebar-primary">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Demo mode</span>
             </div>
-          )}
+          ) : subscription.subscribed ? (
+            <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-sidebar-primary/25 bg-sidebar-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sidebar-primary">
+              <BadgeCheck className="h-3.5 w-3.5" />
+              <span>Active plan</span>
+            </div>
+          ) : null}
         </div>
 
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
