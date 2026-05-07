@@ -35,25 +35,20 @@ serve(async (req) => {
   let event: Stripe.Event;
   const body = await req.text();
 
-  if (webhookSecret) {
-    const signature = req.headers.get("stripe-signature");
-    if (!signature) {
-      return new Response("Missing stripe-signature", { status: 400, headers: corsHeaders });
-    }
-    try {
-      event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
-    } catch (err) {
-      log("Signature verification failed", { error: String(err) });
-      return new Response("Invalid signature", { status: 400, headers: corsHeaders });
-    }
-  } else {
-    // Dev fallback — only use when STRIPE_WEBHOOK_SECRET is not set
-    log("WARNING: STRIPE_WEBHOOK_SECRET not set; skipping signature verification");
-    try {
-      event = JSON.parse(body) as Stripe.Event;
-    } catch {
-      return new Response("Invalid JSON", { status: 400, headers: corsHeaders });
-    }
+  if (!webhookSecret) {
+    log("STRIPE_WEBHOOK_SECRET not configured; rejecting request");
+    return new Response("STRIPE_WEBHOOK_SECRET not configured", { status: 500, headers: corsHeaders });
+  }
+
+  const signature = req.headers.get("stripe-signature");
+  if (!signature) {
+    return new Response("Missing stripe-signature", { status: 400, headers: corsHeaders });
+  }
+  try {
+    event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
+  } catch (err) {
+    log("Signature verification failed", { error: String(err) });
+    return new Response("Invalid signature", { status: 400, headers: corsHeaders });
   }
 
   log("Event received", { type: event.type, id: event.id });
