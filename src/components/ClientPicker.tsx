@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+
 import { useLanguage } from "@/i18n/LanguageContext";
 
 interface ClientPickerProps {
@@ -45,28 +45,30 @@ export function ClientPicker({
   }, [clients, includeArchived, value, alwaysShowSelected]);
 
   return (
-    <div className="space-y-2">
-      <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className={triggerClassName}><SelectValue placeholder={placeholder} /></SelectTrigger>
-        <SelectContent>
-          {allOption && <SelectItem value={allOption.value}>{allOption.label}</SelectItem>}
-          {visible.map((c: any) => (
-            <SelectItem key={c.id} value={c.id}>
-              {c.name}
-              {c.status === "archived" && (
-                <span className="text-muted-foreground"> · {t("archive.badge")}</span>
-              )}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-        <Checkbox
-          checked={includeArchived}
-          onCheckedChange={(v) => setIncludeArchived(!!v)}
-        />
-        <span>{t("archive.includeArchived")}</span>
-      </label>
-    </div>
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className={triggerClassName}><SelectValue placeholder={placeholder} /></SelectTrigger>
+      <SelectContent>
+        {allOption && <SelectItem value={allOption.value}>{allOption.label}</SelectItem>}
+        {visible.map((c: any) => (
+          <SelectItem key={c.id} value={c.id}>
+            {c.name}
+            {c.status === "archived" && (
+              <span className="text-muted-foreground"> · {t("archive.badge")}</span>
+            )}
+          </SelectItem>
+        ))}
+        <div
+          className="mt-1 border-t pt-2 px-2 pb-1 flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); setIncludeArchived(!includeArchived); }}
+        >
+          <Checkbox
+            checked={includeArchived}
+            onCheckedChange={(v) => setIncludeArchived(!!v)}
+          />
+          <span>{t("archive.includeArchived")}</span>
+        </div>
+      </SelectContent>
+    </Select>
   );
 }
