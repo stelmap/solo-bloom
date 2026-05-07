@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://solo-bizz.com/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/" />
+  </url>
+  <url>
+    <loc>https://solo-bizz.com/careers</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://solo-bizz.com/auth</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+</urlset>
