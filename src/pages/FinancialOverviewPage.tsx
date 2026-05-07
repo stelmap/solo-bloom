@@ -15,6 +15,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Line, ComposedChart, Area,
 } from "recharts";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { MonthlyDetailsModal } from "@/components/MonthlyDetailsModal";
 
 interface MonthData {
   month: number;
@@ -269,6 +270,57 @@ export default function FinancialOverviewPage() {
 
   const fmt = (n: number) => `${cs}${Math.abs(n).toLocaleString("en", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
+  // Tax breakdown lines for the currently drilled month
+  const drillTaxLines = useMemo(() => {
+    if (!drillMonth || activeTaxes.length === 0 || drillMonth.taxes <= 0) return [];
+    const monthIdx = drillMonth.month;
+    const isAccrualMonth = monthIdx % 3 === 0;
+    let accruedQuarterKey: string | null = null;
+    let qLabel = "";
+    if (isAccrualMonth) {
+      const prev = monthIdx - 1;
+      if (prev < 0) {
+        accruedQuarterKey = `${year - 1}-Q4`;
+        qLabel = `Q4 ${year - 1}`;
+      } else {
+        const q = Math.floor(prev / 3) + 1;
+        accruedQuarterKey = `${year}-Q${q}`;
+        qLabel = `Q${q}`;
+      }
+    }
+    const qMap = new Map<string, number>();
+    for (const m of monthsData) {
+      const q = Math.floor(m.month / 3) + 1;
+      const key = `${year}-Q${q}`;
+      qMap.set(key, (qMap.get(key) || 0) + m.income);
+    }
+    const lines: { id: string; label: string; amount: number; isForecast?: boolean }[] = [];
+    for (const tax of activeTaxes as any[]) {
+      let amount = 0;
+      let label = tax.tax_name;
+      if (tax.frequency === "quarterly") {
+        if (!accruedQuarterKey) continue;
+        if (tax.tax_type === "percentage") {
+          const qIncome = qMap.get(accruedQuarterKey) || 0;
+          amount = qIncome * (Number(tax.tax_rate) / 100);
+        } else {
+          amount = Number(tax.fixed_amount);
+        }
+        label = `${tax.tax_name} — ${qLabel}`;
+      } else {
+        if (tax.tax_type === "percentage") {
+          amount = drillMonth.income * (Number(tax.tax_rate) / 100);
+        } else {
+          amount = Number(tax.fixed_amount);
+        }
+      }
+      amount = Math.round(amount * 100) / 100;
+      if (amount === 0) continue;
+      lines.push({ id: tax.id, label, amount, isForecast: drillMonth.isFuture });
+    }
+    return lines;
+  }, [drillMonth, activeTaxes, monthsData, year]);
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -406,136 +458,15 @@ export default function FinancialOverviewPage() {
       </div>
 
       {/* Drill-down dialog */}
-      <Dialog open={!!drillMonth} onOpenChange={o => !o && setDrillMonth(null)}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-          {drillMonth && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  {drillMonth.label} {year}
-                  {drillMonth.isFuture && <Badge variant="outline" className="border-dashed text-xs">{t("financial.forecast")}</Badge>}
-                </DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                {/* Summary */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="bg-success/10 rounded-lg p-3">
-                    <p className="text-muted-foreground text-xs">{t("financial.confirmed")}</p>
-                    <p className="text-success font-bold text-lg">{fmt(drillMonth.confirmedIncome)}</p>
-                  </div>
-                  <div className="bg-primary/10 rounded-lg p-3">
-                    <p className="text-muted-foreground text-xs">{t("financial.expected")}</p>
-                    <p className="text-primary font-bold text-lg">{fmt(drillMonth.expectedIncome)}</p>
-                  </div>
-                  <div className="bg-destructive/10 rounded-lg p-3">
-                    <p className="text-muted-foreground text-xs">{t("financial.expenses")}</p>
-                    <p className="text-destructive font-bold text-lg">{fmt(drillMonth.expenses)}</p>
-                  </div>
-                  <div className="bg-warning/10 rounded-lg p-3">
-                    <p className="text-muted-foreground text-xs">{t("financial.taxes")}</p>
-                    <p className="text-warning font-bold text-lg">{fmt(drillMonth.taxes)}</p>
-                  </div>
-                  <div className={cn("rounded-lg p-3 col-span-2", drillMonth.net >= 0 ? "bg-success/10" : "bg-destructive/10")}>
-                    <p className="text-muted-foreground text-xs">{t("financial.netResult")}</p>
-                    <p className={cn("font-bold text-lg", drillMonth.net >= 0 ? "text-success" : "text-destructive")}>
-                      {drillMonth.net < 0 ? "-" : ""}{fmt(drillMonth.net)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Tax breakdown — quarterly taxes only show in the accrual month (Jan/Apr/Jul/Oct) */}
-                {activeTaxes.length > 0 && drillMonth.taxes > 0 && (
-                  <div className="space-y-2">
-                    <h3 className="font-medium text-foreground text-sm">{t("financial.taxBreakdown")}</h3>
-                    {activeTaxes.map(tax => {
-                      const isAccrualMonth = drillMonth.month % 3 === 0;
-                      let amount = 0;
-                      if (tax.frequency === "quarterly") {
-                        if (!isAccrualMonth) return null;
-                        const prevIdx = drillMonth.month - 1;
-                        const qYear = prevIdx < 0 ? year - 1 : year;
-                        const q = prevIdx < 0 ? 4 : Math.floor(prevIdx / 3) + 1;
-                        if (tax.tax_type === "percentage") {
-                          // Approximate: use this month's recognised tax share is hard;
-                          // show full-quarter amount derived from tax row directly.
-                          amount = (drillMonth.taxes); // shown total already equals tax for this month
-                          // when multiple taxes exist this won't separate them; keep single-line summary
-                        } else {
-                          amount = Number(tax.fixed_amount);
-                        }
-                        void qYear; void q;
-                      } else {
-                        amount = tax.tax_type === "percentage"
-                          ? drillMonth.income * (Number(tax.tax_rate) / 100)
-                          : Number(tax.fixed_amount);
-                      }
-                      if (amount === 0) return null;
-                      return (
-                        <div key={tax.id} className="flex justify-between text-sm bg-muted/50 rounded-lg px-3 py-2">
-                          <span className="text-muted-foreground">
-                            {tax.tax_name}
-                            {tax.frequency === "quarterly" ? ` (Q${drillMonth.month === 0 ? 4 : Math.floor((drillMonth.month - 1) / 3) + 1})` : ""}
-                          </span>
-                          <span className="text-warning font-medium">{fmt(amount)}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* Income items */}
-                {drillMonth.incomeItems.length > 0 && (
-                  <div className="space-y-2">
-                    <h3 className="font-medium text-foreground text-sm flex items-center gap-1">
-                      <ArrowUpRight className="h-3.5 w-3.5 text-success" /> {t("financial.incomeDetails")}
-                    </h3>
-                    <div className="space-y-1 max-h-40 overflow-y-auto">
-                      {drillMonth.incomeItems.map((item, i) => (
-                        <div key={i} className={cn(
-                          "flex justify-between text-sm rounded-lg px-3 py-2",
-                          item.type === "expected" ? "bg-primary/5 border border-dashed border-primary/20" : "bg-muted/50"
-                        )}>
-                          <div className="flex items-center gap-2">
-                            <span className="text-foreground">{item.description}</span>
-                            <span className="text-muted-foreground text-xs">{item.date}</span>
-                            {item.type === "expected" && <Badge variant="outline" className="text-[9px] border-dashed">{t("financial.expected")}</Badge>}
-                          </div>
-                          <span className={cn("font-medium", item.type === "expected" ? "text-primary" : "text-success")}>{fmt(item.amount)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Expense items */}
-                {drillMonth.expenseItems.length > 0 && (
-                  <div className="space-y-2">
-                    <h3 className="font-medium text-foreground text-sm flex items-center gap-1">
-                      <ArrowDownRight className="h-3.5 w-3.5 text-destructive" /> {t("financial.expenseDetails")}
-                    </h3>
-                    <div className="space-y-1 max-h-40 overflow-y-auto">
-                      {drillMonth.expenseItems.map((item, i) => (
-                        <div key={i} className="flex justify-between text-sm bg-muted/50 rounded-lg px-3 py-2">
-                          <div>
-                            <span className="text-foreground">{item.description}</span>
-                            <span className="text-muted-foreground text-xs ml-2">{item.date}</span>
-                            {item.isRecurring && <Badge variant="outline" className="text-[9px] ml-1">{t("financial.recurring")}</Badge>}
-                          </div>
-                          <span className="text-destructive font-medium">{fmt(item.amount)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {drillMonth.incomeItems.length === 0 && drillMonth.expenseItems.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-4">{t("financial.noData")}</p>
-                )}
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <MonthlyDetailsModal
+        open={!!drillMonth}
+        onOpenChange={o => !o && setDrillMonth(null)}
+        data={drillMonth}
+        year={year}
+        taxLines={drillTaxLines}
+        fmt={fmt}
+        t={t}
+      />
     </AppLayout>
   );
 }
