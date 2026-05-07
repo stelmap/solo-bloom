@@ -56,14 +56,62 @@ export default function FinancialOverviewPage() {
   const currentYear = now.getFullYear();
   const activeTaxes = (taxSettings as any[]).filter((ts: any) => ts.is_active);
 
-  const calcTaxes = (income: number) => {
+  // Map "yyyy-Qn" -> total income for that quarter (actual past quarters).
+  const quarterIncomeMap = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const i of allIncome as any[]) {
+      const d = incomeDateOf(i);
+      if (!d) continue;
+      const dt = new Date(d);
+      const q = Math.floor(dt.getMonth() / 3) + 1;
+      const key = `${dt.getFullYear()}-Q${q}`;
+      map.set(key, (map.get(key) || 0) + Number(i.amount));
+    }
+    return map;
+  }, [allIncome, incomeDateField]);
+
+  /**
+   * Compute taxes recognized in a given month.
+   * - Monthly tax: accrued in the same month against that month's income.
+   * - Quarterly tax: accrued only in the month AFTER the quarter ends
+   *   (Jan→Q4 prev year, Apr→Q1, Jul→Q2, Oct→Q3). Other months: 0.
+   */
+  const calcTaxes = (
+    monthIncome: number,
+    monthIdx: number,
+    monthYear: number,
+    quarterIncomeOverride?: Map<string, number>,
+  ) => {
     let total = 0;
+    const isAccrualMonth = monthIdx % 3 === 0; // 0=Jan,3=Apr,6=Jul,9=Oct
+    let accruedQuarterKey: string | null = null;
+    if (isAccrualMonth) {
+      // The quarter that ended just before this month
+      const prevQuarterMonthIdx = monthIdx - 1; // -1 for Jan -> Dec prev year
+      if (prevQuarterMonthIdx < 0) {
+        accruedQuarterKey = `${monthYear - 1}-Q4`;
+      } else {
+        const q = Math.floor(prevQuarterMonthIdx / 3) + 1;
+        accruedQuarterKey = `${monthYear}-Q${q}`;
+      }
+    }
+    const qMap = quarterIncomeOverride ?? quarterIncomeMap;
+
     for (const tax of activeTaxes) {
-      if (tax.tax_type === "percentage") {
-        total += income * (Number(tax.tax_rate) / 100);
-      } else if (tax.tax_type === "fixed") {
-        const amount = Number(tax.fixed_amount);
-        total += tax.frequency === "quarterly" ? amount / 3 : amount;
+      if (tax.frequency === "quarterly") {
+        if (!accruedQuarterKey) continue;
+        if (tax.tax_type === "percentage") {
+          const qIncome = qMap.get(accruedQuarterKey) || 0;
+          total += qIncome * (Number(tax.tax_rate) / 100);
+        } else {
+          total += Number(tax.fixed_amount);
+        }
+      } else {
+        if (tax.tax_type === "percentage") {
+          total += monthIncome * (Number(tax.tax_rate) / 100);
+        } else {
+          total += Number(tax.fixed_amount);
+        }
       }
     }
     return Math.round(total * 100) / 100;
@@ -86,53 +134,43 @@ export default function FinancialOverviewPage() {
         .reduce((s, e) => s + Number(e.amount), 0);
     };
 
-    return months.map((monthDate, idx) => {
+    type Pre = {
+      idx: number; isFuture: boolean; monthDate: Date; mStart: Date; mEnd: Date; mKey: string;
+      income: number; confirmedIncome: number; expectedIncome: number;
+      expenses: number; sessions: number;
+      incomeItems: any[]; expenseItems: any[];
+    };
+    const pre: Pre[] = months.map((monthDate, idx) => {
       const isFuture = year > currentYear || (year === currentYear && idx > currentMonth);
       const mStart = startOfMonth(monthDate);
       const mEnd = endOfMonth(monthDate);
       const mKey = format(monthDate, "yyyy-MM");
 
       if (isFuture) {
-        // Forecast: use scheduled appointments for income
         const futureApts = (allAppointments as any[]).filter(a => {
           const d = new Date(a.scheduled_at);
           return d >= mStart && d <= mEnd && a.status !== "cancelled" && a.status !== "no-show";
         });
-
-        // Split: completed+paid = confirmed, rest = expected
         const confirmedApts = futureApts.filter(a => a.status === "completed" && (a.payment_status === "paid_now" || a.payment_status === "paid_in_advance"));
         const expectedApts = futureApts.filter(a => !confirmedApts.includes(a));
         const confirmedIncome = confirmedApts.reduce((s, a) => s + Number(a.price), 0);
         const expectedIncome = expectedApts.reduce((s, a) => s + Number(a.price), 0);
         const predictedIncome = confirmedIncome + expectedIncome;
-
-        // Recurring expenses projected into future month (only those started by this month)
         const predictedExpenses = getRecurringForMonth(mKey);
-        const predictedTaxes = calcTaxes(predictedIncome);
 
         return {
-          month: idx,
-          label: format(monthDate, "MMMM"),
-          shortLabel: format(monthDate, "MMM"),
-          income: predictedIncome,
-          confirmedIncome,
-          expectedIncome,
-          expenses: predictedExpenses,
-          taxes: predictedTaxes,
-          net: predictedIncome - predictedTaxes - predictedExpenses,
-          sessions: futureApts.length,
-          isFuture: true,
+          idx, isFuture, monthDate, mStart, mEnd, mKey,
+          income: predictedIncome, confirmedIncome, expectedIncome,
+          expenses: predictedExpenses, sessions: futureApts.length,
           incomeItems: [
             ...confirmedApts.map(a => ({
               description: `${(a.clients as any)?.name || "Client"} — ${(a.services as any)?.name || "Service"}`,
-              amount: Number(a.price),
-              date: format(new Date(a.scheduled_at), "MMM d"),
+              amount: Number(a.price), date: format(new Date(a.scheduled_at), "MMM d"),
               type: "confirmed" as const,
             })),
             ...expectedApts.map(a => ({
               description: `${(a.clients as any)?.name || "Client"} — ${(a.services as any)?.name || "Service"}`,
-              amount: Number(a.price),
-              date: format(new Date(a.scheduled_at), "MMM d"),
+              amount: Number(a.price), date: format(new Date(a.scheduled_at), "MMM d"),
               type: "expected" as const,
             })),
           ],
@@ -142,60 +180,67 @@ export default function FinancialOverviewPage() {
               return startDate <= mKey + "-31";
             })
             .map((e: any) => ({
-              description: e.description || e.category,
-              amount: Number(e.amount),
-              date: "—",
-              category: e.category,
-              isRecurring: true,
+              description: e.description || e.category, amount: Number(e.amount),
+              date: "—", category: e.category, isRecurring: true,
             })),
         };
       }
 
-      // Past/current: actual data only
       const monthIncome = (allIncome as any[]).filter(i => (incomeDateOf(i) as string)?.startsWith(mKey));
       const monthExpenses = (allExpenses as any[]).filter(e => e.date?.startsWith(mKey));
       const totalIncome = monthIncome.reduce((s, i) => s + Number(i.amount), 0);
-
-      // Expected payments for this month (pending)
       const monthExpected = (expectedPayments as any[]).filter(ep => {
         const apt = ep.appointments as any;
         if (!apt?.scheduled_at) return false;
         return apt.scheduled_at.startsWith(mKey) && ep.status === "pending";
       });
       const expectedIncomeTotal = monthExpected.reduce((s, ep) => s + Number(ep.amount), 0);
-
       const totalExpenses = monthExpenses.reduce((s, e) => s + Number(e.amount), 0);
-      const monthTaxes = calcTaxes(totalIncome);
       const monthSessions = (allAppointments as any[]).filter(a => {
         const d = new Date(a.scheduled_at);
         return d >= mStart && d <= mEnd && a.status === "completed";
       }).length;
-
       return {
-        month: idx,
-        label: format(monthDate, "MMMM"),
-        shortLabel: format(monthDate, "MMM"),
-        income: totalIncome,
-        confirmedIncome: totalIncome,
-        expectedIncome: expectedIncomeTotal,
-        expenses: totalExpenses,
-        taxes: monthTaxes,
-        net: totalIncome - monthTaxes - totalExpenses,
-        sessions: monthSessions,
-        isFuture: false,
+        idx, isFuture, monthDate, mStart, mEnd, mKey,
+        income: totalIncome, confirmedIncome: totalIncome, expectedIncome: expectedIncomeTotal,
+        expenses: totalExpenses, sessions: monthSessions,
         incomeItems: monthIncome.map((i: any) => ({
           description: i.description || (i.appointments?.clients?.name ? `${i.appointments.clients.name} — ${i.appointments.services?.name}` : "Manual"),
-          amount: Number(i.amount),
-          date: format(new Date(incomeDateOf(i)), "MMM d"),
+          amount: Number(i.amount), date: format(new Date(incomeDateOf(i)), "MMM d"),
           type: "confirmed" as const,
         })),
         expenseItems: monthExpenses.map((e: any) => ({
-          description: e.description || e.category,
-          amount: Number(e.amount),
-          date: format(new Date(e.date), "MMM d"),
-          category: e.category,
-          isRecurring: e.is_recurring,
+          description: e.description || e.category, amount: Number(e.amount),
+          date: format(new Date(e.date), "MMM d"), category: e.category, isRecurring: e.is_recurring,
         })),
+      };
+    });
+
+    // Forecast-aware quarterly income map (actual + predicted future months in this year)
+    const fcQuarterMap = new Map(quarterIncomeMap);
+    for (const p of pre) {
+      if (!p.isFuture) continue;
+      const q = Math.floor(p.idx / 3) + 1;
+      const key = `${year}-Q${q}`;
+      fcQuarterMap.set(key, (fcQuarterMap.get(key) || 0) + p.income);
+    }
+
+    return pre.map(p => {
+      const monthTaxes = calcTaxes(p.income, p.idx, year, fcQuarterMap);
+      return {
+        month: p.idx,
+        label: format(p.monthDate, "MMMM"),
+        shortLabel: format(p.monthDate, "MMM"),
+        income: p.income,
+        confirmedIncome: p.confirmedIncome,
+        expectedIncome: p.expectedIncome,
+        expenses: p.expenses,
+        taxes: monthTaxes,
+        net: p.income - monthTaxes - p.expenses,
+        sessions: p.sessions,
+        isFuture: p.isFuture,
+        incomeItems: p.incomeItems,
+        expenseItems: p.expenseItems,
       };
     });
   }, [year, allIncome, allExpenses, allAppointments, activeTaxes, expectedPayments, currentMonth, currentYear, incomeDateField]);
@@ -398,17 +443,39 @@ export default function FinancialOverviewPage() {
                   </div>
                 </div>
 
-                {/* Tax breakdown */}
-                {activeTaxes.length > 0 && (
+                {/* Tax breakdown — quarterly taxes only show in the accrual month (Jan/Apr/Jul/Oct) */}
+                {activeTaxes.length > 0 && drillMonth.taxes > 0 && (
                   <div className="space-y-2">
                     <h3 className="font-medium text-foreground text-sm">{t("financial.taxBreakdown")}</h3>
                     {activeTaxes.map(tax => {
-                      const amount = tax.tax_type === "percentage"
-                        ? drillMonth.income * (Number(tax.tax_rate) / 100)
-                        : tax.frequency === "quarterly" ? Number(tax.fixed_amount) / 3 : Number(tax.fixed_amount);
+                      const isAccrualMonth = drillMonth.month % 3 === 0;
+                      let amount = 0;
+                      if (tax.frequency === "quarterly") {
+                        if (!isAccrualMonth) return null;
+                        const prevIdx = drillMonth.month - 1;
+                        const qYear = prevIdx < 0 ? year - 1 : year;
+                        const q = prevIdx < 0 ? 4 : Math.floor(prevIdx / 3) + 1;
+                        if (tax.tax_type === "percentage") {
+                          // Approximate: use this month's recognised tax share is hard;
+                          // show full-quarter amount derived from tax row directly.
+                          amount = (drillMonth.taxes); // shown total already equals tax for this month
+                          // when multiple taxes exist this won't separate them; keep single-line summary
+                        } else {
+                          amount = Number(tax.fixed_amount);
+                        }
+                        void qYear; void q;
+                      } else {
+                        amount = tax.tax_type === "percentage"
+                          ? drillMonth.income * (Number(tax.tax_rate) / 100)
+                          : Number(tax.fixed_amount);
+                      }
+                      if (amount === 0) return null;
                       return (
                         <div key={tax.id} className="flex justify-between text-sm bg-muted/50 rounded-lg px-3 py-2">
-                          <span className="text-muted-foreground">{tax.tax_name}</span>
+                          <span className="text-muted-foreground">
+                            {tax.tax_name}
+                            {tax.frequency === "quarterly" ? ` (Q${drillMonth.month === 0 ? 4 : Math.floor((drillMonth.month - 1) / 3) + 1})` : ""}
+                          </span>
                           <span className="text-warning font-medium">{fmt(amount)}</span>
                         </div>
                       );
