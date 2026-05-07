@@ -62,7 +62,7 @@ export function TelegramSendLog({ clientId }: Props) {
                     : "text-destructive border-destructive/30"
                 }
               >
-                {row.status}
+                {row.status === "sent" ? t("telegramLog.status.sent") : t("telegramLog.status.failed")}
               </Badge>
             </li>
           ))}
