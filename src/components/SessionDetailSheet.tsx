@@ -43,7 +43,9 @@ interface SessionDetailSheetProps {
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"];
 
 export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12h = false }: SessionDetailSheetProps) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const localeMap: Record<string, string> = { en: "en-US", fr: "fr-FR", pl: "pl-PL", uk: "uk-UA" };
+  const dateLocale = localeMap[lang] || "en-US";
   const dateLocale = useDateLocale();
   const { symbol: cs } = useCurrency();
   const { toast } = useToast();
