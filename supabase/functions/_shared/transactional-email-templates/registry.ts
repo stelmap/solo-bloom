@@ -11,8 +11,10 @@ export interface TemplateEntry {
 
 import { template as sessionReminder } from './session-reminder.tsx'
 import { template as sessionCancellation } from './session-cancellation.tsx'
+import { template as bookingRequestNotification } from './booking-request-notification.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'session-reminder': sessionReminder,
   'session-cancellation': sessionCancellation,
+  'booking-request-notification': bookingRequestNotification,
 }
