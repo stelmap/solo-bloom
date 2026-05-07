@@ -134,7 +134,116 @@ export default function FinancialOverviewPage() {
         .reduce((s, e) => s + Number(e.amount), 0);
     };
 
-    return months.map((monthDate, idx) => {
+    type Pre = {
+      idx: number; isFuture: boolean; monthDate: Date; mStart: Date; mEnd: Date; mKey: string;
+      income: number; confirmedIncome: number; expectedIncome: number;
+      expenses: number; sessions: number;
+      incomeItems: any[]; expenseItems: any[];
+    };
+    const pre: Pre[] = months.map((monthDate, idx) => {
+      const isFuture = year > currentYear || (year === currentYear && idx > currentMonth);
+      const mStart = startOfMonth(monthDate);
+      const mEnd = endOfMonth(monthDate);
+      const mKey = format(monthDate, "yyyy-MM");
+
+      if (isFuture) {
+        const futureApts = (allAppointments as any[]).filter(a => {
+          const d = new Date(a.scheduled_at);
+          return d >= mStart && d <= mEnd && a.status !== "cancelled" && a.status !== "no-show";
+        });
+        const confirmedApts = futureApts.filter(a => a.status === "completed" && (a.payment_status === "paid_now" || a.payment_status === "paid_in_advance"));
+        const expectedApts = futureApts.filter(a => !confirmedApts.includes(a));
+        const confirmedIncome = confirmedApts.reduce((s, a) => s + Number(a.price), 0);
+        const expectedIncome = expectedApts.reduce((s, a) => s + Number(a.price), 0);
+        const predictedIncome = confirmedIncome + expectedIncome;
+        const predictedExpenses = getRecurringForMonth(mKey);
+
+        return {
+          idx, isFuture, monthDate, mStart, mEnd, mKey,
+          income: predictedIncome, confirmedIncome, expectedIncome,
+          expenses: predictedExpenses, sessions: futureApts.length,
+          incomeItems: [
+            ...confirmedApts.map(a => ({
+              description: `${(a.clients as any)?.name || "Client"} — ${(a.services as any)?.name || "Service"}`,
+              amount: Number(a.price), date: format(new Date(a.scheduled_at), "MMM d"),
+              type: "confirmed" as const,
+            })),
+            ...expectedApts.map(a => ({
+              description: `${(a.clients as any)?.name || "Client"} — ${(a.services as any)?.name || "Service"}`,
+              amount: Number(a.price), date: format(new Date(a.scheduled_at), "MMM d"),
+              type: "expected" as const,
+            })),
+          ],
+          expenseItems: recurringExpenses
+            .filter((e: any) => {
+              const startDate = e.recurring_start_date || e.date;
+              return startDate <= mKey + "-31";
+            })
+            .map((e: any) => ({
+              description: e.description || e.category, amount: Number(e.amount),
+              date: "—", category: e.category, isRecurring: true,
+            })),
+        };
+      }
+
+      const monthIncome = (allIncome as any[]).filter(i => (incomeDateOf(i) as string)?.startsWith(mKey));
+      const monthExpenses = (allExpenses as any[]).filter(e => e.date?.startsWith(mKey));
+      const totalIncome = monthIncome.reduce((s, i) => s + Number(i.amount), 0);
+      const monthExpected = (expectedPayments as any[]).filter(ep => {
+        const apt = ep.appointments as any;
+        if (!apt?.scheduled_at) return false;
+        return apt.scheduled_at.startsWith(mKey) && ep.status === "pending";
+      });
+      const expectedIncomeTotal = monthExpected.reduce((s, ep) => s + Number(ep.amount), 0);
+      const totalExpenses = monthExpenses.reduce((s, e) => s + Number(e.amount), 0);
+      const monthSessions = (allAppointments as any[]).filter(a => {
+        const d = new Date(a.scheduled_at);
+        return d >= mStart && d <= mEnd && a.status === "completed";
+      }).length;
+      return {
+        idx, isFuture, monthDate, mStart, mEnd, mKey,
+        income: totalIncome, confirmedIncome: totalIncome, expectedIncome: expectedIncomeTotal,
+        expenses: totalExpenses, sessions: monthSessions,
+        incomeItems: monthIncome.map((i: any) => ({
+          description: i.description || (i.appointments?.clients?.name ? `${i.appointments.clients.name} — ${i.appointments.services?.name}` : "Manual"),
+          amount: Number(i.amount), date: format(new Date(incomeDateOf(i)), "MMM d"),
+          type: "confirmed" as const,
+        })),
+        expenseItems: monthExpenses.map((e: any) => ({
+          description: e.description || e.category, amount: Number(e.amount),
+          date: format(new Date(e.date), "MMM d"), category: e.category, isRecurring: e.is_recurring,
+        })),
+      };
+    });
+
+    // Forecast-aware quarterly income map (actual + predicted future months in this year)
+    const fcQuarterMap = new Map(quarterIncomeMap);
+    for (const p of pre) {
+      if (!p.isFuture) continue;
+      const q = Math.floor(p.idx / 3) + 1;
+      const key = `${year}-Q${q}`;
+      fcQuarterMap.set(key, (fcQuarterMap.get(key) || 0) + p.income);
+    }
+
+    return pre.map(p => {
+      const monthTaxes = calcTaxes(p.income, p.idx, year, fcQuarterMap);
+      return {
+        month: p.idx,
+        label: format(p.monthDate, "MMMM"),
+        shortLabel: format(p.monthDate, "MMM"),
+        income: p.income,
+        confirmedIncome: p.confirmedIncome,
+        expectedIncome: p.expectedIncome,
+        expenses: p.expenses,
+        taxes: monthTaxes,
+        net: p.income - monthTaxes - p.expenses,
+        sessions: p.sessions,
+        isFuture: p.isFuture,
+        incomeItems: p.incomeItems,
+        expenseItems: p.expenseItems,
+      };
+    });
+
       const isFuture = year > currentYear || (year === currentYear && idx > currentMonth);
       const mStart = startOfMonth(monthDate);
       const mEnd = endOfMonth(monthDate);
