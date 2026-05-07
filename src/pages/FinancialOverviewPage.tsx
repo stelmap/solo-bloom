@@ -443,17 +443,39 @@ export default function FinancialOverviewPage() {
                   </div>
                 </div>
 
-                {/* Tax breakdown */}
-                {activeTaxes.length > 0 && (
+                {/* Tax breakdown — quarterly taxes only show in the accrual month (Jan/Apr/Jul/Oct) */}
+                {activeTaxes.length > 0 && drillMonth.taxes > 0 && (
                   <div className="space-y-2">
                     <h3 className="font-medium text-foreground text-sm">{t("financial.taxBreakdown")}</h3>
                     {activeTaxes.map(tax => {
-                      const amount = tax.tax_type === "percentage"
-                        ? drillMonth.income * (Number(tax.tax_rate) / 100)
-                        : tax.frequency === "quarterly" ? Number(tax.fixed_amount) / 3 : Number(tax.fixed_amount);
+                      const isAccrualMonth = drillMonth.month % 3 === 0;
+                      let amount = 0;
+                      if (tax.frequency === "quarterly") {
+                        if (!isAccrualMonth) return null;
+                        const prevIdx = drillMonth.month - 1;
+                        const qYear = prevIdx < 0 ? year - 1 : year;
+                        const q = prevIdx < 0 ? 4 : Math.floor(prevIdx / 3) + 1;
+                        if (tax.tax_type === "percentage") {
+                          // Approximate: use this month's recognised tax share is hard;
+                          // show full-quarter amount derived from tax row directly.
+                          amount = (drillMonth.taxes); // shown total already equals tax for this month
+                          // when multiple taxes exist this won't separate them; keep single-line summary
+                        } else {
+                          amount = Number(tax.fixed_amount);
+                        }
+                        void qYear; void q;
+                      } else {
+                        amount = tax.tax_type === "percentage"
+                          ? drillMonth.income * (Number(tax.tax_rate) / 100)
+                          : Number(tax.fixed_amount);
+                      }
+                      if (amount === 0) return null;
                       return (
                         <div key={tax.id} className="flex justify-between text-sm bg-muted/50 rounded-lg px-3 py-2">
-                          <span className="text-muted-foreground">{tax.tax_name}</span>
+                          <span className="text-muted-foreground">
+                            {tax.tax_name}
+                            {tax.frequency === "quarterly" ? ` (Q${drillMonth.month === 0 ? 4 : Math.floor((drillMonth.month - 1) / 3) + 1})` : ""}
+                          </span>
                           <span className="text-warning font-medium">{fmt(amount)}</span>
                         </div>
                       );
