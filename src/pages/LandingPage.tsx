@@ -1,6 +1,6 @@
 import { useState, useCallback, createContext, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { PublicFooter } from "@/components/PublicFooter";
+
 import { Button } from "@/components/ui/button";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
