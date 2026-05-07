@@ -1,6 +1,16 @@
 // Telegram webhook: handles /start <token> linking, confirm/reschedule callbacks.
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { tgFetch, deriveTelegramWebhookSecret } from '../_shared/telegram.ts';
+import { tgFetch, deriveTelegramWebhookSecret, tg, normalizeLang } from '../_shared/telegram.ts';
+
+async function langForUserId(supabase: any, userId: string | null | undefined) {
+  if (!userId) return 'en';
+  const { data } = await supabase.from('profiles').select('language').eq('user_id', userId).maybeSingle();
+  return normalizeLang(data?.language);
+}
+async function langForAppointmentId(supabase: any, appointmentId: string) {
+  const { data } = await supabase.from('appointments').select('user_id').eq('id', appointmentId).maybeSingle();
+  return langForUserId(supabase, data?.user_id);
+}
 
 function safeEqual(a: string | null, b: string): boolean {
   if (!a || a.length !== b.length) return false;
