@@ -112,19 +112,13 @@ Deno.serve(async (req) => {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('full_name, business_name')
+      .select('full_name, business_name, language')
       .eq('user_id', apt.user_id)
       .single()
 
     const specialistName = profile?.full_name || profile?.business_name || 'your specialist'
-
-    const scheduledDate = new Date(apt.scheduled_at)
-    const sessionDate = scheduledDate.toLocaleDateString('en-US', {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-    })
-    const sessionTime = scheduledDate.toLocaleTimeString('en-US', {
-      hour: '2-digit', minute: '2-digit',
-    })
+    const lang = normalizeLang(profile?.language)
+    const { date: sessionDate, time: sessionTime } = formatSessionDateTime(apt.scheduled_at, lang)
 
     let confirmationUrl: string | undefined
     const needsConfirmation = client.confirmation_required && apt.confirmation_status !== 'confirmed'
