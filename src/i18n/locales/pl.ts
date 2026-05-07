@@ -418,7 +418,7 @@ export default {
   "toast.fileUploaded": "Plik przesłany",
   "toast.uploadFailed": "Przesyłanie nie powiodło się",
   "toast.paymentReceived": "Płatność otrzymana! ✅",
-  "toast.paymentRecordedDesc": "Kwota {amount} EUR zarejestrowana jako przychód.",
+  "toast.paymentRecordedDesc": "{symbol}{amount} zarejestrowane jako przychód.",
   "toast.dayOffAdded": "Dzień wolny dodany",
   "toast.dayOffRemoved": "Dzień wolny usunięty",
   "toast.scheduleSaved": "Harmonogram pracy zapisany",
