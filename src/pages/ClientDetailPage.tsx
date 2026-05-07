@@ -439,11 +439,12 @@ export default function ClientDetailPage() {
                   <Badge variant="outline" className={cn("text-xs", (client as any).confirmation_required ? "text-primary" : "text-muted-foreground")}>
                     {(client as any).confirmation_required ? "✓" : "—"}
                   </Badge>
-                </div>
               </div>
             </div>
 
-            {/* Pricing */}
+            {/* Telegram Connection */}
+            <TelegramConnectCard client={client} />
+
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
                 <DollarSign className="h-4 w-4 text-primary" /> {t("pricing.title")}
