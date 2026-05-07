@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Background -->
+  <rect width="64" height="64" rx="12" fill="#1a1f2e"/>
+  
+  <!-- Letter S -->
+  <text x="10" y="46" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="36" fill="#ffffff">S</text>
+  
+  <!-- Letter B in accent color -->
+  <text x="33" y="46" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="36" fill="#FF6B00">B</text>
+</svg>
