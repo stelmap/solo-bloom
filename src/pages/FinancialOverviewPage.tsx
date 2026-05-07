@@ -56,14 +56,62 @@ export default function FinancialOverviewPage() {
   const currentYear = now.getFullYear();
   const activeTaxes = (taxSettings as any[]).filter((ts: any) => ts.is_active);
 
-  const calcTaxes = (income: number) => {
+  // Map "yyyy-Qn" -> total income for that quarter (actual past quarters).
+  const quarterIncomeMap = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const i of allIncome as any[]) {
+      const d = incomeDateOf(i);
+      if (!d) continue;
+      const dt = new Date(d);
+      const q = Math.floor(dt.getMonth() / 3) + 1;
+      const key = `${dt.getFullYear()}-Q${q}`;
+      map.set(key, (map.get(key) || 0) + Number(i.amount));
+    }
+    return map;
+  }, [allIncome, incomeDateField]);
+
+  /**
+   * Compute taxes recognized in a given month.
+   * - Monthly tax: accrued in the same month against that month's income.
+   * - Quarterly tax: accrued only in the month AFTER the quarter ends
+   *   (Jan→Q4 prev year, Apr→Q1, Jul→Q2, Oct→Q3). Other months: 0.
+   */
+  const calcTaxes = (
+    monthIncome: number,
+    monthIdx: number,
+    monthYear: number,
+    quarterIncomeOverride?: Map<string, number>,
+  ) => {
     let total = 0;
+    const isAccrualMonth = monthIdx % 3 === 0; // 0=Jan,3=Apr,6=Jul,9=Oct
+    let accruedQuarterKey: string | null = null;
+    if (isAccrualMonth) {
+      // The quarter that ended just before this month
+      const prevQuarterMonthIdx = monthIdx - 1; // -1 for Jan -> Dec prev year
+      if (prevQuarterMonthIdx < 0) {
+        accruedQuarterKey = `${monthYear - 1}-Q4`;
+      } else {
+        const q = Math.floor(prevQuarterMonthIdx / 3) + 1;
+        accruedQuarterKey = `${monthYear}-Q${q}`;
+      }
+    }
+    const qMap = quarterIncomeOverride ?? quarterIncomeMap;
+
     for (const tax of activeTaxes) {
-      if (tax.tax_type === "percentage") {
-        total += income * (Number(tax.tax_rate) / 100);
-      } else if (tax.tax_type === "fixed") {
-        const amount = Number(tax.fixed_amount);
-        total += tax.frequency === "quarterly" ? amount / 3 : amount;
+      if (tax.frequency === "quarterly") {
+        if (!accruedQuarterKey) continue;
+        if (tax.tax_type === "percentage") {
+          const qIncome = qMap.get(accruedQuarterKey) || 0;
+          total += qIncome * (Number(tax.tax_rate) / 100);
+        } else {
+          total += Number(tax.fixed_amount);
+        }
+      } else {
+        if (tax.tax_type === "percentage") {
+          total += monthIncome * (Number(tax.tax_rate) / 100);
+        } else {
+          total += Number(tax.fixed_amount);
+        }
       }
     }
     return Math.round(total * 100) / 100;
