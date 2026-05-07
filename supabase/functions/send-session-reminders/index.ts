@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
     .select(`
       id, scheduled_at, duration_minutes, price, user_id,
       confirmation_status,
-      clients!appointments_client_id_fkey(id, name, email, notification_preference, confirmation_required),
+      clients!appointments_client_id_fkey(id, name, email, notification_preference, confirmation_required, telegram_chat_id, telegram_link_status),
       services!appointments_service_id_fkey(name)
     `)
     .in('status', ['scheduled'])
@@ -89,6 +89,7 @@ Deno.serve(async (req) => {
 
   let sentCount = 0
   let skippedCount = 0
+  let telegramCount = 0
 
   for (const apt of appointments) {
     const client = apt.clients as any
@@ -100,20 +101,14 @@ Deno.serve(async (req) => {
       continue
     }
 
-    // Skip if client doesn't want reminders
     if (client.notification_preference === 'no_reminder') {
       skippedCount++
       continue
     }
 
-    // Skip if no email (Phase 2 is email only; Telegram is Phase 3)
     const wantsEmail = ['email_only', 'email_and_telegram'].includes(client.notification_preference)
-    if (!wantsEmail || !client.email) {
-      skippedCount++
-      continue
-    }
+    const wantsTelegram = ['telegram_only', 'email_and_telegram'].includes(client.notification_preference)
 
-    // Get specialist name from profile
     const { data: profile } = await supabase
       .from('profiles')
       .select('full_name, business_name')
@@ -122,7 +117,6 @@ Deno.serve(async (req) => {
 
     const specialistName = profile?.full_name || profile?.business_name || 'your specialist'
 
-    // Format session date/time
     const scheduledDate = new Date(apt.scheduled_at)
     const sessionDate = scheduledDate.toLocaleDateString('en-US', {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
@@ -131,10 +125,9 @@ Deno.serve(async (req) => {
       hour: '2-digit', minute: '2-digit',
     })
 
-    // Build confirmation URL if client requires confirmation
     let confirmationUrl: string | undefined
-    if (client.confirmation_required && apt.confirmation_status !== 'confirmed') {
-      // Create a session_confirmation token
+    const needsConfirmation = client.confirmation_required && apt.confirmation_status !== 'confirmed'
+    if (needsConfirmation) {
       const { data: confirmation, error: confError } = await supabase
         .from('session_confirmations')
         .insert({ appointment_id: apt.id })
@@ -144,53 +137,83 @@ Deno.serve(async (req) => {
       if (confError) {
         console.error('Failed to create confirmation token', confError)
       } else {
-        // Use the published app URL for the confirmation link
         const appUrl = Deno.env.get('APP_URL') || `https://solo-bizz-app.lovable.app`
         confirmationUrl = `${appUrl}/confirm-session?token=${confirmation.token}`
       }
 
-      // Mark confirmation_status as pending
       await supabase
         .from('appointments')
         .update({ confirmation_status: 'pending' } as any)
         .eq('id', apt.id)
     }
 
-    // Send email via send-transactional-email
-    const { error: sendError } = await supabase.functions.invoke('send-transactional-email', {
-      body: {
-        templateName: 'session-reminder',
-        recipientEmail: client.email,
-        idempotencyKey: `session-reminder-${apt.id}`,
-        templateData: {
-          clientName: client.name,
-          specialistName,
-          sessionDate,
-          sessionTime,
-          confirmationUrl,
+    // ---------- Email ----------
+    if (wantsEmail && client.email) {
+      const { error: sendError } = await supabase.functions.invoke('send-transactional-email', {
+        body: {
+          templateName: 'session-reminder',
+          recipientEmail: client.email,
+          idempotencyKey: `session-reminder-${apt.id}`,
+          templateData: {
+            clientName: client.name,
+            specialistName,
+            sessionDate,
+            sessionTime,
+            confirmationUrl,
+          },
         },
-      },
-    })
+      })
+      if (sendError) {
+        console.error('Failed to send email reminder', { appointmentId: apt.id, error: sendError })
+      } else {
+        sentCount++
+      }
+    }
 
-    if (sendError) {
-      console.error('Failed to send reminder', { appointmentId: apt.id, error: sendError })
+    // ---------- Telegram ----------
+    if (wantsTelegram && client.telegram_chat_id && client.telegram_link_status === 'connected') {
+      const sessionType = (service?.name) ?? 'Session'
+      const baseText = needsConfirmation
+        ? `Hello <b>${client.name}</b>,\n\nplease confirm your upcoming session with <b>${specialistName}</b>.\n\nDate: ${sessionDate}\nTime: ${sessionTime}\nType: ${sessionType}\n\nPlease confirm your attendance.`
+        : `Hello <b>${client.name}</b>,\n\nthis is a reminder about your session with <b>${specialistName}</b>.\n\nDate: ${sessionDate}\nTime: ${sessionTime}\nType: ${sessionType}\n\nPlease contact your therapist if you need to reschedule.`
+
+      const reply_markup = needsConfirmation
+        ? { inline_keyboard: [[
+            { text: '✅ Confirm session', callback_data: `confirm:${apt.id}` },
+            { text: '🔄 I need to reschedule', callback_data: `reschedule:${apt.id}` },
+          ]] }
+        : undefined
+
+      const { error: tgErr } = await supabase.functions.invoke('send-telegram-notification', {
+        body: {
+          client_id: client.id,
+          appointment_id: apt.id,
+          template_name: needsConfirmation ? 'session-confirmation' : 'session-reminder',
+          text: baseText,
+          reply_markup,
+        },
+      })
+      if (tgErr) console.error('Telegram send failed', { appointmentId: apt.id, error: tgErr })
+      else telegramCount++
+    }
+
+    if (!wantsEmail && !wantsTelegram) {
+      skippedCount++
       continue
     }
 
-    // Update appointment status to reminder_sent
     await supabase
       .from('appointments')
       .update({ status: 'reminder_sent' } as any)
       .eq('id', apt.id)
 
-    sentCount++
-    console.log('Reminder sent', { appointmentId: apt.id, client: client.name })
+    console.log('Reminder processed', { appointmentId: apt.id, client: client.name })
   }
 
-  console.log('Reminder job complete', { sent: sentCount, skipped: skippedCount })
+  console.log('Reminder job complete', { sent: sentCount, telegram: telegramCount, skipped: skippedCount })
 
   return new Response(
-    JSON.stringify({ processed: appointments.length, sent: sentCount, skipped: skippedCount }),
+    JSON.stringify({ processed: appointments.length, sent: sentCount, telegram: telegramCount, skipped: skippedCount }),
     { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
   )
 })
