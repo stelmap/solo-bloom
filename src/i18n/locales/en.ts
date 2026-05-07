@@ -367,6 +367,8 @@ export default {
   "connectedAccounts.unlinked": "Google account unlinked.",
   "connectedAccounts.cannotUnlinkLast": "You cannot unlink your only sign-in method.",
   "connectedAccounts.googleHint": "Sign in faster with your Google account.",
+  "connectedAccounts.confirmUnlinkTitle": "Unlink Google account?",
+  "connectedAccounts.confirmUnlinkDesc": "You will no longer be able to sign in with Google. You can reconnect it at any time.",
   "auth.createAccount": "Create your account",
   "auth.signIn": "Sign In",
   "auth.signUp": "Sign up",

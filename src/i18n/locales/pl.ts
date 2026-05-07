@@ -367,6 +367,8 @@ export default {
   "connectedAccounts.unlinked": "Konto Google odłączone.",
   "connectedAccounts.cannotUnlinkLast": "Nie możesz odłączyć jedynej metody logowania.",
   "connectedAccounts.googleHint": "Szybsze logowanie przez konto Google.",
+  "connectedAccounts.confirmUnlinkTitle": "Odłączyć konto Google?",
+  "connectedAccounts.confirmUnlinkDesc": "Nie będziesz już mógł logować się przez Google. Możesz ponownie połączyć je w dowolnym momencie.",
   "auth.createAccount": "Stwórz swoje konto",
   "auth.signIn": "Zaloguj się",
   "auth.signUp": "Zarejestruj się",

@@ -6,6 +6,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { UserIdentity } from "@supabase/supabase-js";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export function ConnectedAccountsSection() {
   const { t } = useLanguage();
@@ -13,6 +23,7 @@ export function ConnectedAccountsSection() {
   const [identities, setIdentities] = useState<UserIdentity[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const refresh = async () => {
     setLoading(true);
@@ -71,6 +82,7 @@ export function ConnectedAccountsSection() {
       });
     } finally {
       setBusy(false);
+      setConfirmOpen(false);
     }
   };
 
@@ -126,7 +138,7 @@ export function ConnectedAccountsSection() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={handleUnlinkGoogle}
+                  onClick={() => setConfirmOpen(true)}
                   disabled={busy || identities.length <= 1}
                 >
                   <Unlink className="h-4 w-4 mr-1" />
@@ -141,6 +153,29 @@ export function ConnectedAccountsSection() {
           </div>
         </div>
       )}
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("connectedAccounts.confirmUnlinkTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("connectedAccounts.confirmUnlinkDesc")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={busy}>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleUnlinkGoogle();
+              }}
+              disabled={busy}
+            >
+              {t("connectedAccounts.unlink")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
