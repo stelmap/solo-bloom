@@ -230,6 +230,22 @@ export function AppSidebar() {
               </span>
             </Link>
           )}
+
+          {isAdmin && (
+            <Link
+              to="/admin/booking-requests"
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                "mt-3 flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                isExactActive("/admin/booking-requests")
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+              )}
+            >
+              <ShieldCheck className="h-4.5 w-4.5 shrink-0" />
+              <span className="flex-1 truncate">Admin</span>
+            </Link>
+          )}
         </nav>
 
         <div className="p-4 border-t border-sidebar-border">
