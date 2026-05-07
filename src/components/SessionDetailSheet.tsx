@@ -129,6 +129,14 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     return { total, billableCount: billable.length, expectedAmount };
   }, [groupBillingData]);
 
+  const { data: activeMethods = [] } = useActivePaymentMethods();
+  const PAYMENT_METHODS = activeMethods.map(m => ({ value: m.code, label: localizedMethodName(m, t) }));
+  useEffect(() => {
+    if (PAYMENT_METHODS.length === 0) return;
+    if (!PAYMENT_METHODS.find(m => m.value === paymentMethod)) setPaymentMethod(PAYMENT_METHODS[0].value);
+    if (!PAYMENT_METHODS.find(m => m.value === groupPaymentMethod)) setGroupPaymentMethod(PAYMENT_METHODS[0].value);
+  }, [activeMethods.length]);
+
   if (!apt) return null;
 
   const STATUSES: Record<string, { label: string; color: string }> = {
@@ -139,14 +147,6 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     cancelled: { label: t("status.cancelled"), color: "bg-destructive/15 text-destructive" },
     "no-show": { label: t("status.noShow"), color: "bg-warning/15 text-warning" },
   };
-
-  const { data: activeMethods = [] } = useActivePaymentMethods();
-  const PAYMENT_METHODS = activeMethods.map(m => ({ value: m.code, label: localizedMethodName(m, t) }));
-  useEffect(() => {
-    if (PAYMENT_METHODS.length === 0) return;
-    if (!PAYMENT_METHODS.find(m => m.value === paymentMethod)) setPaymentMethod(PAYMENT_METHODS[0].value);
-    if (!PAYMENT_METHODS.find(m => m.value === groupPaymentMethod)) setGroupPaymentMethod(PAYMENT_METHODS[0].value);
-  }, [activeMethods.length]);
 
   const PAYMENT_STATUSES = [
     { value: "paid_now", label: t("payment.paidNow"), description: t("payment.paidNowDesc") },
