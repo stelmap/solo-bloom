@@ -1020,8 +1020,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 <div>
                   <p className="text-sm font-semibold text-foreground">
                     {groupPaymentState === "waiting_for_payment"
-                      ? t("calendar.willBeExpected", { amount: groupBillingSummary.expectedAmount.toFixed(2) })
-                      : t("calendar.willBeIncome", { amount: groupBillingSummary.expectedAmount.toFixed(2) })}
+                      ? t("calendar.willBeExpected", { symbol: cs, amount: groupBillingSummary.expectedAmount.toFixed(2) })
+                      : t("calendar.willBeIncome", { symbol: cs, amount: groupBillingSummary.expectedAmount.toFixed(2) })}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {groupBillingSummary.billableCount} / {groupBillingSummary.total} {t("groups.billableParticipants").toLowerCase()}
