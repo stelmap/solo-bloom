@@ -439,8 +439,10 @@ export default function ClientDetailPage() {
                   <Badge variant="outline" className={cn("text-xs", (client as any).confirmation_required ? "text-primary" : "text-muted-foreground")}>
                     {(client as any).confirmation_required ? "✓" : "—"}
                   </Badge>
+                </div>
               </div>
             </div>
+
 
             {/* Telegram Connection */}
             <TelegramConnectCard client={client} />
