@@ -57,10 +57,17 @@ function fmtDate(s: string) {
   }
 }
 
+type EmailStatus = {
+  status: string;
+  error_message: string | null;
+  created_at: string;
+};
+
 export default function AdminBookingRequestsPage() {
   const { user, loading } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [rows, setRows] = useState<BookingRequest[]>([]);
+  const [emailByBookingId, setEmailByBookingId] = useState<Record<string, EmailStatus>>({});
   const [busy, setBusy] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [from, setFrom] = useState<string>("");
@@ -91,12 +98,38 @@ export default function AdminBookingRequestsPage() {
         q = q.lte("created_at", end.toISOString());
       }
       const { data, error } = await q;
-      setBusy(false);
       if (error) {
+        setBusy(false);
         toast({ title: "Не вдалося завантажити заявки", description: error.message, variant: "destructive" });
         return;
       }
-      setRows((data ?? []) as BookingRequest[]);
+      const list = (data ?? []) as BookingRequest[];
+      setRows(list);
+
+      // Fetch email statuses for these bookings (deduplicated, latest per message_id)
+      if (list.length > 0) {
+        const ids = list.map((r) => `booking-${r.id}`);
+        const { data: logs } = await supabase
+          .from("email_send_log")
+          .select("message_id,status,error_message,created_at")
+          .in("message_id", ids)
+          .order("created_at", { ascending: false });
+        const map: Record<string, EmailStatus> = {};
+        (logs ?? []).forEach((l: any) => {
+          // first occurrence is latest because ordered desc
+          if (l.message_id && !map[l.message_id]) {
+            map[l.message_id] = {
+              status: l.status,
+              error_message: l.error_message,
+              created_at: l.created_at,
+            };
+          }
+        });
+        setEmailByBookingId(map);
+      } else {
+        setEmailByBookingId({});
+      }
+      setBusy(false);
     },
     [isAdmin, statusFilter, from, to],
   );
