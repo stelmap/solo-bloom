@@ -15,6 +15,7 @@ import {
   Quote, MessageCircle,
 } from "lucide-react";
 import manualTrackingImg from "@/assets/manual-tracking-spreadsheet.png";
+import soloBizzPreviewImg from "@/assets/solobizz-client-profile.png";
 
 // ── Configurable external links (replace as needed) ───────────────────
 const YOUTUBE_URL = "https://www.youtube.com/";
