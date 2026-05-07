@@ -30,9 +30,9 @@ export function TelegramSendLog({ clientId }: Props) {
         <Send className="h-4 w-4 text-primary" /> {t("telegramLog.title")}
       </h3>
       {isLoading ? (
-        <p className="text-xs text-muted-foreground">Loading…</p>
+        <p className="text-xs text-muted-foreground">{t("telegramLog.loading")}</p>
       ) : !data || data.length === 0 ? (
-        <p className="text-xs text-muted-foreground">No Telegram messages sent yet.</p>
+        <p className="text-xs text-muted-foreground">{t("telegramLog.empty")}</p>
       ) : (
         <ul className="divide-y divide-border text-sm">
           {data.map((row: any) => (
