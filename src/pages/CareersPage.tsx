@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Briefcase, ArrowLeft, Mail } from "lucide-react";
-import { useLandingLang } from "@/contexts/LandingLangContext";
+import { getStoredLang } from "@/i18n/LanguageContext";
 
 const COPY = {
   uk: {
