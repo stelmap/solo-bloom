@@ -358,7 +358,7 @@ export default function PaymentAuditPage() {
         </div>
 
         {/* Filters row */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-end gap-2">
           <ClientPicker
             clients={clients}
             value={clientId}
@@ -368,13 +368,35 @@ export default function PaymentAuditPage() {
           />
           <div className="relative flex-1 min-w-[220px] max-w-md">
             <Search className="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-            <Input className="h-9 pl-8 w-full" placeholder={t("audit.searchPlaceholder")} value={search} onChange={e => setSearch(e.target.value)} />
+            <Input
+              className="h-9 pl-8 w-full"
+              placeholder={t("audit.searchPlaceholder")}
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
           </div>
-          <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="h-9 w-[150px]" aria-label={t("audit.dateFrom")} />
-          <span className="text-muted-foreground text-xs">–</span>
-          <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="h-9 w-[150px]" aria-label={t("audit.dateTo")} />
+          <DateFilterPopover
+            label={t("audit.dateFrom")}
+            value={dateFrom}
+            onChange={setDateFrom}
+            locale={dateLocale}
+          />
+          <DateFilterPopover
+            label={t("audit.dateTo")}
+            value={dateTo}
+            onChange={setDateTo}
+            locale={dateLocale}
+          />
           {(dateFrom || dateTo) && (
-            <Button variant="ghost" size="sm" className="h-9" onClick={() => { setDateFrom(""); setDateTo(""); }}>{t("audit.clearDates")}</Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 gap-1"
+              onClick={() => { setDateFrom(""); setDateTo(""); }}
+            >
+              <X className="h-3.5 w-3.5" />
+              {t("audit.clearDates")}
+            </Button>
           )}
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="h-9 w-[200px]"><SelectValue /></SelectTrigger>
@@ -387,7 +409,9 @@ export default function PaymentAuditPage() {
               <SelectItem value="client_desc">{t("audit.sort.clientDesc")}</SelectItem>
             </SelectContent>
           </Select>
-          <span className="ml-auto inline-flex items-center h-9 px-2 text-xs text-muted-foreground tabular-nums">{filtered.length} {t("audit.records")}</span>
+          <span className="ml-auto inline-flex items-center h-9 px-2 text-xs text-muted-foreground tabular-nums">
+            {filtered.length} {t("audit.records")}
+          </span>
         </div>
 
         {/* Table */}
