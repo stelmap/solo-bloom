@@ -17,6 +17,7 @@ import { Language } from "@/i18n/translations";
 import { Plus, Trash2, CalendarOff, Receipt, Pencil, Eye, EyeOff, Lock, Volume2, Sun, Moon, Monitor } from "lucide-react";
 import { SubscriptionSection } from "@/components/SubscriptionSection";
 import { PaymentMethodsSection } from "@/components/PaymentMethodsSection";
+import { ConnectedAccountsSection } from "@/components/ConnectedAccountsSection";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -387,6 +388,10 @@ export default function SettingsPage() {
             </Button>
           </div>
         </div>
+
+        <Separator />
+
+        <ConnectedAccountsSection />
 
         <Separator />
 
