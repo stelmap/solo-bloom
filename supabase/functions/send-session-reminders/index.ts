@@ -191,6 +191,7 @@ Deno.serve(async (req) => {
           template_name: needsConfirmation ? 'session-confirmation' : 'session-reminder',
           text: baseText,
           reply_markup,
+          idempotency_key: `session-reminder-24h:${apt.id}`,
         },
       })
       if (tgErr) console.error('Telegram send failed', { appointmentId: apt.id, error: tgErr })

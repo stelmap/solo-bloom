@@ -1,0 +1,2 @@
+ALTER TABLE public.telegram_send_log ADD COLUMN IF NOT EXISTS idempotency_key text;
+CREATE UNIQUE INDEX IF NOT EXISTS uq_telegram_log_idem_sent ON public.telegram_send_log (idempotency_key) WHERE status = 'sent' AND idempotency_key IS NOT NULL;
