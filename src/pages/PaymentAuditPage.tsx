@@ -581,9 +581,9 @@ export default function PaymentAuditPage() {
 
 function SumCard({ label, value }: { label: string; value: string }) {
   return (
-    <Card className="p-3">
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="text-lg font-semibold mt-0.5 tabular-nums">{value}</div>
+    <Card className="p-3 h-full flex flex-col justify-between min-h-[76px]">
+      <div className="text-[11px] uppercase tracking-wide text-muted-foreground line-clamp-2">{label}</div>
+      <div className="text-lg font-semibold mt-1 tabular-nums">{value}</div>
     </Card>
   );
 }
