@@ -367,6 +367,8 @@ export default {
   "connectedAccounts.unlinked": "Акаунт Google відключено.",
   "connectedAccounts.cannotUnlinkLast": "Не можна відключити єдиний спосіб входу.",
   "connectedAccounts.googleHint": "Швидший вхід через ваш Google акаунт.",
+  "connectedAccounts.confirmUnlinkTitle": "Відключити акаунт Google?",
+  "connectedAccounts.confirmUnlinkDesc": "Ви більше не зможете входити через Google. Ви можете підключити його знову в будь-який час.",
   "auth.createAccount": "Створіть обліковий запис",
   "auth.signIn": "Увійти",
   "auth.signUp": "Зареєструватися",

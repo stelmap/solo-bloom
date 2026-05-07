@@ -367,6 +367,8 @@ export default {
   "connectedAccounts.unlinked": "Compte Google dissocié.",
   "connectedAccounts.cannotUnlinkLast": "Vous ne pouvez pas dissocier votre seule méthode de connexion.",
   "connectedAccounts.googleHint": "Connectez-vous plus rapidement avec votre compte Google.",
+  "connectedAccounts.confirmUnlinkTitle": "Dissocier le compte Google ?",
+  "connectedAccounts.confirmUnlinkDesc": "Vous ne pourrez plus vous connecter avec Google. Vous pouvez le reconnecter à tout moment.",
   "auth.createAccount": "Créez votre compte",
   "auth.signIn": "Connexion",
   "auth.signUp": "S'inscrire",
