@@ -1140,17 +1140,20 @@ function FinalCTA() {
               : "After a short call you'll understand how the system can fit your way of working."}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <a
-              href={BOOKING_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => track("cta_clicked", { source_page: "/#final", cta: "book_call", lang })}
-            >
-              <Button size="lg" className="gap-2">
-                <MessageCircle className="h-4 w-4" />
-                {lang === "uk" ? "Поспілкуватися" : t("doubtCta")}
-              </Button>
-            </a>
+            <BookingDialog
+              lang={lang}
+              source="/#final"
+              trigger={
+                <Button
+                  size="lg"
+                  className="gap-2"
+                  onClick={() => track("cta_clicked", { source_page: "/#final", cta: "book_call", lang })}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  {lang === "uk" ? "Поспілкуватися" : t("doubtCta")}
+                </Button>
+              }
+            />
             <a
               href={`mailto:${CONTACT_EMAIL}`}
               onClick={() => track("cta_clicked", { source_page: "/#final", cta: "email_us", lang })}
