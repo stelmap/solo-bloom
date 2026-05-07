@@ -712,6 +712,14 @@ function ComparisonSection() {
         <div className="grid md:grid-cols-2 gap-5">
           <div className="p-7 rounded-2xl bg-card border border-border">
             <h3 className="text-xl font-semibold text-muted-foreground mb-5">{t("cmpManual")}</h3>
+            <div className="mb-5 rounded-lg overflow-hidden border border-border bg-muted/40">
+              <img
+                src={manualTrackingImg}
+                alt="Spreadsheet with manual client and payment tracking"
+                loading="lazy"
+                className="w-full h-auto block grayscale-[30%] opacity-90"
+              />
+            </div>
             <ul className="space-y-3">
               {manual.map((k) => (
                 <li key={k} className="flex items-start gap-3 text-foreground/80">
