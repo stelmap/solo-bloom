@@ -1,6 +1,7 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
+import { TelegramConnectCard } from "@/components/TelegramConnectCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -443,7 +444,10 @@ export default function ClientDetailPage() {
               </div>
             </div>
 
-            {/* Pricing */}
+
+            {/* Telegram Connection */}
+            <TelegramConnectCard client={client} />
+
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
                 <DollarSign className="h-4 w-4 text-primary" /> {t("pricing.title")}

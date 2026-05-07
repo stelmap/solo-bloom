@@ -401,6 +401,11 @@ export type Database = {
           seed_source: string | null
           status: string
           telegram: string | null
+          telegram_chat_id: string | null
+          telegram_last_notification_at: string | null
+          telegram_link_status: string
+          telegram_link_token: string | null
+          telegram_linked_at: string | null
           unarchived_at: string | null
           updated_at: string
           user_id: string
@@ -429,6 +434,11 @@ export type Database = {
           seed_source?: string | null
           status?: string
           telegram?: string | null
+          telegram_chat_id?: string | null
+          telegram_last_notification_at?: string | null
+          telegram_link_status?: string
+          telegram_link_token?: string | null
+          telegram_linked_at?: string | null
           unarchived_at?: string | null
           updated_at?: string
           user_id: string
@@ -457,6 +467,11 @@ export type Database = {
           seed_source?: string | null
           status?: string
           telegram?: string | null
+          telegram_chat_id?: string | null
+          telegram_last_notification_at?: string | null
+          telegram_link_status?: string
+          telegram_link_token?: string | null
+          telegram_linked_at?: string | null
           unarchived_at?: string | null
           updated_at?: string
           user_id?: string
@@ -1921,6 +1936,48 @@ export type Database = {
           tax_type?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      telegram_send_log: {
+        Row: {
+          appointment_id: string | null
+          chat_id: string | null
+          client_id: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          message_id: string | null
+          metadata: Json | null
+          status: string
+          template_name: string
+          user_id: string | null
+        }
+        Insert: {
+          appointment_id?: string | null
+          chat_id?: string | null
+          client_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          metadata?: Json | null
+          status: string
+          template_name: string
+          user_id?: string | null
+        }
+        Update: {
+          appointment_id?: string | null
+          chat_id?: string | null
+          client_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          metadata?: Json | null
+          status?: string
+          template_name?: string
+          user_id?: string | null
         }
         Relationships: []
       }
