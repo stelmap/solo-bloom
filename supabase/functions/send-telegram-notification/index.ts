@@ -53,6 +53,7 @@ Deno.serve(async (req) => {
     await supabase.from('telegram_send_log').insert({
       user_id: client?.user_id, client_id, appointment_id, template_name,
       status: 'failed', error_message: 'Telegram not connected for client',
+      idempotency_key: idempotency_key ?? null,
     });
     return new Response(JSON.stringify({ ok: false, error: 'not_connected' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
@@ -64,10 +65,16 @@ Deno.serve(async (req) => {
       parse_mode: 'HTML',
       ...(reply_markup ? { reply_markup } : {}),
     });
-    await supabase.from('telegram_send_log').insert({
+    const { error: insertErr } = await supabase.from('telegram_send_log').insert({
       user_id: client.user_id, client_id, appointment_id, template_name,
-      chat_id: client.telegram_chat_id, status: 'sent', message_id: String(res.result?.message_id ?? ''),
+      chat_id: client.telegram_chat_id, status: 'sent',
+      message_id: String(res.result?.message_id ?? ''),
+      idempotency_key: idempotency_key ?? null,
     });
+    // Unique-violation on idempotency_key means a concurrent send already logged success.
+    if (insertErr && (insertErr as any).code === '23505') {
+      return new Response(JSON.stringify({ ok: true, deduplicated: true }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
     await supabase.from('clients').update({ telegram_last_notification_at: new Date().toISOString() } as any).eq('id', client_id);
     return new Response(JSON.stringify({ ok: true, message_id: res.result?.message_id }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (e) {
@@ -75,7 +82,9 @@ Deno.serve(async (req) => {
     await supabase.from('telegram_send_log').insert({
       user_id: client.user_id, client_id, appointment_id, template_name,
       chat_id: client.telegram_chat_id, status: 'failed', error_message: err,
+      idempotency_key: idempotency_key ?? null,
     });
     return new Response(JSON.stringify({ ok: false, error: err }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
+});
 });
