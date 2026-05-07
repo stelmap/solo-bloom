@@ -951,18 +951,55 @@ function PlanCard({
 
 // ── Testimonials ──────────────────────────────────────────────────────
 
-const NATALIA_PARAGRAPHS = [
-  "Справді вона бере на себе частину роботи, яку я зараз виконую вручну в блокнотику, і там все почьоркано)).",
-  "Класно, що працює нагадування і для психолога і для клієнта, правда ще не розібралась чи може клієнт бачити вільні віконечка для запису, це було би зручно.",
-  "Графіки за підсумками місяця чи року дають загальну картину куди я рухаюсь, яка динаміка, і що можна планувати на потім.",
-  "Цікава штука з прогнозуванням прибутку, це щось нове для мене, особливо сподобалось що це прогнозування дає реалістину картинку: то можу я дозволити собі навчання цього місяця чи нє?))",
-  "Загалом, виглядає що програмка дає відчуття: все серйозно, це бізнес дєтка, і це хороше відчуття, воно справді потрібне для системного розвитку.",
-  "Впевнена, це буде корисно для багатьох фахівців",
-];
+const NATALIA_PARAGRAPHS: Record<Language, string[]> = {
+  uk: [
+    "Справді вона бере на себе частину роботи, яку я зараз виконую вручну в блокнотику, і там все почьоркано)).",
+    "Класно, що працює нагадування і для психолога і для клієнта, правда ще не розібралась чи може клієнт бачити вільні віконечка для запису, це було би зручно.",
+    "Графіки за підсумками місяця чи року дають загальну картину куди я рухаюсь, яка динаміка, і що можна планувати на потім.",
+    "Цікава штука з прогнозуванням прибутку, це щось нове для мене, особливо сподобалось що це прогнозування дає реалістину картинку: то можу я дозволити собі навчання цього місяця чи нє?))",
+    "Загалом, виглядає що програмка дає відчуття: все серйозно, це бізнес дєтка, і це хороше відчуття, воно справді потрібне для системного розвитку.",
+    "Впевнена, це буде корисно для багатьох фахівців",
+  ],
+  en: [
+    "It really takes over part of the work I currently do by hand in a notebook, where everything is scribbled over)).",
+    "It's great that reminders work both for the therapist and the client — though I haven't yet figured out whether the client can see the free time slots for booking, that would be convenient.",
+    "The monthly and yearly charts give the big picture of where I'm heading, what the dynamics are, and what I can plan for later.",
+    "The profit forecasting is an interesting thing, something new for me — I especially liked that the forecast gives a realistic picture: can I afford training this month or not?))",
+    "Overall, it feels like the app gives you the sense: this is serious, this is business, baby — and that's a good feeling, you really need it for systematic growth.",
+    "I'm sure it will be useful for many specialists.",
+  ],
+  fr: [
+    "Elle prend vraiment en charge une partie du travail que je fais aujourd'hui à la main dans un carnet, où tout est rayé)).",
+    "C'est super que les rappels fonctionnent à la fois pour le psy et pour le client, mais je n'ai pas encore compris si le client peut voir les créneaux libres pour la prise de rendez-vous — ce serait pratique.",
+    "Les graphiques mensuels et annuels donnent une vision globale de la direction que je prends, de la dynamique et de ce que je peux planifier ensuite.",
+    "La prévision des bénéfices est une chose intéressante, c'est nouveau pour moi — j'ai surtout aimé que la prévision donne une image réaliste : est-ce que je peux me permettre une formation ce mois-ci ou pas ?))",
+    "Globalement, l'appli donne ce sentiment : c'est sérieux, c'est du business, ma belle — et c'est une bonne sensation, vraiment nécessaire pour un développement systématique.",
+    "Je suis sûre que ce sera utile à beaucoup de professionnels.",
+  ],
+  pl: [
+    "Naprawdę bierze na siebie część pracy, którą teraz robię ręcznie w notesiku, gdzie wszystko jest pokreślone)).",
+    "Fajnie, że przypomnienia działają i dla psychologa, i dla klienta, choć jeszcze nie ogarnęłam, czy klient może widzieć wolne okienka do zapisu — to byłoby wygodne.",
+    "Wykresy miesięczne i roczne dają ogólny obraz tego, dokąd zmierzam, jaka jest dynamika i co można planować na później.",
+    "Ciekawa rzecz z prognozowaniem zysku, to coś nowego dla mnie — szczególnie spodobało mi się, że prognoza daje realistyczny obraz: czy mogę sobie pozwolić na szkolenie w tym miesiącu, czy nie?))",
+    "Ogólnie wygląda, że programik daje uczucie: wszystko na poważnie, to biznes, kochana — i to dobre uczucie, naprawdę potrzebne do systemowego rozwoju.",
+    "Jestem pewna, że przyda się wielu specjalistom.",
+  ],
+};
 
-const SVITLANA_PARAGRAPHS = [
-  "мені подобається. Дуже корисна штука. Зразу видно на якому ти світі і що відбувається. Дякую що розширила мій всесвіт.",
-];
+const SVITLANA_PARAGRAPHS: Record<Language, string[]> = {
+  uk: [
+    "мені подобається. Дуже корисна штука. Зразу видно на якому ти світі і що відбувається. Дякую що розширила мій всесвіт.",
+  ],
+  en: [
+    "i like it. Very useful thing. You immediately see where you are and what's going on. Thank you for expanding my universe.",
+  ],
+  fr: [
+    "ça me plaît. Vraiment utile. On voit tout de suite où on en est et ce qui se passe. Merci d'avoir élargi mon univers.",
+  ],
+  pl: [
+    "podoba mi się. Bardzo przydatna rzecz. Od razu widać, na jakim świecie jesteś i co się dzieje. Dziękuję, że poszerzyłaś mój wszechświat.",
+  ],
+};
 
 function TestimonialCard({
   name,
@@ -1004,7 +1041,7 @@ function TestimonialCard({
 }
 
 function TestimonialsSection() {
-  const { t } = useLandingLang();
+  const { t, lang } = useLandingLang();
   return (
     <section className="py-20 px-4 sm:px-6">
       <div className="max-w-5xl mx-auto">
@@ -1018,14 +1055,14 @@ function TestimonialsSection() {
         <div className="grid md:grid-cols-2 gap-5 items-start">
           <TestimonialCard
             name="Наталя"
-            role="Психотерапевт"
-            paragraphs={NATALIA_PARAGRAPHS}
+            role={lang === "uk" ? "Психотерапевт" : lang === "fr" ? "Psychothérapeute" : lang === "pl" ? "Psychoterapeutka" : "Psychotherapist"}
+            paragraphs={NATALIA_PARAGRAPHS[lang] ?? NATALIA_PARAGRAPHS.en}
             expandable
           />
           <TestimonialCard
             name="Світлана"
-            role="Психолог"
-            paragraphs={SVITLANA_PARAGRAPHS}
+            role={lang === "uk" ? "Психолог" : lang === "fr" ? "Psychologue" : lang === "pl" ? "Psycholog" : "Psychologist"}
+            paragraphs={SVITLANA_PARAGRAPHS[lang] ?? SVITLANA_PARAGRAPHS.en}
           />
         </div>
       </div>
