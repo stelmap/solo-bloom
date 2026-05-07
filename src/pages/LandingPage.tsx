@@ -250,11 +250,13 @@ const C = {
     pl: "Psycholodzy już testują Solo Bizz w swojej praktyce",
   },
   testSub: {
-    en: "Early users keep clients, sessions and payments in the system instead of spreadsheets and manual tracking.",
-    fr: "Les premiers utilisateurs gèrent clients, séances et paiements dans le système plutôt que dans des tableurs.",
-    uk: "Перші користувачі вже ведуть клієнтів, сесії та оплати в системі замість таблиць і ручного обліку.",
-    pl: "Pierwsi użytkownicy prowadzą klientów, sesje i płatności w systemie zamiast w arkuszach.",
+    en: "Original feedback from the first users who are already trying the system in their work.",
+    fr: "Retours originaux des premiers utilisateurs qui essaient déjà le système dans leur travail.",
+    uk: "Оригінальні відгуки перших користувачів, які вже пробують систему у своїй роботі.",
+    pl: "Oryginalne opinie pierwszych użytkowników, którzy już próbują systemu w swojej pracy.",
   },
+  testReadMore: { en: "Read full", fr: "Lire la suite", uk: "Читати повністю", pl: "Czytaj całość" },
+  testReadLess: { en: "Show less", fr: "Réduire", uk: "Згорнути", pl: "Zwiń" },
   test1Q: {
     en: "I finally see who paid, who owes, and how much I really earned this month.",
     fr: "Je vois enfin qui a payé, qui me doit, et combien j'ai vraiment gagné ce mois-ci.",
