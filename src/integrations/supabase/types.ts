@@ -2120,6 +2120,65 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_booking_email_logs: {
+        Args: { p_ids: string[] }
+        Returns: {
+          created_at: string
+          error_message: string | null
+          id: string
+          message_id: string | null
+          metadata: Json | null
+          recipient_email: string
+          status: string
+          template_name: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "email_send_log"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      admin_list_booking_requests: {
+        Args: { p_from?: string; p_status?: string; p_to?: string }
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          language: string | null
+          message: string | null
+          name: string
+          phone: string | null
+          source: string | null
+          status: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "booking_requests"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      admin_update_booking_request_status: {
+        Args: { p_id: string; p_status: string }
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          language: string | null
+          message: string | null
+          name: string
+          phone: string | null
+          source: string | null
+          status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "booking_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       check_client_revenue_consistency: {
         Args: never
         Returns: {
