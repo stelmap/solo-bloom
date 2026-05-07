@@ -391,17 +391,17 @@ export default function PaymentAuditPage() {
           <div className="overflow-x-auto">
           <Table className="min-w-[900px]">
             <TableHeader>
-              <TableRow>
-                <TableHead>{t("audit.col.date")}</TableHead>
-                <TableHead>{t("audit.col.client")}</TableHead>
-                <TableHead className="text-right">{t("audit.col.amount")}</TableHead>
-                <TableHead>{t("audit.col.method")}</TableHead>
-                <TableHead>{t("audit.col.invoice")}</TableHead>
-                <TableHead>{t("audit.col.allocation")}</TableHead>
-                <TableHead>{t("audit.col.status")}</TableHead>
-                <TableHead>{t("audit.col.source")}</TableHead>
-                <TableHead>{t("audit.col.linked")}</TableHead>
-                <TableHead className="text-right">{t("audit.col.prepaid")}</TableHead>
+              <TableRow className="h-11 hover:bg-transparent">
+                <TableHead className="h-11 py-0">{t("audit.col.date")}</TableHead>
+                <TableHead className="h-11 py-0">{t("audit.col.client")}</TableHead>
+                <TableHead className="h-11 py-0 text-right">{t("audit.col.amount")}</TableHead>
+                <TableHead className="h-11 py-0">{t("audit.col.method")}</TableHead>
+                <TableHead className="h-11 py-0">{t("audit.col.invoice")}</TableHead>
+                <TableHead className="h-11 py-0">{t("audit.col.allocation")}</TableHead>
+                <TableHead className="h-11 py-0">{t("audit.col.status")}</TableHead>
+                <TableHead className="h-11 py-0">{t("audit.col.source")}</TableHead>
+                <TableHead className="h-11 py-0">{t("audit.col.linked")}</TableHead>
+                <TableHead className="h-11 py-0 text-right">{t("audit.col.prepaid")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -412,21 +412,21 @@ export default function PaymentAuditPage() {
               ) : paged.map(r => {
                 const ab = allocBadgeVariant(r.allocStatus);
                 return (
-                  <TableRow key={`${r.kind}-${r.id}`} onClick={() => setOpenRow(r)} className="cursor-pointer">
-                    <TableCell className="whitespace-nowrap text-sm">{r.date}</TableCell>
-                    <TableCell>
+                  <TableRow key={`${r.kind}-${r.id}`} onClick={() => setOpenRow(r)} className="cursor-pointer h-12">
+                    <TableCell className="py-2 align-middle whitespace-nowrap text-sm">{r.date}</TableCell>
+                    <TableCell className="py-2 align-middle">
                       <button
                         onClick={(e) => { e.stopPropagation(); if (r.client_id) navigate(`/clients/${r.client_id}`); }}
-                        className="text-primary hover:underline text-sm font-medium"
+                        className="text-primary hover:underline text-sm font-medium text-left"
                       >{r.client_name}</button>
                     </TableCell>
-                    <TableCell className="text-right font-medium tabular-nums">{cs}{r.amount.toFixed(2)}</TableCell>
-                    <TableCell className="text-sm">{methodLabel(r.method)}</TableCell>
-                    <TableCell className="text-sm">{r.invoice?.invoice_number || <span className="text-muted-foreground">{t("audit.notGenerated")}</span>}</TableCell>
-                    <TableCell><Badge variant="outline" className={cn("border", ab.cls)}>{t(ab.key as any)}</Badge></TableCell>
-                    <TableCell><Badge variant="outline" className="capitalize">{t(`audit.pstatus.${r.paymentStatus}` as any) || r.paymentStatus}</Badge></TableCell>
-                    <TableCell><span className="text-xs text-muted-foreground capitalize">{t(`audit.src.${r.source}` as any) || r.source}</span></TableCell>
-                    <TableCell className="text-sm" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="py-2 align-middle text-right font-medium tabular-nums">{cs}{r.amount.toFixed(2)}</TableCell>
+                    <TableCell className="py-2 align-middle text-sm">{methodLabel(r.method)}</TableCell>
+                    <TableCell className="py-2 align-middle text-sm">{r.invoice?.invoice_number || <span className="text-muted-foreground">{t("audit.notGenerated")}</span>}</TableCell>
+                    <TableCell className="py-2 align-middle"><Badge variant="outline" className={cn("inline-flex items-center border", ab.cls)}>{t(ab.key as any)}</Badge></TableCell>
+                    <TableCell className="py-2 align-middle"><Badge variant="outline" className="inline-flex items-center capitalize">{t(`audit.pstatus.${r.paymentStatus}` as any) || r.paymentStatus}</Badge></TableCell>
+                    <TableCell className="py-2 align-middle"><span className="text-xs text-muted-foreground capitalize">{t(`audit.src.${r.source}` as any) || r.source}</span></TableCell>
+                    <TableCell className="py-2 align-middle text-sm" onClick={(e) => e.stopPropagation()}>
                       <LinkedSessionsCell
                         allocs={r.allocs}
                         allocStatus={r.allocStatus}
@@ -436,7 +436,7 @@ export default function PaymentAuditPage() {
                         onOpenAppointment={(id) => navigate(`/calendar?appointment=${id}`)}
                       />
                     </TableCell>
-                    <TableCell className="text-right text-sm tabular-nums">
+                    <TableCell className="py-2 align-middle text-right text-sm tabular-nums">
                       {r.allocStatus === "prepayment" ? `+${cs}${r.remaining.toFixed(2)}` :
                        r.allocStatus === "partial" ? `${cs}${r.remaining.toFixed(2)}` : "—"}
                     </TableCell>
