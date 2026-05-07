@@ -911,7 +911,7 @@ function TestimonialCard({
   expandable?: boolean;
 }) {
   const { t } = useLandingLang();
-  const [expanded, setExpanded] = React.useState(false);
+  const [expanded, setExpanded] = useState(false);
   const visible = expandable && !expanded ? paragraphs.slice(0, 1) : paragraphs;
   return (
     <figure className="p-6 sm:p-7 rounded-2xl bg-card border border-border flex flex-col shadow-sm">
