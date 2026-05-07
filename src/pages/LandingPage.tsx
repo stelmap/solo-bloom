@@ -390,6 +390,16 @@ const LANG_CYCLE: Language[] = ["en", "fr", "uk", "pl"];
 
 export function LandingLangProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLang] = useState<Language>(() => getStoredLang());
+  // Stay in sync with the global LanguageProvider so toggles anywhere update copy here.
+  useEffect(() => {
+    const sync = () => setLang(getStoredLang());
+    window.addEventListener("app_lang_change", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("app_lang_change", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
   const toggle = useCallback(() => {
     setLang((prev) => {
       const idx = LANG_CYCLE.indexOf(prev);
