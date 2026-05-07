@@ -1372,6 +1372,64 @@ function LandingFooter() {
   );
 }
 
+// ── SEO (localized meta) ──────────────────────────────────────────────
+
+const SEO_META: Record<Language, { title: string; description: string; ogTitle: string; ogDesc: string; ogLocale: string; htmlLang: string }> = {
+  en: {
+    title: "Solo Bizz — CRM for psychologists, coaches & solo practices",
+    description: "Solo Bizz helps psychologists, therapists, coaches and tutors manage clients, sessions, payments and income — all in one calm, simple workspace.",
+    ogTitle: "Solo Bizz — Run your solo practice without the chaos",
+    ogDesc: "Clients, sessions, payments and income in one place. Built for psychologists, therapists, coaches and tutors.",
+    ogLocale: "en_US",
+    htmlLang: "en",
+  },
+  uk: {
+    title: "Solo Bizz — CRM для психологів, коучів і приватної практики",
+    description: "Solo Bizz допомагає психологам, терапевтам, коучам і репетиторам вести клієнтів, сесії, оплати та дохід — в одному простому робочому просторі.",
+    ogTitle: "Solo Bizz — Керуйте приватною практикою без хаосу",
+    ogDesc: "Клієнти, сесії, оплати та дохід в одному місці. Створено для психологів, терапевтів, коучів і репетиторів.",
+    ogLocale: "uk_UA",
+    htmlLang: "uk",
+  },
+  fr: {
+    title: "Solo Bizz — CRM pour psychologues, coachs et pratiques solo",
+    description: "Solo Bizz aide les psychologues, thérapeutes, coachs et tuteurs à gérer clients, séances, paiements et revenus — dans un espace simple et apaisé.",
+    ogTitle: "Solo Bizz — Gérez votre pratique solo sans le chaos",
+    ogDesc: "Clients, séances, paiements et revenus en un seul endroit. Conçu pour psychologues, thérapeutes, coachs et tuteurs.",
+    ogLocale: "fr_FR",
+    htmlLang: "fr",
+  },
+  pl: {
+    title: "Solo Bizz — CRM dla psychologów, coachów i praktyki solo",
+    description: "Solo Bizz pomaga psychologom, terapeutom, coachom i korepetytorom zarządzać klientami, sesjami, płatnościami i dochodem — w jednym prostym miejscu.",
+    ogTitle: "Solo Bizz — Prowadź praktykę solo bez chaosu",
+    ogDesc: "Klienci, sesje, płatności i dochód w jednym miejscu. Stworzone dla psychologów, terapeutów, coachów i korepetytorów.",
+    ogLocale: "pl_PL",
+    htmlLang: "pl",
+  },
+};
+
+function setMeta(selector: string, attr: "content", value: string) {
+  const el = document.head.querySelector<HTMLMetaElement>(selector);
+  if (el) el.setAttribute(attr, value);
+}
+
+function LandingSEO() {
+  const { lang } = useLandingLang();
+  useEffect(() => {
+    const m = SEO_META[lang] ?? SEO_META.en;
+    document.title = m.title;
+    document.documentElement.lang = m.htmlLang;
+    setMeta('meta[name="description"]', "content", m.description);
+    setMeta('meta[property="og:title"]', "content", m.ogTitle);
+    setMeta('meta[property="og:description"]', "content", m.ogDesc);
+    setMeta('meta[property="og:locale"]', "content", m.ogLocale);
+    setMeta('meta[name="twitter:title"]', "content", m.ogTitle);
+    setMeta('meta[name="twitter:description"]', "content", m.ogDesc);
+  }, [lang]);
+  return null;
+}
+
 // ── Page ──────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
@@ -1381,6 +1439,7 @@ export default function LandingPage() {
 
   return (
     <LandingLangProvider>
+      <LandingSEO />
       <div className="min-h-screen bg-background">
         <LandingNav />
         <HeroSection />
@@ -1398,3 +1457,4 @@ export default function LandingPage() {
     </LandingLangProvider>
   );
 }
+
