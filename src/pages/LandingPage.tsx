@@ -27,7 +27,7 @@ const TELEGRAM_URL = "#telegram"; // [TELEGRAM_URL]
 const TELEGRAM_HANDLE = "@solobizz";
 const PHONE_NUMBER = "+48 000 000 000"; // [PHONE_NUMBER]
 const OFFICE_ADDRESS = "Poland, Wroclaw, Gwiadzista 16";
-const VACANCIES_URL = "#vacancies"; // [VACANCIES_URL]
+const VACANCIES_URL = "/careers";
 
 // ── Local landing-page copy (EN / FR / UK / PL) ───────────────────────
 
@@ -1286,7 +1286,7 @@ function LandingFooter() {
       links: [
         { label: isUk ? "Про нас" : "About us", href: "#about" },
         { label: isUk ? "Контакти" : "Contacts", href: "#contacts" },
-        { label: isUk ? "Вакансії" : "Careers", href: VACANCIES_URL, external: true },
+        { label: isUk ? "Вакансії" : "Careers", href: VACANCIES_URL },
       ],
     },
     {

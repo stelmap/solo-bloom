@@ -32,6 +32,7 @@ const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
 const CookiePolicyPage = lazy(() => import("./pages/CookiePolicyPage"));
+const CareersPage = lazy(() => import("./pages/CareersPage"));
 const ConfirmSessionPage = lazy(() => import("./pages/ConfirmSessionPage"));
 const UnsubscribePage = lazy(() => import("./pages/UnsubscribePage"));
 const SupervisionPage = lazy(() => import("./pages/SupervisionPage"));
@@ -67,6 +68,7 @@ const App = () => (
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="/cookie-policy" element={<CookiePolicyPage />} />
+                <Route path="/careers" element={<CareersPage />} />
                 <Route path="/confirm-session" element={<ConfirmSessionPage />} />
                 <Route path="/unsubscribe" element={<UnsubscribePage />} />
 
