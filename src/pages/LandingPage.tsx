@@ -1265,6 +1265,7 @@ function AboutContactsSection() {
                   href={TELEGRAM_URL}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => track("cta_clicked", { source_page: "/#contacts", cta: "telegram", lang })}
                   className="text-foreground hover:text-primary"
                 >
                   {TELEGRAM_HANDLE}
