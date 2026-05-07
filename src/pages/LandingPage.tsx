@@ -216,6 +216,24 @@ const C = {
   cmpS5: { en: "Clear financial result", fr: "Résultat financier clair", uk: "Зрозумілий фінансовий результат", pl: "Czytelny wynik finansowy" },
   cmpS6: { en: "Less routine, more time for practice", fr: "Moins de routine, plus de temps pour la pratique", uk: "Менше рутини, більше часу на практику", pl: "Mniej rutyny, więcej czasu na praktykę" },
   cmpCta: { en: "Try for free", fr: "Essayer gratuitement", uk: "Спробувати безкоштовно", pl: "Wypróbuj za darmo" },
+  cmpCtaNote: {
+    en: "No credit card. No complex setup.",
+    fr: "Sans carte. Sans configuration complexe.",
+    uk: "Без картки. Без складних налаштувань.",
+    pl: "Bez karty. Bez skomplikowanej konfiguracji.",
+  },
+  cmpManualBadge: {
+    en: "Before",
+    fr: "Avant",
+    uk: "До",
+    pl: "Przed",
+  },
+  cmpSoloBadge: {
+    en: "After",
+    fr: "Après",
+    uk: "Після",
+    pl: "Po",
+  },
 
   // Pricing
   pricingTitle: { en: "Choose your practice", fr: "Choisissez votre formule", uk: "Оберіть свою практику", pl: "Wybierz swoją praktykę" },
@@ -703,56 +721,78 @@ function ComparisonSection() {
   const manual: CopyKey[] = ["cmpM1", "cmpM2", "cmpM3", "cmpM4", "cmpM5", "cmpM6"];
   const solo: CopyKey[] = ["cmpS1", "cmpS2", "cmpS3", "cmpS4", "cmpS5", "cmpS6"];
   return (
-    <section id="comparison" className="py-20 px-4 sm:px-6">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center max-w-2xl mx-auto mb-12">
+    <section id="comparison" className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-b from-background via-muted/30 to-background">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-12">
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">{t("cmpTitle")}</h2>
           <p className="text-lg text-muted-foreground">{t("cmpSub")}</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-5">
-          <div className="p-7 rounded-2xl bg-card border border-border">
-            <h3 className="text-xl font-semibold text-muted-foreground mb-5">{t("cmpManual")}</h3>
-            <div className="mb-5 rounded-lg overflow-hidden border border-border bg-muted/40">
+        <div className="grid md:grid-cols-2 gap-6 items-stretch">
+          {/* Manual tracking card */}
+          <div className="relative flex flex-col p-6 sm:p-8 rounded-2xl bg-card border border-border shadow-sm">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-xl sm:text-2xl font-semibold text-muted-foreground">
+                {t("cmpManual")}
+              </h3>
+              <span className="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-destructive/10 text-destructive">
+                {t("cmpManualBadge")}
+              </span>
+            </div>
+            <div className="mb-6 rounded-xl overflow-hidden border border-border bg-muted/40 aspect-[16/9]">
               <img
                 src={manualTrackingImg}
                 alt="Spreadsheet with manual client and payment tracking"
                 loading="lazy"
-                className="w-full h-auto block grayscale-[30%] opacity-90"
+                className="w-full h-full object-cover object-top grayscale-[35%] opacity-90"
               />
             </div>
-            <ul className="space-y-3">
+            <ul className="space-y-3.5 flex-1">
               {manual.map((k) => (
                 <li key={k} className="flex items-start gap-3 text-foreground/80">
-                  <X className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-                  <span className="text-sm sm:text-base">{t(k)}</span>
+                  <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-destructive/10 shrink-0">
+                    <X className="h-4 w-4 text-destructive" />
+                  </span>
+                  <span className="text-base leading-relaxed">{t(k)}</span>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="p-7 rounded-2xl bg-primary/5 border-2 border-primary/30">
-            <h3 className="text-xl font-semibold text-foreground mb-5">{t("cmpSolo")}</h3>
-            <div className="mb-5 rounded-lg overflow-hidden border border-primary/20 bg-background shadow-sm">
+
+          {/* Solo Bizz card */}
+          <div className="relative flex flex-col p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-primary/[0.06] via-card to-primary/[0.04] border-2 border-primary/40 shadow-lg shadow-primary/10">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-xl sm:text-2xl font-bold text-foreground">
+                {t("cmpSolo")}
+              </h3>
+              <span className="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-primary/15 text-primary">
+                {t("cmpSoloBadge")}
+              </span>
+            </div>
+            <div className="mb-6 rounded-xl overflow-hidden border border-primary/20 bg-background shadow-sm aspect-[16/9]">
               <img
                 src={soloBizzPreviewImg}
                 alt="Solo Bizz client profile dashboard"
                 loading="lazy"
-                className="w-full h-auto block"
+                className="w-full h-full object-cover object-top"
               />
             </div>
-            <ul className="space-y-3">
+            <ul className="space-y-3.5 flex-1">
               {solo.map((k) => (
                 <li key={k} className="flex items-start gap-3 text-foreground">
-                  <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                  <span className="text-sm sm:text-base font-medium">{t(k)}</span>
+                  <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/15 shrink-0">
+                    <Check className="h-4 w-4 text-primary" />
+                  </span>
+                  <span className="text-base leading-relaxed font-medium">{t(k)}</span>
                 </li>
               ))}
             </ul>
           </div>
         </div>
 
-        <div className="mt-10 flex justify-center">
+        <div className="mt-10 flex flex-col items-center gap-3">
           <PrimaryCta label={t("cmpCta")} source="/#comparison" cta="comparison" className="text-base px-8 h-12" />
+          <p className="text-sm text-muted-foreground">{t("cmpCtaNote")}</p>
         </div>
       </div>
     </section>
