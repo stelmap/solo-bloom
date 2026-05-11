@@ -750,6 +750,8 @@ export function useUpdateExpense() {
     mutationFn: async ({ id, ...updates }: { id: string; category?: string; amount?: number; date?: string; description?: string; is_recurring?: boolean; recurring_start_date?: string | null }) => {
       if (updates.is_recurring === false) {
         updates.recurring_start_date = null;
+      } else if (updates.recurring_start_date === "") {
+        updates.recurring_start_date = null;
       }
       const { error } = await supabase.from("expenses").update(updates).eq("id", id);
       if (error) throw error;
