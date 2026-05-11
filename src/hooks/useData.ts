@@ -408,7 +408,7 @@ export function useDeleteService() {
       const { error } = await supabase.from("services").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["services"] }),
+    onSuccess: () => { track("service_deleted"); qc.invalidateQueries({ queryKey: ["services"] }); },
   });
 }
 
