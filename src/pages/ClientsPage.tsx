@@ -17,7 +17,8 @@ import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { useDemoMode } from "@/hooks/useDemoWorkspace";
+import { useFreeStarterMode } from "@/hooks/useDemoWorkspace";
+import { PaywallDialog } from "@/components/PaywallDialog";
 
 const ClientCard = memo(({ client, onNavigate, onDelete, onArchive, onUnarchive, t }: {
   client: any; onNavigate: (id: string) => void;
@@ -90,7 +91,9 @@ export default function ClientsPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
-  const { isDemoMode } = useDemoMode();
+  const { isFreeStarter, atClientLimit } = useFreeStarterMode();
+  const isDemoMode = false; // Free Starter Mode allows all client edits — gating is now via paywall on creation only.
+  const [paywallOpen, setPaywallOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -127,6 +130,11 @@ export default function ClientsPage() {
       setOpen(false);
       toast({ title: t("toast.clientAdded") });
     } catch (e: any) {
+      if (e?.message === "FREE_STARTER_CLIENT_LIMIT_REACHED") {
+        setOpen(false);
+        setPaywallOpen(true);
+        return;
+      }
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
@@ -233,9 +241,17 @@ export default function ClientsPage() {
               </Button>
             </>}
             <Dialog open={open} onOpenChange={setOpen}>
-              {!isDemoMode && <DialogTrigger asChild>
-                <Button><Plus className="h-4 w-4 mr-1" /> {t("clients.addClient")}</Button>
-              </DialogTrigger>}
+              <Button
+                onClick={() => {
+                  if (atClientLimit) {
+                    setPaywallOpen(true);
+                  } else {
+                    setOpen(true);
+                  }
+                }}
+              >
+                <Plus className="h-4 w-4 mr-1" /> {t("clients.addClient")}
+              </Button>
             <DialogContent>
               <DialogHeader><DialogTitle>{t("clients.addClient")}</DialogTitle></DialogHeader>
               <div className="space-y-4">
@@ -299,6 +315,7 @@ export default function ClientsPage() {
           clientName={archiveTarget.name}
         />
       )}
+      <PaywallDialog open={paywallOpen} onOpenChange={setPaywallOpen} reason="client_limit" />
     </AppLayout>
   );
 }

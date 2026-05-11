@@ -1,12 +1,23 @@
-import { useEffect, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 import { translations, type Language } from "@/i18n/translations";
 
-const SEED_ATTEMPT_KEY = "demo_seed_attempted";
-const DEMO_MODE_KEY = "demo_mode_enabled";
+/**
+ * Free Starter Mode
+ * -----------------
+ * Unpaid users get full access to SoloBiz with a soft cap of 5 active clients.
+ * The legacy "demo mode" (read-only seeded workspace) has been retired:
+ *   - `useDemoMode().isDemoMode` is now always `false` so the old `!isDemoMode &&`
+ *     UI gates render their controls again.
+ *   - `useDemoWriteGuard()` is a no-op so all writes are allowed.
+ *   - `useAutoSeedDemo()` is a no-op so we never auto-create demo records.
+ * Callers that need to know if a user is on the free tier should use
+ * `useFreeStarterMode()` instead.
+ */
+
+export const FREE_STARTER_CLIENT_LIMIT = 5;
 
 function readLangFromStorage(): Language {
   try {
@@ -20,154 +31,86 @@ function readLangFromStorage(): Language {
   return "en";
 }
 
-/**
- * Localized restriction message for business-data writes (clients, services, groups, etc.)
- * blocked in demo mode. Personal/account settings (language, currency, profile, schedule)
- * must NEVER throw this — they are always editable.
- */
+/** @deprecated Free Starter Mode no longer raises this error. Kept for backward compat. */
 export function getDemoActionMessage(): string {
   const lang = readLangFromStorage();
   const entry = translations["demo.restrictedBusiness"];
-  return entry?.[lang] || entry?.en || "Editing clients and services is available only after registration.";
+  return entry?.[lang] || entry?.en || "";
 }
 
-/** @deprecated Prefer getDemoActionMessage() so the message is localized. */
-export const DEMO_ACTION_MESSAGE = "Editing clients and services is available only after registration.";
+/** @deprecated */
+export const DEMO_ACTION_MESSAGE = "";
 
-const getDemoModeStorageKey = (userId?: string) => `${DEMO_MODE_KEY}:${userId ?? "anonymous"}`;
-
-const readPersistedDemoMode = (userId?: string) => {
-  if (typeof window === "undefined" || !userId) return false;
-  return localStorage.getItem(getDemoModeStorageKey(userId)) === "1";
-};
-
-const persistDemoMode = (userId: string, enabled: boolean) => {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getDemoModeStorageKey(userId), enabled ? "1" : "0");
-};
-
-/**
- * Returns whether the current user has any demo records in their workspace.
- */
+/** @deprecated kept for backward compat — always returns false now. */
 export function useHasDemoData() {
-  const { user } = useAuth();
   return useQuery({
-    queryKey: ["has-demo-data", user?.id],
-    enabled: !!user?.id,
-    staleTime: 60_000,
-    queryFn: async () => {
-      if (!user?.id) return false;
-      const { data, error } = await supabase.rpc("user_has_demo_data", {
-        p_user_id: user.id,
-      });
-      if (error) {
-        console.error("user_has_demo_data failed:", error);
-        return false;
-      }
-      return Boolean(data);
-    },
+    queryKey: ["has-demo-data-disabled"],
+    queryFn: async () => false,
+    staleTime: Infinity,
   });
 }
 
+/**
+ * @deprecated Use `useFreeStarterMode()` instead.
+ * Always returns `isDemoMode: false` so legacy `!isDemoMode &&` UI gates
+ * render their action buttons.
+ */
 export function useDemoMode() {
-  const { user } = useAuth();
-  const { subscription } = useAuth();
-  const { data: hasDemoData = false, isLoading } = useHasDemoData();
-  const [persistedDemoMode, setPersistedDemoMode] = useState(() => readPersistedDemoMode(user?.id));
-  const isPaid = subscription.subscribed || subscription.on_trial;
-  const isUnpaidUser = !!user?.id && !subscription.loading && !isPaid;
-  const isDemoMode = isUnpaidUser || (!subscription.loading && !isPaid && (hasDemoData || persistedDemoMode));
-
-  useEffect(() => {
-    setPersistedDemoMode(readPersistedDemoMode(user?.id));
-  }, [user?.id]);
-
-  useEffect(() => {
-    if (!user?.id || subscription.loading || isLoading) return;
-    const nextPersistedDemoMode = !isPaid;
-    persistDemoMode(user.id, nextPersistedDemoMode);
-    setPersistedDemoMode(nextPersistedDemoMode);
-  }, [user?.id, subscription.loading, isLoading, isPaid, hasDemoData]);
-
   return {
-    isDemoMode,
-    loading: subscription.loading || isLoading,
-    message: getDemoActionMessage(),
+    isDemoMode: false as const,
+    loading: false,
+    message: "",
   };
 }
 
+/** @deprecated No-op. Free Starter Mode allows all writes. */
 export function useDemoWriteGuard() {
-  const { isDemoMode } = useDemoMode();
-  return () => {
-    if (isDemoMode) throw new Error(getDemoActionMessage());
-  };
+  return () => {};
 }
 
 /**
- * On first login, if the user has no real data and no demo data yet, seed
- * a curated demo workspace. Runs at most once per session per user.
- *
- * Skipped for users with an active paid subscription (or trial) — they
- * should land on a clean real workspace.
+ * Returns information about the user's free starter status.
+ * `isFreeStarter` is true for any signed-in user without an active paid plan
+ * (and not on trial). `atClientLimit` is true once the active client count
+ * reaches FREE_STARTER_CLIENT_LIMIT.
  */
-export function useAutoSeedDemo() {
+export function useFreeStarterMode() {
   const { user, subscription } = useAuth();
-  const qc = useQueryClient();
-  const [done, setDone] = useState(false);
+  const isPaid = subscription.subscribed || subscription.on_trial;
+  const isFreeStarter = !!user?.id && !subscription.loading && !isPaid;
 
-  useEffect(() => {
-    if (done) return;
-    if (!user?.id) return;
-    if (subscription.loading) return;
-    // Don't seed for paid/trial users
-    if (subscription.subscribed || subscription.on_trial) {
-      setDone(true);
-      return;
-    }
-
-    const attemptKey = `${SEED_ATTEMPT_KEY}:${user.id}`;
-    if (sessionStorage.getItem(attemptKey)) {
-      setDone(true);
-      return;
-    }
-
-    let cancelled = false;
-    (async () => {
-      try {
-        // Check if the user has any real records of their own. If they do,
-        // don't seed — they're already using the app. Demo records are ignored
-        // here so existing demo workspaces can be refreshed by the idempotent RPC.
-        const [{ count: clientCount }, { count: aptCount }] = await Promise.all([
-          supabase.from("clients").select("id", { count: "exact", head: true }).eq("is_demo", false),
-          supabase.from("appointments").select("id", { count: "exact", head: true }).eq("is_demo", false),
-        ]);
-        if (cancelled) return;
-        if ((clientCount ?? 0) > 0 || (aptCount ?? 0) > 0) {
-          sessionStorage.setItem(attemptKey, "1");
-          setDone(true);
-          return;
-        }
-
-        const { error } = await supabase.rpc("seed_demo_workspace", {
-          p_user_id: user.id,
-        });
-        if (cancelled) return;
-        if (error) {
-          console.error("seed_demo_workspace failed:", error);
-        } else {
-          // Refresh queries that may now have data
-          qc.invalidateQueries();
-        }
-      } finally {
-        if (!cancelled) {
-          sessionStorage.setItem(attemptKey, "1");
-          setDone(true);
-        }
+  const { data: clientCount = 0, isLoading } = useQuery({
+    queryKey: ["free-starter-client-count", user?.id],
+    enabled: isFreeStarter,
+    staleTime: 30_000,
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("clients")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user!.id)
+        .eq("status", "active")
+        .eq("is_demo", false);
+      if (error) {
+        console.error("free-starter client count failed:", error);
+        return 0;
       }
-    })();
+      return count ?? 0;
+    },
+  });
 
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id, subscription.loading, subscription.subscribed, subscription.on_trial, done, qc]);
+  const limit = FREE_STARTER_CLIENT_LIMIT;
+  const atClientLimit = isFreeStarter && clientCount >= limit;
+
+  return {
+    isFreeStarter,
+    clientCount,
+    limit,
+    atClientLimit,
+    loading: subscription.loading || (isFreeStarter && isLoading),
+  };
+}
+
+/** @deprecated No-op — we no longer auto-seed demo workspaces. */
+export function useAutoSeedDemo() {
+  // intentionally empty
 }

@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { TranslationKey } from "@/i18n/translations";
 import { useEntitlements, type FeatureCode } from "@/hooks/useEntitlements";
-import { useDemoMode } from "@/hooks/useDemoWorkspace";
+import { useFreeStarterMode } from "@/hooks/useDemoWorkspace";
 
 type LeafItem = { kind: "leaf"; icon: any; labelKey: TranslationKey; path: string; requires?: FeatureCode };
 type GroupItem = {
@@ -60,7 +60,7 @@ export function AppSidebar() {
   const { user, signOut, subscription } = useAuth();
   const { t } = useLanguage();
   const isTrial = !subscription.loading && subscription.on_trial && !subscription.subscribed;
-  const { isDemoMode } = useDemoMode();
+  const { isFreeStarter } = useFreeStarterMode();
   const { has, loading: entLoading } = useEntitlements();
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -71,12 +71,12 @@ export function AppSidebar() {
   }, [user]);
 
   const visibleNavItems = useMemo(
-    () => navItems.filter((it) => !it.requires || has(it.requires) || isDemoMode),
-    [has, isDemoMode]
+    () => navItems.filter((it) => !it.requires || has(it.requires) || isFreeStarter),
+    [has, isFreeStarter]
   );
   const lockedCount = useMemo(
-    () => (entLoading || isDemoMode ? 0 : navItems.filter((it) => it.requires && !has(it.requires)).length),
-    [entLoading, has, isDemoMode]
+    () => (entLoading || isFreeStarter ? 0 : navItems.filter((it) => it.requires && !has(it.requires)).length),
+    [entLoading, has, isFreeStarter]
   );
 
   // Auto-open the Finances group when the user is somewhere inside it
@@ -122,9 +122,9 @@ export function AppSidebar() {
                 Trial
               </span>
             )}
-            {isDemoMode && (
+            {isFreeStarter && (
               <span className="inline-flex items-center rounded-full bg-sidebar-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sidebar-primary">
-                Demo
+                Free
               </span>
             )}
           </div>
@@ -134,10 +134,10 @@ export function AppSidebar() {
               <Clock className="h-3.5 w-3.5" />
               <span>Trial active</span>
             </div>
-          ) : isDemoMode ? (
+          ) : isFreeStarter ? (
             <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-sidebar-primary/25 bg-sidebar-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sidebar-primary">
               <Sparkles className="h-3.5 w-3.5" />
-              <span>Demo mode</span>
+              <span>Free Starter</span>
             </div>
           ) : subscription.subscribed ? (
             <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-sidebar-primary/25 bg-sidebar-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sidebar-primary">

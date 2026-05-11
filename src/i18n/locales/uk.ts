@@ -1273,4 +1273,12 @@ export default {
   "archive.toast.archived": "{name} архівовано.",
   "archive.toast.unarchived": "Клієнта повернуто до активних.",
   "archive.includeArchived": "Показати архівних клієнтів",
+  "freeStarter.badge": "Безкоштовний старт",
+  "freeStarter.bannerHeadline": "Безкоштовний план: використано {count}/{limit} клієнтів",
+  "freeStarter.bannerSub": "Оновіть тариф у будь-який час, щоб зняти обмеження на кількість клієнтів.",
+  "freeStarter.choosePlan": "Обрати тариф",
+  "paywall.freeStarter.title": "Досягнуто ліміт безкоштовного плану",
+  "paywall.freeStarter.message": "Ви можете вести до 5 клієнтів безкоштовно. Щоб додати більше клієнтів і продовжити роботу з практикою, оберіть тарифний план.",
+  "paywall.freeStarter.viewPlans": "Переглянути тарифи",
+  "paywall.freeStarter.maybeLater": "Можливо, пізніше",
 } as const;

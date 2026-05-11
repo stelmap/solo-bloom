@@ -1273,4 +1273,12 @@ export default {
   "archive.toast.archived": "{name} has been archived.",
   "archive.toast.unarchived": "Client has been restored to active clients.",
   "archive.includeArchived": "Show archived clients",
+  "freeStarter.badge": "Free Starter",
+  "freeStarter.bannerHeadline": "Free plan: {count}/{limit} clients used",
+  "freeStarter.bannerSub": "Upgrade anytime to remove the client limit and unlock everything.",
+  "freeStarter.choosePlan": "Choose a plan",
+  "paywall.freeStarter.title": "Free Starter limit reached",
+  "paywall.freeStarter.message": "You can manage up to 5 clients for free. To add more clients and continue growing your practice, please choose a subscription plan.",
+  "paywall.freeStarter.viewPlans": "View Plans",
+  "paywall.freeStarter.maybeLater": "Maybe Later",
 } as const;
