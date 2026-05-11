@@ -472,7 +472,7 @@ export function useDeleteAppointment() {
       const { error } = await supabase.from("appointments").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("session_deleted"); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
