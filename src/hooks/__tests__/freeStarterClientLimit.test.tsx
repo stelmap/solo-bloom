@@ -66,6 +66,7 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 
 import { useCreateClient, FREE_STARTER_LIMIT_ERROR } from "@/hooks/useData";
+import { useFreeStarterMode } from "@/hooks/useDemoWorkspace";
 
 function wrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
