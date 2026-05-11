@@ -43,7 +43,8 @@ export function initAnalytics(): void {
   posthog.init(POSTHOG_KEY, {
     api_host: POSTHOG_HOST,
     person_profiles: "identified_only",
-    capture_pageview: true,
+    // SPA: capture pageviews on every history change, not just initial load.
+    capture_pageview: "history_change",
     capture_pageleave: true,
     autocapture: true,
     disable_session_recording: false,
