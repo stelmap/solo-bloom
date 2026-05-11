@@ -1482,7 +1482,8 @@ export function useDashboardStats() {
       ] = await Promise.all([
         supabase.from("income").select(`amount, ${recognitionField}`).gte(recognitionField, monthStart),
         supabase.from("income").select(`amount, ${recognitionField}`).gte(recognitionField, lastMondayStr).lte(recognitionField, lastSundayStr),
-        supabase.from("expenses").select("amount, date, is_recurring").gte("date", monthStart),
+        // Fetch one-off expenses in the month + ALL recurring templates (expanded virtually below)
+        supabase.from("expenses").select("amount, date, is_recurring, recurring_start_date").or(`and(is_recurring.eq.false,date.gte.${monthStart}),is_recurring.eq.true`),
         supabase.from("clients").select("id", { count: "exact", head: true }),
         supabase.from("appointments")
           .select("*, clients(name), services(name)")
