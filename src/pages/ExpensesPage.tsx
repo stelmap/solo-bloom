@@ -111,13 +111,17 @@ export default function ExpensesPage() {
   };
 
   const openEdit = (exp: any) => {
-    setEditExpense(exp);
-    if (exp.is_recurring && exp.recurring_group_id) {
+    // Virtual rows are expanded occurrences of a recurring template — resolve to the real template row.
+    const target = exp.virtual
+      ? (expenses as any[]).find(e => e.id === exp.template_id) || exp
+      : exp;
+    setEditExpense(target);
+    if (target.is_recurring && target.recurring_group_id) {
       // Show scope choice dialog
       setEditScopeOpen(true);
       return;
     }
-    startEdit(exp, "single");
+    startEdit(target, "single");
   };
 
   const startEdit = (exp: any, scope: "single" | "series") => {
