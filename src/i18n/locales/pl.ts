@@ -1273,4 +1273,12 @@ export default {
   "archive.toast.archived": "{name} został zarchiwizowany.",
   "archive.toast.unarchived": "Klient został przywrócony do aktywnych.",
   "archive.includeArchived": "Pokaż zarchiwizowanych klientów",
+  "freeStarter.badge": "Bezpłatny start",
+  "freeStarter.bannerHeadline": "Plan bezpłatny: wykorzystano {count}/{limit} klientów",
+  "freeStarter.bannerSub": "Przejdź na płatny plan w dowolnym momencie, aby zdjąć limit klientów.",
+  "freeStarter.choosePlan": "Wybierz plan",
+  "paywall.freeStarter.title": "Osiągnięto limit planu bezpłatnego",
+  "paywall.freeStarter.message": "W planie bezpłatnym możesz prowadzić do 5 klientów. Aby dodać więcej klientów i dalej rozwijać swoją praktykę, wybierz plan subskrypcji.",
+  "paywall.freeStarter.viewPlans": "Zobacz plany",
+  "paywall.freeStarter.maybeLater": "Może później",
 } as const;

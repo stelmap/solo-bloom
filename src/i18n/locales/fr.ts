@@ -1273,4 +1273,12 @@ export default {
   "archive.toast.archived": "{name} a été archivé.",
   "archive.toast.unarchived": "Le client a été restauré parmi les clients actifs.",
   "archive.includeArchived": "Afficher les clients archivés",
+  "freeStarter.badge": "Démarrage gratuit",
+  "freeStarter.bannerHeadline": "Plan gratuit : {count}/{limit} clients utilisés",
+  "freeStarter.bannerSub": "Passez à un forfait à tout moment pour supprimer la limite de clients.",
+  "freeStarter.choosePlan": "Choisir un forfait",
+  "paywall.freeStarter.title": "Limite du plan gratuit atteinte",
+  "paywall.freeStarter.message": "Vous pouvez gérer jusqu'à 5 clients gratuitement. Pour ajouter plus de clients et continuer à développer votre pratique, choisissez un forfait.",
+  "paywall.freeStarter.viewPlans": "Voir les forfaits",
+  "paywall.freeStarter.maybeLater": "Peut-être plus tard",
 } as const;
