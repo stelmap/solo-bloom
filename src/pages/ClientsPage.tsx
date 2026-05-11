@@ -91,7 +91,9 @@ export default function ClientsPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
-  const { isDemoMode } = useDemoMode();
+  const { isFreeStarter, atClientLimit } = useFreeStarterMode();
+  const isDemoMode = false; // Free Starter Mode allows all client edits — gating is now via paywall on creation only.
+  const [paywallOpen, setPaywallOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
