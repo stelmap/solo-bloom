@@ -111,13 +111,17 @@ export default function ExpensesPage() {
   };
 
   const openEdit = (exp: any) => {
-    setEditExpense(exp);
-    if (exp.is_recurring && exp.recurring_group_id) {
+    // Virtual rows are expanded occurrences of a recurring template — resolve to the real template row.
+    const target = exp.virtual
+      ? (expenses as any[]).find(e => e.id === exp.template_id) || exp
+      : exp;
+    setEditExpense(target);
+    if (target.is_recurring && target.recurring_group_id) {
       // Show scope choice dialog
       setEditScopeOpen(true);
       return;
     }
-    startEdit(exp, "single");
+    startEdit(target, "single");
   };
 
   const startEdit = (exp: any, scope: "single" | "series") => {
@@ -354,7 +358,7 @@ export default function ExpensesPage() {
                         </td>
                         <td className="p-4">
                           <div className="flex gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
-                            {!isTaxGenerated && !expense.virtual && (
+                            {!isTaxGenerated && (
                               <button onClick={() => openEdit(expense)} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
                                 <Pencil className="h-3.5 w-3.5" />
                               </button>
