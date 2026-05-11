@@ -19,7 +19,7 @@ interface Props {
  */
 export function EntitlementGate({ feature, children, redirect = false }: Props) {
   const { loading, has } = useEntitlements();
-  const { isDemoMode } = useDemoMode();
+  const { isFreeStarter } = useFreeStarterMode();
   const location = useLocation();
 
   if (loading) {
@@ -32,7 +32,7 @@ export function EntitlementGate({ feature, children, redirect = false }: Props) 
     );
   }
 
-  if (!has(feature) && !isDemoMode) {
+  if (!has(feature) && !isFreeStarter) {
     if (redirect) {
       return <Navigate to="/plans" replace state={{ from: location.pathname, feature }} />;
     }
