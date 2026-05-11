@@ -173,6 +173,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     setStoredLang(newLang);
     setStoredLangState(newLang);
     setPreLoginLangState(null);
+    track("language_changed", { language: newLang });
   }, []);
 
   return (
