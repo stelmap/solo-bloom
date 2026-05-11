@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemoMode, useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
+import { track } from "@/lib/analytics";
 
 const STALE_MEDIUM = 60_000;
 const INVALIDATE_GROUPS = ["groups", "group-detail", "group-members", "group-sessions", "group-attendance"];
