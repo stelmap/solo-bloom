@@ -86,7 +86,14 @@ export default function ExpensesPage() {
       to = todayStr;
     }
 
-    let result = from ? expenses.filter(e => e.date >= from && e.date <= to) : expenses;
+    // Within a selected date range, expand recurring templates to one virtual row per month.
+    // For "all time" we show only the template row (no expansion) to keep the list tidy.
+    let result: any[];
+    if (from) {
+      result = expandExpensesForRange(expenses as any, from, to);
+    } else {
+      result = expenses as any[];
+    }
     if (catFilter !== "all") result = result.filter(e => e.category === catFilter);
     return result;
   }, [expenses, dateRange, catFilter]);
