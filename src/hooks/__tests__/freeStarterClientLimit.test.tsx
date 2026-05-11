@@ -37,11 +37,13 @@ vi.mock("@/integrations/supabase/client", () => ({
       if (table === "clients") {
         return {
           select: vi.fn(() => {
-            const result = Promise.resolve({ count: mockState.clientCount, data: [], error: null });
-            const eq3 = { eq: vi.fn(() => result), then: result.then.bind(result) };
-            const eq2 = { eq: vi.fn(() => eq3) };
-            const eq1 = { eq: vi.fn(() => eq2), order: vi.fn(() => Promise.resolve({ data: [], error: null })) };
-            return eq1;
+            const final = () => Promise.resolve({ count: mockState.clientCount, data: [], error: null });
+            const eq2 = { eq: vi.fn(final) };
+            const eq1 = { eq: vi.fn(() => eq2) };
+            return {
+              eq: vi.fn(() => eq1),
+              order: vi.fn(() => Promise.resolve({ data: [], error: null })),
+            };
           }),
           insert: vi.fn(() => ({
             select: vi.fn(() => ({
