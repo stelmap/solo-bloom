@@ -60,7 +60,7 @@ export function AppSidebar() {
   const { user, signOut, subscription } = useAuth();
   const { t } = useLanguage();
   const isTrial = !subscription.loading && subscription.on_trial && !subscription.subscribed;
-  const { isDemoMode } = useDemoMode();
+  const { isFreeStarter } = useFreeStarterMode();
   const { has, loading: entLoading } = useEntitlements();
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -71,12 +71,12 @@ export function AppSidebar() {
   }, [user]);
 
   const visibleNavItems = useMemo(
-    () => navItems.filter((it) => !it.requires || has(it.requires) || isDemoMode),
-    [has, isDemoMode]
+    () => navItems.filter((it) => !it.requires || has(it.requires) || isFreeStarter),
+    [has, isFreeStarter]
   );
   const lockedCount = useMemo(
-    () => (entLoading || isDemoMode ? 0 : navItems.filter((it) => it.requires && !has(it.requires)).length),
-    [entLoading, has, isDemoMode]
+    () => (entLoading || isFreeStarter ? 0 : navItems.filter((it) => it.requires && !has(it.requires)).length),
+    [entLoading, has, isFreeStarter]
   );
 
   // Auto-open the Finances group when the user is somewhere inside it
