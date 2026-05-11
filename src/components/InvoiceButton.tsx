@@ -103,6 +103,7 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
   const handleDownloadExisting = (invoice: any) => {
     const doc = generateInvoicePdf({ ...invoice, language: invoice.language as Language });
     doc.save(`invoice_${invoice.invoice_number.replace(/\//g, "-")}.pdf`);
+    track("invoice_downloaded", { kind: "existing" });
   };
 
   return (
