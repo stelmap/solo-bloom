@@ -849,7 +849,7 @@ export function useDeleteIncome() {
       const { error } = await supabase.from("income").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { ["income", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("income_deleted"); ["income", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
