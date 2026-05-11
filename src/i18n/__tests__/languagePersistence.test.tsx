@@ -55,13 +55,18 @@ describe("Language persistence", () => {
     expect(getPreLoginLang()).toBe("uk");
     expect(getStoredLang()).toBe("uk");
 
-    renderApp();
+    const { rerender } = renderApp();
     // Wait for non-English locale to lazy-load
     await act(async () => { await new Promise((r) => setTimeout(r, 30)); });
     expect(screen.getByTestId("lang").textContent).toBe("uk");
 
     // Simulate successful login: profile loads with old language "en"
     mockProfile = { language: "en" };
+    rerender(
+      <LanguageProvider>
+        <Probe />
+      </LanguageProvider>,
+    );
     // Pre-login choice (uk) must win and be persisted to profile
     await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
     expect(updateMock).toHaveBeenCalledWith({ language: "uk" });
