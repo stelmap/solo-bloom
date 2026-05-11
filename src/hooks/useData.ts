@@ -726,21 +726,16 @@ export function useCreateExpense() {
         if (error) throw error;
         return data;
       }
-      // For recurring monthly expenses, generate 12 records with shared recurring_group_id
+      // Recurring monthly expenses are stored as a SINGLE template row.
+      // The Financial Dashboard, Breakeven page and Dashboard widget expand it
+      // virtually for every month from `recurring_start_date` onward, clamping
+      // the day to the last day of shorter months. See src/lib/recurringExpenses.ts
       const startDate = base.recurring_start_date || base.date;
       if (!startDate) throw new Error("Recurring start date is required");
       base.recurring_start_date = startDate;
-      const groupId = crypto.randomUUID();
-      const [year, month, day] = startDate.split("-").map(Number);
-      const records: any[] = [];
-      for (let i = 0; i < 12; i++) {
-        const d = new Date(year, month - 1 + i, 1);
-        const maxDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
-        const actualDay = Math.min(day, maxDay);
-        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(actualDay).padStart(2, "0")}`;
-        records.push({ ...base, date: dateStr, recurring_group_id: groupId });
-      }
-      const { data, error } = await supabase.from("expenses").insert(records).select();
+      base.date = startDate;
+      base.recurring_group_id = crypto.randomUUID();
+      const { data, error } = await supabase.from("expenses").insert(base).select().single();
       if (error) throw error;
       return data;
     },
