@@ -179,9 +179,12 @@ export default function ExpensesPage() {
   };
 
   const togglePaymentStatus = async (expense: any) => {
-    const newStatus = expense.payment_status === "paid" ? "unpaid" : "paid";
+    const target = expense.virtual
+      ? (expenses as any[]).find(e => e.id === expense.template_id) || expense
+      : expense;
+    const newStatus = target.payment_status === "paid" ? "unpaid" : "paid";
     try {
-      await updatePaymentStatus.mutateAsync({ id: expense.id, payment_status: newStatus });
+      await updatePaymentStatus.mutateAsync({ id: target.id, payment_status: newStatus });
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
