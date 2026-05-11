@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { TranslationKey } from "@/i18n/translations";
 import { useEntitlements, type FeatureCode } from "@/hooks/useEntitlements";
-import { useDemoMode } from "@/hooks/useDemoWorkspace";
+import { useFreeStarterMode } from "@/hooks/useDemoWorkspace";
 
 type LeafItem = { kind: "leaf"; icon: any; labelKey: TranslationKey; path: string; requires?: FeatureCode };
 type GroupItem = {
