@@ -568,7 +568,7 @@ export function useCancelAppointment() {
       // Suppress unused-var warnings for now-unused params
       void clientId; void price; void user; void isDemoMode;
     },
-    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: (_d, vars) => { track("session_canceled", { status: vars.status }); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
