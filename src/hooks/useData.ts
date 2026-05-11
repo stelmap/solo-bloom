@@ -126,7 +126,7 @@ export function useDeleteClient() {
       const { error } = await supabase.from("clients").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["clients"] }),
+    onSuccess: () => { track("client_deleted"); qc.invalidateQueries({ queryKey: ["clients"] }); },
   });
 }
 
