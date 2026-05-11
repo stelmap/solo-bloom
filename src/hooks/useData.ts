@@ -1530,7 +1530,16 @@ export function useDashboardStats() {
       const allExpenses = expenseRes.data ?? [];
       const todayIncome = monthIncome.filter((i: any) => dateOf(i) === today).reduce((s: number, i: any) => s + Number(i.amount), 0);
       const monthlyIncome = monthIncome.reduce((s: number, i: any) => s + Number(i.amount), 0);
-      const monthlyExpenses = allExpenses.reduce((s, e) => s + Number(e.amount), 0);
+      // For monthly total: include one-off expenses dated this month + recurring templates whose start date <= end of this month
+      const monthKey = monthStart.substring(0, 7);
+      const monthlyExpenses = allExpenses.reduce((s: number, e: any) => {
+        if (e.is_recurring) {
+          const start = e.recurring_start_date || e.date;
+          if (start && start.substring(0, 7) <= monthKey) return s + Number(e.amount);
+          return s;
+        }
+        return s + Number(e.amount);
+      }, 0);
       const thisWeekIncome = monthIncome.filter((i: any) => dateOf(i) >= thisMondayStr && dateOf(i) <= today).reduce((s: number, i: any) => s + Number(i.amount), 0);
       const lastWeekIncome = (lastWeekIncomeRes.data ?? []).reduce((s, i) => s + Number(i.amount), 0);
 
