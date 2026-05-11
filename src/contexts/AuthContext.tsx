@@ -196,6 +196,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [session, refreshSubscription]);
 
+  // Sync subscription status into analytics so every event is segmentable by plan state.
+  useEffect(() => {
+    if (subscription.loading) return;
+    if (!session) {
+      setSubscriptionStatus("unknown");
+      return;
+    }
+    if (subscription.subscribed) setSubscriptionStatus("active");
+    else if (subscription.on_trial) setSubscriptionStatus("trial");
+    else setSubscriptionStatus("inactive");
+  }, [session, subscription.loading, subscription.subscribed, subscription.on_trial]);
+
   const beginRecovery = () => setIsRecovery(true);
 
   const clearRecovery = () => setIsRecovery(false);
