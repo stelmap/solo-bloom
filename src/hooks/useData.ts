@@ -726,21 +726,16 @@ export function useCreateExpense() {
         if (error) throw error;
         return data;
       }
-      // For recurring monthly expenses, generate 12 records with shared recurring_group_id
+      // Recurring monthly expenses are stored as a SINGLE template row.
+      // The Financial Dashboard, Breakeven page and Dashboard widget expand it
+      // virtually for every month from `recurring_start_date` onward, clamping
+      // the day to the last day of shorter months. See src/lib/recurringExpenses.ts
       const startDate = base.recurring_start_date || base.date;
       if (!startDate) throw new Error("Recurring start date is required");
       base.recurring_start_date = startDate;
-      const groupId = crypto.randomUUID();
-      const [year, month, day] = startDate.split("-").map(Number);
-      const records: any[] = [];
-      for (let i = 0; i < 12; i++) {
-        const d = new Date(year, month - 1 + i, 1);
-        const maxDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
-        const actualDay = Math.min(day, maxDay);
-        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(actualDay).padStart(2, "0")}`;
-        records.push({ ...base, date: dateStr, recurring_group_id: groupId });
-      }
-      const { data, error } = await supabase.from("expenses").insert(records).select();
+      base.date = startDate;
+      base.recurring_group_id = crypto.randomUUID();
+      const { data, error } = await supabase.from("expenses").insert(base).select().single();
       if (error) throw error;
       return data;
     },
@@ -1487,7 +1482,8 @@ export function useDashboardStats() {
       ] = await Promise.all([
         supabase.from("income").select(`amount, ${recognitionField}`).gte(recognitionField, monthStart),
         supabase.from("income").select(`amount, ${recognitionField}`).gte(recognitionField, lastMondayStr).lte(recognitionField, lastSundayStr),
-        supabase.from("expenses").select("amount, date, is_recurring").gte("date", monthStart),
+        // Fetch one-off expenses in the month + ALL recurring templates (expanded virtually below)
+        supabase.from("expenses").select("amount, date, is_recurring, recurring_start_date").or(`and(is_recurring.eq.false,date.gte.${monthStart}),is_recurring.eq.true`),
         supabase.from("clients").select("id", { count: "exact", head: true }),
         supabase.from("appointments")
           .select("*, clients(name), services(name)")
@@ -1534,7 +1530,16 @@ export function useDashboardStats() {
       const allExpenses = expenseRes.data ?? [];
       const todayIncome = monthIncome.filter((i: any) => dateOf(i) === today).reduce((s: number, i: any) => s + Number(i.amount), 0);
       const monthlyIncome = monthIncome.reduce((s: number, i: any) => s + Number(i.amount), 0);
-      const monthlyExpenses = allExpenses.reduce((s, e) => s + Number(e.amount), 0);
+      // For monthly total: include one-off expenses dated this month + recurring templates whose start date <= end of this month
+      const monthKey = monthStart.substring(0, 7);
+      const monthlyExpenses = allExpenses.reduce((s: number, e: any) => {
+        if (e.is_recurring) {
+          const start = e.recurring_start_date || e.date;
+          if (start && start.substring(0, 7) <= monthKey) return s + Number(e.amount);
+          return s;
+        }
+        return s + Number(e.amount);
+      }, 0);
       const thisWeekIncome = monthIncome.filter((i: any) => dateOf(i) >= thisMondayStr && dateOf(i) <= today).reduce((s: number, i: any) => s + Number(i.amount), 0);
       const lastWeekIncome = (lastWeekIncomeRes.data ?? []).reduce((s, i) => s + Number(i.amount), 0);
 

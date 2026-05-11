@@ -124,16 +124,26 @@ export default function FinancialOverviewPage() {
       end: new Date(year, 11, 31),
     });
 
-    // Recurring expenses: only count those whose recurring_start_date <= the month
+    // Recurring expenses are stored as one template row; expand virtually for each month from start.
     const recurringExpenses = (allExpenses as any[]).filter(e => e.is_recurring);
+    const recurringAppliesToMonth = (e: any, monthKey: string) => {
+      const start = (e.recurring_start_date || e.date) as string;
+      return start && start.substring(0, 7) <= monthKey;
+    };
     const getRecurringForMonth = (monthKey: string) => {
       return recurringExpenses
-        .filter(e => {
-          const startDate = e.recurring_start_date || e.date;
-          return startDate <= monthKey + "-31"; // started on or before end of month
-        })
+        .filter(e => recurringAppliesToMonth(e, monthKey))
         .reduce((s, e) => s + Number(e.amount), 0);
     };
+    const recurringItemsForMonth = (monthKey: string) => recurringExpenses
+      .filter(e => recurringAppliesToMonth(e, monthKey))
+      .map((e: any) => ({
+        description: e.description || e.category,
+        amount: Number(e.amount),
+        date: "—",
+        category: e.category,
+        isRecurring: true,
+      }));
 
     type Pre = {
       idx: number; isFuture: boolean; monthDate: Date; mStart: Date; mEnd: Date; mKey: string;
@@ -175,20 +185,14 @@ export default function FinancialOverviewPage() {
               type: "expected" as const,
             })),
           ],
-          expenseItems: recurringExpenses
-            .filter((e: any) => {
-              const startDate = e.recurring_start_date || e.date;
-              return startDate <= mKey + "-31";
-            })
-            .map((e: any) => ({
-              description: e.description || e.category, amount: Number(e.amount),
-              date: "—", category: e.category, isRecurring: true,
-            })),
+          expenseItems: recurringItemsForMonth(mKey),
         };
       }
 
       const monthIncome = (allIncome as any[]).filter(i => (incomeDateOf(i) as string)?.startsWith(mKey));
-      const monthExpenses = (allExpenses as any[]).filter(e => e.date?.startsWith(mKey));
+      // Past/current months: include one-off expenses dated this month + recurring templates that apply to this month.
+      const oneOffMonthExpenses = (allExpenses as any[]).filter(e => !e.is_recurring && e.date?.startsWith(mKey));
+      const recurringMonthTotal = getRecurringForMonth(mKey);
       const totalIncome = monthIncome.reduce((s, i) => s + Number(i.amount), 0);
       const monthExpected = (expectedPayments as any[]).filter(ep => {
         const apt = ep.appointments as any;
@@ -196,7 +200,7 @@ export default function FinancialOverviewPage() {
         return apt.scheduled_at.startsWith(mKey) && ep.status === "pending";
       });
       const expectedIncomeTotal = monthExpected.reduce((s, ep) => s + Number(ep.amount), 0);
-      const totalExpenses = monthExpenses.reduce((s, e) => s + Number(e.amount), 0);
+      const totalExpenses = oneOffMonthExpenses.reduce((s, e) => s + Number(e.amount), 0) + recurringMonthTotal;
       const monthSessions = (allAppointments as any[]).filter(a => {
         const d = new Date(a.scheduled_at);
         return d >= mStart && d <= mEnd && a.status === "completed";
@@ -210,10 +214,13 @@ export default function FinancialOverviewPage() {
           amount: Number(i.amount), date: format(new Date(incomeDateOf(i)), "MMM d"),
           type: "confirmed" as const,
         })),
-        expenseItems: monthExpenses.map((e: any) => ({
-          description: e.description || e.category, amount: Number(e.amount),
-          date: format(new Date(e.date), "MMM d"), category: e.category, isRecurring: e.is_recurring,
-        })),
+        expenseItems: [
+          ...oneOffMonthExpenses.map((e: any) => ({
+            description: e.description || e.category, amount: Number(e.amount),
+            date: format(new Date(e.date), "MMM d"), category: e.category, isRecurring: false,
+          })),
+          ...recurringItemsForMonth(mKey),
+        ],
       };
     });
 
