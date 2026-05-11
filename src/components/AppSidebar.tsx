@@ -122,9 +122,9 @@ export function AppSidebar() {
                 Trial
               </span>
             )}
-            {isDemoMode && (
+            {isFreeStarter && (
               <span className="inline-flex items-center rounded-full bg-sidebar-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sidebar-primary">
-                Demo
+                Free
               </span>
             )}
           </div>
@@ -134,10 +134,10 @@ export function AppSidebar() {
               <Clock className="h-3.5 w-3.5" />
               <span>Trial active</span>
             </div>
-          ) : isDemoMode ? (
+          ) : isFreeStarter ? (
             <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-sidebar-primary/25 bg-sidebar-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sidebar-primary">
               <Sparkles className="h-3.5 w-3.5" />
-              <span>Demo mode</span>
+              <span>Free Starter</span>
             </div>
           ) : subscription.subscribed ? (
             <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-sidebar-primary/25 bg-sidebar-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sidebar-primary">
