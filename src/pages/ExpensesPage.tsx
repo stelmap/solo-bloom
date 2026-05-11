@@ -20,6 +20,7 @@ import { TranslationKey } from "@/i18n/translations";
 import { useSearchParams } from "react-router-dom";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, subMonths, format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics";
 
 const DEFAULT_CATEGORIES = ["Rent", "Materials", "Insurance", "Equipment", "Marketing", "Utilities", "Laundry", "Software", "Tax", "Other"];
 
