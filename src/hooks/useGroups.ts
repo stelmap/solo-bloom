@@ -144,7 +144,7 @@ export function useCreateGroup() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["groups"] }),
+    onSuccess: () => { track("group_created"); qc.invalidateQueries({ queryKey: ["groups"] }); },
   });
 }
 
