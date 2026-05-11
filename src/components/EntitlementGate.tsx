@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { AppLayout } from "./AppLayout";
 import { Button } from "@/components/ui/button";
 import { useEntitlements, type FeatureCode } from "@/hooks/useEntitlements";
-import { useDemoMode } from "@/hooks/useDemoWorkspace";
+import { useFreeStarterMode } from "@/hooks/useDemoWorkspace";
 
 interface Props {
   feature: FeatureCode;
