@@ -307,6 +307,7 @@ export function useDeleteGroup() {
       if (error) throw error;
     },
     onSuccess: () => {
+      track("group_deleted");
       INVALIDATE_GROUPS.forEach(k => qc.invalidateQueries({ queryKey: [k] }));
     },
   });
