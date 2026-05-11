@@ -247,12 +247,38 @@ export function track(event: AnalyticsEvent, props: BaseEventProps = {}): void {
     source_page: typeof window !== "undefined" ? window.location.pathname : undefined,
     locale: typeof navigator !== "undefined" ? navigator.language : undefined,
     subscription_status: subscriptionStatus,
+    environment,
     ...props,
   };
   // Always record the attempt locally so diagnostics work in dev/preview too.
   recordDiagnostic(event, enriched);
   if (!enabled) return;
   posthog.capture(event, enriched);
+}
+
+// React hook for PostHog feature flags. Returns the variant string,
+// `true`/`false` for boolean flags, or `undefined` while loading or in dev.
+export function useFeatureFlag(flagKey: string): boolean | string | undefined {
+  // Lazy import to avoid pulling React into non-component callers.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { useEffect, useState } = require("react") as typeof import("react");
+  const [value, setValue] = useState<boolean | string | undefined>(undefined);
+  useEffect(() => {
+    if (!initialized) initAnalytics();
+    if (!enabled) return;
+    try {
+      const initial = posthog.getFeatureFlag(flagKey);
+      if (initial !== undefined) setValue(initial as boolean | string);
+      const unsub = posthog.onFeatureFlags(() => {
+        const v = posthog.getFeatureFlag(flagKey);
+        setValue(v as boolean | string | undefined);
+      });
+      return () => {
+        try { (unsub as unknown as () => void)?.(); } catch { /* noop */ }
+      };
+    } catch { /* noop */ }
+  }, [flagKey]);
+  return value;
 }
 
 // Fire an arbitrary diagnostic event (not part of the typed AnalyticsEvent union).
