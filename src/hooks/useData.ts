@@ -757,7 +757,7 @@ export function useUpdateExpense() {
       const { error } = await supabase.from("expenses").update(updates).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("expense_updated"); ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
