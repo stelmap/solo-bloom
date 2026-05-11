@@ -180,6 +180,7 @@ export function useCreateSupervision() {
       return supervision as any;
     },
     onSuccess: (_, vars) => {
+      track("supervision_created");
       qc.invalidateQueries({ queryKey: ["supervisions"] });
       qc.invalidateQueries({ queryKey: ["supervision-count", vars.client_id] });
       qc.invalidateQueries({ queryKey: ["unused-client-notes", vars.client_id] });
