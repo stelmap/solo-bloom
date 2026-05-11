@@ -354,14 +354,16 @@ export default function ExpensesPage() {
                         </td>
                         <td className="p-4">
                           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {!isTaxGenerated && (
+                            {!isTaxGenerated && !expense.virtual && (
                               <button onClick={() => openEdit(expense)} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
                                 <Pencil className="h-3.5 w-3.5" />
                               </button>
                             )}
-                            <button onClick={() => setDeleteId(expense.id)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
+                            {!expense.virtual && (
+                              <button onClick={() => setDeleteId(expense.id)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
