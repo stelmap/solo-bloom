@@ -51,15 +51,19 @@ export function useCreateClient() {
   const qc = useQueryClient();
   const { user } = useAuth();
   const assertCanWrite = useDemoWriteGuard();
+  const { isFreeStarter, atClientLimit } = useFreeStarterMode();
   return useMutation({
     mutationFn: async (client: { name: string; phone?: string; email?: string; notes?: string; telegram?: string }) => {
       assertCanWrite();
+      if (isFreeStarter && atClientLimit) {
+        throw new Error(FREE_STARTER_LIMIT_ERROR);
+      }
       const { data, error } = await supabase.from("clients").insert({ ...client, user_id: user!.id } as any).select().single();
       if (error) throw error;
       return data;
     },
     // Analytics: a new client was created
-    onSuccess: () => { track("client_created"); qc.invalidateQueries({ queryKey: ["clients"] }); },
+    onSuccess: () => { track("client_created"); qc.invalidateQueries({ queryKey: ["clients"] }); qc.invalidateQueries({ queryKey: ["free-starter-client-count"] }); },
   });
 }
 
