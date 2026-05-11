@@ -59,7 +59,13 @@ export function useCreateClient() {
         throw new Error(FREE_STARTER_LIMIT_ERROR);
       }
       const { data, error } = await supabase.from("clients").insert({ ...client, user_id: user!.id } as any).select().single();
-      if (error) throw error;
+      if (error) {
+        // Server-side trigger backstop for the Free Starter 5-client cap.
+        if (typeof error.message === "string" && error.message.includes("FREE_STARTER_CLIENT_LIMIT_REACHED")) {
+          throw new Error(FREE_STARTER_LIMIT_ERROR);
+        }
+        throw error;
+      }
       return data;
     },
     // Analytics: a new client was created
