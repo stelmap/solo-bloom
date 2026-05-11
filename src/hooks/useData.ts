@@ -879,6 +879,7 @@ export function useUpdateProfile() {
       if (error) throw error;
     },
     onSuccess: (_d, vars) => {
+      track("profile_updated");
       qc.invalidateQueries({ queryKey: ["profile"] });
       // If recognition method changed, recompute analytics that group income by date
       if (vars.income_recognition_method !== undefined) {
