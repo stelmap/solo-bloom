@@ -310,6 +310,7 @@ export default function ClientsPage() {
           clientName={archiveTarget.name}
         />
       )}
+      <PaywallDialog open={paywallOpen} onOpenChange={setPaywallOpen} reason="client_limit" />
     </AppLayout>
   );
 }
