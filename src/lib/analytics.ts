@@ -63,9 +63,15 @@ export function initAnalytics(): void {
       return cleaned;
     },
     loaded: (ph) => {
+      // Tag every event/person with the environment it came from.
+      ph.register({ environment });
       if (import.meta.env.DEV) ph.debug(false);
     },
   });
+}
+
+export function getEnvironment(): EnvironmentValue {
+  return environment;
 }
 
 function deviceType(): "mobile" | "desktop" {
