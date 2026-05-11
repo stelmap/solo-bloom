@@ -94,26 +94,28 @@ export default function BreakevenPage() {
     return { incomeByMonth: incMap, expensesByMonth: expMap, taxByMonth: taxMap, sessionsByMonth: sesMap };
   }, [income, expenses, appointments, incomeDateField]);
 
+  // Recurring expenses are stored as one template row; count it once for the current month if its start <= today.
+  const monthKeyNow = today.substring(0, 7);
   const monthlyExpenses = expenses.filter((e: any) => {
     if (e.is_recurring) {
-      const startDate = e.recurring_start_date || e.date;
-      return startDate <= today;
+      const start = (e.recurring_start_date || e.date) as string;
+      return start && start.substring(0, 7) <= monthKeyNow;
     }
     return e.date >= monthStart;
   }).reduce((s: number, e: any) => s + Number(e.amount), 0);
 
   const monthlyExpensesExTax = expenses.filter((e: any) => {
     if (e.is_recurring) {
-      const startDate = e.recurring_start_date || e.date;
-      return startDate <= today && e.category !== "Tax";
+      const start = (e.recurring_start_date || e.date) as string;
+      return start && start.substring(0, 7) <= monthKeyNow && e.category !== "Tax";
     }
     return e.date >= monthStart && e.category !== "Tax";
   }).reduce((s: number, e: any) => s + Number(e.amount), 0);
 
   const monthlyTaxExpenses = expenses.filter((e: any) => {
     if (e.is_recurring) {
-      const startDate = e.recurring_start_date || e.date;
-      return startDate <= today && e.category === "Tax";
+      const start = (e.recurring_start_date || e.date) as string;
+      return start && start.substring(0, 7) <= monthKeyNow && e.category === "Tax";
     }
     return e.date >= monthStart && e.category === "Tax";
   }).reduce((s: number, e: any) => s + Number(e.amount), 0);
