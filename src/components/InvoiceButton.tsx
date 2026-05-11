@@ -8,6 +8,7 @@ import { useInvoicesByAppointment, useCreateInvoice } from "@/hooks/useInvoices"
 import { useAuth } from "@/contexts/AuthContext";
 import { generateInvoicePdf } from "@/lib/invoicePdf";
 import { useToast } from "@/hooks/use-toast";
+import { track } from "@/lib/analytics";
 import type { Language } from "@/i18n/translations";
 
 interface InvoiceButtonProps {
@@ -90,6 +91,7 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
       };
       const doc = generateInvoicePdf(invoiceData);
       doc.save(`invoice_${result.invoice_number.replace(/\//g, "-")}.pdf`);
+      track("invoice_downloaded", { kind: "new" });
       toast({ title: t("invoice.generated") });
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
@@ -101,6 +103,7 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
   const handleDownloadExisting = (invoice: any) => {
     const doc = generateInvoicePdf({ ...invoice, language: invoice.language as Language });
     doc.save(`invoice_${invoice.invoice_number.replace(/\//g, "-")}.pdf`);
+    track("invoice_downloaded", { kind: "existing" });
   };
 
   return (

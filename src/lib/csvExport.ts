@@ -1,3 +1,5 @@
+import { track } from "@/lib/analytics";
+
 export function downloadCSV(filename: string, headers: string[], rows: string[][]) {
   const escape = (v: string) => {
     if (v.includes(",") || v.includes('"') || v.includes("\n")) {
@@ -13,4 +15,7 @@ export function downloadCSV(filename: string, headers: string[], rows: string[][
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+  // Derive entity from filename ("expenses.csv" -> "expenses").
+  const entity = filename.replace(/\.csv$/i, "").toLowerCase();
+  track("csv_exported", { entity, row_count: rows.length });
 }

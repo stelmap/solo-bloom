@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemoMode, useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
+import { track } from "@/lib/analytics";
 
 export function useSupervisions(clientId?: string) {
   const { user } = useAuth();
@@ -179,6 +180,7 @@ export function useCreateSupervision() {
       return supervision as any;
     },
     onSuccess: (_, vars) => {
+      track("supervision_created");
       qc.invalidateQueries({ queryKey: ["supervisions"] });
       qc.invalidateQueries({ queryKey: ["supervision-count", vars.client_id] });
       qc.invalidateQueries({ queryKey: ["unused-client-notes", vars.client_id] });
@@ -201,6 +203,7 @@ export function useUpdateSupervision() {
       if (error) throw error;
     },
     onSuccess: () => {
+      track("supervision_updated");
       qc.invalidateQueries({ queryKey: ["supervisions"] });
       qc.invalidateQueries({ queryKey: ["supervision"] });
     },
@@ -227,6 +230,7 @@ export function useDeleteSupervision() {
       if (error) throw error;
     },
     onSuccess: () => {
+      track("supervision_deleted");
       qc.invalidateQueries({ queryKey: ["supervisions"] });
       qc.invalidateQueries({ queryKey: ["supervision-count"] });
       qc.invalidateQueries({ queryKey: ["unused-client-notes"] });

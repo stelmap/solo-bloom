@@ -10,32 +10,36 @@ import posthog from "posthog-js";
 const POSTHOG_KEY = "phc_vfqFKQL2ZpD9oo4XRNgDAesH8ayrWvZF6DUTLyhGkjrn";
 const POSTHOG_HOST = "https://eu.i.posthog.com";
 
-// Production hostnames where analytics should run.
-// Dev (localhost), Lovable preview, and id-preview subdomains are excluded.
+// Hostname → environment mapping. Every event is tagged with `environment`
+// so prod, preview, and dev traffic can be segmented or filtered in PostHog.
 const PROD_HOSTS = new Set<string>([
   "solo-bizz-app.lovable.app",
   "www.solo-bizz.com",
   "solo-bizz.com",
 ]);
 
+export type EnvironmentValue = "production" | "preview" | "development";
+
+function detectEnvironment(): EnvironmentValue {
+  if (typeof window === "undefined") return "development";
+  const host = window.location.hostname;
+  if (PROD_HOSTS.has(host)) return "production";
+  if (host === "localhost" || host === "127.0.0.1" || host.endsWith(".local")) {
+    return "development";
+  }
+  return "preview";
+}
+
 let initialized = false;
 let enabled = false;
-
-function shouldEnable(): boolean {
-  if (typeof window === "undefined") return false;
-  const host = window.location.hostname;
-  // Only the published production hosts send analytics.
-  return PROD_HOSTS.has(host);
-}
+let environment: EnvironmentValue = "development";
 
 export function initAnalytics(): void {
   if (initialized || typeof window === "undefined") return;
   initialized = true;
-  enabled = shouldEnable();
-  if (!enabled) {
-    // Dev / preview — skip init entirely. Calls to track/identify become no-ops.
-    return;
-  }
+  environment = detectEnvironment();
+  // Capture from every environment (prod, preview, dev) so we can segment by env.
+  enabled = true;
   posthog.init(POSTHOG_KEY, {
     api_host: POSTHOG_HOST,
     person_profiles: "identified_only",
@@ -59,9 +63,15 @@ export function initAnalytics(): void {
       return cleaned;
     },
     loaded: (ph) => {
+      // Tag every event/person with the environment it came from.
+      ph.register({ environment });
       if (import.meta.env.DEV) ph.debug(false);
     },
   });
+}
+
+export function getEnvironment(): EnvironmentValue {
+  return environment;
 }
 
 function deviceType(): "mobile" | "desktop" {
@@ -115,7 +125,22 @@ export type AnalyticsEvent =
   | "checkout_started"
   | "checkout_completed"
   | "subscription_active"
-  | "subscription_canceled";
+  | "subscription_canceled"
+  | "group_created"
+  | "group_updated"
+  | "group_deleted"
+  | "supervision_created"
+  | "supervision_updated"
+  | "supervision_deleted"
+  | "invoice_downloaded"
+  | "csv_exported"
+  | "language_changed"
+  | "telegram_connected"
+  | "telegram_disconnected"
+  | "payment_method_added"
+  | "payment_method_deleted"
+  | "booking_request_submitted"
+  | "booking_confirmed";
 
 // In-memory diagnostics for the current browser session.
 // Survives only until page reload — purely a debugging aid.
@@ -222,12 +247,39 @@ export function track(event: AnalyticsEvent, props: BaseEventProps = {}): void {
     source_page: typeof window !== "undefined" ? window.location.pathname : undefined,
     locale: typeof navigator !== "undefined" ? navigator.language : undefined,
     subscription_status: subscriptionStatus,
+    environment,
     ...props,
   };
   // Always record the attempt locally so diagnostics work in dev/preview too.
   recordDiagnostic(event, enriched);
   if (!enabled) return;
   posthog.capture(event, enriched);
+}
+
+// Read a PostHog feature flag synchronously (no React). Returns the variant
+// string, true/false for booleans, or undefined while loading / when disabled.
+export function getFeatureFlag(flagKey: string): boolean | string | undefined {
+  if (!initialized) initAnalytics();
+  if (!enabled) return undefined;
+  try {
+    return posthog.getFeatureFlag(flagKey) as boolean | string | undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// Subscribe to PostHog feature-flag updates. Returns an unsubscribe function.
+export function onFeatureFlagsLoaded(cb: () => void): () => void {
+  if (!initialized) initAnalytics();
+  if (!enabled) return () => {};
+  try {
+    const unsub = posthog.onFeatureFlags(cb);
+    return () => {
+      try { (unsub as unknown as () => void)?.(); } catch { /* noop */ }
+    };
+  } catch {
+    return () => {};
+  }
 }
 
 // Fire an arbitrary diagnostic event (not part of the typed AnalyticsEvent union).

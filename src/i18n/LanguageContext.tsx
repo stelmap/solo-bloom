@@ -1,6 +1,7 @@
 import { createContext, useContext, ReactNode, useCallback, useEffect, useState } from "react";
 import { Language, TranslationKey, getDict, loadLocale, englishDict } from "./translations";
 import { useProfile, useUpdateProfile } from "@/hooks/useData";
+import { track } from "@/lib/analytics";
 
 const LANG_STORAGE_KEY = "app_lang";
 const PRE_LOGIN_LANG_KEY = "pre_login_lang";
@@ -172,6 +173,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     setStoredLang(newLang);
     setStoredLangState(newLang);
     setPreLoginLangState(null);
+    track("language_changed", { language: newLang });
   }, []);
 
   return (
