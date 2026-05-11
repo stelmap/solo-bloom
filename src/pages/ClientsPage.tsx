@@ -17,7 +17,8 @@ import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { useDemoMode } from "@/hooks/useDemoWorkspace";
+import { useFreeStarterMode } from "@/hooks/useDemoWorkspace";
+import { PaywallDialog } from "@/components/PaywallDialog";
 
 const ClientCard = memo(({ client, onNavigate, onDelete, onArchive, onUnarchive, t }: {
   client: any; onNavigate: (id: string) => void;
