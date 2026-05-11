@@ -77,7 +77,29 @@ export default function BreakevenPage() {
       const key = (d as string).substring(0, 7);
       incMap.set(key, (incMap.get(key) || 0) + Number(inc.amount));
     }
+    // Collect months we have data for so recurring expenses can fan out across them
+    const monthSet = new Set<string>();
+    for (const inc of income) { const d = incomeDateOf(inc); if (d) monthSet.add((d as string).substring(0, 7)); }
+    for (const apt of appointments) { if (apt.scheduled_at) monthSet.add(apt.scheduled_at.substring(0, 7)); }
     for (const exp of expenses) {
+      if (exp.is_recurring) continue;
+      monthSet.add(exp.date.substring(0, 7));
+    }
+    // Always include the current month
+    monthSet.add(today.substring(0, 7));
+
+    for (const exp of expenses) {
+      if (exp.is_recurring) {
+        const start = ((exp as any).recurring_start_date || exp.date) as string;
+        const startKey = start?.substring(0, 7);
+        if (!startKey) continue;
+        for (const key of monthSet) {
+          if (key < startKey) continue;
+          if (exp.category === "Tax") taxMap.set(key, (taxMap.get(key) || 0) + Number(exp.amount));
+          else expMap.set(key, (expMap.get(key) || 0) + Number(exp.amount));
+        }
+        continue;
+      }
       const key = exp.date.substring(0, 7);
       if (exp.category === "Tax") {
         taxMap.set(key, (taxMap.get(key) || 0) + Number(exp.amount));
