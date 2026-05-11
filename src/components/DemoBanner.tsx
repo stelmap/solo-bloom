@@ -1,29 +1,24 @@
 import { Link } from "react-router-dom";
-import { Sparkles, ArrowRight, Clock, ShieldCheck } from "lucide-react";
+import { ArrowRight, Clock, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useDemoMode } from "@/hooks/useDemoWorkspace";
+import { useFreeStarterMode, FREE_STARTER_CLIENT_LIMIT } from "@/hooks/useDemoWorkspace";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 /**
  * Persistent banner shown at the top of authenticated pages.
  * - Trial users: shows trial status with days remaining.
- * - Free/unpaid users with demo data: shows demo data notice.
+ * - Free Starter users: shows current X/5 client usage and an upgrade CTA.
  */
 export function DemoBanner() {
   const { subscription } = useAuth();
-  const { isDemoMode } = useDemoMode();
+  const { isFreeStarter, clientCount, limit } = useFreeStarterMode();
   const { t } = useLanguage();
 
-  // Friendly fallbacks when translation keys are missing (t returns the key itself).
   const tx = (key: string, fallback: string) => {
     const value = t(key as any);
     return !value || value === key ? fallback : value;
   };
-  const demoBadge = tx("demo.badge", "Demo data");
-  const demoHeadline = tx("demo.bannerHeadline", "You're exploring with sample data.");
-  const demoSub = tx("demo.bannerSub", "Pick a plan to start using your own clients, sessions, and finances.");
-  const demoChoosePlan = tx("demo.choosePlan", "Choose a plan");
 
   if (subscription.loading) return null;
 
@@ -59,26 +54,37 @@ export function DemoBanner() {
   }
 
   if (subscription.subscribed) return null;
-  if (!isDemoMode) return null;
+  if (!isFreeStarter) return null;
+
+  const badge = tx("freeStarter.badge", "Free Starter");
+  const headline = tx(
+    "freeStarter.bannerHeadline",
+    `Free plan: ${clientCount}/${limit} clients used`
+  ).replace("{count}", String(clientCount)).replace("{limit}", String(limit));
+  const sub = tx(
+    "freeStarter.bannerSub",
+    "Upgrade anytime to remove the client limit and unlock everything."
+  );
+  const cta = tx("freeStarter.choosePlan", "Choose a plan");
 
   return (
     <div className="sticky top-0 z-30 border-b border-primary/25 bg-background/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/85">
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-2.5 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0 md:pl-0 pl-12">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/15 px-3 py-1 text-xs font-bold uppercase text-primary whitespace-nowrap">
-            <ShieldCheck className="h-3.5 w-3.5" />
-            {demoBadge}
+            <Sparkles className="h-3.5 w-3.5" />
+            {badge}
           </span>
           <p className="text-sm text-foreground min-w-0">
-            <span className="font-semibold">{demoHeadline}</span>{" "}
+            <span className="font-semibold">{headline}</span>{" "}
             <span className="text-muted-foreground hidden md:inline">
-              {demoSub}
+              {sub}
             </span>
           </p>
         </div>
         <Button asChild size="sm" variant="default" className="shrink-0">
           <Link to="/plans">
-            {demoChoosePlan}
+            {cta}
             <ArrowRight className="ml-1 h-3.5 w-3.5" />
           </Link>
         </Button>
