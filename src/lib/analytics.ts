@@ -196,12 +196,32 @@ function recordDiagnostic(name: string, props?: Record<string, unknown>) {
   notify();
 }
 
+// Subscription state, refreshed by AuthContext. Attached to every event.
+export type SubscriptionStatusValue = "active" | "inactive" | "trial" | "unknown";
+let subscriptionStatus: SubscriptionStatusValue = "unknown";
+
+export function setSubscriptionStatus(status: SubscriptionStatusValue): void {
+  subscriptionStatus = status;
+  if (enabled) {
+    try {
+      posthog.register({ subscription_status: status });
+    } catch {
+      /* noop */
+    }
+  }
+}
+
+export function getSubscriptionStatus(): SubscriptionStatusValue {
+  return subscriptionStatus;
+}
+
 export function track(event: AnalyticsEvent, props: BaseEventProps = {}): void {
   if (!initialized) initAnalytics();
   const enriched: BaseEventProps = {
     device_type: deviceType(),
     source_page: typeof window !== "undefined" ? window.location.pathname : undefined,
     locale: typeof navigator !== "undefined" ? navigator.language : undefined,
+    subscription_status: subscriptionStatus,
     ...props,
   };
   // Always record the attempt locally so diagnostics work in dev/preview too.

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { identifyUser, resetAnalytics } from "@/lib/analytics";
+import { identifyUser, resetAnalytics, setSubscriptionStatus } from "@/lib/analytics";
 
 export interface SubscriptionStatus {
   subscribed: boolean;
@@ -195,6 +195,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const interval = setInterval(refreshSubscription, 300_000);
     return () => clearInterval(interval);
   }, [session, refreshSubscription]);
+
+  // Sync subscription status into analytics so every event is segmentable by plan state.
+  useEffect(() => {
+    if (subscription.loading) return;
+    if (!session) {
+      setSubscriptionStatus("unknown");
+      return;
+    }
+    if (subscription.subscribed) setSubscriptionStatus("active");
+    else if (subscription.on_trial) setSubscriptionStatus("trial");
+    else setSubscriptionStatus("inactive");
+  }, [session, subscription.loading, subscription.subscribed, subscription.on_trial]);
 
   const beginRecovery = () => setIsRecovery(true);
 
