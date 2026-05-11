@@ -71,6 +71,7 @@ export function useUpdateClient() {
       if (error) throw error;
     },
     onSuccess: (_, vars) => {
+      track("client_updated");
       qc.invalidateQueries({ queryKey: ["clients"] });
       qc.invalidateQueries({ queryKey: ["client", vars.id] });
     },
