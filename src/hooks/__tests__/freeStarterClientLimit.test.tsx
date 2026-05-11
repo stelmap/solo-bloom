@@ -80,11 +80,18 @@ beforeEach(() => {
 
 describe("Free Starter 5-client limit", () => {
   it("blocks the 6th client client-side with FREE_STARTER_CLIENT_LIMIT_REACHED", async () => {
-    const { result } = renderHook(() => useCreateClient(), { wrapper: wrapper() });
-    await waitFor(() => expect(result.current).toBeDefined());
+    const { result } = renderHook(
+      () => {
+        const fs = useFreeStarterMode();
+        const create = useCreateClient();
+        return { fs, create };
+      },
+      { wrapper: wrapper() },
+    );
+    await waitFor(() => expect(result.current.fs.atClientLimit).toBe(true));
 
     await expect(
-      result.current.mutateAsync({ name: "Sixth Client" }),
+      result.current.create.mutateAsync({ name: "Sixth Client" }),
     ).rejects.toThrow(FREE_STARTER_LIMIT_ERROR);
   });
 
