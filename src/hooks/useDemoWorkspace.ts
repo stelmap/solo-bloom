@@ -88,7 +88,8 @@ export function useFreeStarterMode() {
         .from("clients")
         .select("id", { count: "exact", head: true })
         .eq("user_id", user!.id)
-        .eq("status", "active");
+        .eq("status", "active")
+        .eq("is_demo", false);
       if (error) {
         console.error("free-starter client count failed:", error);
         return 0;
