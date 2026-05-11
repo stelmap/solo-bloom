@@ -161,6 +161,7 @@ export function useUpdateGroup() {
       if (error) throw error;
     },
     onSuccess: (_, vars) => {
+      track("group_updated");
       qc.invalidateQueries({ queryKey: ["groups"] });
       qc.invalidateQueries({ queryKey: ["group-detail", vars.id] });
     },
