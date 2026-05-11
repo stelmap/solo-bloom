@@ -124,16 +124,26 @@ export default function FinancialOverviewPage() {
       end: new Date(year, 11, 31),
     });
 
-    // Recurring expenses: only count those whose recurring_start_date <= the month
+    // Recurring expenses are stored as one template row; expand virtually for each month from start.
     const recurringExpenses = (allExpenses as any[]).filter(e => e.is_recurring);
+    const recurringAppliesToMonth = (e: any, monthKey: string) => {
+      const start = (e.recurring_start_date || e.date) as string;
+      return start && start.substring(0, 7) <= monthKey;
+    };
     const getRecurringForMonth = (monthKey: string) => {
       return recurringExpenses
-        .filter(e => {
-          const startDate = e.recurring_start_date || e.date;
-          return startDate <= monthKey + "-31"; // started on or before end of month
-        })
+        .filter(e => recurringAppliesToMonth(e, monthKey))
         .reduce((s, e) => s + Number(e.amount), 0);
     };
+    const recurringItemsForMonth = (monthKey: string) => recurringExpenses
+      .filter(e => recurringAppliesToMonth(e, monthKey))
+      .map((e: any) => ({
+        description: e.description || e.category,
+        amount: Number(e.amount),
+        date: "—",
+        category: e.category,
+        isRecurring: true,
+      }));
 
     type Pre = {
       idx: number; isFuture: boolean; monthDate: Date; mStart: Date; mEnd: Date; mKey: string;
