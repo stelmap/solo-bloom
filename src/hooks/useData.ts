@@ -395,7 +395,7 @@ export function useUpdateService() {
       const { error } = await supabase.from("services").update(updates).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["services"] }),
+    onSuccess: () => { track("service_updated"); qc.invalidateQueries({ queryKey: ["services"] }); },
   });
 }
 
