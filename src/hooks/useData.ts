@@ -687,7 +687,7 @@ export function useMarkExpectedPaymentPaid() {
       } as any);
       if (incErr) throw incErr;
     },
-    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: (_d, vars) => { track("payment_marked_paid", { payment_method: vars.paymentMethod }); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
