@@ -236,9 +236,17 @@ export default function ClientsPage() {
               </Button>
             </>}
             <Dialog open={open} onOpenChange={setOpen}>
-              {!isDemoMode && <DialogTrigger asChild>
-                <Button><Plus className="h-4 w-4 mr-1" /> {t("clients.addClient")}</Button>
-              </DialogTrigger>}
+              <Button
+                onClick={() => {
+                  if (atClientLimit) {
+                    setPaywallOpen(true);
+                  } else {
+                    setOpen(true);
+                  }
+                }}
+              >
+                <Plus className="h-4 w-4 mr-1" /> {t("clients.addClient")}
+              </Button>
             <DialogContent>
               <DialogHeader><DialogTitle>{t("clients.addClient")}</DialogTitle></DialogHeader>
               <div className="space-y-4">
