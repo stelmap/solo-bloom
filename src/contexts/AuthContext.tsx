@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { identifyUser, resetAnalytics } from "@/lib/analytics";
+import { identifyUser, resetAnalytics, setSubscriptionStatus } from "@/lib/analytics";
 
 export interface SubscriptionStatus {
   subscribed: boolean;
