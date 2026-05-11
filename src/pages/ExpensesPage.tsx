@@ -358,7 +358,7 @@ export default function ExpensesPage() {
                         </td>
                         <td className="p-4">
                           <div className="flex gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
-                            {!isTaxGenerated && !expense.virtual && (
+                            {!isTaxGenerated && (
                               <button onClick={() => openEdit(expense)} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
                                 <Pencil className="h-3.5 w-3.5" />
                               </button>
