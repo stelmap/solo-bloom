@@ -125,7 +125,22 @@ export type AnalyticsEvent =
   | "checkout_started"
   | "checkout_completed"
   | "subscription_active"
-  | "subscription_canceled";
+  | "subscription_canceled"
+  | "group_created"
+  | "group_updated"
+  | "group_deleted"
+  | "supervision_created"
+  | "supervision_updated"
+  | "supervision_deleted"
+  | "invoice_downloaded"
+  | "csv_exported"
+  | "language_changed"
+  | "telegram_connected"
+  | "telegram_disconnected"
+  | "payment_method_added"
+  | "payment_method_deleted"
+  | "booking_request_submitted"
+  | "booking_confirmed";
 
 // In-memory diagnostics for the current browser session.
 // Survives only until page reload — purely a debugging aid.
