@@ -73,6 +73,11 @@ export default function DiagnosticsPage() {
             <Row label="Distinct ID">
               <code className="text-xs break-all">{diag.distinctId ?? "—"}</code>
             </Row>
+            <Row label="Unique user counting">
+              <span className="text-xs text-muted-foreground">
+                Each signed-in user is identified by their internal user ID (PostHog `identify`). Anonymous visitors are counted by an auto-generated distinct ID stored in browser storage. Unique users in PostHog = unique distinct IDs.
+              </span>
+            </Row>
             <Row label="Session ID">
               <code className="text-xs break-all">{diag.sessionId ?? "—"}</code>
             </Row>

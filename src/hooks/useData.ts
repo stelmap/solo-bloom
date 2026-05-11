@@ -71,6 +71,7 @@ export function useUpdateClient() {
       if (error) throw error;
     },
     onSuccess: (_, vars) => {
+      track("client_updated");
       qc.invalidateQueries({ queryKey: ["clients"] });
       qc.invalidateQueries({ queryKey: ["client", vars.id] });
     },
@@ -125,7 +126,7 @@ export function useDeleteClient() {
       const { error } = await supabase.from("clients").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["clients"] }),
+    onSuccess: () => { track("client_deleted"); qc.invalidateQueries({ queryKey: ["clients"] }); },
   });
 }
 
@@ -394,7 +395,7 @@ export function useUpdateService() {
       const { error } = await supabase.from("services").update(updates).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["services"] }),
+    onSuccess: () => { track("service_updated"); qc.invalidateQueries({ queryKey: ["services"] }); },
   });
 }
 
@@ -407,7 +408,7 @@ export function useDeleteService() {
       const { error } = await supabase.from("services").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["services"] }),
+    onSuccess: () => { track("service_deleted"); qc.invalidateQueries({ queryKey: ["services"] }); },
   });
 }
 
@@ -458,7 +459,7 @@ export function useUpdateAppointment() {
       const { error } = await supabase.from("appointments").update(updates as any).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("session_updated"); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -471,7 +472,7 @@ export function useDeleteAppointment() {
       const { error } = await supabase.from("appointments").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("session_deleted"); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -543,7 +544,7 @@ export function useReopenAppointment() {
       } as any).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("session_reopened"); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -567,7 +568,7 @@ export function useCancelAppointment() {
       // Suppress unused-var warnings for now-unused params
       void clientId; void price; void user; void isDemoMode;
     },
-    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: (_d, vars) => { track("session_canceled", { status: vars.status }); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -686,7 +687,7 @@ export function useMarkExpectedPaymentPaid() {
       } as any);
       if (incErr) throw incErr;
     },
-    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: (_d, vars) => { track("payment_marked_paid", { payment_method: vars.paymentMethod }); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -756,7 +757,7 @@ export function useUpdateExpense() {
       const { error } = await supabase.from("expenses").update(updates).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("expense_updated"); ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -767,7 +768,7 @@ export function useUpdateExpenseSeries() {
       const { error } = await (supabase.from("expenses") as any).update(updates).eq("recurring_group_id", recurring_group_id);
       if (error) throw error;
     },
-    onSuccess: () => { ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("expense_updated", { scope: "series" }); ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -778,7 +779,7 @@ export function useDeleteExpense() {
       const { error } = await supabase.from("expenses").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("expense_deleted"); ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -848,7 +849,7 @@ export function useDeleteIncome() {
       const { error } = await supabase.from("income").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { ["income", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("income_deleted"); ["income", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -878,6 +879,7 @@ export function useUpdateProfile() {
       if (error) throw error;
     },
     onSuccess: (_d, vars) => {
+      track("profile_updated");
       qc.invalidateQueries({ queryKey: ["profile"] });
       // If recognition method changed, recompute analytics that group income by date
       if (vars.income_recognition_method !== undefined) {

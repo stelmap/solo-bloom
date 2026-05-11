@@ -20,6 +20,7 @@ import { TranslationKey } from "@/i18n/translations";
 import { useSearchParams } from "react-router-dom";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, subMonths, format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics";
 
 const DEFAULT_CATEGORIES = ["Rent", "Materials", "Insurance", "Equipment", "Marketing", "Utilities", "Laundry", "Software", "Tax", "Other"];
 
@@ -185,6 +186,7 @@ export default function ExpensesPage() {
     const newStatus = target.payment_status === "paid" ? "unpaid" : "paid";
     try {
       await updatePaymentStatus.mutateAsync({ id: target.id, payment_status: newStatus });
+      track("payment_status_toggled", { entity: "expense", new_status: newStatus });
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
