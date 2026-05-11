@@ -203,6 +203,7 @@ export function useUpdateSupervision() {
       if (error) throw error;
     },
     onSuccess: () => {
+      track("supervision_updated");
       qc.invalidateQueries({ queryKey: ["supervisions"] });
       qc.invalidateQueries({ queryKey: ["supervision"] });
     },
@@ -229,6 +230,7 @@ export function useDeleteSupervision() {
       if (error) throw error;
     },
     onSuccess: () => {
+      track("supervision_deleted");
       qc.invalidateQueries({ queryKey: ["supervisions"] });
       qc.invalidateQueries({ queryKey: ["supervision-count"] });
       qc.invalidateQueries({ queryKey: ["unused-client-notes"] });
