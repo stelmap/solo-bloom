@@ -8,6 +8,7 @@ import { useInvoicesByAppointment, useCreateInvoice } from "@/hooks/useInvoices"
 import { useAuth } from "@/contexts/AuthContext";
 import { generateInvoicePdf } from "@/lib/invoicePdf";
 import { useToast } from "@/hooks/use-toast";
+import { track } from "@/lib/analytics";
 import type { Language } from "@/i18n/translations";
 
 interface InvoiceButtonProps {
