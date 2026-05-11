@@ -91,6 +91,7 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
       };
       const doc = generateInvoicePdf(invoiceData);
       doc.save(`invoice_${result.invoice_number.replace(/\//g, "-")}.pdf`);
+      track("invoice_downloaded", { kind: "new" });
       toast({ title: t("invoice.generated") });
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
