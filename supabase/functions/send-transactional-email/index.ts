@@ -181,6 +181,65 @@ Deno.serve(async (req) => {
   // Create Supabase client with service role (bypasses RLS)
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+  // Authorization: prevent abuse of the sending domain.
+  // - Service-role callers (DB triggers, cron) are trusted.
+  // - Templates with a fixed `to` (e.g. site-owner notifications) are safe by construction.
+  // - For all other end-user callers, the recipientEmail MUST belong to one of
+  //   their own clients. This blocks authenticated users from sending emails
+  //   to arbitrary inboxes via the app's verified domain.
+  const callerRole = (claimsData.claims as Record<string, unknown>).role
+  const callerSub = (claimsData.claims as Record<string, unknown>).sub as string | undefined
+  const isServiceRoleCaller = callerRole === 'service_role'
+  const templateHasFixedRecipient = !!template.to
+
+  if (!isServiceRoleCaller && !templateHasFixedRecipient) {
+    if (!callerSub) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const normalizedRecipient = effectiveRecipient.trim().toLowerCase()
+    const { data: ownedClient, error: ownershipError } = await supabase
+      .from('clients')
+      .select('id')
+      .eq('user_id', callerSub)
+      .ilike('email', normalizedRecipient)
+      .limit(1)
+      .maybeSingle()
+
+    if (ownershipError) {
+      console.error('[send-transactional-email] Recipient ownership check failed', {
+        error: ownershipError.message,
+        callerSub,
+      })
+      return new Response(
+        JSON.stringify({ error: 'Failed to verify recipient' }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      )
+    }
+
+    if (!ownedClient) {
+      console.warn('[send-transactional-email] Blocked: recipient not owned by caller', {
+        callerSub,
+        templateName,
+      })
+      return new Response(
+        JSON.stringify({
+          error: 'Recipient must be one of your own clients',
+        }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      )
+    }
+  }
+
   // 2. Check suppression list (fail-closed: if we can't verify, don't send)
   const { data: suppressed, error: suppressionError } = await supabase
     .from('suppressed_emails')
