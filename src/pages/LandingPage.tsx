@@ -185,7 +185,7 @@ const C = {
     pl: "Solo Bizz pomaga widzieć finanse, zysk, płatności, obciążenie praktyki i wyniki pracy. Podejmujesz decyzje na podstawie danych, a nie odczuć. Mniej rutyny — więcej czasu na klientów, naukę i rozwój.",
   },
 
-  // Demo
+  // Preview
   demoTitle: {
     en: "See how your practice could look in 60 seconds",
     fr: "Voyez à quoi votre cabinet peut ressembler en 60 secondes",
@@ -193,12 +193,11 @@ const C = {
     pl: "Zobacz, jak Twoja praktyka mogłaby wyglądać w 60 sekund",
   },
   demoText: {
-    en: "Demo workspace with real examples of clients, sessions, payments and income.",
-    fr: "Espace démo avec de vrais exemples de clients, séances, paiements et revenus.",
-    uk: "Демо-простір з реальними прикладами клієнтів, сесій, оплат і доходу.",
-    pl: "Demonstracyjna przestrzeń z prawdziwymi przykładami klientów, sesji, płatności i dochodu.",
+    en: "A live preview of clients, sessions, payments and income — built for solo practices.",
+    fr: "Aperçu en direct de clients, séances, paiements et revenus — conçu pour les praticiens en solo.",
+    uk: "Живий перегляд клієнтів, сесій, оплат і доходу — створений для приватної практики.",
+    pl: "Podgląd klientów, sesji, płatności i dochodu — stworzony dla praktyk solo.",
   },
-  demoCta: { en: "Open demo workspace", fr: "Ouvrir l'espace démo", uk: "Відкрити демо-простір", pl: "Otwórz przestrzeń demo" },
 
   // Comparison
   cmpTitle: {
