@@ -3,6 +3,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { TelegramConnectCard } from "@/components/TelegramConnectCard";
 import { TelegramSendLog } from "@/components/TelegramSendLog";
+import { ClientNotesCard } from "@/components/ClientNotesCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -414,12 +415,10 @@ export default function ClientDetailPage() {
                 {client.email && <div className="flex items-center gap-2 text-muted-foreground"><Mail className="h-4 w-4 text-primary" />{client.email}</div>}
                 {(client as any).telegram && <div className="flex items-center gap-2 text-muted-foreground"><Send className="h-4 w-4 text-primary" />@{(client as any).telegram}</div>}
               </div>
-              {client.notes && (
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground">📝 {client.notes}</p>
-                </div>
-              )}
             </div>
+
+            {/* Client-level notes — moved up; reused in Supervision */}
+            {!isDemoMode && <ClientNotesCard client={client as any} />}
 
             {/* Notification Settings */}
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">

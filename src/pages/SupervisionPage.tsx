@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { ClientPicker } from "@/components/ClientPicker";
+import { ClientNotesCard } from "@/components/ClientNotesCard";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useClients } from "@/hooks/useData";
@@ -212,7 +213,18 @@ export default function SupervisionPage() {
                   </div>
                 </div>
 
-                {/* Imported Notes (read-only) */}
+                {/* Short client notes — read-only mirror of clients.notes */}
+                {(() => {
+                  const c = (clients as any[]).find(x => x.id === detailData.client_id);
+                  return c ? (
+                    <ClientNotesCard
+                      client={c}
+                      mode="preview"
+                      onEditRequested={() => navigate(`/clients/${detailData.client_id}`)}
+                    />
+                  ) : null;
+                })()}
+
                 <div className="space-y-2">
                   <button
                     onClick={() => setExpandedNotes(!expandedNotes)}
@@ -301,9 +313,19 @@ export default function SupervisionPage() {
                 clients={clients}
                 value={createForm.client_id}
                 onChange={v => setCreateForm(f => ({ ...f, client_id: v }))}
-                placeholder={t("supervision.selectClient")}
               />
             </div>
+
+            {createForm.client_id && (() => {
+              const c = (clients as any[]).find(x => x.id === createForm.client_id);
+              return c ? (
+                <ClientNotesCard
+                  client={c}
+                  mode="preview"
+                  onEditRequested={() => navigate(`/clients/${createForm.client_id}`)}
+                />
+              ) : null;
+            })()}
             <div className="space-y-2">
               <Label>{t("supervision.date")} *</Label>
               <Input type="date" value={createForm.supervision_date} onChange={e => setCreateForm(f => ({ ...f, supervision_date: e.target.value }))} />
