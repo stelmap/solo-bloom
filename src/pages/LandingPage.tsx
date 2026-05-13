@@ -64,6 +64,12 @@ const C = {
     uk: "Free Starter: без оплати, поки у вас до 5 активних клієнтів.",
     pl: "Free Starter: bez opłat, dopóki masz do 5 aktywnych klientów.",
   },
+  heroRoi: {
+    en: "With 20+ clients, manual admin can take 4–8+ hours a week. SoloBizz helps you win that time back.",
+    fr: "Avec 20+ clients, l'admin manuelle peut prendre 4 à 8+ heures par semaine. SoloBizz vous aide à récupérer ce temps.",
+    uk: "Коли у вас 20+ клієнтів, ручна адмінка може забирати 4–8+ годин на тиждень. SoloBizz допомагає повернути цей час назад.",
+    pl: "Przy 20+ klientach ręczna administracja może zajmować 4–8+ godzin tygodniowo. SoloBizz pomaga odzyskać ten czas.",
+  },
   trustData: { en: "Client data is protected", fr: "Données clients protégées", uk: "Дані клієнтів захищені", pl: "Dane klientów chronione" },
   trustStripe: { en: "Secure Stripe payments", fr: "Paiements sécurisés via Stripe", uk: "Безпечна оплата через Stripe", pl: "Bezpieczne płatności przez Stripe" },
   trustGdpr: { en: "GDPR-friendly", fr: "Compatible RGPD", uk: "GDPR-friendly підхід", pl: "Zgodne z RODO" },
