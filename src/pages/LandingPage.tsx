@@ -827,7 +827,30 @@ function AudienceSection() {
 
         <div className="mt-10 max-w-3xl mx-auto rounded-2xl border-2 border-primary/30 bg-primary/5 p-6 sm:p-8 text-center">
           <h3 className="text-2xl font-bold text-foreground mb-3">{t("audValueTitle")}</h3>
-          <p className="text-base sm:text-lg text-foreground/80 leading-relaxed">{t("audValueText")}</p>
+          <p className="text-base sm:text-lg text-foreground/80 leading-relaxed mb-6">{t("audValueText")}</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              to="/auth?plan=free_starter"
+              onClick={() =>
+                track("cta_clicked", { source_page: "/#audience", cta: "landing_audience_cta_click", plan_type: "free_starter" })
+              }
+            >
+              <Button size="lg" className="gap-2 h-12 px-8 text-base">
+                {t("audCtaPrimary")} <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+            <a
+              href="#pricing"
+              onClick={() =>
+                track("cta_clicked", { source_page: "/#audience", cta: "landing_audience_cta_click", plan_type: "see_plans" })
+              }
+            >
+              <Button size="lg" variant="outline" className="gap-2 h-12 px-8 text-base">
+                {t("audCtaSecondary")}
+              </Button>
+            </a>
+          </div>
+          <p className="text-xs text-muted-foreground mt-4">{t("audCtaSub")}</p>
         </div>
       </div>
     </section>
