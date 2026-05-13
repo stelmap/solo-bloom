@@ -619,7 +619,7 @@ export default function SettingsPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm font-medium text-foreground">{tax.tax_name}</span>
                         <Badge variant="outline" className={cn("text-xs", tax.is_active ? "border-warning text-warning" : "")}>
-                          {tax.tax_type === "percentage" ? `${tax.tax_rate}%` : `${(profile as any)?.currency === "UAH" ? "₴" : (profile as any)?.currency === "PLN" ? "zł" : "€"}${Number(tax.fixed_amount).toLocaleString()}`}
+                          {tax.tax_type === "percentage" ? `${tax.tax_rate}%` : `${(profile as any)?.currency === "UAH" ? "₴" : (profile as any)?.currency === "PLN" ? "zł" : (profile as any)?.currency === "USD" ? "$" : "€"}${Number(tax.fixed_amount).toLocaleString()}`}
                         </Badge>
                         <Badge variant="secondary" className="text-xs">
                           {tax.frequency === "quarterly" ? t("tax.quarterly") : t("tax.monthly")}
