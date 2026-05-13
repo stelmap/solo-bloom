@@ -1,11 +1,12 @@
 import { useProfile } from "@/hooks/useData";
 
-export type CurrencyCode = "EUR" | "UAH" | "PLN";
+export type CurrencyCode = "EUR" | "UAH" | "PLN" | "USD";
 
 const CURRENCY_SYMBOLS: Record<CurrencyCode, string> = {
   EUR: "€",
   UAH: "₴",
   PLN: "zł",
+  USD: "$",
 };
 
 export function useCurrency() {
