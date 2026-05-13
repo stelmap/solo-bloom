@@ -186,10 +186,10 @@ const C = {
 
   audValueTitle: { en: "What you get", fr: "Ce que vous y gagnez", uk: "Що це дає?", pl: "Co dzięki temu zyskujesz?" },
   audValueText: {
-    en: "Solo Bizz helps you see finances, profit, payments, practice load and work results. You make decisions based on data, not feelings. Less routine — more time for clients, learning and growth.",
-    fr: "Solo Bizz vous montre finances, bénéfice, paiements, charge de travail et résultats. Vous décidez sur la base de données, pas d'impressions. Moins de routine, plus de temps pour vos clients et votre développement.",
-    uk: "Solo Bizz допомагає бачити фінанси, прибуток, оплати, завантаження практики та результативність роботи. Ви приймаєте рішення на основі даних, а не відчуттів. Менше рутинної роботи — більше часу на клієнтів, навчання і розвиток.",
-    pl: "Solo Bizz pomaga widzieć finanse, zysk, płatności, obciążenie praktyki i wyniki pracy. Podejmujesz decyzje na podstawie danych, a nie odczuć. Mniej rutyny — więcej czasu na klientów, naukę i rozwój.",
+    en: "SoloBizz takes the routine out of private practice: bookings, confirmations, payments, debts, financial calculations and spreadsheet chaos. With 20+ clients, manual admin can eat hours every week — SoloBizz helps you put that time back into client work, supervision or rest.",
+    fr: "SoloBizz retire la routine de la pratique privée : RDV, confirmations, paiements, créances, calculs financiers et chaos des tableurs. Avec 20+ clients, l'admin manuelle peut consommer des heures chaque semaine — SoloBizz vous aide à remettre ce temps dans le travail clinique, la supervision ou le repos.",
+    uk: "SoloBizz забирає рутину з приватної практики: записи, підтвердження, оплати, борги, фінансові підрахунки й хаос у таблицях. Якщо у вас 20+ клієнтів, ручна адмінка може забирати години щотижня — SoloBizz допомагає повернути цей час у роботу з клієнтами, супервізію або відпочинок.",
+    pl: "SoloBizz zdejmuje rutynę z prywatnej praktyki: zapisy, potwierdzenia, płatności, długi, obliczenia finansowe i chaos arkuszy. Przy 20+ klientach ręczna administracja może pochłaniać godziny tygodniowo — SoloBizz pomaga oddać ten czas pracy z klientami, superwizji lub odpoczynkowi.",
   },
   audCtaPrimary: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
   audCtaSecondary: { en: "See plans", fr: "Voir les formules", uk: "Переглянути плани", pl: "Zobacz plany" },
