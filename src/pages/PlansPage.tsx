@@ -225,7 +225,7 @@ export default function PlansPage() {
     setContinuing(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { planCode: selectedPlan.code, billingPeriod: period, withTrial: false },
+        body: { planCode: selectedPlan.code, billingPeriod: period, withTrial: true },
       });
       // Edge-function returns non-2xx as `error` with a `context` containing the JSON body.
       if (error) {
