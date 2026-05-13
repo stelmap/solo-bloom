@@ -1135,9 +1135,17 @@ function PricingSection() {
     <BillingCycleContext.Provider value={cycle}>
     <section id="pricing" className="py-20 px-4 sm:px-6 bg-muted/40">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">{t("pricingTitle")}</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("pricingSub")}</p>
+        </div>
+
+        <div className="max-w-3xl mx-auto mb-10 rounded-2xl border border-primary/25 bg-primary/5 p-5 sm:p-6 flex items-start gap-3">
+          <Clock className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+          <div className="text-left">
+            <p className="text-base text-foreground/90 leading-relaxed">{t("pricingValue")}</p>
+            <p className="text-sm text-muted-foreground mt-2">{t("pricingValueNote")}</p>
+          </div>
         </div>
 
         <div className="flex justify-center mb-10">
