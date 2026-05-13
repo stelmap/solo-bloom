@@ -888,17 +888,55 @@ function ComparisonSection() {
 
 // ── Pricing ───────────────────────────────────────────────────────────
 
+type PaidPlan = "solo" | "pro";
+type PlanRow = {
+  id: PaidPlan;
+  name: string;
+  desc: string;
+  bullets: string[];
+  cta: string;
+  badge?: string;
+  highlighted?: boolean;
+  // base monthly price (used to compute amount per cycle and equivalents)
+  monthly: number;
+  quarterly: number; // amount billed every 3 months
+  yearly: number;    // amount billed every 12 months
+};
+
+function fmtEuro(n: number): string {
+  if (n === 0) return "€0";
+  return Number.isInteger(n) ? `€${n}` : `€${n.toFixed(2)}`;
+}
+
 function PricingSection() {
   const { t } = useLandingLang();
   const [cycle, setCycle] = useState<Cycle>("monthly");
 
-  const computed = {
-    monthly:   { solo: 19,  pro: 49,  billed: t("billedMo") },
-    quarterly: { solo: 15,  pro: 39,  billed: t("billedQ") },
-    yearly:    { solo: 11,  pro: 29,  billed: t("billedY") },
-  } as const;
-
-  const data = computed[cycle];
+  const plans: PlanRow[] = [
+    {
+      id: "solo",
+      name: t("soloName"),
+      desc: t("soloDesc"),
+      bullets: [t("soloF1"), t("soloF2"), t("soloF3"), t("soloF4"), t("soloF5")],
+      cta: t("soloCta"),
+      badge: t("soloBadge"),
+      highlighted: true,
+      monthly: 19,
+      quarterly: 45.6,
+      yearly: 136.8,
+    },
+    {
+      id: "pro",
+      name: t("proName"),
+      desc: t("proDesc"),
+      bullets: [t("proF1"), t("proF2"), t("proF3"), t("proF4"), t("proF5")],
+      cta: t("proCta"),
+      badge: t("proBadge"),
+      monthly: 49,
+      quarterly: 117.6,
+      yearly: 352.8,
+    },
+  ];
 
   const tabs: { id: Cycle; label: string; badge?: string }[] = [
     { id: "monthly", label: t("monthly") },
@@ -906,13 +944,16 @@ function PricingSection() {
     { id: "yearly", label: t("yearly"), badge: t("save40") },
   ];
 
+  const billedLabel = cycle === "monthly" ? t("billedMo") : cycle === "quarterly" ? t("billedQ") : t("billedY");
+  const periodSuffix = cycle === "monthly" ? t("perMonth") : cycle === "quarterly" ? t("perQuarter") : t("perYear");
+
   return (
     <BillingCycleContext.Provider value={cycle}>
     <section id="pricing" className="py-20 px-4 sm:px-6 bg-muted/40">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="text-center mb-10">
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">{t("pricingTitle")}</h2>
-          <p className="text-lg text-muted-foreground">{t("pricingSub")}</p>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("pricingSub")}</p>
         </div>
 
         <div className="flex justify-center mb-10">
@@ -944,29 +985,46 @@ function PricingSection() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-          <PlanCard
-            plan="solo"
-            name={t("soloName")}
-            desc={t("soloDesc")}
-            price={data.solo}
-            perMonth={t("perMonth")}
-            billed={data.billed}
-            features={[t("soloF1"), t("soloF2"), t("soloF3"), t("soloF4")]}
-            cta={t("startTrial")}
-          />
-          <PlanCard
-            plan="pro"
-            name={t("proName")}
-            desc={t("proDesc")}
-            price={data.pro}
-            perMonth={t("perMonth")}
-            billed={data.billed}
-            features={[t("proF1"), t("proF2"), t("proF3"), t("proF4")]}
-            cta={t("startTrial")}
-            popular
-            popularLabel={t("popular")}
-          />
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
+          {/* Free Starter card */}
+          <div className="relative p-7 rounded-2xl bg-card border-2 border-border flex flex-col">
+            <h3 className="text-xl font-semibold text-foreground">{t("freeName")}</h3>
+            <p className="text-sm text-muted-foreground mt-1 mb-5">{t("freeDesc")}</p>
+            <div className="flex items-baseline gap-1 mb-1">
+              <span className="text-4xl font-bold text-foreground">€0</span>
+              <span className="text-muted-foreground text-base">{t("perMonth")}</span>
+            </div>
+            <p className="text-xs text-muted-foreground mb-6">{t("freeMicro")}</p>
+            <ul className="space-y-2.5 mb-7 flex-1">
+              {[t("freeF1"), t("freeF2"), t("freeF3"), t("freeF4"), t("freeF5")].map((f) => (
+                <li key={f} className="flex items-start gap-3 text-foreground">
+                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <span className="text-sm">{f}</span>
+                </li>
+              ))}
+            </ul>
+            <Link
+              to="/auth?plan=free_starter"
+              onClick={() =>
+                track("cta_clicked", { source_page: `/#pricing-${cycle}-free`, cta: "pricing_plan", plan_type: "free_starter", billing_cycle: cycle })
+              }
+              className="block mt-auto"
+            >
+              <Button className="w-full h-11 gap-2" variant="outline">
+                {t("freeCta")} <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+
+          {plans.map((p) => (
+            <PlanCard
+              key={p.id}
+              plan={p}
+              cycle={cycle}
+              billedLabel={billedLabel}
+              periodSuffix={periodSuffix}
+            />
+          ))}
         </div>
       </div>
     </section>
@@ -975,54 +1033,63 @@ function PricingSection() {
 }
 
 function PlanCard({
-  plan, name, desc, price, perMonth, billed, features, cta, popular, popularLabel,
+  plan, cycle, billedLabel, periodSuffix,
 }: {
-  plan: "solo" | "pro";
-  name: string; desc: string; price: number; perMonth: string; billed: string;
-  features: string[]; cta: string;
-  popular?: boolean; popularLabel?: string;
+  plan: PlanRow;
+  cycle: Cycle;
+  billedLabel: string;
+  periodSuffix: string;
 }) {
-  const { lang } = useLandingLang();
-  const billing_cycle = useBillingCycle();
+  const { lang, t } = useLandingLang();
+  const amount = cycle === "monthly" ? plan.monthly : cycle === "quarterly" ? plan.quarterly : plan.yearly;
+  const equiv = cycle === "monthly"
+    ? null
+    : cycle === "quarterly"
+      ? plan.quarterly / 3
+      : plan.yearly / 12;
+  const equivStr = equiv ? t("equivalentTo").replace("{price}", fmtEuro(Number(equiv.toFixed(2)))) : null;
+  const popular = plan.highlighted;
   return (
-    <div className={`relative p-7 rounded-2xl bg-card border-2 ${
+    <div className={`relative p-7 rounded-2xl bg-card border-2 flex flex-col ${
       popular ? "border-primary shadow-lg" : "border-border"
     }`}>
-      {popular && popularLabel && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
-          {popularLabel}
+      {plan.badge && (
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold whitespace-nowrap">
+          {plan.badge}
         </span>
       )}
-      <h3 className="text-xl font-semibold text-foreground">{name}</h3>
-      <p className="text-sm text-muted-foreground mt-1 mb-5">{desc}</p>
+      <h3 className="text-xl font-semibold text-foreground">{plan.name}</h3>
+      <p className="text-sm text-muted-foreground mt-1 mb-5">{plan.desc}</p>
       <div className="flex items-baseline gap-1 mb-1">
-        <span className="text-4xl font-bold text-foreground">€{price}</span>
-        <span className="text-muted-foreground text-base">{perMonth}</span>
+        <span className="text-4xl font-bold text-foreground">{fmtEuro(amount)}</span>
+        <span className="text-muted-foreground text-base">{periodSuffix}</span>
       </div>
-      <p className="text-xs text-muted-foreground mb-6">{billed}</p>
-      <ul className="space-y-2.5 mb-7">
-        {features.map((f) => (
-          <li key={f} className="flex items-center gap-3 text-foreground">
-            <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+      <p className="text-xs text-muted-foreground mb-1">{billedLabel}</p>
+      {equivStr && <p className="text-xs text-primary font-medium mb-5">{equivStr}</p>}
+      {!equivStr && <div className="mb-5" />}
+      <ul className="space-y-2.5 mb-7 flex-1">
+        {plan.bullets.map((f) => (
+          <li key={f} className="flex items-start gap-3 text-foreground">
+            <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
             <span className="text-sm">{f}</span>
           </li>
         ))}
       </ul>
       <Link
-        to={`/auth?plan=${plan}_${billing_cycle}`}
+        to={`/auth?plan=${plan.id}_${cycle}`}
         onClick={() =>
           track("cta_clicked", {
-            source_page: `/#pricing-${billing_cycle}-${plan}`,
+            source_page: `/#pricing-${cycle}-${plan.id}`,
             cta: "pricing_plan",
-            plan_type: plan,
-            billing_cycle,
+            plan_type: plan.id,
+            billing_cycle: cycle,
             lang,
           })
         }
-        className="block"
+        className="block mt-auto"
       >
         <Button className="w-full h-11 gap-2" variant={popular ? "default" : "outline"}>
-          {cta} <ArrowRight className="h-4 w-4" />
+          {plan.cta} <ArrowRight className="h-4 w-4" />
         </Button>
       </Link>
     </div>
