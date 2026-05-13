@@ -401,7 +401,7 @@ export default {
   "toast.appointmentDeleted": "Wizyta usunięta",
   "toast.appointmentCompleted": "✅ Wizyta zakończona",
   "toast.sessionCompletedExpected": "Sesja zakończona. Oczekiwana płatność zarejestrowana.",
-  "toast.sessionCompletedIncome": "Sesja zakończona! Zarejestrowano przychód w wysokości {amount} EUR.",
+  "toast.sessionCompletedIncome": "Sesja zakończona! Zarejestrowano przychód {symbol}{amount}.",
   "toast.statusUpdated": "Status zaktualizowany na {status}",
   "toast.clientAdded": "Klient dodany",
   "toast.clientUpdated": "Klient zaktualizowany",
