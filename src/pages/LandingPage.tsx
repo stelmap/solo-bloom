@@ -185,8 +185,14 @@ const C = {
     uk: "Solo Bizz допомагає бачити фінанси, прибуток, оплати, завантаження практики та результативність роботи. Ви приймаєте рішення на основі даних, а не відчуттів. Менше рутинної роботи — більше часу на клієнтів, навчання і розвиток.",
     pl: "Solo Bizz pomaga widzieć finanse, zysk, płatności, obciążenie praktyki i wyniki pracy. Podejmujesz decyzje na podstawie danych, a nie odczuć. Mniej rutyny — więcej czasu na klientów, naukę i rozwój.",
   },
-
-  // Preview
+  audCtaPrimary: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
+  audCtaSecondary: { en: "See plans", fr: "Voir les formules", uk: "Переглянути плани", pl: "Zobacz plany" },
+  audCtaSub: {
+    en: "Free Starter — free forever · up to 5 active clients · no card required",
+    fr: "Free Starter — gratuit pour toujours · jusqu'à 5 clients actifs · sans carte",
+    uk: "Free Starter — безкоштовно назавжди · до 5 клієнтів · без картки",
+    pl: "Free Starter — za darmo na zawsze · do 5 klientów · bez karty",
+  },
   demoTitle: {
     en: "See how your practice could look in 60 seconds",
     fr: "Voyez à quoi votre cabinet peut ressembler en 60 secondes",
