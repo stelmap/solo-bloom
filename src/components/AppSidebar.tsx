@@ -122,11 +122,6 @@ export function AppSidebar() {
                 Trial
               </span>
             )}
-            {isFreeStarter && (
-              <span className="inline-flex items-center rounded-full bg-sidebar-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sidebar-primary">
-                Free
-              </span>
-            )}
           </div>
           <p className="text-xs text-sidebar-foreground/50 mt-0.5">Business Manager</p>
           {isTrial ? (

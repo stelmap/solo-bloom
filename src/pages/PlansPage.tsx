@@ -276,8 +276,7 @@ export default function PlansPage() {
             <div className="inline-flex rounded-xl border border-border bg-muted/40 p-1">
               {availablePeriods.map((p) => {
                 const isActive = period === p;
-                // Show savings for the longest period (yearly) hint
-                const showSave = p === "yearly";
+                const saveLabel = p === "quarterly" ? "−20%" : p === "yearly" ? "−40%" : null;
                 return (
                   <button
                     key={p}
@@ -291,9 +290,9 @@ export default function PlansPage() {
                     )}
                   >
                     {periodLabels[p]}
-                    {showSave && (
+                    {saveLabel && (
                       <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-primary/15 text-primary">
-                        {t("plans.saveBadge")}
+                        {saveLabel}
                       </span>
                     )}
                   </button>
@@ -313,13 +312,58 @@ export default function PlansPage() {
             <p className="text-muted-foreground">{t("plans.loadingNone")}</p>
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 gap-5 max-w-4xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto items-stretch">
+            {/* Free Starter card (informational — granted by default) */}
+            <div className="relative text-left p-6 rounded-2xl border-2 border-border bg-card flex flex-col">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Free Starter
+                </p>
+                <div className="mt-1 flex items-baseline gap-1">
+                  <span className="text-3xl font-bold text-foreground">€0</span>
+                  <span className="text-sm text-muted-foreground">/ {periodSuffix["monthly"]}</span>
+                </div>
+                <p className="mt-1 text-xs font-semibold text-primary">Free forever</p>
+                <p className="text-xs text-muted-foreground">No card required.</p>
+              </div>
+              <p className="mt-3 text-sm text-muted-foreground">
+                For those just starting or running a small private practice.
+              </p>
+              <ul className="mt-5 space-y-2.5 flex-1">
+                {[
+                  "Up to 5 active clients",
+                  "Session calendar",
+                  "Basic client registry",
+                  "Basic payment tracking",
+                  "Reminders and confirmations",
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-sm text-foreground">
+                    <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-5 text-xs text-muted-foreground">
+                Available by default — no checkout needed.
+              </p>
+            </div>
+
             {orderedPlans.map((plan) => {
               const price = priceFor(plan.id, period);
               const isHighlighted = plan.code === HIGHLIGHTED_CODE;
               const isSelected = selectedPlanId === plan.id;
               const features = planFeatures[plan.code] ?? [];
               const savings = price ? savingsVsMonthly(prices, plan.id, period) : null;
+              const equivPerMonth =
+                price && period !== "monthly"
+                  ? Number(price.price) / (period === "quarterly" ? 3 : 12)
+                  : null;
+              const billedLabel =
+                period === "monthly"
+                  ? "Billed monthly"
+                  : period === "quarterly"
+                    ? "Billed every 3 months"
+                    : "Billed yearly";
 
               return (
                 <button
@@ -327,7 +371,7 @@ export default function PlansPage() {
                   type="button"
                   onClick={() => setSelectedPlanId(plan.id)}
                   className={cn(
-                    "group relative text-left p-6 rounded-2xl border transition-all duration-200 flex flex-col",
+                    "group relative text-left p-6 rounded-2xl border-2 transition-all duration-200 flex flex-col",
                     isSelected
                       ? "border-primary ring-2 ring-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 shadow-lg shadow-primary/10"
                       : isHighlighted
@@ -357,6 +401,12 @@ export default function PlansPage() {
                           / {periodSuffix[period]}
                         </span>
                       </div>
+                      <p className="mt-1 text-xs text-muted-foreground">{billedLabel}</p>
+                      {equivPerMonth !== null && price && (
+                        <p className="text-xs font-medium text-primary">
+                          ≈ {formatPrice(Number(equivPerMonth.toFixed(2)), price.currency)}/{periodSuffix["monthly"]}
+                        </p>
+                      )}
                       {savings !== null && (
                         <Badge variant="secondary" className="mt-2 text-[10px]">
                           {t("plans.savePctVsMonthly", { pct: savings })}
