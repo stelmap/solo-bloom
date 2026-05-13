@@ -394,7 +394,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
           price: completePrice, paymentMethod, paymentStatus, paymentDate,
         });
         const msg = paymentStatus === "waiting_for_payment"
-          ? t("toast.sessionCompletedExpected") : t("toast.sessionCompletedIncome", { amount: completePrice.toString() });
+          ? t("toast.sessionCompletedExpected") : t("toast.sessionCompletedIncome", { symbol: cs, amount: completePrice.toString() });
         toast({ title: t("toast.appointmentCompleted"), description: msg });
       }
       onOpenChange(false);
