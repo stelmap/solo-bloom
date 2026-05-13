@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, Loader2, CalendarCheck } from "lucide-react";
+import { SeoHead } from "@/components/SeoHead";
 
 type Status = "loading" | "valid" | "confirmed" | "already_confirmed" | "invalid" | "error";
 

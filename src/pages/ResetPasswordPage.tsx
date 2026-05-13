@@ -10,6 +10,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { Eye, EyeOff, Lock, ShieldAlert } from "lucide-react";
 import { track } from "@/lib/analytics";
 import { PublicFooter } from "@/components/PublicFooter";
+import { SeoHead } from "@/components/SeoHead";
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
