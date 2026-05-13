@@ -2145,7 +2145,7 @@ export function useSaveIncomeConfirmation() {
     onSuccess: () => {
       ["income", "client-income", "client-allocations", "appointment-allocations",
        "client-credit-balance", "appointments", "client-appointments",
-       "dashboard-stats", "expected-payments"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
+       "dashboard-stats", "expected-payments", "payment-audit"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
     },
   });
 }
@@ -2178,7 +2178,7 @@ export function useDeleteIncomeConfirmation() {
     onSuccess: () => {
       ["income", "client-income", "client-allocations", "appointment-allocations",
        "client-credit-balance", "appointments", "client-appointments",
-       "dashboard-stats", "expected-payments"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
+       "dashboard-stats", "expected-payments", "payment-audit"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
     },
   });
 }
