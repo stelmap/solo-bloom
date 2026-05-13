@@ -39,7 +39,7 @@ const C = {
   navPricing: { en: "Pricing", fr: "Tarifs", uk: "Ціни", pl: "Cennik" },
   navFaq: { en: "FAQ", fr: "FAQ", uk: "Питання", pl: "FAQ" },
   navLogin: { en: "Log in", fr: "Connexion", uk: "Увійти", pl: "Zaloguj się" },
-  navTry: { en: "Try free", fr: "Essai gratuit", uk: "Спробувати", pl: "Wypróbuj" },
+  navTry: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
 
   // Hero
   heroBadge: { en: "For psychologists & solo professionals", fr: "Pour psychologues & indépendants", uk: "Для психологів, супервізорів та викладачів", pl: "Dla psychologów i solowych profesjonalistów" },
@@ -55,14 +55,18 @@ const C = {
     uk: "CRM для психологів, психотерапевтів, супервізорів і викладачів, яка автоматично рахує записи, оплати, дохід і прибуток.",
     pl: "CRM dla psychologów, psychoterapeutów, superwizorów i nauczycieli, który automatycznie liczy sesje, płatności, dochód i zysk.",
   },
-  heroCta: { en: "Try it", fr: "Essayer", uk: "Спробувати", pl: "Wypróbuj" },
-  heroVideo: { en: "Watch video", fr: "Voir la vidéo", uk: "Подивитися відео", pl: "Zobacz wideo" },
+  heroCta: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
+  heroSecondary: { en: "See pricing", fr: "Voir les tarifs", uk: "Переглянути ціни", pl: "Zobacz cennik" },
   heroSubCta: {
-    en: "No credit card. No setup. Just try.",
-    fr: "Sans carte. Sans configuration. Essayez.",
-    uk: "Без картки. Без складних налаштувань. Просто спробуйте.",
-    pl: "Bez karty. Bez konfiguracji. Po prostu wypróbuj.",
+    en: "Free Starter: no payment while you have up to 5 active clients.",
+    fr: "Free Starter : sans paiement tant que vous avez jusqu'à 5 clients actifs.",
+    uk: "Free Starter: без оплати, поки у вас до 5 активних клієнтів.",
+    pl: "Free Starter: bez opłat, dopóki masz do 5 aktywnych klientów.",
   },
+  trustData: { en: "Client data is protected", fr: "Données clients protégées", uk: "Дані клієнтів захищені", pl: "Dane klientów chronione" },
+  trustStripe: { en: "Secure Stripe payments", fr: "Paiements sécurisés via Stripe", uk: "Безпечна оплата через Stripe", pl: "Bezpieczne płatności przez Stripe" },
+  trustGdpr: { en: "GDPR-friendly", fr: "Compatible RGPD", uk: "GDPR-friendly підхід", pl: "Zgodne z RODO" },
+  trustSupport: { en: "Email & Telegram support", fr: "Support email & Telegram", uk: "Підтримка через email та Telegram", pl: "Wsparcie przez email i Telegram" },
 
   // Dashboard preview
   dpClients: { en: "Active clients", fr: "Clients actifs", uk: "Активні клієнти", pl: "Aktywni klienci" },
@@ -181,7 +185,7 @@ const C = {
     pl: "Solo Bizz pomaga widzieć finanse, zysk, płatności, obciążenie praktyki i wyniki pracy. Podejmujesz decyzje na podstawie danych, a nie odczuć. Mniej rutyny — więcej czasu na klientów, naukę i rozwój.",
   },
 
-  // Demo
+  // Preview
   demoTitle: {
     en: "See how your practice could look in 60 seconds",
     fr: "Voyez à quoi votre cabinet peut ressembler en 60 secondes",
@@ -189,12 +193,11 @@ const C = {
     pl: "Zobacz, jak Twoja praktyka mogłaby wyglądać w 60 sekund",
   },
   demoText: {
-    en: "Demo workspace with real examples of clients, sessions, payments and income.",
-    fr: "Espace démo avec de vrais exemples de clients, séances, paiements et revenus.",
-    uk: "Демо-простір з реальними прикладами клієнтів, сесій, оплат і доходу.",
-    pl: "Demonstracyjna przestrzeń z prawdziwymi przykładami klientów, sesji, płatności i dochodu.",
+    en: "A live preview of clients, sessions, payments and income — built for solo practices.",
+    fr: "Aperçu en direct de clients, séances, paiements et revenus — conçu pour les praticiens en solo.",
+    uk: "Живий перегляд клієнтів, сесій, оплат і доходу — створений для приватної практики.",
+    pl: "Podgląd klientów, sesji, płatności i dochodu — stworzony dla praktyk solo.",
   },
-  demoCta: { en: "Open demo workspace", fr: "Ouvrir l'espace démo", uk: "Відкрити демо-простір", pl: "Otwórz przestrzeń demo" },
 
   // Comparison
   cmpTitle: {
@@ -244,31 +247,86 @@ const C = {
   },
 
   // Pricing
-  pricingTitle: { en: "Choose your practice", fr: "Choisissez votre formule", uk: "Оберіть свою практику", pl: "Wybierz swoją praktykę" },
-  pricingSub: { en: "Both plans start with a free trial. No credit card.", fr: "Les deux formules démarrent par un essai gratuit. Sans carte.", uk: "Обидва плани починаються з безкоштовного періоду. Без картки.", pl: "Oba plany zaczynają się od bezpłatnego okresu próbnego. Bez karty." },
+  pricingTitle: { en: "Choose your plan", fr: "Choisissez votre formule", uk: "Оберіть свій план", pl: "Wybierz swój plan" },
+  pricingSub: {
+    en: "Start free with up to 5 active clients. Upgrade anytime — only the active client limit changes.",
+    fr: "Commencez gratuitement jusqu'à 5 clients actifs. Évoluez à tout moment — seule la limite de clients actifs change.",
+    uk: "Почніть безкоштовно з до 5 активних клієнтів. Перейдіть на платний план будь-коли — змінюється лише ліміт активних клієнтів.",
+    pl: "Zacznij za darmo z maks. 5 aktywnymi klientami. Zmieniaj plan w dowolnej chwili — różni się tylko limit aktywnych klientów.",
+  },
   monthly: { en: "Monthly", fr: "Mensuel", uk: "Щомісяця", pl: "Miesięcznie" },
   quarterly: { en: "Quarterly", fr: "Trimestriel", uk: "Щокварталу", pl: "Kwartalnie" },
   yearly: { en: "Yearly", fr: "Annuel", uk: "Щороку", pl: "Rocznie" },
-  save20: { en: "Save 20%", fr: "−20 %", uk: "−20%", pl: "Oszczędź 20%" },
-  save40: { en: "Save 40%", fr: "−40 %", uk: "−40%", pl: "Oszczędź 40%" },
+  save20: { en: "−20%", fr: "−20 %", uk: "−20%", pl: "−20%" },
+  save40: { en: "−40%", fr: "−40 %", uk: "−40%", pl: "−40%" },
   perMonth: { en: "/month", fr: "/mois", uk: "/міс", pl: "/miesiąc" },
+  perQuarter: { en: "/quarter", fr: "/trimestre", uk: "/квартал", pl: "/kwartał" },
+  perYear: { en: "/year", fr: "/an", uk: "/рік", pl: "/rok" },
+  equivalentTo: { en: "≈ {price}/month", fr: "≈ {price}/mois", uk: "≈ {price}/міс", pl: "≈ {price}/miesiąc" },
   billedMo: { en: "Billed monthly", fr: "Facturé mensuellement", uk: "Оплата щомісяця", pl: "Rozliczane co miesiąc" },
   billedQ: { en: "Billed every 3 months", fr: "Facturé tous les 3 mois", uk: "Оплата раз на 3 місяці", pl: "Rozliczane co 3 miesiące" },
   billedY: { en: "Billed yearly", fr: "Facturé annuellement", uk: "Оплата раз на рік", pl: "Rozliczane co rok" },
-  soloName: { en: "Solo Practice", fr: "Pratique Solo", uk: "Solo-практика", pl: "Solo Practice" },
-  soloDesc: { en: "For control and clarity", fr: "Pour le contrôle et la clarté", uk: "Для контролю та ясності", pl: "Dla kontroli i przejrzystości" },
-  soloF1: { en: "Clients", fr: "Clients", uk: "Клієнти", pl: "Klienci" },
-  soloF2: { en: "Sessions", fr: "Séances", uk: "Сесії", pl: "Sesje" },
-  soloF3: { en: "Calendar", fr: "Calendrier", uk: "Календар", pl: "Kalendarz" },
-  soloF4: { en: "Basic finances", fr: "Finances de base", uk: "Базові фінанси", pl: "Podstawowe finanse" },
-  proName: { en: "Pro Practice", fr: "Pratique Pro", uk: "Pro-практика", pl: "Pro Practice" },
-  proDesc: { en: "For growth and stable income", fr: "Pour la croissance et un revenu stable", uk: "Для зростання та стабільного доходу", pl: "Dla rozwoju i stabilnego dochodu" },
-  popular: { en: "Most popular", fr: "Le plus populaire", uk: "Найпопулярніший", pl: "Najpopularniejszy" },
-  proF1: { en: "Everything in Solo", fr: "Tout de Solo", uk: "Усе з Solo", pl: "Wszystko w Solo" },
-  proF2: { en: "Supervision", fr: "Supervision", uk: "Супервізія", pl: "Superwizja" },
-  proF3: { en: "Group sessions", fr: "Séances de groupe", uk: "Групові сесії", pl: "Sesje grupowe" },
-  proF4: { en: "Advanced financial tracking", fr: "Suivi financier avancé", uk: "Розширений фінансовий облік", pl: "Zaawansowane śledzenie finansów" },
-  startTrial: { en: "Start free trial", fr: "Démarrer l'essai gratuit", uk: "Почати безкоштовний період", pl: "Rozpocznij okres próbny" },
+
+  // Free Starter
+  freeName: { en: "Free Starter", fr: "Free Starter", uk: "Free Starter", pl: "Free Starter" },
+  freeDesc: {
+    en: "For those just starting or running a small private practice.",
+    fr: "Pour ceux qui démarrent ou gèrent une petite pratique privée.",
+    uk: "Для тих, хто тільки починає або веде невелику приватну практику.",
+    pl: "Dla tych, którzy zaczynają lub prowadzą małą prywatną praktykę.",
+  },
+  freeF1: { en: "Up to 5 active clients", fr: "Jusqu'à 5 clients actifs", uk: "До 5 активних клієнтів", pl: "Do 5 aktywnych klientów" },
+  freeF2: { en: "No time limit", fr: "Sans limite de temps", uk: "Без обмеження по часу", pl: "Bez limitu czasu" },
+  freeF3: { en: "This is not a trial", fr: "Ce n'est pas une période d'essai", uk: "Це не пробний період", pl: "To nie jest okres próbny" },
+  freeF4: { en: "Clients, sessions and payments in one place", fr: "Clients, séances et paiements au même endroit", uk: "Клієнти, сесії та оплати в одному місці", pl: "Klienci, sesje i płatności w jednym miejscu" },
+  freeF5: { en: "Basic financial overview", fr: "Aperçu financier de base", uk: "Базовий фінансовий огляд", pl: "Podstawowy przegląd finansów" },
+  freeCta: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
+  freeMicro: {
+    en: "No payment while you have up to 5 active clients.",
+    fr: "Sans paiement tant que vous avez jusqu'à 5 clients actifs.",
+    uk: "Без оплати, поки у вас до 5 активних клієнтів.",
+    pl: "Bez opłat, dopóki masz do 5 aktywnych klientów.",
+  },
+
+  soloName: { en: "Solo Practice", fr: "Solo Practice", uk: "Solo Practice", pl: "Solo Practice" },
+  soloDesc: {
+    en: "For a regular private practice.",
+    fr: "Pour une pratique privée régulière.",
+    uk: "Для регулярної приватної практики.",
+    pl: "Dla regularnej prywatnej praktyki.",
+  },
+  soloF1: { en: "Up to 20 active clients", fr: "Jusqu'à 20 clients actifs", uk: "До 20 активних клієнтів", pl: "Do 20 aktywnych klientów" },
+  soloF2: { en: "Full access to SoloBizz", fr: "Accès complet à SoloBizz", uk: "Повний доступ до SoloBizz", pl: "Pełny dostęp do SoloBizz" },
+  soloF3: { en: "Calendar, sessions, clients, payments and finance", fr: "Calendrier, séances, clients, paiements et finances", uk: "Календар, сесії, клієнти, оплати та фінанси", pl: "Kalendarz, sesje, klienci, płatności i finanse" },
+  soloF4: { en: "Email / Telegram reminders", fr: "Rappels Email / Telegram", uk: "Email / Telegram нагадування", pl: "Przypomnienia Email / Telegram" },
+  soloF5: { en: "Great for a steadily growing practice", fr: "Idéal pour une pratique en croissance régulière", uk: "Підходить для практики, що стабільно росте", pl: "Idealne dla stale rosnącej praktyki" },
+  soloCta: { en: "Choose Solo Practice", fr: "Choisir Solo Practice", uk: "Обрати Solo Practice", pl: "Wybierz Solo Practice" },
+  soloBadge: {
+    en: "Best for private practice",
+    fr: "Idéal pour la pratique privée",
+    uk: "Найкраще для приватної практики",
+    pl: "Najlepsze dla prywatnej praktyki",
+  },
+
+  proName: { en: "Pro Practice", fr: "Pro Practice", uk: "Pro Practice", pl: "Pro Practice" },
+  proDesc: {
+    en: "For practices that scale.",
+    fr: "Pour les pratiques qui se développent.",
+    uk: "Для практики, що масштабується.",
+    pl: "Dla praktyk, które się skalują.",
+  },
+  proF1: { en: "Unlimited active clients", fr: "Clients actifs illimités", uk: "Необмежена кількість активних клієнтів", pl: "Nielimitowana liczba aktywnych klientów" },
+  proF2: { en: "Full access to SoloBizz", fr: "Accès complet à SoloBizz", uk: "Повний доступ до SoloBizz", pl: "Pełny dostęp do SoloBizz" },
+  proF3: { en: "For 20+ active clients", fr: "Pour 20+ clients actifs", uk: "Для 20+ активних клієнтів", pl: "Dla 20+ aktywnych klientów" },
+  proF4: { en: "Great for a large or active practice", fr: "Idéal pour une pratique large ou active", uk: "Підходить для великої або активної практики", pl: "Idealne dla dużej lub aktywnej praktyki" },
+  proF5: { en: "No client cap", fr: "Pas de plafond de clients", uk: "Без обмеження по кількості клієнтів", pl: "Bez limitu klientów" },
+  proCta: { en: "Choose Pro Practice", fr: "Choisir Pro Practice", uk: "Обрати Pro Practice", pl: "Wybierz Pro Practice" },
+  proBadge: {
+    en: "For a scaling practice",
+    fr: "Pour une pratique en croissance",
+    uk: "Для практики, що масштабується",
+    pl: "Dla skalującej się praktyki",
+  },
 
   // Testimonials
   testTitle: {
@@ -311,23 +369,23 @@ const C = {
   faqTitle: { en: "Frequently asked questions", fr: "Questions fréquentes", uk: "Питання, які часто виникають", pl: "Często zadawane pytania" },
   faq1Q: { en: "Is it hard to start using Solo Bizz?", fr: "Est-ce compliqué de démarrer avec Solo Bizz ?", uk: "Чи складно почати користуватись Solo Bizz?", pl: "Czy trudno zacząć korzystać z Solo Bizz?" },
   faq1A: {
-    en: "No. You can open the demo workspace and see how the system works without any complex setup.",
-    fr: "Non. Vous pouvez ouvrir l'espace démo et voir le fonctionnement sans configuration complexe.",
-    uk: "Ні. Ви можете відкрити демо-простір і побачити, як працює система, без складних налаштувань.",
-    pl: "Nie. Możesz otworzyć demo i zobaczyć, jak działa system, bez skomplikowanej konfiguracji.",
+    en: "No. Sign up with the Free Starter plan and start using SoloBizz right away — no setup required.",
+    fr: "Non. Inscrivez-vous avec le plan Free Starter et commencez tout de suite — sans configuration.",
+    uk: "Ні. Зареєструйтеся з планом Free Starter і почніть користуватись одразу — без складних налаштувань.",
+    pl: "Nie. Zarejestruj się z planem Free Starter i zacznij od razu — bez konfiguracji.",
   },
   faq2Q: { en: "Will it work if I work alone?", fr: "Est-ce adapté si je travaille seul·e ?", uk: "Чи підійде система, якщо я працюю сама?", pl: "Czy nada się, jeśli pracuję sam(a)?" },
   faq2A: {
-    en: "Yes. Solo Bizz is built exactly for solo practices where one person manages clients, sessions, payments and finances.",
-    fr: "Oui. Solo Bizz est conçu pour les pratiques solo où une seule personne gère clients, séances, paiements et finances.",
-    uk: "Так. Solo Bizz створений саме для приватних практик, де одна людина веде клієнтів, сесії, оплати й фінанси.",
-    pl: "Tak. Solo Bizz powstał właśnie dla solowych praktyk, gdzie jedna osoba prowadzi klientów, sesje, płatności i finanse.",
+    en: "Yes. SoloBizz is built exactly for solo practices where one person manages clients, sessions, payments and finances.",
+    fr: "Oui. SoloBizz est conçu pour les pratiques solo où une seule personne gère clients, séances, paiements et finances.",
+    uk: "Так. SoloBizz створений саме для приватних практик, де одна людина веде клієнтів, сесії, оплати й фінанси.",
+    pl: "Tak. SoloBizz powstał właśnie dla solowych praktyk, gdzie jedna osoba prowadzi klientów, sesje, płatności i finanse.",
   },
   faq3Q: { en: "Can I run group sessions or supervisions?", fr: "Puis-je gérer des séances de groupe ou des supervisions ?", uk: "Чи можна вести групові сесії або супервізії?", pl: "Czy mogę prowadzić sesje grupowe lub superwizje?" },
   faq3A: {
     en: "Yes. The system supports individual and group sessions, attendance and payment control.",
     fr: "Oui. Le système gère séances individuelles et de groupe, présence et paiements.",
-    uk: "Так. Система має підтримувати індивідуальні та групові сесії, контроль присутності й оплат.",
+    uk: "Так. Система підтримує індивідуальні та групові сесії, контроль присутності й оплат.",
     pl: "Tak. System obsługuje sesje indywidualne i grupowe, kontrolę obecności i płatności.",
   },
   faq4Q: { en: "Can I use it for teaching or tutoring?", fr: "Puis-je l'utiliser pour l'enseignement ou les cours particuliers ?", uk: "Чи можна використовувати систему для викладання або репетиторства?", pl: "Czy mogę używać go do nauczania lub korepetycji?" },
@@ -337,19 +395,19 @@ const C = {
     uk: "Так. Система підходить для спеціалістів, які працюють з учнями, заняттями, оплатами та прогресом навчання.",
     pl: "Tak. System pasuje dla osób pracujących z uczniami, zajęciami, płatnościami i postępami nauki.",
   },
-  faq5Q: { en: "Is there free access or a demo?", fr: "Y a-t-il un accès gratuit ou une démo ?", uk: "Чи є безкоштовний доступ або демо?", pl: "Czy jest darmowy dostęp lub demo?" },
+  faq5Q: { en: "Is SoloBizz really free?", fr: "SoloBizz est-il vraiment gratuit ?", uk: "Чи справді SoloBizz безкоштовний?", pl: "Czy SoloBizz jest naprawdę darmowy?" },
   faq5A: {
-    en: "Yes. You can try the system through the demo or registration flow according to the current product logic.",
-    fr: "Oui. Vous pouvez essayer via la démo ou via l'inscription, selon la logique produit actuelle.",
-    uk: "Так. Користувач може спробувати систему через демо або реєстраційний flow згідно з поточною логікою продукту.",
-    pl: "Tak. Możesz wypróbować przez demo lub rejestrację, zgodnie z bieżącą logiką produktu.",
+    en: "Yes. The Free Starter plan is permanently free for up to 5 active clients. It is not a trial — there is no time limit.",
+    fr: "Oui. Le plan Free Starter est gratuit en permanence jusqu'à 5 clients actifs. Ce n'est pas une période d'essai — pas de limite de temps.",
+    uk: "Так. План Free Starter безкоштовний назавжди для до 5 активних клієнтів. Це не пробний період — немає обмеження по часу.",
+    pl: "Tak. Plan Free Starter jest na stałe darmowy dla maks. 5 aktywnych klientów. To nie jest okres próbny — bez limitu czasu.",
   },
-  faq6Q: { en: "Do I need a credit card to try it?", fr: "Faut-il une carte bancaire pour essayer ?", uk: "Чи потрібна банківська картка, щоб спробувати?", pl: "Czy potrzebuję karty, żeby wypróbować?" },
+  faq6Q: { en: "Do I need a credit card to start?", fr: "Faut-il une carte bancaire pour commencer ?", uk: "Чи потрібна банківська картка, щоб почати?", pl: "Czy potrzebuję karty, żeby zacząć?" },
   faq6A: {
-    en: "No. A credit card is not required for your first look at the demo workspace.",
-    fr: "Non. Aucune carte n'est nécessaire pour découvrir l'espace démo.",
-    uk: "Ні. Для першого знайомства з демо-простором банківська картка не потрібна.",
-    pl: "Nie. Karta nie jest potrzebna do pierwszego zapoznania z demo.",
+    en: "No. The Free Starter plan does not require a credit card.",
+    fr: "Non. Le plan Free Starter ne nécessite pas de carte bancaire.",
+    uk: "Ні. Для плану Free Starter картка не потрібна.",
+    pl: "Nie. Plan Free Starter nie wymaga karty.",
   },
 
   // Final
@@ -609,12 +667,23 @@ function HeroSection() {
         <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
           {t("heroSub")}
         </p>
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-4">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <PrimaryCta label={t("heroCta")} source="/" cta="hero" className="text-base px-8 h-12" />
-            <VideoCta label={t("heroVideo")} source="/" className="text-base px-8 h-12" />
+            <a
+              href="#pricing"
+              className="inline-flex items-center justify-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-4 h-12"
+            >
+              {t("heroSecondary")}
+            </a>
           </div>
           <p className="text-sm text-muted-foreground">{t("heroSubCta")}</p>
+          <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground mt-2">
+            <li className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-primary" /> {t("trustData")}</li>
+            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> {t("trustStripe")}</li>
+            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> {t("trustGdpr")}</li>
+            <li className="inline-flex items-center gap-1.5"><MessageCircle className="h-3.5 w-3.5 text-primary" /> {t("trustSupport")}</li>
+          </ul>
         </div>
       </div>
     </section>
@@ -725,7 +794,7 @@ function DemoSection() {
         </p>
         <DashboardPreview />
         <div className="mt-10 flex justify-center">
-          <PrimaryCta label={t("demoCta")} source="/#demo" cta="demo" className="text-base px-8 h-12" />
+          <PrimaryCta label={t("heroCta")} source="/#preview" cta="preview" className="text-base px-8 h-12" />
         </div>
       </div>
     </section>
@@ -819,17 +888,55 @@ function ComparisonSection() {
 
 // ── Pricing ───────────────────────────────────────────────────────────
 
+type PaidPlan = "solo" | "pro";
+type PlanRow = {
+  id: PaidPlan;
+  name: string;
+  desc: string;
+  bullets: string[];
+  cta: string;
+  badge?: string;
+  highlighted?: boolean;
+  // base monthly price (used to compute amount per cycle and equivalents)
+  monthly: number;
+  quarterly: number; // amount billed every 3 months
+  yearly: number;    // amount billed every 12 months
+};
+
+function fmtEuro(n: number): string {
+  if (n === 0) return "€0";
+  return Number.isInteger(n) ? `€${n}` : `€${n.toFixed(2)}`;
+}
+
 function PricingSection() {
   const { t } = useLandingLang();
   const [cycle, setCycle] = useState<Cycle>("monthly");
 
-  const computed = {
-    monthly:   { solo: 19,  pro: 49,  billed: t("billedMo") },
-    quarterly: { solo: 15,  pro: 39,  billed: t("billedQ") },
-    yearly:    { solo: 11,  pro: 29,  billed: t("billedY") },
-  } as const;
-
-  const data = computed[cycle];
+  const plans: PlanRow[] = [
+    {
+      id: "solo",
+      name: t("soloName"),
+      desc: t("soloDesc"),
+      bullets: [t("soloF1"), t("soloF2"), t("soloF3"), t("soloF4"), t("soloF5")],
+      cta: t("soloCta"),
+      badge: t("soloBadge"),
+      highlighted: true,
+      monthly: 19,
+      quarterly: 45.6,
+      yearly: 136.8,
+    },
+    {
+      id: "pro",
+      name: t("proName"),
+      desc: t("proDesc"),
+      bullets: [t("proF1"), t("proF2"), t("proF3"), t("proF4"), t("proF5")],
+      cta: t("proCta"),
+      badge: t("proBadge"),
+      monthly: 49,
+      quarterly: 117.6,
+      yearly: 352.8,
+    },
+  ];
 
   const tabs: { id: Cycle; label: string; badge?: string }[] = [
     { id: "monthly", label: t("monthly") },
@@ -837,13 +944,16 @@ function PricingSection() {
     { id: "yearly", label: t("yearly"), badge: t("save40") },
   ];
 
+  const billedLabel = cycle === "monthly" ? t("billedMo") : cycle === "quarterly" ? t("billedQ") : t("billedY");
+  const periodSuffix = cycle === "monthly" ? t("perMonth") : cycle === "quarterly" ? t("perQuarter") : t("perYear");
+
   return (
     <BillingCycleContext.Provider value={cycle}>
     <section id="pricing" className="py-20 px-4 sm:px-6 bg-muted/40">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="text-center mb-10">
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">{t("pricingTitle")}</h2>
-          <p className="text-lg text-muted-foreground">{t("pricingSub")}</p>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("pricingSub")}</p>
         </div>
 
         <div className="flex justify-center mb-10">
@@ -875,29 +985,46 @@ function PricingSection() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-          <PlanCard
-            plan="solo"
-            name={t("soloName")}
-            desc={t("soloDesc")}
-            price={data.solo}
-            perMonth={t("perMonth")}
-            billed={data.billed}
-            features={[t("soloF1"), t("soloF2"), t("soloF3"), t("soloF4")]}
-            cta={t("startTrial")}
-          />
-          <PlanCard
-            plan="pro"
-            name={t("proName")}
-            desc={t("proDesc")}
-            price={data.pro}
-            perMonth={t("perMonth")}
-            billed={data.billed}
-            features={[t("proF1"), t("proF2"), t("proF3"), t("proF4")]}
-            cta={t("startTrial")}
-            popular
-            popularLabel={t("popular")}
-          />
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
+          {/* Free Starter card */}
+          <div className="relative p-7 rounded-2xl bg-card border-2 border-border flex flex-col">
+            <h3 className="text-xl font-semibold text-foreground">{t("freeName")}</h3>
+            <p className="text-sm text-muted-foreground mt-1 mb-5">{t("freeDesc")}</p>
+            <div className="flex items-baseline gap-1 mb-1">
+              <span className="text-4xl font-bold text-foreground">€0</span>
+              <span className="text-muted-foreground text-base">{t("perMonth")}</span>
+            </div>
+            <p className="text-xs text-muted-foreground mb-6">{t("freeMicro")}</p>
+            <ul className="space-y-2.5 mb-7 flex-1">
+              {[t("freeF1"), t("freeF2"), t("freeF3"), t("freeF4"), t("freeF5")].map((f) => (
+                <li key={f} className="flex items-start gap-3 text-foreground">
+                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <span className="text-sm">{f}</span>
+                </li>
+              ))}
+            </ul>
+            <Link
+              to="/auth?plan=free_starter"
+              onClick={() =>
+                track("cta_clicked", { source_page: `/#pricing-${cycle}-free`, cta: "pricing_plan", plan_type: "free_starter", billing_cycle: cycle })
+              }
+              className="block mt-auto"
+            >
+              <Button className="w-full h-11 gap-2" variant="outline">
+                {t("freeCta")} <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+
+          {plans.map((p) => (
+            <PlanCard
+              key={p.id}
+              plan={p}
+              cycle={cycle}
+              billedLabel={billedLabel}
+              periodSuffix={periodSuffix}
+            />
+          ))}
         </div>
       </div>
     </section>
@@ -906,54 +1033,63 @@ function PricingSection() {
 }
 
 function PlanCard({
-  plan, name, desc, price, perMonth, billed, features, cta, popular, popularLabel,
+  plan, cycle, billedLabel, periodSuffix,
 }: {
-  plan: "solo" | "pro";
-  name: string; desc: string; price: number; perMonth: string; billed: string;
-  features: string[]; cta: string;
-  popular?: boolean; popularLabel?: string;
+  plan: PlanRow;
+  cycle: Cycle;
+  billedLabel: string;
+  periodSuffix: string;
 }) {
-  const { lang } = useLandingLang();
-  const billing_cycle = useBillingCycle();
+  const { lang, t } = useLandingLang();
+  const amount = cycle === "monthly" ? plan.monthly : cycle === "quarterly" ? plan.quarterly : plan.yearly;
+  const equiv = cycle === "monthly"
+    ? null
+    : cycle === "quarterly"
+      ? plan.quarterly / 3
+      : plan.yearly / 12;
+  const equivStr = equiv ? t("equivalentTo").replace("{price}", fmtEuro(Number(equiv.toFixed(2)))) : null;
+  const popular = plan.highlighted;
   return (
-    <div className={`relative p-7 rounded-2xl bg-card border-2 ${
+    <div className={`relative p-7 rounded-2xl bg-card border-2 flex flex-col ${
       popular ? "border-primary shadow-lg" : "border-border"
     }`}>
-      {popular && popularLabel && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
-          {popularLabel}
+      {plan.badge && (
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold whitespace-nowrap">
+          {plan.badge}
         </span>
       )}
-      <h3 className="text-xl font-semibold text-foreground">{name}</h3>
-      <p className="text-sm text-muted-foreground mt-1 mb-5">{desc}</p>
+      <h3 className="text-xl font-semibold text-foreground">{plan.name}</h3>
+      <p className="text-sm text-muted-foreground mt-1 mb-5">{plan.desc}</p>
       <div className="flex items-baseline gap-1 mb-1">
-        <span className="text-4xl font-bold text-foreground">€{price}</span>
-        <span className="text-muted-foreground text-base">{perMonth}</span>
+        <span className="text-4xl font-bold text-foreground">{fmtEuro(amount)}</span>
+        <span className="text-muted-foreground text-base">{periodSuffix}</span>
       </div>
-      <p className="text-xs text-muted-foreground mb-6">{billed}</p>
-      <ul className="space-y-2.5 mb-7">
-        {features.map((f) => (
-          <li key={f} className="flex items-center gap-3 text-foreground">
-            <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+      <p className="text-xs text-muted-foreground mb-1">{billedLabel}</p>
+      {equivStr && <p className="text-xs text-primary font-medium mb-5">{equivStr}</p>}
+      {!equivStr && <div className="mb-5" />}
+      <ul className="space-y-2.5 mb-7 flex-1">
+        {plan.bullets.map((f) => (
+          <li key={f} className="flex items-start gap-3 text-foreground">
+            <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
             <span className="text-sm">{f}</span>
           </li>
         ))}
       </ul>
       <Link
-        to={`/auth?plan=${plan}_${billing_cycle}`}
+        to={`/auth?plan=${plan.id}_${cycle}`}
         onClick={() =>
           track("cta_clicked", {
-            source_page: `/#pricing-${billing_cycle}-${plan}`,
+            source_page: `/#pricing-${cycle}-${plan.id}`,
             cta: "pricing_plan",
-            plan_type: plan,
-            billing_cycle,
+            plan_type: plan.id,
+            billing_cycle: cycle,
             lang,
           })
         }
-        className="block"
+        className="block mt-auto"
       >
         <Button className="w-full h-11 gap-2" variant={popular ? "default" : "outline"}>
-          {cta} <ArrowRight className="h-4 w-4" />
+          {plan.cta} <ArrowRight className="h-4 w-4" />
         </Button>
       </Link>
     </div>
@@ -1131,9 +1267,8 @@ function FinalCTA() {
         <p className="text-lg text-secondary-foreground/80 max-w-xl mx-auto mb-8">
           {t("finalDesc")}
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div className="flex items-center justify-center">
           <PrimaryCta label={t("finalCta")} source="/" cta="final" className="text-base px-8 h-12" />
-          <VideoCta label={t("heroVideo")} source="/#final" className="text-base px-8 h-12" />
         </div>
 
         <div id="contact" className="mt-14 max-w-2xl mx-auto rounded-2xl border border-sidebar-border bg-accent/30 p-6 sm:p-10 text-center">
@@ -1298,7 +1433,7 @@ function LandingFooter() {
       links: [
         { label: isUk ? "Як це працює" : "How it works", href: "#comparison" },
         { label: isUk ? "Ціни" : "Pricing", href: "#pricing" },
-        { label: isUk ? "Демо" : "Demo", href: "#demo" },
+        { label: "FAQ", href: "#faq" },
         { label: "FAQ", href: "#faq" },
       ],
     },
