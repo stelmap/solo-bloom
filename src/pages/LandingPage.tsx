@@ -39,7 +39,7 @@ const C = {
   navPricing: { en: "Pricing", fr: "Tarifs", uk: "Ціни", pl: "Cennik" },
   navFaq: { en: "FAQ", fr: "FAQ", uk: "Питання", pl: "FAQ" },
   navLogin: { en: "Log in", fr: "Connexion", uk: "Увійти", pl: "Zaloguj się" },
-  navTry: { en: "Try free", fr: "Essai gratuit", uk: "Спробувати", pl: "Wypróbuj" },
+  navTry: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
 
   // Hero
   heroBadge: { en: "For psychologists & solo professionals", fr: "Pour psychologues & indépendants", uk: "Для психологів, супервізорів та викладачів", pl: "Dla psychologów i solowych profesjonalistów" },
