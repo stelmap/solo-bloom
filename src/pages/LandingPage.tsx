@@ -362,10 +362,10 @@ const C = {
     pl: "Czy SoloBizz jest naprawdę darmowy?",
   },
   pfaq1A: {
-    en: "Yes. Free Starter is a permanent free plan for up to 5 active clients. It is not a trial period.",
-    fr: "Oui. Free Starter est un plan gratuit permanent pour jusqu'à 5 clients actifs. Ce n'est pas une période d'essai.",
-    uk: "Так. Free Starter — це постійний безкоштовний план до 5 активних клієнтів. Це не пробний період.",
-    pl: "Tak. Free Starter to stały darmowy plan dla maks. 5 aktywnych klientów. To nie jest okres próbny.",
+    en: "Yes. Free Starter is a permanent free plan for up to 5 active clients, with no time limit.",
+    fr: "Oui. Free Starter est un plan gratuit permanent jusqu'à 5 clients actifs, sans limite de temps.",
+    uk: "Так. Free Starter — це постійний безкоштовний план до 5 активних клієнтів, без обмеження по часу.",
+    pl: "Tak. Free Starter to stały darmowy plan dla maks. 5 aktywnych klientów, bez limitu czasu.",
   },
   pfaq2Q: {
     en: "What happens when I add a 6th client?",
