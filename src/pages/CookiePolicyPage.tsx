@@ -1,10 +1,16 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { PublicFooter } from "@/components/PublicFooter";
+import { SeoHead } from "@/components/SeoHead";
 
 export default function CookiePolicyPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <SeoHead
+        path="/cookie-policy"
+        title="Cookie Policy — Solo Bizz"
+        description="How Solo Bizz uses essential cookies and analytics for authentication, security and basic service functionality. No advertising or tracking sale."
+      />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8">
           <ArrowLeft className="h-4 w-4" /> Back to home

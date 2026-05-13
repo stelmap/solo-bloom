@@ -17,7 +17,7 @@
     <meta name="description" content="Solo Bizz helps psychologists, therapists, coaches and tutors manage clients, sessions, payments and income — all in one calm, simple workspace." />
     <meta name="keywords" content="CRM for psychologists, therapist software, coach client management, solo practice, session tracking, private practice income" />
     <meta name="author" content="Solo Bizz" />
-    <link rel="canonical" href="https://solo-bizz.com/" />
+    <!-- Canonical is set per-route via react-helmet-async (see src/components/SeoHead.tsx). -->
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
 
     <!-- hreflang alternates -->
@@ -73,7 +73,7 @@
       }
     </script>
 
-    <!-- JSON-LD: Organization -->
+    <!-- JSON-LD: Organization (sitewide identity) -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -81,55 +81,24 @@
         "name": "Solo Bizz",
         "url": "https://solo-bizz.com/",
         "logo": "https://solo-bizz.com/favicon.ico",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Gwiadzista 16",
+          "addressLocality": "Wroclaw",
+          "addressCountry": "PL"
+        },
+        "telephone": "+48572600256",
         "contactPoint": {
           "@type": "ContactPoint",
           "email": "info@solo-bizz.com",
+          "telephone": "+48572600256",
           "contactType": "customer support",
           "availableLanguage": ["English", "Ukrainian", "French", "Polish"]
         },
         "sameAs": ["https://t.me/solobizzcontact"]
       }
     </script>
-
-    <!-- JSON-LD: FAQPage -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": [
-          {
-            "@type": "Question",
-            "name": "Is it hard to start using Solo Bizz?",
-            "acceptedAnswer": { "@type": "Answer", "text": "No. You can sign up and add your first client in under a minute. No setup, no training required." }
-          },
-          {
-            "@type": "Question",
-            "name": "Will it work if I work alone?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Solo Bizz is built specifically for solo practitioners — psychologists, therapists, coaches and tutors." }
-          },
-          {
-            "@type": "Question",
-            "name": "Can I run group sessions or supervisions?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Yes. You can manage individual sessions, group sessions and supervisions in one place." }
-          },
-          {
-            "@type": "Question",
-            "name": "Can I use it for teaching or tutoring?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Tutors and teachers use Solo Bizz to track lessons, payments and student progress." }
-          },
-          {
-            "@type": "Question",
-            "name": "Is there free access or a demo?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Yes. You can try Solo Bizz for free — no credit card required." }
-          },
-          {
-            "@type": "Question",
-            "name": "Do I need a credit card to try it?",
-            "acceptedAnswer": { "@type": "Answer", "text": "No credit card is needed to start your free trial." }
-          }
-        ]
-      }
-    </script>
+    <!-- FAQPage JSON-LD lives on the homepage component, where the FAQ content is. -->
 
     <!-- Meta Pixel Code -->
     <script>

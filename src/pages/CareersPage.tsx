@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Briefcase, ArrowLeft, Mail } from "lucide-react";
 import { getStoredLang } from "@/i18n/LanguageContext";
+import { SeoHead } from "@/components/SeoHead";
 
 const COPY = {
   uk: {
@@ -37,6 +38,11 @@ export default function CareersPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <SeoHead
+        path="/careers"
+        title="Careers — Solo Bizz"
+        description="Open roles at Solo Bizz. We're a small team building calm, focused tools for psychologists, therapists, coaches and tutors running solo practices."
+      />
       <header className="border-b border-border px-4 sm:px-6 h-16 flex items-center">
         <div className="max-w-5xl mx-auto w-full flex items-center justify-between">
           <Link to="/" className="text-lg font-bold text-foreground">Solo Bizz</Link>

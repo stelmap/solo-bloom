@@ -10,6 +10,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { Eye, EyeOff, Lock, ShieldAlert } from "lucide-react";
 import { track } from "@/lib/analytics";
 import { PublicFooter } from "@/components/PublicFooter";
+import { SeoHead } from "@/components/SeoHead";
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -101,6 +102,12 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SeoHead
+        path="/reset-password"
+        title="Reset your Solo Bizz password"
+        description="Set a new password for your Solo Bizz account."
+        noindex
+      />
       <div className="flex flex-1 items-center justify-center p-6">
         <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">

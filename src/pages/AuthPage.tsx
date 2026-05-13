@@ -12,6 +12,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { getStoredLang } from "@/i18n/LanguageContext";
 import { track } from "@/lib/analytics";
 import { PublicFooter } from "@/components/PublicFooter";
+import { SeoHead } from "@/components/SeoHead";
 
 const PLAN_SELECTION_MAP: Record<string, { planCode: "solo" | "pro"; billingPeriod: "monthly" | "quarterly" | "yearly" }> = {
   solo_monthly: { planCode: "solo", billingPeriod: "monthly" },
@@ -217,6 +218,11 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex relative">
+      <SeoHead
+        path="/auth"
+        title="Sign in or create your Solo Bizz account"
+        description="Sign in to your Solo Bizz workspace or create a free account to manage clients, sessions, payments and income for your solo practice."
+      />
       <Link to="/" className="absolute top-4 left-4 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/80 hover:bg-muted text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="h-4 w-4" />
         Main page

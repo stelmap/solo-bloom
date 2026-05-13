@@ -1,0 +1,17 @@
+# Solo Bizz
+
+> Solo Bizz is a calm, all-in-one CRM and finance tracker for psychologists, therapists, coaches and tutors running solo practices. Manage clients, sessions, payments and income in one place.
+
+Solo Bizz helps solo practitioners replace spreadsheets and scattered tools with a single workspace for client records, session scheduling, payment tracking and income/expense reporting. There is a permanent Free Starter plan (up to 5 active clients) plus paid Solo Practice and Pro Practice plans billed monthly, quarterly or yearly.
+
+## Pages
+
+- [Home](/): Product overview, features, pricing and FAQ.
+- [Careers](/careers): Open roles at Solo Bizz.
+- [Privacy Policy](/privacy): How we collect, use, store and protect personal data.
+- [Terms & Conditions](/terms): Terms of use, plans, billing and acceptable use.
+- [Cookie Policy](/cookie-policy): How Solo Bizz uses essential cookies and analytics.
+
+## Optional
+
+- [Sign in or sign up](/auth): Account access for existing and new users.
