@@ -1674,7 +1674,7 @@ function LandingFooter() {
       links: [
         { label: "Email", href: `mailto:${CONTACT_EMAIL}`, external: true },
         { label: "Telegram", href: TELEGRAM_URL, external: true },
-        { label: isUk ? "+48 572600256 (Ukrainian, English)" : "Phone", href: `tel:${PHONE_NUMBER.replace(/\s+/g, "")}`, external: true },
+        { label: isUk ? "Телефон" : "Phone", href: `tel:${PHONE_NUMBER.replace(/\s+/g, "")}`, external: true },
       ],
     },
   ];
