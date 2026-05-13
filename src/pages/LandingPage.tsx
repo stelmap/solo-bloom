@@ -794,7 +794,7 @@ function DemoSection() {
         </p>
         <DashboardPreview />
         <div className="mt-10 flex justify-center">
-          <PrimaryCta label={t("demoCta")} source="/#demo" cta="demo" className="text-base px-8 h-12" />
+          <PrimaryCta label={t("heroCta")} source="/#preview" cta="preview" className="text-base px-8 h-12" />
         </div>
       </div>
     </section>
