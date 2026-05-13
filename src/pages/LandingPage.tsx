@@ -1267,9 +1267,8 @@ function FinalCTA() {
         <p className="text-lg text-secondary-foreground/80 max-w-xl mx-auto mb-8">
           {t("finalDesc")}
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div className="flex items-center justify-center">
           <PrimaryCta label={t("finalCta")} source="/" cta="final" className="text-base px-8 h-12" />
-          <VideoCta label={t("heroVideo")} source="/#final" className="text-base px-8 h-12" />
         </div>
 
         <div id="contact" className="mt-14 max-w-2xl mx-auto rounded-2xl border border-sidebar-border bg-accent/30 p-6 sm:p-10 text-center">
