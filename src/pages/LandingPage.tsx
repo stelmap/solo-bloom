@@ -1078,6 +1078,7 @@ function PricingSection() {
               <span className="text-4xl font-bold text-foreground">€0</span>
               <span className="text-muted-foreground text-base">{t("perMonth")}</span>
             </div>
+            <p className="text-xs font-semibold text-primary mb-1">{t("freeBadgeForever")}</p>
             <p className="text-xs text-muted-foreground mb-6">{t("freeMicro")}</p>
             <ul className="space-y-2.5 mb-7 flex-1">
               {[t("freeF1"), t("freeF2"), t("freeF3"), t("freeF4"), t("freeF5")].map((f) => (
@@ -1090,11 +1091,11 @@ function PricingSection() {
             <Link
               to="/auth?plan=free_starter"
               onClick={() =>
-                track("cta_clicked", { source_page: `/#pricing-${cycle}-free`, cta: "pricing_plan", plan_type: "free_starter", billing_cycle: cycle })
+                track("cta_clicked", { source_page: `/#pricing-${cycle}-free`, cta: "free_starter_selected", plan_type: "free_starter", billing_cycle: cycle })
               }
               className="block mt-auto"
             >
-              <Button className="w-full h-11 gap-2" variant="outline">
+              <Button className="w-full h-11 gap-2 bg-foreground text-background hover:bg-foreground/90 focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2">
                 {t("freeCta")} <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
@@ -1109,6 +1110,31 @@ function PricingSection() {
               periodSuffix={periodSuffix}
             />
           ))}
+        </div>
+
+        {/* Inline pricing FAQ */}
+        <div className="mt-12 max-w-3xl mx-auto">
+          <Accordion type="single" collapsible className="rounded-2xl border border-border bg-card divide-y divide-border">
+            {[
+              { q: "pfaq1Q" as CopyKey, a: "pfaq1A" as CopyKey },
+              { q: "pfaq2Q" as CopyKey, a: "pfaq2A" as CopyKey },
+              { q: "pfaq3Q" as CopyKey, a: "pfaq3A" as CopyKey },
+            ].map((it, idx) => (
+              <AccordionItem key={it.q} value={`pfaq-${idx}`} className="border-0 px-5">
+                <AccordionTrigger
+                  onClick={() =>
+                    track("cta_clicked", { source_page: "/#pricing", cta: "landing_pricing_faq_open", plan_type: it.q })
+                  }
+                  className="text-left text-base font-semibold text-foreground"
+                >
+                  {t(it.q)}
+                </AccordionTrigger>
+                <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
+                  {t(it.a)}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
       </div>
     </section>
