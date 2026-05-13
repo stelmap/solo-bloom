@@ -100,6 +100,12 @@ export default function ConfirmSessionPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 flex items-center justify-center p-4">
+      <SeoHead
+        path="/confirm-session"
+        title="Confirm your session — Solo Bizz"
+        description="Confirm your upcoming session booked through Solo Bizz."
+        noindex
+      />
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-foreground">
