@@ -798,6 +798,10 @@ function HeroSection() {
             </a>
           </div>
           <p className="text-sm text-muted-foreground">{t("heroSubCta")}</p>
+          <div className="mt-2 inline-flex items-start gap-2 max-w-xl rounded-xl border border-primary/30 bg-primary/5 px-4 py-2.5 text-left">
+            <Clock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+            <p className="text-sm font-medium text-foreground/90 leading-snug">{t("heroRoi")}</p>
+          </div>
           <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground mt-2">
             <li className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-primary" /> {t("trustData")}</li>
             <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> {t("trustStripe")}</li>
