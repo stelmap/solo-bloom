@@ -6,7 +6,7 @@ import { Plus, Pencil, Trash2, Download, Check, X } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
 import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense, useUpdateExpensePaymentStatus, useUpdateExpenseSeries } from "@/hooks/useData";
-import { explainExpenseDate } from "@/lib/recurringExpenses";
+import { explainExpenseDate, generateMonthlyOccurrences, generateYearlyOccurrences, isLastDayOfItsMonth } from "@/lib/recurringExpenses";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -48,7 +48,17 @@ export default function ExpensesPage() {
   const [editScopeOpen, setEditScopeOpen] = useState(false);
   const [editScope, setEditScope] = useState<"single" | "series">("single");
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [form, setForm] = useState({ category: "Other", amount: 0, date: new Date().toISOString().split("T")[0], description: "", is_recurring: false, recurring_start_date: "" });
+  const [deleteScope, setDeleteScope] = useState<"single" | "future" | "series">("single");
+  const [deleteIncludePaid, setDeleteIncludePaid] = useState(false);
+  const [form, setForm] = useState<{
+    category: string;
+    amount: number;
+    date: string;
+    description: string;
+    recurrence: "one_time" | "monthly" | "yearly";
+    recurring_start_date: string;
+    instance_status: "planned" | "paid" | "cancelled";
+  }>({ category: "Other", amount: 0, date: new Date().toISOString().split("T")[0], description: "", recurrence: "one_time", recurring_start_date: "", instance_status: "planned" });
 
   // Filters
   const initialRange = (searchParams.get("range") || "month") as DateRangeKey;
@@ -123,20 +133,32 @@ export default function ExpensesPage() {
   const startEdit = (exp: any, scope: "single" | "series") => {
     setEditId(exp.id);
     setEditScope(scope);
-    setForm({ category: exp.category, amount: Number(exp.amount), date: exp.date, description: exp.description || "", is_recurring: exp.is_recurring, recurring_start_date: exp.recurring_start_date || exp.date });
+    const rec: "one_time" | "monthly" | "yearly" = exp.is_template
+      ? (exp.recurrence_type || "monthly")
+      : (exp.is_recurring ? (exp.recurrence_type || "monthly") : "one_time");
+    setForm({
+      category: exp.category,
+      amount: Number(exp.amount),
+      date: exp.date,
+      description: exp.description || "",
+      recurrence: rec,
+      recurring_start_date: exp.recurring_start_date || exp.date,
+      instance_status: (exp.instance_status as any) || (exp.payment_status === "paid" ? "paid" : "planned"),
+    });
     setOpen(true);
   };
 
   const openCreate = () => {
     setEditId(null);
     const today = new Date().toISOString().split("T")[0];
-    setForm({ category: "Other", amount: 0, date: today, description: "", is_recurring: false, recurring_start_date: today });
+    setForm({ category: "Other", amount: 0, date: today, description: "", recurrence: "one_time", recurring_start_date: today, instance_status: "planned" });
     setOpen(true);
   };
 
   const handleSubmit = async () => {
     if (!form.amount) return;
-    if (form.is_recurring && !form.recurring_start_date) {
+    const isRecurring = form.recurrence !== "one_time";
+    if (isRecurring && !form.recurring_start_date) {
       toast({ title: t("common.error"), description: "Recurring start date is required", variant: "destructive" });
       return;
     }
@@ -150,11 +172,26 @@ export default function ExpensesPage() {
             description: form.description,
           });
         } else {
-          await updateExpense.mutateAsync({ id: editId, ...form });
+          await updateExpense.mutateAsync({
+            id: editId,
+            category: form.category,
+            amount: form.amount,
+            description: form.description,
+            instance_status: form.instance_status,
+            paid_date: form.instance_status === "paid" ? new Date().toISOString().split("T")[0] : null,
+          });
         }
         toast({ title: t("toast.expenseUpdated") });
       } else {
-        await createExpense.mutateAsync(form);
+        await createExpense.mutateAsync({
+          category: form.category,
+          amount: form.amount,
+          date: form.date,
+          description: form.description,
+          recurrence: form.recurrence,
+          recurring_start_date: isRecurring ? form.recurring_start_date : null,
+          instance_status: form.instance_status,
+        });
         toast({ title: t("toast.expenseAdded") });
       }
       setOpen(false);
@@ -166,9 +203,11 @@ export default function ExpensesPage() {
   const handleDelete = async () => {
     if (!deleteId) return;
     try {
-      await deleteExpense.mutateAsync(deleteId);
+      await deleteExpense.mutateAsync({ id: deleteId, scope: deleteScope, deletePaid: deleteIncludePaid });
       toast({ title: t("toast.expenseDeleted") });
       setDeleteId(null);
+      setDeleteScope("single");
+      setDeleteIncludePaid(false);
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
@@ -227,19 +266,74 @@ export default function ExpensesPage() {
                   </Select>
                 </div>
                 <div className="space-y-2"><Label>{t("common.amount")} *</Label><Input type="number" step="0.01" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} /></div>
-                <div className="space-y-2"><Label>{t("common.date")}</Label><Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>{t("common.description")}</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
-                <div className="flex items-center gap-2">
-                  <Checkbox checked={form.is_recurring} onCheckedChange={v => setForm(f => ({ ...f, is_recurring: !!v, recurring_start_date: !!v ? (f.recurring_start_date || f.date) : "" }))} id="recurring" />
-                  <Label htmlFor="recurring">{t("expenses.recurringMonthlyCheckbox")}</Label>
+
+                <div className="space-y-2">
+                  <Label>Recurrence</Label>
+                  <Select value={form.recurrence} onValueChange={(v: any) => setForm(f => ({
+                    ...f,
+                    recurrence: v,
+                    recurring_start_date: v === "one_time" ? "" : (f.recurring_start_date || f.date),
+                  }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="one_time">One-time</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="yearly">Yearly</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                {form.is_recurring && (
+
+                {form.recurrence === "one_time" ? (
                   <div className="space-y-1">
-                    <Label>{t("expenses.recurringStartDate")}</Label>
-                    <Input type="date" value={form.recurring_start_date} onChange={e => setForm(f => ({ ...f, recurring_start_date: e.target.value }))} />
-                    <p className="text-xs text-muted-foreground">{t("expenses.recurringStartDateHint")}</p>
+                    <Label>{t("common.date")}</Label>
+                    <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
+                    <p className="text-xs text-muted-foreground">{explainExpenseDate({ recurrence: "one_time", date: form.date })}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <Label>{form.recurrence === "yearly" ? "Yearly start date" : t("expenses.recurringStartDate")}</Label>
+                    <Input type="date" value={form.recurring_start_date} onChange={e => setForm(f => ({ ...f, recurring_start_date: e.target.value, date: e.target.value }))} />
+                    <p className="text-xs text-muted-foreground">{explainExpenseDate({ recurrence: form.recurrence, date: form.recurring_start_date })}</p>
                   </div>
                 )}
+
+                <div className="space-y-2"><Label>{t("common.description")}</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
+
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select value={form.instance_status} onValueChange={(v: any) => setForm(f => ({ ...f, instance_status: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="planned">Planned</SelectItem>
+                      <SelectItem value="paid">Paid</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {form.recurrence !== "one_time" && form.recurring_start_date && (() => {
+                  const dates = form.recurrence === "monthly"
+                    ? generateMonthlyOccurrences(form.recurring_start_date, isLastDayOfItsMonth(form.recurring_start_date), 4)
+                    : generateYearlyOccurrences(form.recurring_start_date, 4);
+                  const fmt = (d: string) => new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+                  return (
+                    <div className="rounded-md border border-border bg-muted/30 p-3 text-xs space-y-1">
+                      <p className="font-medium text-foreground">Preview</p>
+                      <p className="text-muted-foreground">
+                        {form.recurrence === "monthly"
+                          ? (isLastDayOfItsMonth(form.recurring_start_date)
+                              ? "This expense will be planned on the last day of each month."
+                              : "This expense will be planned monthly on the same day.")
+                          : "This expense will be planned once a year on the same day."}
+                      </p>
+                      <p className="text-muted-foreground">First planned expense: <span className="text-foreground">{fmt(dates[0])}</span></p>
+                      <p className="text-muted-foreground">Next planned expenses: <span className="text-foreground">{dates.slice(1).map(fmt).join(", ")}</span></p>
+                      <p className="text-muted-foreground">Default status: <span className="text-foreground capitalize">{form.instance_status}</span></p>
+                      {form.recurrence === "monthly" && <p className="text-muted-foreground">12 months will be generated and extended automatically.</p>}
+                    </div>
+                  );
+                })()}
+
                 <Button onClick={handleSubmit} className="w-full" disabled={createExpense.isPending || updateExpense.isPending}>
                   {editId ? t("common.save") : t("expenses.addExpense")}
                 </Button>
@@ -363,11 +457,13 @@ export default function ExpensesPage() {
                                 <Pencil className="h-3.5 w-3.5" />
                               </button>
                             )}
-                            {!expense.virtual && (
-                              <button onClick={() => setDeleteId(expense.id)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
-                            )}
+                            <button onClick={() => {
+                              setDeleteId(expense.id);
+                              setDeleteScope(expense.template_id ? "single" : "single");
+                              setDeleteIncludePaid(false);
+                            }} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -393,11 +489,47 @@ export default function ExpensesPage() {
         )}
       </div>
 
-      <ConfirmDeleteDialog
-        open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={handleDelete}
-        title={t("expenses.deleteTitle")} description={t("expenses.deleteDesc")}
-        loading={deleteExpense.isPending}
-      />
+      {(() => {
+        const target = deleteId ? (expenses as any[]).find(e => e.id === deleteId) : null;
+        const isRecurring = !!(target?.template_id);
+        return (
+          <Dialog open={!!deleteId} onOpenChange={(o) => { if (!o) { setDeleteId(null); setDeleteScope("single"); setDeleteIncludePaid(false); } }}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>{t("expenses.deleteTitle")}</DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-muted-foreground">{t("expenses.deleteDesc")}</p>
+              {isRecurring && (
+                <div className="space-y-3 mt-2">
+                  <div className="space-y-2">
+                    <Label>Scope</Label>
+                    <Select value={deleteScope} onValueChange={(v: any) => setDeleteScope(v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="single">Only this</SelectItem>
+                        <SelectItem value="future">This and future</SelectItem>
+                        <SelectItem value="series">Entire series</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {deleteScope !== "single" && (
+                    <div className="flex items-center gap-2">
+                      <Checkbox id="del-paid" checked={deleteIncludePaid} onCheckedChange={(v) => setDeleteIncludePaid(!!v)} />
+                      <Label htmlFor="del-paid" className="text-sm">Also delete already-paid instances</Label>
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="flex justify-end gap-2 mt-4">
+                <Button variant="outline" onClick={() => setDeleteId(null)} disabled={deleteExpense.isPending}>{t("common.cancel")}</Button>
+                <Button variant="destructive" onClick={handleDelete} disabled={deleteExpense.isPending}>
+                  {deleteExpense.isPending ? t("common.deleting") : t("common.delete")}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        );
+      })()}
 
       {/* Edit scope choice dialog for recurring expenses */}
       <Dialog open={editScopeOpen} onOpenChange={setEditScopeOpen}>
