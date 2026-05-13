@@ -12,6 +12,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { getStoredLang } from "@/i18n/LanguageContext";
 import { track } from "@/lib/analytics";
 import { PublicFooter } from "@/components/PublicFooter";
+import { SeoHead } from "@/components/SeoHead";
 
 const PLAN_SELECTION_MAP: Record<string, { planCode: "solo" | "pro"; billingPeriod: "monthly" | "quarterly" | "yearly" }> = {
   solo_monthly: { planCode: "solo", billingPeriod: "monthly" },
