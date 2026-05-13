@@ -314,19 +314,26 @@ export default function ExpensesPage() {
                 </div>
 
                 {form.recurrence !== "one_time" && form.recurring_start_date && (() => {
+                  const isLast = form.recurrence === "monthly" && isLastDayOfItsMonth(form.recurring_start_date);
                   const dates = form.recurrence === "monthly"
-                    ? generateMonthlyOccurrences(form.recurring_start_date, isLastDayOfItsMonth(form.recurring_start_date), 4)
+                    ? generateMonthlyOccurrences(form.recurring_start_date, isLast, 5)
                     : generateYearlyOccurrences(form.recurring_start_date, 4);
-                  const fmt = (d: string) => new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+                  // Parse yyyy-mm-dd as a local date so timezone shifts don't move the day
+                  const fmt = (d: string) => {
+                    const [y, m, day] = d.split("-").map(Number);
+                    return new Date(y, m - 1, day).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+                  };
+                  const startDay = Number(form.recurring_start_date.split("-")[2]);
+                  const hasShortMonthClamp = form.recurrence === "monthly" && !isLast && startDay >= 29;
                   return (
                     <div className="rounded-md border border-border bg-muted/30 p-3 text-xs space-y-1">
                       <p className="font-medium text-foreground">Preview</p>
                       <p className="text-muted-foreground">
                         {form.recurrence === "monthly"
-                          ? (isLastDayOfItsMonth(form.recurring_start_date)
-                              ? "This expense will be planned on the last day of each month."
-                              : "This expense will be planned monthly on the same day.")
-                          : "This expense will be planned once a year on the same day."}
+                          ? (isLast
+                              ? "This expense will be planned on the last day of each month (e.g. Jan 31 → Feb 28/29 → Mar 31 → Apr 30)."
+                              : `This expense will be planned monthly on day ${startDay}.${hasShortMonthClamp ? " In months with fewer days, it shifts to the last available day." : ""}`)
+                          : "This expense will be planned once a year on the same day (Feb 29 falls back to Feb 28 in non-leap years)."}
                       </p>
                       <p className="text-muted-foreground">First planned expense: <span className="text-foreground">{fmt(dates[0])}</span></p>
                       <p className="text-muted-foreground">Next planned expenses: <span className="text-foreground">{dates.slice(1).map(fmt).join(", ")}</span></p>
