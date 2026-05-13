@@ -392,7 +392,63 @@ const C = {
     pl: "Tak, subskrypcję można anulować zgodnie z warunkami wybranego planu. Free Starter pozostaje dostępny w ramach limitu aktywnych klientów.",
   },
 
-  // Testimonials
+  // ROI / time saving — comparison tiles
+  roiTilesTitle: {
+    en: "What manual admin can cost you",
+    fr: "Ce que peut coûter l'admin manuelle",
+    uk: "Що може коштувати ручна адмінка",
+    pl: "Ile może kosztować ręczna administracja",
+  },
+  roiT1Value: { en: "4–8+ hrs/week", fr: "4–8+ h/semaine", uk: "4–8+ год/тиждень", pl: "4–8+ godz./tydz." },
+  roiT1Sub: {
+    en: "manual admin can take with 20+ clients",
+    fr: "que l'admin manuelle peut prendre avec 20+ clients",
+    uk: "може забирати ручна адмінка при 20+ клієнтах",
+    pl: "może zajmować ręczna administracja przy 20+ klientach",
+  },
+  roiT2Value: { en: "~10% of time", fr: "~10 % du temps", uk: "10% часу", pl: "~10% czasu" },
+  roiT2Sub: {
+    en: "can go on bookings, payments, messages and reconciling data",
+    fr: "peut partir en RDV, paiements, messages et rapprochements",
+    uk: "може йти на записи, оплати, комунікацію та звірку даних",
+    pl: "może iść na zapisy, płatności, komunikację i uzgadnianie danych",
+  },
+  roiT3Value: { en: "5 min", fr: "5 min", uk: "5 хв", pl: "5 min" },
+  roiT3Sub: {
+    en: "to add a client, session or payment — without Excel",
+    fr: "pour ajouter un client, une séance ou un paiement — sans Excel",
+    uk: "щоб додати клієнта, сесію або оплату без Excel",
+    pl: "by dodać klienta, sesję lub płatność — bez Excela",
+  },
+
+  // FAQ extra (time saving)
+  faq7Q: {
+    en: "How much time can SoloBizz save?",
+    fr: "Combien de temps SoloBizz peut-il faire gagner ?",
+    uk: "Скільки часу SoloBizz може зекономити?",
+    pl: "Ile czasu może zaoszczędzić SoloBizz?",
+  },
+  faq7A: {
+    en: "If you keep clients, sessions, payments and debts manually, admin work can take several hours a week — especially with 20+ clients in your practice. SoloBizz brings these processes into one place: calendar, clients, payments, debts and a financial overview.",
+    fr: "Si vous gérez clients, séances, paiements et créances à la main, l'admin peut prendre plusieurs heures par semaine — surtout avec 20+ clients. SoloBizz regroupe ces processus au même endroit : calendrier, clients, paiements, créances et vue financière.",
+    uk: "Якщо вести клієнтів, сесії, оплати й борги вручну, адміністративна робота може забирати кілька годин на тиждень, особливо коли у практиці вже 20+ клієнтів. SoloBizz допомагає зібрати ці процеси в одному місці: календар, клієнти, оплати, борги й фінансовий огляд.",
+    pl: "Jeśli klientów, sesje, płatności i długi prowadzisz ręcznie, administracja może zajmować kilka godzin w tygodniu — zwłaszcza gdy masz 20+ klientów. SoloBizz łączy te procesy w jednym miejscu: kalendarz, klienci, płatności, długi i przegląd finansowy.",
+  },
+
+  // Pricing value microcopy
+  pricingValue: {
+    en: "You're not paying for another tool. You're getting back the hours that now go to spreadsheets, messages, payment checks and manual calculations.",
+    fr: "Vous ne payez pas un outil de plus. Vous récupérez les heures qui partent aujourd'hui en tableurs, messages, vérification des paiements et calculs manuels.",
+    uk: "Ви платите не за ще один інструмент. Ви повертаєте собі години, які зараз ідуть на таблиці, повідомлення, перевірку оплат і ручні підрахунки.",
+    pl: "Nie płacisz za kolejne narzędzie. Odzyskujesz godziny, które dziś idą na arkusze, wiadomości, sprawdzanie płatności i ręczne obliczenia.",
+  },
+  pricingValueNote: {
+    en: "Free Starter — free forever for up to 5 active clients.",
+    fr: "Free Starter — gratuit pour toujours jusqu'à 5 clients actifs.",
+    uk: "Free Starter — безкоштовно назавжди до 5 активних клієнтів.",
+    pl: "Free Starter — za darmo na zawsze dla maks. 5 aktywnych klientów.",
+  },
+
   testTitle: {
     en: "Psychologists are already testing Solo Bizz in their practice",
     fr: "Des psychologues testent déjà Solo Bizz dans leur cabinet",
