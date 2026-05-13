@@ -1435,7 +1435,6 @@ function LandingFooter() {
         { label: isUk ? "Як це працює" : "How it works", href: "#comparison" },
         { label: isUk ? "Ціни" : "Pricing", href: "#pricing" },
         { label: "FAQ", href: "#faq" },
-        { label: "FAQ", href: "#faq" },
       ],
     },
     {
