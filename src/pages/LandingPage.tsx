@@ -356,16 +356,16 @@ const C = {
 
   // Inline pricing FAQ
   pfaq1Q: {
-    en: "Is SoloBizz really free?",
-    fr: "SoloBizz est-il vraiment gratuit ?",
-    uk: "Чи справді SoloBizz безкоштовний?",
-    pl: "Czy SoloBizz jest naprawdę darmowy?",
+    en: "Do paid plans unlock extra features?",
+    fr: "Les forfaits payants débloquent-ils des fonctionnalités supplémentaires ?",
+    uk: "Чи відкривають платні плани додаткові функції?",
+    pl: "Czy plany płatne odblokowują dodatkowe funkcje?",
   },
   pfaq1A: {
-    en: "Yes. Free Starter is a permanent free plan for up to 5 active clients, with no time limit.",
-    fr: "Oui. Free Starter est un plan gratuit permanent jusqu'à 5 clients actifs, sans limite de temps.",
-    uk: "Так. Free Starter — це постійний безкоштовний план до 5 активних клієнтів, без обмеження по часу.",
-    pl: "Tak. Free Starter to stały darmowy plan dla maks. 5 aktywnych klientów, bez limitu czasu.",
+    en: "No. SoloBizz is one complete system — every feature is available on every plan, including Free Starter. Paid plans only raise the active-client limit and add priority support on Pro.",
+    fr: "Non. SoloBizz est un système complet — toutes les fonctionnalités sont disponibles sur chaque forfait, y compris Free Starter. Les forfaits payants augmentent uniquement la limite de clients actifs et ajoutent le support prioritaire sur Pro.",
+    uk: "Ні. SoloBizz — це одна повна система: усі функції доступні на кожному плані, включно з Free Starter. Платні плани лише збільшують ліміт активних клієнтів і додають пріоритетну підтримку на Pro.",
+    pl: "Nie. SoloBizz to jeden kompletny system — wszystkie funkcje są dostępne w każdym planie, łącznie z Free Starter. Plany płatne tylko zwiększają limit aktywnych klientów i dodają wsparcie priorytetowe w Pro.",
   },
   pfaq2Q: {
     en: "What happens when I add a 6th client?",
@@ -374,10 +374,10 @@ const C = {
     pl: "Co się stanie, gdy dodam 6. klienta?",
   },
   pfaq2A: {
-    en: "The system suggests upgrading to a paid plan. Your data stays — you simply pick a plan that fits your practice size.",
-    fr: "Le système vous propose de passer à un plan payant. Vos données restent : vous choisissez simplement le plan qui correspond à la taille de votre pratique.",
-    uk: "Система запропонує перейти на платний план. Дані не зникають — ви просто обираєте план, який відповідає розміру практики.",
-    pl: "System zaproponuje przejście na plan płatny. Dane pozostają — po prostu wybierasz plan dopasowany do skali praktyki.",
+    en: "The system suggests upgrading to a plan with a higher active-client limit. Your data and settings stay — only the limit changes.",
+    fr: "Le système vous propose de passer à un forfait avec une limite plus élevée. Vos données et réglages restent — seule la limite change.",
+    uk: "Система запропонує перейти на план із вищим лімітом активних клієнтів. Дані та налаштування залишаються — змінюється лише ліміт.",
+    pl: "System zaproponuje przejście na plan z wyższym limitem aktywnych klientów. Dane i ustawienia zostają — zmienia się tylko limit.",
   },
   pfaq3Q: {
     en: "Can I cancel my subscription?",
@@ -386,10 +386,10 @@ const C = {
     pl: "Czy mogę anulować subskrypcję?",
   },
   pfaq3A: {
-    en: "Yes, you can cancel according to your plan's terms. Free Starter remains available within its active client limit.",
-    fr: "Oui, vous pouvez annuler selon les conditions de votre plan. Free Starter reste disponible dans la limite de ses clients actifs.",
-    uk: "Так, підписку можна скасувати відповідно до умов обраного плану. Free Starter залишається доступним для роботи в межах ліміту активних клієнтів.",
-    pl: "Tak, subskrypcję można anulować zgodnie z warunkami wybranego planu. Free Starter pozostaje dostępny w ramach limitu aktywnych klientów.",
+    en: "Yes, you can cancel anytime. Free Starter remains available within its 5 active client limit.",
+    fr: "Oui, vous pouvez annuler à tout moment. Free Starter reste disponible dans la limite de 5 clients actifs.",
+    uk: "Так, скасувати можна будь-коли. Free Starter залишається доступним у межах ліміту 5 активних клієнтів.",
+    pl: "Tak, możesz anulować w dowolnej chwili. Free Starter pozostaje dostępny w ramach limitu 5 aktywnych klientów.",
   },
 
   // ROI / time saving — comparison tiles
