@@ -1193,7 +1193,7 @@ function PlanCard({
         onClick={() =>
           track("cta_clicked", {
             source_page: `/#pricing-${cycle}-${plan.id}`,
-            cta: "pricing_plan",
+            cta: "upgrade_plan_selected",
             plan_type: plan.id,
             billing_cycle: cycle,
             lang,
