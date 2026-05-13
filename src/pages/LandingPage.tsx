@@ -260,12 +260,12 @@ const C = {
   },
 
   // Pricing
-  pricingTitle: { en: "Choose your plan", fr: "Choisissez votre formule", uk: "Оберіть свій план", pl: "Wybierz swój plan" },
+  pricingTitle: { en: "One system. Choose by active clients.", fr: "Un seul système. Choisissez par clients actifs.", uk: "Одна система. Обирайте за кількістю активних клієнтів.", pl: "Jeden system. Wybierz wg aktywnych klientów." },
   pricingSub: {
-    en: "Start free with up to 5 active clients. Upgrade anytime — only the active client limit changes.",
-    fr: "Commencez gratuitement jusqu'à 5 clients actifs. Évoluez à tout moment — seule la limite de clients actifs change.",
-    uk: "Почніть безкоштовно з до 5 активних клієнтів. Перейдіть на платний план будь-коли — змінюється лише ліміт активних клієнтів.",
-    pl: "Zacznij za darmo z maks. 5 aktywnymi klientami. Zmieniaj plan w dowolnej chwili — różni się tylko limit aktywnych klientów.",
+    en: "SoloBizz is one complete system — all features are available from day one. Plans differ only in the number of active clients you can manage.",
+    fr: "SoloBizz est un système complet — toutes les fonctionnalités sont disponibles dès le premier jour. Les forfaits ne diffèrent que par le nombre de clients actifs que vous pouvez gérer.",
+    uk: "SoloBizz — це одна повна система. Усі функції доступні з першого дня. Плани відрізняються лише кількістю активних клієнтів, з якими ви працюєте.",
+    pl: "SoloBizz to jeden kompletny system — wszystkie funkcje są dostępne od pierwszego dnia. Plany różnią się tylko liczbą aktywnych klientów, którymi możesz zarządzać.",
   },
   monthly: { en: "Monthly", fr: "Mensuel", uk: "Щомісяця", pl: "Miesięcznie" },
   quarterly: { en: "Quarterly", fr: "Trimestriel", uk: "Щокварталу", pl: "Kwartalnie" },
