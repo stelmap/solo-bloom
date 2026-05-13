@@ -27,7 +27,7 @@ const BOOKING_URL = "#booking"; // [BOOKING_OR_CONTACT_FORM_URL]
 const TELEGRAM_URL = "https://t.me/solobizzcontact";
 const TELEGRAM_HANDLE = "@solobizzcontact";
 const PHONE_NUMBER = "+48 572 600 256";
-const OFFICE_ADDRESS = "Poland, Wroclaw, Gwiadzista 16";
+const OFFICE_ADDRESS = "Poland, Wrocław, Gwiaździsta 16";
 const VACANCIES_URL = "/careers";
 
 // ── Local landing-page copy (EN / FR / UK / PL) ───────────────────────
