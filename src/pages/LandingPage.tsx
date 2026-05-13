@@ -1441,6 +1441,7 @@ function FaqSection() {
     { q: "faq4Q", a: "faq4A" },
     { q: "faq5Q", a: "faq5A" },
     { q: "faq6Q", a: "faq6A" },
+    { q: "faq7Q", a: "faq7A" },
   ];
   return (
     <section id="faq" className="py-20 px-4 sm:px-6 bg-muted/40">
