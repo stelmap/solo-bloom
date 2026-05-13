@@ -266,19 +266,74 @@ export default function ExpensesPage() {
                   </Select>
                 </div>
                 <div className="space-y-2"><Label>{t("common.amount")} *</Label><Input type="number" step="0.01" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} /></div>
-                <div className="space-y-2"><Label>{t("common.date")}</Label><Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>{t("common.description")}</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
-                <div className="flex items-center gap-2">
-                  <Checkbox checked={form.is_recurring} onCheckedChange={v => setForm(f => ({ ...f, is_recurring: !!v, recurring_start_date: !!v ? (f.recurring_start_date || f.date) : "" }))} id="recurring" />
-                  <Label htmlFor="recurring">{t("expenses.recurringMonthlyCheckbox")}</Label>
+
+                <div className="space-y-2">
+                  <Label>Recurrence</Label>
+                  <Select value={form.recurrence} onValueChange={(v: any) => setForm(f => ({
+                    ...f,
+                    recurrence: v,
+                    recurring_start_date: v === "one_time" ? "" : (f.recurring_start_date || f.date),
+                  }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="one_time">One-time</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="yearly">Yearly</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                {form.is_recurring && (
+
+                {form.recurrence === "one_time" ? (
                   <div className="space-y-1">
-                    <Label>{t("expenses.recurringStartDate")}</Label>
-                    <Input type="date" value={form.recurring_start_date} onChange={e => setForm(f => ({ ...f, recurring_start_date: e.target.value }))} />
-                    <p className="text-xs text-muted-foreground">{t("expenses.recurringStartDateHint")}</p>
+                    <Label>{t("common.date")}</Label>
+                    <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
+                    <p className="text-xs text-muted-foreground">{explainExpenseDate({ recurrence: "one_time", date: form.date })}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <Label>{form.recurrence === "yearly" ? "Yearly start date" : t("expenses.recurringStartDate")}</Label>
+                    <Input type="date" value={form.recurring_start_date} onChange={e => setForm(f => ({ ...f, recurring_start_date: e.target.value, date: e.target.value }))} />
+                    <p className="text-xs text-muted-foreground">{explainExpenseDate({ recurrence: form.recurrence, date: form.recurring_start_date })}</p>
                   </div>
                 )}
+
+                <div className="space-y-2"><Label>{t("common.description")}</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
+
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select value={form.instance_status} onValueChange={(v: any) => setForm(f => ({ ...f, instance_status: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="planned">Planned</SelectItem>
+                      <SelectItem value="paid">Paid</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {form.recurrence !== "one_time" && form.recurring_start_date && (() => {
+                  const dates = form.recurrence === "monthly"
+                    ? generateMonthlyOccurrences(form.recurring_start_date, isLastDayOfItsMonth(form.recurring_start_date), 4)
+                    : generateYearlyOccurrences(form.recurring_start_date, 4);
+                  const fmt = (d: string) => new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+                  return (
+                    <div className="rounded-md border border-border bg-muted/30 p-3 text-xs space-y-1">
+                      <p className="font-medium text-foreground">Preview</p>
+                      <p className="text-muted-foreground">
+                        {form.recurrence === "monthly"
+                          ? (isLastDayOfItsMonth(form.recurring_start_date)
+                              ? "This expense will be planned on the last day of each month."
+                              : "This expense will be planned monthly on the same day.")
+                          : "This expense will be planned once a year on the same day."}
+                      </p>
+                      <p className="text-muted-foreground">First planned expense: <span className="text-foreground">{fmt(dates[0])}</span></p>
+                      <p className="text-muted-foreground">Next planned expenses: <span className="text-foreground">{dates.slice(1).map(fmt).join(", ")}</span></p>
+                      <p className="text-muted-foreground">Default status: <span className="text-foreground capitalize">{form.instance_status}</span></p>
+                      {form.recurrence === "monthly" && <p className="text-muted-foreground">12 months will be generated and extended automatically.</p>}
+                    </div>
+                  );
+                })()}
+
                 <Button onClick={handleSubmit} className="w-full" disabled={createExpense.isPending || updateExpense.isPending}>
                   {editId ? t("common.save") : t("expenses.addExpense")}
                 </Button>
