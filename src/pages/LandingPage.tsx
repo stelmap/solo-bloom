@@ -13,7 +13,7 @@ import { track } from "@/lib/analytics";
 import {
   ArrowRight, CheckCircle2, AlertTriangle, Eye, TrendingUp,
   Calendar as CalendarIcon, Users, Sparkles, ShieldCheck,
-  Play, X, Check, Briefcase, GraduationCap, UserCheck, BookOpen,
+  Play, X, Check, HeartHandshake, Presentation, BookOpen,
   Quote, MessageCircle, Mail, Phone, MapPin, Send,
 } from "lucide-react";
 import manualTrackingImg from "@/assets/manual-tracking-spreadsheet.png";
@@ -128,10 +128,10 @@ const C = {
 
   aud1Title: { en: "Private practitioners", fr: "Praticiens en libéral", uk: "Приватним практикам", pl: "Prywatni praktycy" },
   aud1Desc: {
-    en: "For psychologists, psychotherapists and other specialists who want to see clients, sessions, payments, income, expenses and profit in one place.",
-    fr: "Pour les psychologues, psychothérapeutes et autres pros qui veulent voir clients, séances, paiements, revenus, dépenses et bénéfice au même endroit.",
-    uk: "Для психологів, психотерапевтів та інших спеціалістів, які хочуть бачити клієнтів, сесії, оплати, дохід, витрати й прибуток в одному місці.",
-    pl: "Dla psychologów, psychoterapeutów i innych specjalistów, którzy chcą widzieć klientów, sesje, płatności, dochód, wydatki i zysk w jednym miejscu.",
+    en: "For psychologists and therapists who want to run their practice without spreadsheets and chaos.",
+    fr: "Pour les psychologues et thérapeutes qui veulent gérer leur pratique sans tableurs ni chaos.",
+    uk: "Для психологів і терапевтів, які хочуть вести практику без таблиць і хаосу.",
+    pl: "Dla psychologów i terapeutów, którzy chcą prowadzić praktykę bez arkuszy i chaosu.",
   },
   aud1B1: { en: "Individual and group sessions", fr: "Séances individuelles et de groupe", uk: "Індивідуальні та групові сесії", pl: "Sesje indywidualne i grupowe" },
   aud1B2: { en: "Payments and debts under control", fr: "Paiements et dettes sous contrôle", uk: "Контроль оплат і боргів", pl: "Kontrola płatności i długów" },
@@ -141,10 +141,10 @@ const C = {
 
   aud2Title: { en: "Supervisors", fr: "Superviseurs", uk: "Супервізорам", pl: "Superwizorzy" },
   aud2Desc: {
-    en: "For supervisors running individual or group supervisions who want to control bookings, attendance, payments and history.",
-    fr: "Pour les superviseurs qui gèrent supervisions individuelles ou de groupe et veulent suivre rendez-vous, présence, paiements et historique.",
-    uk: "Для супервізорів, які проводять індивідуальні або групові супервізії та хочуть контролювати записи, присутність, оплати й історію роботи.",
-    pl: "Dla superwizorów prowadzących superwizje indywidualne lub grupowe, którzy chcą kontrolować zapisy, obecność, płatności i historię.",
+    en: "For supervisors who run individual and group sessions.",
+    fr: "Pour les superviseurs qui mènent des séances individuelles et de groupe.",
+    uk: "Для супервізорів, які працюють з індивідуальними та груповими зустрічами.",
+    pl: "Dla superwizorów, którzy prowadzą spotkania indywidualne i grupowe.",
   },
   aud2B1: { en: "Supervision tracking", fr: "Suivi des supervisions", uk: "Облік супервізій", pl: "Ewidencja superwizji" },
   aud2B2: { en: "Attendance control", fr: "Contrôle des présences", uk: "Контроль присутності учасників", pl: "Kontrola obecności uczestników" },
@@ -152,12 +152,12 @@ const C = {
   aud2B4: { en: "History of past meetings", fr: "Historique des séances passées", uk: "Історія проведених зустрічей", pl: "Historia odbytych spotkań" },
   aud2B5: { en: "Less manual calculation", fr: "Moins de calculs manuels", uk: "Менше ручної роботи з підрахунками", pl: "Mniej ręcznych obliczeń" },
 
-  aud3Title: { en: "Early-career therapists", fr: "Thérapeutes en début de carrière", uk: "Початкуючим психотерапевтам", pl: "Początkujący psychoterapeuci" },
+  aud3Title: { en: "Early-career therapists", fr: "Thérapeutes en début de carrière", uk: "Початківцям", pl: "Początkujący psychoterapeuci" },
   aud3Desc: {
-    en: "For specialists who are just building a practice and want to see their progress, session count, client base and financial dynamics.",
-    fr: "Pour ceux qui démarrent leur pratique et veulent voir leur progression, séances, clientèle et dynamique financière.",
-    uk: "Для спеціалістів, які тільки будують практику і хочуть бачити свій прогрес, кількість сесій, клієнтську базу та фінансову динаміку.",
-    pl: "Dla specjalistów, którzy dopiero budują praktykę i chcą widzieć postęp, liczbę sesji, bazę klientów i dynamikę finansową.",
+    en: "For specialists who are just launching a practice and want to run it structurally from day one.",
+    fr: "Pour les pros qui démarrent leur pratique et veulent la structurer dès le premier jour.",
+    uk: "Для спеціалістів, які тільки запускають практику і хочуть одразу вести її структурно.",
+    pl: "Dla specjalistów, którzy dopiero zaczynają praktykę i chcą prowadzić ją strukturalnie od pierwszego dnia.",
   },
   aud3B1: { en: "Number of sessions delivered", fr: "Nombre de séances réalisées", uk: "Кількість проведених сесій", pl: "Liczba przeprowadzonych sesji" },
   aud3B2: { en: "Practice progress", fr: "Progression de la pratique", uk: "Прогрес практики", pl: "Postęp praktyki" },
@@ -165,12 +165,12 @@ const C = {
   aud3B4: { en: "Clear interaction history", fr: "Historique d'interaction clair", uk: "Зрозуміла історія взаємодії", pl: "Czytelna historia interakcji" },
   aud3B5: { en: "Visible growth from your first clients", fr: "Une croissance visible dès les premiers clients", uk: "Видимість росту з перших клієнтів", pl: "Widoczny wzrost od pierwszych klientów" },
 
-  aud4Title: { en: "Teachers and tutors", fr: "Enseignants et tuteurs", uk: "Вчителям і репетиторам", pl: "Nauczyciele i korepetytorzy" },
+  aud4Title: { en: "Teachers and mentors", fr: "Enseignants et mentors", uk: "Викладачам / менторам", pl: "Nauczyciele i mentorzy" },
   aud4Desc: {
-    en: "For teachers and tutors who work with students, lessons and payments and want to see learning progress without spreadsheet chaos.",
-    fr: "Pour les enseignants et tuteurs qui suivent élèves, cours et paiements sans chaos de tableurs.",
-    uk: "Для викладачів і репетиторів, які працюють з учнями, заняттями, оплатами та хочуть бачити прогрес навчання без хаосу в таблицях.",
-    pl: "Dla nauczycieli i korepetytorów, którzy pracują z uczniami, zajęciami i płatnościami i chcą widzieć postępy bez chaosu arkuszy.",
+    en: "For those who run consultations, training or mentoring sessions.",
+    fr: "Pour celles et ceux qui mènent consultations, formations ou sessions de mentorat.",
+    uk: "Для тих, хто проводить консультації, навчання або менторські сесії.",
+    pl: "Dla tych, którzy prowadzą konsultacje, szkolenia lub sesje mentorskie.",
   },
   aud4B1: { en: "Lesson schedule", fr: "Planning des cours", uk: "Розклад занять", pl: "Harmonogram zajęć" },
   aud4B2: { en: "Student notes", fr: "Notes élèves", uk: "Нотатки по учнях", pl: "Notatki o uczniach" },
@@ -185,8 +185,14 @@ const C = {
     uk: "Solo Bizz допомагає бачити фінанси, прибуток, оплати, завантаження практики та результативність роботи. Ви приймаєте рішення на основі даних, а не відчуттів. Менше рутинної роботи — більше часу на клієнтів, навчання і розвиток.",
     pl: "Solo Bizz pomaga widzieć finanse, zysk, płatności, obciążenie praktyki i wyniki pracy. Podejmujesz decyzje na podstawie danych, a nie odczuć. Mniej rutyny — więcej czasu na klientów, naukę i rozwój.",
   },
-
-  // Preview
+  audCtaPrimary: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
+  audCtaSecondary: { en: "See plans", fr: "Voir les formules", uk: "Переглянути плани", pl: "Zobacz plany" },
+  audCtaSub: {
+    en: "Free Starter — free forever · up to 5 active clients · no card required",
+    fr: "Free Starter — gratuit pour toujours · jusqu'à 5 clients actifs · sans carte",
+    uk: "Free Starter — безкоштовно назавжди · до 5 клієнтів · без картки",
+    pl: "Free Starter — za darmo na zawsze · do 5 klientów · bez karty",
+  },
   demoTitle: {
     en: "See how your practice could look in 60 seconds",
     fr: "Voyez à quoi votre cabinet peut ressembler en 60 secondes",
@@ -276,17 +282,18 @@ const C = {
     uk: "Для тих, хто тільки починає або веде невелику приватну практику.",
     pl: "Dla tych, którzy zaczynają lub prowadzą małą prywatną praktykę.",
   },
+  freeBadgeForever: { en: "Free forever", fr: "Gratuit pour toujours", uk: "Безкоштовно назавжди", pl: "Za darmo na zawsze" },
   freeF1: { en: "Up to 5 active clients", fr: "Jusqu'à 5 clients actifs", uk: "До 5 активних клієнтів", pl: "Do 5 aktywnych klientów" },
-  freeF2: { en: "No time limit", fr: "Sans limite de temps", uk: "Без обмеження по часу", pl: "Bez limitu czasu" },
-  freeF3: { en: "This is not a trial", fr: "Ce n'est pas une période d'essai", uk: "Це не пробний період", pl: "To nie jest okres próbny" },
-  freeF4: { en: "Clients, sessions and payments in one place", fr: "Clients, séances et paiements au même endroit", uk: "Клієнти, сесії та оплати в одному місці", pl: "Klienci, sesje i płatności w jednym miejscu" },
-  freeF5: { en: "Basic financial overview", fr: "Aperçu financier de base", uk: "Базовий фінансовий огляд", pl: "Podstawowy przegląd finansów" },
+  freeF2: { en: "Session calendar", fr: "Calendrier des séances", uk: "Календар сесій", pl: "Kalendarz sesji" },
+  freeF3: { en: "Basic client registry", fr: "Registre client basique", uk: "Базовий реєстр клієнтів", pl: "Podstawowy rejestr klientów" },
+  freeF4: { en: "Basic payment tracking", fr: "Suivi basique des paiements", uk: "Базовий облік оплат", pl: "Podstawowa ewidencja płatności" },
+  freeF5: { en: "Reminders and confirmations", fr: "Rappels et confirmations", uk: "Нагадування та підтвердження", pl: "Przypomnienia i potwierdzenia" },
   freeCta: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
   freeMicro: {
-    en: "No payment while you have up to 5 active clients.",
-    fr: "Sans paiement tant que vous avez jusqu'à 5 clients actifs.",
-    uk: "Без оплати, поки у вас до 5 активних клієнтів.",
-    pl: "Bez opłat, dopóki masz do 5 aktywnych klientów.",
+    en: "No card required.",
+    fr: "Sans carte bancaire.",
+    uk: "Без картки.",
+    pl: "Bez karty.",
   },
 
   soloName: { en: "Solo Practice", fr: "Solo Practice", uk: "Solo Practice", pl: "Solo Practice" },
@@ -296,11 +303,17 @@ const C = {
     uk: "Для регулярної приватної практики.",
     pl: "Dla regularnej prywatnej praktyki.",
   },
-  soloF1: { en: "Up to 20 active clients", fr: "Jusqu'à 20 clients actifs", uk: "До 20 активних клієнтів", pl: "Do 20 aktywnych klientów" },
-  soloF2: { en: "Full access to SoloBizz", fr: "Accès complet à SoloBizz", uk: "Повний доступ до SoloBizz", pl: "Pełny dostęp do SoloBizz" },
-  soloF3: { en: "Calendar, sessions, clients, payments and finance", fr: "Calendrier, séances, clients, paiements et finances", uk: "Календар, сесії, клієнти, оплати та фінанси", pl: "Kalendarz, sesje, klienci, płatności i finanse" },
-  soloF4: { en: "Email / Telegram reminders", fr: "Rappels Email / Telegram", uk: "Email / Telegram нагадування", pl: "Przypomnienia Email / Telegram" },
-  soloF5: { en: "Great for a steadily growing practice", fr: "Idéal pour une pratique en croissance régulière", uk: "Підходить для практики, що стабільно росте", pl: "Idealne dla stale rosnącej praktyki" },
+  soloIntro: {
+    en: "Everything in Free Starter, plus:",
+    fr: "Tout du Free Starter, plus :",
+    uk: "Усе з Free Starter, плюс:",
+    pl: "Wszystko z Free Starter, plus:",
+  },
+  soloF1: { en: "More active clients per plan limit", fr: "Plus de clients actifs selon la limite du plan", uk: "Більше активних клієнтів згідно з лімітом плану", pl: "Więcej aktywnych klientów zgodnie z limitem planu" },
+  soloF2: { en: "Advanced financial analytics", fr: "Analytique financière avancée", uk: "Розширена фінансова аналітика", pl: "Rozszerzona analityka finansowa" },
+  soloF3: { en: "Income, expenses, debts", fr: "Revenus, dépenses, créances", uk: "Доходи, витрати, заборгованості", pl: "Przychody, wydatki, zaległości" },
+  soloF4: { en: "Payment method settings", fr: "Réglages des moyens de paiement", uk: "Налаштування способів оплат", pl: "Ustawienia metod płatności" },
+  soloF5: { en: "Advanced session management", fr: "Gestion avancée des séances", uk: "Розширене керування сесіями", pl: "Zaawansowane zarządzanie sesjami" },
   soloCta: { en: "Choose Solo Practice", fr: "Choisir Solo Practice", uk: "Обрати Solo Practice", pl: "Wybierz Solo Practice" },
   soloBadge: {
     en: "Best for private practice",
@@ -316,10 +329,16 @@ const C = {
     uk: "Для практики, що масштабується.",
     pl: "Dla praktyk, które się skalują.",
   },
-  proF1: { en: "Unlimited active clients", fr: "Clients actifs illimités", uk: "Необмежена кількість активних клієнтів", pl: "Nielimitowana liczba aktywnych klientów" },
-  proF2: { en: "Full access to SoloBizz", fr: "Accès complet à SoloBizz", uk: "Повний доступ до SoloBizz", pl: "Pełny dostęp do SoloBizz" },
-  proF3: { en: "For 20+ active clients", fr: "Pour 20+ clients actifs", uk: "Для 20+ активних клієнтів", pl: "Dla 20+ aktywnych klientów" },
-  proF4: { en: "Great for a large or active practice", fr: "Idéal pour une pratique large ou active", uk: "Підходить для великої або активної практики", pl: "Idealne dla dużej lub aktywnej praktyki" },
+  proIntro: {
+    en: "Everything in Solo Practice, plus:",
+    fr: "Tout du Solo Practice, plus :",
+    uk: "Усе з Solo Practice, плюс:",
+    pl: "Wszystko z Solo Practice, plus:",
+  },
+  proF1: { en: "Groups", fr: "Groupes", uk: "Групи", pl: "Grupy" },
+  proF2: { en: "Supervisions", fr: "Supervisions", uk: "Супервізії", pl: "Superwizje" },
+  proF3: { en: "Advanced reports", fr: "Rapports avancés", uk: "Розширені звіти", pl: "Rozszerzone raporty" },
+  proF4: { en: "Priority support", fr: "Support prioritaire", uk: "Пріоритетна підтримка", pl: "Wsparcie priorytetowe" },
   proF5: { en: "No client cap", fr: "Pas de plafond de clients", uk: "Без обмеження по кількості клієнтів", pl: "Bez limitu klientów" },
   proCta: { en: "Choose Pro Practice", fr: "Choisir Pro Practice", uk: "Обрати Pro Practice", pl: "Wybierz Pro Practice" },
   proBadge: {
@@ -327,6 +346,44 @@ const C = {
     fr: "Pour une pratique en croissance",
     uk: "Для практики, що масштабується",
     pl: "Dla skalującej się praktyki",
+  },
+
+  // Inline pricing FAQ
+  pfaq1Q: {
+    en: "Is SoloBizz really free?",
+    fr: "SoloBizz est-il vraiment gratuit ?",
+    uk: "Чи справді SoloBizz безкоштовний?",
+    pl: "Czy SoloBizz jest naprawdę darmowy?",
+  },
+  pfaq1A: {
+    en: "Yes. Free Starter is a permanent free plan for up to 5 active clients. It is not a trial period.",
+    fr: "Oui. Free Starter est un plan gratuit permanent pour jusqu'à 5 clients actifs. Ce n'est pas une période d'essai.",
+    uk: "Так. Free Starter — це постійний безкоштовний план до 5 активних клієнтів. Це не пробний період.",
+    pl: "Tak. Free Starter to stały darmowy plan dla maks. 5 aktywnych klientów. To nie jest okres próbny.",
+  },
+  pfaq2Q: {
+    en: "What happens when I add a 6th client?",
+    fr: "Que se passe-t-il quand j'ajoute un 6ᵉ client ?",
+    uk: "Що станеться, коли я додам 6-го клієнта?",
+    pl: "Co się stanie, gdy dodam 6. klienta?",
+  },
+  pfaq2A: {
+    en: "The system suggests upgrading to a paid plan. Your data stays — you simply pick a plan that fits your practice size.",
+    fr: "Le système vous propose de passer à un plan payant. Vos données restent : vous choisissez simplement le plan qui correspond à la taille de votre pratique.",
+    uk: "Система запропонує перейти на платний план. Дані не зникають — ви просто обираєте план, який відповідає розміру практики.",
+    pl: "System zaproponuje przejście na plan płatny. Dane pozostają — po prostu wybierasz plan dopasowany do skali praktyki.",
+  },
+  pfaq3Q: {
+    en: "Can I cancel my subscription?",
+    fr: "Puis-je annuler mon abonnement ?",
+    uk: "Чи можна скасувати підписку?",
+    pl: "Czy mogę anulować subskrypcję?",
+  },
+  pfaq3A: {
+    en: "Yes, you can cancel according to your plan's terms. Free Starter remains available within its active client limit.",
+    fr: "Oui, vous pouvez annuler selon les conditions de votre plan. Free Starter reste disponible dans la limite de ses clients actifs.",
+    uk: "Так, підписку можна скасувати відповідно до умов обраного плану. Free Starter залишається доступним для роботи в межах ліміту активних клієнтів.",
+    pl: "Tak, subskrypcję można anulować zgodnie z warunkami wybranego planu. Free Starter pozostaje dostępny w ramach limitu aktywnych klientów.",
   },
 
   // Testimonials
@@ -733,10 +790,10 @@ type AudienceCard = {
 function AudienceSection() {
   const { t } = useLandingLang();
   const cards: AudienceCard[] = [
-    { icon: Briefcase, titleKey: "aud1Title", descKey: "aud1Desc", bullets: ["aud1B1", "aud1B2", "aud1B3", "aud1B4", "aud1B5"] },
-    { icon: UserCheck, titleKey: "aud2Title", descKey: "aud2Desc", bullets: ["aud2B1", "aud2B2", "aud2B3", "aud2B4", "aud2B5"] },
-    { icon: GraduationCap, titleKey: "aud3Title", descKey: "aud3Desc", bullets: ["aud3B1", "aud3B2", "aud3B3", "aud3B4", "aud3B5"] },
-    { icon: BookOpen, titleKey: "aud4Title", descKey: "aud4Desc", bullets: ["aud4B1", "aud4B2", "aud4B3", "aud4B4", "aud4B5"] },
+    { icon: HeartHandshake, titleKey: "aud1Title", descKey: "aud1Desc", bullets: ["aud1B1", "aud1B2", "aud1B3", "aud1B4", "aud1B5"] },
+    { icon: Users, titleKey: "aud2Title", descKey: "aud2Desc", bullets: ["aud2B1", "aud2B2", "aud2B3", "aud2B4", "aud2B5"] },
+    { icon: Sparkles, titleKey: "aud3Title", descKey: "aud3Desc", bullets: ["aud3B1", "aud3B2", "aud3B3", "aud3B4", "aud3B5"] },
+    { icon: Presentation, titleKey: "aud4Title", descKey: "aud4Desc", bullets: ["aud4B1", "aud4B2", "aud4B3", "aud4B4", "aud4B5"] },
   ];
   return (
     <section id="audience" className="py-20 px-4 sm:px-6">
@@ -770,7 +827,30 @@ function AudienceSection() {
 
         <div className="mt-10 max-w-3xl mx-auto rounded-2xl border-2 border-primary/30 bg-primary/5 p-6 sm:p-8 text-center">
           <h3 className="text-2xl font-bold text-foreground mb-3">{t("audValueTitle")}</h3>
-          <p className="text-base sm:text-lg text-foreground/80 leading-relaxed">{t("audValueText")}</p>
+          <p className="text-base sm:text-lg text-foreground/80 leading-relaxed mb-6">{t("audValueText")}</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              to="/auth?plan=free_starter"
+              onClick={() =>
+                track("cta_clicked", { source_page: "/#audience", cta: "landing_audience_cta_click", plan_type: "free_starter" })
+              }
+            >
+              <Button size="lg" className="gap-2 h-12 px-8 text-base">
+                {t("audCtaPrimary")} <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+            <a
+              href="#pricing"
+              onClick={() =>
+                track("cta_clicked", { source_page: "/#audience", cta: "landing_audience_cta_click", plan_type: "see_plans" })
+              }
+            >
+              <Button size="lg" variant="outline" className="gap-2 h-12 px-8 text-base">
+                {t("audCtaSecondary")}
+              </Button>
+            </a>
+          </div>
+          <p className="text-xs text-muted-foreground mt-4">{t("audCtaSub")}</p>
         </div>
       </div>
     </section>
@@ -894,6 +974,7 @@ type PlanRow = {
   id: PaidPlan;
   name: string;
   desc: string;
+  intro?: string;
   bullets: string[];
   cta: string;
   badge?: string;
@@ -918,6 +999,7 @@ function PricingSection() {
       id: "solo",
       name: t("soloName"),
       desc: t("soloDesc"),
+      intro: t("soloIntro"),
       bullets: [t("soloF1"), t("soloF2"), t("soloF3"), t("soloF4"), t("soloF5")],
       cta: t("soloCta"),
       badge: t("soloBadge"),
@@ -930,6 +1012,7 @@ function PricingSection() {
       id: "pro",
       name: t("proName"),
       desc: t("proDesc"),
+      intro: t("proIntro"),
       bullets: [t("proF1"), t("proF2"), t("proF3"), t("proF4"), t("proF5")],
       cta: t("proCta"),
       badge: t("proBadge"),
@@ -995,6 +1078,7 @@ function PricingSection() {
               <span className="text-4xl font-bold text-foreground">€0</span>
               <span className="text-muted-foreground text-base">{t("perMonth")}</span>
             </div>
+            <p className="text-xs font-semibold text-primary mb-1">{t("freeBadgeForever")}</p>
             <p className="text-xs text-muted-foreground mb-6">{t("freeMicro")}</p>
             <ul className="space-y-2.5 mb-7 flex-1">
               {[t("freeF1"), t("freeF2"), t("freeF3"), t("freeF4"), t("freeF5")].map((f) => (
@@ -1007,11 +1091,11 @@ function PricingSection() {
             <Link
               to="/auth?plan=free_starter"
               onClick={() =>
-                track("cta_clicked", { source_page: `/#pricing-${cycle}-free`, cta: "pricing_plan", plan_type: "free_starter", billing_cycle: cycle })
+                track("cta_clicked", { source_page: `/#pricing-${cycle}-free`, cta: "free_starter_selected", plan_type: "free_starter", billing_cycle: cycle })
               }
               className="block mt-auto"
             >
-              <Button className="w-full h-11 gap-2" variant="outline">
+              <Button className="w-full h-11 gap-2 bg-foreground text-background hover:bg-foreground/90 focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2">
                 {t("freeCta")} <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
@@ -1026,6 +1110,31 @@ function PricingSection() {
               periodSuffix={periodSuffix}
             />
           ))}
+        </div>
+
+        {/* Inline pricing FAQ */}
+        <div className="mt-12 max-w-3xl mx-auto">
+          <Accordion type="single" collapsible className="rounded-2xl border border-border bg-card divide-y divide-border">
+            {[
+              { q: "pfaq1Q" as CopyKey, a: "pfaq1A" as CopyKey },
+              { q: "pfaq2Q" as CopyKey, a: "pfaq2A" as CopyKey },
+              { q: "pfaq3Q" as CopyKey, a: "pfaq3A" as CopyKey },
+            ].map((it, idx) => (
+              <AccordionItem key={it.q} value={`pfaq-${idx}`} className="border-0 px-5">
+                <AccordionTrigger
+                  onClick={() =>
+                    track("cta_clicked", { source_page: "/#pricing", cta: "landing_pricing_faq_open", plan_type: it.q })
+                  }
+                  className="text-left text-base font-semibold text-foreground"
+                >
+                  {t(it.q)}
+                </AccordionTrigger>
+                <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
+                  {t(it.a)}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
       </div>
     </section>
@@ -1068,6 +1177,9 @@ function PlanCard({
       <p className="text-xs text-muted-foreground mb-1">{billedLabel}</p>
       {equivStr && <p className="text-xs text-primary font-medium mb-5">{equivStr}</p>}
       {!equivStr && <div className="mb-5" />}
+      {plan.intro && (
+        <p className="text-sm font-semibold text-foreground mb-3">{plan.intro}</p>
+      )}
       <ul className="space-y-2.5 mb-7 flex-1">
         {plan.bullets.map((f) => (
           <li key={f} className="flex items-start gap-3 text-foreground">
@@ -1081,7 +1193,7 @@ function PlanCard({
         onClick={() =>
           track("cta_clicked", {
             source_page: `/#pricing-${cycle}-${plan.id}`,
-            cta: "pricing_plan",
+            cta: "upgrade_plan_selected",
             plan_type: plan.id,
             billing_cycle: cycle,
             lang,
