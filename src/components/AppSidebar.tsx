@@ -187,7 +187,6 @@ export function AppSidebar() {
                 >
                   <item.icon className="h-4.5 w-4.5 shrink-0" />
                   <span className="flex-1 text-left">{t(item.labelKey)}</span>
-                  {item.requires && <ProBadge />}
                   <ChevronDown
                     className={cn(
                       "h-4 w-4 transition-transform shrink-0",
