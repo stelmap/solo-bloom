@@ -69,19 +69,45 @@ export function useDemoWriteGuard() {
 }
 
 /**
- * Returns information about the user's free starter status.
- * `isFreeStarter` is true for any signed-in user without an active paid plan
- * (and not on trial). `atClientLimit` is true once the active client count
- * reaches FREE_STARTER_CLIENT_LIMIT.
+ * Returns information about the user's plan-based active-client limit.
+ * - `isFreeStarter` is true for any signed-in user without an active paid plan.
+ * - `planCode` is "free" | "solo" | "pro" | other plan codes.
+ * - `limit` is `null` for unlimited plans.
+ * - `atClientLimit` is true once the active client count reaches the limit.
  */
 export function useFreeStarterMode() {
   const { user, subscription } = useAuth();
   const isPaid = subscription.subscribed || subscription.on_trial;
   const isFreeStarter = !!user?.id && !subscription.loading && !isPaid;
 
+  // Resolve the user's plan code from their active price_id.
+  const { data: planCode } = useQuery({
+    queryKey: ["current-plan-code", user?.id, subscription.price_id],
+    enabled: !!user?.id && !subscription.loading,
+    staleTime: 60_000,
+    queryFn: async (): Promise<"free" | "solo" | "pro" | string> => {
+      if (!isPaid) return "free";
+      if (!subscription.price_id) return "pro"; // legacy/unknown -> unlimited
+      const { data, error } = await supabase
+        .from("plan_prices")
+        .select("plans!inner(code)")
+        .eq("stripe_price_id", subscription.price_id)
+        .maybeSingle();
+      if (error || !data) return "pro";
+      // @ts-ignore - relational shape
+      return (data.plans?.code as string) ?? "pro";
+    },
+  });
+
+  const resolvedPlanCode: string = planCode ?? (isPaid ? "pro" : "free");
+  const limit: number | null =
+    resolvedPlanCode === "free" ? FREE_STARTER_CLIENT_LIMIT
+    : resolvedPlanCode === "solo" ? 20
+    : null; // pro / legacy → unlimited
+
   const { data: clientCount = 0, isLoading } = useQuery({
-    queryKey: ["free-starter-client-count", user?.id],
-    enabled: isFreeStarter,
+    queryKey: ["plan-active-client-count", user?.id],
+    enabled: !!user?.id && !subscription.loading && limit !== null,
     staleTime: 30_000,
     queryFn: async () => {
       const { count, error } = await supabase
@@ -91,22 +117,22 @@ export function useFreeStarterMode() {
         .eq("status", "active")
         .eq("is_demo", false);
       if (error) {
-        console.error("free-starter client count failed:", error);
+        console.error("active client count failed:", error);
         return 0;
       }
       return count ?? 0;
     },
   });
 
-  const limit = FREE_STARTER_CLIENT_LIMIT;
-  const atClientLimit = isFreeStarter && clientCount >= limit;
+  const atClientLimit = limit !== null && clientCount >= limit;
 
   return {
     isFreeStarter,
+    planCode: resolvedPlanCode,
     clientCount,
     limit,
     atClientLimit,
-    loading: subscription.loading || (isFreeStarter && isLoading),
+    loading: subscription.loading || (limit !== null && isLoading),
   };
 }
 
