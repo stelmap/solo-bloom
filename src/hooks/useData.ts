@@ -706,6 +706,12 @@ export function useMarkExpectedPaymentPaid() {
 // Expenses
 const EXPENSES_PAGE_SIZE = 50;
 
+import {
+  generateMonthlyOccurrences,
+  generateYearlyOccurrences,
+  isLastDayOfItsMonth,
+} from "@/lib/recurringExpenses";
+
 export function useExpenses(page = 0) {
   const { user } = useAuth();
   return useQuery({
@@ -713,9 +719,11 @@ export function useExpenses(page = 0) {
     queryFn: async () => {
       const from = page * EXPENSES_PAGE_SIZE;
       const to = from + EXPENSES_PAGE_SIZE - 1;
+      // Hide templates from the list view; users interact with instances.
       const { data, error, count } = await supabase
         .from("expenses")
         .select("*", { count: "exact" })
+        .eq("is_template", false)
         .order("date", { ascending: true })
         .range(from, to);
       if (error) throw error;
@@ -726,58 +734,163 @@ export function useExpenses(page = 0) {
   });
 }
 
+type RecurrenceKind = "one_time" | "monthly" | "yearly";
+
 export function useCreateExpense() {
   const qc = useQueryClient();
   const { user } = useAuth();
   const { isDemoMode } = useDemoMode();
   return useMutation({
-    mutationFn: async (expense: { category: string; amount: number; date: string; description?: string; is_recurring?: boolean; recurring_start_date?: string | null }) => {
-      const base: any = attachDemoFlag({ ...expense, user_id: user!.id }, isDemoMode);
-      if (!base.is_recurring) {
-        base.recurring_start_date = null;
-        const { data, error } = await supabase.from("expenses").insert(base).select().single();
+    mutationFn: async (expense: {
+      category: string;
+      amount: number;
+      date: string;
+      description?: string;
+      recurrence?: RecurrenceKind;
+      // Legacy field name still accepted from older callers
+      is_recurring?: boolean;
+      recurring_start_date?: string | null;
+      instance_status?: "planned" | "paid" | "cancelled";
+      paid_date?: string | null;
+    }) => {
+      const recurrence: RecurrenceKind = expense.recurrence
+        ?? (expense.is_recurring ? "monthly" : "one_time");
+
+      // One-time expense: single row, no template.
+      if (recurrence === "one_time") {
+        const status = expense.instance_status || "planned";
+        const row: any = attachDemoFlag({
+          user_id: user!.id,
+          category: expense.category,
+          amount: expense.amount,
+          date: expense.date,
+          description: expense.description ?? null,
+          is_recurring: false,
+          is_template: false,
+          instance_status: status,
+          paid_date: status === "paid" ? (expense.paid_date || expense.date) : null,
+          payment_status: status === "paid" ? "paid" : "unpaid",
+        }, isDemoMode);
+        const { data, error } = await supabase.from("expenses").insert(row).select().single();
         if (error) throw error;
         return data;
       }
-      // Recurring monthly expenses are stored as a SINGLE template row.
-      // The Financial Dashboard, Breakeven page and Dashboard widget expand it
-      // virtually for every month from `recurring_start_date` onward, clamping
-      // the day to the last day of shorter months. See src/lib/recurringExpenses.ts
-      const startDate = base.recurring_start_date || base.date;
+
+      const startDate = expense.recurring_start_date || expense.date;
       if (!startDate) throw new Error("Recurring start date is required");
-      base.recurring_start_date = startDate;
-      base.date = startDate;
-      base.recurring_group_id = crypto.randomUUID();
-      const { data, error } = await supabase.from("expenses").insert(base).select().single();
-      if (error) throw error;
-      return data;
+      const isLastDay = recurrence === "monthly" && isLastDayOfItsMonth(startDate);
+      const groupId = crypto.randomUUID();
+
+      // 1. Insert template row
+      const tpl: any = attachDemoFlag({
+        user_id: user!.id,
+        category: expense.category,
+        amount: expense.amount,
+        date: startDate,
+        description: expense.description ?? null,
+        is_recurring: true,
+        is_template: true,
+        recurrence_type: recurrence,
+        is_last_day_of_month: isLastDay,
+        recurring_start_date: startDate,
+        recurring_group_id: groupId,
+        instance_status: "planned",
+        payment_status: "unpaid",
+      }, isDemoMode);
+      const { data: template, error: tplErr } = await supabase
+        .from("expenses").insert(tpl).select().single();
+      if (tplErr) throw tplErr;
+
+      // 2. Insert N instance rows (12 monthly, 5 yearly)
+      const dates = recurrence === "monthly"
+        ? generateMonthlyOccurrences(startDate, isLastDay, 12)
+        : generateYearlyOccurrences(startDate, 5);
+      const instanceRows = dates.map(d => attachDemoFlag({
+        user_id: user!.id,
+        category: expense.category,
+        amount: expense.amount,
+        date: d,
+        description: expense.description ?? null,
+        is_recurring: false,
+        is_template: false,
+        template_id: (template as any).id,
+        recurring_group_id: groupId,
+        instance_status: "planned",
+        payment_status: "unpaid",
+      }, isDemoMode));
+      const { error: instErr } = await supabase.from("expenses").insert(instanceRows);
+      if (instErr) throw instErr;
+
+      return template;
     },
-    // Analytics: a new expense was created (recurring or one-off)
-    onSuccess: (_d, vars) => { track("expense_created", { is_recurring: !!vars.is_recurring }); ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: (_d, vars) => {
+      track("expense_created", { is_recurring: !!vars.is_recurring || vars.recurrence !== "one_time" });
+      ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+    },
   });
 }
+
+export type ExpenseEditScope = "single" | "future" | "series";
 
 export function useUpdateExpense() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; category?: string; amount?: number; date?: string; description?: string; is_recurring?: boolean; recurring_start_date?: string | null }) => {
-      if (updates.is_recurring === false) {
-        updates.recurring_start_date = null;
-      } else if (updates.recurring_start_date === "") {
-        updates.recurring_start_date = null;
+    mutationFn: async ({ id, scope = "single", ...updates }: {
+      id: string;
+      scope?: ExpenseEditScope;
+      category?: string;
+      amount?: number;
+      date?: string;
+      description?: string;
+      instance_status?: "planned" | "paid" | "cancelled";
+      paid_date?: string | null;
+    }) => {
+      // Look up the row to know if it's an instance and find its template.
+      const { data: target, error: lookupErr } = await supabase
+        .from("expenses").select("*").eq("id", id).single();
+      if (lookupErr) throw lookupErr;
+      const t: any = target;
+
+      // Don't let user change `date` via edits; series structure handles dates.
+      const { date: _ignoredDate, ...patch } = updates as any;
+
+      if (scope === "single" || !t.template_id) {
+        const { error } = await supabase.from("expenses").update(patch).eq("id", id);
+        if (error) throw error;
+        return;
       }
-      const { error } = await supabase.from("expenses").update(updates).eq("id", id);
-      if (error) throw error;
+
+      const templateId = t.template_id;
+      if (scope === "future") {
+        // Update this instance + all future instances (skip already-paid ones).
+        const { error } = await supabase.from("expenses").update(patch)
+          .eq("template_id", templateId)
+          .gte("date", t.date)
+          .neq("instance_status", "paid");
+        if (error) throw error;
+        return;
+      }
+      // series: update template + all instances except already-paid ones
+      const { error: tplErr } = await supabase.from("expenses").update(patch).eq("id", templateId);
+      if (tplErr) throw tplErr;
+      const { error: instErr } = await supabase.from("expenses").update(patch)
+        .eq("template_id", templateId)
+        .neq("instance_status", "paid");
+      if (instErr) throw instErr;
     },
     onSuccess: () => { track("expense_updated"); ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
+// Back-compat shim: old call sites passed `recurring_group_id` to update the whole series.
 export function useUpdateExpenseSeries() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ recurring_group_id, ...updates }: { recurring_group_id: string; category?: string; amount?: number; description?: string }) => {
-      const { error } = await (supabase.from("expenses") as any).update(updates).eq("recurring_group_id", recurring_group_id);
+      const { error } = await (supabase.from("expenses") as any)
+        .update(updates)
+        .eq("recurring_group_id", recurring_group_id)
+        .neq("instance_status", "paid");
       if (error) throw error;
     },
     onSuccess: () => { track("expense_updated", { scope: "series" }); ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
@@ -787,9 +900,38 @@ export function useUpdateExpenseSeries() {
 export function useDeleteExpense() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("expenses").delete().eq("id", id);
-      if (error) throw error;
+    mutationFn: async (input: string | { id: string; scope?: ExpenseEditScope; deletePaid?: boolean }) => {
+      const id = typeof input === "string" ? input : input.id;
+      const scope: ExpenseEditScope = typeof input === "string" ? "single" : (input.scope || "single");
+      const deletePaid = typeof input === "string" ? false : !!input.deletePaid;
+
+      const { data: target, error: lookupErr } = await supabase
+        .from("expenses").select("*").eq("id", id).single();
+      if (lookupErr) throw lookupErr;
+      const t: any = target;
+
+      if (scope === "single" || !t.template_id) {
+        const { error } = await supabase.from("expenses").delete().eq("id", id);
+        if (error) throw error;
+        return;
+      }
+      const templateId = t.template_id;
+      if (scope === "future") {
+        let q: any = supabase.from("expenses").delete()
+          .eq("template_id", templateId)
+          .gte("date", t.date);
+        if (!deletePaid) q = q.neq("instance_status", "paid");
+        const { error } = await q;
+        if (error) throw error;
+        return;
+      }
+      // series: delete instances then template
+      let q: any = supabase.from("expenses").delete().eq("template_id", templateId);
+      if (!deletePaid) q = q.neq("instance_status", "paid");
+      const { error: instErr } = await q;
+      if (instErr) throw instErr;
+      const { error: tplErr } = await supabase.from("expenses").delete().eq("id", templateId);
+      if (tplErr) throw tplErr;
     },
     onSuccess: () => { track("expense_deleted"); ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
@@ -1218,7 +1360,13 @@ export function useUpdateExpensePaymentStatus() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, payment_status }: { id: string; payment_status: string }) => {
-      const { error } = await supabase.from("expenses").update({ payment_status } as any).eq("id", id);
+      const isPaid = payment_status === "paid";
+      const patch: any = {
+        payment_status,
+        instance_status: isPaid ? "paid" : "planned",
+        paid_date: isPaid ? new Date().toISOString().slice(0, 10) : null,
+      };
+      const { error } = await supabase.from("expenses").update(patch).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => { ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
@@ -1498,8 +1646,8 @@ export function useDashboardStats() {
       ] = await Promise.all([
         supabase.from("income").select(`amount, ${recognitionField}`).gte(recognitionField, monthStart),
         supabase.from("income").select(`amount, ${recognitionField}`).gte(recognitionField, lastMondayStr).lte(recognitionField, lastSundayStr),
-        // Fetch one-off expenses in the month + ALL recurring templates (expanded virtually below)
-        supabase.from("expenses").select("amount, date, is_recurring, recurring_start_date").or(`and(is_recurring.eq.false,date.gte.${monthStart}),is_recurring.eq.true`),
+        // Instances are real rows now — just fetch this month's non-template rows.
+        supabase.from("expenses").select("amount, date, instance_status").eq("is_template", false).gte("date", monthStart).lte("date", monthEndStr),
         supabase.from("clients").select("id", { count: "exact", head: true }),
         supabase.from("appointments")
           .select("*, clients(name), services(name)")
@@ -1546,16 +1694,10 @@ export function useDashboardStats() {
       const allExpenses = expenseRes.data ?? [];
       const todayIncome = monthIncome.filter((i: any) => dateOf(i) === today).reduce((s: number, i: any) => s + Number(i.amount), 0);
       const monthlyIncome = monthIncome.reduce((s: number, i: any) => s + Number(i.amount), 0);
-      // For monthly total: include one-off expenses dated this month + recurring templates whose start date <= end of this month
-      const monthKey = monthStart.substring(0, 7);
-      const monthlyExpenses = allExpenses.reduce((s: number, e: any) => {
-        if (e.is_recurring) {
-          const start = e.recurring_start_date || e.date;
-          if (start && start.substring(0, 7) <= monthKey) return s + Number(e.amount);
-          return s;
-        }
-        return s + Number(e.amount);
-      }, 0);
+      // Sum all non-template expense rows in this month (planned + paid; excludes cancelled).
+      const monthlyExpenses = allExpenses
+        .filter((e: any) => e.instance_status !== "cancelled")
+        .reduce((s: number, e: any) => s + Number(e.amount), 0);
       const thisWeekIncome = monthIncome.filter((i: any) => dateOf(i) >= thisMondayStr && dateOf(i) <= today).reduce((s: number, i: any) => s + Number(i.amount), 0);
       const lastWeekIncome = (lastWeekIncomeRes.data ?? []).reduce((s, i) => s + Number(i.amount), 0);
 

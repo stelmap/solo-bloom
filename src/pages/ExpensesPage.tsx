@@ -6,7 +6,7 @@ import { Plus, Pencil, Trash2, Download, Check, X } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
 import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense, useUpdateExpensePaymentStatus, useUpdateExpenseSeries } from "@/hooks/useData";
-import { expandExpensesForRange } from "@/lib/recurringExpenses";
+import { explainExpenseDate } from "@/lib/recurringExpenses";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -87,14 +87,9 @@ export default function ExpensesPage() {
       to = todayStr;
     }
 
-    // Within a selected date range, expand recurring templates to one virtual row per month.
-    // For "all time" we show only the template row (no expansion) to keep the list tidy.
-    let result: any[];
-    if (from) {
-      result = expandExpensesForRange(expenses as any, from, to);
-    } else {
-      result = expenses as any[];
-    }
+    // Instances are real DB rows now — just filter by date range and category.
+    let result = expenses as any[];
+    if (from) result = result.filter(e => e.date >= from && e.date <= to);
     if (catFilter !== "all") result = result.filter(e => e.category === catFilter);
     return result;
   }, [expenses, dateRange, catFilter]);

@@ -1,10 +1,13 @@
 /**
- * Helpers for monthly recurring expenses.
+ * Helpers for materialized recurring expenses.
  *
- * Recurring expenses are stored as a single template row (`is_recurring=true`,
- * `recurring_start_date` set). At read time they are expanded virtually for each
- * month from their start date onward, with the day clamped to the last day of
- * shorter months (so Jan 31 → Feb 28/29, Apr 30, etc.).
+ * Recurring expenses are stored as a TEMPLATE row (`is_template=true`,
+ * `recurrence_type` set) plus N materialized INSTANCE rows (`template_id`
+ * set, `instance_status` of `planned` | `paid` | `cancelled`).
+ *
+ * The legacy "expand virtually" helpers are gone — instances are real DB rows
+ * now. This file provides the day-clamping and instance-generation utilities
+ * used by `useCreateExpense` and the rolling-horizon top-up.
  */
 
 export type ExpenseRow = {
@@ -17,98 +20,82 @@ export type ExpenseRow = {
   recurring_start_date?: string | null;
   recurring_group_id?: string | null;
   payment_status?: string | null;
+  instance_status?: "planned" | "paid" | "cancelled" | null;
+  paid_date?: string | null;
+  template_id?: string | null;
+  is_template?: boolean | null;
+  recurrence_type?: "monthly" | "yearly" | null;
+  is_last_day_of_month?: boolean | null;
   tax_setting_id?: string | null;
   [k: string]: any;
 };
 
-export type VirtualExpense = ExpenseRow & {
-  virtual: true;
-  template_id: string;
-};
+function pad(n: number) { return String(n).padStart(2, "0"); }
 
-function daysInMonth(year: number, monthIndex0: number): number {
+export function daysInMonth(year: number, monthIndex0: number): number {
   return new Date(year, monthIndex0 + 1, 0).getDate();
 }
 
-function pad(n: number): string {
-  return String(n).padStart(2, "0");
+export function isLastDayOfItsMonth(date: string): boolean {
+  const [y, m, d] = date.split("-").map(Number);
+  return d === daysInMonth(y, m - 1);
 }
 
-/** Return yyyy-MM-dd for the given year, monthIndex0 and clamped day-of-month. */
-export function recurringDateFor(startDate: string, year: number, monthIndex0: number): string {
+/** Compute the occurrence date for a recurring template in the given (year, monthIndex0). */
+export function occurrenceDateFor(
+  startDate: string,
+  isLastDay: boolean,
+  year: number,
+  monthIndex0: number,
+): string {
   const startDay = Number(startDate.split("-")[2]);
-  const day = Math.min(startDay, daysInMonth(year, monthIndex0));
+  const last = daysInMonth(year, monthIndex0);
+  const day = isLastDay ? last : Math.min(startDay, last);
   return `${year}-${pad(monthIndex0 + 1)}-${pad(day)}`;
 }
 
-/** True if the recurring template has an occurrence in the given yyyy-MM key. */
-export function recurringAppliesToMonth(template: ExpenseRow, monthKey: string): boolean {
-  const start = template.recurring_start_date || template.date;
-  if (!start) return false;
-  const startMonth = start.substring(0, 7);
-  return monthKey >= startMonth;
-}
-
-/**
- * Expand recurring templates into virtual occurrences for [fromDate, toDate] (inclusive),
- * yielding one occurrence per calendar month. Non-recurring rows are passed through unchanged.
- */
-export function expandExpensesForRange(
-  expenses: ExpenseRow[],
-  fromDate: string,
-  toDate: string,
-): (ExpenseRow | VirtualExpense)[] {
-  if (!expenses?.length) return [];
-  const out: (ExpenseRow | VirtualExpense)[] = [];
-
-  const fromY = Number(fromDate.substring(0, 4));
-  const fromM = Number(fromDate.substring(5, 7)) - 1;
-  const toY = Number(toDate.substring(0, 4));
-  const toM = Number(toDate.substring(5, 7)) - 1;
-
-  for (const e of expenses) {
-    if (!e.is_recurring) {
-      if (e.date >= fromDate && e.date <= toDate) out.push(e);
-      continue;
-    }
-    const start = e.recurring_start_date || e.date;
-    if (!start) continue;
-    const startY = Number(start.substring(0, 4));
-    const startM = Number(start.substring(5, 7)) - 1;
-
-    // Iterate months in [from, to]
-    let y = fromY;
-    let m = fromM;
-    while (y < toY || (y === toY && m <= toM)) {
-      // Skip months before start
-      if (y > startY || (y === startY && m >= startM)) {
-        const occDate = recurringDateFor(start, y, m);
-        if (occDate >= fromDate && occDate <= toDate) {
-          out.push({
-            ...e,
-            id: `${e.id}-${y}-${pad(m + 1)}`,
-            template_id: e.id,
-            date: occDate,
-            virtual: true,
-          });
-        }
-      }
-      m++;
-      if (m > 11) { m = 0; y++; }
-    }
+/** Generate `count` future occurrences for a monthly template, starting at startDate. */
+export function generateMonthlyOccurrences(startDate: string, isLastDay: boolean, count = 12): string[] {
+  const [sy, sm] = startDate.split("-").map(Number);
+  const out: string[] = [];
+  let y = sy; let m = sm - 1;
+  for (let i = 0; i < count; i++) {
+    out.push(occurrenceDateFor(startDate, isLastDay, y, m));
+    m++; if (m > 11) { m = 0; y++; }
   }
-
   return out;
 }
 
-/** Sum of recurring template amounts that apply to the given yyyy-MM key. */
-export function recurringTotalForMonth(expenses: ExpenseRow[], monthKey: string, opts?: { categoryFilter?: (cat: string) => boolean }): number {
-  let total = 0;
-  for (const e of expenses) {
-    if (!e.is_recurring) continue;
-    if (!recurringAppliesToMonth(e, monthKey)) continue;
-    if (opts?.categoryFilter && !opts.categoryFilter(e.category)) continue;
-    total += Number(e.amount);
+/** Generate `count` yearly occurrences, starting at startDate. */
+export function generateYearlyOccurrences(startDate: string, count = 5): string[] {
+  const [sy, sm, sd] = startDate.split("-").map(Number);
+  const out: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const y = sy + i;
+    const last = daysInMonth(y, sm - 1);
+    const day = Math.min(sd, last);
+    out.push(`${y}-${pad(sm)}-${pad(day)}`);
   }
-  return total;
+  return out;
+}
+
+/** Human helper text describing how a chosen date will be used. */
+export function explainExpenseDate(opts: {
+  recurrence: "one_time" | "monthly" | "yearly";
+  date: string | null;
+  t?: (key: string) => string;
+}): string | null {
+  const { recurrence, date } = opts;
+  if (!date) return null;
+  if (recurrence === "one_time") {
+    return "This date will be used as the expense date.";
+  }
+  if (recurrence === "yearly") {
+    return "This date defines the day and month when this expense will be planned every year.";
+  }
+  // monthly
+  if (isLastDayOfItsMonth(date)) {
+    return "You selected the last day of the month. This recurring expense will be planned on the last day of each following month (e.g. Jan 31 → Feb 28/29 → Mar 31 → Apr 30).";
+  }
+  return "This date defines the day of the month when this expense will be planned. The recurring expense will be included in calculations starting from this date.";
 }
