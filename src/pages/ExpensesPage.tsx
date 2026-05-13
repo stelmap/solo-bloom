@@ -133,20 +133,32 @@ export default function ExpensesPage() {
   const startEdit = (exp: any, scope: "single" | "series") => {
     setEditId(exp.id);
     setEditScope(scope);
-    setForm({ category: exp.category, amount: Number(exp.amount), date: exp.date, description: exp.description || "", is_recurring: exp.is_recurring, recurring_start_date: exp.recurring_start_date || exp.date });
+    const rec: "one_time" | "monthly" | "yearly" = exp.is_template
+      ? (exp.recurrence_type || "monthly")
+      : (exp.is_recurring ? (exp.recurrence_type || "monthly") : "one_time");
+    setForm({
+      category: exp.category,
+      amount: Number(exp.amount),
+      date: exp.date,
+      description: exp.description || "",
+      recurrence: rec,
+      recurring_start_date: exp.recurring_start_date || exp.date,
+      instance_status: (exp.instance_status as any) || (exp.payment_status === "paid" ? "paid" : "planned"),
+    });
     setOpen(true);
   };
 
   const openCreate = () => {
     setEditId(null);
     const today = new Date().toISOString().split("T")[0];
-    setForm({ category: "Other", amount: 0, date: today, description: "", is_recurring: false, recurring_start_date: today });
+    setForm({ category: "Other", amount: 0, date: today, description: "", recurrence: "one_time", recurring_start_date: today, instance_status: "planned" });
     setOpen(true);
   };
 
   const handleSubmit = async () => {
     if (!form.amount) return;
-    if (form.is_recurring && !form.recurring_start_date) {
+    const isRecurring = form.recurrence !== "one_time";
+    if (isRecurring && !form.recurring_start_date) {
       toast({ title: t("common.error"), description: "Recurring start date is required", variant: "destructive" });
       return;
     }
@@ -160,11 +172,26 @@ export default function ExpensesPage() {
             description: form.description,
           });
         } else {
-          await updateExpense.mutateAsync({ id: editId, ...form });
+          await updateExpense.mutateAsync({
+            id: editId,
+            category: form.category,
+            amount: form.amount,
+            description: form.description,
+            instance_status: form.instance_status,
+            paid_date: form.instance_status === "paid" ? new Date().toISOString().split("T")[0] : null,
+          });
         }
         toast({ title: t("toast.expenseUpdated") });
       } else {
-        await createExpense.mutateAsync(form);
+        await createExpense.mutateAsync({
+          category: form.category,
+          amount: form.amount,
+          date: form.date,
+          description: form.description,
+          recurrence: form.recurrence,
+          recurring_start_date: isRecurring ? form.recurring_start_date : null,
+          instance_status: form.instance_status,
+        });
         toast({ title: t("toast.expenseAdded") });
       }
       setOpen(false);
@@ -172,8 +199,6 @@ export default function ExpensesPage() {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
-
-  const handleDelete = async () => {
     if (!deleteId) return;
     try {
       await deleteExpense.mutateAsync(deleteId);
