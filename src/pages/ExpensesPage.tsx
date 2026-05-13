@@ -199,11 +199,15 @@ export default function ExpensesPage() {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
+
+  const handleDelete = async () => {
     if (!deleteId) return;
     try {
-      await deleteExpense.mutateAsync(deleteId);
+      await deleteExpense.mutateAsync({ id: deleteId, scope: deleteScope, deletePaid: deleteIncludePaid });
       toast({ title: t("toast.expenseDeleted") });
       setDeleteId(null);
+      setDeleteScope("single");
+      setDeleteIncludePaid(false);
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
