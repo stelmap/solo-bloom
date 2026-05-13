@@ -98,12 +98,13 @@ export default function ExpensesPage() {
       to = todayStr;
     }
 
-    // Instances are real DB rows now — just filter by date range and category.
-    let result = expenses as any[];
+    // Instances are real DB rows now — exclude templates and filter by range, category, and status.
+    let result = (expenses as any[]).filter(e => !e.is_template);
     if (from) result = result.filter(e => e.date >= from && e.date <= to);
     if (catFilter !== "all") result = result.filter(e => e.category === catFilter);
+    if (statusFilter !== "all") result = result.filter(e => (e.instance_status || "planned") === statusFilter);
     return result;
-  }, [expenses, dateRange, catFilter]);
+  }, [expenses, dateRange, catFilter, statusFilter]);
 
   const totalFiltered = filtered.reduce((s, e) => s + Number(e.amount), 0);
   const taxTotal = filtered.filter(e => e.category === "Tax").reduce((s, e) => s + Number(e.amount), 0);
