@@ -81,7 +81,7 @@ export default function AuthPage() {
     try {
       track("checkout_started", { plan_type: plan });
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { ...selection, withTrial: true },
+        body: { ...selection, withTrial: false },
       });
       if (error) throw error;
       if (!data?.url) throw new Error("No checkout URL returned");
