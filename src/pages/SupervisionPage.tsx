@@ -313,9 +313,19 @@ export default function SupervisionPage() {
                 clients={clients}
                 value={createForm.client_id}
                 onChange={v => setCreateForm(f => ({ ...f, client_id: v }))}
-                placeholder={t("supervision.selectClient")}
               />
             </div>
+
+            {createForm.client_id && (() => {
+              const c = (clients as any[]).find(x => x.id === createForm.client_id);
+              return c ? (
+                <ClientNotesCard
+                  client={c}
+                  mode="preview"
+                  onEditRequested={() => navigate(`/clients/${createForm.client_id}`)}
+                />
+              ) : null;
+            })()}
             <div className="space-y-2">
               <Label>{t("supervision.date")} *</Label>
               <Input type="date" value={createForm.supervision_date} onChange={e => setCreateForm(f => ({ ...f, supervision_date: e.target.value }))} />
