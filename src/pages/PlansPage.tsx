@@ -202,7 +202,7 @@ export default function PlansPage() {
     setContinuing(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { planCode: selectedPlan.code, billingPeriod: period, withTrial: true },
+        body: { planCode: selectedPlan.code, billingPeriod: period, withTrial: false },
       });
       // Edge-function returns non-2xx as `error` with a `context` containing the JSON body.
       if (error) {
@@ -250,12 +250,6 @@ export default function PlansPage() {
           <p className="text-muted-foreground max-w-xl mx-auto">
             {t("plans.subtitle")}
           </p>
-          <div className="flex justify-center">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
-              <Sparkles className="h-3.5 w-3.5" />
-              {t("plans.trialBadge")}
-            </span>
-          </div>
         </header>
 
         {subscriptionError && (

@@ -157,8 +157,6 @@ export function SubscriptionSection() {
 
     const statusBadge = subscription.cancel_at_period_end ? (
       <Badge variant="destructive" className="border-0">{t("sub.cancelingBadge")}</Badge>
-    ) : subscription.on_trial ? (
-      <Badge className="bg-primary/15 text-primary hover:bg-primary/15 border-0">{t("sub.trialBadge")}</Badge>
     ) : (
       <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/15 border-0">
         {t("sub.activeBadge")}
@@ -168,10 +166,7 @@ export function SubscriptionSection() {
     // Determine which date row to show
     let dateLabel: string | null = null;
     let dateValue: string | null = null;
-    if (subscription.on_trial && subscription.trial_end) {
-      dateLabel = t("sub.detailsTrialEnds");
-      dateValue = fmtDate(subscription.trial_end);
-    } else if (subscription.subscription_end) {
+    if (subscription.subscription_end) {
       dateLabel = subscription.cancel_at_period_end ? t("sub.detailsEnds") : t("sub.detailsRenewal");
       dateValue = fmtDate(subscription.subscription_end);
     }
