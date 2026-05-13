@@ -489,11 +489,47 @@ export default function ExpensesPage() {
         )}
       </div>
 
-      <ConfirmDeleteDialog
-        open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={handleDelete}
-        title={t("expenses.deleteTitle")} description={t("expenses.deleteDesc")}
-        loading={deleteExpense.isPending}
-      />
+      {(() => {
+        const target = deleteId ? (expenses as any[]).find(e => e.id === deleteId) : null;
+        const isRecurring = !!(target?.template_id);
+        return (
+          <Dialog open={!!deleteId} onOpenChange={(o) => { if (!o) { setDeleteId(null); setDeleteScope("single"); setDeleteIncludePaid(false); } }}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>{t("expenses.deleteTitle")}</DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-muted-foreground">{t("expenses.deleteDesc")}</p>
+              {isRecurring && (
+                <div className="space-y-3 mt-2">
+                  <div className="space-y-2">
+                    <Label>Scope</Label>
+                    <Select value={deleteScope} onValueChange={(v: any) => setDeleteScope(v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="single">Only this</SelectItem>
+                        <SelectItem value="future">This and future</SelectItem>
+                        <SelectItem value="series">Entire series</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {deleteScope !== "single" && (
+                    <div className="flex items-center gap-2">
+                      <Checkbox id="del-paid" checked={deleteIncludePaid} onCheckedChange={(v) => setDeleteIncludePaid(!!v)} />
+                      <Label htmlFor="del-paid" className="text-sm">Also delete already-paid instances</Label>
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="flex justify-end gap-2 mt-4">
+                <Button variant="outline" onClick={() => setDeleteId(null)} disabled={deleteExpense.isPending}>{t("common.cancel")}</Button>
+                <Button variant="destructive" onClick={handleDelete} disabled={deleteExpense.isPending}>
+                  {deleteExpense.isPending ? t("common.deleting") : t("common.delete")}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        );
+      })()}
 
       {/* Edit scope choice dialog for recurring expenses */}
       <Dialog open={editScopeOpen} onOpenChange={setEditScopeOpen}>
