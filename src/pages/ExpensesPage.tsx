@@ -457,11 +457,13 @@ export default function ExpensesPage() {
                                 <Pencil className="h-3.5 w-3.5" />
                               </button>
                             )}
-                            {!expense.virtual && (
-                              <button onClick={() => setDeleteId(expense.id)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
-                            )}
+                            <button onClick={() => {
+                              setDeleteId(expense.id);
+                              setDeleteScope(expense.template_id ? "single" : "single");
+                              setDeleteIncludePaid(false);
+                            }} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
                           </div>
                         </td>
                       </tr>
