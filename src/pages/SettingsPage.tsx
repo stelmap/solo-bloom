@@ -716,6 +716,7 @@ export default function SettingsPage() {
                 <SelectItem value="EUR">{t("currency.EUR")}</SelectItem>
                 <SelectItem value="UAH">{t("currency.UAH")}</SelectItem>
                 <SelectItem value="PLN">{t("currency.PLN")}</SelectItem>
+                <SelectItem value="USD">{t("currency.USD")}</SelectItem>
               </SelectContent>
             </Select>
             {form.currency !== ((profile as any)?.currency || "EUR") && (
