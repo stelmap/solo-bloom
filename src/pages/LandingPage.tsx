@@ -13,7 +13,7 @@ import { track } from "@/lib/analytics";
 import {
   ArrowRight, CheckCircle2, AlertTriangle, Eye, TrendingUp,
   Calendar as CalendarIcon, Users, Sparkles, ShieldCheck,
-  Play, X, Check, Briefcase, GraduationCap, UserCheck, BookOpen,
+  Play, X, Check, HeartHandshake, Presentation, BookOpen,
   Quote, MessageCircle, Mail, Phone, MapPin, Send,
 } from "lucide-react";
 import manualTrackingImg from "@/assets/manual-tracking-spreadsheet.png";
