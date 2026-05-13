@@ -25,7 +25,7 @@ const CONTACT_OR_CALENDAR_URL = `mailto:${CONTACT_EMAIL}`;
 const BOOKING_URL = "#booking"; // [BOOKING_OR_CONTACT_FORM_URL]
 const TELEGRAM_URL = "https://t.me/solobizzcontact";
 const TELEGRAM_HANDLE = "@solobizzcontact";
-const PHONE_NUMBER = "+48 000 000 000"; // [PHONE_NUMBER]
+const PHONE_NUMBER = "+48 572 600 256";
 const OFFICE_ADDRESS = "Poland, Wroclaw, Gwiadzista 16";
 const VACANCIES_URL = "/careers";
 
@@ -1395,7 +1395,7 @@ function AboutContactsSection() {
               <Phone className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
                 <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">
-                  {isUk ? "Телефон" : "Phone"}
+                  {isUk ? "+48 572600256 (Ukrainian, English)" : "Phone"}
                 </div>
                 <a href={`tel:${PHONE_NUMBER.replace(/\s+/g, "")}`} className="text-foreground hover:text-primary">
                   {PHONE_NUMBER}
@@ -1450,7 +1450,7 @@ function LandingFooter() {
       links: [
         { label: "Email", href: `mailto:${CONTACT_EMAIL}`, external: true },
         { label: "Telegram", href: TELEGRAM_URL, external: true },
-        { label: isUk ? "Телефон" : "Phone", href: `tel:${PHONE_NUMBER.replace(/\s+/g, "")}`, external: true },
+        { label: isUk ? "+48 572600256 (Ukrainian, English)" : "Phone", href: `tel:${PHONE_NUMBER.replace(/\s+/g, "")}`, external: true },
       ],
     },
   ];
