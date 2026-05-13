@@ -117,24 +117,14 @@ export function AppSidebar() {
             <h1 className="text-xl font-bold text-sidebar-foreground tracking-tight">
               Solo<span className="text-sidebar-primary">Bizz</span>
             </h1>
-            {isTrial && (
-              <span className="inline-flex items-center rounded-full bg-sidebar-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sidebar-primary">
-                Trial
-              </span>
-            )}
           </div>
           <p className="text-xs text-sidebar-foreground/50 mt-0.5">Business Manager</p>
-          {isTrial ? (
-            <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-sidebar-primary/25 bg-sidebar-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sidebar-primary">
-              <Clock className="h-3.5 w-3.5" />
-              <span>Trial active</span>
-            </div>
-          ) : isFreeStarter ? (
+          {isFreeStarter ? (
             <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-sidebar-primary/25 bg-sidebar-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sidebar-primary">
               <Sparkles className="h-3.5 w-3.5" />
               <span>Free Starter</span>
             </div>
-          ) : subscription.subscribed ? (
+          ) : (subscription.subscribed || isTrial) ? (
             <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-sidebar-primary/25 bg-sidebar-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sidebar-primary">
               <BadgeCheck className="h-3.5 w-3.5" />
               <span>Active plan</span>
