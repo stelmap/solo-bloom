@@ -453,17 +453,18 @@ export default function ExpensesPage() {
                         <td className="p-4">
                           <Select
                             value={status}
-                            onValueChange={(v: any) => updatePaymentStatus.mutateAsync({
-                              id: expense.id,
-                              payment_status: v === "paid" ? "paid" : "unpaid",
-                            }).then(() => track("payment_status_toggled", { entity: "expense", new_status: v }))
-                              .catch((e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }))
-                              // also persist cancelled directly
-                              .finally(async () => {
-                                if (v === "cancelled") {
+                            onValueChange={async (v: any) => {
+                              try {
+                                if (v === "paid" || v === "planned") {
+                                  await updatePaymentStatus.mutateAsync({ id: expense.id, payment_status: v === "paid" ? "paid" : "unpaid" });
+                                } else {
                                   await updateExpense.mutateAsync({ id: expense.id, instance_status: "cancelled", paid_date: null });
                                 }
-                              })}
+                                track("payment_status_toggled", { entity: "expense", new_status: v });
+                              } catch (e: any) {
+                                toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+                              }
+                            }}
                           >
                             <SelectTrigger className={cn(
                               "h-7 w-32 text-xs border",
