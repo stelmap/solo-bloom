@@ -1,4 +1,5 @@
 import { useState, useCallback, createContext, useContext, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { BookingDialog } from "@/components/BookingDialog";
 
@@ -1585,6 +1586,22 @@ export default function LandingPage() {
   return (
     <LandingLangProvider>
       <LandingSEO />
+      <Helmet>
+        <link rel="canonical" href="https://solo-bizz.com/" />
+        <meta property="og:url" content="https://solo-bizz.com/" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: [
+            { "@type": "Question", name: "Is it hard to start using Solo Bizz?", acceptedAnswer: { "@type": "Answer", text: "No. You can sign up and add your first client in under a minute. No setup, no training required." } },
+            { "@type": "Question", name: "Will it work if I work alone?", acceptedAnswer: { "@type": "Answer", text: "Yes. Solo Bizz is built specifically for solo practitioners — psychologists, therapists, coaches and tutors." } },
+            { "@type": "Question", name: "Can I run group sessions or supervisions?", acceptedAnswer: { "@type": "Answer", text: "Yes. You can manage individual sessions, group sessions and supervisions in one place." } },
+            { "@type": "Question", name: "Can I use it for teaching or tutoring?", acceptedAnswer: { "@type": "Answer", text: "Yes. Tutors and teachers use Solo Bizz to track lessons, payments and student progress." } },
+            { "@type": "Question", name: "Is there free access?", acceptedAnswer: { "@type": "Answer", text: "Yes. Solo Bizz has a permanent Free Starter plan for up to 5 active clients — no credit card required." } },
+            { "@type": "Question", name: "Do I need a credit card to start?", acceptedAnswer: { "@type": "Answer", text: "No credit card is needed for the Free Starter plan." } },
+          ],
+        })}</script>
+      </Helmet>
       <div className="min-h-screen bg-background">
         <LandingNav />
         <HeroSection />
