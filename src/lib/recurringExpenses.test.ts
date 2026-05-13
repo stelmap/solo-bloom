@@ -94,6 +94,71 @@ describe("recurringExpenses preview matches backend generation", () => {
     });
   });
 
+  describe("timezone stability", () => {
+    // The generators operate on yyyy-mm-dd strings and must NOT shift dates
+    // due to local↔UTC parsing (the classic `new Date("2026-03-01")` UTC bug
+    // that yields Feb 28 in negative-offset timezones).
+
+    const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+    it("first occurrence equals the provided start date verbatim", () => {
+      // In a UTC-shifted parse, "2026-03-01" could become "2026-02-28".
+      expect(generateMonthlyOccurrences("2026-03-01", false, 1)[0]).toBe("2026-03-01");
+      expect(generateMonthlyOccurrences("2026-01-01", false, 1)[0]).toBe("2026-01-01");
+      expect(generateMonthlyOccurrences("2026-12-31", true, 1)[0]).toBe("2026-12-31");
+      expect(generateYearlyOccurrences("2026-01-01", 1)[0]).toBe("2026-01-01");
+      expect(generateYearlyOccurrences("2026-12-31", 1)[0]).toBe("2026-12-31");
+    });
+
+    it("DST-boundary days are not shifted (Mar/Nov in northern hemisphere)", () => {
+      // In a TZ-naive impl, Mar 8 / Mar 29 / Nov 1 could drift by one day.
+      expect(generateMonthlyOccurrences("2026-03-08", false, 3)).toEqual([
+        "2026-03-08",
+        "2026-04-08",
+        "2026-05-08",
+      ]);
+      expect(generateMonthlyOccurrences("2026-03-29", false, 2)).toEqual([
+        "2026-03-29",
+        "2026-04-29",
+      ]);
+      expect(generateMonthlyOccurrences("2026-11-01", false, 2)).toEqual([
+        "2026-11-01",
+        "2026-12-01",
+      ]);
+    });
+
+    it("always emits zero-padded yyyy-mm-dd strings (no Date#toISOString drift)", () => {
+      const all = [
+        ...generateMonthlyOccurrences("2026-01-05", false, 12),
+        ...generateMonthlyOccurrences("2026-01-31", true, 12),
+        ...generateYearlyOccurrences("2024-02-29", 5),
+      ];
+      for (const s of all) expect(s).toMatch(ISO_RE);
+    });
+
+    it("is deterministic — output is independent of wall-clock / Date.now", () => {
+      const a = generateMonthlyOccurrences("2026-01-31", true, 12);
+      const realNow = Date.now;
+      try {
+        // Simulate a different "now" — output must not change.
+        Date.now = () => new Date(1970, 0, 1).getTime();
+        const b = generateMonthlyOccurrences("2026-01-31", true, 12);
+        expect(b).toEqual(a);
+      } finally {
+        Date.now = realNow;
+      }
+    });
+
+    it("occurrenceDateFor returns the requested calendar date verbatim", () => {
+      // Day 1 in a TZ-shifted impl could become last-day-of-previous-month.
+      expect(occurrenceDateFor("2026-01-01", false, 2026, 2)).toBe("2026-03-01");
+      expect(occurrenceDateFor("2026-01-01", false, 2026, 0)).toBe("2026-01-01");
+      // Last-day flag respects the target month's length, not the start month's.
+      expect(occurrenceDateFor("2026-01-31", true, 2026, 1)).toBe("2026-02-28");
+      expect(occurrenceDateFor("2024-01-31", true, 2024, 1)).toBe("2024-02-29");
+    });
+  });
+
   describe("yearly", () => {
     it("repeats same month/day each year", () => {
       const dates = generateYearlyOccurrences("2026-03-15", 3);
