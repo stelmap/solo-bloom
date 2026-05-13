@@ -64,6 +64,7 @@ export default function ExpensesPage() {
   const initialRange = (searchParams.get("range") || "month") as DateRangeKey;
   const [dateRange, setDateRange] = useState<DateRangeKey>(initialRange);
   const [catFilter, setCatFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "planned" | "paid" | "cancelled">("all");
 
   const CATEGORIES = useMemo(() => {
     const customCats = expenses
