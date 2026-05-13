@@ -165,7 +165,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const t = useCallback(
     (key: TranslationKey, params?: Record<string, string | number>): string =>
       translateFor(lang, key, params),
-    [lang]
+    // localeVersion bump invalidates memo so consumers re-render once a lazy locale arrives.
+    [lang, localeVersion]
   );
 
   const setLang = useCallback((newLang: Language) => {
