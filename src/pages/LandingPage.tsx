@@ -1617,11 +1617,14 @@ function AboutContactsSection() {
               <Phone className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
                 <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">
-                  {isUk ? "+48 572600256 (Ukrainian, English)" : "Phone"}
+                  {isUk ? "Телефон" : "Phone"}
                 </div>
                 <a href={`tel:${PHONE_NUMBER.replace(/\s+/g, "")}`} className="text-foreground hover:text-primary">
                   {PHONE_NUMBER}
                 </a>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {isUk ? "Консультації англійською та українською мовами" : "Consultations in English and Ukrainian"}
+                </div>
               </div>
             </li>
             <li className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
