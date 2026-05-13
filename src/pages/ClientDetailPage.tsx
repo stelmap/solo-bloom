@@ -494,27 +494,6 @@ export default function ClientDetailPage() {
                 </div>
               </div>
             )}
-
-            <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-              <h3 className="font-semibold text-foreground flex items-center gap-2"><FileText className="h-4 w-4 text-primary" /> {t("clientDetail.notes")}</h3>
-              {!isDemoMode && <div className="flex gap-2">
-                <Textarea placeholder={t("clientDetail.addNote")} value={noteText} onChange={e => setNoteText(e.target.value)} className="min-h-[60px] text-sm" />
-                <Button size="sm" onClick={handleAddNote} disabled={!noteText.trim() || createNote.isPending}><Plus className="h-4 w-4" /></Button>
-              </div>}
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {(notes as any[]).length === 0 && <p className="text-xs text-muted-foreground text-center py-2">{t("clientDetail.noNotes")}</p>}
-                {(notes as any[]).map((note: any) => (
-                  <div key={note.id} className="bg-muted/50 rounded-lg p-3 group relative">
-                    <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{format(new Date(note.created_at), "MMM d, yyyy", { locale: dateLocale })} · {formatScheduledTime(note.created_at, use12h)}</p>
-                    {!isDemoMode && <button onClick={() => deleteNote.mutate({ id: note.id, clientId: client.id })} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all">
-                      <X className="h-3 w-3" />
-                    </button>}
-                  </div>
-                ))}
-              </div>
-            </div>
-
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2"><Paperclip className="h-4 w-4 text-primary" /> {t("clientDetail.attachments")}</h3>
               {!isDemoMode && <>
