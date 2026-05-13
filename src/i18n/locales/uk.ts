@@ -682,6 +682,7 @@ export default {
   "currency.EUR": "EUR (€) — Євро",
   "currency.UAH": "UAH (₴) — Українська гривня",
   "currency.PLN": "PLN (zł) — Польський злотий",
+  "currency.USD": "USD ($) — Долар США",
   "landing.nav.features": "Можливості",
   "landing.nav.howItWorks": "Як це працює",
   "landing.nav.pricing": "Тарифи",
