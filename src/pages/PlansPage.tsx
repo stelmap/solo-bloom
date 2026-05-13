@@ -81,17 +81,21 @@ export default function PlansPage() {
     solo: [
       t("plans.bulletClientsSolo" as any),
       t("plans.bulletEverythingFree" as any),
-      t("plans.bulletAllFeatures" as any),
+      t("plans.bulletCoreModules" as any),
       t("plans.bulletAnalytics" as any),
       t("plans.bulletCancelAnytime" as any),
     ],
     pro: [
       t("plans.bulletClientsPro" as any),
       t("plans.bulletEverythingSolo" as any),
-      t("plans.bulletAllFeatures" as any),
       t("plans.bulletPrioritySupport" as any),
       t("plans.bulletCustomOnboarding" as any),
+      t("plans.bulletScalingTeams" as any),
     ],
+  };
+  const planDescriptions: Record<string, string> = {
+    solo: t("plans.soloDesc" as any),
+    pro: t("plans.proDesc" as any),
   };
   const freeFeatures = [
     t("plans.bulletClientsFree" as any),
