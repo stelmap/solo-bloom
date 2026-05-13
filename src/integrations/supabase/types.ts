@@ -2222,6 +2222,10 @@ export type Database = {
           success: boolean
         }[]
       }
+      current_plan_client_limit: {
+        Args: { p_user_id: string }
+        Returns: number
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean

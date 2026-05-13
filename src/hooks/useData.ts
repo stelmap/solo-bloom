@@ -7,6 +7,7 @@ import { track } from "@/lib/analytics";
 import { getDemoActionMessage, useDemoMode, useDemoWriteGuard, useFreeStarterMode, FREE_STARTER_CLIENT_LIMIT } from "@/hooks/useDemoWorkspace";
 
 export const FREE_STARTER_LIMIT_ERROR = "FREE_STARTER_CLIENT_LIMIT_REACHED";
+export const PLAN_CLIENT_LIMIT_ERROR = "PLAN_CLIENT_LIMIT_REACHED";
 
 const INVALIDATE_APPOINTMENTS = ["appointments", "dashboard-stats", "client-appointments"];
 const INVALIDATE_FINANCIAL = ["income", "expenses", "expected-payments", "dashboard-stats"];
@@ -51,19 +52,18 @@ export function useCreateClient() {
   const qc = useQueryClient();
   const { user } = useAuth();
   const assertCanWrite = useDemoWriteGuard();
-  const { isFreeStarter, atClientLimit } = useFreeStarterMode();
+  const { atClientLimit, planCode, limit } = useFreeStarterMode();
   return useMutation({
     mutationFn: async (client: { name: string; phone?: string; email?: string; notes?: string; telegram?: string }) => {
       assertCanWrite();
-      if (isFreeStarter && atClientLimit) {
-        throw new Error(FREE_STARTER_LIMIT_ERROR);
+      if (atClientLimit) {
+        throw new Error(planCode === "free" ? FREE_STARTER_LIMIT_ERROR : `${PLAN_CLIENT_LIMIT_ERROR}:${limit ?? ""}`);
       }
       const { data, error } = await supabase.from("clients").insert({ ...client, user_id: user!.id } as any).select().single();
       if (error) {
-        // Server-side trigger backstop for the Free Starter 5-client cap.
-        if (typeof error.message === "string" && error.message.includes("FREE_STARTER_CLIENT_LIMIT_REACHED")) {
-          throw new Error(FREE_STARTER_LIMIT_ERROR);
-        }
+        const msg = typeof error.message === "string" ? error.message : "";
+        if (msg.includes("FREE_STARTER_CLIENT_LIMIT_REACHED")) throw new Error(FREE_STARTER_LIMIT_ERROR);
+        if (msg.includes("PLAN_CLIENT_LIMIT_REACHED")) throw new Error(PLAN_CLIENT_LIMIT_ERROR);
         throw error;
       }
       return data;
