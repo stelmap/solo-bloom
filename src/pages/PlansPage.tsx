@@ -81,17 +81,21 @@ export default function PlansPage() {
     solo: [
       t("plans.bulletClientsSolo" as any),
       t("plans.bulletEverythingFree" as any),
-      t("plans.bulletAllFeatures" as any),
+      t("plans.bulletCoreModules" as any),
       t("plans.bulletAnalytics" as any),
       t("plans.bulletCancelAnytime" as any),
     ],
     pro: [
       t("plans.bulletClientsPro" as any),
       t("plans.bulletEverythingSolo" as any),
-      t("plans.bulletAllFeatures" as any),
       t("plans.bulletPrioritySupport" as any),
       t("plans.bulletCustomOnboarding" as any),
+      t("plans.bulletScalingTeams" as any),
     ],
+  };
+  const planDescriptions: Record<string, string> = {
+    solo: t("plans.soloDesc" as any),
+    pro: t("plans.proDesc" as any),
   };
   const freeFeatures = [
     t("plans.bulletClientsFree" as any),
@@ -427,11 +431,17 @@ export default function PlansPage() {
                     )}
                   </div>
 
-                  {plan.description && (
-                    <p className="mt-3 text-sm text-muted-foreground">{plan.description}</p>
+                  {(planDescriptions[plan.code] || plan.description) && (
+                    <p className="mt-3 text-sm text-muted-foreground">
+                      {planDescriptions[plan.code] || plan.description}
+                    </p>
                   )}
 
-                  <ul className="mt-5 space-y-2.5 flex-1">
+                  <p className="mt-4 text-sm font-semibold text-foreground">
+                    {t("plans.allIncludedIntro" as any)}
+                  </p>
+
+                  <ul className="mt-3 space-y-2.5 flex-1">
                     {features.map((f) => (
                       <li key={f} className="flex items-start gap-2 text-sm text-foreground">
                         <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
