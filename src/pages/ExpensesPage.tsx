@@ -64,6 +64,7 @@ export default function ExpensesPage() {
   const initialRange = (searchParams.get("range") || "month") as DateRangeKey;
   const [dateRange, setDateRange] = useState<DateRangeKey>(initialRange);
   const [catFilter, setCatFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "planned" | "paid" | "cancelled">("all");
 
   const CATEGORIES = useMemo(() => {
     const customCats = expenses
@@ -97,12 +98,13 @@ export default function ExpensesPage() {
       to = todayStr;
     }
 
-    // Instances are real DB rows now — just filter by date range and category.
-    let result = expenses as any[];
+    // Instances are real DB rows now — exclude templates and filter by range, category, and status.
+    let result = (expenses as any[]).filter(e => !e.is_template);
     if (from) result = result.filter(e => e.date >= from && e.date <= to);
     if (catFilter !== "all") result = result.filter(e => e.category === catFilter);
+    if (statusFilter !== "all") result = result.filter(e => (e.instance_status || "planned") === statusFilter);
     return result;
-  }, [expenses, dateRange, catFilter]);
+  }, [expenses, dateRange, catFilter, statusFilter]);
 
   const totalFiltered = filtered.reduce((s, e) => s + Number(e.amount), 0);
   const taxTotal = filtered.filter(e => e.category === "Tax").reduce((s, e) => s + Number(e.amount), 0);
@@ -361,6 +363,17 @@ export default function ExpensesPage() {
               {CATEGORIES.map(c => <SelectItem key={c} value={c}>{catLabel(c)}</SelectItem>)}
             </SelectContent>
           </Select>
+          <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+            <SelectTrigger className="w-32 h-8">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="planned">Planned</SelectItem>
+              <SelectItem value="paid">Paid</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -408,7 +421,8 @@ export default function ExpensesPage() {
                 <tbody>
                   {filtered.map((expense: any) => {
                     const isTaxGenerated = !!expense.tax_setting_id;
-                    const isPaid = expense.payment_status === "paid";
+                    const status: "planned" | "paid" | "cancelled" = (expense.instance_status as any) || (expense.payment_status === "paid" ? "paid" : "planned");
+                    const isPaid = status === "paid";
                     return (
                       <tr key={expense.id} className={cn(
                         "border-b border-border last:border-0 hover:bg-muted/30 transition-colors group",
@@ -437,18 +451,35 @@ export default function ExpensesPage() {
                           </Badge>
                         </td>
                         <td className="p-4">
-                          <button
-                            onClick={() => togglePaymentStatus(expense)}
-                            className={cn(
-                              "inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border transition-colors",
-                              isPaid
-                                ? "bg-success/10 border-success/30 text-success hover:bg-success/20"
-                                : "bg-destructive/10 border-destructive/30 text-destructive hover:bg-destructive/20"
-                            )}
+                          <Select
+                            value={status}
+                            onValueChange={async (v: any) => {
+                              try {
+                                if (v === "paid" || v === "planned") {
+                                  await updatePaymentStatus.mutateAsync({ id: expense.id, payment_status: v === "paid" ? "paid" : "unpaid" });
+                                } else {
+                                  await updateExpense.mutateAsync({ id: expense.id, instance_status: "cancelled", paid_date: null });
+                                }
+                                track("payment_status_toggled", { entity: "expense", new_status: v });
+                              } catch (e: any) {
+                                toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+                              }
+                            }}
                           >
-                            {isPaid ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
-                            {isPaid ? t("expenses.paid") : t("expenses.unpaid")}
-                          </button>
+                            <SelectTrigger className={cn(
+                              "h-7 w-32 text-xs border",
+                              status === "paid" && "bg-success/10 border-success/30 text-success",
+                              status === "planned" && "bg-muted/40 border-border text-foreground",
+                              status === "cancelled" && "bg-destructive/10 border-destructive/30 text-destructive line-through",
+                            )}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="planned">Planned</SelectItem>
+                              <SelectItem value="paid">Paid</SelectItem>
+                              <SelectItem value="cancelled">Cancelled</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </td>
                         <td className="p-4">
                           <div className="flex gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
