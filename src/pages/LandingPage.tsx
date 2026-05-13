@@ -790,10 +790,10 @@ type AudienceCard = {
 function AudienceSection() {
   const { t } = useLandingLang();
   const cards: AudienceCard[] = [
-    { icon: Briefcase, titleKey: "aud1Title", descKey: "aud1Desc", bullets: ["aud1B1", "aud1B2", "aud1B3", "aud1B4", "aud1B5"] },
-    { icon: UserCheck, titleKey: "aud2Title", descKey: "aud2Desc", bullets: ["aud2B1", "aud2B2", "aud2B3", "aud2B4", "aud2B5"] },
-    { icon: GraduationCap, titleKey: "aud3Title", descKey: "aud3Desc", bullets: ["aud3B1", "aud3B2", "aud3B3", "aud3B4", "aud3B5"] },
-    { icon: BookOpen, titleKey: "aud4Title", descKey: "aud4Desc", bullets: ["aud4B1", "aud4B2", "aud4B3", "aud4B4", "aud4B5"] },
+    { icon: HeartHandshake, titleKey: "aud1Title", descKey: "aud1Desc", bullets: ["aud1B1", "aud1B2", "aud1B3", "aud1B4", "aud1B5"] },
+    { icon: Users, titleKey: "aud2Title", descKey: "aud2Desc", bullets: ["aud2B1", "aud2B2", "aud2B3", "aud2B4", "aud2B5"] },
+    { icon: Sparkles, titleKey: "aud3Title", descKey: "aud3Desc", bullets: ["aud3B1", "aud3B2", "aud3B3", "aud3B4", "aud3B5"] },
+    { icon: Presentation, titleKey: "aud4Title", descKey: "aud4Desc", bullets: ["aud4B1", "aud4B2", "aud4B3", "aud4B4", "aud4B5"] },
   ];
   return (
     <section id="audience" className="py-20 px-4 sm:px-6">
