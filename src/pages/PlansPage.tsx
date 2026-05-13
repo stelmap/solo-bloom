@@ -78,9 +78,28 @@ export default function PlansPage() {
   const periodLabels: Record<BillingPeriod, string> = { monthly: t("plans.monthly"), quarterly: t("plans.quarterly"), yearly: t("plans.yearly") };
   const periodSuffix: Record<BillingPeriod, string> = { monthly: t("plans.month" as any), quarterly: t("plans.threeMonths" as any), yearly: t("plans.year" as any) };
   const planFeatures: Record<string, string[]> = {
-    solo: [t("plans.soloFeatureCalendar" as any), t("plans.soloFeatureClients" as any), t("plans.soloFeatureServices" as any), t("plans.soloFeatureReminders" as any), t("plans.soloFeatureRecurring" as any)],
-    pro: [t("plans.proFeatureEverything" as any), t("plans.proFeatureFinance" as any), t("plans.proFeatureBreakeven" as any), t("plans.proFeatureInvoices" as any), t("plans.proFeatureSupervision" as any), t("plans.proFeatureAnalytics" as any)],
+    solo: [
+      t("plans.bulletClientsSolo" as any),
+      t("plans.bulletEverythingFree" as any),
+      t("plans.bulletAllFeatures" as any),
+      t("plans.bulletAnalytics" as any),
+      t("plans.bulletCancelAnytime" as any),
+    ],
+    pro: [
+      t("plans.bulletClientsPro" as any),
+      t("plans.bulletEverythingSolo" as any),
+      t("plans.bulletAllFeatures" as any),
+      t("plans.bulletPrioritySupport" as any),
+      t("plans.bulletCustomOnboarding" as any),
+    ],
   };
+  const freeFeatures = [
+    t("plans.bulletClientsFree" as any),
+    t("plans.bulletAllFeatures" as any),
+    t("plans.bulletCoreModules" as any),
+    t("plans.bulletAnalytics" as any),
+    t("plans.bulletForeverFree" as any),
+  ];
 
   const checkHasRealData = async (): Promise<boolean> => {
     const tables = ["clients", "appointments", "income", "expenses"] as const;
@@ -311,26 +330,20 @@ export default function PlansPage() {
             <div className="relative text-left p-6 rounded-2xl border-2 border-border bg-card flex flex-col">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Free Starter
+                  {t("plans.freeName" as any)}
                 </p>
                 <div className="mt-1 flex items-baseline gap-1">
                   <span className="text-3xl font-bold text-foreground">€0</span>
                   <span className="text-sm text-muted-foreground">/ {periodSuffix["monthly"]}</span>
                 </div>
-                <p className="mt-1 text-xs font-semibold text-primary">Free forever</p>
-                <p className="text-xs text-muted-foreground">No card required.</p>
+                <p className="mt-1 text-xs font-semibold text-primary">{t("plans.freeForever" as any)}</p>
+                <p className="text-xs text-muted-foreground">{t("plans.noCardRequired" as any)}</p>
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
-                For those just starting or running a small private practice.
+                {t("plans.freeDesc" as any)}
               </p>
               <ul className="mt-5 space-y-2.5 flex-1">
-                {[
-                  "Up to 5 active clients",
-                  "Session calendar",
-                  "Basic client registry",
-                  "Basic payment tracking",
-                  "Reminders and confirmations",
-                ].map((f) => (
+                {freeFeatures.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-sm text-foreground">
                     <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                     <span>{f}</span>
@@ -338,7 +351,7 @@ export default function PlansPage() {
                 ))}
               </ul>
               <p className="mt-5 text-xs text-muted-foreground">
-                Available by default — no checkout needed.
+                {t("plans.freeAvailableByDefault" as any)}
               </p>
             </div>
 
