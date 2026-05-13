@@ -6,11 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { useUpdateClient } from "@/hooks/useData";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-
-const PLACEHOLDER =
-  "Додайте важливу інформацію про клієнта: цілі терапії, домовленості, фокус роботи, особливості контакту, важливі теми або нотатки для підготовки.";
 
 type Props = {
   client: { id: string; name: string; notes?: string | null; updated_at?: string | null };
@@ -26,6 +24,7 @@ type Props = {
 export function ClientNotesCard({ client, mode = "edit", onEditRequested, disabled }: Props) {
   const update = useUpdateClient();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [value, setValue] = useState(client.notes ?? "");
   const [expanded, setExpanded] = useState(false);
   const [savedAt, setSavedAt] = useState<Date | null>(client.updated_at ? new Date(client.updated_at) : null);
@@ -53,7 +52,7 @@ export function ClientNotesCard({ client, mode = "edit", onEditRequested, disabl
       setSavedAt(new Date());
       setDirty(false);
     } catch (e: any) {
-      toast({ title: "Не вдалося зберегти", description: e.message, variant: "destructive" });
+      toast({ title: t("clientNotes.saveFailed"), description: e.message, variant: "destructive" });
     }
   };
 
@@ -72,11 +71,11 @@ export function ClientNotesCard({ client, mode = "edit", onEditRequested, disabl
   const isEmpty = !value.trim();
   const saving = update.isPending;
   const status = saving
-    ? { icon: <Loader2 className="h-3 w-3 animate-spin" />, text: "Збереження…", tone: "text-muted-foreground" }
+    ? { icon: <Loader2 className="h-3 w-3 animate-spin" />, text: t("clientNotes.saving"), tone: "text-muted-foreground" }
     : dirty
-      ? { icon: <Pencil className="h-3 w-3" />, text: "Є незбережені зміни", tone: "text-warning" }
+      ? { icon: <Pencil className="h-3 w-3" />, text: t("clientNotes.unsaved"), tone: "text-warning" }
       : value.length > 0
-        ? { icon: <CheckCircle2 className="h-3 w-3" />, text: "Збережено", tone: "text-success" }
+        ? { icon: <CheckCircle2 className="h-3 w-3" />, text: t("clientNotes.saved"), tone: "text-success" }
         : null;
 
   if (mode === "preview") {
@@ -84,19 +83,19 @@ export function ClientNotesCard({ client, mode = "edit", onEditRequested, disabl
       <div className="bg-card rounded-xl border border-border p-5 space-y-3">
         <div className="flex items-center justify-between gap-2">
           <h3 className="font-semibold text-foreground flex items-center gap-2">
-            <FileText className="h-4 w-4 text-primary" /> Короткі нотатки клієнта
+            <FileText className="h-4 w-4 text-primary" /> {t("clientNotes.shortTitle")}
           </h3>
           {!isEmpty && onEditRequested && (
             <Button variant="ghost" size="sm" onClick={onEditRequested}>
-              <Pencil className="h-3.5 w-3.5 mr-1" /> Редагувати нотатку клієнта
+              <Pencil className="h-3.5 w-3.5 mr-1" /> {t("clientNotes.editInProfile")}
             </Button>
           )}
         </div>
         {isEmpty ? (
           <div className="rounded-lg border border-dashed border-border bg-muted/30 p-4 text-center space-y-2">
-            <p className="text-sm text-muted-foreground">Коротких нотаток по клієнту ще немає.</p>
+            <p className="text-sm text-muted-foreground">{t("clientNotes.noneShort")}</p>
             {onEditRequested && (
-              <Button variant="outline" size="sm" onClick={onEditRequested}>Додати нотатку</Button>
+              <Button variant="outline" size="sm" onClick={onEditRequested}>{t("clientNotes.addNote")}</Button>
             )}
           </div>
         ) : (
@@ -104,7 +103,7 @@ export function ClientNotesCard({ client, mode = "edit", onEditRequested, disabl
             <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{value}</p>
             {savedAt && (
               <p className="text-[11px] text-muted-foreground mt-2">
-                Оновлено {format(savedAt, "dd.MM.yyyy HH:mm")}
+                {t("clientNotes.updated")} {format(savedAt, "dd.MM.yyyy HH:mm")}
               </p>
             )}
           </div>
@@ -118,7 +117,7 @@ export function ClientNotesCard({ client, mode = "edit", onEditRequested, disabl
       value={value}
       onChange={(e) => handleChange(e.target.value)}
       onBlur={handleManualSave}
-      placeholder={PLACEHOLDER}
+      placeholder={t("clientNotes.placeholder")}
       disabled={disabled}
       className={cn(
         "resize-none text-sm leading-relaxed",
@@ -132,7 +131,7 @@ export function ClientNotesCard({ client, mode = "edit", onEditRequested, disabl
       <div className="bg-card rounded-xl border border-border p-5 space-y-3">
         <div className="flex items-center justify-between gap-2">
           <h3 className="font-semibold text-foreground flex items-center gap-2">
-            <FileText className="h-4 w-4 text-primary" /> Нотатки клієнта
+            <FileText className="h-4 w-4 text-primary" /> {t("clientNotes.title")}
           </h3>
           <div className="flex items-center gap-2">
             {status && (
@@ -144,16 +143,16 @@ export function ClientNotesCard({ client, mode = "edit", onEditRequested, disabl
               variant="ghost"
               size="sm"
               onClick={() => setExpanded(true)}
-              title="Відкрити у великому вікні"
+              title={t("clientNotes.openLarge")}
             >
-              <Maximize2 className="h-3.5 w-3.5 mr-1" /> Розгорнути
+              <Maximize2 className="h-3.5 w-3.5 mr-1" /> {t("clientNotes.expand")}
             </Button>
           </div>
         </div>
 
         {isEmpty && !dirty ? (
           <div className="rounded-lg border border-dashed border-border bg-muted/20 p-3">
-            <p className="text-xs text-muted-foreground mb-2">Нотаток ще немає</p>
+            <p className="text-xs text-muted-foreground mb-2">{t("clientNotes.empty")}</p>
             {editor(false)}
           </div>
         ) : (
@@ -161,9 +160,9 @@ export function ClientNotesCard({ client, mode = "edit", onEditRequested, disabl
         )}
 
         <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-          <span>{value.length} симв.</span>
+          <span>{value.length} {t("clientNotes.chars")}</span>
           {savedAt && !dirty && !saving && (
-            <span>Оновлено {format(savedAt, "dd.MM.yyyy HH:mm")}</span>
+            <span>{t("clientNotes.updated")} {format(savedAt, "dd.MM.yyyy HH:mm")}</span>
           )}
         </div>
       </div>
@@ -172,7 +171,7 @@ export function ClientNotesCard({ client, mode = "edit", onEditRequested, disabl
         <DialogContent className="max-w-3xl w-[95vw] sm:w-full">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between gap-3 pr-6">
-              <span>Нотатки клієнта — {client.name}</span>
+              <span>{t("clientNotes.title")} — {client.name}</span>
               {status && (
                 <Badge variant="outline" className={cn("font-normal", status.tone)}>
                   <span className="inline-flex items-center gap-1">{status.icon}{status.text}</span>
@@ -183,14 +182,14 @@ export function ClientNotesCard({ client, mode = "edit", onEditRequested, disabl
           {editor(true)}
           <div className="flex items-center justify-between gap-2 pt-2">
             <p className="text-xs text-muted-foreground">
-              {savedAt ? `Останнє збереження: ${format(savedAt, "dd.MM.yyyy HH:mm")}` : "Ще не збережено"}
+              {savedAt ? `${t("clientNotes.lastSave")}: ${format(savedAt, "dd.MM.yyyy HH:mm")}` : t("clientNotes.notSavedYet")}
             </p>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setExpanded(false)}>
-                <X className="h-4 w-4 mr-1" /> Закрити
+                <X className="h-4 w-4 mr-1" /> {t("clientNotes.close")}
               </Button>
               <Button onClick={async () => { await handleManualSave(); setExpanded(false); }} disabled={saving}>
-                Зберегти
+                {t("clientNotes.save")}
               </Button>
             </div>
           </div>
