@@ -517,10 +517,10 @@ const C = {
   },
   faq5Q: { en: "Is SoloBizz really free?", fr: "SoloBizz est-il vraiment gratuit ?", uk: "Чи справді SoloBizz безкоштовний?", pl: "Czy SoloBizz jest naprawdę darmowy?" },
   faq5A: {
-    en: "Yes. The Free Starter plan is permanently free for up to 5 active clients. It is not a trial — there is no time limit.",
-    fr: "Oui. Le plan Free Starter est gratuit en permanence jusqu'à 5 clients actifs. Ce n'est pas une période d'essai — pas de limite de temps.",
-    uk: "Так. План Free Starter безкоштовний назавжди для до 5 активних клієнтів. Це не пробний період — немає обмеження по часу.",
-    pl: "Tak. Plan Free Starter jest na stałe darmowy dla maks. 5 aktywnych klientów. To nie jest okres próbny — bez limitu czasu.",
+    en: "Yes. The Free Starter plan is permanently free for up to 5 active clients, with no time limit.",
+    fr: "Oui. Le plan Free Starter est gratuit en permanence jusqu'à 5 clients actifs, sans limite de temps.",
+    uk: "Так. План Free Starter безкоштовний назавжди для до 5 активних клієнтів, без обмеження по часу.",
+    pl: "Tak. Plan Free Starter jest na stałe darmowy dla maks. 5 aktywnych klientów, bez limitu czasu.",
   },
   faq6Q: { en: "Do I need a credit card to start?", fr: "Faut-il une carte bancaire pour commencer ?", uk: "Чи потрібна банківська картка, щоб почати?", pl: "Czy potrzebuję karty, żeby zacząć?" },
   faq6A: {
