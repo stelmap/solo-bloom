@@ -213,7 +213,18 @@ export default function SupervisionPage() {
                   </div>
                 </div>
 
-                {/* Imported Notes (read-only) */}
+                {/* Short client notes — read-only mirror of clients.notes */}
+                {(() => {
+                  const c = (clients as any[]).find(x => x.id === detailData.client_id);
+                  return c ? (
+                    <ClientNotesCard
+                      client={c}
+                      mode="preview"
+                      onEditRequested={() => navigate(`/clients/${detailData.client_id}`)}
+                    />
+                  ) : null;
+                })()}
+
                 <div className="space-y-2">
                   <button
                     onClick={() => setExpandedNotes(!expandedNotes)}
