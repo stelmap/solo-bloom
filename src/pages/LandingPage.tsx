@@ -1827,16 +1827,18 @@ export default function LandingPage() {
       </Helmet>
       <div className="min-h-screen bg-background">
         <LandingNav />
-        <HeroSection />
-        <PainSection />
-        <AudienceSection />
-        <DemoSection />
-        <ComparisonSection />
-        <PricingSection />
-        <TestimonialsSection />
-        <FaqSection />
-        <FinalCTA />
-        <AboutContactsSection />
+        <main>
+          <HeroSection />
+          <PainSection />
+          <AudienceSection />
+          <DemoSection />
+          <ComparisonSection />
+          <PricingSection />
+          <TestimonialsSection />
+          <FaqSection />
+          <FinalCTA />
+          <AboutContactsSection />
+        </main>
         <LandingFooter />
       </div>
     </LandingLangProvider>
