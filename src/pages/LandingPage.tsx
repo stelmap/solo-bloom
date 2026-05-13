@@ -1024,9 +1024,43 @@ function ComparisonSection() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-center gap-3">
-          <PrimaryCta label={t("cmpCta")} source="/#comparison" cta="comparison" className="text-base px-8 h-12" />
-          <p className="text-sm text-muted-foreground">{t("cmpCtaNote")}</p>
+        {/* ROI / time-saving tiles */}
+        <div className="mt-10">
+          <h3 className="sr-only">{t("roiTilesTitle")}</h3>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {[
+              { Icon: Clock, value: t("roiT1Value"), sub: t("roiT1Sub") },
+              { Icon: Timer, value: t("roiT2Value"), sub: t("roiT2Sub") },
+              { Icon: TrendingUp, value: t("roiT3Value"), sub: t("roiT3Sub") },
+            ].map((tile) => (
+              <div
+                key={tile.value}
+                className="rounded-2xl border border-primary/25 bg-primary/5 p-5 flex items-start gap-3"
+              >
+                <div className="h-9 w-9 rounded-lg bg-primary/15 text-primary flex items-center justify-center shrink-0">
+                  <tile.Icon className="h-4 w-4" />
+                </div>
+                <div>
+                  <div className="text-xl font-bold text-foreground leading-tight">{tile.value}</div>
+                  <div className="text-sm text-muted-foreground mt-1 leading-snug">{tile.sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-8 flex flex-col items-center gap-3">
+          <Link
+            to="/auth?plan=free_starter"
+            onClick={() =>
+              track("cta_clicked", { source_page: "/#comparison", cta: "free_starter_selected", plan_type: "free_starter" })
+            }
+          >
+            <Button size="lg" className="gap-2 h-12 px-8 text-base">
+              {t("audCtaPrimary")} <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
+          <p className="text-xs text-muted-foreground text-center max-w-md">{t("audCtaSub")}</p>
         </div>
       </div>
     </section>
