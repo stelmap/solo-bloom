@@ -777,14 +777,20 @@ export type Database = {
           date: string
           description: string | null
           id: string
+          instance_status: string
           is_demo: boolean
+          is_last_day_of_month: boolean
           is_recurring: boolean
+          is_template: boolean
+          paid_date: string | null
           payment_status: string
+          recurrence_type: string | null
           recurring_group_id: string | null
           recurring_start_date: string | null
           seed_batch_id: string | null
           seed_source: string | null
           tax_setting_id: string | null
+          template_id: string | null
           updated_at: string
           user_id: string
         }
@@ -795,14 +801,20 @@ export type Database = {
           date?: string
           description?: string | null
           id?: string
+          instance_status?: string
           is_demo?: boolean
+          is_last_day_of_month?: boolean
           is_recurring?: boolean
+          is_template?: boolean
+          paid_date?: string | null
           payment_status?: string
+          recurrence_type?: string | null
           recurring_group_id?: string | null
           recurring_start_date?: string | null
           seed_batch_id?: string | null
           seed_source?: string | null
           tax_setting_id?: string | null
+          template_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -813,14 +825,20 @@ export type Database = {
           date?: string
           description?: string | null
           id?: string
+          instance_status?: string
           is_demo?: boolean
+          is_last_day_of_month?: boolean
           is_recurring?: boolean
+          is_template?: boolean
+          paid_date?: string | null
           payment_status?: string
+          recurrence_type?: string | null
           recurring_group_id?: string | null
           recurring_start_date?: string | null
           seed_batch_id?: string | null
           seed_source?: string | null
           tax_setting_id?: string | null
+          template_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -830,6 +848,13 @@ export type Database = {
             columns: ["tax_setting_id"]
             isOneToOne: false
             referencedRelation: "tax_settings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
             referencedColumns: ["id"]
           },
         ]
