@@ -6,7 +6,7 @@ import { Plus, Pencil, Trash2, Download, Check, X } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
 import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense, useUpdateExpensePaymentStatus, useUpdateExpenseSeries } from "@/hooks/useData";
-import { explainExpenseDate } from "@/lib/recurringExpenses";
+import { explainExpenseDate, generateMonthlyOccurrences, generateYearlyOccurrences, isLastDayOfItsMonth } from "@/lib/recurringExpenses";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -48,7 +48,17 @@ export default function ExpensesPage() {
   const [editScopeOpen, setEditScopeOpen] = useState(false);
   const [editScope, setEditScope] = useState<"single" | "series">("single");
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [form, setForm] = useState({ category: "Other", amount: 0, date: new Date().toISOString().split("T")[0], description: "", is_recurring: false, recurring_start_date: "" });
+  const [deleteScope, setDeleteScope] = useState<"single" | "future" | "series">("single");
+  const [deleteIncludePaid, setDeleteIncludePaid] = useState(false);
+  const [form, setForm] = useState<{
+    category: string;
+    amount: number;
+    date: string;
+    description: string;
+    recurrence: "one_time" | "monthly" | "yearly";
+    recurring_start_date: string;
+    instance_status: "planned" | "paid" | "cancelled";
+  }>({ category: "Other", amount: 0, date: new Date().toISOString().split("T")[0], description: "", recurrence: "one_time", recurring_start_date: "", instance_status: "planned" });
 
   // Filters
   const initialRange = (searchParams.get("range") || "month") as DateRangeKey;
