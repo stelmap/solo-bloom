@@ -1433,7 +1433,7 @@ function LandingFooter() {
       links: [
         { label: isUk ? "Як це працює" : "How it works", href: "#comparison" },
         { label: isUk ? "Ціни" : "Pricing", href: "#pricing" },
-        { label: isUk ? "Демо" : "Demo", href: "#demo" },
+        { label: "FAQ", href: "#faq" },
         { label: "FAQ", href: "#faq" },
       ],
     },
