@@ -130,7 +130,7 @@ export default function ClientsPage() {
       setOpen(false);
       toast({ title: t("toast.clientAdded") });
     } catch (e: any) {
-      if (e?.message === "FREE_STARTER_CLIENT_LIMIT_REACHED") {
+      if (e?.message === "FREE_STARTER_CLIENT_LIMIT_REACHED" || e?.message?.startsWith?.("PLAN_CLIENT_LIMIT_REACHED")) {
         setOpen(false);
         setPaywallOpen(true);
         return;
