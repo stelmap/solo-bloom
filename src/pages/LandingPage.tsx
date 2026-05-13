@@ -1177,6 +1177,9 @@ function PlanCard({
       <p className="text-xs text-muted-foreground mb-1">{billedLabel}</p>
       {equivStr && <p className="text-xs text-primary font-medium mb-5">{equivStr}</p>}
       {!equivStr && <div className="mb-5" />}
+      {plan.intro && (
+        <p className="text-sm font-semibold text-foreground mb-3">{plan.intro}</p>
+      )}
       <ul className="space-y-2.5 mb-7 flex-1">
         {plan.bullets.map((f) => (
           <li key={f} className="flex items-start gap-3 text-foreground">
