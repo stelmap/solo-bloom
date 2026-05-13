@@ -77,35 +77,12 @@ export default function BreakevenPage() {
       const key = (d as string).substring(0, 7);
       incMap.set(key, (incMap.get(key) || 0) + Number(inc.amount));
     }
-    // Collect months we have data for so recurring expenses can fan out across them
-    const monthSet = new Set<string>();
-    for (const inc of income) { const d = incomeDateOf(inc); if (d) monthSet.add((d as string).substring(0, 7)); }
-    for (const apt of appointments) { if (apt.scheduled_at) monthSet.add(apt.scheduled_at.substring(0, 7)); }
+    // Instances are real rows; just bucket by month. Templates are filtered out by useExpenses.
     for (const exp of expenses) {
-      if (exp.is_recurring) continue;
-      monthSet.add(exp.date.substring(0, 7));
-    }
-    // Always include the current month
-    monthSet.add(today.substring(0, 7));
-
-    for (const exp of expenses) {
-      if (exp.is_recurring) {
-        const start = ((exp as any).recurring_start_date || exp.date) as string;
-        const startKey = start?.substring(0, 7);
-        if (!startKey) continue;
-        for (const key of monthSet) {
-          if (key < startKey) continue;
-          if (exp.category === "Tax") taxMap.set(key, (taxMap.get(key) || 0) + Number(exp.amount));
-          else expMap.set(key, (expMap.get(key) || 0) + Number(exp.amount));
-        }
-        continue;
-      }
+      if ((exp as any).instance_status === "cancelled") continue;
       const key = exp.date.substring(0, 7);
-      if (exp.category === "Tax") {
-        taxMap.set(key, (taxMap.get(key) || 0) + Number(exp.amount));
-      } else {
-        expMap.set(key, (expMap.get(key) || 0) + Number(exp.amount));
-      }
+      if (exp.category === "Tax") taxMap.set(key, (taxMap.get(key) || 0) + Number(exp.amount));
+      else expMap.set(key, (expMap.get(key) || 0) + Number(exp.amount));
     }
     for (const apt of appointments) {
       if (apt.status === "completed") {
@@ -116,31 +93,18 @@ export default function BreakevenPage() {
     return { incomeByMonth: incMap, expensesByMonth: expMap, taxByMonth: taxMap, sessionsByMonth: sesMap };
   }, [income, expenses, appointments, incomeDateField]);
 
-  // Recurring expenses are stored as one template row; count it once for the current month if its start <= today.
   const monthKeyNow = today.substring(0, 7);
-  const monthlyExpenses = expenses.filter((e: any) => {
-    if (e.is_recurring) {
-      const start = (e.recurring_start_date || e.date) as string;
-      return start && start.substring(0, 7) <= monthKeyNow;
-    }
-    return e.date >= monthStart;
-  }).reduce((s: number, e: any) => s + Number(e.amount), 0);
+  const monthlyExpenses = expenses.filter((e: any) =>
+    e.date >= monthStart && e.date <= today.substring(0,7) + "-31" && e.instance_status !== "cancelled"
+  ).reduce((s: number, e: any) => s + Number(e.amount), 0);
 
-  const monthlyExpensesExTax = expenses.filter((e: any) => {
-    if (e.is_recurring) {
-      const start = (e.recurring_start_date || e.date) as string;
-      return start && start.substring(0, 7) <= monthKeyNow && e.category !== "Tax";
-    }
-    return e.date >= monthStart && e.category !== "Tax";
-  }).reduce((s: number, e: any) => s + Number(e.amount), 0);
+  const monthlyExpensesExTax = expenses.filter((e: any) =>
+    e.date.startsWith(monthKeyNow) && e.category !== "Tax" && e.instance_status !== "cancelled"
+  ).reduce((s: number, e: any) => s + Number(e.amount), 0);
 
-  const monthlyTaxExpenses = expenses.filter((e: any) => {
-    if (e.is_recurring) {
-      const start = (e.recurring_start_date || e.date) as string;
-      return start && start.substring(0, 7) <= monthKeyNow && e.category === "Tax";
-    }
-    return e.date >= monthStart && e.category === "Tax";
-  }).reduce((s: number, e: any) => s + Number(e.amount), 0);
+  const monthlyTaxExpenses = expenses.filter((e: any) =>
+    e.date.startsWith(monthKeyNow) && e.category === "Tax" && e.instance_status !== "cancelled"
+  ).reduce((s: number, e: any) => s + Number(e.amount), 0);
 
   const monthlyIncome = income.filter((i: any) => (incomeDateOf(i) ?? "") >= monthStart).reduce((s: number, i: any) => s + Number(i.amount), 0);
   const avgServicePrice = services.length > 0 ? services.reduce((s, sv) => s + Number(sv.price), 0) / services.length : 1;

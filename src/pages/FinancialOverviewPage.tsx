@@ -124,23 +124,18 @@ export default function FinancialOverviewPage() {
       end: new Date(year, 11, 31),
     });
 
-    // Recurring expenses are stored as one template row; expand virtually for each month from start.
-    const recurringExpenses = (allExpenses as any[]).filter(e => e.is_recurring);
-    const recurringAppliesToMonth = (e: any, monthKey: string) => {
-      const start = (e.recurring_start_date || e.date) as string;
-      return start && start.substring(0, 7) <= monthKey;
-    };
-    const getRecurringForMonth = (monthKey: string) => {
-      return recurringExpenses
-        .filter(e => recurringAppliesToMonth(e, monthKey))
+    // Instances are real rows now; bucket per month directly.
+    const expensesByMonth = (allExpenses as any[])
+      .filter(e => !e.is_template && e.instance_status !== "cancelled");
+    const getRecurringForMonth = (monthKey: string) =>
+      expensesByMonth.filter(e => e.date?.startsWith(monthKey) && e.template_id)
         .reduce((s, e) => s + Number(e.amount), 0);
-    };
-    const recurringItemsForMonth = (monthKey: string) => recurringExpenses
-      .filter(e => recurringAppliesToMonth(e, monthKey))
+    const recurringItemsForMonth = (monthKey: string) => expensesByMonth
+      .filter(e => e.date?.startsWith(monthKey) && e.template_id)
       .map((e: any) => ({
         description: e.description || e.category,
         amount: Number(e.amount),
-        date: "—",
+        date: e.date,
         category: e.category,
         isRecurring: true,
       }));
@@ -191,7 +186,7 @@ export default function FinancialOverviewPage() {
 
       const monthIncome = (allIncome as any[]).filter(i => (incomeDateOf(i) as string)?.startsWith(mKey));
       // Past/current months: include one-off expenses dated this month + recurring templates that apply to this month.
-      const oneOffMonthExpenses = (allExpenses as any[]).filter(e => !e.is_recurring && e.date?.startsWith(mKey));
+      const oneOffMonthExpenses = (allExpenses as any[]).filter(e => !e.is_template && !e.template_id && e.instance_status !== "cancelled" && e.date?.startsWith(mKey));
       const recurringMonthTotal = getRecurringForMonth(mKey);
       const totalIncome = monthIncome.reduce((s, i) => s + Number(i.amount), 0);
       const monthExpected = (expectedPayments as any[]).filter(ep => {
