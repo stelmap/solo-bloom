@@ -667,12 +667,23 @@ function HeroSection() {
         <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
           {t("heroSub")}
         </p>
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-4">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <PrimaryCta label={t("heroCta")} source="/" cta="hero" className="text-base px-8 h-12" />
-            <VideoCta label={t("heroVideo")} source="/" className="text-base px-8 h-12" />
+            <a
+              href="#pricing"
+              className="inline-flex items-center justify-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-4 h-12"
+            >
+              {t("heroSecondary")}
+            </a>
           </div>
           <p className="text-sm text-muted-foreground">{t("heroSubCta")}</p>
+          <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground mt-2">
+            <li className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-primary" /> {t("trustData")}</li>
+            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> {t("trustStripe")}</li>
+            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> {t("trustGdpr")}</li>
+            <li className="inline-flex items-center gap-1.5"><MessageCircle className="h-3.5 w-3.5 text-primary" /> {t("trustSupport")}</li>
+          </ul>
         </div>
       </div>
     </section>
