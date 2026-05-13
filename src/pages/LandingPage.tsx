@@ -974,6 +974,7 @@ type PlanRow = {
   id: PaidPlan;
   name: string;
   desc: string;
+  intro?: string;
   bullets: string[];
   cta: string;
   badge?: string;
@@ -998,6 +999,7 @@ function PricingSection() {
       id: "solo",
       name: t("soloName"),
       desc: t("soloDesc"),
+      intro: t("soloIntro"),
       bullets: [t("soloF1"), t("soloF2"), t("soloF3"), t("soloF4"), t("soloF5")],
       cta: t("soloCta"),
       badge: t("soloBadge"),
@@ -1010,6 +1012,7 @@ function PricingSection() {
       id: "pro",
       name: t("proName"),
       desc: t("proDesc"),
+      intro: t("proIntro"),
       bullets: [t("proF1"), t("proF2"), t("proF3"), t("proF4"), t("proF5")],
       cta: t("proCta"),
       badge: t("proBadge"),
