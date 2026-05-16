@@ -8,7 +8,7 @@ import { useState, memo, useRef } from "react";
 import ExcelJS from "exceljs";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useNavigate } from "react-router-dom";
-import { useClients, useCreateClient, useDeleteClient, useUnarchiveClient } from "@/hooks/useData";
+import { useClients, useCreateClient, useDeleteClient, useUnarchiveClient, useAppointments } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { ArchiveClientDialog } from "@/components/ArchiveClientDialog";
