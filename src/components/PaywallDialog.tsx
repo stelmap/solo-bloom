@@ -47,6 +47,12 @@ export function PaywallDialog({ open, onOpenChange, reason = "client_limit" }: P
             {message}
           </DialogDescription>
         </DialogHeader>
+        <div className="mt-2 rounded-xl border border-primary/20 bg-primary/5 p-3 flex items-start gap-2.5">
+          <ShieldCheck className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {tx("privacy.shortClients", "Your clients' data is protected. We don't see or use client information.")}
+          </p>
+        </div>
         <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-center gap-2 pt-4">
           <Button
             variant="outline"
