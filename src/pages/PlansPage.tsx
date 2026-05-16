@@ -6,7 +6,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, Check, Loader2, Sparkles, ArrowLeft, Trash2 } from "lucide-react";
+import { AlertCircle, Check, Loader2, Sparkles, ArrowLeft, Trash2, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHasDemoData } from "@/hooks/useDemoWorkspace";
@@ -454,6 +454,16 @@ export default function PlansPage() {
             })}
           </div>
         )}
+
+        {/* Privacy / trust block — placed near decision point */}
+        <div className="max-w-3xl mx-auto rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-4 sm:p-5 flex items-start gap-3.5">
+          <div className="h-9 w-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+            <ShieldCheck className="h-4 w-4 text-primary" />
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {t("privacy.longClients" as any)}
+          </p>
+        </div>
 
         {/* Footer CTA */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">

@@ -304,10 +304,29 @@ const C = {
 
   soloName: { en: "Solo Practice", fr: "Solo Practice", uk: "Solo Practice", pl: "Solo Practice" },
   soloDesc: {
-    en: "For an established private practice.",
-    fr: "Pour une pratique privée établie.",
-    uk: "Для усталеної приватної практики.",
-    pl: "Dla ustabilizowanej prywatnej praktyki.",
+    en: "Affordable plan for a small solo practice — manage clients, sessions and payments without chaos.",
+    fr: "Forfait abordable pour une petite pratique solo — gérez clients, séances et paiements sans chaos.",
+    uk: "Доступний тариф для невеликої сольної практики — ведення клієнтів, сесій та оплат без хаосу.",
+    pl: "Przystępny plan dla małej, jednoosobowej praktyki — klienci, sesje i płatności bez chaosu.",
+  },
+  // Privacy / trust messaging used near pricing and CTAs
+  privacyTitle: {
+    en: "Your clients' data, fully private",
+    fr: "Les données de vos clients, entièrement privées",
+    uk: "Дані ваших клієнтів — повністю приватні",
+    pl: "Dane Twoich klientów — w pełni prywatne",
+  },
+  privacyLong: {
+    en: "Your client data stays private. SoloBizz does not read, analyze or use information about your clients. Client data is protected, and only the practice owner has access.",
+    fr: "Les données de vos clients restent privées. SoloBizz ne consulte, n'analyse ni n'utilise les informations de vos clients. Les données sont protégées et seul le propriétaire de la pratique y a accès.",
+    uk: "Ваші клієнтські дані залишаються приватними. SoloBizz не переглядає, не аналізує і не використовує інформацію про ваших клієнтів. Дані клієнтів захищені, а доступ до них має лише власник практики.",
+    pl: "Twoje dane klientów pozostają prywatne. SoloBizz nie przegląda, nie analizuje i nie wykorzystuje informacji o Twoich klientach. Dane są chronione, a dostęp ma tylko właściciel praktyki.",
+  },
+  privacyShort: {
+    en: "Your clients' data is protected. We don't see or use client information.",
+    fr: "Les données de vos clients sont protégées. Nous ne voyons ni n'utilisons les informations clients.",
+    uk: "Дані ваших клієнтів захищені. Ми не бачимо і не використовуємо клієнтську інформацію.",
+    pl: "Dane Twoich klientów są chronione. Nie widzimy i nie wykorzystujemy informacji o klientach.",
   },
   soloIntro: {
     en: "All SoloBizz features included.",
@@ -330,10 +349,10 @@ const C = {
 
   proName: { en: "Pro Practice", fr: "Pro Practice", uk: "Pro Practice", pl: "Pro Practice" },
   proDesc: {
-    en: "For practices that scale without limits.",
-    fr: "Pour les pratiques qui se développent sans limite.",
-    uk: "Для практики, що масштабується без обмежень.",
-    pl: "Dla praktyk, które skalują się bez ograniczeń.",
+    en: "Advanced practice management — more active clients, group sessions, supervision and full financial control.",
+    fr: "Gestion avancée — plus de clients actifs, séances de groupe, supervision et contrôle financier complet.",
+    uk: "Розширене керування практикою — більше активних клієнтів, групові сесії, супервізія і повний фінансовий контроль.",
+    pl: "Zaawansowane zarządzanie praktyką — więcej aktywnych klientów, sesje grupowe, superwizja i pełna kontrola finansów.",
   },
   proIntro: {
     en: "All SoloBizz features included.",
@@ -1104,9 +1123,9 @@ function PricingSection() {
       cta: t("soloCta"),
       badge: t("soloBadge"),
       highlighted: true,
-      monthly: 19,
-      quarterly: 45.6,
-      yearly: 136.8,
+      monthly: 5,
+      quarterly: 12,
+      yearly: 36,
     },
     {
       id: "pro",
@@ -1116,9 +1135,9 @@ function PricingSection() {
       bullets: [t("proF1"), t("proF2"), t("proF3"), t("proF4"), t("proF5")],
       cta: t("proCta"),
       badge: t("proBadge"),
-      monthly: 49,
-      quarterly: 117.6,
-      yearly: 352.8,
+      monthly: 19,
+      quarterly: 45.6,
+      yearly: 136.8,
     },
   ];
 
@@ -1177,6 +1196,17 @@ function PricingSection() {
           </div>
         </div>
 
+        {/* Privacy / trust block — placed near pricing to reduce hesitation */}
+        <div className="max-w-3xl mx-auto mb-10 rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/5 to-transparent p-5 sm:p-6 flex items-start gap-4">
+          <div className="h-10 w-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+            <ShieldCheck className="h-5 w-5 text-primary" />
+          </div>
+          <div className="text-left">
+            <p className="text-base font-semibold text-foreground">{t("privacyTitle")}</p>
+            <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{t("privacyLong")}</p>
+          </div>
+        </div>
+
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
           {/* Free Starter card */}
           <div className="relative p-7 rounded-2xl bg-card border-2 border-border flex flex-col">
@@ -1219,6 +1249,12 @@ function PricingSection() {
             />
           ))}
         </div>
+
+        {/* Short privacy reassurance close to plan CTAs */}
+        <p className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+          <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+          {t("privacyShort")}
+        </p>
 
         {/* Inline pricing FAQ */}
         <div className="mt-12 max-w-3xl mx-auto">
