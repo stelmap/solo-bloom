@@ -85,6 +85,7 @@ ClientCard.displayName = "ClientCard";
 
 export default function ClientsPage() {
   const { data: clients = [], isLoading } = useClients();
+  const { data: appointments = [] } = useAppointments();
   const createClient = useCreateClient();
   const deleteClient = useDeleteClient();
   const unarchiveClient = useUnarchiveClient();
@@ -109,9 +110,33 @@ export default function ClientsPage() {
     archived: clients.filter((c: any) => c.status === "archived").length,
     all: clients.length,
   };
+
+  // Build map of client_id -> concatenated service names from their appointment history
+  const clientServices = (() => {
+    const map = new Map<string, string>();
+    for (const a of appointments as any[]) {
+      const svc = a?.services?.name;
+      if (!a?.client_id || !svc) continue;
+      const prev = map.get(a.client_id);
+      map.set(a.client_id, prev ? `${prev} ${svc}` : svc);
+    }
+    return map;
+  })();
+
+  const q = debouncedSearch.trim().toLowerCase();
   const filtered = clients
     .filter((c: any) => statusFilter === "all" ? true : (c.status ?? "active") === statusFilter)
-    .filter((c) => c.name.toLowerCase().includes(debouncedSearch.toLowerCase()));
+    .filter((c: any) => {
+      if (!q) return true;
+      const hay = [
+        c.name,
+        c.phone,
+        c.email,
+        c.telegram,
+        clientServices.get(c.id) || "",
+      ].filter(Boolean).join(" ").toLowerCase();
+      return hay.includes(q);
+    });
 
   const handleUnarchive = async (id: string) => {
     try {
