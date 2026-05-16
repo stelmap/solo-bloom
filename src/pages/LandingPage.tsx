@@ -1250,6 +1250,12 @@ function PricingSection() {
           ))}
         </div>
 
+        {/* Short privacy reassurance close to plan CTAs */}
+        <p className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+          <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+          {t("privacyShort")}
+        </p>
+
         {/* Inline pricing FAQ */}
         <div className="mt-12 max-w-3xl mx-auto">
           <Accordion type="single" collapsible className="rounded-2xl border border-border bg-card divide-y divide-border">
