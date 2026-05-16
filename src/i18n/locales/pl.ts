@@ -368,7 +368,7 @@ export default {
   "common.duration": "Czas trwania (minuty)",
   "common.type": "Typ",
   "auth.welcomeBack": "Witaj ponownie",
-  "auth.continueWithGoogle": "Kontynuuj z Google",
+  "auth.continueWithGoogle": "Zaloguj się do Solo Bizz przez Google",
   "auth.orContinueWith": "lub kontynuuj z email",
   "auth.googleSignInCancelled": "Logowanie Google zostało anulowane.",
   "auth.googleSignInFailed": "Nie udało się zalogować przez Google. Spróbuj ponownie.",

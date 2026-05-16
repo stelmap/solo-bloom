@@ -368,7 +368,7 @@ export default {
   "common.duration": "Тривалість (хвилин)",
   "common.type": "Тип",
   "auth.welcomeBack": "З поверненням",
-  "auth.continueWithGoogle": "Продовжити через Google",
+  "auth.continueWithGoogle": "Зайти в Solo Bizz через Google",
   "auth.orContinueWith": "або через email",
   "auth.googleSignInCancelled": "Вхід через Google скасовано.",
   "auth.googleSignInFailed": "Не вдалося завершити вхід через Google. Спробуйте ще раз.",

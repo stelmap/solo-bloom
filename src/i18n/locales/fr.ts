@@ -368,7 +368,7 @@ export default {
   "common.duration": "Durée (minutes)",
   "common.type": "Type",
   "auth.welcomeBack": "Bon retour",
-  "auth.continueWithGoogle": "Continuer avec Google",
+  "auth.continueWithGoogle": "Se connecter à Solo Bizz avec Google",
   "auth.orContinueWith": "ou continuer avec email",
   "auth.googleSignInCancelled": "Connexion Google annulée.",
   "auth.googleSignInFailed": "Impossible de terminer la connexion Google. Veuillez réessayer.",
