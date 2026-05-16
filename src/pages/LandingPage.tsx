@@ -1135,9 +1135,9 @@ function PricingSection() {
       bullets: [t("proF1"), t("proF2"), t("proF3"), t("proF4"), t("proF5")],
       cta: t("proCta"),
       badge: t("proBadge"),
-      monthly: 49,
-      quarterly: 117.6,
-      yearly: 352.8,
+      monthly: 19,
+      quarterly: 45.6,
+      yearly: 136.8,
     },
   ];
 
