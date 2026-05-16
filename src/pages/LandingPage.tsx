@@ -304,10 +304,29 @@ const C = {
 
   soloName: { en: "Solo Practice", fr: "Solo Practice", uk: "Solo Practice", pl: "Solo Practice" },
   soloDesc: {
-    en: "For an established private practice.",
-    fr: "Pour une pratique privée établie.",
-    uk: "Для усталеної приватної практики.",
-    pl: "Dla ustabilizowanej prywatnej praktyki.",
+    en: "Affordable plan for a small solo practice — manage clients, sessions and payments without chaos.",
+    fr: "Forfait abordable pour une petite pratique solo — gérez clients, séances et paiements sans chaos.",
+    uk: "Доступний тариф для невеликої сольної практики — ведення клієнтів, сесій та оплат без хаосу.",
+    pl: "Przystępny plan dla małej, jednoosobowej praktyki — klienci, sesje i płatności bez chaosu.",
+  },
+  // Privacy / trust messaging used near pricing and CTAs
+  privacyTitle: {
+    en: "Your clients' data, fully private",
+    fr: "Les données de vos clients, entièrement privées",
+    uk: "Дані ваших клієнтів — повністю приватні",
+    pl: "Dane Twoich klientów — w pełni prywatne",
+  },
+  privacyLong: {
+    en: "Your client data stays private. SoloBizz does not read, analyze or use information about your clients. Client data is protected, and only the practice owner has access.",
+    fr: "Les données de vos clients restent privées. SoloBizz ne consulte, n'analyse ni n'utilise les informations de vos clients. Les données sont protégées et seul le propriétaire de la pratique y a accès.",
+    uk: "Ваші клієнтські дані залишаються приватними. SoloBizz не переглядає, не аналізує і не використовує інформацію про ваших клієнтів. Дані клієнтів захищені, а доступ до них має лише власник практики.",
+    pl: "Twoje dane klientów pozostają prywatne. SoloBizz nie przegląda, nie analizuje i nie wykorzystuje informacji o Twoich klientach. Dane są chronione, a dostęp ma tylko właściciel praktyki.",
+  },
+  privacyShort: {
+    en: "Your clients' data is protected. We don't see or use client information.",
+    fr: "Les données de vos clients sont protégées. Nous ne voyons ni n'utilisons les informations clients.",
+    uk: "Дані ваших клієнтів захищені. Ми не бачимо і не використовуємо клієнтську інформацію.",
+    pl: "Dane Twoich klientów są chronione. Nie widzimy i nie wykorzystujemy informacji o klientach.",
   },
   soloIntro: {
     en: "All SoloBizz features included.",
