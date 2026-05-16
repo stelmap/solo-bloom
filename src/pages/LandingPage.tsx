@@ -1123,9 +1123,9 @@ function PricingSection() {
       cta: t("soloCta"),
       badge: t("soloBadge"),
       highlighted: true,
-      monthly: 19,
-      quarterly: 45.6,
-      yearly: 136.8,
+      monthly: 5,
+      quarterly: 12,
+      yearly: 36,
     },
     {
       id: "pro",
