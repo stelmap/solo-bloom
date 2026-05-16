@@ -69,7 +69,8 @@ serve(async (req) => {
     } catch {
       return json({ error: "Invalid request body." }, 400);
     }
-    const { withTrial = true } = body;
+    // Trial removed: ignore any `withTrial` flag sent by older clients.
+    const withTrial = false;
     const legacySelection = body.priceId ? LEGACY_PRICE_TO_SELECTION[body.priceId] : undefined;
     const planCode = body.planCode ?? legacySelection?.planCode;
     const billingPeriod = body.billingPeriod ?? legacySelection?.billingPeriod;
