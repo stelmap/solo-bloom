@@ -6,7 +6,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, Check, Loader2, Sparkles, ArrowLeft, Trash2 } from "lucide-react";
+import { AlertCircle, Check, Loader2, Sparkles, ArrowLeft, Trash2, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHasDemoData } from "@/hooks/useDemoWorkspace";
