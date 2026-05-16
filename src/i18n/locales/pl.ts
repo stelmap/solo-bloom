@@ -1068,6 +1068,8 @@ export default {
   "plans.savePctVsMonthly": "Oszczędź {pct}% w porównaniu do miesięcznego",
   "plans.loadingNone": "Brak dostępnych aktywnych planów.",
   "plans.footerSecure": "Bezpieczna płatność przez Stripe. Anuluj w dowolnym momencie w ustawieniach.",
+  "privacy.shortClients": "Dane Twoich klientów są chronione. Nie widzimy i nie wykorzystujemy informacji o klientach.",
+  "privacy.longClients": "Twoje dane klientów pozostają prywatne. SoloBizz nie przegląda, nie analizuje i nie wykorzystuje informacji o Twoich klientach. Dane są chronione, a dostęp ma tylko właściciel praktyki.",
   "plans.continue": "Kontynuuj",
   "plans.continueSelect": "Kontynuuj — wybierz plan",
   "plans.clearDemo": "Wyczyść dane demo",
