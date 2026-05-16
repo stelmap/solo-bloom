@@ -143,7 +143,7 @@ export default {
   "clients.count.archived": "{count} archived clients",
   "clients.count.all": "{count} clients total",
   "clients.addClient": "Add Client",
-  "clients.searchPlaceholder": "Search clients...",
+  "clients.searchPlaceholder": "Search by name, phone, telegram, service...",
   "clients.noClients": "No clients yet. Add your first client!",
   "clients.loading": "Loading...",
   "clients.deleteTitle": "Delete client?",
