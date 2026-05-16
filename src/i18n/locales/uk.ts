@@ -143,7 +143,7 @@ export default {
   "clients.count.archived": "{count} в архіві",
   "clients.count.all": "{count} клієнтів усього",
   "clients.addClient": "Додати клієнта",
-  "clients.searchPlaceholder": "Пошук клієнтів...",
+  "clients.searchPlaceholder": "Пошук за іменем, телефоном, telegram, послугою...",
   "clients.noClients": "Клієнтів ще немає. Додайте першого!",
   "clients.loading": "Завантаження...",
   "clients.deleteTitle": "Видалити клієнта?",
