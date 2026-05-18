@@ -50,7 +50,7 @@ export default function BreakevenPage() {
   const { data: profile } = useProfile();
   const { data: taxSettings = [] } = useTaxSettings();
   const upsertGoals = useUpsertBreakevenGoals();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { symbol: cs } = useCurrency();
   const { toast } = useToast();
   const [wizardOpen, setWizardOpen] = useState(false);
