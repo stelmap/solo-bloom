@@ -11,7 +11,7 @@ import { useExpenses, useIncome, useServices, useAppointments, useBreakevenGoals
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { calculateCapacity, sessionsNeededForTarget } from "@/lib/capacity";
@@ -36,8 +36,8 @@ const defaultGoals = (t: any): GoalForm[] => [
 ];
 
 export default function BreakevenPage() {
-  // Analytics: user opened the breakeven view
-  useEffect(() => { track("breakeven_viewed"); }, []);
+  // Analytics: enriched event fires once per mount after data is ready (see below).
+  const breakevenTrackedRef = useRef(false);
   const { data: expenseResult } = useExpenses();
   const expenses = (expenseResult as any)?.data ?? expenseResult ?? [];
   const { data: incomeResult } = useIncome();
@@ -50,7 +50,7 @@ export default function BreakevenPage() {
   const { data: profile } = useProfile();
   const { data: taxSettings = [] } = useTaxSettings();
   const upsertGoals = useUpsertBreakevenGoals();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { symbol: cs } = useCurrency();
   const { toast } = useToast();
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -153,6 +153,39 @@ export default function BreakevenPage() {
         return s + Math.min((monthlyIncome / Math.max(target, 1)) * 100, 100);
       }, 0) / goalTargets.length
     : 0;
+
+  // Required totals across all goals (monthly-normalized).
+  const requiredMonthlyIncome = useMemo(
+    () => goalTargets.reduce(
+      (s, g: any) => s + (g.goal_type === "yearly" ? g.target / 12 : g.target),
+      0,
+    ),
+    [goalTargets],
+  );
+  const avgServicePriceForTrack = useMemo(() => {
+    const prices = (services as any[]).map((s) => Number(s.price)).filter((p) => p > 0);
+    if (prices.length === 0) return 0;
+    return prices.reduce((a, b) => a + b, 0) / prices.length;
+  }, [services]);
+  const requiredClients = avgServicePriceForTrack > 0
+    ? Math.ceil(Math.max(requiredMonthlyIncome - monthlyIncome, 0) / avgServicePriceForTrack)
+    : 0;
+
+  useEffect(() => {
+    if (breakevenTrackedRef.current) return;
+    if (goalTargets.length === 0) return; // wait until goals load
+    breakevenTrackedRef.current = true;
+    track("breakeven_viewed", {
+      lang,
+      goal_count: goalTargets.length,
+      required_monthly_income: Math.round(requiredMonthlyIncome),
+      required_clients: requiredClients,
+      monthly_income_so_far: Math.round(monthlyIncome),
+      sessions_completed: sessionsCompleted,
+      remaining_capacity: remainingCapacity,
+      avg_progress_pct: Math.round(avgProgress),
+    });
+  }, [lang, goalTargets.length, requiredMonthlyIncome, requiredClients, monthlyIncome, sessionsCompleted, remainingCapacity, avgProgress]);
 
   const openWizard = () => {
     if (goals.length > 0) {
