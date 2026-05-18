@@ -27,11 +27,13 @@ const PLAN_SELECTION_MAP: Record<string, { planCode: "solo" | "pro"; billingPeri
 };
 
 export default function AuthPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, subscription } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const planParam = searchParams.get("plan");
-  const [mode, setMode] = useState<"login" | "signup" | "forgot">(searchParams.get("mode") === "signup" ? "signup" : "login");
+  const isCheckoutPlan = Boolean(planParam && PLAN_SELECTION_MAP[planParam]);
+  const isFreeStarterPlan = planParam === "free_starter";
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">(searchParams.get("mode") === "signup" || isFreeStarterPlan ? "signup" : "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -116,22 +118,40 @@ export default function AuthPage() {
 
 
   useEffect(() => {
-    if (user && planParam && PLAN_SELECTION_MAP[planParam] && !checkoutTriggeredRef.current) {
+    if (!user || !planParam) return;
+
+    if (isFreeStarterPlan || !isCheckoutPlan) {
+      navigate("/dashboard", { replace: true });
+      return;
+    }
+
+    if (subscription.loading) return;
+
+    if (subscription.subscribed || subscription.on_trial) {
+      toast({
+        title: "You\'re already subscribed",
+        description: "Manage your plan from Settings → Subscription.",
+      });
+      navigate("/dashboard", { replace: true });
+      return;
+    }
+
+    if (!checkoutTriggeredRef.current) {
       checkoutTriggeredRef.current = true;
       startPlanCheckout(planParam);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, planParam]);
+  }, [user, planParam, isCheckoutPlan, isFreeStarterPlan, subscription.loading, subscription.subscribed, subscription.on_trial]);
 
   if (authLoading) {
     return <div className="min-h-screen bg-secondary flex items-center justify-center"><div className="animate-pulse text-secondary-foreground/50">{t("common.loading")}</div></div>;
   }
 
-  if (user && !planParam) {
+  if (user && (!planParam || isFreeStarterPlan || !isCheckoutPlan)) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  if (user && planParam && (checkoutRedirecting || checkoutTriggeredRef.current) && !checkoutError) {
+  if (user && planParam && isCheckoutPlan && (subscription.loading || checkoutRedirecting || checkoutTriggeredRef.current) && !checkoutError) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="max-w-sm w-full text-center space-y-4">
@@ -143,7 +163,7 @@ export default function AuthPage() {
     );
   }
 
-  if (user && planParam && checkoutError) {
+  if (user && planParam && isCheckoutPlan && checkoutError) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="max-w-sm w-full text-center space-y-4">
