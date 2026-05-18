@@ -154,6 +154,39 @@ export default function BreakevenPage() {
       }, 0) / goalTargets.length
     : 0;
 
+  // Required totals across all goals (monthly-normalized).
+  const requiredMonthlyIncome = useMemo(
+    () => goalTargets.reduce(
+      (s, g: any) => s + (g.goal_type === "yearly" ? g.target / 12 : g.target),
+      0,
+    ),
+    [goalTargets],
+  );
+  const avgServicePriceForTrack = useMemo(() => {
+    const prices = (services as any[]).map((s) => Number(s.price)).filter((p) => p > 0);
+    if (prices.length === 0) return 0;
+    return prices.reduce((a, b) => a + b, 0) / prices.length;
+  }, [services]);
+  const requiredClients = avgServicePriceForTrack > 0
+    ? Math.ceil(Math.max(requiredMonthlyIncome - monthlyIncome, 0) / avgServicePriceForTrack)
+    : 0;
+
+  useEffect(() => {
+    if (breakevenTrackedRef.current) return;
+    if (goalTargets.length === 0) return; // wait until goals load
+    breakevenTrackedRef.current = true;
+    track("breakeven_viewed", {
+      lang,
+      goal_count: goalTargets.length,
+      required_monthly_income: Math.round(requiredMonthlyIncome),
+      required_clients: requiredClients,
+      monthly_income_so_far: Math.round(monthlyIncome),
+      sessions_completed: sessionsCompleted,
+      remaining_capacity: remainingCapacity,
+      avg_progress_pct: Math.round(avgProgress),
+    });
+  }, [lang, goalTargets.length, requiredMonthlyIncome, requiredClients, monthlyIncome, sessionsCompleted, remainingCapacity, avgProgress]);
+
   const openWizard = () => {
     if (goals.length > 0) {
       setGoalForms((goals as any[]).map((g: any) => ({
