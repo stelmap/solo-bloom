@@ -915,7 +915,7 @@ function AudienceSection() {
           <p className="text-base sm:text-lg text-foreground/80 leading-relaxed mb-6">{t("audValueText")}</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
-              to="/auth?plan=free_starter"
+              to="/auth?mode=signup"
               onClick={() =>
                 track("cta_clicked", { source_page: "/#audience", cta: "landing_audience_cta_click", plan_type: "free_starter" })
               }
@@ -1070,7 +1070,7 @@ function ComparisonSection() {
 
         <div className="mt-8 flex flex-col items-center gap-3">
           <Link
-            to="/auth?plan=free_starter"
+            to="/auth?mode=signup"
             onClick={() =>
               track("cta_clicked", { source_page: "/#comparison", cta: "free_starter_selected", plan_type: "free_starter" })
             }
@@ -1227,7 +1227,7 @@ function PricingSection() {
               ))}
             </ul>
             <Link
-              to="/auth?plan=free_starter"
+              to="/auth?mode=signup"
               onClick={() =>
                 track("cta_clicked", { source_page: `/#pricing-${cycle}-free`, cta: "free_starter_selected", plan_type: "free_starter", billing_cycle: cycle })
               }
