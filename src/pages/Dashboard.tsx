@@ -1,6 +1,7 @@
 import { AppLayout } from "@/components/AppLayout";
 import { useDashboardStats, useProfile } from "@/hooks/useData";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { track } from "@/lib/analytics";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { cn } from "@/lib/utils";
