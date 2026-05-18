@@ -129,7 +129,7 @@ export default function AuthPage() {
 
     if (subscription.subscribed || subscription.on_trial) {
       toast({
-        title: "You\'re already subscribed",
+        title: "You're already subscribed",
         description: "Manage your plan from Settings → Subscription.",
       });
       navigate("/dashboard", { replace: true });
