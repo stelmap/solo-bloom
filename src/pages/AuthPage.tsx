@@ -83,7 +83,26 @@ export default function AuthPage() {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { ...selection, withTrial: false },
       });
-      if (error) throw error;
+      if (error) {
+        let serverMsg: string | undefined;
+        let serverCode: string | undefined;
+        try {
+          const ctx: any = (error as any).context;
+          if (ctx && typeof ctx.json === "function") {
+            const j = await ctx.json();
+            serverMsg = j?.error;
+            serverCode = j?.code;
+          }
+        } catch {
+          // ignore
+        }
+        if (serverCode === "already_subscribed") {
+          toast({ title: "You're already subscribed", description: serverMsg });
+          navigate("/dashboard", { replace: true });
+          return;
+        }
+        throw new Error(serverMsg || error.message || "Failed to start checkout");
+      }
       if (!data?.url) throw new Error("No checkout URL returned");
       window.location.href = data.url;
     } catch (err: any) {
@@ -94,6 +113,7 @@ export default function AuthPage() {
       toast({ title: t("common.error"), description: msg, variant: "destructive" });
     }
   };
+
 
   useEffect(() => {
     if (user && planParam && PLAN_SELECTION_MAP[planParam] && !checkoutTriggeredRef.current) {
