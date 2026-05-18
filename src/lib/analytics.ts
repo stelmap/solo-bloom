@@ -93,6 +93,7 @@ export interface BaseEventProps {
 
 export type AnalyticsEvent =
   | "landing_view"
+  | "dashboard_viewed"
   | "pricing_view"
   | "cta_clicked"
   | "pricing_cycle_changed"
