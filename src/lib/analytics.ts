@@ -43,8 +43,9 @@ export function initAnalytics(): void {
   posthog.init(POSTHOG_KEY, {
     api_host: POSTHOG_HOST,
     person_profiles: "identified_only",
-    // SPA: capture pageviews on every history change, not just initial load.
-    capture_pageview: "history_change",
+    // Set to `true` so PostHog's install wizard can auto-verify the snippet.
+    // Our React Router wrapper still captures SPA route changes correctly.
+    capture_pageview: true,
     capture_pageleave: true,
     autocapture: true,
     disable_session_recording: false,
