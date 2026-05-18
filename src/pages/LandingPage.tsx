@@ -641,7 +641,7 @@ function PrimaryCta({
   const billing_cycle = useBillingCycle();
   return (
     <Link
-      to={`/auth?plan=solo_${billing_cycle}`}
+      to="/auth?mode=signup"
       onClick={() =>
         track("cta_clicked", { source_page: source, cta, lang, billing_cycle, ...extra })
       }
