@@ -62,6 +62,13 @@ export default function Dashboard() {
   useEffect(() => {
     track("dashboard_viewed", { range: "today", lang });
   }, [lang]);
+
+  // Click handler for KPI widgets: emits a typed event and navigates.
+  const openWidget = (widget: string, path: string) => {
+    track("dashboard_widget_clicked", { widget, range: "today", lang });
+    navigate(path);
+  };
+
   const navigate = useNavigate();
   const use12h = (profile as any)?.time_format === "12h";
 
