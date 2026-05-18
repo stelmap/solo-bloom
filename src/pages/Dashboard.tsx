@@ -62,6 +62,13 @@ export default function Dashboard() {
   useEffect(() => {
     track("dashboard_viewed", { range: "today", lang });
   }, [lang]);
+
+  // Click handler for KPI widgets: emits a typed event and navigates.
+  const openWidget = (widget: string, path: string) => {
+    track("dashboard_widget_clicked", { widget, range: "today", lang });
+    navigate(path);
+  };
+
   const navigate = useNavigate();
   const use12h = (profile as any)?.time_format === "12h";
 
@@ -213,11 +220,12 @@ export default function Dashboard() {
                 {t("ops.todaysMoney")}
               </h3>
               <div className="grid grid-cols-2 gap-3">
-                <OverviewTile icon={DollarSign} label={t("ops.paidToday")} value={`${cs}${summary.amountReceived.toLocaleString()}`} tone="success" />
-                <OverviewTile icon={Hourglass} label={t("ops.unpaidToday")} value={`${cs}${summary.amountPending.toLocaleString()}`} tone="warning" />
-                <OverviewTile icon={CalendarClock} label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} />
-                <OverviewTile icon={Wallet} label={t("ops.outstandingBalance")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : undefined} />
+                <OverviewTile icon={DollarSign} label={t("ops.paidToday")} value={`${cs}${summary.amountReceived.toLocaleString()}`} tone="success" onClick={() => openWidget("daily_income", "/finances/income")} />
+                <OverviewTile icon={Hourglass} label={t("ops.unpaidToday")} value={`${cs}${summary.amountPending.toLocaleString()}`} tone="warning" onClick={() => openWidget("unpaid_today", "/finances/income")} />
+                <OverviewTile icon={CalendarClock} label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} onClick={() => openWidget("expected_revenue_today", "/calendar")} />
+                <OverviewTile icon={Wallet} label={t("ops.outstandingBalance")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : undefined} onClick={() => openWidget("outstanding_balance", "/finances/income")} />
               </div>
+
             </div>
           </div>
         </section>
@@ -322,22 +330,35 @@ export default function Dashboard() {
 }
 
 function OverviewTile({
-  icon: Icon, label, value, tone,
-}: { icon: any; label: string; value: string; tone?: "success" | "warning" }) {
+  icon: Icon, label, value, tone, onClick,
+}: { icon: any; label: string; value: string; tone?: "success" | "warning"; onClick?: () => void }) {
   const toneClass =
     tone === "success" ? "text-success" :
     tone === "warning" ? "text-warning" :
     "text-foreground";
-  return (
-    <div className="bg-card border border-border rounded-xl p-4 animate-fade-in">
+  const base = "bg-card border border-border rounded-xl p-4 animate-fade-in text-left w-full";
+  const interactive = onClick
+    ? "cursor-pointer transition-colors hover:bg-muted/40 hover:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-ring"
+    : "";
+  const content = (
+    <>
       <div className="flex items-center gap-2 text-muted-foreground">
         <Icon className="h-4 w-4" />
         <p className="text-xs">{label}</p>
       </div>
       <p className={cn("text-xl font-bold mt-1.5", toneClass)}>{value}</p>
-    </div>
+    </>
   );
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className={cn(base, interactive)}>
+        {content}
+      </button>
+    );
+  }
+  return <div className={base}>{content}</div>;
 }
+
 
 function NowNextCard({
   kind, title, apt, emptyText, cs, use12h, onOpen, openLabel, t,
