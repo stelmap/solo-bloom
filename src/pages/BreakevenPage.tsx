@@ -36,8 +36,8 @@ const defaultGoals = (t: any): GoalForm[] => [
 ];
 
 export default function BreakevenPage() {
-  // Analytics: user opened the breakeven view
-  useEffect(() => { track("breakeven_viewed"); }, []);
+  // Analytics: enriched event fires once per mount after data is ready (see below).
+  const breakevenTrackedRef = useRef(false);
   const { data: expenseResult } = useExpenses();
   const expenses = (expenseResult as any)?.data ?? expenseResult ?? [];
   const { data: incomeResult } = useIncome();
