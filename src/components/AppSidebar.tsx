@@ -221,19 +221,34 @@ export function AppSidebar() {
           )}
 
           {isAdmin && (
-            <Link
-              to="/admin/booking-requests"
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                "mt-3 flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                isExactActive("/admin/booking-requests")
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-              )}
-            >
-              <ShieldCheck className="h-4.5 w-4.5 shrink-0" />
-              <span className="flex-1 truncate">Admin</span>
-            </Link>
+            <div className="mt-3 space-y-1">
+              <Link
+                to="/admin/booking-requests"
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  isExactActive("/admin/booking-requests")
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                )}
+              >
+                <ShieldCheck className="h-4.5 w-4.5 shrink-0" />
+                <span className="flex-1 truncate">Booking requests</span>
+              </Link>
+              <Link
+                to="/admin/users"
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  isExactActive("/admin/users")
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                )}
+              >
+                <ShieldCheck className="h-4.5 w-4.5 shrink-0" />
+                <span className="flex-1 truncate">Users</span>
+              </Link>
+            </div>
           )}
         </nav>
 
