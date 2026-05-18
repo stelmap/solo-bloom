@@ -220,11 +220,12 @@ export default function Dashboard() {
                 {t("ops.todaysMoney")}
               </h3>
               <div className="grid grid-cols-2 gap-3">
-                <OverviewTile icon={DollarSign} label={t("ops.paidToday")} value={`${cs}${summary.amountReceived.toLocaleString()}`} tone="success" />
-                <OverviewTile icon={Hourglass} label={t("ops.unpaidToday")} value={`${cs}${summary.amountPending.toLocaleString()}`} tone="warning" />
-                <OverviewTile icon={CalendarClock} label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} />
-                <OverviewTile icon={Wallet} label={t("ops.outstandingBalance")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : undefined} />
+                <OverviewTile icon={DollarSign} label={t("ops.paidToday")} value={`${cs}${summary.amountReceived.toLocaleString()}`} tone="success" onClick={() => openWidget("daily_income", "/finances/income")} />
+                <OverviewTile icon={Hourglass} label={t("ops.unpaidToday")} value={`${cs}${summary.amountPending.toLocaleString()}`} tone="warning" onClick={() => openWidget("unpaid_today", "/finances/income")} />
+                <OverviewTile icon={CalendarClock} label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} onClick={() => openWidget("expected_revenue_today", "/calendar")} />
+                <OverviewTile icon={Wallet} label={t("ops.outstandingBalance")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : undefined} onClick={() => openWidget("outstanding_balance", "/finances/income")} />
               </div>
+
             </div>
           </div>
         </section>
