@@ -322,22 +322,35 @@ export default function Dashboard() {
 }
 
 function OverviewTile({
-  icon: Icon, label, value, tone,
-}: { icon: any; label: string; value: string; tone?: "success" | "warning" }) {
+  icon: Icon, label, value, tone, onClick,
+}: { icon: any; label: string; value: string; tone?: "success" | "warning"; onClick?: () => void }) {
   const toneClass =
     tone === "success" ? "text-success" :
     tone === "warning" ? "text-warning" :
     "text-foreground";
-  return (
-    <div className="bg-card border border-border rounded-xl p-4 animate-fade-in">
+  const base = "bg-card border border-border rounded-xl p-4 animate-fade-in text-left w-full";
+  const interactive = onClick
+    ? "cursor-pointer transition-colors hover:bg-muted/40 hover:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-ring"
+    : "";
+  const content = (
+    <>
       <div className="flex items-center gap-2 text-muted-foreground">
         <Icon className="h-4 w-4" />
         <p className="text-xs">{label}</p>
       </div>
       <p className={cn("text-xl font-bold mt-1.5", toneClass)}>{value}</p>
-    </div>
+    </>
   );
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className={cn(base, interactive)}>
+        {content}
+      </button>
+    );
+  }
+  return <div className={base}>{content}</div>;
 }
+
 
 function NowNextCard({
   kind, title, apt, emptyText, cs, use12h, onOpen, openLabel, t,
