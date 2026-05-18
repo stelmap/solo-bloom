@@ -55,8 +55,13 @@ function paymentBadgeClass(status: string) {
 export default function Dashboard() {
   const { data: stats, isLoading } = useDashboardStats();
   const { data: profile } = useProfile();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { symbol: cs } = useCurrency();
+
+  // Fire once per mount. Dashboard is today-scoped, so range is fixed.
+  useEffect(() => {
+    track("dashboard_viewed", { range: "today", lang });
+  }, [lang]);
   const navigate = useNavigate();
   const use12h = (profile as any)?.time_format === "12h";
 
