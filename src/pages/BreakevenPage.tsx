@@ -11,7 +11,7 @@ import { useExpenses, useIncome, useServices, useAppointments, useBreakevenGoals
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { calculateCapacity, sessionsNeededForTarget } from "@/lib/capacity";
