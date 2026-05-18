@@ -230,17 +230,25 @@ export default function PlansPage() {
       // Edge-function returns non-2xx as `error` with a `context` containing the JSON body.
       if (error) {
         let serverMsg: string | undefined;
+        let serverCode: string | undefined;
         try {
           const ctx: any = (error as any).context;
           if (ctx && typeof ctx.json === "function") {
             const j = await ctx.json();
             serverMsg = j?.error;
+            serverCode = j?.code;
           }
         } catch {
           // ignore — fall back to error.message
         }
+        if (serverCode === "already_subscribed") {
+          toast({ title: t("plans.alreadySubscribed") || "You're already subscribed", description: serverMsg });
+          navigate("/settings");
+          return;
+        }
         throw new Error(serverMsg || error.message || "Checkout failed");
       }
+
       if (data?.url) {
         // Single, same-tab redirect to Stripe.
         window.location.href = data.url;
