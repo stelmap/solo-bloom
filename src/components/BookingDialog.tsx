@@ -108,6 +108,7 @@ export function BookingDialog({
       toast({ title: t.error, variant: "destructive" });
       return;
     }
+    track("booking_request_submitted", { source_page: source, lang });
     track("cta_clicked", { source_page: source, cta: "booking_request_submitted", lang });
     setDone(true);
     form.reset();
