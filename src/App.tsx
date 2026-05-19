@@ -75,6 +75,7 @@ const App = () => (
                 <Route path="/careers" element={<CareersPage />} />
                 <Route path="/confirm-session" element={<ConfirmSessionPage />} />
                 <Route path="/unsubscribe" element={<UnsubscribePage />} />
+                <Route path="/server-update" element={<ServerUpdatePage />} />
 
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
