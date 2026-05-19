@@ -43,6 +43,7 @@ const PurchaseSuccessPage = lazy(() => import("./pages/PurchaseSuccessPage"));
 
 const AdminEmailPreviewPage = lazy(() => import("./pages/AdminEmailPreviewPage"));
 const AdminUsersPage = lazy(() => import("./pages/AdminUsersPage"));
+const AdminDomainsPage = lazy(() => import("./pages/AdminDomainsPage"));
 
 const queryClient = new QueryClient();
 
