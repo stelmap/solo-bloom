@@ -65,6 +65,25 @@ const NotFound = () => {
           </p>
         </div>
 
+        {isOffCanonical && (
+          <div className="rounded-xl border border-primary/30 bg-primary/5 p-5 text-left">
+            <p className="text-xs uppercase tracking-wider text-primary mb-1">
+              Looks like you're on the old address
+            </p>
+            <p className="text-sm text-foreground mb-3">
+              SoloBizz lives at{" "}
+              <span className="font-mono font-medium">{CANONICAL_HOST}</span>. Continue
+              there to find what you were looking for.
+            </p>
+            <Button asChild size="sm" className="w-full sm:w-auto">
+              <a href={canonicalUrl} rel="noreferrer">
+                Go to {CANONICAL_HOST}
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </a>
+            </Button>
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Button size="lg" onClick={() => navigate(-1)} variant="outline" className="w-full sm:w-auto">
             <ArrowLeft className="mr-2 h-4 w-4" />
