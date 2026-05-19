@@ -44,6 +44,7 @@ const PurchaseSuccessPage = lazy(() => import("./pages/PurchaseSuccessPage"));
 const AdminEmailPreviewPage = lazy(() => import("./pages/AdminEmailPreviewPage"));
 const AdminUsersPage = lazy(() => import("./pages/AdminUsersPage"));
 const AdminDomainsPage = lazy(() => import("./pages/AdminDomainsPage"));
+const ServerUpdatePage = lazy(() => import("./pages/ServerUpdatePage"));
 
 const queryClient = new QueryClient();
 
@@ -74,6 +75,7 @@ const App = () => (
                 <Route path="/careers" element={<CareersPage />} />
                 <Route path="/confirm-session" element={<ConfirmSessionPage />} />
                 <Route path="/unsubscribe" element={<UnsubscribePage />} />
+                <Route path="/server-update" element={<ServerUpdatePage />} />
 
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
