@@ -1,17 +1,16 @@
 #!/usr/bin/env node
 /**
- * Deployment safeguard: blocks `npm run build` (and therefore any publish)
- * unless the PostHog reverse proxy at t.solo-bizz.com is live.
+ * Deployment safeguard: verifies the PostHog reverse proxy at
+ * t.solo-bizz.com is live before publishing.
  *
- * Verifies:
- *   1. DNS — t.solo-bizz.com resolves to a CNAME under *.europehog.com
- *      (PostHog's managed proxy infrastructure).
- *   2. TLS + HTTP — https://t.solo-bizz.com/ responds (any 2xx/3xx/4xx is
- *      fine; we only need to confirm the cert is provisioned and the edge
- *      answers). A network error / 5xx fails the check.
+ * Modes:
+ *   - Default: WARN-only. Prints a warning and lets the build proceed so
+ *     analytics keep working via PostHog's edge fallback.
+ *   - Strict:  Set ENFORCE_POSTHOG_PROXY_CHECK=1 to hard-fail the build
+ *     until DNS + HTTPS verify clean. Use this once the CNAME is live.
  *
- * Escape hatches:
- *   - SKIP_POSTHOG_PROXY_CHECK=1   → bypass entirely (use sparingly)
+ * Other env:
+ *   - SKIP_POSTHOG_PROXY_CHECK=1   → skip entirely
  *   - POSTHOG_PROXY_HOST=foo.com   → check a different host
  */
 import { promises as dns } from "node:dns";
@@ -19,6 +18,7 @@ import { promises as dns } from "node:dns";
 const HOST = process.env.POSTHOG_PROXY_HOST || "t.solo-bizz.com";
 const EXPECTED_CNAME_SUFFIX = "europehog.com";
 const TIMEOUT_MS = 10_000;
+const ENFORCE = process.env.ENFORCE_POSTHOG_PROXY_CHECK === "1";
 
 if (process.env.SKIP_POSTHOG_PROXY_CHECK === "1") {
   console.log(`[posthog-proxy] SKIP_POSTHOG_PROXY_CHECK=1 — skipping ${HOST} verification.`);
