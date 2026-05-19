@@ -16,7 +16,13 @@
 import { promises as dns } from "node:dns";
 
 const HOST = process.env.POSTHOG_PROXY_HOST || "t.solo-bizz.com";
-const EXPECTED_CNAME_SUFFIX = "europehog.com";
+// Exact CNAME target issued by PostHog for t.solo-bizz.com. Override via
+// EXPECTED_CNAME_TARGET if PostHog ever reprovisions the proxy.
+const EXPECTED_CNAME_TARGET = (
+  process.env.EXPECTED_CNAME_TARGET || "63113a26bbb742483db5.cf-prod-eu-proxy.europehog.com"
+)
+  .toLowerCase()
+  .replace(/\.$/, "");
 const TIMEOUT_MS = 10_000;
 const ENFORCE = process.env.ENFORCE_POSTHOG_PROXY_CHECK === "1";
 
