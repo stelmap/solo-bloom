@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, RefreshCw } from "lucide-react";
 import { SeoHead } from "@/components/SeoHead";
+import { Helmet } from "react-helmet-async";
 
 const CANONICAL_URL = "https://www.solo-bizz.com/";
 const COUNTDOWN_SECONDS = 8;
