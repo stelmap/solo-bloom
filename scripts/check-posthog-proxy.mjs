@@ -55,18 +55,20 @@ function fail(msg) {
 async function checkDns() {
   try {
     const records = await dns.resolveCname(HOST);
-    const ok = records.some((r) => r.toLowerCase().endsWith(EXPECTED_CNAME_SUFFIX));
+    const normalized = records.map((r) => r.toLowerCase().replace(/\.$/, ""));
+    const ok = normalized.includes(EXPECTED_CNAME_TARGET);
     if (!ok) {
       fail(
-        `DNS for ${HOST} resolved (${records.join(", ")}) but no CNAME points to ` +
-          `*.${EXPECTED_CNAME_SUFFIX}. Update the DNS record at your registrar.`,
+        `DNS for ${HOST} resolved (${records.join(", ")}) but no CNAME matches the ` +
+          `expected PostHog target "${EXPECTED_CNAME_TARGET}". ` +
+          `Update the DNS record at your registrar to point exactly there.`,
       );
     }
     return records;
   } catch (err) {
     fail(
       `DNS lookup for ${HOST} failed (${err.code || err.message}). ` +
-        `Add the CNAME at your DNS provider and wait for propagation.`,
+        `Add a CNAME pointing to "${EXPECTED_CNAME_TARGET}" and wait for propagation.`,
     );
   }
 }
