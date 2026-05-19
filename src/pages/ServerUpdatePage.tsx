@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, RefreshCw } from "lucide-react";
+import { SeoHead } from "@/components/SeoHead";
+import { Helmet } from "react-helmet-async";
 
 const CANONICAL_URL = "https://www.solo-bizz.com/";
 const COUNTDOWN_SECONDS = 8;
@@ -19,6 +21,20 @@ export default function ServerUpdatePage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background via-background to-muted/40 px-4 py-12">
+      <SeoHead
+        title="SoloBizz is moving — continue at www.solo-bizz.com"
+        description="This SoloBizz address is being updated. The app is live at www.solo-bizz.com — you'll be redirected automatically."
+        path="/server-update"
+        noindex
+      />
+      <Helmet>
+        {/* Point share previews to the live canonical host. */}
+        <link rel="canonical" href="https://www.solo-bizz.com/" />
+        <meta property="og:url" content="https://www.solo-bizz.com/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="SoloBizz" />
+        <meta name="twitter:card" content="summary" />
+      </Helmet>
       <div className="w-full max-w-md text-center space-y-8">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
           <RefreshCw className="h-8 w-8 animate-spin-slow" aria-hidden />
