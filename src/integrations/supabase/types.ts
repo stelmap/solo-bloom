@@ -580,6 +580,45 @@ export type Database = {
         }
         Relationships: []
       }
+      domain_status_checks: {
+        Row: {
+          created_at: string
+          host: string
+          id: string
+          last_checked_at: string
+          last_error: string | null
+          last_latency_ms: number | null
+          last_state: string
+          last_status_code: number | null
+          last_transition_at: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          host: string
+          id?: string
+          last_checked_at?: string
+          last_error?: string | null
+          last_latency_ms?: number | null
+          last_state?: string
+          last_status_code?: number | null
+          last_transition_at?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          host?: string
+          id?: string
+          last_checked_at?: string
+          last_error?: string | null
+          last_latency_ms?: number | null
+          last_state?: string
+          last_status_code?: number | null
+          last_transition_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string

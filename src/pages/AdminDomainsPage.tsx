@@ -6,44 +6,34 @@ import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, RefreshCw, ExternalLink, CheckCircle2, XCircle } from "lucide-react";
+import {
+  Loader2, RefreshCw, ExternalLink, CheckCircle2, XCircle, Bell, Mail,
+} from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
-type DomainKey = "apex" | "www";
-
-type DomainStatus = {
-  key: DomainKey;
+type DomainRow = {
   host: string;
-  url: string;
-  role: "redirect" | "primary";
-  state: "checking" | "active" | "unreachable";
-  latencyMs?: number;
-  checkedAt?: string;
+  last_state: "active" | "unreachable" | "unknown";
+  last_status_code: number | null;
+  last_latency_ms: number | null;
+  last_error: string | null;
+  last_checked_at: string;
+  last_transition_at: string;
 };
 
-const DOMAINS: Omit<DomainStatus, "state">[] = [
-  { key: "apex", host: "solo-bizz.com", url: "https://solo-bizz.com/", role: "redirect" },
-  { key: "www", host: "www.solo-bizz.com", url: "https://www.solo-bizz.com/", role: "primary" },
+const KNOWN_HOSTS: { host: string; url: string; role: "redirect" | "primary" }[] = [
+  { host: "solo-bizz.com", url: "https://solo-bizz.com/", role: "redirect" },
+  { host: "www.solo-bizz.com", url: "https://www.solo-bizz.com/", role: "primary" },
 ];
 
-async function probe(url: string): Promise<{ ok: boolean; ms: number }> {
-  const started = performance.now();
-  try {
-    // no-cors: cross-origin probe, opaque response. Resolves iff the host
-    // accepted the TCP+TLS handshake and returned any HTTP response.
-    await fetch(url, { method: "GET", mode: "no-cors", cache: "no-store", redirect: "follow" });
-    return { ok: true, ms: Math.round(performance.now() - started) };
-  } catch {
-    return { ok: false, ms: Math.round(performance.now() - started) };
-  }
-}
+const NOTIFY_EMAIL = "o.gilevich@gmail.com";
 
 export default function AdminDomainsPage() {
   const { user, loading } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [rows, setRows] = useState<DomainStatus[]>(
-    DOMAINS.map((d) => ({ ...d, state: "checking" }))
-  );
-  const [busy, setBusy] = useState(false);
+  const [rows, setRows] = useState<DomainRow[]>([]);
+  const [loadingRows, setLoadingRows] = useState(true);
+  const [running, setRunning] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -52,26 +42,40 @@ export default function AdminDomainsPage() {
     });
   }, [user]);
 
-  async function runChecks() {
-    setBusy(true);
-    setRows((prev) => prev.map((r) => ({ ...r, state: "checking" })));
-    const results = await Promise.all(
-      DOMAINS.map(async (d) => {
-        const { ok, ms } = await probe(d.url);
-        return {
-          ...d,
-          state: ok ? ("active" as const) : ("unreachable" as const),
-          latencyMs: ms,
-          checkedAt: new Date().toISOString(),
-        };
-      })
-    );
-    setRows(results);
-    setBusy(false);
+  async function fetchRows() {
+    setLoadingRows(true);
+    const { data, error } = await supabase
+      .from("domain_status_checks")
+      .select("*")
+      .order("host", { ascending: true });
+    if (error) {
+      toast({ title: "Failed to load domain status", description: error.message, variant: "destructive" });
+    } else {
+      setRows((data ?? []) as DomainRow[]);
+    }
+    setLoadingRows(false);
+  }
+
+  async function runCheckNow() {
+    setRunning(true);
+    try {
+      const { error } = await supabase.functions.invoke("check-domain-status", { body: {} });
+      if (error) throw error;
+      toast({ title: "Check complete", description: "Latest status saved." });
+      await fetchRows();
+    } catch (e) {
+      toast({
+        title: "Check failed",
+        description: e instanceof Error ? e.message : String(e),
+        variant: "destructive",
+      });
+    } finally {
+      setRunning(false);
+    }
   }
 
   useEffect(() => {
-    if (isAdmin) runChecks();
+    if (isAdmin) fetchRows();
   }, [isAdmin]);
 
   if (loading || isAdmin === null) {
@@ -86,74 +90,115 @@ export default function AdminDomainsPage() {
   if (!user) return <Navigate to="/auth" replace />;
   if (!isAdmin) return <Navigate to="/dashboard" replace />;
 
+  const byHost = new Map(rows.map((r) => [r.host, r]));
+
   return (
     <AppLayout>
       <div className="container mx-auto max-w-3xl p-4 sm:p-6 space-y-6">
-        <header className="flex items-center justify-between gap-4">
+        <header className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Custom domains</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Live status of the apex and www hosts for solo-bizz.com.
+              Auto-checked every 5 minutes. Status changes are emailed to{" "}
+              <span className="font-mono">{NOTIFY_EMAIL}</span>.
             </p>
           </div>
-          <Button onClick={runChecks} disabled={busy} variant="outline" size="sm">
-            {busy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-            Re-check
+          <Button onClick={runCheckNow} disabled={running} variant="outline" size="sm">
+            {running ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+            Run check now
           </Button>
         </header>
 
-        <div className="grid gap-4">
-          {rows.map((row) => (
-            <Card key={row.key}>
-              <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 pb-3">
-                <div className="space-y-1">
-                  <CardTitle className="text-base font-mono">{row.host}</CardTitle>
-                  <p className="text-xs text-muted-foreground">
-                    {row.role === "primary" ? "Primary — serves the app" : "Redirects to www.solo-bizz.com"}
-                  </p>
-                </div>
-                <StatusBadge state={row.state} />
-              </CardHeader>
-              <CardContent className="flex items-center justify-between text-sm text-muted-foreground">
-                <div className="space-y-0.5">
-                  <div>
-                    Last checked:{" "}
-                    {row.checkedAt ? new Date(row.checkedAt).toLocaleTimeString() : "—"}
-                  </div>
-                  {typeof row.latencyMs === "number" && (
-                    <div>Round-trip: {row.latencyMs} ms</div>
-                  )}
-                </div>
-                <a
-                  href={row.url}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="inline-flex items-center gap-1 text-primary hover:underline"
-                >
-                  Open <ExternalLink className="h-3.5 w-3.5" />
-                </a>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <Card className="border-dashed">
+          <CardContent className="flex items-center gap-3 py-4 text-sm text-muted-foreground">
+            <Bell className="h-4 w-4 text-primary shrink-0" />
+            <span>
+              Alert emails are sent on <strong>state transitions only</strong> — once when a
+              domain goes down (or SSL fails) and once when it recovers. No spam on steady state.
+            </span>
+          </CardContent>
+        </Card>
 
-        <p className="text-xs text-muted-foreground">
-          Note: browsers return opaque responses for cross-origin probes, so this check
-          confirms the host is reachable and serving traffic. For exact HTTP status and
-          redirect headers, run the <code className="font-mono">apex-redirect</code> e2e spec
-          against production DNS.
-        </p>
+        <div className="grid gap-4">
+          {KNOWN_HOSTS.map((cfg) => {
+            const row = byHost.get(cfg.host);
+            return (
+              <Card key={cfg.host}>
+                <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 pb-3">
+                  <div className="space-y-1">
+                    <CardTitle className="text-base font-mono">{cfg.host}</CardTitle>
+                    <p className="text-xs text-muted-foreground">
+                      {cfg.role === "primary"
+                        ? "Primary — serves the app"
+                        : "Redirects to www.solo-bizz.com"}
+                    </p>
+                  </div>
+                  <StatusBadge state={row?.last_state ?? "unknown"} loading={loadingRows} />
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm text-muted-foreground">
+                  {row ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                        <div>
+                          <span className="text-foreground/60">Last checked:</span>{" "}
+                          {new Date(row.last_checked_at).toLocaleString()}
+                        </div>
+                        <div>
+                          <span className="text-foreground/60">Last change:</span>{" "}
+                          {new Date(row.last_transition_at).toLocaleString()}
+                        </div>
+                        {row.last_status_code !== null && (
+                          <div>
+                            <span className="text-foreground/60">HTTP:</span> {row.last_status_code}
+                          </div>
+                        )}
+                        {row.last_latency_ms !== null && (
+                          <div>
+                            <span className="text-foreground/60">Latency:</span> {row.last_latency_ms} ms
+                          </div>
+                        )}
+                      </div>
+                      {row.last_error && (
+                        <div className="text-destructive">
+                          <span className="text-foreground/60">Error:</span> {row.last_error}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div>No checks recorded yet.</div>
+                  )}
+                  <div className="pt-2 flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1.5 text-xs">
+                      <Mail className="h-3.5 w-3.5" />
+                      Notifies {NOTIFY_EMAIL}
+                    </span>
+                    <a
+                      href={cfg.url}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex items-center gap-1 text-primary hover:underline"
+                    >
+                      Open <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
     </AppLayout>
   );
 }
 
-function StatusBadge({ state }: { state: DomainStatus["state"] }) {
-  if (state === "checking") {
+function StatusBadge({
+  state, loading,
+}: { state: DomainRow["last_state"]; loading: boolean }) {
+  if (loading) {
     return (
       <Badge variant="secondary" className="gap-1">
         <Loader2 className="h-3 w-3 animate-spin" />
-        Checking
+        Loading
       </Badge>
     );
   }
@@ -165,10 +210,17 @@ function StatusBadge({ state }: { state: DomainStatus["state"] }) {
       </Badge>
     );
   }
+  if (state === "unreachable") {
+    return (
+      <Badge variant="destructive" className="gap-1">
+        <XCircle className="h-3 w-3" />
+        Unreachable
+      </Badge>
+    );
+  }
   return (
-    <Badge variant="destructive" className="gap-1">
-      <XCircle className="h-3 w-3" />
-      Unreachable
+    <Badge variant="secondary" className="gap-1">
+      Unknown
     </Badge>
   );
 }
