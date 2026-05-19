@@ -20,6 +20,12 @@ export default function ServerUpdatePage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background via-background to-muted/40 px-4 py-12">
+      <SeoHead
+        title="SoloBizz is moving — continue at www.solo-bizz.com"
+        description="This SoloBizz address is being updated. The app is live at www.solo-bizz.com — you'll be redirected automatically."
+        path="/server-update"
+        noindex
+      />
       <div className="w-full max-w-md text-center space-y-8">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
           <RefreshCw className="h-8 w-8 animate-spin-slow" aria-hidden />
