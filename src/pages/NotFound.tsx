@@ -1,8 +1,11 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Home, Compass } from "lucide-react";
+import { ArrowLeft, Home, Compass, ExternalLink } from "lucide-react";
 import { SeoHead } from "@/components/SeoHead";
+
+const CANONICAL_HOST = "www.solo-bizz.com";
+const CANONICAL_ORIGIN = "https://www.solo-bizz.com";
 
 const ASCII_GHOST = String.raw`
     .|||||||||.
