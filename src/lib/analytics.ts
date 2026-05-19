@@ -8,7 +8,10 @@
 import posthog from "posthog-js";
 
 const POSTHOG_KEY = "phc_vfqFKQL2ZpD9oo4XRNgDAesH8ayrWvZF6DUTLyhGkjrn";
-const POSTHOG_HOST = "https://eu.i.posthog.com";
+// Custom reverse-proxy domain (managed by PostHog) — avoids ad-blockers and
+// keeps analytics traffic on our own domain. Falls back via PostHog's edge.
+const POSTHOG_HOST = "https://t.solo-bizz.com";
+const POSTHOG_UI_HOST = "https://eu.posthog.com";
 
 // Hostname → environment mapping. Every event is tagged with `environment`
 // so prod, preview, and dev traffic can be segmented or filtered in PostHog.
