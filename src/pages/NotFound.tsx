@@ -17,10 +17,20 @@ const ASCII_GHOST = String.raw`
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [isOffCanonical, setIsOffCanonical] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const host = window.location.hostname;
+      setIsOffCanonical(
+        host === "solo-bizz.com" ||
+          (host.endsWith("solo-bizz.com") && host !== CANONICAL_HOST && !host.endsWith("lovable.app")),
+      );
+    }
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
   }, [location.pathname]);
+
+  const canonicalUrl = `${CANONICAL_ORIGIN}${location.pathname}${location.search}`;
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background via-background to-muted/40 px-4 py-12">
