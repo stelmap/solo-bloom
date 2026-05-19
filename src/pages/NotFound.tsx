@@ -1,8 +1,11 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Home, Compass } from "lucide-react";
+import { ArrowLeft, Home, Compass, ExternalLink } from "lucide-react";
 import { SeoHead } from "@/components/SeoHead";
+
+const CANONICAL_HOST = "www.solo-bizz.com";
+const CANONICAL_ORIGIN = "https://www.solo-bizz.com";
 
 const ASCII_GHOST = String.raw`
     .|||||||||.
@@ -14,10 +17,20 @@ const ASCII_GHOST = String.raw`
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [isOffCanonical, setIsOffCanonical] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const host = window.location.hostname;
+      setIsOffCanonical(
+        host === "solo-bizz.com" ||
+          (host.endsWith("solo-bizz.com") && host !== CANONICAL_HOST && !host.endsWith("lovable.app")),
+      );
+    }
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
   }, [location.pathname]);
+
+  const canonicalUrl = `${CANONICAL_ORIGIN}${location.pathname}${location.search}`;
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background via-background to-muted/40 px-4 py-12">
@@ -51,6 +64,25 @@ const NotFound = () => {
             . It may have been moved, renamed, or never existed.
           </p>
         </div>
+
+        {isOffCanonical && (
+          <div className="rounded-xl border border-primary/30 bg-primary/5 p-5 text-left">
+            <p className="text-xs uppercase tracking-wider text-primary mb-1">
+              Looks like you're on the old address
+            </p>
+            <p className="text-sm text-foreground mb-3">
+              SoloBizz lives at{" "}
+              <span className="font-mono font-medium">{CANONICAL_HOST}</span>. Continue
+              there to find what you were looking for.
+            </p>
+            <Button asChild size="sm" className="w-full sm:w-auto">
+              <a href={canonicalUrl} rel="noreferrer">
+                Go to {CANONICAL_HOST}
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </a>
+            </Button>
+          </div>
+        )}
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Button size="lg" onClick={() => navigate(-1)} variant="outline" className="w-full sm:w-auto">
