@@ -45,6 +45,7 @@ export function initAnalytics(): void {
   enabled = true;
   posthog.init(POSTHOG_KEY, {
     api_host: POSTHOG_HOST,
+    ui_host: POSTHOG_UI_HOST,
     person_profiles: "identified_only",
     // Set to `true` so PostHog's install wizard can auto-verify the snippet.
     // Our React Router wrapper still captures SPA route changes correctly.
