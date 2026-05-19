@@ -26,6 +26,15 @@ if (process.env.SKIP_POSTHOG_PROXY_CHECK === "1") {
 }
 
 function fail(msg) {
+  if (!ENFORCE) {
+    console.warn("\n\x1b[33m[posthog-proxy] WARNING\x1b[0m");
+    console.warn(`[posthog-proxy] ${msg}`);
+    console.warn(
+      `[posthog-proxy] Proceeding anyway (warn-only mode). ` +
+        `Set ENFORCE_POSTHOG_PROXY_CHECK=1 to make this a hard build failure once DNS is live.\n`,
+    );
+    process.exit(0);
+  }
   console.error("\n\x1b[31m[posthog-proxy] BUILD BLOCKED\x1b[0m");
   console.error(`[posthog-proxy] ${msg}`);
   console.error(
