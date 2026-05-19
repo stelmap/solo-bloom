@@ -27,6 +27,14 @@ export default function ServerUpdatePage() {
         path="/server-update"
         noindex
       />
+      <Helmet>
+        {/* Point share previews to the live canonical host. */}
+        <link rel="canonical" href="https://www.solo-bizz.com/" />
+        <meta property="og:url" content="https://www.solo-bizz.com/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="SoloBizz" />
+        <meta name="twitter:card" content="summary" />
+      </Helmet>
       <div className="w-full max-w-md text-center space-y-8">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
           <RefreshCw className="h-8 w-8 animate-spin-slow" aria-hidden />
