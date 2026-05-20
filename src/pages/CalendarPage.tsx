@@ -585,13 +585,15 @@ export default function CalendarPage() {
             <h1 className="text-2xl font-bold text-foreground">{t("calendar.title")}</h1>
             <p className="text-muted-foreground mt-1">{t("calendar.subtitle")}</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1">
-              <Button variant="ghost" size="icon" onClick={() => setCurrentDate(d => addDays(d, -7))}><ChevronLeft className="h-4 w-4" /></Button>
-              <span className="text-sm font-medium px-3 text-foreground">
-                {format(weekStart, "MMM d", { locale: dateLocale })} – {format(addDays(weekStart, 6), "MMM d, yyyy", { locale: dateLocale })}
+              <Button variant="ghost" size="icon" onClick={() => setCurrentDate(d => addDays(d, isMobile ? -1 : -7))}><ChevronLeft className="h-4 w-4" /></Button>
+              <span className="text-sm font-medium px-2 sm:px-3 text-foreground whitespace-nowrap">
+                {isMobile
+                  ? format(currentDate, "EEE, MMM d", { locale: dateLocale })
+                  : `${format(weekStart, "MMM d", { locale: dateLocale })} – ${format(addDays(weekStart, 6), "MMM d, yyyy", { locale: dateLocale })}`}
               </span>
-              <Button variant="ghost" size="icon" onClick={() => setCurrentDate(d => addDays(d, 7))}><ChevronRight className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => setCurrentDate(d => addDays(d, isMobile ? 1 : 7))}><ChevronRight className="h-4 w-4" /></Button>
             </div>
             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
               <DialogTrigger asChild>
