@@ -801,18 +801,29 @@ export default function CalendarPage() {
           style={{ maxHeight: "calc(100vh - 280px)", touchAction: isMobile ? "pan-y" : undefined }}
           onTouchStart={isMobile ? (e) => {
             const t = e.touches[0];
-            (e.currentTarget as any)._swipeStart = { x: t.clientX, y: t.clientY };
+            (e.currentTarget as any)._swipe = { x: t.clientX, y: t.clientY, cancelled: false };
+          } : undefined}
+          onTouchMove={isMobile ? (e) => {
+            const s = (e.currentTarget as any)._swipe;
+            if (!s || s.cancelled) return;
+            const t = e.touches[0];
+            const dx = t.clientX - s.x;
+            const dy = t.clientY - s.y;
+            // If vertical movement dominates, treat as scroll and cancel swipe
+            if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) {
+              s.cancelled = true;
+            }
           } : undefined}
           onTouchEnd={isMobile ? (e) => {
-            const start = (e.currentTarget as any)._swipeStart;
-            if (!start) return;
+            const s = (e.currentTarget as any)._swipe;
+            (e.currentTarget as any)._swipe = null;
+            if (!s || s.cancelled) return;
             const t = e.changedTouches[0];
-            const dx = t.clientX - start.x;
-            const dy = t.clientY - start.y;
-            if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+            const dx = t.clientX - s.x;
+            const dy = t.clientY - s.y;
+            if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 2) {
               setCurrentDate((d) => addDays(d, dx < 0 ? 1 : -1));
             }
-            (e.currentTarget as any)._swipeStart = null;
           } : undefined}
         >
           <div className="overflow-y-auto flex-1 min-h-0" style={{ scrollbarGutter: "stable" }}>
