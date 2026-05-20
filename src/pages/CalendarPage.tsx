@@ -586,15 +586,51 @@ export default function CalendarPage() {
             <p className="text-muted-foreground mt-1">{t("calendar.subtitle")}</p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-            <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1">
-              <Button variant="ghost" size="icon" onClick={() => setCurrentDate(d => addDays(d, isMobile ? -1 : -7))}><ChevronLeft className="h-4 w-4" /></Button>
-              <span className="text-sm font-medium px-2 sm:px-3 text-foreground whitespace-nowrap">
-                {isMobile
-                  ? format(currentDate, "EEE, MMM d", { locale: dateLocale })
-                  : `${format(weekStart, "MMM d", { locale: dateLocale })} – ${format(addDays(weekStart, 6), "MMM d, yyyy", { locale: dateLocale })}`}
-              </span>
-              <Button variant="ghost" size="icon" onClick={() => setCurrentDate(d => addDays(d, isMobile ? 1 : 7))}><ChevronRight className="h-4 w-4" /></Button>
-            </div>
+            {isMobile ? (
+              <div className="flex items-center gap-2 w-full">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  aria-label={t("calendar.previousDay") || "Previous day"}
+                  onClick={() => setCurrentDate(d => addDays(d, -1))}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  {t("calendar.prev") || "Prev"}
+                </Button>
+                <Button
+                  variant={isSameDay(currentDate, new Date()) ? "default" : "secondary"}
+                  size="sm"
+                  onClick={() => setCurrentDate(new Date())}
+                  aria-label={t("calendar.today") || "Today"}
+                >
+                  {t("calendar.today") || "Today"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  aria-label={t("calendar.nextDay") || "Next day"}
+                  onClick={() => setCurrentDate(d => addDays(d, 1))}
+                >
+                  {t("calendar.next") || "Next"}
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1">
+                <Button variant="ghost" size="icon" aria-label="Previous week" onClick={() => setCurrentDate(d => addDays(d, -7))}><ChevronLeft className="h-4 w-4" /></Button>
+                <span className="text-sm font-medium px-2 sm:px-3 text-foreground whitespace-nowrap">
+                  {`${format(weekStart, "MMM d", { locale: dateLocale })} – ${format(addDays(weekStart, 6), "MMM d, yyyy", { locale: dateLocale })}`}
+                </span>
+                <Button variant="ghost" size="icon" aria-label="Next week" onClick={() => setCurrentDate(d => addDays(d, 7))}><ChevronRight className="h-4 w-4" /></Button>
+              </div>
+            )}
+            {isMobile && (
+              <div className="w-full text-center text-sm font-semibold text-foreground" aria-live="polite">
+                {format(currentDate, "EEEE, MMM d, yyyy", { locale: dateLocale })}
+              </div>
+            )}
             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 mr-1" /> {t("calendar.newAppointment")}</Button>
