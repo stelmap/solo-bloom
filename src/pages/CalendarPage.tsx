@@ -719,19 +719,21 @@ export default function CalendarPage() {
         </div>
 
         {/* Weekly capacity bar */}
-        <div className="bg-card rounded-xl border border-border p-4 animate-fade-in">
-          <div className="flex items-center gap-3 mb-3">
+        <div className="bg-card rounded-xl border border-border p-3 sm:p-4 animate-fade-in">
+          <div className="flex items-center gap-2 sm:gap-3 mb-3 flex-wrap">
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">{t("capacity.title")}</span>
-            <div className="flex items-center gap-4 ml-auto text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 sm:gap-4 ml-auto text-xs text-muted-foreground">
               <span>{t("capacity.totalSlots")}: {weekCapacity.totalSlots}</span>
               <span>{t("capacity.booked")}: {weekCapacity.totalBooked}</span>
               <span>{t("capacity.free")}: {weekCapacity.totalFree}</span>
             </div>
           </div>
-          <div className="grid grid-cols-[72px_repeat(7,1fr)] gap-0">
+          <div className={cn("grid gap-0", isMobile ? "grid-cols-[56px_1fr]" : "grid-cols-[72px_repeat(7,1fr)]")}>
             <div />{/* spacer for time column */}
             {weekCapacity.dayStats.map((ds, i) => {
+              const dow = days[i].getDay();
+              const dayKeyIdx = dow === 0 ? 6 : dow - 1;
               const pct = ds.slots > 0 ? (ds.booked / ds.slots) * 100 : 0;
               const isFull = ds.slots > 0 && ds.booked >= ds.slots;
               const isLow = ds.working && ds.slots > 0 && pct < 30;
