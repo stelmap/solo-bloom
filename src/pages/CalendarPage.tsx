@@ -796,7 +796,25 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex flex-col" style={{ maxHeight: "calc(100vh - 280px)" }}>
+        <div
+          className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex flex-col"
+          style={{ maxHeight: "calc(100vh - 280px)", touchAction: isMobile ? "pan-y" : undefined }}
+          onTouchStart={isMobile ? (e) => {
+            const t = e.touches[0];
+            (e.currentTarget as any)._swipeStart = { x: t.clientX, y: t.clientY };
+          } : undefined}
+          onTouchEnd={isMobile ? (e) => {
+            const start = (e.currentTarget as any)._swipeStart;
+            if (!start) return;
+            const t = e.changedTouches[0];
+            const dx = t.clientX - start.x;
+            const dy = t.clientY - start.y;
+            if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+              setCurrentDate((d) => addDays(d, dx < 0 ? 1 : -1));
+            }
+            (e.currentTarget as any)._swipeStart = null;
+          } : undefined}
+        >
           <div className="overflow-y-auto flex-1 min-h-0" style={{ scrollbarGutter: "stable" }}>
             <table className="w-full border-collapse table-fixed">
               <colgroup>
