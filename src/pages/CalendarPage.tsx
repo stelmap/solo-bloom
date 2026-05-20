@@ -739,7 +739,7 @@ export default function CalendarPage() {
               const isLow = ds.working && ds.slots > 0 && pct < 30;
               return (
                 <div key={i} className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">{t(DAY_KEYS[i] as any)}</p>
+                  <p className="text-xs text-muted-foreground mb-1">{t(DAY_KEYS[dayKeyIdx] as any)}</p>
                   {ds.working ? (
                     <>
                       <Progress value={pct} className={cn("h-2", isFull ? "[&>div]:bg-destructive" : isLow ? "[&>div]:bg-warning" : "")} />
