@@ -28,6 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
@@ -148,8 +149,10 @@ export default function CalendarPage() {
   const [recurDays, setRecurDays] = useState<number[]>([1]);
   const [recurEndDate, setRecurEndDate] = useState("");
 
+  const isMobile = useIsMobile();
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const days = isMobile ? [currentDate] : weekDays;
 
   const toggleRecurDay = (d: number) => {
     setRecurDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d].sort());
@@ -582,13 +585,15 @@ export default function CalendarPage() {
             <h1 className="text-2xl font-bold text-foreground">{t("calendar.title")}</h1>
             <p className="text-muted-foreground mt-1">{t("calendar.subtitle")}</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1">
-              <Button variant="ghost" size="icon" onClick={() => setCurrentDate(d => addDays(d, -7))}><ChevronLeft className="h-4 w-4" /></Button>
-              <span className="text-sm font-medium px-3 text-foreground">
-                {format(weekStart, "MMM d", { locale: dateLocale })} – {format(addDays(weekStart, 6), "MMM d, yyyy", { locale: dateLocale })}
+              <Button variant="ghost" size="icon" onClick={() => setCurrentDate(d => addDays(d, isMobile ? -1 : -7))}><ChevronLeft className="h-4 w-4" /></Button>
+              <span className="text-sm font-medium px-2 sm:px-3 text-foreground whitespace-nowrap">
+                {isMobile
+                  ? format(currentDate, "EEE, MMM d", { locale: dateLocale })
+                  : `${format(weekStart, "MMM d", { locale: dateLocale })} – ${format(addDays(weekStart, 6), "MMM d, yyyy", { locale: dateLocale })}`}
               </span>
-              <Button variant="ghost" size="icon" onClick={() => setCurrentDate(d => addDays(d, 7))}><ChevronRight className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => setCurrentDate(d => addDays(d, isMobile ? 1 : 7))}><ChevronRight className="h-4 w-4" /></Button>
             </div>
             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
               <DialogTrigger asChild>
@@ -714,25 +719,27 @@ export default function CalendarPage() {
         </div>
 
         {/* Weekly capacity bar */}
-        <div className="bg-card rounded-xl border border-border p-4 animate-fade-in">
-          <div className="flex items-center gap-3 mb-3">
+        <div className="bg-card rounded-xl border border-border p-3 sm:p-4 animate-fade-in">
+          <div className="flex items-center gap-2 sm:gap-3 mb-3 flex-wrap">
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">{t("capacity.title")}</span>
-            <div className="flex items-center gap-4 ml-auto text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 sm:gap-4 ml-auto text-xs text-muted-foreground">
               <span>{t("capacity.totalSlots")}: {weekCapacity.totalSlots}</span>
               <span>{t("capacity.booked")}: {weekCapacity.totalBooked}</span>
               <span>{t("capacity.free")}: {weekCapacity.totalFree}</span>
             </div>
           </div>
-          <div className="grid grid-cols-[72px_repeat(7,1fr)] gap-0">
+          <div className={cn("grid gap-0", isMobile ? "grid-cols-[56px_1fr]" : "grid-cols-[72px_repeat(7,1fr)]")}>
             <div />{/* spacer for time column */}
             {weekCapacity.dayStats.map((ds, i) => {
+              const dow = days[i].getDay();
+              const dayKeyIdx = dow === 0 ? 6 : dow - 1;
               const pct = ds.slots > 0 ? (ds.booked / ds.slots) * 100 : 0;
               const isFull = ds.slots > 0 && ds.booked >= ds.slots;
               const isLow = ds.working && ds.slots > 0 && pct < 30;
               return (
                 <div key={i} className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">{t(DAY_KEYS[i] as any)}</p>
+                  <p className="text-xs text-muted-foreground mb-1">{t(DAY_KEYS[dayKeyIdx] as any)}</p>
                   {ds.working ? (
                     <>
                       <Progress value={pct} className={cn("h-2", isFull ? "[&>div]:bg-destructive" : isLow ? "[&>div]:bg-warning" : "")} />
@@ -757,7 +764,7 @@ export default function CalendarPage() {
           <div className="overflow-y-auto flex-1 min-h-0" style={{ scrollbarGutter: "stable" }}>
             <table className="w-full border-collapse table-fixed">
               <colgroup>
-                <col className="w-[72px]" />
+                <col className={isMobile ? "w-[56px]" : "w-[72px]"} />
                 {days.map((_, i) => <col key={i} />)}
               </colgroup>
               <thead className="sticky top-0 z-20 bg-card">
