@@ -962,6 +962,23 @@ export function useIncome(page = 0, dateFrom?: string, dateTo?: string) {
   });
 }
 
+export function useIncomeSum(dateFrom?: string, dateTo?: string) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["income-sum", user?.id, dateFrom ?? null, dateTo ?? null],
+    queryFn: async () => {
+      let q = supabase.from("income").select("amount");
+      if (dateFrom) q = q.gte("date", dateFrom);
+      if (dateTo) q = q.lte("date", dateTo);
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data ?? []).reduce((s: number, r: any) => s + Number(r.amount ?? 0), 0);
+    },
+    enabled: !!user,
+    staleTime: STALE_MEDIUM,
+  });
+}
+
 export function useCreateIncome() {
   const qc = useQueryClient();
   const { user } = useAuth();
