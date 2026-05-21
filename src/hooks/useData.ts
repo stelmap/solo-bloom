@@ -940,18 +940,20 @@ export function useDeleteExpense() {
 // Income
 const INCOME_PAGE_SIZE = 50;
 
-export function useIncome(page = 0) {
+export function useIncome(page = 0, dateFrom?: string, dateTo?: string) {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["income", user?.id, page],
+    queryKey: ["income", user?.id, page, dateFrom ?? null, dateTo ?? null],
     queryFn: async () => {
       const from = page * INCOME_PAGE_SIZE;
       const to = from + INCOME_PAGE_SIZE - 1;
-      const { data, error, count } = await supabase
+      let q = supabase
         .from("income")
         .select("*, appointments(clients(name), services(name))", { count: "exact" })
-        .order("date", { ascending: false })
-        .range(from, to);
+        .order("date", { ascending: false });
+      if (dateFrom) q = q.gte("date", dateFrom);
+      if (dateTo) q = q.lte("date", dateTo);
+      const { data, error, count } = await q.range(from, to);
       if (error) throw error;
       return { data: data ?? [], totalCount: count ?? 0, pageSize: INCOME_PAGE_SIZE };
     },
