@@ -37,7 +37,7 @@ export default function IncomePage() {
   }, [dateRange]);
 
   // Reset to first page when filter changes
-  useMemo(() => { setPage(0); }, [dateFrom]);
+  useEffect(() => { setPage(0); }, [dateFrom]);
 
   const { data: incomeResult, isLoading } = useIncome(page, dateFrom);
   const income = incomeResult?.data ?? [];
