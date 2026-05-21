@@ -7,7 +7,36 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { EntitlementGate } from "@/components/EntitlementGate";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, ComponentType } from "react";
+
+// Wrap lazy() so stale-chunk errors after a deploy trigger a one-time reload
+// instead of leaving the user on a blank screen.
+function lazyWithReload<T extends ComponentType<any>>(
+  factory: () => Promise<{ default: T }>
+) {
+  return lazy(async () => {
+    try {
+      return await factory();
+    } catch (err: any) {
+      const msg = String(err?.message || err);
+      const isChunkError =
+        /Importing a module script failed|Failed to fetch dynamically imported module|ChunkLoadError|Loading chunk [\d]+ failed/i.test(
+          msg
+        );
+      if (isChunkError && typeof window !== "undefined") {
+        const KEY = "__chunk_reload_at";
+        const last = Number(sessionStorage.getItem(KEY) || 0);
+        if (Date.now() - last > 10000) {
+          sessionStorage.setItem(KEY, String(Date.now()));
+          window.location.reload();
+          // Return a stub while the reload happens
+          return { default: (() => null) as unknown as T };
+        }
+      }
+      throw err;
+    }
+  });
+}
 
 // Eagerly loaded (landing + auth — needed immediately)
 import Index from "./pages/Index";
@@ -15,36 +44,36 @@ import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
 // Lazy loaded (behind auth or rarely visited)
-const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const CalendarPage = lazy(() => import("./pages/CalendarPage"));
-const ClientsPage = lazy(() => import("./pages/ClientsPage"));
-const ClientDetailPage = lazy(() => import("./pages/ClientDetailPage"));
-const GroupsPage = lazy(() => import("./pages/GroupsPage"));
-const GroupDetailPage = lazy(() => import("./pages/GroupDetailPage"));
-const ServicesPage = lazy(() => import("./pages/ServicesPage"));
-const IncomePage = lazy(() => import("./pages/IncomePage"));
-const ExpensesPage = lazy(() => import("./pages/ExpensesPage"));
-const BreakevenPage = lazy(() => import("./pages/BreakevenPage"));
-const FinancialOverviewPage = lazy(() => import("./pages/FinancialOverviewPage"));
-const PaymentAuditPage = lazy(() => import("./pages/PaymentAuditPage"));
-const SettingsPage = lazy(() => import("./pages/SettingsPage"));
-const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
-const TermsPage = lazy(() => import("./pages/TermsPage"));
-const CookiePolicyPage = lazy(() => import("./pages/CookiePolicyPage"));
-const CareersPage = lazy(() => import("./pages/CareersPage"));
-const AdminBookingRequestsPage = lazy(() => import("./pages/AdminBookingRequestsPage"));
-const ConfirmSessionPage = lazy(() => import("./pages/ConfirmSessionPage"));
-const UnsubscribePage = lazy(() => import("./pages/UnsubscribePage"));
-const SupervisionPage = lazy(() => import("./pages/SupervisionPage"));
-const DiagnosticsPage = lazy(() => import("./pages/DiagnosticsPage"));
-const PlansPage = lazy(() => import("./pages/PlansPage"));
-const PurchaseSuccessPage = lazy(() => import("./pages/PurchaseSuccessPage"));
+const ResetPasswordPage = lazyWithReload(() => import("./pages/ResetPasswordPage"));
+const Dashboard = lazyWithReload(() => import("./pages/Dashboard"));
+const CalendarPage = lazyWithReload(() => import("./pages/CalendarPage"));
+const ClientsPage = lazyWithReload(() => import("./pages/ClientsPage"));
+const ClientDetailPage = lazyWithReload(() => import("./pages/ClientDetailPage"));
+const GroupsPage = lazyWithReload(() => import("./pages/GroupsPage"));
+const GroupDetailPage = lazyWithReload(() => import("./pages/GroupDetailPage"));
+const ServicesPage = lazyWithReload(() => import("./pages/ServicesPage"));
+const IncomePage = lazyWithReload(() => import("./pages/IncomePage"));
+const ExpensesPage = lazyWithReload(() => import("./pages/ExpensesPage"));
+const BreakevenPage = lazyWithReload(() => import("./pages/BreakevenPage"));
+const FinancialOverviewPage = lazyWithReload(() => import("./pages/FinancialOverviewPage"));
+const PaymentAuditPage = lazyWithReload(() => import("./pages/PaymentAuditPage"));
+const SettingsPage = lazyWithReload(() => import("./pages/SettingsPage"));
+const PrivacyPage = lazyWithReload(() => import("./pages/PrivacyPage"));
+const TermsPage = lazyWithReload(() => import("./pages/TermsPage"));
+const CookiePolicyPage = lazyWithReload(() => import("./pages/CookiePolicyPage"));
+const CareersPage = lazyWithReload(() => import("./pages/CareersPage"));
+const AdminBookingRequestsPage = lazyWithReload(() => import("./pages/AdminBookingRequestsPage"));
+const ConfirmSessionPage = lazyWithReload(() => import("./pages/ConfirmSessionPage"));
+const UnsubscribePage = lazyWithReload(() => import("./pages/UnsubscribePage"));
+const SupervisionPage = lazyWithReload(() => import("./pages/SupervisionPage"));
+const DiagnosticsPage = lazyWithReload(() => import("./pages/DiagnosticsPage"));
+const PlansPage = lazyWithReload(() => import("./pages/PlansPage"));
+const PurchaseSuccessPage = lazyWithReload(() => import("./pages/PurchaseSuccessPage"));
 
-const AdminEmailPreviewPage = lazy(() => import("./pages/AdminEmailPreviewPage"));
-const AdminUsersPage = lazy(() => import("./pages/AdminUsersPage"));
-const AdminDomainsPage = lazy(() => import("./pages/AdminDomainsPage"));
-const ServerUpdatePage = lazy(() => import("./pages/ServerUpdatePage"));
+const AdminEmailPreviewPage = lazyWithReload(() => import("./pages/AdminEmailPreviewPage"));
+const AdminUsersPage = lazyWithReload(() => import("./pages/AdminUsersPage"));
+const AdminDomainsPage = lazyWithReload(() => import("./pages/AdminDomainsPage"));
+const ServerUpdatePage = lazyWithReload(() => import("./pages/ServerUpdatePage"));
 
 const queryClient = new QueryClient();
 
