@@ -7,7 +7,36 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { EntitlementGate } from "@/components/EntitlementGate";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, ComponentType } from "react";
+
+// Wrap lazy() so stale-chunk errors after a deploy trigger a one-time reload
+// instead of leaving the user on a blank screen.
+function lazyWithReload<T extends ComponentType<any>>(
+  factory: () => Promise<{ default: T }>
+) {
+  return lazy(async () => {
+    try {
+      return await factory();
+    } catch (err: any) {
+      const msg = String(err?.message || err);
+      const isChunkError =
+        /Importing a module script failed|Failed to fetch dynamically imported module|ChunkLoadError|Loading chunk [\d]+ failed/i.test(
+          msg
+        );
+      if (isChunkError && typeof window !== "undefined") {
+        const KEY = "__chunk_reload_at";
+        const last = Number(sessionStorage.getItem(KEY) || 0);
+        if (Date.now() - last > 10000) {
+          sessionStorage.setItem(KEY, String(Date.now()));
+          window.location.reload();
+          // Return a stub while the reload happens
+          return { default: (() => null) as unknown as T };
+        }
+      }
+      throw err;
+    }
+  });
+}
 
 // Eagerly loaded (landing + auth — needed immediately)
 import Index from "./pages/Index";
