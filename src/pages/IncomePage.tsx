@@ -5,13 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Plus, Trash2, DollarSign, CheckCircle, Download } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
-import { useIncome, useCreateIncome, useDeleteIncome, useExpectedPayments, useMarkExpectedPaymentPaid, useClients } from "@/hooks/useData";
+import { useIncome, useIncomeSum, useCreateIncome, useDeleteIncome, useExpectedPayments, useMarkExpectedPaymentPaid, useClients } from "@/hooks/useData";
 import { useActivePaymentMethods, localizedMethodName } from "@/hooks/usePaymentMethods";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -22,11 +22,29 @@ import { startOfWeek, startOfMonth, format } from "date-fns";
 
 export default function IncomePage() {
   const [page, setPage] = useState(0);
-  const { data: incomeResult, isLoading } = useIncome(page);
+  const [searchParams] = useSearchParams();
+
+  // Filters
+  const initialRange = searchParams.get("range") || "month";
+  const [dateRange, setDateRange] = useState(initialRange);
+
+  const dateFrom = useMemo(() => {
+    const now = new Date();
+    if (dateRange === "today") return format(now, "yyyy-MM-dd");
+    if (dateRange === "week") return format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
+    if (dateRange === "month") return format(startOfMonth(now), "yyyy-MM-dd");
+    return undefined; // all
+  }, [dateRange]);
+
+  // Reset to first page when filter changes
+  useEffect(() => { setPage(0); }, [dateFrom]);
+
+  const { data: incomeResult, isLoading } = useIncome(page, dateFrom);
   const income = incomeResult?.data ?? [];
   const totalCount = incomeResult?.totalCount ?? 0;
   const pageSize = incomeResult?.pageSize ?? 50;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const { data: periodTotal = 0 } = useIncomeSum(dateFrom);
   const { data: expectedPayments = [], isLoading: epLoading } = useExpectedPayments();
   const { data: clients = [] } = useClients();
   const createIncome = useCreateIncome();
@@ -35,7 +53,6 @@ export default function IncomePage() {
   const { toast } = useToast();
   const { t } = useLanguage();
   const { symbol: cs } = useCurrency();
-  const [searchParams] = useSearchParams();
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [payDialog, setPayDialog] = useState<any>(null);
@@ -43,22 +60,8 @@ export default function IncomePage() {
   const [payDate, setPayDate] = useState(new Date().toISOString().split("T")[0]);
   const [form, setForm] = useState({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash", client_id: "" });
 
-  // Filters
-  const initialRange = searchParams.get("range") || "month";
-  const [dateRange, setDateRange] = useState(initialRange);
-
-  const filtered = useMemo(() => {
-    const now = new Date();
-    const todayStr = format(now, "yyyy-MM-dd");
-    let from = "";
-    if (dateRange === "today") from = todayStr;
-    else if (dateRange === "week") from = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
-    else if (dateRange === "month") from = format(startOfMonth(now), "yyyy-MM-dd");
-    else return income; // all
-    return income.filter((i: any) => i.date >= from);
-  }, [income, dateRange]);
-
-  const total = filtered.reduce((s: number, i: any) => s + Number(i.amount), 0);
+  const filtered = income; // server-side filtered
+  const total = periodTotal;
   const pendingTotal = (expectedPayments as any[]).reduce((s: number, ep: any) => s + Number(ep.amount), 0);
 
   const { data: activeMethods = [] } = useActivePaymentMethods();
