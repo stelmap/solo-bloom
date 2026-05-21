@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Trash2, DollarSign, CheckCircle, Download } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
-import { useIncome, useCreateIncome, useDeleteIncome, useExpectedPayments, useMarkExpectedPaymentPaid, useClients } from "@/hooks/useData";
+import { useIncome, useIncomeSum, useCreateIncome, useDeleteIncome, useExpectedPayments, useMarkExpectedPaymentPaid, useClients } from "@/hooks/useData";
 import { useActivePaymentMethods, localizedMethodName } from "@/hooks/usePaymentMethods";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
