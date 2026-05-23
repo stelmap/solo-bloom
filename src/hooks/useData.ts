@@ -776,6 +776,12 @@ export function useExpenseAggregates(filters?: ExpenseFilters) {
         if (e.category === "Tax") tax += amt;
         if (e.is_recurring) recurring += amt;
         if (e.payment_status === "unpaid") unpaid += amt;
+      }
+      return { total, tax, recurring, unpaid, exTax: total - tax };
+    },
+    enabled: !!user,
+    staleTime: STALE_MEDIUM,
+  });
 }
 
 /** Distinct categories across all of the user's expenses (used to populate the category filter). */
@@ -793,12 +799,6 @@ export function useExpenseCategories() {
       const set = new Set<string>();
       for (const r of (data ?? []) as any[]) if (r.category) set.add(r.category);
       return Array.from(set);
-    },
-    enabled: !!user,
-    staleTime: STALE_MEDIUM,
-  });
-}
-      return { total, tax, recurring, unpaid, exTax: total - tax };
     },
     enabled: !!user,
     staleTime: STALE_MEDIUM,
