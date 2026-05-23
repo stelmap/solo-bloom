@@ -712,22 +712,72 @@ import {
   isLastDayOfItsMonth,
 } from "@/lib/recurringExpenses";
 
-export function useExpenses(page = 0) {
+export interface ExpenseFilters {
+  dateFrom?: string;
+  dateTo?: string;
+  category?: string; // "all" or undefined disables
+  status?: "all" | "planned" | "paid" | "cancelled";
+}
+
+function applyExpenseFilters(query: any, filters?: ExpenseFilters) {
+  if (!filters) return query;
+  if (filters.dateFrom) query = query.gte("date", filters.dateFrom);
+  if (filters.dateTo) query = query.lte("date", filters.dateTo);
+  if (filters.category && filters.category !== "all") query = query.eq("category", filters.category);
+  if (filters.status && filters.status !== "all") query = query.eq("instance_status", filters.status);
+  return query;
+}
+
+export function useExpenses(page = 0, filters?: ExpenseFilters) {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["expenses", user?.id, page],
+    queryKey: ["expenses", user?.id, page, filters?.dateFrom ?? null, filters?.dateTo ?? null, filters?.category ?? null, filters?.status ?? null],
     queryFn: async () => {
       const from = page * EXPENSES_PAGE_SIZE;
       const to = from + EXPENSES_PAGE_SIZE - 1;
       // Hide templates from the list view; users interact with instances.
-      const { data, error, count } = await supabase
+      let q = supabase
         .from("expenses")
         .select("*", { count: "exact" })
-        .eq("is_template", false)
+        .eq("is_template", false);
+      q = applyExpenseFilters(q, filters);
+      const { data, error, count } = await q
         .order("date", { ascending: true })
         .range(from, to);
       if (error) throw error;
       return { data: data ?? [], totalCount: count ?? 0, pageSize: EXPENSES_PAGE_SIZE };
+    },
+    enabled: !!user,
+    staleTime: STALE_MEDIUM,
+  });
+}
+
+/**
+ * Server-side aggregates for the expenses list, applied with the same filters as
+ * `useExpenses` but across ALL matching rows (not just the current page).
+ */
+export function useExpenseAggregates(filters?: ExpenseFilters) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["expenses-aggregates", user?.id, filters?.dateFrom ?? null, filters?.dateTo ?? null, filters?.category ?? null, filters?.status ?? null],
+    queryFn: async () => {
+      let q = supabase
+        .from("expenses")
+        .select("amount, category, is_recurring, payment_status, instance_status")
+        .eq("is_template", false);
+      q = applyExpenseFilters(q, filters);
+      const { data, error } = await q.range(0, 9999);
+      if (error) throw error;
+      const rows = (data ?? []) as any[];
+      let total = 0, tax = 0, recurring = 0, unpaid = 0;
+      for (const e of rows) {
+        const amt = Number(e.amount) || 0;
+        total += amt;
+        if (e.category === "Tax") tax += amt;
+        if (e.is_recurring) recurring += amt;
+        if (e.payment_status === "unpaid") unpaid += amt;
+      }
+      return { total, tax, recurring, unpaid, exTax: total - tax };
     },
     enabled: !!user,
     staleTime: STALE_MEDIUM,
