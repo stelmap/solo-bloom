@@ -776,7 +776,28 @@ export function useExpenseAggregates(filters?: ExpenseFilters) {
         if (e.category === "Tax") tax += amt;
         if (e.is_recurring) recurring += amt;
         if (e.payment_status === "unpaid") unpaid += amt;
-      }
+}
+
+/** Distinct categories across all of the user's expenses (used to populate the category filter). */
+export function useExpenseCategories() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["expense-categories", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("expenses")
+        .select("category")
+        .eq("is_template", false)
+        .range(0, 9999);
+      if (error) throw error;
+      const set = new Set<string>();
+      for (const r of (data ?? []) as any[]) if (r.category) set.add(r.category);
+      return Array.from(set);
+    },
+    enabled: !!user,
+    staleTime: STALE_MEDIUM,
+  });
+}
       return { total, tax, recurring, unpaid, exTax: total - tax };
     },
     enabled: !!user,
