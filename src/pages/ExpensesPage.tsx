@@ -5,13 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Plus, Pencil, Trash2, Download, Check, X } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
-import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense, useUpdateExpensePaymentStatus, useUpdateExpenseSeries } from "@/hooks/useData";
+import { useExpenses, useExpenseAggregates, useExpenseCategories, useCreateExpense, useUpdateExpense, useDeleteExpense, useUpdateExpensePaymentStatus, useUpdateExpenseSeries } from "@/hooks/useData";
 import { explainExpenseDate, generateMonthlyOccurrences, generateYearlyOccurrences, isLastDayOfItsMonth } from "@/lib/recurringExpenses";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -28,11 +28,6 @@ type DateRangeKey = "today" | "week" | "month" | "quarter" | "last3" | "last12" 
 
 export default function ExpensesPage() {
   const [page, setPage] = useState(0);
-  const { data: expenseResult, isLoading } = useExpenses(page);
-  const expenses = expenseResult?.data ?? [];
-  const totalCount = expenseResult?.totalCount ?? 0;
-  const pageSize = expenseResult?.pageSize ?? 50;
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const createExpense = useCreateExpense();
   const updateExpense = useUpdateExpense();
   const updateSeries = useUpdateExpenseSeries();
@@ -66,51 +61,57 @@ export default function ExpensesPage() {
   const [catFilter, setCatFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "planned" | "paid" | "cancelled">("all");
 
-  const CATEGORIES = useMemo(() => {
-    const customCats = expenses
-      .map((e: any) => e.category as string)
-      .filter((c: string) => c && !DEFAULT_CATEGORIES.includes(c));
-    return [...DEFAULT_CATEGORIES, ...Array.from(new Set(customCats))];
-  }, [expenses]);
-
-  const filtered = useMemo(() => {
+  // Translate the date range key into concrete from/to dates that the server can filter by.
+  const { dateFrom, dateTo } = useMemo(() => {
     const now = new Date();
     const todayStr = format(now, "yyyy-MM-dd");
-    let from = "";
-    let to = "";
-    if (dateRange === "today") {
-      from = todayStr;
-      to = todayStr;
-    } else if (dateRange === "week") {
-      from = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
-      to = format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
-    } else if (dateRange === "month") {
-      from = format(startOfMonth(now), "yyyy-MM-dd");
-      to = format(endOfMonth(now), "yyyy-MM-dd");
-    } else if (dateRange === "quarter") {
-      from = format(startOfQuarter(now), "yyyy-MM-dd");
-      to = format(endOfQuarter(now), "yyyy-MM-dd");
-    } else if (dateRange === "last3") {
-      from = format(subMonths(now, 3), "yyyy-MM-dd");
-      to = todayStr;
-    } else if (dateRange === "last12") {
-      from = format(subMonths(now, 12), "yyyy-MM-dd");
-      to = todayStr;
-    }
+    if (dateRange === "today") return { dateFrom: todayStr, dateTo: todayStr };
+    if (dateRange === "week") return {
+      dateFrom: format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
+      dateTo: format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
+    };
+    if (dateRange === "month") return {
+      dateFrom: format(startOfMonth(now), "yyyy-MM-dd"),
+      dateTo: format(endOfMonth(now), "yyyy-MM-dd"),
+    };
+    if (dateRange === "quarter") return {
+      dateFrom: format(startOfQuarter(now), "yyyy-MM-dd"),
+      dateTo: format(endOfQuarter(now), "yyyy-MM-dd"),
+    };
+    if (dateRange === "last3") return { dateFrom: format(subMonths(now, 3), "yyyy-MM-dd"), dateTo: todayStr };
+    if (dateRange === "last12") return { dateFrom: format(subMonths(now, 12), "yyyy-MM-dd"), dateTo: todayStr };
+    return { dateFrom: undefined, dateTo: undefined };
+  }, [dateRange]);
 
-    // Instances are real DB rows now — exclude templates and filter by range, category, and status.
-    let result = (expenses as any[]).filter(e => !e.is_template);
-    if (from) result = result.filter(e => e.date >= from && e.date <= to);
-    if (catFilter !== "all") result = result.filter(e => e.category === catFilter);
-    if (statusFilter !== "all") result = result.filter(e => (e.instance_status || "planned") === statusFilter);
-    return result;
-  }, [expenses, dateRange, catFilter, statusFilter]);
+  const filters = useMemo(() => ({
+    dateFrom, dateTo,
+    category: catFilter,
+    status: statusFilter,
+  }), [dateFrom, dateTo, catFilter, statusFilter]);
 
-  const totalFiltered = filtered.reduce((s, e) => s + Number(e.amount), 0);
-  const taxTotal = filtered.filter(e => e.category === "Tax").reduce((s, e) => s + Number(e.amount), 0);
-  const expensesExTax = totalFiltered - taxTotal;
-  const recurringTotal = filtered.filter(e => e.is_recurring).reduce((s, e) => s + Number(e.amount), 0);
-  const unpaidTotal = filtered.filter(e => (e as any).payment_status === "unpaid").reduce((s, e) => s + Number(e.amount), 0);
+  // Reset to first page whenever filters change so pagination stays consistent.
+  useEffect(() => { setPage(0); }, [dateFrom, dateTo, catFilter, statusFilter]);
+
+  const { data: expenseResult, isLoading } = useExpenses(page, filters);
+  const expenses = expenseResult?.data ?? [];
+  const totalCount = expenseResult?.totalCount ?? 0;
+  const pageSize = expenseResult?.pageSize ?? 50;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const { data: aggregates } = useExpenseAggregates(filters);
+  const { data: allCategories = [] } = useExpenseCategories();
+
+  const CATEGORIES = useMemo(() => {
+    const customCats = (allCategories as string[]).filter(c => c && !DEFAULT_CATEGORIES.includes(c));
+    return [...DEFAULT_CATEGORIES, ...Array.from(new Set(customCats))];
+  }, [allCategories]);
+
+  // Server-side filtered rows: no further client-side filtering needed.
+  const filtered = expenses as any[];
+  const totalFiltered = aggregates?.total ?? 0;
+  const taxTotal = aggregates?.tax ?? 0;
+  const expensesExTax = aggregates?.exTax ?? 0;
+  const recurringTotal = aggregates?.recurring ?? 0;
+  const unpaidTotal = aggregates?.unpaid ?? 0;
 
   const catLabel = (cat: string) => {
     const key = `category.${cat}` as TranslationKey;
