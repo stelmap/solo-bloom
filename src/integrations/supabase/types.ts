@@ -108,6 +108,84 @@ export type Database = {
           },
         ]
       }
+      booking_availability: {
+        Row: {
+          buffer_minutes: number
+          created_at: string
+          end_time: string
+          id: string
+          is_enabled: boolean
+          max_horizon_days: number
+          min_notice_hours: number
+          session_duration_minutes: number
+          start_time: string
+          updated_at: string
+          user_id: string
+          weekday: number
+        }
+        Insert: {
+          buffer_minutes?: number
+          created_at?: string
+          end_time?: string
+          id?: string
+          is_enabled?: boolean
+          max_horizon_days?: number
+          min_notice_hours?: number
+          session_duration_minutes?: number
+          start_time?: string
+          updated_at?: string
+          user_id: string
+          weekday: number
+        }
+        Update: {
+          buffer_minutes?: number
+          created_at?: string
+          end_time?: string
+          id?: string
+          is_enabled?: boolean
+          max_horizon_days?: number
+          min_notice_hours?: number
+          session_duration_minutes?: number
+          start_time?: string
+          updated_at?: string
+          user_id?: string
+          weekday?: number
+        }
+        Relationships: []
+      }
+      booking_links: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          is_active: boolean
+          mode: string
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_active?: boolean
+          mode?: string
+          token?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_active?: boolean
+          mode?: string
+          token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       booking_requests: {
         Row: {
           created_at: string
@@ -1761,6 +1839,77 @@ export type Database = {
         }
         Relationships: []
       }
+      session_booking_requests: {
+        Row: {
+          appointment_id: string | null
+          client_id: string | null
+          comment: string | null
+          consent_at: string
+          created_at: string
+          duration_minutes: number
+          email: string
+          first_name: string
+          id: string
+          ip_hash: string | null
+          last_name: string | null
+          link_id: string | null
+          match_hint: Json | null
+          phone: string | null
+          requested_slot_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          client_id?: string | null
+          comment?: string | null
+          consent_at: string
+          created_at?: string
+          duration_minutes?: number
+          email: string
+          first_name: string
+          id?: string
+          ip_hash?: string | null
+          last_name?: string | null
+          link_id?: string | null
+          match_hint?: Json | null
+          phone?: string | null
+          requested_slot_at: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          appointment_id?: string | null
+          client_id?: string | null
+          comment?: string | null
+          consent_at?: string
+          created_at?: string
+          duration_minutes?: number
+          email?: string
+          first_name?: string
+          id?: string
+          ip_hash?: string | null
+          last_name?: string | null
+          link_id?: string | null
+          match_hint?: Json | null
+          phone?: string | null
+          requested_slot_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_booking_requests_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "booking_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_confirmations: {
         Row: {
           appointment_id: string
@@ -2307,6 +2456,40 @@ export type Database = {
         }
         Returns: number
       }
+      public_create_booking: {
+        Args: {
+          p_comment: string
+          p_consent: boolean
+          p_email: string
+          p_first_name: string
+          p_ip_hash: string
+          p_last_name: string
+          p_phone: string
+          p_slot_at: string
+          p_token: string
+        }
+        Returns: {
+          request_id: string
+          requires_approval: boolean
+          status: string
+        }[]
+      }
+      public_get_available_slots: {
+        Args: { p_from_date: string; p_to_date: string; p_token: string }
+        Returns: {
+          slot_at: string
+        }[]
+      }
+      public_get_booking_page: {
+        Args: { p_token: string }
+        Returns: {
+          display_name: string
+          is_active: boolean
+          language: string
+          mode: string
+          session_duration_minutes: number
+        }[]
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
@@ -2319,6 +2502,7 @@ export type Database = {
         Args: { p_appointment_id: string }
         Returns: undefined
       }
+      regenerate_booking_link_token: { Args: never; Returns: string }
       seed_demo_workspace: { Args: { p_user_id: string }; Returns: Json }
       user_has_demo_data: { Args: { p_user_id: string }; Returns: boolean }
     }
