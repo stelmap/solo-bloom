@@ -395,6 +395,10 @@ export default function SettingsPage() {
 
         <Separator />
 
+        <PublicBookingSection />
+
+        <Separator />
+
         {/* Billing & Invoice Settings */}
         <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
           <div className="flex items-center gap-2">
