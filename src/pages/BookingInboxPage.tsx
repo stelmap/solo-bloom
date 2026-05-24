@@ -19,7 +19,7 @@ import {
   type BookingRequestRow,
 } from "@/hooks/useBookingInbox";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Mail, Phone, CheckCircle2, XCircle, UserPlus, RefreshCw } from "lucide-react";
+import { Loader2, Mail, Phone, CheckCircle2, XCircle, UserPlus, RefreshCw, AlertCircle, Sparkles } from "lucide-react";
 
 const STATUS_OPTIONS = [
   { value: "all", label: "All" },
@@ -119,15 +119,38 @@ export default function BookingInboxPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <div className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">{counts.pending}</span> pending ·{" "}
-              <span className="font-medium text-foreground">{counts.needs_linking}</span> need linking
-            </div>
             <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} className="gap-2">
               <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} /> Refresh
             </Button>
           </div>
         </div>
+
+        {(counts.pending > 0 || counts.needs_linking > 0) && (
+          <div className="flex items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <div className="flex-1 text-sm">
+              <span className="font-semibold text-foreground">Action needed.</span>{" "}
+              <span className="text-muted-foreground">
+                {counts.pending > 0 && (
+                  <>
+                    <span className="font-medium text-foreground">{counts.pending}</span> new request{counts.pending === 1 ? "" : "s"} to review
+                  </>
+                )}
+                {counts.pending > 0 && counts.needs_linking > 0 && " · "}
+                {counts.needs_linking > 0 && (
+                  <>
+                    <span className="font-medium text-foreground">{counts.needs_linking}</span> need client linking
+                  </>
+                )}
+              </span>
+            </div>
+            {status !== "pending" && counts.pending > 0 && (
+              <Button size="sm" variant="outline" onClick={() => setStatus("pending")}>
+                Show pending
+              </Button>
+            )}
+          </div>
+        )}
 
         <div className="flex items-center gap-3">
           <Select value={status} onValueChange={setStatus}>
@@ -169,10 +192,21 @@ export default function BookingInboxPage() {
               )}
               {rows.map((r) => {
                 const actionable = r.status === "pending" || r.status === "needs_linking";
+                const isNew = r.status === "pending" && (Date.now() - new Date(r.created_at).getTime()) < 24 * 60 * 60 * 1000;
                 return (
-                  <TableRow key={r.id}>
+                  <TableRow
+                    key={r.id}
+                    className={actionable ? "bg-amber-500/[0.04] border-l-2 border-l-amber-500 hover:bg-amber-500/[0.07]" : ""}
+                  >
                     <TableCell className="align-top">
-                      <div className="text-sm font-medium">{fmt(r.requested_slot_at)}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm font-medium">{fmt(r.requested_slot_at)}</div>
+                        {isNew && (
+                          <span className="inline-flex items-center gap-1 rounded-md bg-primary px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground">
+                            <Sparkles className="h-2.5 w-2.5" /> New
+                          </span>
+                        )}
+                      </div>
                       <div className="text-xs text-muted-foreground">{r.duration_minutes} min</div>
                     </TableCell>
                     <TableCell className="align-top">
