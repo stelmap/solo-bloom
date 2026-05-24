@@ -1019,7 +1019,30 @@ export default function CalendarPage() {
             </table>
           </div>
         </div>
+        </div>
+
+        <BookingInboxPanel className="lg:w-[340px] lg:shrink-0 lg:max-h-[calc(100vh-120px)] lg:sticky lg:top-6" />
       </div>
+
+      <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{t("settings.calendarSettings") || "Calendar settings"}</SheetTitle>
+          </SheetHeader>
+          <Tabs defaultValue="hours" className="mt-4 space-y-4">
+            <TabsList className="flex-wrap h-auto">
+              <TabsTrigger value="hours">{t("settings.workingHours")}</TabsTrigger>
+              <TabsTrigger value="daysOff">{t("settings.daysOff")}</TabsTrigger>
+              <TabsTrigger value="booking">{t("settings.publicBooking")}</TabsTrigger>
+              <TabsTrigger value="practice">{t("settings.practiceProfile")}</TabsTrigger>
+            </TabsList>
+            <TabsContent value="hours"><WorkingHoursSection /></TabsContent>
+            <TabsContent value="daysOff"><DaysOffSection /></TabsContent>
+            <TabsContent value="booking"><PublicBookingSection /></TabsContent>
+            <TabsContent value="practice"><PracticeProfileSection /></TabsContent>
+          </Tabs>
+        </SheetContent>
+      </Sheet>
 
       <SessionDetailSheet
         appointment={detailApt}
