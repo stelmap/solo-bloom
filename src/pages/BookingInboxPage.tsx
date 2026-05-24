@@ -192,10 +192,21 @@ export default function BookingInboxPage() {
               )}
               {rows.map((r) => {
                 const actionable = r.status === "pending" || r.status === "needs_linking";
+                const isNew = r.status === "pending" && (Date.now() - new Date(r.created_at).getTime()) < 24 * 60 * 60 * 1000;
                 return (
-                  <TableRow key={r.id}>
+                  <TableRow
+                    key={r.id}
+                    className={actionable ? "bg-amber-500/[0.04] border-l-2 border-l-amber-500 hover:bg-amber-500/[0.07]" : ""}
+                  >
                     <TableCell className="align-top">
-                      <div className="text-sm font-medium">{fmt(r.requested_slot_at)}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm font-medium">{fmt(r.requested_slot_at)}</div>
+                        {isNew && (
+                          <span className="inline-flex items-center gap-1 rounded-md bg-primary px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground">
+                            <Sparkles className="h-2.5 w-2.5" /> New
+                          </span>
+                        )}
+                      </div>
                       <div className="text-xs text-muted-foreground">{r.duration_minutes} min</div>
                     </TableCell>
                     <TableCell className="align-top">
