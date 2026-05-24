@@ -119,15 +119,38 @@ export default function BookingInboxPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <div className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">{counts.pending}</span> pending ·{" "}
-              <span className="font-medium text-foreground">{counts.needs_linking}</span> need linking
-            </div>
             <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} className="gap-2">
               <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} /> Refresh
             </Button>
           </div>
         </div>
+
+        {(counts.pending > 0 || counts.needs_linking > 0) && (
+          <div className="flex items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <div className="flex-1 text-sm">
+              <span className="font-semibold text-foreground">Action needed.</span>{" "}
+              <span className="text-muted-foreground">
+                {counts.pending > 0 && (
+                  <>
+                    <span className="font-medium text-foreground">{counts.pending}</span> new request{counts.pending === 1 ? "" : "s"} to review
+                  </>
+                )}
+                {counts.pending > 0 && counts.needs_linking > 0 && " · "}
+                {counts.needs_linking > 0 && (
+                  <>
+                    <span className="font-medium text-foreground">{counts.needs_linking}</span> need client linking
+                  </>
+                )}
+              </span>
+            </div>
+            {status !== "pending" && counts.pending > 0 && (
+              <Button size="sm" variant="outline" onClick={() => setStatus("pending")}>
+                Show pending
+              </Button>
+            )}
+          </div>
+        )}
 
         <div className="flex items-center gap-3">
           <Select value={status} onValueChange={setStatus}>
