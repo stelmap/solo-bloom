@@ -237,7 +237,8 @@ export function AppSidebar() {
               <Inbox className="h-4.5 w-4.5 shrink-0" />
               <span className="flex-1 truncate">Booking inbox</span>
               {inboxCount > 0 && (
-                <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-sidebar-primary/20 text-sidebar-primary">
+                <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
                   {inboxCount}
                 </span>
               )}
