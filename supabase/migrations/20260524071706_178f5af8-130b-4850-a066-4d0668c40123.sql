@@ -1,0 +1,283 @@
+-- Add slug column
+ALTER TABLE public.booking_links ADD COLUMN IF NOT EXISTS slug text;
+CREATE UNIQUE INDEX IF NOT EXISTS booking_links_slug_unique ON public.booking_links (lower(slug)) WHERE slug IS NOT NULL;
+
+-- Setter RPC with validation
+CREATE OR REPLACE FUNCTION public.set_booking_link_slug(p_slug text)
+RETURNS text
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_slug text;
+BEGIN
+  IF auth.uid() IS NULL THEN RAISE EXCEPTION 'Not authenticated'; END IF;
+
+  IF p_slug IS NULL OR length(trim(p_slug)) = 0 THEN
+    UPDATE public.booking_links SET slug = NULL WHERE user_id = auth.uid();
+    RETURN NULL;
+  END IF;
+
+  v_slug := lower(trim(p_slug));
+  IF v_slug !~ '^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])$' THEN
+    RAISE EXCEPTION 'Handle must be 3-40 chars: lowercase letters, digits, hyphens';
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM public.booking_links WHERE lower(slug) = v_slug AND user_id <> auth.uid()) THEN
+    RAISE EXCEPTION 'This handle is already taken';
+  END IF;
+
+  UPDATE public.booking_links SET slug = v_slug WHERE user_id = auth.uid();
+  RETURN v_slug;
+END $$;
+
+GRANT EXECUTE ON FUNCTION public.set_booking_link_slug(text) TO authenticated;
+
+-- Update lookup functions to accept slug OR token
+CREATE OR REPLACE FUNCTION public.public_get_booking_page(p_token text)
+RETURNS TABLE (
+  display_name text,
+  session_duration_minutes int,
+  mode text,
+  is_active boolean,
+  language text,
+  timezone text
+)
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_link record;
+  v_key text;
+BEGIN
+  v_key := lower(trim(coalesce(p_token,'')));
+  SELECT bl.user_id, bl.is_active, bl.mode, bl.display_name
+    INTO v_link
+    FROM public.booking_links bl
+   WHERE bl.token = p_token OR lower(bl.slug) = v_key
+   LIMIT 1;
+
+  IF v_link.user_id IS NULL THEN RETURN; END IF;
+
+  RETURN QUERY
+    SELECT
+      COALESCE(v_link.display_name, p.business_name, p.full_name, 'Therapist'),
+      COALESCE((SELECT ba.session_duration_minutes FROM public.booking_availability ba WHERE ba.user_id = v_link.user_id LIMIT 1), 60),
+      v_link.mode,
+      v_link.is_active,
+      COALESCE(p.language, 'en'),
+      COALESCE(p.timezone, 'UTC')
+    FROM public.profiles p
+    WHERE p.user_id = v_link.user_id;
+END $$;
+
+GRANT EXECUTE ON FUNCTION public.public_get_booking_page(text) TO anon, authenticated;
+
+CREATE OR REPLACE FUNCTION public.public_get_available_slots(
+  p_token text,
+  p_from_date date,
+  p_to_date date
+)
+RETURNS TABLE (slot_at timestamptz)
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_user uuid;
+  v_active boolean;
+  v_tz text;
+  v_rule record;
+  v_day date;
+  v_dow smallint;
+  v_dur int;
+  v_buffer int;
+  v_min_notice int;
+  v_max_horizon int;
+  v_slot timestamptz;
+  v_slot_end timestamptz;
+  v_min_from timestamptz;
+  v_max_to date;
+  v_key text;
+BEGIN
+  v_key := lower(trim(coalesce(p_token,'')));
+  SELECT bl.user_id, bl.is_active INTO v_user, v_active
+  FROM public.booking_links bl WHERE bl.token = p_token OR lower(bl.slug) = v_key LIMIT 1;
+
+  IF v_user IS NULL OR v_active IS NOT TRUE THEN RETURN; END IF;
+
+  SELECT COALESCE(p.timezone, 'UTC') INTO v_tz
+    FROM public.profiles p WHERE p.user_id = v_user LIMIT 1;
+  IF v_tz IS NULL THEN v_tz := 'UTC'; END IF;
+
+  SELECT session_duration_minutes, buffer_minutes, min_notice_hours, max_horizon_days
+    INTO v_dur, v_buffer, v_min_notice, v_max_horizon
+    FROM public.booking_availability WHERE user_id = v_user LIMIT 1;
+  IF v_dur IS NULL THEN
+    v_dur := 60; v_buffer := 10; v_min_notice := 24; v_max_horizon := 30;
+  END IF;
+
+  v_min_from := now() + (v_min_notice || ' hours')::interval;
+  v_max_to := LEAST(p_to_date, (now() + (v_max_horizon || ' days')::interval)::date);
+
+  v_day := GREATEST(p_from_date, current_date);
+  WHILE v_day <= v_max_to LOOP
+    v_dow := EXTRACT(DOW FROM v_day)::smallint;
+
+    FOR v_rule IN
+      SELECT start_time, end_time, session_duration_minutes, buffer_minutes
+        FROM public.booking_availability
+       WHERE user_id = v_user AND weekday = v_dow AND is_enabled = true
+    LOOP
+      v_slot := ((v_day::text || ' ' || v_rule.start_time::text)::timestamp) AT TIME ZONE v_tz;
+      LOOP
+        v_slot_end := v_slot + (v_rule.session_duration_minutes || ' minutes')::interval;
+        EXIT WHEN ((v_slot_end AT TIME ZONE v_tz)::time) > v_rule.end_time;
+
+        IF v_slot >= v_min_from
+           AND NOT EXISTS (
+             SELECT 1 FROM public.appointments a
+              WHERE a.user_id = v_user
+                AND a.status NOT IN ('cancelled','no-show')
+                AND tstzrange(a.scheduled_at, a.scheduled_at + (a.duration_minutes || ' minutes')::interval, '[)')
+                    && tstzrange(v_slot - (v_rule.buffer_minutes || ' minutes')::interval,
+                                 v_slot_end + (v_rule.buffer_minutes || ' minutes')::interval, '[)')
+           )
+           AND NOT EXISTS (
+             SELECT 1 FROM public.days_off d
+              WHERE d.user_id = v_user AND d.date = v_day AND d.is_non_working = true
+           )
+           AND NOT EXISTS (
+             SELECT 1 FROM public.session_booking_requests sbr
+              WHERE sbr.user_id = v_user
+                AND sbr.status IN ('pending','needs_linking','confirmed')
+                AND tstzrange(sbr.requested_slot_at,
+                              sbr.requested_slot_at + (sbr.duration_minutes || ' minutes')::interval, '[)')
+                    && tstzrange(v_slot - (v_rule.buffer_minutes || ' minutes')::interval,
+                                 v_slot_end + (v_rule.buffer_minutes || ' minutes')::interval, '[)')
+           )
+        THEN
+          slot_at := v_slot;
+          RETURN NEXT;
+        END IF;
+
+        v_slot := v_slot_end + (v_rule.buffer_minutes || ' minutes')::interval;
+      END LOOP;
+    END LOOP;
+
+    v_day := v_day + 1;
+  END LOOP;
+END $$;
+
+GRANT EXECUTE ON FUNCTION public.public_get_available_slots(text, date, date) TO anon, authenticated;
+
+CREATE OR REPLACE FUNCTION public.public_create_booking(p_token text, p_slot_at timestamp with time zone, p_first_name text, p_last_name text, p_email text, p_phone text, p_comment text, p_consent boolean, p_ip_hash text)
+ RETURNS TABLE(request_id uuid, status text, requires_approval boolean)
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_link record;
+  v_dur int;
+  v_recent_count int;
+  v_matched_client uuid;
+  v_status text;
+  v_new_id uuid;
+  v_appointment_id uuid;
+  v_key text;
+BEGIN
+  IF NOT COALESCE(p_consent, false) THEN RAISE EXCEPTION 'Consent required'; END IF;
+  IF length(trim(coalesce(p_first_name,''))) < 1 OR length(trim(coalesce(p_first_name,''))) > 120 THEN
+    RAISE EXCEPTION 'Invalid first_name'; END IF;
+  IF length(trim(coalesce(p_email,''))) < 3 OR length(trim(coalesce(p_email,''))) > 254
+     OR p_email !~* '^[^@\s]+@[^@\s]+\.[^@\s]+$' THEN
+    RAISE EXCEPTION 'Invalid email'; END IF;
+  IF p_phone IS NOT NULL AND length(p_phone) > 40 THEN RAISE EXCEPTION 'Invalid phone'; END IF;
+  IF p_comment IS NOT NULL AND length(p_comment) > 2000 THEN RAISE EXCEPTION 'Invalid comment'; END IF;
+
+  v_key := lower(trim(coalesce(p_token,'')));
+  SELECT bl.id, bl.user_id, bl.is_active, bl.mode
+    INTO v_link
+    FROM public.booking_links bl
+   WHERE bl.token = p_token OR lower(bl.slug) = v_key
+   LIMIT 1;
+
+  IF v_link.user_id IS NULL OR v_link.is_active IS NOT TRUE THEN
+    RAISE EXCEPTION 'Booking link is not active';
+  END IF;
+
+  IF p_ip_hash IS NOT NULL THEN
+    SELECT count(*) INTO v_recent_count
+      FROM public.session_booking_requests sbr
+     WHERE sbr.ip_hash = p_ip_hash AND sbr.created_at > now() - interval '1 hour';
+    IF v_recent_count >= 5 THEN
+      RAISE EXCEPTION 'Too many requests, please try again later';
+    END IF;
+  END IF;
+
+  SELECT ba.session_duration_minutes INTO v_dur
+    FROM public.booking_availability ba WHERE ba.user_id = v_link.user_id LIMIT 1;
+  v_dur := COALESCE(v_dur, 60);
+
+  IF EXISTS (
+    SELECT 1 FROM public.appointments a
+     WHERE a.user_id = v_link.user_id
+       AND a.status NOT IN ('cancelled','no-show')
+       AND tstzrange(a.scheduled_at, a.scheduled_at + (a.duration_minutes||' minutes')::interval,'[)')
+           && tstzrange(p_slot_at, p_slot_at + (v_dur||' minutes')::interval,'[)')
+  ) OR EXISTS (
+    SELECT 1 FROM public.session_booking_requests sbr
+     WHERE sbr.user_id = v_link.user_id
+       AND sbr.status IN ('pending','needs_linking','confirmed')
+       AND tstzrange(sbr.requested_slot_at, sbr.requested_slot_at + (sbr.duration_minutes||' minutes')::interval,'[)')
+           && tstzrange(p_slot_at, p_slot_at + (v_dur||' minutes')::interval,'[)')
+  ) THEN
+    RAISE EXCEPTION 'Slot no longer available';
+  END IF;
+
+  SELECT c.id INTO v_matched_client
+    FROM public.clients c
+   WHERE c.user_id = v_link.user_id
+     AND c.status = 'active'
+     AND (lower(c.email) = lower(p_email) OR (p_phone IS NOT NULL AND c.phone = p_phone))
+   LIMIT 1;
+
+  v_status := CASE
+    WHEN v_link.mode = 'auto' AND v_matched_client IS NOT NULL THEN 'confirmed'
+    WHEN v_matched_client IS NULL THEN 'needs_linking'
+    ELSE 'pending'
+  END;
+
+  INSERT INTO public.session_booking_requests (
+    user_id, link_id, client_id, first_name, last_name, email, phone, comment,
+    consent_at, requested_slot_at, duration_minutes, status, ip_hash
+  ) VALUES (
+    v_link.user_id, v_link.id, v_matched_client, trim(p_first_name), nullif(trim(coalesce(p_last_name,'')),''),
+    lower(trim(p_email)), nullif(trim(coalesce(p_phone,'')),''), nullif(trim(coalesce(p_comment,'')),''),
+    now(), p_slot_at, v_dur, v_status, p_ip_hash
+  ) RETURNING id INTO v_new_id;
+
+  IF v_status = 'confirmed' AND v_matched_client IS NOT NULL THEN
+    INSERT INTO public.appointments (
+      user_id, client_id, service_id, scheduled_at, duration_minutes, price, status, notes
+    )
+    SELECT v_link.user_id, v_matched_client, s.id, p_slot_at, v_dur, COALESCE(s.price, 0), 'scheduled',
+           'Booked via public link' || CASE WHEN p_comment IS NOT NULL THEN E'\n\n' || p_comment ELSE '' END
+    FROM public.services s
+    WHERE s.user_id = v_link.user_id
+    ORDER BY s.created_at ASC
+    LIMIT 1
+    RETURNING id INTO v_appointment_id;
+
+    UPDATE public.session_booking_requests
+       SET appointment_id = v_appointment_id
+     WHERE id = v_new_id;
+  END IF;
+
+  RETURN QUERY SELECT v_new_id, v_status, (v_link.mode = 'manual');
+END $function$;

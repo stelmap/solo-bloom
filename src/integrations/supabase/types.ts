@@ -160,6 +160,7 @@ export type Database = {
           id: string
           is_active: boolean
           mode: string
+          slug: string | null
           token: string
           updated_at: string
           user_id: string
@@ -170,6 +171,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           mode?: string
+          slug?: string | null
           token?: string
           updated_at?: string
           user_id: string
@@ -180,6 +182,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           mode?: string
+          slug?: string | null
           token?: string
           updated_at?: string
           user_id?: string
@@ -2539,6 +2542,7 @@ export type Database = {
       }
       regenerate_booking_link_token: { Args: never; Returns: string }
       seed_demo_workspace: { Args: { p_user_id: string }; Returns: Json }
+      set_booking_link_slug: { Args: { p_slug: string }; Returns: string }
       user_has_demo_data: { Args: { p_user_id: string }; Returns: boolean }
     }
     Enums: {

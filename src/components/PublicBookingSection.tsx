@@ -107,7 +107,26 @@ export function PublicBookingSection() {
     },
   });
 
-  const url = link?.token ? `${window.location.origin}/book/${link.token}` : "";
+  const setSlug = useMutation({
+    mutationFn: async (slug: string) => {
+      const { error } = await supabase.rpc("set_booking_link_slug", { p_slug: slug });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Handle updated" });
+      qc.invalidateQueries({ queryKey: ["booking_link", userId] });
+    },
+    onError: (e: any) =>
+      toast({ title: "Could not update handle", description: e.message, variant: "destructive" }),
+  });
+
+  const [slugInput, setSlugInput] = useState("");
+  useEffect(() => {
+    setSlugInput((link as any)?.slug ?? "");
+  }, [link?.id, (link as any)?.slug]);
+
+  const handle = (link as any)?.slug || link?.token || "";
+  const url = handle ? `${window.location.origin}/book/${handle}` : "";
 
   return (
     <div className="space-y-6">
@@ -138,6 +157,38 @@ export function PublicBookingSection() {
               placeholder="Your name or practice"
             />
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="bk-slug">Custom handle (optional)</Label>
+            <div className="flex gap-2">
+              <div className="flex items-stretch flex-1 rounded-md border border-input overflow-hidden focus-within:ring-2 focus-within:ring-ring">
+                <span className="px-3 flex items-center text-xs text-muted-foreground bg-muted border-r border-input whitespace-nowrap">
+                  {typeof window !== "undefined" ? window.location.host : ""}/book/
+                </span>
+                <input
+                  id="bk-slug"
+                  value={slugInput}
+                  onChange={(e) => setSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                  placeholder="your-name"
+                  maxLength={40}
+                  className="flex-1 px-3 py-2 text-sm bg-background outline-none"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={setSlug.isPending || slugInput === ((link as any)?.slug ?? "")}
+                onClick={() => setSlug.mutate(slugInput)}
+              >
+                {setSlug.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              3–40 chars: lowercase letters, digits, hyphens. Leave empty to fall back to the auto-generated secret link.
+            </p>
+          </div>
+
 
           <div className="space-y-2">
             <Label>Booking mode</Label>
