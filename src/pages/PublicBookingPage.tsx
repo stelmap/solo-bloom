@@ -17,6 +17,7 @@ type PageInfo = {
   mode: "manual" | "auto";
   is_active: boolean;
   language: string;
+  timezone: string;
 };
 
 const formSchema = z.object({
@@ -93,15 +94,17 @@ export default function PublicBookingPage() {
       });
   }, [info, token]);
 
+  const tz = info?.timezone || "UTC";
+
   const groupedByDay = useMemo(() => {
     const m: Record<string, string[]> = {};
     for (const s of slots) {
       const d = new Date(s);
-      const key = d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+      const key = d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", timeZone: tz });
       (m[key] ||= []).push(s);
     }
     return m;
-  }, [slots]);
+  }, [slots, tz]);
 
   async function getIpHash(): Promise<string | null> {
     try {
@@ -198,6 +201,9 @@ export default function PublicBookingPage() {
           <p className="text-sm text-muted-foreground mt-1">
             Book a {info.session_duration_minutes}-minute session
           </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            All times shown in {tz}
+          </p>
         </header>
 
         {!selectedSlot ? (
@@ -228,7 +234,7 @@ export default function PublicBookingPage() {
                             size="sm"
                             onClick={() => setSelectedSlot(s)}
                           >
-                            {new Date(s).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            {new Date(s).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZone: tz })}
                           </Button>
                         ))}
                       </div>
@@ -248,6 +254,8 @@ export default function PublicBookingPage() {
                   day: "numeric",
                   hour: "2-digit",
                   minute: "2-digit",
+                  timeZone: tz,
+                  timeZoneName: "short",
                 })}
                 <Button
                   variant="ghost"

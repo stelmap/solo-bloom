@@ -1652,6 +1652,7 @@ export type Database = {
           reminder_minutes: number
           sessions_per_day: number
           time_format: string
+          timezone: string | null
           updated_at: string
           user_id: string
           vat_mode: string
@@ -1676,6 +1677,7 @@ export type Database = {
           reminder_minutes?: number
           sessions_per_day?: number
           time_format?: string
+          timezone?: string | null
           updated_at?: string
           user_id: string
           vat_mode?: string
@@ -1700,6 +1702,7 @@ export type Database = {
           reminder_minutes?: number
           sessions_per_day?: number
           time_format?: string
+          timezone?: string | null
           updated_at?: string
           user_id?: string
           vat_mode?: string
@@ -2519,6 +2522,7 @@ export type Database = {
           language: string
           mode: string
           session_duration_minutes: number
+          timezone: string
         }[]
       }
       read_email_batch: {
