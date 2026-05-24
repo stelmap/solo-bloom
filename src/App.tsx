@@ -58,6 +58,8 @@ const BreakevenPage = lazyWithReload(() => import("./pages/BreakevenPage"));
 const FinancialOverviewPage = lazyWithReload(() => import("./pages/FinancialOverviewPage"));
 const PaymentAuditPage = lazyWithReload(() => import("./pages/PaymentAuditPage"));
 const SettingsPage = lazyWithReload(() => import("./pages/SettingsPage"));
+const CalendarSettingsPage = lazyWithReload(() => import("./pages/CalendarSettingsPage"));
+const FinanceSettingsPage = lazyWithReload(() => import("./pages/FinanceSettingsPage"));
 const PrivacyPage = lazyWithReload(() => import("./pages/PrivacyPage"));
 const TermsPage = lazyWithReload(() => import("./pages/TermsPage"));
 const CookiePolicyPage = lazyWithReload(() => import("./pages/CookiePolicyPage"));
