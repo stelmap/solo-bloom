@@ -29,8 +29,8 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useBookingInboxCount } from "@/hooks/useBookingInbox";
-import { Link } from "react-router-dom";
+import { useBookingInboxCount, useBookingRequests, type BookingRequestRow } from "@/hooks/useBookingInbox";
+import { Link, useNavigate } from "react-router-dom";
 import { Inbox } from "lucide-react";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
@@ -39,6 +39,12 @@ const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sa
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const { data: appointments = [] } = useAppointments();
+  const { data: bookingRequests = [] } = useBookingRequests();
+  const navigate = useNavigate();
+  const pendingRequests = useMemo(
+    () => bookingRequests.filter(r => r.status === "pending" || r.status === "needs_linking"),
+    [bookingRequests],
+  );
   const { data: clients = [] } = useClients();
   const { data: services = [] } = useServices();
   const { data: profile } = useProfile();
@@ -410,6 +416,14 @@ export default function CalendarPage() {
     const dayStr = format(day, "yyyy-MM-dd"); // local calendar day string
     return appointments.filter(apt => {
       const d = new Date(apt.scheduled_at);
+      return toUTCDateStr(d) === dayStr && d.getUTCHours() === hour;
+    });
+  };
+
+  const getPendingRequestsForDayHour = (day: Date, hour: number): BookingRequestRow[] => {
+    const dayStr = format(day, "yyyy-MM-dd");
+    return pendingRequests.filter(req => {
+      const d = new Date(req.requested_slot_at);
       return toUTCDateStr(d) === dayStr && d.getUTCHours() === hour;
     });
   };
@@ -877,13 +891,15 @@ export default function CalendarPage() {
                     </td>
                     {days.map((day, dayIdx) => {
                       const events = getEventsForDayHour(day, hour);
+                      const pendingReqs = getPendingRequestsForDayHour(day, hour);
                       const working = isHourWorking(day, hour);
                       const dayOff = isDayOff(day);
+                      const hasAny = events.length > 0 || pendingReqs.length > 0;
                       return (
                         <td key={dayIdx}
                           onClick={() => {
                             if (dayOff || !working) return;
-                            if (events.length > 0) return;
+                            if (hasAny) return;
                             const dateStr = format(day, "yyyy-MM-dd");
                             const timeStr = `${hour.toString().padStart(2, "0")}:00`;
                             setForm(f => ({ ...f, date: dateStr, time: timeStr }));
@@ -898,15 +914,38 @@ export default function CalendarPage() {
                           onDrop={(e) => handleDrop(e, day, hour)}
                           className={cn(
                             "relative border-l border-b border-border h-[60px] transition-colors",
-                            dayOff ? "bg-destructive/5 cursor-not-allowed" : !working ? "bg-muted/20 cursor-not-allowed" : events.length === 0 ? "hover:bg-primary/5 cursor-pointer group/slot" : "",
+                            dayOff ? "bg-destructive/5 cursor-not-allowed" : !working ? "bg-muted/20 cursor-not-allowed" : !hasAny ? "hover:bg-primary/5 cursor-pointer group/slot" : "",
                             dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && canDropOnSlot(day, hour, dragAptId) && "bg-primary/15 ring-2 ring-primary/30 ring-inset",
                             dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && !canDropOnSlot(day, hour, dragAptId) && "bg-destructive/10 ring-2 ring-destructive/30 ring-inset",
                           )}>
-                          {events.length === 0 && working && !dayOff && !dragAptId && (
+                          {!hasAny && working && !dayOff && !dragAptId && (
                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/slot:opacity-100 transition-opacity pointer-events-none">
                               <Plus className="h-4 w-4 text-primary/40" />
                             </div>
                           )}
+                          {pendingReqs.map((req, idx) => {
+                            const heightPx = Math.max((req.duration_minutes / 60) * 60 - 4, 20);
+                            const name = req.matched_client_name || `${req.first_name}${req.last_name ? " " + req.last_name : ""}`.trim();
+                            return (
+                              <div
+                                key={req.id}
+                                onClick={(e) => { e.stopPropagation(); navigate("/booking-inbox"); }}
+                                className={cn(
+                                  "absolute inset-x-1 rounded-md border border-dashed border-warning/60 bg-warning/10 text-warning-foreground p-1.5 cursor-pointer hover:ring-2 hover:ring-warning/40 transition-all z-20 overflow-hidden",
+                                )}
+                                style={{ top: `${idx * 4}px`, height: `${heightPx}px` }}
+                                title={t("booking.pendingRequest") || "Pending booking request"}
+                              >
+                                <div className="flex items-center gap-1">
+                                  <Inbox className="h-3 w-3 shrink-0 opacity-70" />
+                                  <p className="text-xs font-semibold truncate flex-1">{name}</p>
+                                </div>
+                                <p className="text-[10px] opacity-70 truncate">
+                                  {req.status === "needs_linking" ? (t("booking.needsLinking") || "Needs linking") : (t("booking.pending") || "Pending")}
+                                </p>
+                              </div>
+                            );
+                          })}
                           {events.map((evt) => {
                             const si = statusInfo(evt.status);
                             const heightPx = Math.max((evt.duration_minutes / 60) * 60 - 4, 20);
