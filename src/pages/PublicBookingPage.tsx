@@ -201,6 +201,9 @@ export default function PublicBookingPage() {
           <p className="text-sm text-muted-foreground mt-1">
             Book a {info.session_duration_minutes}-minute session
           </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            All times shown in {tz}
+          </p>
         </header>
 
         {!selectedSlot ? (
