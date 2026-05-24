@@ -600,10 +600,12 @@ export default function CalendarPage() {
     }
   }, [appointments, canDropOnSlot, toast, t]);
 
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   return (
     <AppLayout>
-      <div className="space-y-6">
-        <BookingInboxBanner />
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+        <div className="space-y-6 flex-1 min-w-0">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("calendar.title")}</h1>
