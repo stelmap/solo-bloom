@@ -33,7 +33,16 @@ const ProBadge = () => (
 
 const navItems: NavItem[] = [
   { kind: "leaf", icon: LayoutDashboard, labelKey: "nav.dashboard", path: "/dashboard" },
-  { kind: "leaf", icon: Calendar, labelKey: "nav.calendar", path: "/calendar" },
+  {
+    kind: "group",
+    icon: Calendar,
+    labelKey: "nav.calendar",
+    basePath: "/calendar",
+    children: [
+      { icon: Calendar, labelKey: "nav.calendar", path: "/calendar" },
+      { icon: Settings, labelKey: "nav.calendarSettings", path: "/calendar/settings" },
+    ],
+  },
   { kind: "leaf", icon: Users, labelKey: "nav.clients", path: "/clients" },
   { kind: "leaf", icon: UsersRound, labelKey: "nav.groups", path: "/groups" },
   { kind: "leaf", icon: Scissors, labelKey: "nav.services", path: "/services" },
@@ -49,6 +58,7 @@ const navItems: NavItem[] = [
       { icon: TrendingDown, labelKey: "nav.expenses", path: "/finances/expenses" },
       { icon: ShieldCheck, labelKey: "nav.paymentAudit", path: "/finances/payment-audit" },
       { icon: Target, labelKey: "nav.breakeven", path: "/finances/breakeven" },
+      { icon: Settings, labelKey: "nav.financeSettings", path: "/finances/settings" },
     ],
   },
   { kind: "leaf", icon: ClipboardList, labelKey: "nav.supervision", path: "/supervision", requires: "premium_access" },
@@ -82,14 +92,13 @@ export function AppSidebar() {
     [entLoading, has, isFreeStarter]
   );
 
-  // Auto-open the Finances group when the user is somewhere inside it
-  const inFinances = useMemo(
-    () => location.pathname === "/finances" || location.pathname.startsWith("/finances/"),
-    [location.pathname]
-  );
-  const [financesOpen, setFinancesOpen] = useState<boolean>(inFinances);
-  // keep open whenever route is inside finances
-  const isFinancesOpen = financesOpen || inFinances;
+  // Track open state per group; auto-open when route is inside the group's basePath
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const isGroupActive = (basePath: string) =>
+    location.pathname === basePath || location.pathname.startsWith(basePath + "/");
+  const isGroupOpen = (basePath: string) => openGroups[basePath] ?? isGroupActive(basePath);
+  const toggleGroup = (basePath: string) =>
+    setOpenGroups((m) => ({ ...m, [basePath]: !isGroupOpen(basePath) }));
 
   const initials = user?.user_metadata?.full_name
     ? user.user_metadata.full_name.split(" ").map((n: string) => n[0]).join("").toUpperCase()
@@ -157,31 +166,32 @@ export function AppSidebar() {
               );
             }
 
-            // Group (Finances)
-            const groupActive = inFinances;
+            // Group
+            const groupActive = isGroupActive(item.basePath);
+            const groupOpen = isGroupOpen(item.basePath);
             return (
               <div key={item.basePath}>
                 <button
                   type="button"
-                  onClick={() => setFinancesOpen((o) => !o)}
+                  onClick={() => toggleGroup(item.basePath)}
                   className={cn(
                     "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                     groupActive
                       ? "text-sidebar-foreground"
                       : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                   )}
-                  aria-expanded={isFinancesOpen}
+                  aria-expanded={groupOpen}
                 >
                   <item.icon className="h-4.5 w-4.5 shrink-0" />
                   <span className="flex-1 text-left">{t(item.labelKey)}</span>
                   <ChevronDown
                     className={cn(
                       "h-4 w-4 transition-transform shrink-0",
-                      isFinancesOpen ? "rotate-0" : "-rotate-90"
+                      groupOpen ? "rotate-0" : "-rotate-90"
                     )}
                   />
                 </button>
-                {isFinancesOpen && (
+                {groupOpen && (
                   <div className="mt-1 ml-3 pl-3 border-l border-sidebar-border space-y-0.5">
                     {item.children.map((child) => {
                       const isActive = isExactActive(child.path);
