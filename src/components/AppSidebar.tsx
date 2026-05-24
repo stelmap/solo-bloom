@@ -33,16 +33,7 @@ const ProBadge = () => (
 
 const navItems: NavItem[] = [
   { kind: "leaf", icon: LayoutDashboard, labelKey: "nav.dashboard", path: "/dashboard" },
-  {
-    kind: "group",
-    icon: Calendar,
-    labelKey: "nav.calendar",
-    basePath: "/calendar",
-    children: [
-      { icon: Calendar, labelKey: "nav.calendar", path: "/calendar" },
-      { icon: Settings, labelKey: "nav.calendarSettings", path: "/calendar/settings" },
-    ],
-  },
+  { kind: "leaf", icon: Calendar, labelKey: "nav.calendar", path: "/calendar" },
   { kind: "leaf", icon: Users, labelKey: "nav.clients", path: "/clients" },
   { kind: "leaf", icon: UsersRound, labelKey: "nav.groups", path: "/groups" },
   { kind: "leaf", icon: Scissors, labelKey: "nav.services", path: "/services" },
