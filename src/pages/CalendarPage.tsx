@@ -45,10 +45,12 @@ const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sa
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const appointmentsRange = useMemo(() => {
-    const from = addDays(currentDate, -60).toISOString();
-    const to = addDays(currentDate, 180).toISOString();
+    // Quantize to month so week-navigation reuses the cached window
+    const anchor = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const from = addDays(anchor, -60).toISOString();
+    const to = addDays(anchor, 240).toISOString();
     return { from, to };
-  }, [currentDate]);
+  }, [currentDate.getFullYear(), currentDate.getMonth()]);
   const { data: appointments = [] } = useAppointments(appointmentsRange);
   const { data: bookingRequests = [] } = useBookingRequests();
   const navigate = useNavigate();
