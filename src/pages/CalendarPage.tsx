@@ -29,6 +29,9 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useBookingInboxCount } from "@/hooks/useBookingInbox";
+import { Link } from "react-router-dom";
+import { Inbox } from "lucide-react";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
@@ -580,6 +583,7 @@ export default function CalendarPage() {
   return (
     <AppLayout>
       <div className="space-y-6">
+        <BookingInboxBanner />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("calendar.title")}</h1>
@@ -1024,3 +1028,21 @@ export default function CalendarPage() {
     </AppLayout>
   );
 }
+
+function BookingInboxBanner() {
+  const { data: count = 0 } = useBookingInboxCount();
+  if (!count) return null;
+  return (
+    <Link
+      to="/booking-inbox"
+      className="flex items-center gap-3 px-4 py-3 rounded-lg border border-primary/30 bg-primary/10 text-sm hover:bg-primary/15 transition-colors"
+    >
+      <Inbox className="h-4 w-4 text-primary" />
+      <span className="flex-1">
+        <span className="font-medium">{count}</span> booking request{count === 1 ? "" : "s"} awaiting your action.
+      </span>
+      <span className="text-primary font-medium">Open inbox →</span>
+    </Link>
+  );
+}
+

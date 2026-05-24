@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Calendar, Users, Scissors, DollarSign,
   TrendingDown, Settings, Target, Menu, X, LogOut, BarChart3, UsersRound, ClipboardList,
-  Wallet, ChevronDown, Lock, ShieldCheck, Sparkles, BadgeCheck,
+  Wallet, ChevronDown, Lock, ShieldCheck, Sparkles, BadgeCheck, Inbox,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useMemo, useEffect } from "react";
@@ -12,6 +12,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { TranslationKey } from "@/i18n/translations";
 import { useEntitlements, type FeatureCode } from "@/hooks/useEntitlements";
 import { useFreeStarterMode } from "@/hooks/useDemoWorkspace";
+import { useBookingInboxCount } from "@/hooks/useBookingInbox";
 
 type LeafItem = { kind: "leaf"; icon: any; labelKey: TranslationKey; path: string; requires?: FeatureCode };
 type GroupItem = {
@@ -63,6 +64,8 @@ export function AppSidebar() {
   const { isFreeStarter } = useFreeStarterMode();
   const { has, loading: entLoading } = useEntitlements();
   const [isAdmin, setIsAdmin] = useState(false);
+  const { data: inboxCount = 0 } = useBookingInboxCount();
+
 
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
@@ -219,6 +222,27 @@ export function AppSidebar() {
               </span>
             </Link>
           )}
+
+          <div className="mt-3 space-y-1">
+            <Link
+              to="/booking-inbox"
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                isExactActive("/booking-inbox")
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+              )}
+            >
+              <Inbox className="h-4.5 w-4.5 shrink-0" />
+              <span className="flex-1 truncate">Booking inbox</span>
+              {inboxCount > 0 && (
+                <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-sidebar-primary/20 text-sidebar-primary">
+                  {inboxCount}
+                </span>
+              )}
+            </Link>
+          </div>
 
           {isAdmin && (
             <div className="mt-3 space-y-1">
