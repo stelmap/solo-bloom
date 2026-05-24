@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { ClientPicker } from "@/components/ClientPicker";
 import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
-import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon } from "lucide-react";
 import { useState, useMemo, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, addDays, startOfWeek, isSameDay, isBefore, startOfDay } from "date-fns";
@@ -21,6 +21,9 @@ import {
 } from "@/hooks/useData";
 import { useGroups, useGroupMembers, useCreateGroupSession } from "@/hooks/useGroups";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -29,9 +32,12 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useBookingInboxCount, useBookingRequests, type BookingRequestRow } from "@/hooks/useBookingInbox";
-import { Link, useNavigate } from "react-router-dom";
+import { useBookingRequests, type BookingRequestRow } from "@/hooks/useBookingInbox";
+import { useNavigate } from "react-router-dom";
 import { Inbox } from "lucide-react";
+import { BookingInboxPanel } from "@/components/BookingInboxPanel";
+import { WorkingHoursSection, DaysOffSection, PracticeProfileSection } from "@/components/settings/CalendarSections";
+import { PublicBookingSection } from "@/components/PublicBookingSection";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
@@ -594,10 +600,12 @@ export default function CalendarPage() {
     }
   }, [appointments, canDropOnSlot, toast, t]);
 
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   return (
     <AppLayout>
-      <div className="space-y-6">
-        <BookingInboxBanner />
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+        <div className="space-y-6 flex-1 min-w-0">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("calendar.title")}</h1>
@@ -769,6 +777,19 @@ export default function CalendarPage() {
                 </div>
               </DialogContent>
             </Dialog>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label={t("settings.calendarSettings") || "Calendar settings"}
+                  onClick={() => setSettingsOpen(true)}
+                >
+                  <SettingsIcon className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t("settings.calendarSettings") || "Calendar settings"}</TooltipContent>
+            </Tooltip>
           </div>
         </div>
 
@@ -998,7 +1019,30 @@ export default function CalendarPage() {
             </table>
           </div>
         </div>
+        </div>
+
+        <BookingInboxPanel className="lg:w-[340px] lg:shrink-0 lg:max-h-[calc(100vh-120px)] lg:sticky lg:top-6" />
       </div>
+
+      <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{t("settings.calendarSettings") || "Calendar settings"}</SheetTitle>
+          </SheetHeader>
+          <Tabs defaultValue="hours" className="mt-4 space-y-4">
+            <TabsList className="flex-wrap h-auto">
+              <TabsTrigger value="hours">{t("settings.workingHours")}</TabsTrigger>
+              <TabsTrigger value="daysOff">{t("settings.daysOff")}</TabsTrigger>
+              <TabsTrigger value="booking">{t("settings.publicBooking")}</TabsTrigger>
+              <TabsTrigger value="practice">{t("settings.practiceProfile")}</TabsTrigger>
+            </TabsList>
+            <TabsContent value="hours"><WorkingHoursSection /></TabsContent>
+            <TabsContent value="daysOff"><DaysOffSection /></TabsContent>
+            <TabsContent value="booking"><PublicBookingSection /></TabsContent>
+            <TabsContent value="practice"><PracticeProfileSection /></TabsContent>
+          </Tabs>
+        </SheetContent>
+      </Sheet>
 
       <SessionDetailSheet
         appointment={detailApt}
@@ -1065,23 +1109,6 @@ export default function CalendarPage() {
         </DialogContent>
       </Dialog>
     </AppLayout>
-  );
-}
-
-function BookingInboxBanner() {
-  const { data: count = 0 } = useBookingInboxCount();
-  if (!count) return null;
-  return (
-    <Link
-      to="/booking-inbox"
-      className="flex items-center gap-3 px-4 py-3 rounded-lg border border-primary/30 bg-primary/10 text-sm hover:bg-primary/15 transition-colors"
-    >
-      <Inbox className="h-4 w-4 text-primary" />
-      <span className="flex-1">
-        <span className="font-medium">{count}</span> booking request{count === 1 ? "" : "s"} awaiting your action.
-      </span>
-      <span className="text-primary font-medium">Open inbox →</span>
-    </Link>
   );
 }
 
