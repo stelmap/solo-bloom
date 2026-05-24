@@ -1112,20 +1112,3 @@ export default function CalendarPage() {
   );
 }
 
-function BookingInboxBanner() {
-  const { data: count = 0 } = useBookingInboxCount();
-  if (!count) return null;
-  return (
-    <Link
-      to="/booking-inbox"
-      className="flex items-center gap-3 px-4 py-3 rounded-lg border border-primary/30 bg-primary/10 text-sm hover:bg-primary/15 transition-colors"
-    >
-      <Inbox className="h-4 w-4 text-primary" />
-      <span className="flex-1">
-        <span className="font-medium">{count}</span> booking request{count === 1 ? "" : "s"} awaiting your action.
-      </span>
-      <span className="text-primary font-medium">Open inbox →</span>
-    </Link>
-  );
-}
-
