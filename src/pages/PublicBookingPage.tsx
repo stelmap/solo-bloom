@@ -231,7 +231,7 @@ export default function PublicBookingPage() {
                             size="sm"
                             onClick={() => setSelectedSlot(s)}
                           >
-                            {new Date(s).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            {new Date(s).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZone: tz })}
                           </Button>
                         ))}
                       </div>
