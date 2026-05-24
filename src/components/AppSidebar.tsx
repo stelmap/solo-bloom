@@ -166,31 +166,32 @@ export function AppSidebar() {
               );
             }
 
-            // Group (Finances)
-            const groupActive = inFinances;
+            // Group
+            const groupActive = isGroupActive(item.basePath);
+            const groupOpen = isGroupOpen(item.basePath);
             return (
               <div key={item.basePath}>
                 <button
                   type="button"
-                  onClick={() => setFinancesOpen((o) => !o)}
+                  onClick={() => toggleGroup(item.basePath)}
                   className={cn(
                     "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                     groupActive
                       ? "text-sidebar-foreground"
                       : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                   )}
-                  aria-expanded={isFinancesOpen}
+                  aria-expanded={groupOpen}
                 >
                   <item.icon className="h-4.5 w-4.5 shrink-0" />
                   <span className="flex-1 text-left">{t(item.labelKey)}</span>
                   <ChevronDown
                     className={cn(
                       "h-4 w-4 transition-transform shrink-0",
-                      isFinancesOpen ? "rotate-0" : "-rotate-90"
+                      groupOpen ? "rotate-0" : "-rotate-90"
                     )}
                   />
                 </button>
-                {isFinancesOpen && (
+                {groupOpen && (
                   <div className="mt-1 ml-3 pl-3 border-l border-sidebar-border space-y-0.5">
                     {item.children.map((child) => {
                       const isActive = isExactActive(child.path);
