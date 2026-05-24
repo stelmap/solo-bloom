@@ -1,81 +1,176 @@
-## Goal
+# Plan: Public Booking Link + Client Document Workflow
 
-Replace the current "single template + virtual expansion" model with **materialized monthly instances** that each carry their own status (Planned / Paid / Cancelled), so users can mark-as-paid, edit/delete one / future / entire series, and see predictable single-count totals everywhere.
+Це великий milestone з public-facing шаром. Пропоную розбити на 2 незалежні фази, які можна релізити окремо. Лендинг не чіпаємо.
 
-## Data model changes (migration)
+---
 
-Add to `public.expenses`:
-- `instance_status text not null default 'planned'` — `'planned' | 'paid' | 'cancelled'`
-- `paid_date date null`
-- `recurrence_type text null` — `'monthly' | 'yearly'` (only on the template row)
-- `is_last_day_of_month boolean not null default false` (only on the template row)
-- `is_template boolean not null default false`
-- `template_id uuid null references public.expenses(id) on delete set null` — on instance rows, points to the template
-- Unique partial index: `(template_id, date) where template_id is not null` — prevents duplicates per (series, month-day).
+## Phase 1 — Public Booking Link (MVP)
 
-Backfill:
-- For every existing recurring template (one row today per `recurring_group_id`): mark it `is_template=true`, set `recurrence_type='monthly'`, set `is_last_day_of_month` from `recurring_start_date` day == last day, then materialize 12 months of instances starting from `recurring_start_date` (skipping any existing month thanks to the unique index). Carry the template's `payment_status` to instances if it was `paid` for the start month only.
-- Map old `payment_status` -> `instance_status` on non-recurring rows: `paid` -> `paid`, anything else -> `planned`.
+### Backend (міграції)
 
-## Generation logic
+**Нові таблиці:**
 
-Helper `src/lib/recurringExpenses.ts`:
-- `generateInstances(template, fromMonth, count=12)`: returns rows for N months. Day = `is_last_day_of_month ? lastDayOf(month) : min(template.day, lastDayOf(month))`.
-- `ensureRollingHorizon(userId)`: client-side after load — for each active template, find the latest instance month and top-up to (currentMonth + 11). Insert relies on the unique index for idempotency. Runs once per session per template.
-- Drop the old `expandExpensesForRange` virtual expansion.
+- `booking_links` — одне посилання на користувача
+  - `user_id`, `token` (унікальний, 32 байти hex), `is_active`, `mode` ('manual' | 'auto'), `created_at`
+  - RLS: власник CRUD; публічний `SELECT` по `token` (через SECURITY DEFINER RPC, не напряму)
 
-## Status rules
+- `booking_availability` — правила доступності
+  - `user_id`, `weekday` (0-6), `start_time`, `end_time`
+  - `session_duration_minutes`, `buffer_minutes`, `min_notice_hours`, `max_horizon_days`
+  - (для MVP — один набір правил на користувача, не per-service)
 
-- `planned`: counts in forecasts only.
-- `paid`: counts in actual financial calculations (Dashboard, Breakeven, Financial Overview, CSV export). Sets `paid_date`.
-- `cancelled`: excluded from all sums.
+- `booking_requests` (перейменувати існуючу `booking_requests` лендингу → `landing_booking_requests`, або створити нову `session_booking_requests` щоб не плутати)
+  - **Пропоную: `session_booking_requests`** (нова таблиця, існуючу booking_requests лендингу не чіпаємо)
+  - `user_id`, `appointment_id` (nullable), `client_id` (nullable), `link_id`
+  - `first_name`, `last_name`, `email`, `phone`, `comment`, `consent_at`
+  - `requested_slot_at`, `status` ('pending' | 'confirmed' | 'cancelled_client' | 'cancelled_therapist' | 'needs_linking' | 'spam' | 'expired')
+  - `ip_hash`, `created_at`
 
-Update `useDashboardStats`, `BreakevenPage`, `FinancialOverviewPage`, `ExpensesPage` totals/CSV to filter by `instance_status='paid'` for actuals (and `!= 'cancelled'` for forecasts). Remove all virtual-expansion calls — instances are now real rows.
+**SECURITY DEFINER RPC функції** (єдиний публічний доступ):
+- `public_get_booking_page(p_token)` → повертає тільки `{therapist_display_name, session_duration, currency_lang}` (без приватних даних)
+- `public_get_available_slots(p_token, p_from_date, p_to_date)` → масив вільних слотів, обчислений на сервері з урахуванням `appointments`, `days_off`, `booking_availability`
+- `public_create_booking(p_token, p_slot_at, p_first_name, p_last_name, p_email, p_phone, p_comment, p_consent)` → з input-валідацією, перевіркою конфлікту слоту (FOR UPDATE), rate-limit за IP-хешем (макс N за годину), створює `session_booking_requests` row + якщо `mode='auto'` — створює `appointments` row
 
-## Expense form (`ExpensesPage`)
+**Логіка matching** (виконується в RPC або triggered): шукає client за email → phone → name; ставить `status='pending'` з підказкою або `needs_linking`.
 
-- New status field on edit (Planned / Paid / Cancelled) with a "Mark as paid" quick action in the row.
-- Recurrence selector now: One-time / Monthly / Yearly.
-- Helper text under date field, dynamic by recurrence type (one-time, monthly, yearly, last-day-of-month detected automatically).
-- Preview block before save for recurring: lists first 4 generated dates + default status.
-- Row actions: Edit, Delete, Mark as paid.
+### Frontend
 
-## Edit / Delete scopes
+**Нові сторінки:**
+- `/book/:token` — публічна сторінка (поза `AppLayout`, без auth)
+  - Крок 1: вибір дати + слоту
+  - Крок 2: форма (ім'я, email, телефон, коментар, consent)
+  - Крок 3: success / "очікує підтвердження"
+  - SEO: `<meta name="robots" content="noindex,nofollow">`
+  - i18n: uk/en/fr/pl
 
-For instances of a template, both Edit and Delete open a scope dialog:
-- **Only this** — operate on the single instance.
-- **This and future** — operate on selected + all instances with `date >= selected.date` (paid ones skipped on edit; on delete, paid ones also deleted only after explicit confirm).
-- **Entire series** — operate on template + all instances. Warn if any `paid` exist.
+**Settings (Calendar Settings):**
+- Нова секція "Public Booking" в `SettingsPage`:
+  - Toggle enable/disable
+  - Copy link / Regenerate (з confirm dialog)
+  - Mode: manual / auto-confirm
+  - Availability form (дні тижня, години, тривалість, buffer, min notice, max horizon)
 
-For one-time expenses: simple Delete with confirm.
+**Calendar:**
+- Бейдж "Public booking" на сесіях з `source = public_link`
+- Бейдж "Needs client linking" жовтим
+- В `SessionDetailSheet` — нова дія "Attach to client" / "Create new client from booking" / "Mark as spam"
 
-## Filters / sorting
+**Inbox/Requests:**
+- В сайдбарі — новий пункт "Booking requests" (badge з кількістю pending)
+- Сторінка `BookingRequestsPage` — список запитів, дії Approve / Reject / Link to client
 
-Extend the Expenses table:
-- Filter by status (Planned / Paid / Cancelled / All).
-- Filter by recurrence type (One-time / Monthly / Yearly).
-- Existing category filter retained.
-- Sortable columns: date, amount, status, category.
-- Search by description.
+### Email
+- `booking-request-notification-therapist` (новий шаблон) — психотерапевту про нову заявку
+- `booking-confirmation-client` (новий шаблон) — клієнту: "отримано / підтверджено"
+- Використовуємо існуючу `send-transactional-email` інфраструктуру
 
-## Files touched
+### Security
+- Token: 32 байти, `encode(gen_random_bytes(32), 'hex')`
+- Rate limit: per IP-hash в RPC (відмова якщо >5 спроб/година)
+- Validation: zod на клієнті + CHECK constraints + RPC валідація
+- Consent обов'язковий — без нього RPC падає
+- Анти-спам: honeypot поле + перевірка email-формату
 
-- Migration (new) — schema + backfill.
-- `src/lib/recurringExpenses.ts` — new generators, drop virtual expand.
-- `src/hooks/useData.ts` — `useCreateExpense` (template + 12 instances), `useUpdateExpense` (scoped), `useDeleteExpense` (scoped), `useDashboardStats` (paid only).
-- `src/pages/ExpensesPage.tsx` — form, helper text, preview, status badges, scope dialogs, mark-as-paid, filters/sort.
-- `src/pages/FinancialOverviewPage.tsx`, `src/pages/BreakevenPage.tsx` — stop calling virtual expansion; use real rows filtered by status.
-- `src/lib/csvExport.ts` (if it expanded virtually) — same.
-- i18n strings in `src/i18n/locales/*` for helper text, preview, scope dialogs, statuses.
+---
 
-## Out of scope
+## Phase 2 — Client Document Workflow (MVP)
 
-- Weekly recurrence (UI stays monthly/yearly).
-- Auto-marking as paid based on bank import.
-- Per-instance payment method history beyond the existing field.
+### Backend
 
-## Risks
+**Нові таблиці:**
 
-- Migration must be idempotent and safe on existing data; the unique partial index catches double-runs.
-- Yearly recurrence is new — only generate 1 instance/year, top-up logic must handle it.
-- Many call sites currently sum recurring via `expandExpensesForRange`; missing one will under/over-count. I'll grep for all uses and switch them.
+- `document_templates`
+  - `user_id`, `name`, `category` ('onboarding' | 'legal' | 'process' | 'payment' | 'supervision' | 'custom')
+  - `type` ('form' | 'pdf' | 'text' | 'consent')
+  - `content_jsonb` (для form fields) або `file_path` (для PDF з storage)
+  - `requires_signature` boolean
+
+- `document_sends`
+  - `user_id`, `client_id`, `template_id`, `appointment_id` (nullable)
+  - `token` (унікальний secure), `expires_at`, `deadline_at` (nullable)
+  - `status` ('draft'|'sent'|'opened'|'in_progress'|'submitted'|'overdue'|'cancelled'|'expired'|'archived')
+  - `sent_at`, `opened_at`, `submitted_at`
+  - `response_jsonb` (заповнені поля), `file_path` (для submitted PDF)
+  - `message` text (від терапевта)
+
+- `document_audit`
+  - `document_send_id`, `event` ('created'|'sent'|'opened'|'submitted'|'viewed'|'archived'|'deleted')
+  - `actor_type` ('therapist'|'client'|'system'), `created_at`, `ip_hash`
+
+**Storage bucket:** `client-documents` (private, RLS — тільки власник)
+
+**SECURITY DEFINER RPC:**
+- `public_get_document(p_token)` → перевіряє expires_at, ставить `opened_at`, повертає шаблон + чернетку
+- `public_submit_document(p_token, p_response, p_consent)` → зберігає, ставить status='submitted'
+- Email верифікація: для MVP достатньо token-only (як зазначено в специфікації)
+
+### Frontend
+
+**Settings:**
+- Нова сторінка `/settings/document-templates` — CRUD шаблонів з form builder (drag/drop полів: short text, long text, date, checkbox, radio, dropdown, email, phone, signature)
+
+**Client Profile (`ClientDetailPage`):**
+- Нова таб "Documents":
+  - Список sent / submitted / pending
+  - Кнопка "Send document" → dialog з вибором template, deadline, message
+  - Для submitted — preview відповіді + download PDF
+
+**Client Creation:**
+- Чекбокс "Send onboarding documents" + multi-select шаблонів категорії onboarding
+
+**Session Details:**
+- Дія "Send document from this session"
+
+**Public сторінка:**
+- `/doc/:token` — поза auth
+  - Renderер форми залежно від типу
+  - Save draft / Submit
+  - Success screen
+  - noindex
+
+### Email
+- `document-sent-to-client` — клієнту з secure link
+- `document-submitted-notification` — терапевту про заповнення
+- `document-overdue-reminder` — клієнту якщо deadline minus 1 день (cron, можна Phase 3)
+
+### Security
+- Token: 32 байти hex
+- `expires_at` default 30 днів
+- noindex meta
+- RLS: storage policy перевіряє `user_id` власника
+- Consent перед submit
+
+---
+
+## Що НЕ робимо в цьому milestone
+- Оплата при бронюванні
+- Кабінет клієнта
+- Per-service availability (один загальний набір)
+- Кілька публічних посилань
+- Групові бронювання
+- Юридично сертифікований e-signature
+- Document versioning
+- Спільний доступ між спеціалістами
+- Інтеграція з Google Calendar (slot calculation поки тільки з SoloBizz appointments + days_off)
+
+---
+
+## Технічні деталі
+
+**Стек:** існуючий React 18 + Vite + Supabase. Жодних нових бібліотек крім, можливо, простого form-builder UI (можна на shadcn).
+
+**Routing:** `/book/:token` та `/doc/:token` додати в `App.tsx` поза `ProtectedRoute` і поза `AppLayout`.
+
+**i18n:** додати ключі в `src/i18n/locales/{en,uk,fr,pl}.ts`.
+
+**Тести:** unit для slot-calculation, e2e (Playwright) для booking flow та document submit.
+
+**Rollout:** feature flag `public_booking_enabled` (вже є `useFeatureFlag`), щоб релізити поступово.
+
+---
+
+## Орієнтовний обсяг
+- Phase 1: ~12-15 файлів, 2 міграції, 3 RPC, 4 нових сторінки/секції
+- Phase 2: ~10-12 файлів, 2 міграції, 2 RPC, 1 storage bucket
+
+**Рекомендую почати з Phase 1**, бо вона дає більшу цінність і не залежить від Phase 2. Якщо погоджуєш — приступаю до Phase 1 з міграціями.
