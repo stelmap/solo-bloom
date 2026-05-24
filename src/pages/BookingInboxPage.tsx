@@ -19,7 +19,7 @@ import {
   type BookingRequestRow,
 } from "@/hooks/useBookingInbox";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Mail, Phone, CheckCircle2, XCircle, UserPlus, RefreshCw } from "lucide-react";
+import { Loader2, Mail, Phone, CheckCircle2, XCircle, UserPlus, RefreshCw, AlertCircle, Sparkles } from "lucide-react";
 
 const STATUS_OPTIONS = [
   { value: "all", label: "All" },
