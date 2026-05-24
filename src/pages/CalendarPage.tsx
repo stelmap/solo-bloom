@@ -29,6 +29,9 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useBookingInboxCount } from "@/hooks/useBookingInbox";
+import { Link } from "react-router-dom";
+import { Inbox } from "lucide-react";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
