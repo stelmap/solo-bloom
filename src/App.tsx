@@ -131,6 +131,7 @@ const App = () => (
                 <Route path="/financial" element={<Navigate to="/finances" replace />} />
 
                 <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+                <Route path="/booking-inbox" element={<ProtectedRoute><BookingInboxPage /></ProtectedRoute>} />
                 <Route path="/supervision" element={<ProtectedRoute><EntitlementGate feature="premium_access"><SupervisionPage /></EntitlementGate></ProtectedRoute>} />
                 <Route path="/diagnostics" element={<ProtectedRoute><DiagnosticsPage /></ProtectedRoute>} />
                 <Route path="/plans" element={<ProtectedRoute><PlansPage /></ProtectedRoute>} />
