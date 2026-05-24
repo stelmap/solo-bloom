@@ -1,176 +1,73 @@
-# Plan: Public Booking Link + Client Document Workflow
+# Settings architecture refactor
 
-Це великий milestone з public-facing шаром. Пропоную розбити на 2 незалежні фази, які можна релізити окремо. Лендинг не чіпаємо.
+The current `SettingsPage` is a single ~850-line scroll containing profile, password, language, theme, sound, working hours, days off, taxes, currency, VAT, revenue recognition, payment methods, public booking, availability, and subscription.
 
----
+We'll split it into three focused pages reachable from the sidebar and from contextual entry points inside Calendar and Finance, without changing any data model or breaking saved data.
 
-## Phase 1 — Public Booking Link (MVP)
+## Target structure
 
-### Backend (міграції)
+```text
+/settings              -> Account & system (lean, no scroll)
+/calendar/settings     -> Calendar + booking configuration
+/finance/settings      -> Finance configuration
+```
 
-**Нові таблиці:**
+### 1. `/settings` (Account)
+Tabs (or short stacked cards, max one viewport tall per tab):
+- **Profile** — full name, email (read-only), phone, language
+- **Appearance** — theme, sound reminder
+- **Security** — change password
+- **Connected accounts** — existing `ConnectedAccountsSection`
+- **Subscription** — existing `SubscriptionSection`
 
-- `booking_links` — одне посилання на користувача
-  - `user_id`, `token` (унікальний, 32 байти hex), `is_active`, `mode` ('manual' | 'auto'), `created_at`
-  - RLS: власник CRUD; публічний `SELECT` по `token` (через SECURITY DEFINER RPC, не напряму)
+Remove from this page: working hours, days off, taxes, currency, VAT, revenue recognition, payment methods, public booking, availability, default session duration, business/invoice details.
 
-- `booking_availability` — правила доступності
-  - `user_id`, `weekday` (0-6), `start_time`, `end_time`
-  - `session_duration_minutes`, `buffer_minutes`, `min_notice_hours`, `max_horizon_days`
-  - (для MVP — один набір правил на користувача, не per-service)
+### 2. `/calendar/settings` (new page, `AppLayout`)
+Tabs:
+- **Working hours** — weekly schedule + time format + default session duration
+- **Days off** — vacation / holiday / sick days list + add dialog
+- **Public booking** — full `PublicBookingSection` (link, slug, mode, timezone, availability rules: session length, buffer, min notice, max horizon, weekly availability)
+- **Practice profile** — new card: display name (existing `booking_links.display_name`), business name, public description (reuses `profiles.business_name` + booking display name; logo placeholder, no upload yet)
 
-- `booking_requests` (перейменувати існуючу `booking_requests` лендингу → `landing_booking_requests`, або створити нову `session_booking_requests` щоб не плутати)
-  - **Пропоную: `session_booking_requests`** (нова таблиця, існуючу booking_requests лендингу не чіпаємо)
-  - `user_id`, `appointment_id` (nullable), `client_id` (nullable), `link_id`
-  - `first_name`, `last_name`, `email`, `phone`, `comment`, `consent_at`
-  - `requested_slot_at`, `status` ('pending' | 'confirmed' | 'cancelled_client' | 'cancelled_therapist' | 'needs_linking' | 'spam' | 'expired')
-  - `ip_hash`, `created_at`
+Add a "Calendar settings" entry: header button on `/calendar` linking here, plus a sidebar sub-item under Calendar.
 
-**SECURITY DEFINER RPC функції** (єдиний публічний доступ):
-- `public_get_booking_page(p_token)` → повертає тільки `{therapist_display_name, session_duration, currency_lang}` (без приватних даних)
-- `public_get_available_slots(p_token, p_from_date, p_to_date)` → масив вільних слотів, обчислений на сервері з урахуванням `appointments`, `days_off`, `booking_availability`
-- `public_create_booking(p_token, p_slot_at, p_first_name, p_last_name, p_email, p_phone, p_comment, p_consent)` → з input-валідацією, перевіркою конфлікту слоту (FOR UPDATE), rate-limit за IP-хешем (макс N за годину), створює `session_booking_requests` row + якщо `mode='auto'` — створює `appointments` row
+### 3. `/finance/settings` (new page, `AppLayout`)
+Tabs:
+- **Currency & invoicing** — currency, business_id, business_address, VAT mode + rate
+- **Revenue recognition** — `income_recognition_method` radio (payment date / session date)
+- **Payment methods** — existing `PaymentMethodsSection`
+- **Taxes** — existing tax settings list + dialog
+- **Analytics & break-even** — link out to existing `/breakeven` page (no logic move; break-even goals already live there)
 
-**Логіка matching** (виконується в RPC або triggered): шукає client за email → phone → name; ставить `status='pending'` з підказкою або `needs_linking`.
+Add "Finance settings" entry: header button on `/income` (or financial overview) and a sidebar sub-item.
 
-### Frontend
+## Sidebar
 
-**Нові сторінки:**
-- `/book/:token` — публічна сторінка (поза `AppLayout`, без auth)
-  - Крок 1: вибір дати + слоту
-  - Крок 2: форма (ім'я, email, телефон, коментар, consent)
-  - Крок 3: success / "очікує підтвердження"
-  - SEO: `<meta name="robots" content="noindex,nofollow">`
-  - i18n: uk/en/fr/pl
+Add two sub-links under existing Calendar and Finance/Income groups in `AppSidebar`:
+- Calendar → Settings
+- Finance → Settings
 
-**Settings (Calendar Settings):**
-- Нова секція "Public Booking" в `SettingsPage`:
-  - Toggle enable/disable
-  - Copy link / Regenerate (з confirm dialog)
-  - Mode: manual / auto-confirm
-  - Availability form (дні тижня, години, тривалість, buffer, min notice, max horizon)
+Keep top-level "Settings" pointing to `/settings`.
 
-**Calendar:**
-- Бейдж "Public booking" на сесіях з `source = public_link`
-- Бейдж "Needs client linking" жовтим
-- В `SessionDetailSheet` — нова дія "Attach to client" / "Create new client from booking" / "Mark as spam"
+## Implementation steps
 
-**Inbox/Requests:**
-- В сайдбарі — новий пункт "Booking requests" (badge з кількістю pending)
-- Сторінка `BookingRequestsPage` — список запитів, дії Approve / Reject / Link to client
+1. Create `src/components/settings/` with extracted sub-components:
+   - `ProfileCard.tsx`, `AppearanceCard.tsx`, `SecurityCard.tsx` (extracted from current SettingsPage)
+   - `WorkingHoursCard.tsx`, `DaysOffCard.tsx` (extracted)
+   - `CurrencyInvoiceCard.tsx`, `RevenueRecognitionCard.tsx`, `TaxSettingsCard.tsx` (extracted)
+   - `PracticeProfileCard.tsx` (new, thin wrapper over profile + booking display name)
+2. Rewrite `SettingsPage.tsx` to a tabbed Account page using shadcn `Tabs`.
+3. Add `src/pages/CalendarSettingsPage.tsx` with tabs.
+4. Add `src/pages/FinanceSettingsPage.tsx` with tabs.
+5. Register routes in `src/App.tsx`: `/calendar/settings`, `/finance/settings`.
+6. Add "Settings" entry buttons on `CalendarPage` header and `IncomePage`/`FinancialOverviewPage` header.
+7. Add sub-nav items in `AppSidebar`.
+8. Add new i18n keys for tab labels and section titles in `en.ts`, `uk.ts`, `fr.ts`, `pl.ts` (reusing existing keys where possible).
 
-### Email
-- `booking-request-notification-therapist` (новий шаблон) — психотерапевту про нову заявку
-- `booking-confirmation-client` (новий шаблон) — клієнту: "отримано / підтверджено"
-- Використовуємо існуючу `send-transactional-email` інфраструктуру
+## Data / migration
 
-### Security
-- Token: 32 байти, `encode(gen_random_bytes(32), 'hex')`
-- Rate limit: per IP-hash в RPC (відмова якщо >5 спроб/година)
-- Validation: zod на клієнті + CHECK constraints + RPC валідація
-- Consent обов'язковий — без нього RPC падає
-- Анти-спам: honeypot поле + перевірка email-формату
+No database changes. All existing fields stay on `profiles`, `booking_links`, `booking_availability`, `days_off`, `tax_settings`, `payment_methods`. Existing user data continues to load via the same hooks.
 
----
-
-## Phase 2 — Client Document Workflow (MVP)
-
-### Backend
-
-**Нові таблиці:**
-
-- `document_templates`
-  - `user_id`, `name`, `category` ('onboarding' | 'legal' | 'process' | 'payment' | 'supervision' | 'custom')
-  - `type` ('form' | 'pdf' | 'text' | 'consent')
-  - `content_jsonb` (для form fields) або `file_path` (для PDF з storage)
-  - `requires_signature` boolean
-
-- `document_sends`
-  - `user_id`, `client_id`, `template_id`, `appointment_id` (nullable)
-  - `token` (унікальний secure), `expires_at`, `deadline_at` (nullable)
-  - `status` ('draft'|'sent'|'opened'|'in_progress'|'submitted'|'overdue'|'cancelled'|'expired'|'archived')
-  - `sent_at`, `opened_at`, `submitted_at`
-  - `response_jsonb` (заповнені поля), `file_path` (для submitted PDF)
-  - `message` text (від терапевта)
-
-- `document_audit`
-  - `document_send_id`, `event` ('created'|'sent'|'opened'|'submitted'|'viewed'|'archived'|'deleted')
-  - `actor_type` ('therapist'|'client'|'system'), `created_at`, `ip_hash`
-
-**Storage bucket:** `client-documents` (private, RLS — тільки власник)
-
-**SECURITY DEFINER RPC:**
-- `public_get_document(p_token)` → перевіряє expires_at, ставить `opened_at`, повертає шаблон + чернетку
-- `public_submit_document(p_token, p_response, p_consent)` → зберігає, ставить status='submitted'
-- Email верифікація: для MVP достатньо token-only (як зазначено в специфікації)
-
-### Frontend
-
-**Settings:**
-- Нова сторінка `/settings/document-templates` — CRUD шаблонів з form builder (drag/drop полів: short text, long text, date, checkbox, radio, dropdown, email, phone, signature)
-
-**Client Profile (`ClientDetailPage`):**
-- Нова таб "Documents":
-  - Список sent / submitted / pending
-  - Кнопка "Send document" → dialog з вибором template, deadline, message
-  - Для submitted — preview відповіді + download PDF
-
-**Client Creation:**
-- Чекбокс "Send onboarding documents" + multi-select шаблонів категорії onboarding
-
-**Session Details:**
-- Дія "Send document from this session"
-
-**Public сторінка:**
-- `/doc/:token` — поза auth
-  - Renderер форми залежно від типу
-  - Save draft / Submit
-  - Success screen
-  - noindex
-
-### Email
-- `document-sent-to-client` — клієнту з secure link
-- `document-submitted-notification` — терапевту про заповнення
-- `document-overdue-reminder` — клієнту якщо deadline minus 1 день (cron, можна Phase 3)
-
-### Security
-- Token: 32 байти hex
-- `expires_at` default 30 днів
-- noindex meta
-- RLS: storage policy перевіряє `user_id` власника
-- Consent перед submit
-
----
-
-## Що НЕ робимо в цьому milestone
-- Оплата при бронюванні
-- Кабінет клієнта
-- Per-service availability (один загальний набір)
-- Кілька публічних посилань
-- Групові бронювання
-- Юридично сертифікований e-signature
-- Document versioning
-- Спільний доступ між спеціалістами
-- Інтеграція з Google Calendar (slot calculation поки тільки з SoloBizz appointments + days_off)
-
----
-
-## Технічні деталі
-
-**Стек:** існуючий React 18 + Vite + Supabase. Жодних нових бібліотек крім, можливо, простого form-builder UI (можна на shadcn).
-
-**Routing:** `/book/:token` та `/doc/:token` додати в `App.tsx` поза `ProtectedRoute` і поза `AppLayout`.
-
-**i18n:** додати ключі в `src/i18n/locales/{en,uk,fr,pl}.ts`.
-
-**Тести:** unit для slot-calculation, e2e (Playwright) для booking flow та document submit.
-
-**Rollout:** feature flag `public_booking_enabled` (вже є `useFeatureFlag`), щоб релізити поступово.
-
----
-
-## Орієнтовний обсяг
-- Phase 1: ~12-15 файлів, 2 міграції, 3 RPC, 4 нових сторінки/секції
-- Phase 2: ~10-12 файлів, 2 міграції, 2 RPC, 1 storage bucket
-
-**Рекомендую почати з Phase 1**, бо вона дає більшу цінність і не залежить від Phase 2. Якщо погоджуєш — приступаю до Phase 1 з міграціями.
+## Out of scope (kept as follow-up)
+- Logo upload (placeholder only)
+- Real domain-separated tables (`account_preferences`, `practice_profile`, …) — current `profiles` columns are sufficient; restructuring would require risky data migration. We'll document the logical grouping in code via the extracted card components.
