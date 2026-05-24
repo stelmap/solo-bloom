@@ -17,6 +17,7 @@ type PageInfo = {
   mode: "manual" | "auto";
   is_active: boolean;
   language: string;
+  timezone: string;
 };
 
 const formSchema = z.object({
