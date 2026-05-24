@@ -420,6 +420,14 @@ export default function CalendarPage() {
     });
   };
 
+  const getPendingRequestsForDayHour = (day: Date, hour: number): BookingRequestRow[] => {
+    const dayStr = format(day, "yyyy-MM-dd");
+    return pendingRequests.filter(req => {
+      const d = new Date(req.requested_slot_at);
+      return toUTCDateStr(d) === dayStr && d.getUTCHours() === hour;
+    });
+  };
+
   const STATUS_MAP: Record<string, { label: string; color: string }> = {
     scheduled: { label: t("status.scheduled"), color: "bg-muted text-muted-foreground" },
     reminder_sent: { label: t("status.reminderSent"), color: "bg-accent text-accent-foreground" },
