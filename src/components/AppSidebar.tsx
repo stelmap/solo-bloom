@@ -64,6 +64,8 @@ export function AppSidebar() {
   const { isFreeStarter } = useFreeStarterMode();
   const { has, loading: entLoading } = useEntitlements();
   const [isAdmin, setIsAdmin] = useState(false);
+  const { data: inboxCount = 0 } = useBookingInboxCount();
+
 
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
