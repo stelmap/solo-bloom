@@ -28,6 +28,43 @@ export function PublicBookingSection() {
     },
   });
 
+  const { data: profile } = useQuery({
+    queryKey: ["profile_tz", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("timezone").eq("user_id", userId!).maybeSingle();
+      return data;
+    },
+  });
+
+  const updateTimezone = useMutation({
+    mutationFn: async (tz: string) => {
+      const { error } = await supabase.from("profiles").update({ timezone: tz } as any).eq("user_id", userId!);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["profile_tz", userId] }),
+  });
+
+  // Auto-detect timezone from browser if not set yet
+  useEffect(() => {
+    if (!userId || !profile) return;
+    if (!profile.timezone) {
+      const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (browserTz) updateTimezone.mutate(browserTz);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, profile]);
+
+  const tzOptions = useMemo(() => {
+    try {
+      // @ts-ignore
+      const all: string[] = (Intl as any).supportedValuesOf?.("timeZone") ?? [];
+      return all;
+    } catch {
+      return [];
+    }
+  }, []);
+
   const { data: availability } = useQuery({
     queryKey: ["booking_availability", userId],
     enabled: !!userId,
