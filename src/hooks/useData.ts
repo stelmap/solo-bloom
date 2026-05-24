@@ -425,15 +425,20 @@ export function useDeleteService() {
 }
 
 // Appointments
-export function useAppointments() {
+export function useAppointments(range?: { from?: string; to?: string }) {
   const { user } = useAuth();
+  const from = range?.from;
+  const to = range?.to;
   return useQuery({
-    queryKey: ["appointments", user?.id],
+    queryKey: ["appointments", user?.id, from ?? null, to ?? null],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let q = supabase
         .from("appointments")
         .select("*, clients(name), services(name, price), group_sessions!appointments_group_session_id_fkey(id, group_id, groups(name))")
         .order("scheduled_at", { ascending: true });
+      if (from) q = q.gte("scheduled_at", from);
+      if (to) q = q.lte("scheduled_at", to);
+      const { data, error } = await q;
       if (error) throw error;
       return data;
     },
