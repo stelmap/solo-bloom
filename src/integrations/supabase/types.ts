@@ -2403,6 +2403,10 @@ export type Database = {
         }[]
       }
       cleanup_demo_workspace: { Args: { p_user_id: string }; Returns: Json }
+      confirm_booking_request: {
+        Args: { p_client_id?: string; p_id: string; p_service_id?: string }
+        Returns: string
+      }
       confirm_session_by_token: {
         Args: { p_token: string }
         Returns: {
@@ -2413,6 +2417,10 @@ export type Database = {
       current_plan_client_limit: {
         Args: { p_user_id: string }
         Returns: number
+      }
+      decline_booking_request: {
+        Args: { p_id: string; p_reason?: string }
+        Returns: undefined
       }
       delete_email: {
         Args: { message_id: number; queue_name: string }
@@ -2444,6 +2452,29 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      link_booking_request_client: {
+        Args: { p_client_id: string; p_id: string }
+        Returns: undefined
+      }
+      list_session_booking_requests: {
+        Args: { p_limit?: number; p_status?: string }
+        Returns: {
+          appointment_id: string
+          client_id: string
+          comment: string
+          created_at: string
+          duration_minutes: number
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          link_id: string
+          matched_client_name: string
+          phone: string
+          requested_slot_at: string
+          status: string
+        }[]
       }
       migrate_all_legacy_users: { Args: never; Returns: Json }
       migrate_legacy_user: { Args: { p_user_id: string }; Returns: Json }
