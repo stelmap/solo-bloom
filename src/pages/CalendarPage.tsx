@@ -39,6 +39,12 @@ const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sa
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const { data: appointments = [] } = useAppointments();
+  const { data: bookingRequests = [] } = useBookingRequests();
+  const navigate = useNavigate();
+  const pendingRequests = useMemo(
+    () => bookingRequests.filter(r => r.status === "pending" || r.status === "needs_linking"),
+    [bookingRequests],
+  );
   const { data: clients = [] } = useClients();
   const { data: services = [] } = useServices();
   const { data: profile } = useProfile();
