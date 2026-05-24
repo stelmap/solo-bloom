@@ -18,6 +18,7 @@ import { Plus, Trash2, CalendarOff, Receipt, Pencil, Eye, EyeOff, Lock, Volume2,
 import { SubscriptionSection } from "@/components/SubscriptionSection";
 import { PaymentMethodsSection } from "@/components/PaymentMethodsSection";
 import { ConnectedAccountsSection } from "@/components/ConnectedAccountsSection";
+import { PublicBookingSection } from "@/components/PublicBookingSection";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
