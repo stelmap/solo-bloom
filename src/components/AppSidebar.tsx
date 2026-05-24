@@ -223,6 +223,27 @@ export function AppSidebar() {
             </Link>
           )}
 
+          <div className="mt-3 space-y-1">
+            <Link
+              to="/booking-inbox"
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                isExactActive("/booking-inbox")
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+              )}
+            >
+              <Inbox className="h-4.5 w-4.5 shrink-0" />
+              <span className="flex-1 truncate">Booking inbox</span>
+              {inboxCount > 0 && (
+                <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-sidebar-primary/20 text-sidebar-primary">
+                  {inboxCount}
+                </span>
+              )}
+            </Link>
+          </div>
+
           {isAdmin && (
             <div className="mt-3 space-y-1">
               <Link
