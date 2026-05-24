@@ -150,6 +150,32 @@ export function PublicBookingSection() {
             </Select>
           </div>
 
+          <div className="space-y-2">
+            <Label>Timezone (shown to clients)</Label>
+            {tzOptions.length > 0 ? (
+              <Select
+                value={profile?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone}
+                onValueChange={(v) => updateTimezone.mutate(v)}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent className="max-h-72">
+                  {tzOptions.map((tz) => (
+                    <SelectItem key={tz} value={tz}>{tz}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                value={profile?.timezone || ""}
+                onChange={(e) => updateTimezone.mutate(e.target.value)}
+                placeholder="e.g. Europe/Kyiv"
+              />
+            )}
+            <p className="text-xs text-muted-foreground">
+              All booking times on the public page will be shown in this timezone.
+            </p>
+          </div>
+
           {url && (
             <div className="space-y-2">
               <Label>Your booking link</Label>
