@@ -33,7 +33,16 @@ const ProBadge = () => (
 
 const navItems: NavItem[] = [
   { kind: "leaf", icon: LayoutDashboard, labelKey: "nav.dashboard", path: "/dashboard" },
-  { kind: "leaf", icon: Calendar, labelKey: "nav.calendar", path: "/calendar" },
+  {
+    kind: "group",
+    icon: Calendar,
+    labelKey: "nav.calendar",
+    basePath: "/calendar",
+    children: [
+      { icon: Calendar, labelKey: "nav.calendar", path: "/calendar" },
+      { icon: Settings, labelKey: "nav.calendarSettings", path: "/calendar/settings" },
+    ],
+  },
   { kind: "leaf", icon: Users, labelKey: "nav.clients", path: "/clients" },
   { kind: "leaf", icon: UsersRound, labelKey: "nav.groups", path: "/groups" },
   { kind: "leaf", icon: Scissors, labelKey: "nav.services", path: "/services" },
@@ -49,6 +58,7 @@ const navItems: NavItem[] = [
       { icon: TrendingDown, labelKey: "nav.expenses", path: "/finances/expenses" },
       { icon: ShieldCheck, labelKey: "nav.paymentAudit", path: "/finances/payment-audit" },
       { icon: Target, labelKey: "nav.breakeven", path: "/finances/breakeven" },
+      { icon: Settings, labelKey: "nav.financeSettings", path: "/finances/settings" },
     ],
   },
   { kind: "leaf", icon: ClipboardList, labelKey: "nav.supervision", path: "/supervision", requires: "premium_access" },
