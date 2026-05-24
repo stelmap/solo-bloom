@@ -64,6 +64,7 @@ const CookiePolicyPage = lazyWithReload(() => import("./pages/CookiePolicyPage")
 const CareersPage = lazyWithReload(() => import("./pages/CareersPage"));
 const AdminBookingRequestsPage = lazyWithReload(() => import("./pages/AdminBookingRequestsPage"));
 const ConfirmSessionPage = lazyWithReload(() => import("./pages/ConfirmSessionPage"));
+const PublicBookingPage = lazyWithReload(() => import("./pages/PublicBookingPage"));
 const UnsubscribePage = lazyWithReload(() => import("./pages/UnsubscribePage"));
 const SupervisionPage = lazyWithReload(() => import("./pages/SupervisionPage"));
 const DiagnosticsPage = lazyWithReload(() => import("./pages/DiagnosticsPage"));
