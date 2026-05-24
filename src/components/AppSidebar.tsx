@@ -92,14 +92,13 @@ export function AppSidebar() {
     [entLoading, has, isFreeStarter]
   );
 
-  // Auto-open the Finances group when the user is somewhere inside it
-  const inFinances = useMemo(
-    () => location.pathname === "/finances" || location.pathname.startsWith("/finances/"),
-    [location.pathname]
-  );
-  const [financesOpen, setFinancesOpen] = useState<boolean>(inFinances);
-  // keep open whenever route is inside finances
-  const isFinancesOpen = financesOpen || inFinances;
+  // Track open state per group; auto-open when route is inside the group's basePath
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const isGroupActive = (basePath: string) =>
+    location.pathname === basePath || location.pathname.startsWith(basePath + "/");
+  const isGroupOpen = (basePath: string) => openGroups[basePath] ?? isGroupActive(basePath);
+  const toggleGroup = (basePath: string) =>
+    setOpenGroups((m) => ({ ...m, [basePath]: !isGroupOpen(basePath) }));
 
   const initials = user?.user_metadata?.full_name
     ? user.user_metadata.full_name.split(" ").map((n: string) => n[0]).join("").toUpperCase()
