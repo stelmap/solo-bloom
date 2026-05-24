@@ -94,15 +94,17 @@ export default function PublicBookingPage() {
       });
   }, [info, token]);
 
+  const tz = info?.timezone || "UTC";
+
   const groupedByDay = useMemo(() => {
     const m: Record<string, string[]> = {};
     for (const s of slots) {
       const d = new Date(s);
-      const key = d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+      const key = d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", timeZone: tz });
       (m[key] ||= []).push(s);
     }
     return m;
-  }, [slots]);
+  }, [slots, tz]);
 
   async function getIpHash(): Promise<string | null> {
     try {
