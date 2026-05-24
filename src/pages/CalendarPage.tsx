@@ -777,6 +777,19 @@ export default function CalendarPage() {
                 </div>
               </DialogContent>
             </Dialog>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label={t("settings.calendarSettings") || "Calendar settings"}
+                  onClick={() => setSettingsOpen(true)}
+                >
+                  <SettingsIcon className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t("settings.calendarSettings") || "Calendar settings"}</TooltipContent>
+            </Tooltip>
           </div>
         </div>
 
