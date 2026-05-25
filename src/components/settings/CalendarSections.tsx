@@ -104,16 +104,40 @@ export function WorkingHoursSection() {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>{t("settings.defaultDuration")}</Label>
-            <Select value={form.default_duration.toString()} onValueChange={v => setForm(f => ({ ...f, default_duration: parseInt(v) }))}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="30">{t("settings.30min")}</SelectItem>
-                <SelectItem value="60">{t("settings.60min")}</SelectItem>
-                <SelectItem value="90">{t("settings.90min")}</SelectItem>
-                <SelectItem value="120">{t("settings.120min")}</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="default-duration">{t("settings.defaultDuration")}</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="default-duration"
+                type="number"
+                min={5}
+                max={480}
+                step={5}
+                value={form.default_duration}
+                onChange={e => {
+                  const n = parseInt(e.target.value);
+                  setForm(f => ({ ...f, default_duration: Number.isFinite(n) ? n : 0 }));
+                }}
+                className="w-24"
+              />
+              <span className="text-sm text-muted-foreground">min</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {[30, 45, 50, 60, 75, 90, 120].map(v => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, default_duration: v }))}
+                  className={cn(
+                    "text-xs px-2 py-1 rounded-md border transition-colors",
+                    form.default_duration === v
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-muted/40 text-muted-foreground border-border hover:bg-muted",
+                  )}
+                >
+                  {v} min
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
