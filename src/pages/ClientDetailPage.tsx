@@ -92,9 +92,12 @@ export default function ClientDetailPage() {
     waiting_for_payment: { label: t("payment.waiting"), color: "bg-warning/10 text-warning" },
     paid_now: { label: t("payment.paid"), color: "bg-success/10 text-success" },
     paid_in_advance: { label: t("payment.paidAdvance"), color: "bg-success/10 text-success" },
+    paid_from_prepayment: { label: t("payment.paidAdvance"), color: "bg-success/10 text-success" },
     partially_paid: { label: t("incomeConfirm.partial"), color: "bg-warning/15 text-warning" },
+    partially_paid_from_prepayment: { label: t("incomeConfirm.partial"), color: "bg-warning/15 text-warning" },
     not_applicable: { label: t("payment.na"), color: "bg-muted text-muted-foreground" },
   };
+
 
   const { data: creditBalance = 0 } = useClientCreditBalance(id);
   const { data: clientDebtData } = useClientDebt(id);
@@ -136,13 +139,20 @@ export default function ClientDetailPage() {
 
   // Predicates — single source of truth for both card counts and filtered list
   const isCompleted = (a: any) => a.status === "completed";
-  const isPaid = (a: any) => a.payment_status === "paid_now" || a.payment_status === "paid_in_advance" || a.payment_status === "paid_from_prepayment";
+  const isPaid = (a: any) =>
+    a.payment_status === "paid_now" ||
+    a.payment_status === "paid_in_advance" ||
+    a.payment_status === "paid_from_prepayment";
   // Awaiting = only completed sessions that aren't fully paid yet
   const isAwaiting = (a: any) =>
     a.status === "completed" &&
-    (a.payment_status === "unpaid" || a.payment_status === "waiting_for_payment" || a.payment_status === "partially_paid");
+    (a.payment_status === "unpaid" ||
+      a.payment_status === "waiting_for_payment" ||
+      a.payment_status === "partially_paid" ||
+      a.payment_status === "partially_paid_from_prepayment");
   const isCancelled = (a: any) => a.status === "cancelled" || a.status === "no-show";
-  const isPrepaid = (a: any) => a.payment_status === "paid_in_advance";
+  const isPrepaid = (a: any) =>
+    a.payment_status === "paid_in_advance" || a.payment_status === "paid_from_prepayment";
 
   const totalSessions = appointments.length;
   const completedSessions = (appointments as any[]).filter(isCompleted).length;
