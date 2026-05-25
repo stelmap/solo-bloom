@@ -36,6 +36,13 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useDemoMode } from "@/hooks/useDemoWorkspace";
+import {
+  isCompleted,
+  isPaid,
+  isAwaiting,
+  isCancelled,
+  isPrepaid,
+} from "@/lib/paymentClassifiers";
 
 export default function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -168,22 +175,8 @@ export default function ClientDetailPage() {
     return { sortedAppointments: sorted, nextUpcomingId: upcoming.length > 0 ? upcoming[0].id : null };
   }, [appointments]);
 
-  // Predicates — single source of truth for both card counts and filtered list
-  const isCompleted = (a: any) => a.status === "completed";
-  const isPaid = (a: any) =>
-    a.payment_status === "paid_now" ||
-    a.payment_status === "paid_in_advance" ||
-    a.payment_status === "paid_from_prepayment";
-  // Awaiting = only completed sessions that aren't fully paid yet
-  const isAwaiting = (a: any) =>
-    a.status === "completed" &&
-    (a.payment_status === "unpaid" ||
-      a.payment_status === "waiting_for_payment" ||
-      a.payment_status === "partially_paid" ||
-      a.payment_status === "partially_paid_from_prepayment");
-  const isCancelled = (a: any) => a.status === "cancelled" || a.status === "no-show";
-  const isPrepaid = (a: any) =>
-    a.payment_status === "paid_in_advance" || a.payment_status === "paid_from_prepayment";
+  // Predicates — single source of truth for both card counts and filtered list.
+  // See src/lib/paymentClassifiers.ts (unit-tested).
 
   const totalSessions = appointments.length;
   const completedSessions = (appointments as any[]).filter(isCompleted).length;
