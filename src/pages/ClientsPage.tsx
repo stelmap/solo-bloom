@@ -98,7 +98,7 @@ const ClientCard = memo(({ client, onNavigate, onDelete, onArchive, onUnarchive,
     <div className="space-y-1.5 text-sm">
       {client.phone && <div className="flex items-center gap-2 text-muted-foreground"><Phone className="h-3.5 w-3.5" /><span className="truncate">{client.phone}</span></div>}
       {client.email && <div className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" /><span className="truncate">{client.email}</span></div>}
-      {client.telegram && <div className="flex items-center gap-2 text-muted-foreground"><Send className="h-3.5 w-3.5" /><span className="truncate">@{client.telegram}</span></div>}
+      
     </div>
     {client.notes && <p className="mt-3 text-xs text-muted-foreground bg-muted/50 rounded-md p-2 line-clamp-2">📝 {client.notes}</p>}
   </div>
@@ -355,8 +355,8 @@ export default function ClientsPage() {
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => {
               downloadCSV("clients.csv",
-                [t("csv.header.name"), t("csv.header.phone"), t("csv.header.email"), t("csv.header.telegram"), t("csv.header.notes")],
-                clients.map(c => [c.name, c.phone || "", c.email || "", c.telegram || "", c.notes || ""])
+                [t("csv.header.name"), t("csv.header.phone"), t("csv.header.email"), t("csv.header.notes")],
+                clients.map(c => [c.name, c.phone || "", c.email || "", c.notes || ""])
               );
             }}><Download className="h-4 w-4 mr-1" /> {t("export.csv")}</Button>
             {!isDemoMode && <>
@@ -383,7 +383,7 @@ export default function ClientsPage() {
                 <div className="space-y-2"><Label>{t("common.name")} *</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>{t("common.phone")}</Label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>{t("common.email")}</Label><Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>{t("common.telegram")}</Label><Input placeholder="username" value={form.telegram} onChange={e => setForm(f => ({ ...f, telegram: e.target.value }))} /></div>
+                
                 <div className="space-y-2"><Label>{t("common.notes")}</Label><Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
                 <Button onClick={handleCreate} className="w-full" disabled={createClient.isPending}>
                   {createClient.isPending ? t("common.adding") : t("clients.addClient")}

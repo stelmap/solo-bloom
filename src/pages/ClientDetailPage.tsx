@@ -1,8 +1,6 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
-import { TelegramConnectCard } from "@/components/TelegramConnectCard";
-import { TelegramSendLog } from "@/components/TelegramSendLog";
 import { ClientNotesCard } from "@/components/ClientNotesCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -414,7 +412,7 @@ export default function ClientDetailPage() {
               <div className="space-y-2 text-sm">
                 {client.phone && <div className="flex items-center gap-2 text-muted-foreground"><Phone className="h-4 w-4 text-primary" />{client.phone}</div>}
                 {client.email && <div className="flex items-center gap-2 text-muted-foreground"><Mail className="h-4 w-4 text-primary" />{client.email}</div>}
-                {(client as any).telegram && <div className="flex items-center gap-2 text-muted-foreground"><Send className="h-4 w-4 text-primary" />@{(client as any).telegram}</div>}
+                
               </div>
             </div>
 
@@ -430,9 +428,7 @@ export default function ClientDetailPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">{t("notification.channel")}</span>
                   <Badge variant="outline" className="text-xs">
-                    {(client as any).notification_preference === "email_only" ? t("notification.emailOnly") :
-                     (client as any).notification_preference === "telegram_only" ? t("notification.telegramOnly") :
-                     (client as any).notification_preference === "email_and_telegram" ? t("notification.emailAndTelegram") :
+                    {(client as any).notification_preference === "email_only" || (client as any).notification_preference === "email_and_telegram" ? t("notification.emailOnly") :
                      t("notification.noReminder")}
                   </Badge>
                 </div>
@@ -445,10 +441,6 @@ export default function ClientDetailPage() {
               </div>
             </div>
 
-
-            {/* Telegram Connection */}
-            <TelegramConnectCard client={client} />
-            <TelegramSendLog clientId={client.id} />
 
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
@@ -798,7 +790,7 @@ export default function ClientDetailPage() {
                 <div className="space-y-2 sm:col-span-2"><Label>{t("common.name")} *</Label><Input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>{t("common.phone")}</Label><Input value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>{t("common.email")}</Label><Input type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} /></div>
-                <div className="space-y-2 sm:col-span-2"><Label>{t("common.telegram")}</Label><Input placeholder="username" value={editForm.telegram} onChange={e => setEditForm(f => ({ ...f, telegram: e.target.value }))} /></div>
+                
                 <div className="space-y-2 sm:col-span-2"><Label>{t("common.generalNotes")}</Label><Textarea rows={3} value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} /></div>
               </div>
             </section>
@@ -823,8 +815,6 @@ export default function ClientDetailPage() {
                     <SelectContent>
                       <SelectItem value="no_reminder">{t("notification.noReminder")}</SelectItem>
                       <SelectItem value="email_only">{t("notification.emailOnly")}</SelectItem>
-                      <SelectItem value="telegram_only">{t("notification.telegramOnly")}</SelectItem>
-                      <SelectItem value="email_and_telegram">{t("notification.emailAndTelegram")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
