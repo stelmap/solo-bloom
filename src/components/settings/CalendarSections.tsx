@@ -71,6 +71,10 @@ export function WorkingHoursSection() {
         updateProfile.mutateAsync(form),
         upsertSchedule.mutateAsync(schedule),
       ]);
+      // Mirror working schedule to public booking availability when inheritance is ON
+      if (user && getInheritFlag(user.id)) {
+        try { await syncBookingAvailabilityFromSchedule(user.id, schedule); } catch {}
+      }
       toast({ title: t("settings.saved") });
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
