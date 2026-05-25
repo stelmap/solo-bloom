@@ -595,6 +595,36 @@ export type Database = {
         }
         Relationships: []
       }
+      data_access_audit: {
+        Row: {
+          action: string
+          at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       days_off: {
         Row: {
           created_at: string
@@ -978,6 +1008,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      gdpr_deletion_requests: {
+        Row: {
+          cancelled_at: string | null
+          executed_at: string | null
+          id: string
+          reason: string | null
+          requested_at: string
+          scheduled_for: string
+          user_id: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          executed_at?: string | null
+          id?: string
+          reason?: string | null
+          requested_at?: string
+          scheduled_for?: string
+          user_id: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          executed_at?: string | null
+          id?: string
+          reason?: string | null
+          requested_at?: string
+          scheduled_for?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       group_attendance: {
         Row: {
@@ -2409,6 +2469,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: number
+      }
+      audit_read: {
+        Args: { p_entity_id: string; p_entity_type: string }
+        Returns: undefined
       }
       auto_apply_credits_to_client_outstanding: {
         Args: { p_client_id: string }

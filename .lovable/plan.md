@@ -1,74 +1,89 @@
-## Часткова оплата сесії + автоматичне закриття боргів
+# GDPR Hardening Plan
 
-Розширюємо існуючу логіку передоплат правилом часткової оплати та FIFO‑розподілом нових оплат: спершу борги → потім поточна сесія → потім передоплата.
+Goal: make the app GDPR-defensible. Lovable Cloud's Supabase already gives you encryption-at-rest on disk and TLS in transit. What's missing for GDPR is **field-level encryption of sensitive data, an access audit trail, and user-facing data rights (export + erasure)**.
 
-### 1. База даних
+Reality check up front: a database administrator with raw Postgres access could still read your data today. The plan below uses **pgsodium / pgcrypto with keys held in Supabase Vault**, which means even a direct DB dump returns ciphertext — only the app (going through Postgres functions) can decrypt. That's the standard GDPR "state of the art" bar for a SaaS of this size.
 
-**Міграція** додає одну SQL‑функцію та необхідні статуси:
+## Scope of encryption
 
-- Розширюємо допустимі значення `appointments.payment_status` так, щоб приймали `partially_paid`.
-- Нова RPC `apply_payment_to_client_debts(p_user_id, p_client_id, p_income_id, p_amount)`:
-  1. Бере `expected_payments` клієнта зі статусом `pending` у порядку `created_at` ASC.
-  2. Для кожного: списує з `p_amount`, оновлює `amount` (або позначає `paid` коли = 0), створює рядок в `income_session_allocations` (`income_id`, `appointment_id`, `allocated_amount`, `from_prepayment=false`).
-  3. Коли борг закрито повністю → відповідний `appointment.payment_status` стає `paid`; коли частково — `partially_paid`, а `expected_payments.amount` зменшується.
-  4. Повертає залишок (`leftover`) — суму, яка не пішла на борги.
+Encrypted at rest (column-level, transparent to the UI):
+- `clients`: `name`, `email`, `phone`, `notes`, `telegram`, `billing_company_name`, `billing_tax_id`, `billing_address`, `archive_comment`
+- `client_notes`: `content`
+- `client_attachments`: `file_name` (the binary file is already separate; see storage section)
+- `appointments`: `notes`, `cancellation_reason`, `price_override_reason`
+- `supervisions`: `imported_notes_snapshot`, `supervisor_feedback`, `next_steps`, `supervision_outcome`
+- `payment_corrections`: `correction_comment`
 
-### 2. Хуки (`src/hooks/useData.ts`)
+NOT encrypted (needed for queries / not personal data):
+- `appointments.price`, `status`, `scheduled_at`, `payment_status` (financial metadata, needed for sorting/filtering — pseudonymised by the encrypted client name)
+- IDs, timestamps, foreign keys
 
-**`useCompleteAppointment`** переписуємо під єдиний потік `paid_now / paid_in_advance`:
+## Technical approach
 
-- `amountPaid` тепер може бути `< price` (часткова оплата), `=` (повна), або `>` (передоплата).
-- Кроки:
-  1. `appointment.update({ status: completed, price, payment_status })` де `payment_status` обчислюється:
-     - `paid` якщо після всіх розподілів сесія покрита,
-     - `partially_paid` якщо залишилась частина боргу,
-     - `waiting_for_payment` якщо `amountPaid = 0` (вибрано "очікую оплату").
-  2. Якщо `amountPaid > 0`: створюємо `income` на `amountPaid`.
-  3. Викликаємо нову RPC `apply_payment_to_client_debts` — закриваємо старі борги клієнта; отримуємо `leftover`.
-  4. З `leftover` покриваємо поточну сесію: створюємо `income_session_allocations` (поточна сесія, `min(leftover, price)`).
-  5. Якщо `leftover < price` — створюємо `expected_payments` на залишок (`price - leftover`) і ставимо `payment_status = partially_paid`.
-  6. Якщо `leftover > price` — різниця йде в `client_credits` як передоплата.
-- Логіка `paid_from_prepayment` залишається як є (вже працює FIFO через `consume_client_credit_for_appointment`).
+```text
+┌──────────────┐    HTTPS    ┌────────────────┐    pgsodium    ┌───────────┐
+│  React app   │ ──────────▶ │ Postgres views │ ─────────────▶ │ Vault key │
+│ (plain text) │ ◀────────── │  + RPC wrappers│ ◀───────────── │  (master) │
+└──────────────┘             └────────────────┘                └───────────┘
+                                     │
+                                     ▼
+                             ciphertext columns
+```
 
-**`useAddIncome` / `useUpdateIncome`** (ручний дохід): якщо `client_id` встановлено і `appointment_id` НЕ встановлено — після створення income автоматично викликаємо `apply_payment_to_client_debts`, а решту відправляємо в `client_credits` (як уже частково реалізовано).
+1. Enable `pgsodium` extension; create one master key in `pgsodium.key`.
+2. For each encrypted column, rename current column → `<name>_ct` (bytea, encrypted) and create a **security-definer view** that decrypts on SELECT for the row owner only.
+3. Frontend keeps querying `clients`, `client_notes`, etc. — those become updatable views. No frontend code changes.
+4. Write trigger encrypts on INSERT/UPDATE before writing to `_ct`.
+5. Backfill existing rows once.
 
-### 3. UI — `SessionDetailSheet.tsx`
+## Storage (attachments)
 
-- Прибираємо `min={completePrice}` з поля "Amount received" і `if (amountPaid < v) setAmountPaid(v)`.
-- Додаємо нову плашку‑підказку у режимі завершення:
-  - `amountPaid < price` → "Часткова оплата: <X> в дохід, <Y> у заборгованість, статус → Частково оплачено".
-  - `amountPaid = price` → "Повна оплата: <X> в дохід".
-  - `amountPaid > price` → існуюча плашка передоплати.
-- Якщо у клієнта є відкриті борги — показуємо інфо‑блок "Буде закрито X € старих боргів цього клієнта".
+`client-attachments` bucket stays as-is for now (Supabase encrypts at rest). Add:
+- `private` ACL only (verify, fix if public)
+- Signed URLs with 5-min TTL instead of any direct URLs
+- Optional follow-up: client-side encrypt files before upload using a per-user key derived from their session (more complex, can be a v2)
 
-### 4. Картка клієнта (`ClientDetailPage.tsx`)
+## Audit log
 
-- Додаємо блок "Заборгованість": сума всіх `expected_payments` (status='pending') клієнта + список сесій з датою і сумою боргу.
+New table `data_access_audit`:
+- `user_id`, `action` (read/write/delete/export), `entity_type`, `entity_id`, `at`, `ip_hash`, `user_agent`
+- Triggers on the 6 sensitive tables log every write.
+- An `audit_read(entity_type, entity_id)` RPC the frontend calls when opening a client detail page (best-effort read logging — DB-level read logging would require pgaudit which isn't available here).
+- RLS: users see only their own audit rows; retain 2 years.
 
-### 5. Локалізація
+## GDPR user rights endpoints
 
-Додаємо ключі в `en/uk/fr/pl`:
-- `payment.partiallyPaid`, `payment.expectedPayment`
-- `prepayment.partialPayment`, `prepayment.willCreateDebt`
-- `prepayment.willCloseDebts`
-- `client.outstandingDebt`, `client.debtFromSession`
-- `toast.partialPaymentRecorded`
+Two edge functions:
+1. `gdpr-export` — returns a ZIP/JSON of all the authenticated user's data (clients, notes, appointments, attachments via signed URLs). Logged in audit.
+2. `gdpr-erase` — hard-deletes the user's workspace + auth account after a 7-day grace period (sets `deletion_scheduled_at`, cron deletes). Audit-logged.
 
-### 6. Аналітика (cash flow)
+Settings page gets a new "Privacy & data" tab with: Download my data / Delete my account / View access log.
 
-Перевіряємо `Dashboard.tsx`, `FinancialOverviewPage.tsx`, `ClientDetailPage.tsx`:
-- `expected_payments` НЕ враховуються в `cash_income` (вже так).
-- `PAID_STATUSES` додаємо `partially_paid`? — ні, partially_paid не є "повністю оплаченим"; income table вже відображає реально отримані гроші, тож аналітика лишається коректною.
+## What I will NOT do in this pass
 
-### Out of scope
+- Per-user key encryption with the password as KEK (locks out password reset, big UX cost — separate decision)
+- Replacing Resend or PostHog (they don't touch client PHI; PostHog already gets only `user.id`, no PII)
+- Formal DPA documents (legal work, outside code)
+- Pseudonymising backups (Supabase-managed, outside our control without self-hosting)
 
-- Окрема UI‑форма для ручного "погашення боргу" — вистачає того, що будь‑яка нова оплата з `client_id` автоматично закриває борги FIFO.
-- Часткове відкочування (refund).
-- Перепризначення вже створених `income_session_allocations` вручну.
+## File / migration touch list
 
-### Acceptance Criteria mapping
-- AC1 ✓ — крок 2.5 у `useCompleteAppointment`.
-- AC2 ✓ — `expected_payments` не пишеться в `income` table.
-- AC3 ✓ — FIFO RPC закриває старі борги до поточної сесії, далі — передоплата.
-- AC4 ✓ — RPC оновлює `appointment.payment_status` на `paid` при повному закритті.
-- AC5 ✓ — блок "Заборгованість" у картці клієнта.
+- **Migrations** (one combined): enable pgsodium, create master key, add `_ct` columns, encrypt-on-write triggers, decrypting views, backfill, `data_access_audit` table + triggers + RLS, `gdpr_deletion_requests` table.
+- **Edge functions**: `gdpr-export/index.ts`, `gdpr-erase/index.ts`, `gdpr-process-deletions/index.ts` (cron).
+- **Frontend**:
+  - `src/components/settings/PrivacySection.tsx` (new)
+  - `src/pages/SettingsPage.tsx` (add tab)
+  - `src/i18n/locales/*.ts` (4 files, new strings)
+  - `src/hooks/useGdpr.ts` (new)
+  - `src/lib/audit.ts` (new — fire-and-forget read logging)
+  - Wire `audit.ts` into `ClientDetailPage.tsx`, `GroupDetailPage.tsx`
+- **Docs**: `docs/gdpr-compliance.md` describing the model, what's covered, what isn't.
+
+## Order of execution
+
+1. Migration (encryption + audit + deletion table) — biggest blast radius, do first with backup verification
+2. Edge functions
+3. Frontend Privacy tab + audit hooks
+4. Translations + docs
+
+Estimated changes: ~12 files, 1 large migration, 3 edge functions. After implementation we run the Supabase linter and full test suite before publishing.
