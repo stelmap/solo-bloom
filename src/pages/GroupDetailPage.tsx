@@ -1,4 +1,5 @@
 import { AppLayout } from "@/components/AppLayout";
+import { ListSkeleton } from "@/components/ListSkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -162,12 +163,14 @@ export default function GroupDetailPage() {
   };
 
   if (groupLoading) {
-    return <AppLayout><p className="text-muted-foreground text-center py-12">{t("common.loading")}</p></AppLayout>;
+    return <AppLayout><ListSkeleton variant="rows" count={5} /></AppLayout>;
   }
 
   if (!group) {
     return <AppLayout><p className="text-muted-foreground text-center py-12">{t("groups.notFound")}</p></AppLayout>;
   }
+
+
 
   return (
     <AppLayout>

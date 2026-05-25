@@ -1,4 +1,5 @@
 import { AppLayout } from "@/components/AppLayout";
+import { ListSkeleton } from "@/components/ListSkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -153,7 +154,8 @@ export default function GroupsPage() {
 
         {/* List */}
         {isLoading ? (
-          <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
+          <ListSkeleton variant="cards" count={6} />
+
         ) : filtered.length === 0 ? (
           <div className="text-center py-12">
             <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />

@@ -1,4 +1,5 @@
 import { AppLayout } from "@/components/AppLayout";
+import { ListSkeleton } from "@/components/ListSkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -408,7 +409,8 @@ export default function ExpensesPage() {
         </div>
 
         {isLoading ? (
-          <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
+          <ListSkeleton variant="table" count={8} />
+
         ) : filtered.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">{t("expenses.noExpenses")}</p>
         ) : (

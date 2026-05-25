@@ -1,4 +1,5 @@
 import { AppLayout } from "@/components/AppLayout";
+import { ListSkeleton } from "@/components/ListSkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -94,7 +95,8 @@ export default function ServicesPage() {
         </div>
 
         {isLoading ? (
-          <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
+          <ListSkeleton variant="cards" count={6} />
+
         ) : services.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">{t("services.noServices")}</p>
         ) : (
