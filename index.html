@@ -103,18 +103,29 @@
     </script>
     <!-- FAQPage JSON-LD lives on the homepage component, where the FAQ content is. -->
 
-    <!-- Meta Pixel Code -->
+    <!-- Meta Pixel — deferred to idle so it doesn't block first paint -->
     <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '2059708747919020');
-    fbq('track', 'PageView');
+    (function () {
+      function loadPixel() {
+        if (window.fbq) return;
+        var n = window.fbq = function () {
+          n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+        };
+        if (!window._fbq) window._fbq = n;
+        n.push = n; n.loaded = true; n.version = '2.0'; n.queue = [];
+        var t = document.createElement('script');
+        t.async = true;
+        t.src = 'https://connect.facebook.net/en_US/fbevents.js';
+        document.head.appendChild(t);
+        n('init', '2059708747919020');
+        n('track', 'PageView');
+      }
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(loadPixel, { timeout: 4000 });
+      } else {
+        window.addEventListener('load', function () { setTimeout(loadPixel, 1500); });
+      }
+    })();
     </script>
     <!-- End Meta Pixel Code -->
 
