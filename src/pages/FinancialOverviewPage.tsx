@@ -99,6 +99,7 @@ export default function FinancialOverviewPage() {
     const qMap = quarterIncomeOverride ?? quarterIncomeMap;
 
     for (const tax of activeTaxes) {
+      if (!taxAppliesIn(tax, monthIdx, monthYear, accruedQuarterKey)) continue;
       if (tax.frequency === "quarterly") {
         if (!accruedQuarterKey) continue;
         if (tax.tax_type === "percentage") {
