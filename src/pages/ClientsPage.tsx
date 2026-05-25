@@ -90,6 +90,7 @@ export default function ClientsPage() {
   const deleteClient = useDeleteClient();
   const unarchiveClient = useUnarchiveClient();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const { t } = useLanguage();
   const { isFreeStarter, atClientLimit } = useFreeStarterMode();
@@ -123,9 +124,51 @@ export default function ClientsPage() {
     return map;
   })();
 
+  const monthFilter = searchParams.get("filter") as "activeThisMonth" | "newThisMonth" | null;
+
+  const isThisMonth = (dateStr: string) => {
+    const now = new Date();
+    const d = new Date(dateStr);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  };
+
+  const activeClientIdsThisMonth = useMemo(() => {
+    const ids = new Set<string>();
+    for (const a of appointments as any[]) {
+      if (a.status !== "cancelled" && isThisMonth(a.scheduled_at)) {
+        ids.add(a.client_id);
+      }
+    }
+    return ids;
+  }, [appointments]);
+
+  const newClientIds = useMemo(() => {
+    const ids = new Set<string>();
+    const firstSessionByClient = new Map<string, string>();
+    for (const a of appointments as any[]) {
+      if (!firstSessionByClient.has(a.client_id)) {
+        firstSessionByClient.set(a.client_id, a.scheduled_at);
+      }
+    }
+    for (const [cid, firstAt] of firstSessionByClient) {
+      if (isThisMonth(firstAt)) ids.add(cid);
+    }
+    for (const c of clients) {
+      if (!firstSessionByClient.has(c.id) && isThisMonth(c.created_at)) {
+        ids.add(c.id);
+      }
+    }
+    return ids;
+  }, [appointments, clients]);
+
   const q = debouncedSearch.trim().toLowerCase();
   const filtered = clients
     .filter((c: any) => statusFilter === "all" ? true : (c.status ?? "active") === statusFilter)
+    .filter((c: any) => {
+      if (monthFilter === "activeThisMonth") return activeClientIdsThisMonth.has(c.id);
+      if (monthFilter === "newThisMonth") return newClientIds.has(c.id);
+      return true;
+    })
     .filter((c: any) => {
       if (!q) return true;
       const hay = [
