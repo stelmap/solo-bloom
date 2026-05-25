@@ -187,7 +187,7 @@ export default function Dashboard() {
             <OverviewTile icon={Users} label={t("ops.activeClientsThisMonth")} value={String(stats?.activeClientsThisMonth ?? 0)} onClick={() => openWidget("active_clients_this_month", "/clients?filter=activeThisMonth")} />
             <OverviewTile icon={UserPlus} label={t("ops.newClientsThisMonth")} value={String(stats?.newClientsThisMonth ?? 0)} tone="success" onClick={() => openWidget("new_clients_this_month", "/clients?filter=newThisMonth")} />
             <OverviewTile icon={UserCheck} label={t("ops.completedTherapyThisMonth")} value={String(stats?.completedTherapyThisMonth ?? 0)} tone="success" onClick={() => openWidget("completed_therapy_this_month", "/clients?filter=completedThisMonth")} />
-            <OverviewTile icon={UserMinus} label={t("ops.droppedTherapyThisMonth")} value={String(stats?.droppedTherapyThisMonth ?? 0)} tone="warning" />
+            <OverviewTile icon={UserMinus} label={t("ops.droppedTherapyThisMonth")} value={String(stats?.droppedTherapyThisMonth ?? 0)} tone="warning" onClick={() => openWidget("dropped_therapy_this_month", "/clients?filter=droppedThisMonth")} />
             <OverviewTile icon={XCircle} label={t("ops.cancelledSessionsThisMonth")} value={String((stats as any)?.cancelledSessionsThisMonth ?? 0)} />
           </div>
         </section>

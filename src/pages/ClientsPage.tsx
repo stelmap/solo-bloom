@@ -147,7 +147,7 @@ export default function ClientsPage() {
     return map;
   })();
 
-  const monthFilter = searchParams.get("filter") as "activeThisMonth" | "newThisMonth" | "completedThisMonth" | null;
+  const monthFilter = searchParams.get("filter") as "activeThisMonth" | "newThisMonth" | "completedThisMonth" | "droppedThisMonth" | null;
 
   const isThisMonth = (dateStr: string | null | undefined) => {
     if (!dateStr) return false;
@@ -157,9 +157,13 @@ export default function ClientsPage() {
   };
 
   const COMPLETED_ARCHIVE_REASONS = new Set(["completed", "therapy_completed", "training_completed", "service_completed"]);
+  const DROPPED_ARCHIVE_REASONS = new Set(["client_paused", "client_stopped"]);
 
-  // When arriving via "completedThisMonth", force the Archived tab
-  const effectiveStatusFilter = monthFilter === "completedThisMonth" ? "archived" : statusFilter;
+  // When arriving via month filters, force the Archived tab
+  const effectiveStatusFilter =
+    monthFilter === "completedThisMonth" || monthFilter === "droppedThisMonth"
+      ? "archived"
+      : statusFilter;
 
   const activeClientIdsThisMonth = useMemo(() => {
     const ids = new Set<string>();
@@ -200,6 +204,13 @@ export default function ClientsPage() {
         return (
           c.status === "archived" &&
           COMPLETED_ARCHIVE_REASONS.has(c.archive_reason ?? "") &&
+          isThisMonth(c.archived_at)
+        );
+      }
+      if (monthFilter === "droppedThisMonth") {
+        return (
+          c.status === "archived" &&
+          DROPPED_ARCHIVE_REASONS.has(c.archive_reason ?? "") &&
           isThisMonth(c.archived_at)
         );
       }
@@ -394,7 +405,9 @@ export default function ClientsPage() {
                 ? t("ops.activeClientsThisMonth")
                 : monthFilter === "newThisMonth"
                 ? t("ops.newClientsThisMonth")
-                : t("ops.completedTherapyThisMonth")}
+                : monthFilter === "completedThisMonth"
+                ? t("ops.completedTherapyThisMonth")
+                : t("ops.droppedTherapyThisMonth")}
             </Badge>
             <button
               onClick={() => {
