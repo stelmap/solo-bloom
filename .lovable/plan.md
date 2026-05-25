@@ -1,89 +1,49 @@
-# GDPR Hardening Plan
+## Phase 1 — Deletion executor cron (safe, small)
 
-Goal: make the app GDPR-defensible. Lovable Cloud's Supabase already gives you encryption-at-rest on disk and TLS in transit. What's missing for GDPR is **field-level encryption of sensitive data, an access audit trail, and user-facing data rights (export + erasure)**.
+- Enable `pg_cron` and `pg_net` extensions.
+- Add `public.process_gdpr_deletions()` security-definer function: for every row in `gdpr_deletion_requests` where `scheduled_for <= now()` AND `executed_at IS NULL` AND `cancelled_at IS NULL`, delete the user's rows across all owned tables (clients, client_notes, appointments, income, expenses, invoices, supervisions, attachments, etc.), then delete the auth user via `auth.admin` is not callable from SQL — instead we mark `executed_at` and call the `gdpr-erase` edge function with the service role from a second cron entry, OR delete app data here and leave auth user removal to manual / edge function.
+- Schedule daily at 03:00 UTC via `cron.schedule`.
+- Audit each execution into `data_access_audit` (action=`gdpr_deletion_executed`).
 
-Reality check up front: a database administrator with raw Postgres access could still read your data today. The plan below uses **pgsodium / pgcrypto with keys held in Supabase Vault**, which means even a direct DB dump returns ciphertext — only the app (going through Postgres functions) can decrypt. That's the standard GDPR "state of the art" bar for a SaaS of this size.
+## Phase 2 — Scoped column-level encryption
 
-## Scope of encryption
+Use `pgcrypto` (already standard) + a master key stored in **Supabase Vault**. Symmetric AES via `pgp_sym_encrypt` / `pgp_sym_decrypt`.
 
-Encrypted at rest (column-level, transparent to the UI):
-- `clients`: `name`, `email`, `phone`, `notes`, `telegram`, `billing_company_name`, `billing_tax_id`, `billing_address`, `archive_comment`
-- `client_notes`: `content`
-- `client_attachments`: `file_name` (the binary file is already separate; see storage section)
-- `appointments`: `notes`, `cancellation_reason`, `price_override_reason`
-- `supervisions`: `imported_notes_snapshot`, `supervisor_feedback`, `next_steps`, `supervision_outcome`
-- `payment_corrections`: `correction_comment`
+**Encrypt (free-text, never searched/sorted in SQL):**
+- `client_notes.content`
+- `appointments.notes`, `appointments.cancellation_reason`, `appointments.price_override_reason`
+- `payment_corrections.correction_comment`
+- `client_attachments.file_name` (display only)
+- `clients.notes`, `clients.archive_comment`, `clients.billing_address`, `clients.billing_tax_id`, `clients.billing_company_name`
 
-NOT encrypted (needed for queries / not personal data):
-- `appointments.price`, `status`, `scheduled_at`, `payment_status` (financial metadata, needed for sorting/filtering — pseudonymised by the encrypted client name)
-- IDs, timestamps, foreign keys
+**Do NOT encrypt (needed for search/joins/filters):**
+- `clients.name`, `clients.email`, `clients.phone` — used for search, dedup, invoicing recipient. Encrypting breaks UX. Documented as residual risk; access controlled by RLS.
 
-## Technical approach
+**Mechanism (transparent to frontend):**
+1. New column `<col>_ct bytea` next to each plaintext column.
+2. BEFORE INSERT/UPDATE trigger encrypts plaintext into `_ct` and nulls the plaintext column.
+3. Replace table reads with a security-barrier **view** (`clients_v`, `client_notes_v`, etc.) that decrypts `_ct` back to the original column name. RLS on view = `auth.uid() = user_id`.
+4. Frontend keeps using `from('clients')` — we rename original table to `clients_raw`, point view at it via the original name. **OR** simpler: keep table name, expose decrypted column via a generated/computed column using a SECURITY DEFINER function. We'll use the view approach (cleaner, no per-row function call surprises).
+5. Backfill: one-shot UPDATE encrypting existing plaintext, then DROP plaintext column.
 
-```text
-┌──────────────┐    HTTPS    ┌────────────────┐    pgsodium    ┌───────────┐
-│  React app   │ ──────────▶ │ Postgres views │ ─────────────▶ │ Vault key │
-│ (plain text) │ ◀────────── │  + RPC wrappers│ ◀───────────── │  (master) │
-└──────────────┘             └────────────────┘                └───────────┘
-                                     │
-                                     ▼
-                             ciphertext columns
-```
+**Key management:** master key in `vault.secrets` as `gdpr_master_key`. Decryption function is SECURITY DEFINER and only callable from the views.
 
-1. Enable `pgsodium` extension; create one master key in `pgsodium.key`.
-2. For each encrypted column, rename current column → `<name>_ct` (bytea, encrypted) and create a **security-definer view** that decrypts on SELECT for the row owner only.
-3. Frontend keeps querying `clients`, `client_notes`, etc. — those become updatable views. No frontend code changes.
-4. Write trigger encrypts on INSERT/UPDATE before writing to `_ct`.
-5. Backfill existing rows once.
+## Phase 3 — Session timeout + forced MFA
 
-## Storage (attachments)
+- **Session timeout:** add `useIdleTimeout` hook in frontend. After 30 min idle → `supabase.auth.signOut()` + redirect to `/auth`. Configurable in Privacy tab.
+- **Forced MFA:** Enable TOTP in Supabase auth config. Add `MfaEnrollment.tsx` in Settings → Security tab. Gate the app (in `App.tsx` route guard): if user has no enrolled factor AND `profiles.mfa_required = true`, redirect to enrollment. Default `mfa_required = true` for new accounts.
 
-`client-attachments` bucket stays as-is for now (Supabase encrypts at rest). Add:
-- `private` ACL only (verify, fix if public)
-- Signed URLs with 5-min TTL instead of any direct URLs
-- Optional follow-up: client-side encrypt files before upload using a per-user key derived from their session (more complex, can be a v2)
+## File changes
 
-## Audit log
+- 1 migration: cron + extensions + `process_gdpr_deletions()`
+- 1 migration: encryption (pgcrypto, vault key reference, `_ct` columns, triggers, views, backfill, drop plaintext)
+- 1 migration: `profiles.mfa_required` column
+- Frontend: `src/hooks/useIdleTimeout.ts`, `src/components/settings/SecuritySection.tsx`, `src/components/auth/MfaEnrollment.tsx`, route guard update in `App.tsx`, Privacy tab additions.
 
-New table `data_access_audit`:
-- `user_id`, `action` (read/write/delete/export), `entity_type`, `entity_id`, `at`, `ip_hash`, `user_agent`
-- Triggers on the 6 sensitive tables log every write.
-- An `audit_read(entity_type, entity_id)` RPC the frontend calls when opening a client detail page (best-effort read logging — DB-level read logging would require pgaudit which isn't available here).
-- RLS: users see only their own audit rows; retain 2 years.
+## Risks / what I need confirmation on
 
-## GDPR user rights endpoints
+1. **Encryption of `clients.email`** — if you want it encrypted, search-by-email and the invoice "send to client" flow break unless we add a deterministic hash column. Current plan: leave plaintext. Confirm?
+2. **Auth user deletion in cron** — `pg_net` can POST to the `gdpr-erase` edge function with the service role to actually delete the `auth.users` row. OK to use that pattern?
+3. **MFA forced on existing users** — should existing accounts be grandfathered (opt-in) or forced to enroll on next login? Recommend opt-in for existing, required for new signups.
 
-Two edge functions:
-1. `gdpr-export` — returns a ZIP/JSON of all the authenticated user's data (clients, notes, appointments, attachments via signed URLs). Logged in audit.
-2. `gdpr-erase` — hard-deletes the user's workspace + auth account after a 7-day grace period (sets `deletion_scheduled_at`, cron deletes). Audit-logged.
-
-Settings page gets a new "Privacy & data" tab with: Download my data / Delete my account / View access log.
-
-## What I will NOT do in this pass
-
-- Per-user key encryption with the password as KEK (locks out password reset, big UX cost — separate decision)
-- Replacing Resend or PostHog (they don't touch client PHI; PostHog already gets only `user.id`, no PII)
-- Formal DPA documents (legal work, outside code)
-- Pseudonymising backups (Supabase-managed, outside our control without self-hosting)
-
-## File / migration touch list
-
-- **Migrations** (one combined): enable pgsodium, create master key, add `_ct` columns, encrypt-on-write triggers, decrypting views, backfill, `data_access_audit` table + triggers + RLS, `gdpr_deletion_requests` table.
-- **Edge functions**: `gdpr-export/index.ts`, `gdpr-erase/index.ts`, `gdpr-process-deletions/index.ts` (cron).
-- **Frontend**:
-  - `src/components/settings/PrivacySection.tsx` (new)
-  - `src/pages/SettingsPage.tsx` (add tab)
-  - `src/i18n/locales/*.ts` (4 files, new strings)
-  - `src/hooks/useGdpr.ts` (new)
-  - `src/lib/audit.ts` (new — fire-and-forget read logging)
-  - Wire `audit.ts` into `ClientDetailPage.tsx`, `GroupDetailPage.tsx`
-- **Docs**: `docs/gdpr-compliance.md` describing the model, what's covered, what isn't.
-
-## Order of execution
-
-1. Migration (encryption + audit + deletion table) — biggest blast radius, do first with backup verification
-2. Edge functions
-3. Frontend Privacy tab + audit hooks
-4. Translations + docs
-
-Estimated changes: ~12 files, 1 large migration, 3 edge functions. After implementation we run the Supabase linter and full test suite before publishing.
+Tell me yes/no on each and I'll execute Phase 1 immediately, then 2, then 3.
