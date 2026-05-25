@@ -367,7 +367,11 @@ export default function ClientsPage() {
         {monthFilter && (
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="text-xs">
-              {monthFilter === "activeThisMonth" ? t("ops.activeClientsThisMonth") : t("ops.newClientsThisMonth")}
+              {monthFilter === "activeThisMonth"
+                ? t("ops.activeClientsThisMonth")
+                : monthFilter === "newThisMonth"
+                ? t("ops.newClientsThisMonth")
+                : t("ops.completedTherapyThisMonth")}
             </Badge>
             <button
               onClick={() => {
