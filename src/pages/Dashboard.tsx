@@ -162,13 +162,6 @@ export default function Dashboard() {
     .filter((apt) => apt.status !== "cancelled")
     .reduce((s, apt) => s + Number(apt.price ?? 0), 0);
 
-  if (isLoading) {
-    return (
-      <AppLayout>
-        <div className="flex items-center justify-center h-64 text-muted-foreground">{t("dashboard.loading")}</div>
-      </AppLayout>
-    );
-  }
 
   return (
     <AppLayout>
