@@ -245,7 +245,11 @@ export function TaxesSection() {
               const needsUpdate = !!status?.needsUpdate;
               const handleRefresh = async () => {
                 try {
-                  await generateTax.mutateAsync({ taxSettingId: tax.id, entries: status?.expected || [] });
+                  // Refetch the status to get fresh expected entries based on
+                  // the latest income/expense data before regenerating.
+                  const fresh = await refetchAccrual();
+                  const freshEntries = (fresh.data as any)?.[tax.id]?.expected || status?.expected || [];
+                  await generateTax.mutateAsync({ taxSettingId: tax.id, entries: freshEntries });
                   toast({ title: t("tax.refreshed") });
                 } catch (e: any) {
                   toast({ title: t("common.error"), description: e.message, variant: "destructive" });
