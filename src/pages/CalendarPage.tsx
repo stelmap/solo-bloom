@@ -849,7 +849,7 @@ export default function CalendarPage() {
 
         <div
           className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex flex-col"
-          style={{ maxHeight: "calc(100vh - 280px)", touchAction: isMobile ? "pan-y" : undefined }}
+          style={{ maxHeight: "calc(100vh - 180px)", minHeight: "480px", touchAction: isMobile ? "pan-y" : undefined }}
           onTouchStart={isMobile ? (e) => {
             const t = e.touches[0];
             (e.currentTarget as any)._swipe = { x: t.clientX, y: t.clientY, cancelled: false };
