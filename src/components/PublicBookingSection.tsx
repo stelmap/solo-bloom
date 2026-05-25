@@ -391,24 +391,34 @@ function AvailabilityCard({
   });
 
   const saveShared = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (vals: { duration: number; buffer: number; minNotice: number; maxHorizon: number }) => {
       if (!userId) return;
       const { error } = await supabase
         .from("booking_availability")
         .update({
-          session_duration_minutes: duration,
-          buffer_minutes: buffer,
-          min_notice_hours: minNotice,
-          max_horizon_days: maxHorizon,
+          session_duration_minutes: vals.duration,
+          buffer_minutes: vals.buffer,
+          min_notice_hours: vals.minNotice,
+          max_horizon_days: vals.maxHorizon,
         })
         .eq("user_id", userId);
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: tx("common.saved", "Saved") });
       qc.invalidateQueries({ queryKey: ["booking_availability", userId] });
     },
   });
+
+  // Autosave shared rules (debounced) once values are hydrated
+  const debouncedRules = useDebouncedValue({ duration, buffer, minNotice, maxHorizon }, 700);
+  const rulesHydrated = useRef(false);
+  useEffect(() => {
+    if (!userId || availability.length === 0) return;
+    if (!rulesHydrated.current) { rulesHydrated.current = true; return; }
+    saveShared.mutate(debouncedRules);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedRules, userId]);
+
 
   const displayRow = (weekday: number) => {
     if (inherit) {
