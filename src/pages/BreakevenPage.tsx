@@ -112,9 +112,15 @@ export default function BreakevenPage() {
   const bookedSessions = appointments.filter(a => (a.status === "scheduled" || a.status === "confirmed") && a.scheduled_at >= today + "T00:00:00" && a.scheduled_at < today.substring(0, 7) + "-31T23:59:59").length;
 
   const activeTaxes = (taxSettings as any[]).filter((ts: any) => ts.is_active);
+  const taxHasStarted = (tax: any) => {
+    const s: string | undefined = tax.start_calculation_date;
+    if (!s) return true;
+    return s <= today;
+  };
   const estimatedTax = useMemo(() => {
     let total = 0;
     for (const tax of activeTaxes) {
+      if (!taxHasStarted(tax)) continue;
       if (tax.tax_type === "percentage") total += monthlyIncome * (Number(tax.tax_rate) / 100);
       else if (tax.tax_type === "fixed") {
         const amt = Number(tax.fixed_amount);
@@ -122,7 +128,7 @@ export default function BreakevenPage() {
       }
     }
     return Math.round(total);
-  }, [activeTaxes, monthlyIncome]);
+  }, [activeTaxes, monthlyIncome, today]);
 
   const netAfterTax = monthlyIncome - estimatedTax;
   const netProfit = netAfterTax - monthlyExpensesExTax;
@@ -146,6 +152,7 @@ export default function BreakevenPage() {
   const avgProgress = goalTargets.length > 0
     ? goalTargets.reduce((s: number, g: any) => {
         const target = g.target + (activeTaxes.length > 0 ? activeTaxes.reduce((sum: number, tax: any) => {
+          if (!taxHasStarted(tax)) return sum;
           if (tax.tax_type === "percentage") return sum + g.target * (Number(tax.tax_rate) / 100);
           if (tax.tax_type === "fixed") return sum + (tax.frequency === "quarterly" ? Number(tax.fixed_amount) / 3 : Number(tax.fixed_amount));
           return sum;
