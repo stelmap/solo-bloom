@@ -99,6 +99,7 @@ export default function ClientDetailPage() {
   };
 
   const { data: creditBalance = 0 } = useClientCreditBalance(id);
+  const { data: clientDebtData } = useClientDebt(id);
 
   const { data: clientAllocs = [] } = useClientAllocations(id);
   const allocByApt = useMemo(() => {
