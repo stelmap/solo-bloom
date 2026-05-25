@@ -172,34 +172,30 @@ export function PublicBookingSection() {
 
           <div className="space-y-2">
             <Label htmlFor="bk-slug">Custom handle (optional)</Label>
-            <div className="flex gap-2">
-              <div className="flex items-stretch flex-1 rounded-md border border-input overflow-hidden focus-within:ring-2 focus-within:ring-ring">
-                <span className="px-3 flex items-center text-xs text-muted-foreground bg-muted border-r border-input whitespace-nowrap">
-                  {typeof window !== "undefined" ? window.location.host : ""}/book/
-                </span>
-                <input
-                  id="bk-slug"
-                  value={slugInput}
-                  onChange={(e) => setSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
-                  placeholder="your-name"
-                  maxLength={40}
-                  className="flex-1 px-3 py-2 text-sm bg-background outline-none"
-                />
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={setSlug.isPending || slugInput === ((link as any)?.slug ?? "")}
-                onClick={() => setSlug.mutate(slugInput)}
-              >
-                {setSlug.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
-              </Button>
+            <div className="flex items-stretch rounded-md border border-input overflow-hidden focus-within:ring-2 focus-within:ring-ring">
+              <span className="px-3 flex items-center text-xs text-muted-foreground bg-muted border-r border-input whitespace-nowrap">
+                {typeof window !== "undefined" ? window.location.host : ""}/book/
+              </span>
+              <input
+                id="bk-slug"
+                value={slugInput}
+                onChange={(e) => setSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                onBlur={() => {
+                  if (slugInput !== ((link as any)?.slug ?? "")) setSlug.mutate(slugInput);
+                }}
+                placeholder="your-name"
+                maxLength={40}
+                className="flex-1 px-3 py-2 text-sm bg-background outline-none"
+              />
+              <span className="px-3 flex items-center text-xs text-muted-foreground">
+                {setSlug.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+              </span>
             </div>
             <p className="text-xs text-muted-foreground">
               3–40 chars: lowercase letters, digits, hyphens. Leave empty to fall back to the auto-generated secret link.
             </p>
           </div>
+
 
 
           <div className="space-y-2">
