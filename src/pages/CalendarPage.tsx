@@ -85,7 +85,11 @@ export default function CalendarPage() {
   const startHour = parseInt((profile as any)?.work_hours_start || "09") || 9;
   const endHour = parseInt((profile as any)?.work_hours_end || "18") || 18;
   const use12h = (profile as any)?.time_format === "12h";
-  const hours = Array.from({ length: endHour - startHour }, (_, i) => i + startHour);
+  // Always render a full readable day range so users can scroll to later slots
+  // even when their working hours end early. Working hours are still highlighted below.
+  const displayStart = Math.min(startHour, 8);
+  const displayEnd = Math.max(endHour, 22);
+  const hours = Array.from({ length: displayEnd - displayStart }, (_, i) => i + displayStart);
 
   // Build schedule map: day_of_week -> { is_working, start_time, end_time }
   const scheduleMap = useMemo(() => {
@@ -611,8 +615,9 @@ export default function CalendarPage() {
 
   return (
     <AppLayout>
-      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
-        <div className="space-y-6 flex-1 min-w-0">
+      <div className="flex flex-col gap-6">
+        <section className="space-y-6 flex-1 min-w-0" aria-label="Calendar">
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("calendar.title")}</h1>
@@ -844,7 +849,7 @@ export default function CalendarPage() {
 
         <div
           className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex flex-col"
-          style={{ maxHeight: "calc(100vh - 280px)", touchAction: isMobile ? "pan-y" : undefined }}
+          style={{ maxHeight: "calc(100vh - 180px)", minHeight: "480px", touchAction: isMobile ? "pan-y" : undefined }}
           onTouchStart={isMobile ? (e) => {
             const t = e.touches[0];
             (e.currentTarget as any)._swipe = { x: t.clientX, y: t.clientY, cancelled: false };
@@ -1026,10 +1031,13 @@ export default function CalendarPage() {
             </table>
           </div>
         </div>
-        </div>
+        </section>
 
-        <BookingInboxPanel className="lg:w-[340px] lg:shrink-0 lg:max-h-[calc(100vh-120px)] lg:sticky lg:top-6" />
+        <section aria-label="Booking inbox">
+          <BookingInboxPanel className="w-full" />
+        </section>
       </div>
+
 
       <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
         <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
