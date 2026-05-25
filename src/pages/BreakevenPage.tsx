@@ -152,6 +152,7 @@ export default function BreakevenPage() {
   const avgProgress = goalTargets.length > 0
     ? goalTargets.reduce((s: number, g: any) => {
         const target = g.target + (activeTaxes.length > 0 ? activeTaxes.reduce((sum: number, tax: any) => {
+          if (!taxHasStarted(tax)) return sum;
           if (tax.tax_type === "percentage") return sum + g.target * (Number(tax.tax_rate) / 100);
           if (tax.tax_type === "fixed") return sum + (tax.frequency === "quarterly" ? Number(tax.fixed_amount) / 3 : Number(tax.fixed_amount));
           return sum;
