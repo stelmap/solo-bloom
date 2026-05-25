@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Plus, Trash2, CalendarOff, Image as ImageIcon, Check, Loader2 } from "lucide-react";
@@ -93,37 +93,31 @@ export function WorkingHoursSection() {
     setSchedule(prev => prev.map(d => d.day_of_week === dayOfWeek ? { ...d, ...updates } : d));
   };
 
-  // Autosave: debounce profile + schedule changes
-  const debouncedForm = useDebouncedValue(form, 600);
-  const debouncedSchedule = useDebouncedValue(schedule, 600);
   const [savedAt, setSavedAt] = useState<number | null>(null);
-  const hydrated = useRef(false);
-  useEffect(() => {
-    if (!profile) return;
-    if (!hydrated.current) { hydrated.current = true; return; }
-    (async () => {
-      try {
-        await Promise.all([
-          updateProfile.mutateAsync(debouncedForm),
-          upsertSchedule.mutateAsync(debouncedSchedule),
-        ]);
-        if (user && getInheritFlag(user.id)) {
-          try { await syncBookingAvailabilityFromSchedule(user.id, debouncedSchedule); } catch {}
-        }
-        setSavedAt(Date.now());
-      } catch (e: any) {
-        toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+  const isPending = updateProfile.isPending || upsertSchedule.isPending;
+
+  const handleSave = async () => {
+    try {
+      await Promise.all([
+        updateProfile.mutateAsync(form),
+        upsertSchedule.mutateAsync(schedule),
+      ]);
+      if (user && getInheritFlag(user.id)) {
+        try { await syncBookingAvailabilityFromSchedule(user.id, schedule); } catch {}
       }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedForm, debouncedSchedule]);
+      setSavedAt(Date.now());
+      toast({ title: t("settings.saved") });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
 
   return (
     <div className="space-y-6">
       <div className="bg-card rounded-xl border border-border p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold text-foreground">{t("settings.calendar")}</h2>
-          <SaveStatus pending={updateProfile.isPending || upsertSchedule.isPending} savedAt={savedAt} />
+          <SaveStatus pending={isPending} savedAt={savedAt} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -218,6 +212,12 @@ export function WorkingHoursSection() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="flex justify-end">
+        <Button onClick={handleSave} disabled={isPending}>
+          {isPending ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("common.saving")}</>) : t("common.save")}
+        </Button>
       </div>
     </div>
   );
@@ -399,17 +399,17 @@ export function PracticeProfileSection() {
     }
   }, [profile]);
 
-  const debouncedForm = useDebouncedValue(form, 600);
   const [savedAt, setSavedAt] = useState<number | null>(null);
-  const hydrated = useRef(false);
-  useEffect(() => {
-    if (!profile) return;
-    if (!hydrated.current) { hydrated.current = true; return; }
-    updateProfile.mutateAsync(debouncedForm)
-      .then(() => setSavedAt(Date.now()))
-      .catch((e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedForm]);
+
+  const handleSave = async () => {
+    try {
+      await updateProfile.mutateAsync(form);
+      setSavedAt(Date.now());
+      toast({ title: t("settings.saved") });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
 
   return (
     <div className="bg-card rounded-xl border border-border p-6 space-y-4">
@@ -431,6 +431,12 @@ export function PracticeProfileSection() {
           <div className="space-y-2"><Label>{t("common.phone")}</Label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
           <div className="space-y-2"><Label>{t("settings.businessAddress")}</Label><Input value={form.business_address} onChange={e => setForm(f => ({ ...f, business_address: e.target.value }))} /></div>
         </div>
+      </div>
+
+      <div className="flex justify-end pt-2">
+        <Button onClick={handleSave} disabled={updateProfile.isPending}>
+          {updateProfile.isPending ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("common.saving")}</>) : t("common.save")}
+        </Button>
       </div>
     </div>
   );
