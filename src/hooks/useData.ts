@@ -1345,10 +1345,10 @@ export function useGenerateTaxExpenses() {
       entries: Array<{ date: string; amount: number; description: string }>;
     }) => {
       assertCanWrite();
-      // Delete existing generated entries for this tax
+      // Delete ALL existing generated entries for this tax (regardless of payment status)
+      // to prevent duplicates accumulating across syncs.
       await supabase.from("expenses").delete()
-        .eq("tax_setting_id", taxSettingId)
-        .eq("payment_status", "unpaid");
+        .eq("tax_setting_id", taxSettingId);
       
       // Insert new entries
       if (entries.length > 0) {
