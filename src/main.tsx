@@ -17,9 +17,10 @@ createRoot(document.getElementById("root")!).render(
 const loadAnalytics = () => {
   import("@/lib/analytics").then(m => m.initAnalytics()).catch(() => {});
 };
-if ("requestIdleCallback" in window) {
-  (window as any).requestIdleCallback(loadAnalytics, { timeout: 4000 });
+const w = window as any;
+if (typeof w.requestIdleCallback === "function") {
+  w.requestIdleCallback(loadAnalytics, { timeout: 4000 });
 } else {
-  window.addEventListener("load", () => setTimeout(loadAnalytics, 1500));
+  w.addEventListener("load", () => setTimeout(loadAnalytics, 1500));
 }
 
