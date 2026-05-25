@@ -546,6 +546,15 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   <span className="text-muted-foreground">{t("common.payment")}</span>
                   <span className={cn("font-medium", payInfo.color)}>{payInfo.label}</span>
                 </div>
+                {hasPrepayment && isActive && (
+                  <div className="flex justify-between items-center rounded-md bg-primary/5 border border-primary/20 px-2 py-1.5">
+                    <span className="text-xs text-muted-foreground">{t("prepayment.balance")}</span>
+                    <span className="text-xs font-semibold text-primary">
+                      +{cs}{Number(clientCredit).toFixed(2)}
+                      {sessionPrice > 0 ? ` · ${t("prepayment.sessionsShort", { count: String(Math.floor(Number(clientCredit) / sessionPrice)) })}` : ""}
+                    </span>
+                  </div>
+                )}
                 {showConfirmationState && (
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">{t("confirmation.status")}</span>
