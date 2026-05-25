@@ -27,6 +27,7 @@ import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState, useRef, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { getDateLocale } from "@/lib/dateLocale";
 import { useMemo } from "react";
@@ -41,6 +42,7 @@ export default function ClientDetailPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t, lang } = useLanguage();
+  const qc = useQueryClient();
   const dateLocale = getDateLocale(lang);
   const { symbol: cs } = useCurrency();
   const { isDemoMode } = useDemoMode();
