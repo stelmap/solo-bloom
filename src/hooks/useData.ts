@@ -1370,6 +1370,7 @@ export function useGenerateTaxExpenses() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["expenses"] });
       qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      qc.invalidateQueries({ queryKey: ["tax-accrual-status"] });
     },
   });
 }
