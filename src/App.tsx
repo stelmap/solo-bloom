@@ -38,12 +38,12 @@ function lazyWithReload<T extends ComponentType<any>>(
   });
 }
 
-// Eagerly loaded (landing + auth — needed immediately)
+// Eagerly loaded (landing — needed immediately for SEO/LCP)
 import Index from "./pages/Index";
-import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
 // Lazy loaded (behind auth or rarely visited)
+const AuthPage = lazyWithReload(() => import("./pages/AuthPage"));
 const ResetPasswordPage = lazyWithReload(() => import("./pages/ResetPasswordPage"));
 const Dashboard = lazyWithReload(() => import("./pages/Dashboard"));
 const CalendarPage = lazyWithReload(() => import("./pages/CalendarPage"));
