@@ -79,7 +79,19 @@ const AdminUsersPage = lazyWithReload(() => import("./pages/AdminUsersPage"));
 const AdminDomainsPage = lazyWithReload(() => import("./pages/AdminDomainsPage"));
 const ServerUpdatePage = lazyWithReload(() => import("./pages/ServerUpdatePage"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Avoid noisy refetches that block the main thread on tab focus /
+      // reconnects. Hooks set their own staleTime when fresher data matters.
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      retry: 1,
+      staleTime: 30_000,
+      gcTime: 5 * 60_000,
+    },
+  },
+});
 
 function PageFallback() {
   return (
