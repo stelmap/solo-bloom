@@ -484,10 +484,14 @@ function AvailabilityCard({
             <Input type="number" value={maxHorizon} onChange={(e) => setMaxHorizon(Number(e.target.value))} min={1} max={365} />
           </div>
         </div>
-        <Button size="sm" variant="outline" onClick={() => saveShared.mutate()} disabled={saveShared.isPending}>
-          {saveShared.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          {tx("settings.saveRules", "Save rules")}
-        </Button>
+        <p className="text-xs text-muted-foreground inline-flex items-center gap-1">
+          {saveShared.isPending ? (
+            <><Loader2 className="h-3 w-3 animate-spin" /> {tx("common.saving", "Saving…")}</>
+          ) : (
+            <><Check className="h-3 w-3 text-primary" /> {tx("settings.autosaved", "Changes save automatically")}</>
+          )}
+        </p>
+
 
         <div className="space-y-2 pt-2 border-t">
           {inherit && (
