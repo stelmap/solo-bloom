@@ -154,7 +154,19 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     "no-show": { label: t("status.noShow"), color: "bg-warning/15 text-warning" },
   };
 
+  const hasPrepayment = Number(clientCredit) > 0.001;
+  const sessionPrice = Number(apt.price || 0);
+  const prepaymentCovers = Math.min(Number(clientCredit), sessionPrice);
+  const prepaymentRemainingAfter = Math.max(0, Number(clientCredit) - sessionPrice);
+
   const PAYMENT_STATUSES = [
+    ...(hasPrepayment && !isGroupSession ? [{
+      value: "paid_from_prepayment",
+      label: t("payment.paidFromPrepayment"),
+      description: prepaymentCovers >= sessionPrice
+        ? t("payment.paidFromPrepaymentDesc", { symbol: cs, amount: prepaymentRemainingAfter.toFixed(2) })
+        : t("payment.paidFromPrepaymentPartialDesc", { symbol: cs, covered: prepaymentCovers.toFixed(2), remaining: (sessionPrice - prepaymentCovers).toFixed(2) }),
+    }] : []),
     { value: "paid_now", label: t("payment.paidNow"), description: t("payment.paidNowDesc") },
     { value: "paid_in_advance", label: t("payment.paidInAdvance"), description: t("payment.paidInAdvanceDesc") },
     { value: "waiting_for_payment", label: t("payment.waitingForPayment"), description: t("payment.waitingForPaymentDesc") },
@@ -165,6 +177,9 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     waiting_for_payment: { label: t("payment.waiting"), color: "text-warning" },
     paid_now: { label: t("payment.paid"), color: "text-success" },
     paid_in_advance: { label: t("payment.paidAdvance"), color: "text-success" },
+    paid_from_prepayment: { label: t("payment.paidFromPrepaymentShort"), color: "text-success" },
+    partially_paid_from_prepayment: { label: t("payment.partiallyPaidFromPrepayment"), color: "text-warning" },
+    partially_paid: { label: t("payment.partiallyPaid"), color: "text-warning" },
   };
 
   const statusInfo = STATUSES[apt.status] || STATUSES.scheduled;
