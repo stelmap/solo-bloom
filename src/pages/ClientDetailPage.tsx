@@ -36,6 +36,13 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useDemoMode } from "@/hooks/useDemoWorkspace";
+import {
+  isCompleted,
+  isPaid,
+  isAwaiting,
+  isCancelled,
+  isPrepaid,
+} from "@/lib/paymentClassifiers";
 
 export default function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
