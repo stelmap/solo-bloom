@@ -11,11 +11,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import {
   useProfile, useUpdateProfile,
   useTaxSettings, useCreateTaxSetting, useUpdateTaxSetting, useDeleteTaxSetting,
+  useTaxAccrualStatus, useGenerateTaxExpenses,
 } from "@/hooks/useData";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
-import { Receipt, Plus, Trash2, Pencil } from "lucide-react";
+import { Receipt, Plus, Trash2, Pencil, RefreshCw, AlertCircle } from "lucide-react";
 import { nextAccrualDate } from "@/lib/taxExpenseGenerator";
 import { Link } from "react-router-dom";
 
@@ -170,6 +171,8 @@ export function TaxesSection() {
   const { toast } = useToast();
   const { data: profile } = useProfile();
   const { data: taxSettings = [] } = useTaxSettings();
+  const { data: accrualStatus = {} } = useTaxAccrualStatus();
+  const generateTax = useGenerateTaxExpenses();
   const createTax = useCreateTaxSetting();
   const updateTax = useUpdateTaxSetting();
   const deleteTax = useDeleteTaxSetting();
@@ -237,7 +240,18 @@ export function TaxesSection() {
           </div>
         ) : (
           <div className="space-y-2">
-            {(taxSettings as any[]).map((tax: any) => (
+            {(taxSettings as any[]).map((tax: any) => {
+              const status = (accrualStatus as any)[tax.id];
+              const needsUpdate = !!status?.needsUpdate;
+              const handleRefresh = async () => {
+                try {
+                  await generateTax.mutateAsync({ taxSettingId: tax.id, entries: status?.expected || [] });
+                  toast({ title: t("tax.refreshed") });
+                } catch (e: any) {
+                  toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+                }
+              };
+              return (
               <div key={tax.id} className={cn("p-4 rounded-lg border", tax.is_active ? "bg-warning/5 border-warning/20" : "bg-muted/30 border-border opacity-60")}>
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
@@ -249,9 +263,19 @@ export function TaxesSection() {
                       <Badge variant="secondary" className="text-xs">
                         {tax.frequency === "quarterly" ? t("tax.quarterly") : t("tax.monthly")}
                       </Badge>
+                      {needsUpdate && (
+                        <Badge variant="outline" className="text-xs border-destructive text-destructive gap-1">
+                          <AlertCircle className="h-3 w-3" /> {t("tax.needsUpdate")}
+                        </Badge>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
+                    {needsUpdate && (
+                      <Button variant="outline" size="sm" className="h-8 gap-1" onClick={handleRefresh} disabled={generateTax.isPending}>
+                        <RefreshCw className={cn("h-3.5 w-3.5", generateTax.isPending && "animate-spin")} /> {t("tax.refresh")}
+                      </Button>
+                    )}
                     <Switch checked={tax.is_active} onCheckedChange={v => handleToggleTax(tax.id, v)} />
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditTax(tax)}><Pencil className="h-3.5 w-3.5" /></Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDeleteTax(tax.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
@@ -264,7 +288,8 @@ export function TaxesSection() {
                   ) : null;
                 })()}
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

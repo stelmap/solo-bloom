@@ -1,9 +1,19 @@
 /**
  * Tax expense generation utilities.
- * Generates expense entries from active tax rules for display and syncing.
+ *
+ * Two flavours:
+ *  - Fixed taxes: a flat amount per period. Emit one entry per period from
+ *    the configured start date through the CURRENT period (inclusive). Entry
+ *    is dated on the first day of that period — so a fixed tax is visible in
+ *    the current month immediately.
+ *  - Percentage taxes: amount depends on actual income/expense data, so the
+ *    entry can only be calculated after the source period has CLOSED. Emit
+ *    one entry per closed period (from start through the previous period),
+ *    dated on the first day of the FOLLOWING period — e.g. April's income
+ *    produces a tax entry dated May 1st.
  */
 
-import { startOfMonth, endOfMonth, addMonths, format, startOfQuarter, addQuarters, endOfQuarter } from "date-fns";
+import { startOfMonth, addMonths, format, startOfQuarter, addQuarters } from "date-fns";
 
 export interface TaxRule {
   id: string;
@@ -22,123 +32,123 @@ export interface GeneratedTaxExpense {
   tax_name: string;
   category: "Tax";
   amount: number;
-  date: string; // first day of the period
+  date: string; // entry date (period the tax appears in)
   description: string;
   is_recurring: true;
   frequency: string;
   period_label: string;
 }
 
-/**
- * Generate tax expense periods from start_calculation_date to endDate.
- * For monthly taxes: one entry per month
- * For quarterly taxes: one entry per quarter
- */
+function monthKey(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+function quarterKey(d: Date) {
+  return `${d.getFullYear()}-Q${Math.ceil((d.getMonth() + 1) / 3)}`;
+}
+
 export function generateTaxExpensePeriods(
   tax: TaxRule,
-  endDate: Date,
+  _endDate: Date,
   periodIncomeMap?: Map<string, number>,
   periodExpenseMap?: Map<string, number>,
 ): GeneratedTaxExpense[] {
   if (!tax.is_active) return [];
 
   const startDate = new Date(tax.start_calculation_date + "T12:00:00");
-  const results: GeneratedTaxExpense[] = [];
   const today = new Date();
+  const results: GeneratedTaxExpense[] = [];
+  const isQuarterly = tax.frequency === "quarterly";
+  const stepFn = isQuarterly ? addQuarters : addMonths;
+  const startOfPeriodFn = isQuarterly ? startOfQuarter : startOfMonth;
+  const keyFn = isQuarterly ? quarterKey : monthKey;
 
-  if (tax.frequency === "quarterly") {
-    // Emit one entry per quarter from the configured start date through the
-    // current quarter (inclusive). The entry date is the first day of the
-    // quarter itself so recurring taxes are visible immediately.
-    let periodStart = startOfQuarter(startDate);
-    const lastPeriodStart = startOfQuarter(today);
-    while (periodStart <= lastPeriodStart && periodStart <= endDate) {
-      const periodKey = format(periodStart, "yyyy-'Q'") + Math.ceil((periodStart.getMonth() + 1) / 3);
-      const periodLabel = `Q${Math.ceil((periodStart.getMonth() + 1) / 3)} ${periodStart.getFullYear()}`;
-      const amount = calculateTaxAmount(tax, periodKey, periodIncomeMap, periodExpenseMap);
+  if (tax.tax_type === "fixed") {
+    // Fixed amount — emit immediately for every period from start through current.
+    let periodStart = startOfPeriodFn(startDate);
+    const lastPeriodStart = startOfPeriodFn(today);
+    while (periodStart <= lastPeriodStart) {
+      const label = isQuarterly
+        ? `Q${Math.ceil((periodStart.getMonth() + 1) / 3)} ${periodStart.getFullYear()}`
+        : format(periodStart, "MMM yyyy");
       results.push({
         tax_setting_id: tax.id,
         tax_name: tax.tax_name,
         category: "Tax",
-        amount,
+        amount: Number(tax.fixed_amount) || 0,
         date: format(periodStart, "yyyy-MM-dd"),
-        description: `${tax.tax_name} — ${periodLabel}`,
+        description: `${tax.tax_name} — ${label}`,
         is_recurring: true,
-        frequency: "quarterly",
-        period_label: periodLabel,
+        frequency: tax.frequency,
+        period_label: label,
       });
-      periodStart = addQuarters(periodStart, 1);
+      periodStart = stepFn(periodStart, 1);
     }
-  } else {
-    // Emit one entry per month from the start date through the current month
-    // (inclusive). The entry date is the first day of the month itself.
-    let periodStart = startOfMonth(startDate);
-    const lastPeriodStart = startOfMonth(today);
-    while (periodStart <= lastPeriodStart && periodStart <= endDate) {
-      const periodKey = format(periodStart, "yyyy-MM");
-      const periodLabel = format(periodStart, "MMM yyyy");
-      const amount = calculateTaxAmount(tax, periodKey, periodIncomeMap, periodExpenseMap);
-      results.push({
-        tax_setting_id: tax.id,
-        tax_name: tax.tax_name,
-        category: "Tax",
-        amount,
-        date: format(periodStart, "yyyy-MM-dd"),
-        description: `${tax.tax_name} — ${periodLabel}`,
-        is_recurring: true,
-        frequency: "monthly",
-        period_label: periodLabel,
-      });
-      periodStart = addMonths(periodStart, 1);
-    }
+    return results;
   }
 
+  // Percentage — emit one entry per CLOSED source period, posted in the NEXT period.
+  let sourceStart = startOfPeriodFn(startDate);
+  const previousPeriodStart = stepFn(startOfPeriodFn(today), -1);
+  while (sourceStart <= previousPeriodStart) {
+    const sourceKey = keyFn(sourceStart);
+    const amount = calculateTaxAmount(tax, sourceKey, periodIncomeMap, periodExpenseMap);
+    const accrualDate = stepFn(sourceStart, 1);
+    const sourceLabel = isQuarterly
+      ? `Q${Math.ceil((sourceStart.getMonth() + 1) / 3)} ${sourceStart.getFullYear()}`
+      : format(sourceStart, "MMM yyyy");
+    if (amount > 0) {
+      results.push({
+        tax_setting_id: tax.id,
+        tax_name: tax.tax_name,
+        category: "Tax",
+        amount,
+        date: format(accrualDate, "yyyy-MM-dd"),
+        description: `${tax.tax_name} — ${sourceLabel}`,
+        is_recurring: true,
+        frequency: tax.frequency,
+        period_label: sourceLabel,
+      });
+    }
+    sourceStart = stepFn(sourceStart, 1);
+  }
   return results;
 }
 
 /**
- * Compute the next accrual date for an active tax rule (the first day of
- * the next period after the most recent completed period). Returns null
- * if the rule is inactive or its start date is in the future.
+ * Next accrual date — first day of the next period after the most recent
+ * completed source period. Returns null for inactive rules.
  */
 export function nextAccrualDate(tax: TaxRule, now: Date = new Date()): Date | null {
   if (!tax.is_active) return null;
   const startDate = new Date(tax.start_calculation_date + "T12:00:00");
   if (tax.frequency === "quarterly") {
-    const currentPeriodStart = startOfQuarter(now > startDate ? now : startDate);
-    return addQuarters(currentPeriodStart, 1);
+    const base = now > startDate ? now : startDate;
+    return addQuarters(startOfQuarter(base), 1);
   }
-  const currentPeriodStart = startOfMonth(now > startDate ? now : startDate);
-  return addMonths(currentPeriodStart, 1);
+  const base = now > startDate ? now : startDate;
+  return addMonths(startOfMonth(base), 1);
 }
 
 function calculateTaxAmount(
   tax: TaxRule,
-  _periodKey: string,
+  periodKey: string,
   periodIncomeMap?: Map<string, number>,
   periodExpenseMap?: Map<string, number>,
 ): number {
-  if (tax.tax_type === "fixed") {
-    return Number(tax.fixed_amount);
-  }
-  
-  // Percentage-based
+  if (tax.tax_type === "fixed") return Number(tax.fixed_amount) || 0;
+
   const rate = Number(tax.tax_rate) / 100;
-  
+
   if (tax.calculate_on === "expenses" && periodExpenseMap) {
-    return Math.round((periodExpenseMap.get(_periodKey) || 0) * rate);
+    return Math.round((periodExpenseMap.get(periodKey) || 0) * rate);
   }
-  
   if (tax.calculate_on === "profit" && periodIncomeMap && periodExpenseMap) {
-    const income = periodIncomeMap.get(_periodKey) || 0;
-    const expenses = periodExpenseMap.get(_periodKey) || 0;
+    const income = periodIncomeMap.get(periodKey) || 0;
+    const expenses = periodExpenseMap.get(periodKey) || 0;
     return Math.round(Math.max(income - expenses, 0) * rate);
   }
-  
-  // Default: income-based
   if (periodIncomeMap) {
-    return Math.round((periodIncomeMap.get(_periodKey) || 0) * rate);
+    return Math.round((periodIncomeMap.get(periodKey) || 0) * rate);
   }
-  
   return 0;
 }
