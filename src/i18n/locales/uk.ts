@@ -165,6 +165,7 @@ export default {
   "clientDetail.resultCountSimple": "Показано {count} {label}",
   "clientDetail.pageOf": "Сторінка {page} з {total}",
   "common.previous": "Назад",
+  "common.backToDashboard": "Назад до Дашборду",
   "common.next": "Далі",
   "income.paidBy": "Оплатив (Клієнт)",
   "income.selectClient": "Оберіть клієнта (необов'язково)",
