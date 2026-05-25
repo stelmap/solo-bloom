@@ -399,20 +399,26 @@ export function PracticeProfileSection() {
     }
   }, [profile]);
 
-  const handleSave = async () => {
-    try {
-      await updateProfile.mutateAsync(form);
-      toast({ title: t("settings.saved") });
-    } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
-    }
-  };
+  const debouncedForm = useDebouncedValue(form, 600);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const hydrated = useRef(false);
+  useEffect(() => {
+    if (!profile) return;
+    if (!hydrated.current) { hydrated.current = true; return; }
+    updateProfile.mutateAsync(debouncedForm)
+      .then(() => setSavedAt(Date.now()))
+      .catch((e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedForm]);
 
   return (
     <div className="bg-card rounded-xl border border-border p-6 space-y-4">
-      <div>
-        <h2 className="font-semibold text-foreground">{t("settings.practiceProfile")}</h2>
-        <p className="text-sm text-muted-foreground mt-1">{t("settings.practiceProfileDesc")}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="font-semibold text-foreground">{t("settings.practiceProfile")}</h2>
+          <p className="text-sm text-muted-foreground mt-1">{t("settings.practiceProfileDesc")}</p>
+        </div>
+        <SaveStatus pending={updateProfile.isPending} savedAt={savedAt} />
       </div>
 
       <div className="flex items-start gap-4">
@@ -425,12 +431,6 @@ export function PracticeProfileSection() {
           <div className="space-y-2"><Label>{t("common.phone")}</Label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
           <div className="space-y-2"><Label>{t("settings.businessAddress")}</Label><Input value={form.business_address} onChange={e => setForm(f => ({ ...f, business_address: e.target.value }))} /></div>
         </div>
-      </div>
-
-      <div className="pt-2">
-        <Button onClick={handleSave} disabled={updateProfile.isPending}>
-          {updateProfile.isPending ? t("common.saving") : t("common.save")}
-        </Button>
       </div>
     </div>
   );
