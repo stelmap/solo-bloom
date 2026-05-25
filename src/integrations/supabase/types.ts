@@ -1347,6 +1347,7 @@ export type Database = {
           allocated_amount: number
           appointment_id: string
           created_at: string
+          from_prepayment: boolean
           id: string
           income_id: string
           updated_at: string
@@ -1356,6 +1357,7 @@ export type Database = {
           allocated_amount?: number
           appointment_id: string
           created_at?: string
+          from_prepayment?: boolean
           id?: string
           income_id: string
           updated_at?: string
@@ -1365,6 +1367,7 @@ export type Database = {
           allocated_amount?: number
           appointment_id?: string
           created_at?: string
+          from_prepayment?: boolean
           id?: string
           income_id?: string
           updated_at?: string
@@ -2419,6 +2422,14 @@ export type Database = {
           already_confirmed: boolean
           success: boolean
         }[]
+      }
+      consume_client_credit_for_appointment: {
+        Args: {
+          p_appointment_id: string
+          p_client_id: string
+          p_max_amount: number
+        }
+        Returns: number
       }
       current_plan_client_limit: {
         Args: { p_user_id: string }

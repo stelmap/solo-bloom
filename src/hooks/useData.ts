@@ -499,10 +499,11 @@ export function useCompleteAppointment() {
   const { user } = useAuth();
   const { isDemoMode } = useDemoMode();
   return useMutation({
-    mutationFn: async ({ appointmentId, clientId, price, paymentMethod, paymentStatus, paymentDate }: {
+    mutationFn: async ({ appointmentId, clientId, price, paymentMethod, paymentStatus, paymentDate, amountPaid }: {
       appointmentId: string; clientId: string; price: number; paymentMethod: string; paymentStatus: string; paymentDate?: string;
+      // Optional total cash received. If > price, the remainder is stored as a client_credits prepayment row.
+      amountPaid?: number;
     }) => {
-      // Fetch session date for storing on income row
       const { data: aptData } = await supabase
         .from("appointments")
         .select("scheduled_at")
@@ -525,13 +526,26 @@ export function useCompleteAppointment() {
       const payDate = paymentDate || today;
 
       if (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") {
-        const { error: incErr } = await supabase.from("income").insert({
+        const totalReceived = Math.max(Number(amountPaid ?? price), Number(price));
+        const { data: incRow, error: incErr } = await supabase.from("income").insert({
           user_id: user!.id, appointment_id: appointmentId,
-          amount: price, date: payDate, session_date: sessionDate ?? payDate, source: "appointment",
+          client_id: clientId,
+          amount: totalReceived, date: payDate, session_date: sessionDate ?? payDate, source: "appointment",
           payment_method: paymentMethod,
           ...(isDemoMode ? { is_demo: true } : {}),
-        } as any);
+        } as any).select("id").single();
         if (incErr) throw incErr;
+
+        const remainder = totalReceived - Number(price);
+        if (remainder > 0.001 && clientId) {
+          await (supabase as any).from("client_credits").insert({
+            user_id: user!.id,
+            client_id: clientId,
+            income_id: (incRow as any)?.id,
+            amount: remainder,
+            description: "Prepayment from session overpayment",
+          } as any);
+        }
       } else if (paymentStatus === "waiting_for_payment") {
         const { error: epErr } = await supabase.from("expected_payments").insert({
           user_id: user!.id, appointment_id: appointmentId,
@@ -541,8 +555,42 @@ export function useCompleteAppointment() {
         if (epErr) throw epErr;
       }
     },
-    // Analytics: a session was marked complete (with payment outcome)
-    onSuccess: (_d, vars) => { track("session_completed", { payment_status: vars.paymentStatus }); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: (_d, vars) => {
+      track("session_completed", { payment_status: vars.paymentStatus });
+      [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+      qc.invalidateQueries({ queryKey: ["client-credit-balance"] });
+    },
+  });
+}
+
+// Complete an appointment by consuming the client's prepayment balance (FIFO).
+// Does NOT create new income — only allocates existing prepayment to this session.
+export function useCompleteFromPrepayment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ appointmentId, clientId, price }: { appointmentId: string; clientId: string; price: number }) => {
+      const { error: aptErr } = await supabase
+        .from("appointments")
+        .update({ status: "completed", price, payment_status: "paid_from_prepayment" } as any)
+        .eq("id", appointmentId);
+      if (aptErr) throw aptErr;
+
+      await supabase.from("income").delete().eq("appointment_id", appointmentId).eq("source", "appointment");
+      await supabase.from("expected_payments").delete().eq("appointment_id", appointmentId);
+
+      const { data, error } = await (supabase as any).rpc("consume_client_credit_for_appointment", {
+        p_appointment_id: appointmentId,
+        p_client_id: clientId,
+        p_max_amount: Number(price),
+      });
+      if (error) throw error;
+      return Number(data ?? 0);
+    },
+    onSuccess: () => {
+      track("session_completed", { payment_status: "paid_from_prepayment" });
+      [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+      ["client-credit-balance", "client-allocations", "appointment-allocations", "payment-audit"].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+    },
   });
 }
 

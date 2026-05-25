@@ -27,6 +27,7 @@ import {
   useCancelAppointment, useClients, useServices,
   useDeleteRecurringAppointments, useEditRecurringAppointments,
   useProfile, useCreatePriceChange, useReopenAppointment,
+  useClientCreditBalance, useCompleteFromPrepayment,
 } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,10 +56,12 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const updateAppointment = useUpdateAppointment();
   const deleteAppointment = useDeleteAppointment();
   const completeAppointment = useCompleteAppointment();
+  const completeFromPrepayment = useCompleteFromPrepayment();
   const cancelAppointment = useCancelAppointment();
   const deleteRecurring = useDeleteRecurringAppointments();
   const editRecurring = useEditRecurringAppointments();
   const reopenAppointment = useReopenAppointment();
+  const { data: clientCredit = 0 } = useClientCreditBalance(apt?.client_id);
 
   // Group attendance hooks — must be before any early return
   const groupSessionId = apt?.group_session_id
@@ -89,6 +92,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
   // Complete form
   const [completePrice, setCompletePrice] = useState(0);
+  const [amountPaid, setAmountPaid] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [paymentStatus, setPaymentStatus] = useState("paid_now");
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
@@ -150,7 +154,19 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     "no-show": { label: t("status.noShow"), color: "bg-warning/15 text-warning" },
   };
 
+  const hasPrepayment = Number(clientCredit) > 0.001;
+  const sessionPrice = Number(apt.price || 0);
+  const prepaymentCovers = Math.min(Number(clientCredit), sessionPrice);
+  const prepaymentRemainingAfter = Math.max(0, Number(clientCredit) - sessionPrice);
+
   const PAYMENT_STATUSES = [
+    ...(hasPrepayment && !isGroupSession ? [{
+      value: "paid_from_prepayment",
+      label: t("payment.paidFromPrepayment"),
+      description: prepaymentCovers >= sessionPrice
+        ? t("payment.paidFromPrepaymentDesc", { symbol: cs, amount: prepaymentRemainingAfter.toFixed(2) })
+        : t("payment.paidFromPrepaymentPartialDesc", { symbol: cs, covered: prepaymentCovers.toFixed(2), remaining: (sessionPrice - prepaymentCovers).toFixed(2) }),
+    }] : []),
     { value: "paid_now", label: t("payment.paidNow"), description: t("payment.paidNowDesc") },
     { value: "paid_in_advance", label: t("payment.paidInAdvance"), description: t("payment.paidInAdvanceDesc") },
     { value: "waiting_for_payment", label: t("payment.waitingForPayment"), description: t("payment.waitingForPaymentDesc") },
@@ -161,6 +177,9 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     waiting_for_payment: { label: t("payment.waiting"), color: "text-warning" },
     paid_now: { label: t("payment.paid"), color: "text-success" },
     paid_in_advance: { label: t("payment.paidAdvance"), color: "text-success" },
+    paid_from_prepayment: { label: t("payment.paidFromPrepaymentShort"), color: "text-success" },
+    partially_paid_from_prepayment: { label: t("payment.partiallyPaidFromPrepayment"), color: "text-warning" },
+    partially_paid: { label: t("payment.partiallyPaid"), color: "text-warning" },
   };
 
   const statusInfo = STATUSES[apt.status] || STATUSES.scheduled;
@@ -358,9 +377,12 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   };
 
   const openComplete = () => {
-    setCompletePrice(Number(apt.price));
+    const p = Number(apt.price);
+    setCompletePrice(p);
+    setAmountPaid(p);
     setPaymentMethod("cash");
-    setPaymentStatus("paid_now");
+    // Auto-select prepayment if client has any credit (covers full or partial).
+    setPaymentStatus(hasPrepayment && !isGroupSession ? "paid_from_prepayment" : "paid_now");
     setGroupPaymentState("paid_now");
     setGroupPaymentMethod("cash");
     setMode("complete");
@@ -388,13 +410,29 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
           paymentMethod: groupPaymentMethod,
         });
         toast({ title: t("groups.sessionCompleted") });
+      } else if (paymentStatus === "paid_from_prepayment") {
+        const consumed = await completeFromPrepayment.mutateAsync({
+          appointmentId: apt.id, clientId: apt.client_id, price: completePrice,
+        });
+        const fullyCovered = consumed + 0.001 >= completePrice;
+        toast({
+          title: t("toast.appointmentCompleted"),
+          description: fullyCovered
+            ? t("toast.sessionCompletedFromPrepayment", { symbol: cs, amount: completePrice.toFixed(2) })
+            : t("toast.sessionCompletedFromPrepaymentPartial", { symbol: cs, covered: consumed.toFixed(2), remaining: (completePrice - consumed).toFixed(2) }),
+        });
       } else {
         await completeAppointment.mutateAsync({
           appointmentId: apt.id, clientId: apt.client_id,
           price: completePrice, paymentMethod, paymentStatus, paymentDate,
+          amountPaid: (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") ? amountPaid : undefined,
         });
+        const overpay = (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") && amountPaid > completePrice + 0.001;
         const msg = paymentStatus === "waiting_for_payment"
-          ? t("toast.sessionCompletedExpected") : t("toast.sessionCompletedIncome", { symbol: cs, amount: completePrice.toString() });
+          ? t("toast.sessionCompletedExpected")
+          : overpay
+            ? t("toast.sessionCompletedWithPrepayment", { symbol: cs, paid: amountPaid.toFixed(2), prepay: (amountPaid - completePrice).toFixed(2) })
+            : t("toast.sessionCompletedIncome", { symbol: cs, amount: completePrice.toString() });
         toast({ title: t("toast.appointmentCompleted"), description: msg });
       }
       onOpenChange(false);
@@ -508,6 +546,15 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   <span className="text-muted-foreground">{t("common.payment")}</span>
                   <span className={cn("font-medium", payInfo.color)}>{payInfo.label}</span>
                 </div>
+                {hasPrepayment && isActive && (
+                  <div className="flex justify-between items-center rounded-md bg-primary/5 border border-primary/20 px-2 py-1.5">
+                    <span className="text-xs text-muted-foreground">{t("prepayment.balance")}</span>
+                    <span className="text-xs font-semibold text-primary">
+                      +{cs}{Number(clientCredit).toFixed(2)}
+                      {sessionPrice > 0 ? ` · ${t("prepayment.sessionsShort", { count: String(Math.floor(Number(clientCredit) / sessionPrice)) })}` : ""}
+                    </span>
+                  </div>
+                )}
                 {showConfirmationState && (
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">{t("confirmation.status")}</span>
@@ -852,6 +899,20 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
             <div className="space-y-5">
               <p className="text-sm text-muted-foreground">{t("calendar.confirmOutcome")}</p>
 
+              {/* Prepayment banner */}
+              {hasPrepayment && (
+                <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
+                  <p className="font-medium text-foreground">
+                    {t("prepayment.clientHasCredit", { symbol: cs, amount: Number(clientCredit).toFixed(2) })}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {sessionPrice > 0
+                      ? t("prepayment.coversApproxSessions", { count: String(Math.floor(Number(clientCredit) / sessionPrice)) })
+                      : null}
+                  </p>
+                </div>
+              )}
+
               {/* Notes before completing */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-1.5"><FileText className="h-3.5 w-3.5" /> {t("session.notes")}</Label>
@@ -865,7 +926,11 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
               <div className="space-y-2">
                 <Label>{t("calendar.finalPrice")}</Label>
-                <Input type="number" step="0.01" value={completePrice} onChange={e => setCompletePrice(parseFloat(e.target.value) || 0)} />
+                <Input type="number" step="0.01" value={completePrice} onChange={e => {
+                  const v = parseFloat(e.target.value) || 0;
+                  setCompletePrice(v);
+                  if (amountPaid < v) setAmountPaid(v);
+                }} />
               </div>
 
               <div className="space-y-2">
@@ -885,6 +950,16 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
               {(paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") && (
                 <>
+                  <div className="space-y-2">
+                    <Label>{t("prepayment.amountReceived")}</Label>
+                    <Input type="number" step="0.01" min={completePrice} value={amountPaid}
+                      onChange={e => setAmountPaid(parseFloat(e.target.value) || 0)} />
+                    {amountPaid > completePrice + 0.001 && (
+                      <p className="text-xs text-success">
+                        {t("prepayment.willBeStored", { symbol: cs, amount: (amountPaid - completePrice).toFixed(2) })}
+                      </p>
+                    )}
+                  </div>
                   <div className="space-y-2">
                     <Label>{t("common.paymentDate")}</Label>
                     <Input type="date" value={paymentDate} onChange={e => setPaymentDate(e.target.value)} />
@@ -906,21 +981,34 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
               )}
 
               <div className={cn("rounded-lg p-4 flex items-center gap-3 border",
-                paymentStatus === "waiting_for_payment" ? "bg-warning/10 border-warning/20" : "bg-success/10 border-success/20"
+                paymentStatus === "waiting_for_payment" ? "bg-warning/10 border-warning/20"
+                  : paymentStatus === "paid_from_prepayment" ? "bg-primary/10 border-primary/20"
+                  : "bg-success/10 border-success/20"
               )}>
-                <DollarSign className={cn("h-5 w-5", paymentStatus === "waiting_for_payment" ? "text-warning" : "text-success")} />
+                <DollarSign className={cn("h-5 w-5",
+                  paymentStatus === "waiting_for_payment" ? "text-warning"
+                    : paymentStatus === "paid_from_prepayment" ? "text-primary"
+                    : "text-success")} />
                 <div>
                   <p className="text-sm font-semibold text-foreground">
                     {paymentStatus === "waiting_for_payment"
                       ? t("calendar.willBeExpected", { symbol: cs, amount: completePrice.toFixed(2) })
-                      : t("calendar.willBeIncome", { symbol: cs, amount: completePrice.toFixed(2) })}
+                      : paymentStatus === "paid_from_prepayment"
+                      ? (prepaymentCovers >= sessionPrice
+                          ? t("prepayment.willDeduct", { symbol: cs, amount: completePrice.toFixed(2), remaining: prepaymentRemainingAfter.toFixed(2) })
+                          : t("prepayment.willPartiallyDeduct", { symbol: cs, covered: prepaymentCovers.toFixed(2), remaining: (sessionPrice - prepaymentCovers).toFixed(2) }))
+                      : t("calendar.willBeIncome", { symbol: cs, amount: amountPaid.toFixed(2) })}
                   </p>
                 </div>
               </div>
 
               <div className="flex gap-2">
-                <Button onClick={handleComplete} className="flex-1" disabled={completeAppointment.isPending}>
-                  {completeAppointment.isPending ? t("calendar.saving") : t("calendar.confirmComplete")}
+                <Button onClick={handleComplete} className="flex-1" disabled={completeAppointment.isPending || completeFromPrepayment.isPending}>
+                  {(completeAppointment.isPending || completeFromPrepayment.isPending)
+                    ? t("calendar.saving")
+                    : paymentStatus === "paid_from_prepayment"
+                      ? t("prepayment.completeAndDeduct")
+                      : t("calendar.confirmComplete")}
                 </Button>
                 <Button variant="outline" onClick={() => setMode("view")}><X className="h-4 w-4" /></Button>
               </div>

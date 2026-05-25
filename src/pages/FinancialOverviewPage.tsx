@@ -181,7 +181,7 @@ export default function FinancialOverviewPage() {
           const d = new Date(a.scheduled_at);
           return d >= mStart && d <= mEnd && a.status !== "cancelled" && a.status !== "no-show";
         });
-        const confirmedApts = futureApts.filter(a => a.status === "completed" && (a.payment_status === "paid_now" || a.payment_status === "paid_in_advance"));
+        const confirmedApts = futureApts.filter(a => a.status === "completed" && (a.payment_status === "paid_now" || a.payment_status === "paid_in_advance" || a.payment_status === "paid_from_prepayment"));
         const expectedApts = futureApts.filter(a => !confirmedApts.includes(a));
         const confirmedIncome = confirmedApts.reduce((s, a) => s + Number(a.price), 0);
         const expectedIncome = expectedApts.reduce((s, a) => s + Number(a.price), 0);
