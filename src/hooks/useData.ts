@@ -524,20 +524,39 @@ export function useCompleteAppointment() {
       const payDate = paymentDate || today;
       const priceNum = Number(price);
 
-      // Case A: "waiting for payment" — full amount is a debt.
+      // Case A: "waiting for payment" — first try to consume any existing
+      // prepayment credits the client has. Only the remaining gap becomes a debt.
       if (paymentStatus === "waiting_for_payment") {
         await supabase
           .from("appointments")
           .update({ status: "completed", price: priceNum, payment_status: "waiting_for_payment" } as any)
           .eq("id", appointmentId);
-        const { error: epErr } = await supabase.from("expected_payments").insert({
-          user_id: user!.id, appointment_id: appointmentId,
-          client_id: clientId, amount: priceNum, status: "pending",
-          ...(isDemoMode ? { is_demo: true } : {}),
-        } as any);
-        if (epErr) throw epErr;
+
+        let consumed = 0;
+        if (clientId && priceNum > 0) {
+          const { data: consumedRpc, error: consumeErr } = await (supabase as any).rpc(
+            "consume_client_credit_for_appointment",
+            { p_appointment_id: appointmentId, p_client_id: clientId, p_max_amount: priceNum },
+          );
+          if (consumeErr) throw consumeErr;
+          consumed = Number(consumedRpc ?? 0);
+        }
+
+        const stillOwed = Math.max(priceNum - consumed, 0);
+        if (stillOwed > 0.001) {
+          const { error: epErr } = await supabase.from("expected_payments").insert({
+            user_id: user!.id, appointment_id: appointmentId,
+            client_id: clientId, amount: stillOwed, status: "pending",
+            ...(isDemoMode ? { is_demo: true } : {}),
+          } as any);
+          if (epErr) throw epErr;
+        }
+
+        // Final status recalc (consume RPC already runs it, but rerun in case stillOwed changed nothing on row).
+        await (supabase as any).rpc("recalc_appointment_payment_status", { p_appointment_id: appointmentId });
         return;
       }
+
 
       // Case B: paid_now / paid_in_advance — partial / full / overpayment.
       const received = Math.max(Number(amountPaid ?? priceNum), 0);
