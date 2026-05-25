@@ -434,7 +434,12 @@ export default function PaymentAuditPage() {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow><TableCell colSpan={10} className="text-center py-10 text-muted-foreground">{t("common.loading") || "Loading…"}</TableCell></TableRow>
+                Array.from({ length: 8 }).map((_, i) => (
+                  <TableRow key={`sk-${i}`} className="h-12">
+                    <TableCell colSpan={10}><Skeleton className="h-4 w-full" /></TableCell>
+                  </TableRow>
+                ))
+
               ) : filtered.length === 0 ? (
                 <TableRow><TableCell colSpan={10} className="text-center py-10 text-muted-foreground">{t("audit.empty")}</TableCell></TableRow>
               ) : paged.map(r => {

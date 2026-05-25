@@ -151,7 +151,8 @@ export default function SupervisionPage() {
           {/* List */}
           <div className={cn("space-y-3", detailData ? "lg:col-span-1" : "lg:col-span-3")}>
             {isLoading ? (
-              <p className="text-muted-foreground text-center py-8">{t("dashboard.loading")}</p>
+              <ListSkeleton variant="rows" count={5} />
+
             ) : supervisions.length === 0 ? (
               <div className="bg-card rounded-xl border border-border p-8 text-center">
                 <ClipboardList className="h-10 w-10 text-muted-foreground mx-auto mb-3" />

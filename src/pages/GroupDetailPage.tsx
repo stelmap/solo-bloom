@@ -161,13 +161,10 @@ export default function GroupDetailPage() {
     }
   };
 
-  if (groupLoading) {
-    return <AppLayout><p className="text-muted-foreground text-center py-12">{t("common.loading")}</p></AppLayout>;
-  }
-
-  if (!group) {
+  if (!groupLoading && !group) {
     return <AppLayout><p className="text-muted-foreground text-center py-12">{t("groups.notFound")}</p></AppLayout>;
   }
+
 
   return (
     <AppLayout>

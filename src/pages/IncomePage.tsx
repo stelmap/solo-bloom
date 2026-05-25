@@ -219,7 +219,8 @@ export default function IncomePage() {
 
           <TabsContent value="income">
             {isLoading ? (
-              <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
+              <ListSkeleton variant="table" count={8} />
+
             ) : filtered.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">{t("income.noIncome")}</p>
             ) : (
