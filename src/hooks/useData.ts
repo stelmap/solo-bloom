@@ -1448,6 +1448,8 @@ export function useTaxAccrualSync() {
       } catch (err) {
         // Non-fatal: surface to console but do not crash the app
         console.warn("Tax accrual sync failed", err);
+      } finally {
+        inFlight.current = false;
       }
     })();
 
