@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,9 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
-import { Copy, RefreshCw, Loader2, ExternalLink } from "lucide-react";
+import { Copy, RefreshCw, Loader2, ExternalLink, Check } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useWorkingSchedule } from "@/hooks/useData";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import {
   syncBookingAvailabilityFromSchedule,
   getInheritFlag,
