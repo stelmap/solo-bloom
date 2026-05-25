@@ -5,6 +5,7 @@ import { ProfileSection, AppearanceSection, SecuritySection, NotificationsSectio
 import { ConnectedAccountsSection } from "@/components/ConnectedAccountsSection";
 import { SubscriptionSection } from "@/components/SubscriptionSection";
 import { PrivacySection } from "@/components/settings/PrivacySection";
+import { MfaAndTimeoutSection } from "@/components/settings/MfaAndTimeoutSection";
 
 export default function SettingsPage() {
   const { t } = useLanguage();
