@@ -877,8 +877,8 @@ export default function CalendarPage() {
             }
           } : undefined}
         >
-          <div className="overflow-y-auto flex-1 min-h-0" style={{ scrollbarGutter: "stable" }}>
-            <table className="w-full border-collapse table-fixed">
+          <div className="overflow-auto flex-1 min-h-0" style={{ scrollbarGutter: "stable" }}>
+            <table className="w-full border-collapse table-fixed min-w-[760px]">
               <colgroup>
                 <col className={isMobile ? "w-[56px]" : "w-[72px]"} />
                 {days.map((_, i) => <col key={i} />)}
