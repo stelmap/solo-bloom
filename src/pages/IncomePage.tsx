@@ -2,7 +2,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, DollarSign, CheckCircle, Download } from "lucide-react";
+import { Plus, Trash2, DollarSign, CheckCircle, Download, ArrowLeft } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
 import { useIncome, useIncomeSum, useCreateIncome, useDeleteIncome, useExpectedPayments, useMarkExpectedPaymentPaid, useClients } from "@/hooks/useData";
@@ -17,16 +17,20 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { startOfWeek, startOfMonth, format } from "date-fns";
 
 export default function IncomePage() {
   const [page, setPage] = useState(0);
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   // Filters
   const initialRange = searchParams.get("range") || "month";
+  const initialTab = searchParams.get("tab") === "pending" ? "pending" : "income";
+  const fromDashboard = searchParams.has("range") || searchParams.has("tab");
   const [dateRange, setDateRange] = useState(initialRange);
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   const dateFrom = useMemo(() => {
     const now = new Date();
@@ -62,7 +66,14 @@ export default function IncomePage() {
 
   const filtered = income; // server-side filtered
   const total = periodTotal;
-  const pendingTotal = (expectedPayments as any[]).reduce((s: number, ep: any) => s + Number(ep.amount), 0);
+  const filteredExpected = useMemo(() => {
+    if (!dateFrom) return expectedPayments as any[];
+    return (expectedPayments as any[]).filter((ep: any) => {
+      const d = ep.appointments?.scheduled_at?.slice(0, 10);
+      return d && d >= dateFrom;
+    });
+  }, [expectedPayments, dateFrom]);
+  const pendingTotal = filteredExpected.reduce((s: number, ep: any) => s + Number(ep.amount), 0);
 
   const { data: activeMethods = [] } = useActivePaymentMethods();
   const PAYMENT_METHODS = activeMethods.map(m => ({ value: m.code, label: localizedMethodName(m, t) }));
@@ -113,6 +124,16 @@ export default function IncomePage() {
   return (
     <AppLayout>
       <div className="space-y-6">
+        {fromDashboard && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/dashboard")}
+            className="self-start -ml-2 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" /> {t("common.backToDashboard")}
+          </Button>
+        )}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("income.title")}</h1>
@@ -177,7 +198,7 @@ export default function IncomePage() {
           <div className="bg-card rounded-xl border border-warning/30 p-5 animate-fade-in">
             <p className="text-sm text-warning">{t("income.pendingPayments")}</p>
             <p className="text-2xl font-bold text-warning mt-1">{cs}{pendingTotal.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("income.awaitingPayment", { count: (expectedPayments as any[]).length })}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("income.awaitingPayment", { count: filteredExpected.length })}</p>
           </div>
           <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
             <p className="text-sm text-muted-foreground">{t("finance.expectedIncome")}</p>
@@ -185,13 +206,13 @@ export default function IncomePage() {
           </div>
         </div>
 
-        <Tabs defaultValue="income" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="income">{t("income.confirmedIncome")}</TabsTrigger>
             <TabsTrigger value="pending">
               {t("income.expectedPayments")}
-              {(expectedPayments as any[]).length > 0 && (
-                <Badge className="ml-2 bg-warning/20 text-warning text-xs">{(expectedPayments as any[]).length}</Badge>
+              {filteredExpected.length > 0 && (
+                <Badge className="ml-2 bg-warning/20 text-warning text-xs">{filteredExpected.length}</Badge>
               )}
             </TabsTrigger>
           </TabsList>
@@ -259,11 +280,11 @@ export default function IncomePage() {
           <TabsContent value="pending">
             {epLoading ? (
               <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
-            ) : (expectedPayments as any[]).length === 0 ? (
+            ) : filteredExpected.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">{t("income.noPending")}</p>
             ) : (
               <div className="space-y-3">
-                {(expectedPayments as any[]).map((ep: any) => (
+                {filteredExpected.map((ep: any) => (
                   <div key={ep.id} className="bg-card rounded-xl border border-warning/20 p-4 flex items-center gap-4 animate-fade-in">
                     <div className="h-10 w-10 rounded-lg bg-warning/10 flex items-center justify-center">
                       <DollarSign className="h-5 w-5 text-warning" />
