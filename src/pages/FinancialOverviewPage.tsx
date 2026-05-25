@@ -72,6 +72,29 @@ export default function FinancialOverviewPage() {
   }, [allIncome, incomeDateField]);
 
   /**
+   * Whether a tax rule applies to the given month/quarter.
+   * Monthly: (year, month) must be on or after the start month.
+   * Quarterly: the accrued quarter (the quarter being taxed) must be on or after the start quarter.
+   */
+  const taxAppliesIn = (tax: any, monthIdx: number, monthYear: number, accruedQuarterKey: string | null) => {
+    const startStr: string | undefined = tax.start_calculation_date;
+    if (!startStr) return true;
+    const m = startStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return true;
+    const sy = +m[1], smonth = +m[2] - 1;
+    if (tax.frequency === "quarterly") {
+      if (!accruedQuarterKey) return false;
+      const qm = accruedQuarterKey.match(/^(\d{4})-Q(\d)$/);
+      if (!qm) return true;
+      const qy = +qm[1], qn = +qm[2];
+      const sq = Math.floor(smonth / 3) + 1;
+      return qy > sy || (qy === sy && qn >= sq);
+    }
+    return monthYear > sy || (monthYear === sy && monthIdx >= smonth);
+  };
+
+
+  /**
    * Compute taxes recognized in a given month.
    * - Monthly tax: accrued in the same month against that month's income.
    * - Quarterly tax: accrued only in the month AFTER the quarter ends
