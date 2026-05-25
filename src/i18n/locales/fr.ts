@@ -167,6 +167,8 @@ export default {
   "common.previous": "Précédent",
   "common.backToDashboard": "Retour au tableau de bord",
   "common.next": "Suivant",
+  "common.saved": "Enregistré",
+  "common.to": "à",
   "income.paidBy": "Payé par (Client)",
   "income.selectClient": "Sélectionner un client (facultatif)",
   "income.noClient": "Aucun client",
