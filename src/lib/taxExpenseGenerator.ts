@@ -94,7 +94,8 @@ export function generateTaxExpensePeriods(
   while (sourceStart <= previousPeriodStart) {
     const sourceKey = keyFn(sourceStart);
     const amount = calculateTaxAmount(tax, sourceKey, periodIncomeMap, periodExpenseMap);
-    const accrualDate = stepFn(sourceStart, 1);
+    const rawAccrual = stepFn(sourceStart, 1);
+    const accrualDate = rawAccrual < startDate ? startDate : rawAccrual;
     const sourceLabel = isQuarterly
       ? `Q${Math.ceil((sourceStart.getMonth() + 1) / 3)} ${sourceStart.getFullYear()}`
       : format(sourceStart, "MMM yyyy");
