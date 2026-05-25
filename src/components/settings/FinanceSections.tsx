@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-time-picker";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -315,7 +316,7 @@ export function TaxesSection() {
             </div>
             <div className="space-y-1">
               <Label>{t("tax.startCalculationDate")} *</Label>
-              <Input type="date" value={taxForm.start_calculation_date} onChange={e => setTaxForm(f => ({ ...f, start_calculation_date: e.target.value }))} />
+              <DatePicker date={taxForm.start_calculation_date} onDateChange={v => setTaxForm(f => ({ ...f, start_calculation_date: v }))} />
               <p className="text-xs text-muted-foreground">{t("tax.startCalculationDateHint")}</p>
             </div>
             <Button onClick={handleSaveTax} className="w-full" disabled={createTax.isPending || updateTax.isPending || !taxForm.tax_name}>
