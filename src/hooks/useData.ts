@@ -10,7 +10,7 @@ export const FREE_STARTER_LIMIT_ERROR = "FREE_STARTER_CLIENT_LIMIT_REACHED";
 export const PLAN_CLIENT_LIMIT_ERROR = "PLAN_CLIENT_LIMIT_REACHED";
 
 const INVALIDATE_APPOINTMENTS = ["appointments", "dashboard-stats", "client-appointments"];
-const INVALIDATE_FINANCIAL = ["income", "expenses", "expected-payments", "dashboard-stats"];
+const INVALIDATE_FINANCIAL = ["income", "expenses", "expected-payments", "dashboard-stats", "tax-accrual-status"];
 const attachDemoFlag = <T extends Record<string, any>>(payload: T, isDemoMode: boolean): T => (
   isDemoMode ? { ...payload, is_demo: true } : payload
 );
@@ -901,7 +901,7 @@ export function useCreateExpense() {
     },
     onSuccess: (_d, vars) => {
       track("expense_created", { is_recurring: !!vars.is_recurring || vars.recurrence !== "one_time" });
-      ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+      ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
     },
   });
 }
@@ -954,7 +954,7 @@ export function useUpdateExpense() {
         .neq("instance_status", "paid");
       if (instErr) throw instErr;
     },
-    onSuccess: () => { track("expense_updated"); ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("expense_updated"); ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -969,7 +969,7 @@ export function useUpdateExpenseSeries() {
         .neq("instance_status", "paid");
       if (error) throw error;
     },
-    onSuccess: () => { track("expense_updated", { scope: "series" }); ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("expense_updated", { scope: "series" }); ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -1009,7 +1009,7 @@ export function useDeleteExpense() {
       const { error: tplErr } = await supabase.from("expenses").delete().eq("id", templateId);
       if (tplErr) throw tplErr;
     },
-    onSuccess: () => { track("expense_deleted"); ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("expense_deleted"); ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -1067,7 +1067,7 @@ export function useCreateIncome() {
       return data;
     },
     // Analytics: a new income entry was created
-    onSuccess: (_d, vars) => { track("income_created", { source: vars.source }); ["income", "dashboard-stats", "client-income"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: (_d, vars) => { track("income_created", { source: vars.source }); ["income", "dashboard-stats", "client-income", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -1098,7 +1098,7 @@ export function useDeleteIncome() {
       const { error } = await supabase.from("income").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { track("income_deleted"); ["income", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("income_deleted"); ["income", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -1132,7 +1132,7 @@ export function useUpdateProfile() {
       qc.invalidateQueries({ queryKey: ["profile"] });
       // If recognition method changed, recompute analytics that group income by date
       if (vars.income_recognition_method !== undefined) {
-        ["dashboard-stats", "income", "client-income"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
+        ["dashboard-stats", "income", "client-income", "tax-accrual-status"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
       }
     },
   });
@@ -1370,6 +1370,7 @@ export function useGenerateTaxExpenses() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["expenses"] });
       qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      qc.invalidateQueries({ queryKey: ["tax-accrual-status"] });
     },
   });
 }
@@ -1506,11 +1507,16 @@ export function useTaxAccrualStatus() {
         const periods = generateTaxExpensePeriods(tax as any, horizon, incomeMap, expenseMap);
         const expected = periods.map(p => ({ date: p.date, amount: p.amount, description: p.description }));
         const stored = (expenseRows ?? []).filter((r: any) => r.tax_setting_id === tax.id) as any[];
-        const expectedTotal = expected.reduce((s, e) => s + Number(e.amount), 0);
-        const storedTotal = stored.reduce((s: number, r: any) => s + Number(r.amount), 0);
-        const needsUpdate = tax.tax_type === "percentage" && (
-          expected.length !== stored.length || Math.abs(expectedTotal - storedTotal) > 0.5
-        );
+        // Build a per-entry signature (date + rounded amount) so we detect
+        // ANY mismatch — added/removed periods or amount changes — not just totals.
+        const sigOf = (rows: Array<{ date: string; amount: number }>) =>
+          rows
+            .map(r => `${r.date}:${Math.round(Number(r.amount) * 100)}`)
+            .sort()
+            .join("|");
+        const expectedSig = sigOf(expected);
+        const storedSig = sigOf(stored.map((r: any) => ({ date: r.date, amount: Number(r.amount) })));
+        const needsUpdate = tax.tax_type === "percentage" && expectedSig !== storedSig;
         result[tax.id] = { needsUpdate, expected };
       }
       return result;
@@ -1535,7 +1541,7 @@ export function useUpdateExpensePaymentStatus() {
       const { error } = await supabase.from("expenses").update(patch).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
