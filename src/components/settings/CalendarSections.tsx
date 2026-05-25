@@ -93,26 +93,39 @@ export function WorkingHoursSection() {
     setSchedule(prev => prev.map(d => d.day_of_week === dayOfWeek ? { ...d, ...updates } : d));
   };
 
-  const handleSave = async () => {
-    try {
-      await Promise.all([
-        updateProfile.mutateAsync(form),
-        upsertSchedule.mutateAsync(schedule),
-      ]);
-      // Mirror working schedule to public booking availability when inheritance is ON
-      if (user && getInheritFlag(user.id)) {
-        try { await syncBookingAvailabilityFromSchedule(user.id, schedule); } catch {}
+  // Autosave: debounce profile + schedule changes
+  const debouncedForm = useDebouncedValue(form, 600);
+  const debouncedSchedule = useDebouncedValue(schedule, 600);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const hydrated = useRef(false);
+  useEffect(() => {
+    if (!profile) return;
+    if (!hydrated.current) { hydrated.current = true; return; }
+    (async () => {
+      try {
+        await Promise.all([
+          updateProfile.mutateAsync(debouncedForm),
+          upsertSchedule.mutateAsync(debouncedSchedule),
+        ]);
+        if (user && getInheritFlag(user.id)) {
+          try { await syncBookingAvailabilityFromSchedule(user.id, debouncedSchedule); } catch {}
+        }
+        setSavedAt(Date.now());
+      } catch (e: any) {
+        toast({ title: t("common.error"), description: e.message, variant: "destructive" });
       }
-      toast({ title: t("settings.saved") });
-    } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
-    }
-  };
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedForm, debouncedSchedule]);
 
   return (
     <div className="space-y-6">
       <div className="bg-card rounded-xl border border-border p-6 space-y-4">
-        <h2 className="font-semibold text-foreground">{t("settings.calendar")}</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold text-foreground">{t("settings.calendar")}</h2>
+          <SaveStatus pending={updateProfile.isPending || upsertSchedule.isPending} savedAt={savedAt} />
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>{t("settings.workHoursStart")}</Label>
