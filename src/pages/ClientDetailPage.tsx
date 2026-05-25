@@ -753,6 +753,36 @@ export default function ClientDetailPage() {
             </div>
           );
         })()}
+
+        {/* Outstanding debt — per-session breakdown */}
+        {clientDebtData && clientDebtData.items?.length > 0 && (
+          <div className="bg-card rounded-xl border border-warning/30 p-5 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <h3 className="font-semibold text-foreground">{t("clientDetail.outstandingDebt")}</h3>
+                <p className="text-xs text-muted-foreground">{t("clientDetail.outstandingDebtHint")}</p>
+              </div>
+              <div className="text-lg font-semibold text-destructive">{cs}{Number(clientDebtData.total).toFixed(2)}</div>
+            </div>
+            <div className="space-y-2">
+              {clientDebtData.items.map((d: any) => {
+                const apt = d.appointment;
+                const dateStr = apt?.scheduled_at
+                  ? format(new Date(apt.scheduled_at), "MMM d, yyyy", { locale: dateLocale })
+                  : "—";
+                return (
+                  <div key={d.id} className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2 text-sm">
+                    <div>
+                      <p className="font-medium text-foreground">{apt?.service?.name ?? t("session.title")}</p>
+                      <p className="text-xs text-muted-foreground">{dateStr}</p>
+                    </div>
+                    <div className="font-semibold text-destructive">{cs}{Number(d.amount).toFixed(2)}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
