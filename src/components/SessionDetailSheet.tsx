@@ -931,7 +931,6 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 <Input type="number" step="0.01" value={completePrice} onChange={e => {
                   const v = parseFloat(e.target.value) || 0;
                   setCompletePrice(v);
-                  if (amountPaid < v) setAmountPaid(v);
                 }} />
               </div>
 
@@ -954,11 +953,21 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 <>
                   <div className="space-y-2">
                     <Label>{t("prepayment.amountReceived")}</Label>
-                    <Input type="number" step="0.01" min={completePrice} value={amountPaid}
+                    <Input type="number" step="0.01" min={0} value={amountPaid}
                       onChange={e => setAmountPaid(parseFloat(e.target.value) || 0)} />
                     {amountPaid > completePrice + 0.001 && (
                       <p className="text-xs text-success">
                         {t("prepayment.willBeStored", { symbol: cs, amount: (amountPaid - completePrice).toFixed(2) })}
+                      </p>
+                    )}
+                    {amountPaid > 0 && amountPaid < completePrice - 0.001 && (
+                      <p className="text-xs text-warning">
+                        {t("partial.willCreateDebt", { symbol: cs, paid: amountPaid.toFixed(2), debt: (completePrice - amountPaid).toFixed(2) })}
+                      </p>
+                    )}
+                    {clientDebt > 0.001 && amountPaid > 0 && (
+                      <p className="text-xs text-primary">
+                        {t("partial.willCloseDebts", { symbol: cs, debt: Math.min(clientDebt, amountPaid).toFixed(2) })}
                       </p>
                     )}
                   </div>
