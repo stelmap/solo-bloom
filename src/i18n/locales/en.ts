@@ -358,6 +358,7 @@ export default {
   "common.deleting": "Deleting...",
   "common.add": "Add",
   "common.cancel": "Cancel",
+  "common.clear": "Clear",
   "common.confirm": "Confirm",
   "common.loading": "Loading...",
   "common.error": "Error",

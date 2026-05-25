@@ -358,6 +358,7 @@ export default {
   "common.deleting": "Видалення...",
   "common.add": "Додати",
   "common.cancel": "Скасувати",
+  "common.clear": "Очистити",
   "common.confirm": "Підтвердити",
   "common.loading": "Завантаження...",
   "common.error": "Помилка",

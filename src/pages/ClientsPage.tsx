@@ -2,12 +2,12 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Phone, Mail, Send, Trash2, Download, Upload, Archive, ArchiveRestore, MoreVertical } from "lucide-react";
+import { Plus, Search, Phone, Mail, Send, Trash2, Download, Upload, Archive, ArchiveRestore, MoreVertical, X } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
-import { useState, memo, useRef } from "react";
+import { useState, memo, useRef, useMemo } from "react";
 import ExcelJS from "exceljs";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useClients, useCreateClient, useDeleteClient, useUnarchiveClient, useAppointments } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
@@ -90,6 +90,7 @@ export default function ClientsPage() {
   const deleteClient = useDeleteClient();
   const unarchiveClient = useUnarchiveClient();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const { t } = useLanguage();
   const { isFreeStarter, atClientLimit } = useFreeStarterMode();
@@ -123,9 +124,51 @@ export default function ClientsPage() {
     return map;
   })();
 
+  const monthFilter = searchParams.get("filter") as "activeThisMonth" | "newThisMonth" | null;
+
+  const isThisMonth = (dateStr: string) => {
+    const now = new Date();
+    const d = new Date(dateStr);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  };
+
+  const activeClientIdsThisMonth = useMemo(() => {
+    const ids = new Set<string>();
+    for (const a of appointments as any[]) {
+      if (a.status !== "cancelled" && isThisMonth(a.scheduled_at)) {
+        ids.add(a.client_id);
+      }
+    }
+    return ids;
+  }, [appointments]);
+
+  const newClientIds = useMemo(() => {
+    const ids = new Set<string>();
+    const firstSessionByClient = new Map<string, string>();
+    for (const a of appointments as any[]) {
+      if (!firstSessionByClient.has(a.client_id)) {
+        firstSessionByClient.set(a.client_id, a.scheduled_at);
+      }
+    }
+    for (const [cid, firstAt] of firstSessionByClient) {
+      if (isThisMonth(firstAt)) ids.add(cid);
+    }
+    for (const c of clients) {
+      if (!firstSessionByClient.has(c.id) && isThisMonth(c.created_at)) {
+        ids.add(c.id);
+      }
+    }
+    return ids;
+  }, [appointments, clients]);
+
   const q = debouncedSearch.trim().toLowerCase();
   const filtered = clients
     .filter((c: any) => statusFilter === "all" ? true : (c.status ?? "active") === statusFilter)
+    .filter((c: any) => {
+      if (monthFilter === "activeThisMonth") return activeClientIdsThisMonth.has(c.id);
+      if (monthFilter === "newThisMonth") return newClientIds.has(c.id);
+      return true;
+    })
     .filter((c: any) => {
       if (!q) return true;
       const hay = [
@@ -307,6 +350,24 @@ export default function ClientsPage() {
             <Input placeholder={t("clients.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
           </div>
         </div>
+
+        {monthFilter && (
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs">
+              {monthFilter === "activeThisMonth" ? t("ops.activeClientsThisMonth") : t("ops.newClientsThisMonth")}
+            </Badge>
+            <button
+              onClick={() => {
+                const next = new URLSearchParams(searchParams);
+                next.delete("filter");
+                setSearchParams(next);
+              }}
+              className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
+            >
+              <X className="h-3 w-3" /> {t("common.clear")}
+            </button>
+          </div>
+        )}
 
         {isLoading ? (
           <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
