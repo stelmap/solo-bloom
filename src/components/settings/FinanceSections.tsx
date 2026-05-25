@@ -171,7 +171,7 @@ export function TaxesSection() {
   const { toast } = useToast();
   const { data: profile } = useProfile();
   const { data: taxSettings = [] } = useTaxSettings();
-  const { data: accrualStatus = {} } = useTaxAccrualStatus();
+  const { data: accrualStatus = {}, refetch: refetchAccrual } = useTaxAccrualStatus();
   const generateTax = useGenerateTaxExpenses();
   const createTax = useCreateTaxSetting();
   const updateTax = useUpdateTaxSetting();
