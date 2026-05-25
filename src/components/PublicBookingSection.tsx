@@ -11,8 +11,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import { Copy, RefreshCw, Loader2, ExternalLink } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { useWorkingSchedule } from "@/hooks/useData";
+import {
+  syncBookingAvailabilityFromSchedule,
+  getInheritFlag,
+  setInheritFlag,
+  dowToWeekday,
+} from "@/lib/bookingAvailabilitySync";
 
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WEEKDAY_KEYS = [
+  "day.sunday", "day.monday", "day.tuesday", "day.wednesday",
+  "day.thursday", "day.friday", "day.saturday",
+] as const;
 
 export function PublicBookingSection() {
   const { user } = useAuth();
