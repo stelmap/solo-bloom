@@ -357,11 +357,11 @@ export type Database = {
         }
         Relationships: []
       }
-      client_notes: {
+      client_notes_raw: {
         Row: {
           appointment_id: string | null
           client_id: string
-          content: string
+          content_ct: string | null
           created_at: string
           id: string
           included_in_supervision: boolean
@@ -375,7 +375,7 @@ export type Database = {
         Insert: {
           appointment_id?: string | null
           client_id: string
-          content: string
+          content_ct?: string | null
           created_at?: string
           id?: string
           included_in_supervision?: boolean
@@ -389,7 +389,7 @@ export type Database = {
         Update: {
           appointment_id?: string | null
           client_id?: string
-          content?: string
+          content_ct?: string | null
           created_at?: string
           id?: string
           included_in_supervision?: boolean
@@ -2402,9 +2402,78 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      client_notes: {
+        Row: {
+          appointment_id: string | null
+          client_id: string | null
+          content: string | null
+          created_at: string | null
+          id: string | null
+          included_in_supervision: boolean | null
+          is_demo: boolean | null
+          seed_batch_id: string | null
+          seed_source: string | null
+          supervision_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          appointment_id?: string | null
+          client_id?: string | null
+          content?: never
+          created_at?: string | null
+          id?: string | null
+          included_in_supervision?: boolean | null
+          is_demo?: boolean | null
+          seed_batch_id?: string | null
+          seed_source?: string | null
+          supervision_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          appointment_id?: string | null
+          client_id?: string | null
+          content?: never
+          created_at?: string | null
+          id?: string | null
+          included_in_supervision?: boolean | null
+          is_demo?: boolean | null
+          seed_batch_id?: string | null
+          seed_source?: string | null
+          supervision_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_notes_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_notes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_notes_supervision_id_fkey"
+            columns: ["supervision_id"]
+            isOneToOne: false
+            referencedRelation: "supervisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      _gdpr_decrypt: { Args: { cipher: string }; Returns: string }
+      _gdpr_encrypt: { Args: { plain: string }; Returns: string }
+      _gdpr_key: { Args: never; Returns: string }
       admin_list_booking_email_logs: {
         Args: { p_ids: string[] }
         Returns: {
