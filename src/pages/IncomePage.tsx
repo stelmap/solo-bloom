@@ -124,6 +124,16 @@ export default function IncomePage() {
   return (
     <AppLayout>
       <div className="space-y-6">
+        {fromDashboard && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/dashboard")}
+            className="self-start -ml-2 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" /> {t("common.backToDashboard")}
+          </Button>
+        )}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("income.title")}</h1>
