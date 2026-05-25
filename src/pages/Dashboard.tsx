@@ -25,7 +25,7 @@ type Apt = {
   services?: { name?: string } | null;
 };
 
-const PAID_STATUSES = new Set(["paid_now", "paid_in_advance"]);
+const PAID_STATUSES = new Set(["paid_now", "paid_in_advance", "paid_from_prepayment"]);
 const UNPAID_STATUSES = new Set(["unpaid", "waiting_for_payment"]);
 
 function statusBadgeClass(status: string) {
