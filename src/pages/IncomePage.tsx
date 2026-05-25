@@ -66,7 +66,14 @@ export default function IncomePage() {
 
   const filtered = income; // server-side filtered
   const total = periodTotal;
-  const pendingTotal = (expectedPayments as any[]).reduce((s: number, ep: any) => s + Number(ep.amount), 0);
+  const filteredExpected = useMemo(() => {
+    if (!dateFrom) return expectedPayments as any[];
+    return (expectedPayments as any[]).filter((ep: any) => {
+      const d = ep.appointments?.scheduled_at?.slice(0, 10);
+      return d && d >= dateFrom;
+    });
+  }, [expectedPayments, dateFrom]);
+  const pendingTotal = filteredExpected.reduce((s: number, ep: any) => s + Number(ep.amount), 0);
 
   const { data: activeMethods = [] } = useActivePaymentMethods();
   const PAYMENT_METHODS = activeMethods.map(m => ({ value: m.code, label: localizedMethodName(m, t) }));
