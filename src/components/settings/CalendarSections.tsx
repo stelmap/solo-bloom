@@ -16,7 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Plus, Trash2, CalendarOff, Image as ImageIcon, Check, Loader2 } from "lucide-react";
