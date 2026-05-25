@@ -2567,6 +2567,10 @@ export type Database = {
       regenerate_booking_link_token: { Args: never; Returns: string }
       seed_demo_workspace: { Args: { p_user_id: string }; Returns: Json }
       set_booking_link_slug: { Args: { p_slug: string }; Returns: string }
+      settle_client_debts_from_overpayment: {
+        Args: { p_client_id: string }
+        Returns: Json
+      }
       user_has_demo_data: { Args: { p_user_id: string }; Returns: boolean }
     }
     Enums: {
