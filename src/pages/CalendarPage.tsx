@@ -1031,10 +1031,13 @@ export default function CalendarPage() {
             </table>
           </div>
         </div>
-        </div>
+        </section>
 
-        <BookingInboxPanel className="lg:w-[340px] lg:shrink-0 lg:max-h-[calc(100vh-120px)] lg:sticky lg:top-6" />
+        <section aria-label="Booking inbox">
+          <BookingInboxPanel className="w-full" />
+        </section>
       </div>
+
 
       <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
         <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
