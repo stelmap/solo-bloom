@@ -124,13 +124,19 @@ export default function ClientsPage() {
     return map;
   })();
 
-  const monthFilter = searchParams.get("filter") as "activeThisMonth" | "newThisMonth" | null;
+  const monthFilter = searchParams.get("filter") as "activeThisMonth" | "newThisMonth" | "completedThisMonth" | null;
 
-  const isThisMonth = (dateStr: string) => {
+  const isThisMonth = (dateStr: string | null | undefined) => {
+    if (!dateStr) return false;
     const now = new Date();
     const d = new Date(dateStr);
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   };
+
+  const COMPLETED_ARCHIVE_REASONS = new Set(["completed", "therapy_completed", "training_completed", "service_completed"]);
+
+  // When arriving via "completedThisMonth", force the Archived tab
+  const effectiveStatusFilter = monthFilter === "completedThisMonth" ? "archived" : statusFilter;
 
   const activeClientIdsThisMonth = useMemo(() => {
     const ids = new Set<string>();
@@ -163,10 +169,17 @@ export default function ClientsPage() {
 
   const q = debouncedSearch.trim().toLowerCase();
   const filtered = clients
-    .filter((c: any) => statusFilter === "all" ? true : (c.status ?? "active") === statusFilter)
+    .filter((c: any) => effectiveStatusFilter === "all" ? true : (c.status ?? "active") === effectiveStatusFilter)
     .filter((c: any) => {
       if (monthFilter === "activeThisMonth") return activeClientIdsThisMonth.has(c.id);
       if (monthFilter === "newThisMonth") return newClientIds.has(c.id);
+      if (monthFilter === "completedThisMonth") {
+        return (
+          c.status === "archived" &&
+          COMPLETED_ARCHIVE_REASONS.has(c.archive_reason ?? "") &&
+          isThisMonth(c.archived_at)
+        );
+      }
       return true;
     })
     .filter((c: any) => {
