@@ -2467,3 +2467,26 @@ export function useDeleteIncomeConfirmation() {
     },
   });
 }
+
+// Total outstanding debt of a client + per-session breakdown.
+export function useClientDebt(clientId: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["client-debt", clientId],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("expected_payments")
+        .select("id, amount, appointment_id, created_at, appointment:appointment_id(id, scheduled_at, price, service:service_id(name))")
+        .eq("client_id", clientId!)
+        .eq("user_id", user!.id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      const rows = (data ?? []) as any[];
+      const total = rows.reduce((s, r) => s + Number(r.amount || 0), 0);
+      return { total, items: rows };
+    },
+    enabled: !!user && !!clientId,
+  });
+}
+
