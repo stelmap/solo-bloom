@@ -2,12 +2,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useData";
 import { useAutoSeedDemo } from "@/hooks/useDemoWorkspace";
+import { useIdleTimeout } from "@/hooks/useIdleTimeout";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, isRecovery } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
   // Seed a demo workspace on first login for unpaid users with no real data
   useAutoSeedDemo();
+  // GDPR: auto sign-out on inactivity (configurable in Settings → Security)
+  useIdleTimeout();
 
   if (loading || (user && profileLoading)) {
     return (

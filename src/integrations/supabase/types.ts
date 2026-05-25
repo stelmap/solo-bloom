@@ -1713,6 +1713,7 @@ export type Database = {
           id: string
           income_recognition_method: string
           language: string
+          mfa_required: boolean
           onboarding_completed: boolean
           phone: string | null
           reminder_minutes: number
@@ -1738,6 +1739,7 @@ export type Database = {
           id?: string
           income_recognition_method?: string
           language?: string
+          mfa_required?: boolean
           onboarding_completed?: boolean
           phone?: string | null
           reminder_minutes?: number
@@ -1763,6 +1765,7 @@ export type Database = {
           id?: string
           income_recognition_method?: string
           language?: string
+          mfa_required?: boolean
           onboarding_completed?: boolean
           phone?: string | null
           reminder_minutes?: number
@@ -2581,6 +2584,7 @@ export type Database = {
         }
         Returns: number
       }
+      process_gdpr_deletions: { Args: never; Returns: number }
       public_create_booking: {
         Args: {
           p_comment: string

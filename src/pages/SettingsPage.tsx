@@ -5,6 +5,7 @@ import { ProfileSection, AppearanceSection, SecuritySection, NotificationsSectio
 import { ConnectedAccountsSection } from "@/components/ConnectedAccountsSection";
 import { SubscriptionSection } from "@/components/SubscriptionSection";
 import { PrivacySection } from "@/components/settings/PrivacySection";
+import { MfaAndTimeoutSection } from "@/components/settings/MfaAndTimeoutSection";
 
 export default function SettingsPage() {
   const { t } = useLanguage();
@@ -29,7 +30,12 @@ export default function SettingsPage() {
 
           <TabsContent value="profile"><ProfileSection /></TabsContent>
           <TabsContent value="appearance"><AppearanceSection /></TabsContent>
-          <TabsContent value="security"><SecuritySection /></TabsContent>
+          <TabsContent value="security">
+            <div className="space-y-6">
+              <SecuritySection />
+              <MfaAndTimeoutSection />
+            </div>
+          </TabsContent>
           <TabsContent value="notifications"><NotificationsSection /></TabsContent>
           <TabsContent value="connected"><ConnectedAccountsSection /></TabsContent>
           <TabsContent value="subscription"><SubscriptionSection /></TabsContent>
