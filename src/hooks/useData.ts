@@ -1450,6 +1450,69 @@ export function useTaxAccrualSync() {
   }, [user?.id, JSON.stringify((taxSettings as any[]).map(t => [t.id, t.is_active, t.tax_rate, t.fixed_amount, t.tax_type, t.frequency, t.calculate_on, t.start_calculation_date]))]);
 }
 
+/**
+ * Compute, per active tax rule, whether the stored auto-generated expense
+ * rows still match what the current income/expense data would produce.
+ * Used to surface a "Needs update" indicator next to percentage taxes.
+ */
+export function useTaxAccrualStatus() {
+  const { user } = useAuth();
+  const { data: taxSettings = [] } = useTaxSettings();
+  return useQuery({
+    queryKey: ["tax-accrual-status", user?.id, (taxSettings as any[]).map(t => t.id).join(",")],
+    enabled: !!user && (taxSettings as any[]).length > 0,
+    staleTime: 15_000,
+    queryFn: async () => {
+      const { data: incomeRows } = await supabase.from("income").select("amount, date, status").eq("status", "confirmed");
+      const monthIncome = new Map<string, number>();
+      const quarterIncome = new Map<string, number>();
+      for (const r of (incomeRows ?? []) as any[]) {
+        const d = new Date(r.date + "T12:00:00");
+        const mKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        const qKey = `${d.getFullYear()}-Q${Math.ceil((d.getMonth() + 1) / 3)}`;
+        monthIncome.set(mKey, (monthIncome.get(mKey) || 0) + Number(r.amount));
+        quarterIncome.set(qKey, (quarterIncome.get(qKey) || 0) + Number(r.amount));
+      }
+      const { data: expenseRows } = await supabase.from("expenses").select("amount, date, category, tax_setting_id");
+      const monthExpense = new Map<string, number>();
+      const quarterExpense = new Map<string, number>();
+      for (const r of (expenseRows ?? []) as any[]) {
+        if (r.category === "Tax" || r.tax_setting_id) continue;
+        const d = new Date(r.date + "T12:00:00");
+        const mKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        const qKey = `${d.getFullYear()}-Q${Math.ceil((d.getMonth() + 1) / 3)}`;
+        monthExpense.set(mKey, (monthExpense.get(mKey) || 0) + Number(r.amount));
+        quarterExpense.set(qKey, (quarterExpense.get(qKey) || 0) + Number(r.amount));
+      }
+      const { generateTaxExpensePeriods } = await import("@/lib/taxExpenseGenerator");
+      const today = new Date();
+      const horizon = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+      const result: Record<string, { needsUpdate: boolean; expected: Array<{ date: string; amount: number; description: string }> }> = {};
+      for (const tax of taxSettings as any[]) {
+        if (!tax.is_active) {
+          result[tax.id] = { needsUpdate: false, expected: [] };
+          continue;
+        }
+        const incomeMap = tax.frequency === "quarterly" ? quarterIncome : monthIncome;
+        const expenseMap = tax.frequency === "quarterly" ? quarterExpense : monthExpense;
+        const periods = generateTaxExpensePeriods(tax as any, horizon, incomeMap, expenseMap);
+        const expected = periods.map(p => ({ date: p.date, amount: p.amount, description: p.description }));
+        const stored = (expenseRows ?? []).filter((r: any) => r.tax_setting_id === tax.id) as any[];
+        const expectedTotal = expected.reduce((s, e) => s + Number(e.amount), 0);
+        const storedTotal = stored.reduce((s: number, r: any) => s + Number(r.amount), 0);
+        const needsUpdate = tax.tax_type === "percentage" && (
+          expected.length !== stored.length || Math.abs(expectedTotal - storedTotal) > 0.5
+        );
+        result[tax.id] = { needsUpdate, expected };
+      }
+      return result;
+    },
+  });
+}
+
+
+
+
 
 export function useUpdateExpensePaymentStatus() {
   const qc = useQueryClient();
