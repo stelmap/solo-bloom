@@ -29,9 +29,7 @@ export function ArchiveClientDialog({ open, onOpenChange, clientId, clientName, 
   const [futureAction, setFutureAction] = useState<"keep" | "cancel">("keep");
 
   const reasonOptions = [
-    { value: "therapy_completed", label: t("archive.reason.therapyCompleted") },
-    { value: "training_completed", label: t("archive.reason.trainingCompleted") },
-    { value: "service_completed", label: t("archive.reason.serviceCompleted") },
+    { value: "completed", label: t("archive.reason.completed") },
     { value: "client_paused", label: t("archive.reason.clientPaused") },
     { value: "client_stopped", label: t("archive.reason.clientStopped") },
     { value: "other", label: t("archive.reason.other") },
