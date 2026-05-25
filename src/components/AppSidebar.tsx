@@ -101,18 +101,18 @@ export function AppSidebar() {
     <>
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="fixed top-4 left-4 z-50 md:hidden p-2 rounded-lg bg-secondary text-secondary-foreground border border-sidebar-border shadow-lg"
+        className="fixed top-4 left-4 z-50 lg:hidden p-2 rounded-lg bg-secondary text-secondary-foreground border border-sidebar-border shadow-lg"
       >
         {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
 
       {mobileOpen && (
-        <div className="fixed inset-0 z-30 bg-foreground/40 backdrop-blur-sm md:hidden" onClick={() => setMobileOpen(false)} />
+        <div className="fixed inset-0 z-30 bg-foreground/40 backdrop-blur-sm lg:hidden" onClick={() => setMobileOpen(false)} />
       )}
 
       <aside className={cn(
         "fixed left-0 top-0 z-40 h-full w-64 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-200",
-        "md:translate-x-0",
+        "lg:translate-x-0",
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="p-6 border-b border-sidebar-border">
