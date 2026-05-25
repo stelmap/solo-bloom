@@ -30,7 +30,12 @@ export default function SettingsPage() {
 
           <TabsContent value="profile"><ProfileSection /></TabsContent>
           <TabsContent value="appearance"><AppearanceSection /></TabsContent>
-          <TabsContent value="security"><SecuritySection /></TabsContent>
+          <TabsContent value="security">
+            <div className="space-y-6">
+              <SecuritySection />
+              <MfaAndTimeoutSection />
+            </div>
+          </TabsContent>
           <TabsContent value="notifications"><NotificationsSection /></TabsContent>
           <TabsContent value="connected"><ConnectedAccountsSection /></TabsContent>
           <TabsContent value="subscription"><SubscriptionSection /></TabsContent>
