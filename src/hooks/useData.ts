@@ -901,7 +901,7 @@ export function useCreateExpense() {
     },
     onSuccess: (_d, vars) => {
       track("expense_created", { is_recurring: !!vars.is_recurring || vars.recurrence !== "one_time" });
-      ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+      ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
     },
   });
 }
@@ -954,7 +954,7 @@ export function useUpdateExpense() {
         .neq("instance_status", "paid");
       if (instErr) throw instErr;
     },
-    onSuccess: () => { track("expense_updated"); ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("expense_updated"); ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -969,7 +969,7 @@ export function useUpdateExpenseSeries() {
         .neq("instance_status", "paid");
       if (error) throw error;
     },
-    onSuccess: () => { track("expense_updated", { scope: "series" }); ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("expense_updated", { scope: "series" }); ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -1009,7 +1009,7 @@ export function useDeleteExpense() {
       const { error: tplErr } = await supabase.from("expenses").delete().eq("id", templateId);
       if (tplErr) throw tplErr;
     },
-    onSuccess: () => { track("expense_deleted"); ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("expense_deleted"); ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -1067,7 +1067,7 @@ export function useCreateIncome() {
       return data;
     },
     // Analytics: a new income entry was created
-    onSuccess: (_d, vars) => { track("income_created", { source: vars.source }); ["income", "dashboard-stats", "client-income"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: (_d, vars) => { track("income_created", { source: vars.source }); ["income", "dashboard-stats", "client-income", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -1098,7 +1098,7 @@ export function useDeleteIncome() {
       const { error } = await supabase.from("income").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { track("income_deleted"); ["income", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("income_deleted"); ["income", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -1132,7 +1132,7 @@ export function useUpdateProfile() {
       qc.invalidateQueries({ queryKey: ["profile"] });
       // If recognition method changed, recompute analytics that group income by date
       if (vars.income_recognition_method !== undefined) {
-        ["dashboard-stats", "income", "client-income"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
+        ["dashboard-stats", "income", "client-income", "tax-accrual-status"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
       }
     },
   });
@@ -1535,7 +1535,7 @@ export function useUpdateExpensePaymentStatus() {
       const { error } = await supabase.from("expenses").update(patch).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { ["expenses", "dashboard-stats"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
