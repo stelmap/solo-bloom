@@ -430,11 +430,14 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
           amountPaid: (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") ? amountPaid : undefined,
         });
         const overpay = (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") && amountPaid > completePrice + 0.001;
+        const partial = (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") && amountPaid > 0 && amountPaid < completePrice - 0.001;
         const msg = paymentStatus === "waiting_for_payment"
           ? t("toast.sessionCompletedExpected")
           : overpay
             ? t("toast.sessionCompletedWithPrepayment", { symbol: cs, paid: amountPaid.toFixed(2), prepay: (amountPaid - completePrice).toFixed(2) })
-            : t("toast.sessionCompletedIncome", { symbol: cs, amount: completePrice.toString() });
+            : partial
+              ? t("toast.partialPaymentRecorded", { symbol: cs, paid: amountPaid.toFixed(2), debt: (completePrice - amountPaid).toFixed(2) })
+              : t("toast.sessionCompletedIncome", { symbol: cs, amount: completePrice.toString() });
         toast({ title: t("toast.appointmentCompleted"), description: msg });
       }
       onOpenChange(false);
