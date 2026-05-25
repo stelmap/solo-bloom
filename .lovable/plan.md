@@ -1,99 +1,74 @@
-# Client Prepayment Balance Logic
+## Часткова оплата сесії + автоматичне закриття боргів
 
-Build a full prepayment system where any client payment exceeding session cost becomes a balance that automatically covers future sessions — without duplicating income.
+Розширюємо існуючу логіку передоплат правилом часткової оплати та FIFO‑розподілом нових оплат: спершу борги → потім поточна сесія → потім передоплата.
 
-## Core concept
+### 1. База даних
 
-Client balance = sum(confirmed incomes for client) − sum(completed billable sessions for client).
+**Міграція** додає одну SQL‑функцію та необхідні статуси:
 
-- Balance > 0 → prepayment (credit)
-- Balance = 0 → settled
-- Balance < 0 → debt
+- Розширюємо допустимі значення `appointments.payment_status` так, щоб приймали `partially_paid`.
+- Нова RPC `apply_payment_to_client_debts(p_user_id, p_client_id, p_income_id, p_amount)`:
+  1. Бере `expected_payments` клієнта зі статусом `pending` у порядку `created_at` ASC.
+  2. Для кожного: списує з `p_amount`, оновлює `amount` (або позначає `paid` коли = 0), створює рядок в `income_session_allocations` (`income_id`, `appointment_id`, `allocated_amount`, `from_prepayment=false`).
+  3. Коли борг закрито повністю → відповідний `appointment.payment_status` стає `paid`; коли частково — `partially_paid`, а `expected_payments.amount` зменшується.
+  4. Повертає залишок (`leftover`) — суму, яка не пішла на борги.
 
-One income record is created when money is actually received. Sessions consumed from prepayment never create new income — they only mark payment status and allocate against existing income.
+### 2. Хуки (`src/hooks/useData.ts`)
 
-## Data model changes
+**`useCompleteAppointment`** переписуємо під єдиний потік `paid_now / paid_in_advance`:
 
-**`income` table** — add:
-- `is_prepayment` boolean default false (set true when income amount > session amount at creation, or when added without a session)
-- `remaining_balance` numeric — unallocated portion of this income, decremented as future sessions consume it
+- `amountPaid` тепер може бути `< price` (часткова оплата), `=` (повна), або `>` (передоплата).
+- Кроки:
+  1. `appointment.update({ status: completed, price, payment_status })` де `payment_status` обчислюється:
+     - `paid` якщо після всіх розподілів сесія покрита,
+     - `partially_paid` якщо залишилась частина боргу,
+     - `waiting_for_payment` якщо `amountPaid = 0` (вибрано "очікую оплату").
+  2. Якщо `amountPaid > 0`: створюємо `income` на `amountPaid`.
+  3. Викликаємо нову RPC `apply_payment_to_client_debts` — закриваємо старі борги клієнта; отримуємо `leftover`.
+  4. З `leftover` покриваємо поточну сесію: створюємо `income_session_allocations` (поточна сесія, `min(leftover, price)`).
+  5. Якщо `leftover < price` — створюємо `expected_payments` на залишок (`price - leftover`) і ставимо `payment_status = partially_paid`.
+  6. Якщо `leftover > price` — різниця йде в `client_credits` як передоплата.
+- Логіка `paid_from_prepayment` залишається як є (вже працює FIFO через `consume_client_credit_for_appointment`).
 
-**`appointments` table** — extend `payment_status` to allow:
-- `paid_from_prepayment`
-- `partially_paid_from_prepayment`
+**`useAddIncome` / `useUpdateIncome`** (ручний дохід): якщо `client_id` встановлено і `appointment_id` НЕ встановлено — після створення income автоматично викликаємо `apply_payment_to_client_debts`, а решту відправляємо в `client_credits` (як уже частково реалізовано).
 
-Add columns:
-- `prepaid_amount_used` numeric default 0
-- `remaining_due` numeric default 0
+### 3. UI — `SessionDetailSheet.tsx`
 
-**`income_session_allocations`** (already exists) — reuse: each row links an income to an appointment with `allocated_amount`. Prepayment consumption creates allocation rows pointing back to the original income.
+- Прибираємо `min={completePrice}` з поля "Amount received" і `if (amountPaid < v) setAmountPaid(v)`.
+- Додаємо нову плашку‑підказку у режимі завершення:
+  - `amountPaid < price` → "Часткова оплата: <X> в дохід, <Y> у заборгованість, статус → Частково оплачено".
+  - `amountPaid = price` → "Повна оплата: <X> в дохід".
+  - `amountPaid > price` → існуюча плашка передоплати.
+- Якщо у клієнта є відкриті борги — показуємо інфо‑блок "Буде закрито X € старих боргів цього клієнта".
 
-## Allocation algorithm
+### 4. Картка клієнта (`ClientDetailPage.tsx`)
 
-When a new income is recorded for a client, OR when a session is completed:
+- Додаємо блок "Заборгованість": сума всіх `expected_payments` (status='pending') клієнта + список сесій з датою і сумою боргу.
 
-1. Get all unpaid completed sessions for client, oldest first → cover with available balance.
-2. Remaining money becomes prepayment (income.remaining_balance > 0).
-3. When completing a session: if client has positive balance, offer "Pay from prepayment". On confirm, create allocation row(s) consuming oldest income first (FIFO), update session payment_status accordingly, decrement income.remaining_balance.
+### 5. Локалізація
 
-Triggered recalculation on: income create/update/delete, session complete/cancel, session price change, payment status change.
+Додаємо ключі в `en/uk/fr/pl`:
+- `payment.partiallyPaid`, `payment.expectedPayment`
+- `prepayment.partialPayment`, `prepayment.willCreateDebt`
+- `prepayment.willCloseDebts`
+- `client.outstandingDebt`, `client.debtFromSession`
+- `toast.partialPaymentRecorded`
 
-## Backend (DB) work
+### 6. Аналітика (cash flow)
 
-Single migration:
-- Add the new income + appointment columns
-- Add CHECK constraint relaxation / update for new payment_status values
-- Create `recalculate_client_balance(client_id)` SQL function that recomputes allocations + remaining_balance + appointment payment_status using FIFO logic
-- Trigger this function from triggers on income and appointments
+Перевіряємо `Dashboard.tsx`, `FinancialOverviewPage.tsx`, `ClientDetailPage.tsx`:
+- `expected_payments` НЕ враховуються в `cash_income` (вже так).
+- `PAID_STATUSES` додаємо `partially_paid`? — ні, partially_paid не є "повністю оплаченим"; income table вже відображає реально отримані гроші, тож аналітика лишається коректною.
 
-## Frontend work
+### Out of scope
 
-**New shared hook** `useClientBalance(clientId)` returning `{ totalPaid, totalSessions, balance, prepaidAmount, prepaidSessionsCount, debt }`.
+- Окрема UI‑форма для ручного "погашення боргу" — вистачає того, що будь‑яка нова оплата з `client_id` автоматично закриває борги FIFO.
+- Часткове відкочування (refund).
+- Перепризначення вже створених `income_session_allocations` вручну.
 
-**Calendar — Complete Session modal** (`src/components/calendar/...CompleteSession...`):
-- Show client balance banner
-- If balance ≥ session price → preselect "Pay from prepayment", primary button "Complete & deduct from prepayment"
-- If 0 < balance < session price → show partial coverage UI: "Prepayment covers X €, remaining Y €" with options [leave as debt] / [add payment now]
-- If balance ≤ 0 → existing flow
-
-On submit:
-- `paid_from_prepayment` → no income insert, only allocation row + status update
-- `partially_paid_from_prepayment` → allocation row for prepaid portion + new income for the rest (if user adds payment) or leave remaining_due
-
-**Manual income (Finance → Income → Add)**:
-- After insert, call recalc; if no outstanding sessions, mark `is_prepayment=true` and surface "Added as prepayment for {client}".
-
-**Client card** (`src/components/clients/ClientCard...` or detail page) — add Financial Balance block:
-- Total paid, total session value, current balance
-- Prepayment + estimated sessions (using client's avg or default session price)
-- Debt + unpaid session count
-
-**Calendar appointment popover/details** — show "Balance: +X €, Prepaid sessions: N" when client has credit.
-
-**Payment audit / income list** — for sessions paid from prepayment, show source income date; for prepayment incomes, show which sessions consumed them and remaining.
-
-**i18n** — add keys in en/fr/pl/uk for: paid from prepayment, partially paid from prepayment, prepayment available, prepaid sessions, complete and deduct, prepayment covers X remaining Y, financial balance, total paid, total sessions, current balance, debt.
-
-## Files to touch (estimate)
-
-- migration (1)
-- `src/hooks/useClientBalance.ts` (new)
-- `src/hooks/useData.ts` (invalidations, manual income hook)
-- `src/components/calendar/CompleteSessionDialog.tsx` (or equivalent) — prepayment UI
-- `src/components/calendar/AppointmentDetails*.tsx` — balance banner
-- `src/components/clients/ClientDetail*.tsx` — financial block
-- `src/components/finance/IncomeForm*.tsx` — post-insert recalc messaging
-- `src/components/finance/PaymentAudit*.tsx` — show prepayment source
-- `src/i18n/locales/{en,fr,pl,uk}.ts`
-
-## Out of scope (confirm)
-
-- Refunding prepayment back to client
-- Manual reassignment of an allocation to a different session
-- Prepayment expiry
-
-These can be follow-ups.
-
-## Acceptance
-
-All AC1–AC6 covered by the allocation algorithm above. After approval I'll inspect actual file names, then ship the migration first, then the UI in one pass.
+### Acceptance Criteria mapping
+- AC1 ✓ — крок 2.5 у `useCompleteAppointment`.
+- AC2 ✓ — `expected_payments` не пишеться в `income` table.
+- AC3 ✓ — FIFO RPC закриває старі борги до поточної сесії, далі — передоплата.
+- AC4 ✓ — RPC оновлює `appointment.payment_status` на `paid` при повному закритті.
+- AC5 ✓ — блок "Заборгованість" у картці клієнта.

@@ -493,7 +493,9 @@ export function useDeleteAppointment() {
   });
 }
 
-// Complete appointment with payment status
+// Complete appointment with payment status.
+// Supports partial payment (amountPaid < price), full payment, and overpayment.
+// Allocation order: oldest expected_payments (debts) -> current session -> prepayment.
 export function useCompleteAppointment() {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -501,7 +503,7 @@ export function useCompleteAppointment() {
   return useMutation({
     mutationFn: async ({ appointmentId, clientId, price, paymentMethod, paymentStatus, paymentDate, amountPaid }: {
       appointmentId: string; clientId: string; price: number; paymentMethod: string; paymentStatus: string; paymentDate?: string;
-      // Optional total cash received. If > price, the remainder is stored as a client_credits prepayment row.
+      // Total cash received now. May be < price (partial), = price, or > price (prepayment).
       amountPaid?: number;
     }) => {
       const { data: aptData } = await supabase
@@ -513,52 +515,115 @@ export function useCompleteAppointment() {
         ? new Date(aptData.scheduled_at).toISOString().split("T")[0]
         : undefined;
 
-      const { error: aptErr } = await supabase
-        .from("appointments")
-        .update({ status: "completed", price, payment_status: paymentStatus } as any)
-        .eq("id", appointmentId);
-      if (aptErr) throw aptErr;
-
+      // Clean up any prior records for THIS appointment.
+      await supabase.from("income_session_allocations").delete().eq("appointment_id", appointmentId);
       await supabase.from("income").delete().eq("appointment_id", appointmentId);
       await supabase.from("expected_payments").delete().eq("appointment_id", appointmentId);
 
       const today = new Date().toISOString().split("T")[0];
       const payDate = paymentDate || today;
+      const priceNum = Number(price);
 
-      if (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") {
-        const totalReceived = Math.max(Number(amountPaid ?? price), Number(price));
+      // Case A: "waiting for payment" — full amount is a debt.
+      if (paymentStatus === "waiting_for_payment") {
+        await supabase
+          .from("appointments")
+          .update({ status: "completed", price: priceNum, payment_status: "waiting_for_payment" } as any)
+          .eq("id", appointmentId);
+        const { error: epErr } = await supabase.from("expected_payments").insert({
+          user_id: user!.id, appointment_id: appointmentId,
+          client_id: clientId, amount: priceNum, status: "pending",
+          ...(isDemoMode ? { is_demo: true } : {}),
+        } as any);
+        if (epErr) throw epErr;
+        return;
+      }
+
+      // Case B: paid_now / paid_in_advance — partial / full / overpayment.
+      const received = Math.max(Number(amountPaid ?? priceNum), 0);
+
+      await supabase
+        .from("appointments")
+        .update({ status: "completed", price: priceNum } as any)
+        .eq("id", appointmentId);
+
+      let leftover = received;
+      let incomeId: string | null = null;
+
+      if (received > 0) {
         const { data: incRow, error: incErr } = await supabase.from("income").insert({
           user_id: user!.id, appointment_id: appointmentId,
           client_id: clientId,
-          amount: totalReceived, date: payDate, session_date: sessionDate ?? payDate, source: "appointment",
+          amount: received, date: payDate, session_date: sessionDate ?? payDate, source: "appointment",
           payment_method: paymentMethod,
           ...(isDemoMode ? { is_demo: true } : {}),
         } as any).select("id").single();
         if (incErr) throw incErr;
+        incomeId = (incRow as any)?.id ?? null;
 
-        const remainder = totalReceived - Number(price);
-        if (remainder > 0.001 && clientId) {
+        // 1) Close oldest debts of this client first (FIFO).
+        if (clientId && incomeId) {
+          const { data: leftoverRpc, error: debtErr } = await (supabase as any).rpc("apply_payment_to_client_debts", {
+            p_user_id: user!.id,
+            p_client_id: clientId,
+            p_income_id: incomeId,
+            p_amount: received,
+          });
+          if (debtErr) throw debtErr;
+          leftover = Number(leftoverRpc ?? 0);
+        }
+
+        // 2) Apply leftover to current session.
+        if (leftover > 0 && incomeId) {
+          const allocateToCurrent = Math.min(leftover, priceNum);
+          if (allocateToCurrent > 0) {
+            await (supabase as any).from("income_session_allocations").insert({
+              user_id: user!.id,
+              income_id: incomeId,
+              appointment_id: appointmentId,
+              allocated_amount: allocateToCurrent,
+              from_prepayment: false,
+            } as any);
+            leftover -= allocateToCurrent;
+          }
+        }
+
+        // 3) Anything still left -> prepayment credit.
+        if (leftover > 0.001 && clientId && incomeId) {
           await (supabase as any).from("client_credits").insert({
             user_id: user!.id,
             client_id: clientId,
-            income_id: (incRow as any)?.id,
-            amount: remainder,
+            income_id: incomeId,
+            amount: leftover,
             description: "Prepayment from session overpayment",
           } as any);
         }
-      } else if (paymentStatus === "waiting_for_payment") {
-        const { error: epErr } = await supabase.from("expected_payments").insert({
+      }
+
+      // 4) If current session not fully covered by allocations, create an expected_payment for the gap.
+      const { data: thisAllocs } = await (supabase as any)
+        .from("income_session_allocations")
+        .select("allocated_amount")
+        .eq("appointment_id", appointmentId);
+      const allocatedToThis = (thisAllocs ?? []).reduce((s: number, r: any) => s + Number(r.allocated_amount || 0), 0);
+      const stillOwed = Math.max(priceNum - allocatedToThis, 0);
+      if (stillOwed > 0.001) {
+        await supabase.from("expected_payments").insert({
           user_id: user!.id, appointment_id: appointmentId,
-          client_id: clientId, amount: price, status: "pending",
+          client_id: clientId, amount: stillOwed, status: "pending",
           ...(isDemoMode ? { is_demo: true } : {}),
         } as any);
-        if (epErr) throw epErr;
       }
+
+      // 5) Recalc payment_status for this appointment from allocations.
+      await (supabase as any).rpc("recalc_appointment_payment_status", { p_appointment_id: appointmentId });
     },
     onSuccess: (_d, vars) => {
       track("session_completed", { payment_status: vars.paymentStatus });
       [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
       qc.invalidateQueries({ queryKey: ["client-credit-balance"] });
+      qc.invalidateQueries({ queryKey: ["client-debt"] });
+      qc.invalidateQueries({ queryKey: ["expected-payments"] });
     },
   });
 }
@@ -2402,3 +2467,26 @@ export function useDeleteIncomeConfirmation() {
     },
   });
 }
+
+// Total outstanding debt of a client + per-session breakdown.
+export function useClientDebt(clientId: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["client-debt", clientId],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("expected_payments")
+        .select("id, amount, appointment_id, created_at, appointment:appointment_id(id, scheduled_at, price, service:service_id(name))")
+        .eq("client_id", clientId!)
+        .eq("user_id", user!.id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      const rows = (data ?? []) as any[];
+      const total = rows.reduce((s, r) => s + Number(r.amount || 0), 0);
+      return { total, items: rows };
+    },
+    enabled: !!user && !!clientId,
+  });
+}
+

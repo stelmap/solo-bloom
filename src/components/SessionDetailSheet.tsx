@@ -27,7 +27,7 @@ import {
   useCancelAppointment, useClients, useServices,
   useDeleteRecurringAppointments, useEditRecurringAppointments,
   useProfile, useCreatePriceChange, useReopenAppointment,
-  useClientCreditBalance, useCompleteFromPrepayment,
+  useClientCreditBalance, useCompleteFromPrepayment, useClientDebt,
 } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,6 +62,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const editRecurring = useEditRecurringAppointments();
   const reopenAppointment = useReopenAppointment();
   const { data: clientCredit = 0 } = useClientCreditBalance(apt?.client_id);
+  const { data: clientDebtData } = useClientDebt(apt?.client_id);
+  const clientDebt = Number(clientDebtData?.total ?? 0);
 
   // Group attendance hooks — must be before any early return
   const groupSessionId = apt?.group_session_id
@@ -428,11 +430,14 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
           amountPaid: (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") ? amountPaid : undefined,
         });
         const overpay = (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") && amountPaid > completePrice + 0.001;
+        const partial = (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") && amountPaid > 0 && amountPaid < completePrice - 0.001;
         const msg = paymentStatus === "waiting_for_payment"
           ? t("toast.sessionCompletedExpected")
           : overpay
             ? t("toast.sessionCompletedWithPrepayment", { symbol: cs, paid: amountPaid.toFixed(2), prepay: (amountPaid - completePrice).toFixed(2) })
-            : t("toast.sessionCompletedIncome", { symbol: cs, amount: completePrice.toString() });
+            : partial
+              ? t("toast.partialPaymentRecorded", { symbol: cs, paid: amountPaid.toFixed(2), debt: (completePrice - amountPaid).toFixed(2) })
+              : t("toast.sessionCompletedIncome", { symbol: cs, amount: completePrice.toString() });
         toast({ title: t("toast.appointmentCompleted"), description: msg });
       }
       onOpenChange(false);
@@ -929,7 +934,6 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 <Input type="number" step="0.01" value={completePrice} onChange={e => {
                   const v = parseFloat(e.target.value) || 0;
                   setCompletePrice(v);
-                  if (amountPaid < v) setAmountPaid(v);
                 }} />
               </div>
 
@@ -952,11 +956,21 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 <>
                   <div className="space-y-2">
                     <Label>{t("prepayment.amountReceived")}</Label>
-                    <Input type="number" step="0.01" min={completePrice} value={amountPaid}
+                    <Input type="number" step="0.01" min={0} value={amountPaid}
                       onChange={e => setAmountPaid(parseFloat(e.target.value) || 0)} />
                     {amountPaid > completePrice + 0.001 && (
                       <p className="text-xs text-success">
                         {t("prepayment.willBeStored", { symbol: cs, amount: (amountPaid - completePrice).toFixed(2) })}
+                      </p>
+                    )}
+                    {amountPaid > 0 && amountPaid < completePrice - 0.001 && (
+                      <p className="text-xs text-warning">
+                        {t("partial.willCreateDebt", { symbol: cs, paid: amountPaid.toFixed(2), debt: (completePrice - amountPaid).toFixed(2) })}
+                      </p>
+                    )}
+                    {clientDebt > 0.001 && amountPaid > 0 && (
+                      <p className="text-xs text-primary">
+                        {t("partial.willCloseDebts", { symbol: cs, debt: Math.min(clientDebt, amountPaid).toFixed(2) })}
                       </p>
                     )}
                   </div>
