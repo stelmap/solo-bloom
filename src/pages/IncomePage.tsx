@@ -23,10 +23,14 @@ import { startOfWeek, startOfMonth, format } from "date-fns";
 export default function IncomePage() {
   const [page, setPage] = useState(0);
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   // Filters
   const initialRange = searchParams.get("range") || "month";
+  const initialTab = searchParams.get("tab") === "pending" ? "pending" : "income";
+  const fromDashboard = searchParams.has("range") || searchParams.has("tab");
   const [dateRange, setDateRange] = useState(initialRange);
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   const dateFrom = useMemo(() => {
     const now = new Date();
