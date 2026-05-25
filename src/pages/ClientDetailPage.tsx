@@ -102,6 +102,33 @@ export default function ClientDetailPage() {
   const { data: creditBalance = 0 } = useClientCreditBalance(id);
   const { data: clientDebtData } = useClientDebt(id);
 
+  // Auto-apply existing prepayment credits to outstanding completed sessions for this client.
+  const autoApplyRanRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!id) return;
+    if (Number(creditBalance) <= 0) return;
+    const hasOutstanding = (appointments as any[]).some(
+      (a) => a.status === "completed" &&
+        ["waiting_for_payment", "unpaid", "partially_paid"].includes(a.payment_status),
+    );
+    if (!hasOutstanding) return;
+    const key = `${id}:${creditBalance}`;
+    if (autoApplyRanRef.current === key) return;
+    autoApplyRanRef.current = key;
+    (async () => {
+      try {
+        await (supabase as any).rpc("auto_apply_credits_to_client_outstanding", { p_client_id: id });
+      } catch (e) {
+        console.warn("auto_apply_credits_to_client_outstanding failed", e);
+      } finally {
+        ["appointments", "client-allocations", "client-credit-balance", "client-debt", "expected-payments"].forEach(
+          (k) => qc.invalidateQueries({ queryKey: [k] }),
+        );
+      }
+    })();
+  }, [id, creditBalance, appointments]);
+
+
   const { data: clientAllocs = [] } = useClientAllocations(id);
   const allocByApt = useMemo(() => {
     const map: Record<string, { paid: number; minDate: string | null }> = {};
