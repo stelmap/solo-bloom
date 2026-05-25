@@ -433,7 +433,8 @@ export default function ClientsPage() {
         )}
 
         {isLoading ? (
-          <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
+          <ListSkeleton variant="cards" count={6} />
+
         ) : filtered.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">{t("clients.noClients")}</p>
         ) : (
