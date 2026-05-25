@@ -73,7 +73,7 @@ const C = {
   trustData: { en: "Client data is protected", fr: "Données clients protégées", uk: "Дані клієнтів захищені", pl: "Dane klientów chronione" },
   trustStripe: { en: "Secure Stripe payments", fr: "Paiements sécurisés via Stripe", uk: "Безпечна оплата через Stripe", pl: "Bezpieczne płatności przez Stripe" },
   trustGdpr: { en: "GDPR-friendly", fr: "Compatible RGPD", uk: "GDPR-friendly підхід", pl: "Zgodne z RODO" },
-  trustSupport: { en: "Email & Telegram support", fr: "Support email & Telegram", uk: "Підтримка через email та Telegram", pl: "Wsparcie przez email i Telegram" },
+  trustSupport: { en: "Email support", fr: "Support email", uk: "Підтримка через email", pl: "Wsparcie przez email" },
 
   // Dashboard preview
   dpClients: { en: "Active clients", fr: "Clients actifs", uk: "Активні клієнти", pl: "Aktywni klienci" },
@@ -1570,29 +1570,15 @@ function FinalCTA() {
                   : "Email us"}
               </Button>
             </a>
-            <a
-              href={TELEGRAM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => track("cta_clicked", { source_page: "/#final", cta: "telegram", lang })}
-            >
-              <Button size="lg" variant="outline" className="gap-2">
-                <Send className="h-4 w-4" />
-                {lang === "uk" ? "Написати в Telegram"
-                  : lang === "fr" ? "Écrire sur Telegram"
-                  : lang === "pl" ? "Napisz na Telegramie"
-                  : "Telegram"}
-              </Button>
-            </a>
           </div>
           <p className="text-xs text-secondary-foreground/60 mt-5">
             {lang === "uk"
-              ? "Можете залишити заявку, написати на email або перейти в Telegram — ми відповімо зручним для вас способом."
+              ? "Можете залишити заявку або написати на email — ми відповімо зручним для вас способом."
               : lang === "fr"
-              ? "Laissez une demande, écrivez-nous par email ou sur Telegram — nous répondrons par le canal qui vous convient."
+              ? "Laissez une demande ou écrivez-nous par email — nous répondrons par le canal qui vous convient."
               : lang === "pl"
-              ? "Zostaw zgłoszenie, napisz e-mail lub na Telegramie — odpowiemy w wygodny dla Ciebie sposób."
-              : "Leave a request, email us, or message us on Telegram — we'll reply your way."}
+              ? "Zostaw zgłoszenie lub napisz e-mail — odpowiemy w wygodny dla Ciebie sposób."
+              : "Leave a request or email us — we'll reply your way."}
           </p>
         </div>
       </div>
@@ -1663,21 +1649,6 @@ function AboutContactsSection() {
                 </div>
               </div>
             </li>
-            <li className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
-              <Send className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-              <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">Telegram</div>
-                <a
-                  href={TELEGRAM_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => track("cta_clicked", { source_page: "/#contacts", cta: "telegram", lang })}
-                  className="text-foreground hover:text-primary"
-                >
-                  {TELEGRAM_HANDLE}
-                </a>
-              </div>
-            </li>
           </ul>
         </div>
       </div>
@@ -1709,7 +1680,7 @@ function LandingFooter() {
       title: isUk ? "Зв'язок" : "Get in touch",
       links: [
         { label: "Email", href: `mailto:${CONTACT_EMAIL}`, external: true },
-        { label: "Telegram", href: TELEGRAM_URL, external: true },
+        
         { label: isUk ? "Телефон" : "Phone", href: `tel:${PHONE_NUMBER.replace(/\s+/g, "")}`, external: true },
       ],
     },
