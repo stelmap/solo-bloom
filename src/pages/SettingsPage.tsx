@@ -4,6 +4,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { ProfileSection, AppearanceSection, SecuritySection, NotificationsSection } from "@/components/settings/AccountSections";
 import { ConnectedAccountsSection } from "@/components/ConnectedAccountsSection";
 import { SubscriptionSection } from "@/components/SubscriptionSection";
+import { PrivacySection } from "@/components/settings/PrivacySection";
 
 export default function SettingsPage() {
   const { t } = useLanguage();
@@ -23,6 +24,7 @@ export default function SettingsPage() {
             <TabsTrigger value="notifications">{t("settings.notifications")}</TabsTrigger>
             <TabsTrigger value="connected">{t("settings.connectedAccounts")}</TabsTrigger>
             <TabsTrigger value="subscription">{t("settings.subscriptionTab")}</TabsTrigger>
+            <TabsTrigger value="privacy">Privacy & Data</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile"><ProfileSection /></TabsContent>
@@ -31,6 +33,7 @@ export default function SettingsPage() {
           <TabsContent value="notifications"><NotificationsSection /></TabsContent>
           <TabsContent value="connected"><ConnectedAccountsSection /></TabsContent>
           <TabsContent value="subscription"><SubscriptionSection /></TabsContent>
+          <TabsContent value="privacy"><PrivacySection /></TabsContent>
         </Tabs>
       </div>
     </AppLayout>
