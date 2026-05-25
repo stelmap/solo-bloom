@@ -67,6 +67,8 @@ export function generateTaxExpensePeriods(
     let periodStart = startOfPeriodFn(startDate);
     const lastPeriodStart = startOfPeriodFn(today);
     while (periodStart <= lastPeriodStart) {
+      // Never date entries before the configured start date.
+      const entryDate = periodStart < startDate ? startDate : periodStart;
       const label = isQuarterly
         ? `Q${Math.ceil((periodStart.getMonth() + 1) / 3)} ${periodStart.getFullYear()}`
         : format(periodStart, "MMM yyyy");
@@ -75,7 +77,7 @@ export function generateTaxExpensePeriods(
         tax_name: tax.tax_name,
         category: "Tax",
         amount: Number(tax.fixed_amount) || 0,
-        date: format(periodStart, "yyyy-MM-dd"),
+        date: format(entryDate, "yyyy-MM-dd"),
         description: `${tax.tax_name} — ${label}`,
         is_recurring: true,
         frequency: tax.frequency,
@@ -92,7 +94,8 @@ export function generateTaxExpensePeriods(
   while (sourceStart <= previousPeriodStart) {
     const sourceKey = keyFn(sourceStart);
     const amount = calculateTaxAmount(tax, sourceKey, periodIncomeMap, periodExpenseMap);
-    const accrualDate = stepFn(sourceStart, 1);
+    const rawAccrual = stepFn(sourceStart, 1);
+    const accrualDate = rawAccrual < startDate ? startDate : rawAccrual;
     const sourceLabel = isQuarterly
       ? `Q${Math.ceil((sourceStart.getMonth() + 1) / 3)} ${sourceStart.getFullYear()}`
       : format(sourceStart, "MMM yyyy");
