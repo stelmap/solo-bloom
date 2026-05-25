@@ -322,6 +322,7 @@ export default function FinancialOverviewPage() {
     }
     const lines: { id: string; label: string; amount: number; isForecast?: boolean }[] = [];
     for (const tax of activeTaxes as any[]) {
+      if (!taxAppliesIn(tax, monthIdx, year, accruedQuarterKey)) continue;
       let amount = 0;
       let label = tax.tax_name;
       if (tax.frequency === "quarterly") {
