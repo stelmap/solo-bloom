@@ -351,6 +351,24 @@ export default function ClientsPage() {
           </div>
         </div>
 
+        {monthFilter && (
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs">
+              {monthFilter === "activeThisMonth" ? t("ops.activeClientsThisMonth") : t("ops.newClientsThisMonth")}
+            </Badge>
+            <button
+              onClick={() => {
+                const next = new URLSearchParams(searchParams);
+                next.delete("filter");
+                setSearchParams(next);
+              }}
+              className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
+            >
+              <X className="h-3 w-3" /> {t("common.clear")}
+            </button>
+          </div>
+        )}
+
         {isLoading ? (
           <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
         ) : filtered.length === 0 ? (
