@@ -280,11 +280,11 @@ export default function IncomePage() {
           <TabsContent value="pending">
             {epLoading ? (
               <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
-            ) : (expectedPayments as any[]).length === 0 ? (
+            ) : filteredExpected.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">{t("income.noPending")}</p>
             ) : (
               <div className="space-y-3">
-                {(expectedPayments as any[]).map((ep: any) => (
+                {filteredExpected.map((ep: any) => (
                   <div key={ep.id} className="bg-card rounded-xl border border-warning/20 p-4 flex items-center gap-4 animate-fade-in">
                     <div className="h-10 w-10 rounded-lg bg-warning/10 flex items-center justify-center">
                       <DollarSign className="h-5 w-5 text-warning" />
