@@ -85,7 +85,11 @@ export default function CalendarPage() {
   const startHour = parseInt((profile as any)?.work_hours_start || "09") || 9;
   const endHour = parseInt((profile as any)?.work_hours_end || "18") || 18;
   const use12h = (profile as any)?.time_format === "12h";
-  const hours = Array.from({ length: endHour - startHour }, (_, i) => i + startHour);
+  // Always render a full readable day range so users can scroll to later slots
+  // even when their working hours end early. Working hours are still highlighted below.
+  const displayStart = Math.min(startHour, 8);
+  const displayEnd = Math.max(endHour, 22);
+  const hours = Array.from({ length: displayEnd - displayStart }, (_, i) => i + displayStart);
 
   // Build schedule map: day_of_week -> { is_working, start_time, end_time }
   const scheduleMap = useMemo(() => {
