@@ -10,7 +10,7 @@ export const FREE_STARTER_LIMIT_ERROR = "FREE_STARTER_CLIENT_LIMIT_REACHED";
 export const PLAN_CLIENT_LIMIT_ERROR = "PLAN_CLIENT_LIMIT_REACHED";
 
 const INVALIDATE_APPOINTMENTS = ["appointments", "dashboard-stats", "client-appointments"];
-const INVALIDATE_FINANCIAL = ["income", "expenses", "expected-payments", "dashboard-stats"];
+const INVALIDATE_FINANCIAL = ["income", "expenses", "expected-payments", "dashboard-stats", "tax-accrual-status"];
 const attachDemoFlag = <T extends Record<string, any>>(payload: T, isDemoMode: boolean): T => (
   isDemoMode ? { ...payload, is_demo: true } : payload
 );
