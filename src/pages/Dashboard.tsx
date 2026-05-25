@@ -220,10 +220,10 @@ export default function Dashboard() {
                 {t("ops.todaysMoney")}
               </h3>
               <div className="grid grid-cols-2 gap-3">
-                <OverviewTile icon={DollarSign} label={t("ops.paidToday")} value={`${cs}${summary.amountReceived.toLocaleString()}`} tone="success" onClick={() => openWidget("daily_income", "/finances/income")} />
-                <OverviewTile icon={Hourglass} label={t("ops.unpaidToday")} value={`${cs}${summary.amountPending.toLocaleString()}`} tone="warning" onClick={() => openWidget("unpaid_today", "/finances/income")} />
-                <OverviewTile icon={CalendarClock} label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} onClick={() => openWidget("expected_revenue_today", "/calendar")} />
-                <OverviewTile icon={Wallet} label={t("ops.outstandingBalance")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : undefined} onClick={() => openWidget("outstanding_balance", "/finances/income")} />
+                <OverviewTile icon={DollarSign} label={t("ops.paidToday")} value={`${cs}${summary.amountReceived.toLocaleString()}`} tone="success" onClick={() => openWidget("daily_income", "/finances/income?range=today&tab=income")} />
+                <OverviewTile icon={Hourglass} label={t("ops.unpaidToday")} value={`${cs}${summary.amountPending.toLocaleString()}`} tone="warning" onClick={() => openWidget("unpaid_today", "/finances/income?range=today&tab=pending")} />
+                <OverviewTile icon={CalendarClock} label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} onClick={() => openWidget("expected_revenue_today", "/finances/income?range=today&tab=income")} />
+                <OverviewTile icon={Wallet} label={t("ops.outstandingBalance")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : undefined} onClick={() => openWidget("outstanding_balance", "/finances/income?range=all&tab=pending")} />
               </div>
 
             </div>
