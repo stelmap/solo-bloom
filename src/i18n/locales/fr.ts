@@ -165,6 +165,7 @@ export default {
   "clientDetail.resultCountSimple": "Affichage de {count} {label}",
   "clientDetail.pageOf": "Page {page} sur {total}",
   "common.previous": "Précédent",
+  "common.backToDashboard": "Retour au tableau de bord",
   "common.next": "Suivant",
   "income.paidBy": "Payé par (Client)",
   "income.selectClient": "Sélectionner un client (facultatif)",
