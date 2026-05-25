@@ -1385,11 +1385,17 @@ export function useTaxAccrualSync() {
   const { user } = useAuth();
   const { data: taxSettings = [] } = useTaxSettings();
   const generate = useGenerateTaxExpenses();
+  const lastSyncSig = useRef<string>("");
+  const inFlight = useRef(false);
 
   useEffect(() => {
     if (!user) return;
     const active = (taxSettings as any[]).filter(t => t.is_active);
     if (active.length === 0) return;
+    const sig = `${user.id}|${JSON.stringify(active.map(t => [t.id, t.tax_rate, t.fixed_amount, t.tax_type, t.frequency, t.calculate_on, t.start_calculation_date]))}`;
+    if (lastSyncSig.current === sig || inFlight.current) return;
+    lastSyncSig.current = sig;
+    inFlight.current = true;
     let cancelled = false;
 
     (async () => {
