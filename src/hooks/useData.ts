@@ -1507,11 +1507,16 @@ export function useTaxAccrualStatus() {
         const periods = generateTaxExpensePeriods(tax as any, horizon, incomeMap, expenseMap);
         const expected = periods.map(p => ({ date: p.date, amount: p.amount, description: p.description }));
         const stored = (expenseRows ?? []).filter((r: any) => r.tax_setting_id === tax.id) as any[];
-        const expectedTotal = expected.reduce((s, e) => s + Number(e.amount), 0);
-        const storedTotal = stored.reduce((s: number, r: any) => s + Number(r.amount), 0);
-        const needsUpdate = tax.tax_type === "percentage" && (
-          expected.length !== stored.length || Math.abs(expectedTotal - storedTotal) > 0.5
-        );
+        // Build a per-entry signature (date + rounded amount) so we detect
+        // ANY mismatch — added/removed periods or amount changes — not just totals.
+        const sigOf = (rows: Array<{ date: string; amount: number }>) =>
+          rows
+            .map(r => `${r.date}:${Math.round(Number(r.amount) * 100)}`)
+            .sort()
+            .join("|");
+        const expectedSig = sigOf(expected);
+        const storedSig = sigOf(stored.map((r: any) => ({ date: r.date, amount: Number(r.amount) })));
+        const needsUpdate = tax.tax_type === "percentage" && expectedSig !== storedSig;
         result[tax.id] = { needsUpdate, expected };
       }
       return result;
