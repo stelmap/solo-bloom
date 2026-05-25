@@ -218,11 +218,8 @@ export function WorkingHoursSection() {
             </div>
           ))}
         </div>
-        <div className="pt-2">
-          <Button onClick={handleSave} disabled={updateProfile.isPending || upsertSchedule.isPending}>
-            {(updateProfile.isPending || upsertSchedule.isPending) ? t("common.saving") : t("common.save")}
-          </Button>
-        </div>
+      </div>
+
       </div>
     </div>
   );
