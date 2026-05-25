@@ -1869,7 +1869,7 @@ export function useDashboardStats() {
 
       const cancelledSessionsThisMonth = monthApts.filter((a) => a.status === "cancelled").length;
 
-      const COMPLETED_REASONS = new Set(["therapy_completed", "training_completed", "service_completed"]);
+      const COMPLETED_REASONS = new Set(["completed", "therapy_completed", "training_completed", "service_completed"]);
       const DROPPED_REASONS = new Set(["client_paused", "client_stopped", "other"]);
       let completedTherapyThisMonth = 0;
       let droppedTherapyThisMonth = 0;
