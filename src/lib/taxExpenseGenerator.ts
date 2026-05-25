@@ -47,54 +47,48 @@ export function generateTaxExpensePeriods(
   const today = new Date();
 
   if (tax.frequency === "quarterly") {
-    // Iterate over each quarter that starts on/after the configured start date.
-    // Only emit an accrual entry once that quarter has fully ended.
+    // Emit one entry per quarter from the configured start date through the
+    // current quarter (inclusive). The entry date is the first day of the
+    // quarter itself so recurring taxes are visible immediately.
     let periodStart = startOfQuarter(startDate);
-    while (periodStart <= endDate) {
-      const periodEnd = endOfQuarter(periodStart);
-      const accrualDate = addQuarters(startOfQuarter(periodStart), 1); // first day of next quarter
+    const lastPeriodStart = startOfQuarter(today);
+    while (periodStart <= lastPeriodStart && periodStart <= endDate) {
       const periodKey = format(periodStart, "yyyy-'Q'") + Math.ceil((periodStart.getMonth() + 1) / 3);
       const periodLabel = `Q${Math.ceil((periodStart.getMonth() + 1) / 3)} ${periodStart.getFullYear()}`;
-
-      if (periodEnd < today && accrualDate <= endDate) {
-        const amount = calculateTaxAmount(tax, periodKey, periodIncomeMap, periodExpenseMap);
-        results.push({
-          tax_setting_id: tax.id,
-          tax_name: tax.tax_name,
-          category: "Tax",
-          amount,
-          date: format(accrualDate, "yyyy-MM-dd"),
-          description: `${tax.tax_name} — ${periodLabel}`,
-          is_recurring: true,
-          frequency: "quarterly",
-          period_label: periodLabel,
-        });
-      }
+      const amount = calculateTaxAmount(tax, periodKey, periodIncomeMap, periodExpenseMap);
+      results.push({
+        tax_setting_id: tax.id,
+        tax_name: tax.tax_name,
+        category: "Tax",
+        amount,
+        date: format(periodStart, "yyyy-MM-dd"),
+        description: `${tax.tax_name} — ${periodLabel}`,
+        is_recurring: true,
+        frequency: "quarterly",
+        period_label: periodLabel,
+      });
       periodStart = addQuarters(periodStart, 1);
     }
   } else {
-    // monthly: accrue on the first day of the next month after the period ends.
+    // Emit one entry per month from the start date through the current month
+    // (inclusive). The entry date is the first day of the month itself.
     let periodStart = startOfMonth(startDate);
-    while (periodStart <= endDate) {
-      const periodEnd = endOfMonth(periodStart);
-      const accrualDate = addMonths(startOfMonth(periodStart), 1);
+    const lastPeriodStart = startOfMonth(today);
+    while (periodStart <= lastPeriodStart && periodStart <= endDate) {
       const periodKey = format(periodStart, "yyyy-MM");
       const periodLabel = format(periodStart, "MMM yyyy");
-
-      if (periodEnd < today && accrualDate <= endDate) {
-        const amount = calculateTaxAmount(tax, periodKey, periodIncomeMap, periodExpenseMap);
-        results.push({
-          tax_setting_id: tax.id,
-          tax_name: tax.tax_name,
-          category: "Tax",
-          amount,
-          date: format(accrualDate, "yyyy-MM-dd"),
-          description: `${tax.tax_name} — ${periodLabel}`,
-          is_recurring: true,
-          frequency: "monthly",
-          period_label: periodLabel,
-        });
-      }
+      const amount = calculateTaxAmount(tax, periodKey, periodIncomeMap, periodExpenseMap);
+      results.push({
+        tax_setting_id: tax.id,
+        tax_name: tax.tax_name,
+        category: "Tax",
+        amount,
+        date: format(periodStart, "yyyy-MM-dd"),
+        description: `${tax.tax_name} — ${periodLabel}`,
+        is_recurring: true,
+        frequency: "monthly",
+        period_label: periodLabel,
+      });
       periodStart = addMonths(periodStart, 1);
     }
   }
