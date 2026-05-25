@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -1345,10 +1345,10 @@ export function useGenerateTaxExpenses() {
       entries: Array<{ date: string; amount: number; description: string }>;
     }) => {
       assertCanWrite();
-      // Delete existing generated entries for this tax
+      // Delete ALL existing generated entries for this tax (regardless of payment status)
+      // to prevent duplicates accumulating across syncs.
       await supabase.from("expenses").delete()
-        .eq("tax_setting_id", taxSettingId)
-        .eq("payment_status", "unpaid");
+        .eq("tax_setting_id", taxSettingId);
       
       // Insert new entries
       if (entries.length > 0) {
@@ -1385,11 +1385,17 @@ export function useTaxAccrualSync() {
   const { user } = useAuth();
   const { data: taxSettings = [] } = useTaxSettings();
   const generate = useGenerateTaxExpenses();
+  const lastSyncSig = useRef<string>("");
+  const inFlight = useRef(false);
 
   useEffect(() => {
     if (!user) return;
     const active = (taxSettings as any[]).filter(t => t.is_active);
     if (active.length === 0) return;
+    const sig = `${user.id}|${JSON.stringify(active.map(t => [t.id, t.tax_rate, t.fixed_amount, t.tax_type, t.frequency, t.calculate_on, t.start_calculation_date]))}`;
+    if (lastSyncSig.current === sig || inFlight.current) return;
+    lastSyncSig.current = sig;
+    inFlight.current = true;
     let cancelled = false;
 
     (async () => {
@@ -1442,6 +1448,8 @@ export function useTaxAccrualSync() {
       } catch (err) {
         // Non-fatal: surface to console but do not crash the app
         console.warn("Tax accrual sync failed", err);
+      } finally {
+        inFlight.current = false;
       }
     })();
 
