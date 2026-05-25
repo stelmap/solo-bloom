@@ -2401,6 +2401,15 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      apply_payment_to_client_debts: {
+        Args: {
+          p_amount: number
+          p_client_id: string
+          p_income_id: string
+          p_user_id: string
+        }
+        Returns: number
+      }
       check_client_revenue_consistency: {
         Args: never
         Returns: {
