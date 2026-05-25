@@ -41,7 +41,7 @@ export function DemoBanner() {
   return (
     <div className="sticky top-0 z-30 border-b border-primary/25 bg-background/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/85">
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-2.5 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2 min-w-0 md:pl-0 pl-12">
+        <div className="flex items-center gap-2 min-w-0 lg:pl-0 pl-12">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/15 px-3 py-1 text-xs font-bold uppercase text-primary whitespace-nowrap">
             <Sparkles className="h-3.5 w-3.5" />
             {badge}
