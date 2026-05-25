@@ -19,6 +19,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Plus, Trash2, CalendarOff, Image as ImageIcon } from "lucide-react";
+import { syncBookingAvailabilityFromSchedule, getInheritFlag } from "@/lib/bookingAvailabilitySync";
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, "0")}:00`);
 const DAY_FULL_KEYS = ["day.monday", "day.tuesday", "day.wednesday", "day.thursday", "day.friday", "day.saturday", "day.sunday"] as const;
