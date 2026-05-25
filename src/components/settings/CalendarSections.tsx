@@ -19,6 +19,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Plus, Trash2, CalendarOff, Image as ImageIcon } from "lucide-react";
+import { syncBookingAvailabilityFromSchedule, getInheritFlag } from "@/lib/bookingAvailabilitySync";
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, "0")}:00`);
 const DAY_FULL_KEYS = ["day.monday", "day.tuesday", "day.wednesday", "day.thursday", "day.friday", "day.saturday", "day.sunday"] as const;
@@ -29,6 +30,7 @@ const DEFAULT_SCHEDULE = Array.from({ length: 7 }, (_, i) => ({
 export function WorkingHoursSection() {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { user } = useAuth();
   const { data: profile } = useProfile();
   const updateProfile = useUpdateProfile();
   const { data: workingSchedule } = useWorkingSchedule();
@@ -69,6 +71,10 @@ export function WorkingHoursSection() {
         updateProfile.mutateAsync(form),
         upsertSchedule.mutateAsync(schedule),
       ]);
+      // Mirror working schedule to public booking availability when inheritance is ON
+      if (user && getInheritFlag(user.id)) {
+        try { await syncBookingAvailabilityFromSchedule(user.id, schedule); } catch {}
+      }
       toast({ title: t("settings.saved") });
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });

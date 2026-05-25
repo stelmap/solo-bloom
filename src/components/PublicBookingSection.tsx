@@ -11,8 +11,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import { Copy, RefreshCw, Loader2, ExternalLink } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { useWorkingSchedule } from "@/hooks/useData";
+import {
+  syncBookingAvailabilityFromSchedule,
+  getInheritFlag,
+  setInheritFlag,
+  dowToWeekday,
+} from "@/lib/bookingAvailabilitySync";
 
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WEEKDAY_KEYS = [
+  "day.sunday", "day.monday", "day.tuesday", "day.wednesday",
+  "day.thursday", "day.friday", "day.saturday",
+] as const;
 
 export function PublicBookingSection() {
   const { user } = useAuth();
@@ -278,11 +289,37 @@ function AvailabilityCard({
   availability: any[];
 }) {
   const qc = useQueryClient();
+  const { t } = useLanguage();
+  const { data: workingSchedule } = useWorkingSchedule();
+
+  const tx = (key: string, fallback: string) => {
+    const v = t(key as any);
+    return !v || v === key ? fallback : v;
+  };
+
+  const [inherit, setInheritState] = useState<boolean>(() => getInheritFlag(userId));
+  useEffect(() => { setInheritState(getInheritFlag(userId)); }, [userId]);
+
   const byDay = useMemo(() => {
     const m: Record<number, any> = {};
     for (const r of availability) m[r.weekday] = r;
     return m;
   }, [availability]);
+
+  // When inheritance is ON, derive display rows from the working schedule
+  const inheritedByDay = useMemo(() => {
+    const m: Record<number, { is_enabled: boolean; start_time: string; end_time: string }> = {};
+    if (workingSchedule && workingSchedule.length > 0) {
+      for (const ws of workingSchedule) {
+        m[dowToWeekday(ws.day_of_week)] = {
+          is_enabled: ws.is_working,
+          start_time: ws.start_time,
+          end_time: ws.end_time,
+        };
+      }
+    }
+    return m;
+  }, [workingSchedule]);
 
   // shared settings come from first row, or sensible defaults
   const shared = availability[0] || {
@@ -304,6 +341,26 @@ function AvailabilityCard({
       setMaxHorizon(availability[0].max_horizon_days);
     }
   }, [availability]);
+
+  // Auto-sync booking_availability from working schedule when inheritance is ON
+  useEffect(() => {
+    if (!userId || !inherit || !workingSchedule || workingSchedule.length === 0) return;
+    syncBookingAvailabilityFromSchedule(userId, workingSchedule).then(() => {
+      qc.invalidateQueries({ queryKey: ["booking_availability", userId] });
+    }).catch(() => {});
+  }, [userId, inherit, workingSchedule, qc]);
+
+  const handleToggleInherit = (on: boolean) => {
+    if (!userId) return;
+    setInheritFlag(userId, on);
+    setInheritState(on);
+    if (on && workingSchedule && workingSchedule.length > 0) {
+      syncBookingAvailabilityFromSchedule(userId, workingSchedule).then(() => {
+        qc.invalidateQueries({ queryKey: ["booking_availability", userId] });
+        toast({ title: tx("settings.bookingInheritedFromSchedule", "Public booking now follows your working schedule") });
+      }).catch(() => {});
+    }
+  };
 
   const upsertDay = useMutation({
     mutationFn: async (row: {
@@ -351,72 +408,115 @@ function AvailabilityCard({
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: "Saved" });
+      toast({ title: tx("common.saved", "Saved") });
       qc.invalidateQueries({ queryKey: ["booking_availability", userId] });
     },
   });
 
+  const displayRow = (weekday: number) => {
+    if (inherit) {
+      const ws = inheritedByDay[weekday];
+      return {
+        enabled: !!ws?.is_enabled,
+        start: (ws?.start_time || "09:00").slice(0, 5),
+        end: (ws?.end_time || "18:00").slice(0, 5),
+      };
+    }
+    const row = byDay[weekday];
+    return {
+      enabled: !!row?.is_enabled,
+      start: row?.start_time?.slice(0, 5) || "09:00",
+      end: row?.end_time?.slice(0, 5) || "18:00",
+    };
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Availability</CardTitle>
-        <CardDescription>Days, hours and rules used to compute the free slots shown to clients.</CardDescription>
+        <CardTitle>{tx("settings.availability", "Availability")}</CardTitle>
+        <CardDescription>
+          {tx("settings.availabilityDesc", "Days, hours and rules used to compute the free slots shown to clients.")}
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        <div className="flex items-start gap-3 p-3 rounded-lg border bg-muted/30">
+          <Checkbox
+            id="inherit-schedule"
+            checked={inherit}
+            onCheckedChange={(v) => handleToggleInherit(!!v)}
+            className="mt-0.5"
+          />
+          <div className="flex-1">
+            <Label htmlFor="inherit-schedule" className="cursor-pointer">
+              {tx("settings.useWorkingScheduleForBooking", "Use my working schedule for public booking")}
+            </Label>
+            <p className="text-xs text-muted-foreground mt-1">
+              {tx(
+                "settings.useWorkingScheduleForBookingHelper",
+                "Public booking uses your working schedule by default. You can customize it if you want to offer fewer public booking slots than your full working hours.",
+              )}
+            </p>
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="space-y-1">
-            <Label className="text-xs">Session length (min)</Label>
+            <Label className="text-xs">{tx("settings.sessionLength", "Session length (min)")}</Label>
             <Input type="number" value={duration} onChange={(e) => setDuration(Number(e.target.value))} min={15} max={240} />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">Buffer (min)</Label>
+            <Label className="text-xs">{tx("settings.bufferMin", "Buffer (min)")}</Label>
             <Input type="number" value={buffer} onChange={(e) => setBuffer(Number(e.target.value))} min={0} max={120} />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">Min notice (hours)</Label>
+            <Label className="text-xs">{tx("settings.minNoticeHours", "Min notice (hours)")}</Label>
             <Input type="number" value={minNotice} onChange={(e) => setMinNotice(Number(e.target.value))} min={0} max={336} />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">Max horizon (days)</Label>
+            <Label className="text-xs">{tx("settings.maxHorizonDays", "Max horizon (days)")}</Label>
             <Input type="number" value={maxHorizon} onChange={(e) => setMaxHorizon(Number(e.target.value))} min={1} max={365} />
           </div>
         </div>
         <Button size="sm" variant="outline" onClick={() => saveShared.mutate()} disabled={saveShared.isPending}>
           {saveShared.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          Save rules
+          {tx("settings.saveRules", "Save rules")}
         </Button>
 
         <div className="space-y-2 pt-2 border-t">
-          {WEEKDAYS.map((label, weekday) => {
-            const row = byDay[weekday];
-            const enabled = !!row?.is_enabled;
-            const start = row?.start_time?.slice(0, 5) || "09:00";
-            const end = row?.end_time?.slice(0, 5) || "18:00";
+          {inherit && (
+            <p className="text-xs text-muted-foreground italic pb-1">
+              {tx("settings.inheritedReadOnly", "Inherited from your working schedule. Uncheck the option above to customize.")}
+            </p>
+          )}
+          {WEEKDAY_KEYS.map((dayKey, weekday) => {
+            const { enabled, start, end } = displayRow(weekday);
+            const disabled = inherit;
             return (
               <div key={weekday} className="flex items-center gap-3 py-1">
-                <div className="flex items-center gap-2 w-24">
+                <div className="flex items-center gap-2 w-32">
                   <Checkbox
                     checked={enabled}
+                    disabled={disabled}
                     onCheckedChange={(v) =>
                       upsertDay.mutate({ weekday, is_enabled: !!v, start_time: start, end_time: end })
                     }
                   />
-                  <span className="text-sm w-10">{label}</span>
+                  <span className="text-sm">{tx(dayKey, dayKey)}</span>
                 </div>
                 <Input
                   type="time"
                   value={start}
-                  disabled={!enabled}
+                  disabled={disabled || !enabled}
                   onChange={(e) =>
                     upsertDay.mutate({ weekday, is_enabled: enabled, start_time: e.target.value, end_time: end })
                   }
                   className="w-28"
                 />
-                <span className="text-muted-foreground text-xs">to</span>
+                <span className="text-muted-foreground text-xs">{tx("common.to", "to")}</span>
                 <Input
                   type="time"
                   value={end}
-                  disabled={!enabled}
+                  disabled={disabled || !enabled}
                   onChange={(e) =>
                     upsertDay.mutate({ weekday, is_enabled: enabled, start_time: start, end_time: e.target.value })
                   }
