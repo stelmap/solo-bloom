@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,9 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
-import { Copy, RefreshCw, Loader2, ExternalLink } from "lucide-react";
+import { Copy, RefreshCw, Loader2, ExternalLink, Check } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useWorkingSchedule } from "@/hooks/useData";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import {
   syncBookingAvailabilityFromSchedule,
   getInheritFlag,
@@ -171,34 +172,30 @@ export function PublicBookingSection() {
 
           <div className="space-y-2">
             <Label htmlFor="bk-slug">Custom handle (optional)</Label>
-            <div className="flex gap-2">
-              <div className="flex items-stretch flex-1 rounded-md border border-input overflow-hidden focus-within:ring-2 focus-within:ring-ring">
-                <span className="px-3 flex items-center text-xs text-muted-foreground bg-muted border-r border-input whitespace-nowrap">
-                  {typeof window !== "undefined" ? window.location.host : ""}/book/
-                </span>
-                <input
-                  id="bk-slug"
-                  value={slugInput}
-                  onChange={(e) => setSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
-                  placeholder="your-name"
-                  maxLength={40}
-                  className="flex-1 px-3 py-2 text-sm bg-background outline-none"
-                />
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={setSlug.isPending || slugInput === ((link as any)?.slug ?? "")}
-                onClick={() => setSlug.mutate(slugInput)}
-              >
-                {setSlug.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
-              </Button>
+            <div className="flex items-stretch rounded-md border border-input overflow-hidden focus-within:ring-2 focus-within:ring-ring">
+              <span className="px-3 flex items-center text-xs text-muted-foreground bg-muted border-r border-input whitespace-nowrap">
+                {typeof window !== "undefined" ? window.location.host : ""}/book/
+              </span>
+              <input
+                id="bk-slug"
+                value={slugInput}
+                onChange={(e) => setSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                onBlur={() => {
+                  if (slugInput !== ((link as any)?.slug ?? "")) setSlug.mutate(slugInput);
+                }}
+                placeholder="your-name"
+                maxLength={40}
+                className="flex-1 px-3 py-2 text-sm bg-background outline-none"
+              />
+              <span className="px-3 flex items-center text-xs text-muted-foreground">
+                {setSlug.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+              </span>
             </div>
             <p className="text-xs text-muted-foreground">
               3–40 chars: lowercase letters, digits, hyphens. Leave empty to fall back to the auto-generated secret link.
             </p>
           </div>
+
 
 
           <div className="space-y-2">
@@ -394,24 +391,34 @@ function AvailabilityCard({
   });
 
   const saveShared = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (vals: { duration: number; buffer: number; minNotice: number; maxHorizon: number }) => {
       if (!userId) return;
       const { error } = await supabase
         .from("booking_availability")
         .update({
-          session_duration_minutes: duration,
-          buffer_minutes: buffer,
-          min_notice_hours: minNotice,
-          max_horizon_days: maxHorizon,
+          session_duration_minutes: vals.duration,
+          buffer_minutes: vals.buffer,
+          min_notice_hours: vals.minNotice,
+          max_horizon_days: vals.maxHorizon,
         })
         .eq("user_id", userId);
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: tx("common.saved", "Saved") });
       qc.invalidateQueries({ queryKey: ["booking_availability", userId] });
     },
   });
+
+  // Autosave shared rules (debounced) once values are hydrated
+  const debouncedRules = useDebouncedValue({ duration, buffer, minNotice, maxHorizon }, 700);
+  const rulesHydrated = useRef(false);
+  useEffect(() => {
+    if (!userId || availability.length === 0) return;
+    if (!rulesHydrated.current) { rulesHydrated.current = true; return; }
+    saveShared.mutate(debouncedRules);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedRules, userId]);
+
 
   const displayRow = (weekday: number) => {
     if (inherit) {
@@ -477,10 +484,14 @@ function AvailabilityCard({
             <Input type="number" value={maxHorizon} onChange={(e) => setMaxHorizon(Number(e.target.value))} min={1} max={365} />
           </div>
         </div>
-        <Button size="sm" variant="outline" onClick={() => saveShared.mutate()} disabled={saveShared.isPending}>
-          {saveShared.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          {tx("settings.saveRules", "Save rules")}
-        </Button>
+        <p className="text-xs text-muted-foreground inline-flex items-center gap-1">
+          {saveShared.isPending ? (
+            <><Loader2 className="h-3 w-3 animate-spin" /> {tx("common.saving", "Saving…")}</>
+          ) : (
+            <><Check className="h-3 w-3 text-primary" /> {tx("settings.autosaved", "Changes save automatically")}</>
+          )}
+        </p>
+
 
         <div className="space-y-2 pt-2 border-t">
           {inherit && (
