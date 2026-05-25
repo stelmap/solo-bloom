@@ -27,7 +27,7 @@ import {
   useCancelAppointment, useClients, useServices,
   useDeleteRecurringAppointments, useEditRecurringAppointments,
   useProfile, useCreatePriceChange, useReopenAppointment,
-  useClientCreditBalance, useCompleteFromPrepayment,
+  useClientCreditBalance, useCompleteFromPrepayment, useClientDebt,
 } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
