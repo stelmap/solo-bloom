@@ -615,8 +615,9 @@ export default function CalendarPage() {
 
   return (
     <AppLayout>
-      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
-        <div className="space-y-6 flex-1 min-w-0">
+      <div className="flex flex-col gap-6">
+        <section className="space-y-6 flex-1 min-w-0" aria-label="Calendar">
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("calendar.title")}</h1>
