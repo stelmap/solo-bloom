@@ -56,10 +56,12 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const updateAppointment = useUpdateAppointment();
   const deleteAppointment = useDeleteAppointment();
   const completeAppointment = useCompleteAppointment();
+  const completeFromPrepayment = useCompleteFromPrepayment();
   const cancelAppointment = useCancelAppointment();
   const deleteRecurring = useDeleteRecurringAppointments();
   const editRecurring = useEditRecurringAppointments();
   const reopenAppointment = useReopenAppointment();
+  const { data: clientCredit = 0 } = useClientCreditBalance(apt?.client_id);
 
   // Group attendance hooks — must be before any early return
   const groupSessionId = apt?.group_session_id
