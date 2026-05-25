@@ -30,6 +30,7 @@ const DEFAULT_SCHEDULE = Array.from({ length: 7 }, (_, i) => ({
 export function WorkingHoursSection() {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { user } = useAuth();
   const { data: profile } = useProfile();
   const updateProfile = useUpdateProfile();
   const { data: workingSchedule } = useWorkingSchedule();
