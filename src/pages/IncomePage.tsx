@@ -198,7 +198,7 @@ export default function IncomePage() {
           <div className="bg-card rounded-xl border border-warning/30 p-5 animate-fade-in">
             <p className="text-sm text-warning">{t("income.pendingPayments")}</p>
             <p className="text-2xl font-bold text-warning mt-1">{cs}{pendingTotal.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("income.awaitingPayment", { count: (expectedPayments as any[]).length })}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("income.awaitingPayment", { count: filteredExpected.length })}</p>
           </div>
           <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
             <p className="text-sm text-muted-foreground">{t("finance.expectedIncome")}</p>
@@ -206,13 +206,13 @@ export default function IncomePage() {
           </div>
         </div>
 
-        <Tabs defaultValue="income" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="income">{t("income.confirmedIncome")}</TabsTrigger>
             <TabsTrigger value="pending">
               {t("income.expectedPayments")}
-              {(expectedPayments as any[]).length > 0 && (
-                <Badge className="ml-2 bg-warning/20 text-warning text-xs">{(expectedPayments as any[]).length}</Badge>
+              {filteredExpected.length > 0 && (
+                <Badge className="ml-2 bg-warning/20 text-warning text-xs">{filteredExpected.length}</Badge>
               )}
             </TabsTrigger>
           </TabsList>
