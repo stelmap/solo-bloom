@@ -24,7 +24,7 @@ export function ArchiveClientDialog({ open, onOpenChange, clientId, clientName, 
   const { toast } = useToast();
   const archive = useArchiveClient();
   const { data: futureAppointments = [] } = useClientFutureAppointments(open ? clientId : undefined);
-  const [reason, setReason] = useState<string>("therapy_completed");
+  const [reason, setReason] = useState<string>("completed");
   const [comment, setComment] = useState("");
   const [futureAction, setFutureAction] = useState<"keep" | "cancel">("keep");
 
