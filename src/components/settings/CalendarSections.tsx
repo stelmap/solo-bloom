@@ -399,17 +399,17 @@ export function PracticeProfileSection() {
     }
   }, [profile]);
 
-  const debouncedForm = useDebouncedValue(form, 600);
   const [savedAt, setSavedAt] = useState<number | null>(null);
-  const hydrated = useRef(false);
-  useEffect(() => {
-    if (!profile) return;
-    if (!hydrated.current) { hydrated.current = true; return; }
-    updateProfile.mutateAsync(debouncedForm)
-      .then(() => setSavedAt(Date.now()))
-      .catch((e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedForm]);
+
+  const handleSave = async () => {
+    try {
+      await updateProfile.mutateAsync(form);
+      setSavedAt(Date.now());
+      toast({ title: t("settings.saved") });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
 
   return (
     <div className="bg-card rounded-xl border border-border p-6 space-y-4">
@@ -431,6 +431,12 @@ export function PracticeProfileSection() {
           <div className="space-y-2"><Label>{t("common.phone")}</Label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
           <div className="space-y-2"><Label>{t("settings.businessAddress")}</Label><Input value={form.business_address} onChange={e => setForm(f => ({ ...f, business_address: e.target.value }))} /></div>
         </div>
+      </div>
+
+      <div className="flex justify-end pt-2">
+        <Button onClick={handleSave} disabled={updateProfile.isPending}>
+          {updateProfile.isPending ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("common.saving")}</>) : t("common.save")}
+        </Button>
       </div>
     </div>
   );
