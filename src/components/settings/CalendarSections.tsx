@@ -213,6 +213,12 @@ export function WorkingHoursSection() {
           ))}
         </div>
       </div>
+
+      <div className="flex justify-end">
+        <Button onClick={handleSave} disabled={isPending}>
+          {isPending ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("common.saving")}</>) : t("common.save")}
+        </Button>
+      </div>
     </div>
   );
 }
