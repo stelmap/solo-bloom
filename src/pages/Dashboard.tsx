@@ -336,28 +336,33 @@ function OverviewTile({
     tone === "success" ? "text-success" :
     tone === "warning" ? "text-warning" :
     "text-foreground";
-  const base = "bg-card border border-border rounded-xl p-4 animate-fade-in text-left w-full";
-  const interactive = onClick
-    ? "cursor-pointer transition-colors hover:bg-muted/40 hover:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-ring"
-    : "";
+  const base = "relative bg-card border border-border rounded-xl p-4 animate-fade-in text-left w-full block";
+  const interactive =
+    "cursor-pointer transition-all hover:bg-muted/50 hover:border-foreground/30 hover:shadow-sm hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background group";
   const content = (
     <>
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <Icon className="h-4 w-4" />
-        <p className="text-xs">{label}</p>
+      <div className="flex items-center justify-between gap-2 text-muted-foreground">
+        <div className="flex items-center gap-2 min-w-0">
+          <Icon className="h-4 w-4 shrink-0" />
+          <p className="text-xs truncate">{label}</p>
+        </div>
+        {onClick && (
+          <ArrowRight className="h-3.5 w-3.5 shrink-0 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+        )}
       </div>
       <p className={cn("text-xl font-bold mt-1.5", toneClass)}>{value}</p>
     </>
   );
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} className={cn(base, interactive)}>
+      <button type="button" onClick={onClick} className={cn(base, interactive)} aria-label={`${label}: ${value}. View details`}>
         {content}
       </button>
     );
   }
-  return <div className={base}>{content}</div>;
+  return <div className={base} aria-disabled="true">{content}</div>;
 }
+
 
 
 function NowNextCard({
