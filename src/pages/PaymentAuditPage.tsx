@@ -1,4 +1,5 @@
 import { AppLayout } from "@/components/AppLayout";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ClientPicker } from "@/components/ClientPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

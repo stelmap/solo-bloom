@@ -161,9 +161,14 @@ export default function GroupDetailPage() {
     }
   };
 
-  if (!groupLoading && !group) {
+  if (groupLoading) {
+    return <AppLayout><ListSkeleton variant="rows" count={5} /></AppLayout>;
+  }
+
+  if (!group) {
     return <AppLayout><p className="text-muted-foreground text-center py-12">{t("groups.notFound")}</p></AppLayout>;
   }
+
 
 
   return (
