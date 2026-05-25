@@ -81,6 +81,29 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
     };
   };
 
+  const downloadPdf = (doc: any, filename: string) => {
+    try {
+      const blob: Blob = doc.output("blob");
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch {
+      // Fallback: open in a new tab so the user can save manually
+      try {
+        const dataUri = doc.output("datauristring");
+        window.open(dataUri, "_blank", "noopener");
+      } catch {
+        doc.save(filename);
+      }
+    }
+  };
+
   const handleGenerate = async () => {
     setGenerating(true);
     try {
@@ -90,7 +113,7 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
         language: lang as Language,
       };
       const doc = generateInvoicePdf(invoiceData);
-      doc.save(`invoice_${result.invoice_number.replace(/\//g, "-")}.pdf`);
+      downloadPdf(doc, `invoice_${result.invoice_number.replace(/\//g, "-")}.pdf`);
       track("invoice_downloaded", { kind: "new" });
       toast({ title: t("invoice.generated") });
     } catch (e: any) {
@@ -102,7 +125,7 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
 
   const handleDownloadExisting = (invoice: any) => {
     const doc = generateInvoicePdf({ ...invoice, language: invoice.language as Language });
-    doc.save(`invoice_${invoice.invoice_number.replace(/\//g, "-")}.pdf`);
+    downloadPdf(doc, `invoice_${invoice.invoice_number.replace(/\//g, "-")}.pdf`);
     track("invoice_downloaded", { kind: "existing" });
   };
 
