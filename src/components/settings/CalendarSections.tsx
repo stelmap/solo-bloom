@@ -13,6 +13,7 @@ import {
   useDaysOff, useCreateDayOff, useDeleteDayOff, useBulkCancelForDayOff,
 } from "@/hooks/useData";
 import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
