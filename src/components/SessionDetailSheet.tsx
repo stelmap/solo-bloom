@@ -92,6 +92,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
   // Complete form
   const [completePrice, setCompletePrice] = useState(0);
+  const [amountPaid, setAmountPaid] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [paymentStatus, setPaymentStatus] = useState("paid_now");
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
