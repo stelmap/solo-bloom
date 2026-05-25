@@ -11,11 +11,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import {
   useProfile, useUpdateProfile,
   useTaxSettings, useCreateTaxSetting, useUpdateTaxSetting, useDeleteTaxSetting,
+  useTaxAccrualStatus, useGenerateTaxExpenses,
 } from "@/hooks/useData";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
-import { Receipt, Plus, Trash2, Pencil } from "lucide-react";
+import { Receipt, Plus, Trash2, Pencil, RefreshCw, AlertCircle } from "lucide-react";
 import { nextAccrualDate } from "@/lib/taxExpenseGenerator";
 import { Link } from "react-router-dom";
 
