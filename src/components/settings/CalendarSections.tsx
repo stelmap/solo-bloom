@@ -219,8 +219,6 @@ export function WorkingHoursSection() {
           ))}
         </div>
       </div>
-
-      </div>
     </div>
   );
 }
