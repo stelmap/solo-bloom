@@ -377,9 +377,12 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   };
 
   const openComplete = () => {
-    setCompletePrice(Number(apt.price));
+    const p = Number(apt.price);
+    setCompletePrice(p);
+    setAmountPaid(p);
     setPaymentMethod("cash");
-    setPaymentStatus("paid_now");
+    // Auto-select prepayment if client has any credit (covers full or partial).
+    setPaymentStatus(hasPrepayment && !isGroupSession ? "paid_from_prepayment" : "paid_now");
     setGroupPaymentState("paid_now");
     setGroupPaymentMethod("cash");
     setMode("complete");
@@ -407,13 +410,29 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
           paymentMethod: groupPaymentMethod,
         });
         toast({ title: t("groups.sessionCompleted") });
+      } else if (paymentStatus === "paid_from_prepayment") {
+        const consumed = await completeFromPrepayment.mutateAsync({
+          appointmentId: apt.id, clientId: apt.client_id, price: completePrice,
+        });
+        const fullyCovered = consumed + 0.001 >= completePrice;
+        toast({
+          title: t("toast.appointmentCompleted"),
+          description: fullyCovered
+            ? t("toast.sessionCompletedFromPrepayment", { symbol: cs, amount: completePrice.toFixed(2) })
+            : t("toast.sessionCompletedFromPrepaymentPartial", { symbol: cs, covered: consumed.toFixed(2), remaining: (completePrice - consumed).toFixed(2) }),
+        });
       } else {
         await completeAppointment.mutateAsync({
           appointmentId: apt.id, clientId: apt.client_id,
           price: completePrice, paymentMethod, paymentStatus, paymentDate,
+          amountPaid: (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") ? amountPaid : undefined,
         });
+        const overpay = (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") && amountPaid > completePrice + 0.001;
         const msg = paymentStatus === "waiting_for_payment"
-          ? t("toast.sessionCompletedExpected") : t("toast.sessionCompletedIncome", { symbol: cs, amount: completePrice.toString() });
+          ? t("toast.sessionCompletedExpected")
+          : overpay
+            ? t("toast.sessionCompletedWithPrepayment", { symbol: cs, paid: amountPaid.toFixed(2), prepay: (amountPaid - completePrice).toFixed(2) })
+            : t("toast.sessionCompletedIncome", { symbol: cs, amount: completePrice.toString() });
         toast({ title: t("toast.appointmentCompleted"), description: msg });
       }
       onOpenChange(false);
