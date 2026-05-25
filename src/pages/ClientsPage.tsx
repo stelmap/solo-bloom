@@ -20,6 +20,25 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useFreeStarterMode } from "@/hooks/useDemoWorkspace";
 import { PaywallDialog } from "@/components/PaywallDialog";
 
+const getArchiveReasonLabel = (reason: string, t: any) => {
+  const keyMap: Record<string, string> = {
+    completed: "archive.reason.completed",
+    client_paused: "archive.reason.clientPaused",
+    client_stopped: "archive.reason.clientStopped",
+    other: "archive.reason.other",
+  };
+  return t(keyMap[reason] ?? "archive.reason.other");
+};
+
+const getArchiveReasonVariant = (reason: string): "default" | "secondary" | "destructive" | "outline" => {
+  switch (reason) {
+    case "completed": return "default";
+    case "client_paused": return "outline";
+    case "client_stopped": return "destructive";
+    default: return "secondary";
+  }
+};
+
 const ClientCard = memo(({ client, onNavigate, onDelete, onArchive, onUnarchive, t }: {
   client: any; onNavigate: (id: string) => void;
   onDelete?: (id: string) => void;
@@ -66,9 +85,13 @@ const ClientCard = memo(({ client, onNavigate, onDelete, onArchive, onUnarchive,
         {client.name.split(" ").map((n: string) => n[0]).join("").toUpperCase()}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <h3 className="font-semibold text-foreground truncate">{client.name}</h3>
-          {isArchived && <Badge variant="secondary" className="text-[10px]">{t("archive.badge")}</Badge>}
+          {isArchived && (
+            <Badge variant={getArchiveReasonVariant(client.archive_reason)} className="text-[10px]">
+              {getArchiveReasonLabel(client.archive_reason, t)}
+            </Badge>
+          )}
         </div>
       </div>
     </div>
