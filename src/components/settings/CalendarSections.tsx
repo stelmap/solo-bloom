@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,9 +16,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { Plus, Trash2, CalendarOff, Image as ImageIcon } from "lucide-react";
+import { Plus, Trash2, CalendarOff, Image as ImageIcon, Check, Loader2 } from "lucide-react";
 import { syncBookingAvailabilityFromSchedule, getInheritFlag } from "@/lib/bookingAvailabilitySync";
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, "0")}:00`);
@@ -26,6 +27,33 @@ const DAY_FULL_KEYS = ["day.monday", "day.tuesday", "day.wednesday", "day.thursd
 const DEFAULT_SCHEDULE = Array.from({ length: 7 }, (_, i) => ({
   day_of_week: i + 1, is_working: i < 5, start_time: "09:00", end_time: "18:00",
 }));
+
+function SaveStatus({ pending, savedAt }: { pending: boolean; savedAt: number | null }) {
+  const { t } = useLanguage();
+  const [showSaved, setShowSaved] = useState(false);
+  useEffect(() => {
+    if (savedAt) {
+      setShowSaved(true);
+      const id = setTimeout(() => setShowSaved(false), 1500);
+      return () => clearTimeout(id);
+    }
+  }, [savedAt]);
+  if (pending) {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+        <Loader2 className="h-3 w-3 animate-spin" /> {t("common.saving")}
+      </span>
+    );
+  }
+  if (showSaved) {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+        <Check className="h-3 w-3 text-primary" /> {t("settings.saved")}
+      </span>
+    );
+  }
+  return null;
+}
 
 export function WorkingHoursSection() {
   const { t } = useLanguage();
