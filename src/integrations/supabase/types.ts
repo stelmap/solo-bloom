@@ -2410,6 +2410,10 @@ export type Database = {
         }
         Returns: number
       }
+      auto_apply_credits_to_client_outstanding: {
+        Args: { p_client_id: string }
+        Returns: number
+      }
       check_client_revenue_consistency: {
         Args: never
         Returns: {
