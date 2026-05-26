@@ -821,12 +821,36 @@ export default function CalendarPage() {
               <DialogContent className="max-h-[85vh] overflow-y-auto">
                 <DialogHeader><DialogTitle>{t("calendar.newAppointment")}</DialogTitle></DialogHeader>
                 <div className="space-y-4">
+                  {/* First-session helper (shown only when no appointments yet) */}
+                  {appointments.length === 0 && (
+                    <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+                      <p className="text-sm font-semibold">{L.createFirstTitle}</p>
+                      <p className="text-xs text-muted-foreground">{L.createFirstDesc}</p>
+                      <ul className="text-xs text-muted-foreground space-y-1 pt-1">
+                        {[
+                          { ok: !!form.client_id || (isGroupSession && !!groupId), label: L.stepAddClient },
+                          { ok: !!form.service_id, label: L.stepAddService },
+                          { ok: !!form.date && !!form.time, label: L.stepDateTime },
+                          { ok: false, label: L.stepSave },
+                        ].map((s, i) => (
+                          <li key={i} className="flex items-center gap-2">
+                            {s.ok
+                              ? <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                              : <Circle className="h-3.5 w-3.5 text-muted-foreground/60" />}
+                            <span className={s.ok ? "text-foreground" : ""}>{s.label}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
                   {/* Group session toggle */}
                   {activeGroups.length > 0 && (
                     <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/30 border border-border">
                       <Checkbox id="groupSession" checked={isGroupSession} onCheckedChange={v => { setIsGroupSession(!!v); if (!v) setGroupId(""); }} />
-                      <Label htmlFor="groupSession" className="flex items-center gap-1 cursor-pointer">
-                        <Users className="h-3.5 w-3.5" /> {t("groups.groupSession")}
+                      <Label htmlFor="groupSession" className="flex items-center gap-2 cursor-pointer">
+                        <Users className="h-3.5 w-3.5 shrink-0" />
+                        <span>{t("groups.groupSession")}</span>
                       </Label>
                     </div>
                   )}
@@ -848,24 +872,53 @@ export default function CalendarPage() {
                   ) : (
                     <div className="space-y-2">
                       <Label>{t("calendar.client")} *</Label>
-                      <ClientPicker
-                        clients={clients}
-                        value={form.client_id}
-                        onChange={v => setForm(f => ({ ...f, client_id: v }))}
-                        placeholder={t("calendar.selectClient")}
-                      />
+                      {clients.length === 0 ? (
+                        <div className="rounded-md border border-dashed border-border p-3 space-y-2 bg-muted/20">
+                          <p className="text-sm text-muted-foreground">{L.noClientsYet}</p>
+                          <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setQaClientOpen(true)}>
+                            <UserPlus className="h-4 w-4" /> {L.addNewClient}
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          <ClientPicker
+                            clients={clients}
+                            value={form.client_id}
+                            onChange={v => setForm(f => ({ ...f, client_id: v }))}
+                            placeholder={t("calendar.selectClient")}
+                          />
+                          <Button type="button" variant="ghost" size="sm" className="h-auto p-0 text-xs text-primary gap-1" onClick={() => setQaClientOpen(true)}>
+                            <UserPlus className="h-3.5 w-3.5" /> {L.addNewClient}
+                          </Button>
+                        </>
+                      )}
                     </div>
                   )}
                   <div className="space-y-2">
                     <Label>{t("calendar.service")} *</Label>
-                    <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); }}>
-                      <SelectTrigger className={serviceError ? "border-destructive" : ""}><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
-                      <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
-                    </Select>
-                    {serviceError && (
-                      <p className="text-sm text-destructive">⚠️ {t("calendar.service")} is required</p>
+                    {services.length === 0 ? (
+                      <div className="rounded-md border border-dashed border-border p-3 space-y-2 bg-muted/20">
+                        <p className="text-sm text-muted-foreground">{L.noServicesYet}</p>
+                        <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setQaServiceOpen(true)}>
+                          <Briefcase className="h-4 w-4" /> {L.addNewService}
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); }}>
+                          <SelectTrigger className={serviceError ? "border-destructive" : ""}><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
+                          <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
+                        </Select>
+                        <Button type="button" variant="ghost" size="sm" className="h-auto p-0 text-xs text-primary gap-1" onClick={() => setQaServiceOpen(true)}>
+                          <Briefcase className="h-3.5 w-3.5" /> {L.addNewService}
+                        </Button>
+                        {serviceError && (
+                          <p className="text-sm text-destructive">⚠️ {t("calendar.service")} is required</p>
+                        )}
+                      </>
                     )}
                   </div>
+
                   <DateTimePicker
                     date={form.date}
                     time={form.time}
