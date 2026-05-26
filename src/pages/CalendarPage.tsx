@@ -272,6 +272,54 @@ export default function CalendarPage() {
   const [recurDays, setRecurDays] = useState<number[]>([1]);
   const [recurEndDate, setRecurEndDate] = useState("");
 
+  // Localized copy for new empty-state / onboarding UI inside the create modal
+  const L = NEW_COPY[(["en", "uk", "fr", "pl"].includes(lang as any) ? lang : "en") as LangKey];
+
+  // Quick-add nested dialogs (open from inside the create-session modal,
+  // form state is preserved because it lives in the parent component).
+  const createClient = useCreateClient();
+  const createService = useCreateService();
+  const [qaClientOpen, setQaClientOpen] = useState(false);
+  const [qaServiceOpen, setQaServiceOpen] = useState(false);
+  const [qaClient, setQaClient] = useState({ name: "", email: "", phone: "" });
+  const [qaService, setQaService] = useState({ name: "", duration_minutes: 60, price: 0 });
+
+  const handleQuickAddClient = async () => {
+    const name = qaClient.name.trim();
+    if (!name) return;
+    try {
+      const c: any = await createClient.mutateAsync({
+        name,
+        email: qaClient.email.trim() || undefined,
+        phone: qaClient.phone.trim() || undefined,
+      });
+      setForm(f => ({ ...f, client_id: c.id }));
+      setQaClient({ name: "", email: "", phone: "" });
+      setQaClientOpen(false);
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleQuickAddService = async () => {
+    const name = qaService.name.trim();
+    if (!name || qaService.duration_minutes <= 0) return;
+    try {
+      const s: any = await createService.mutateAsync({
+        name,
+        duration_minutes: Number(qaService.duration_minutes),
+        price: Number(qaService.price || 0),
+      });
+      setForm(f => ({ ...f, service_id: s.id }));
+      setServiceError(false);
+      setQaService({ name: "", duration_minutes: 60, price: 0 });
+      setQaServiceOpen(false);
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
+
+
   const isMobile = useIsMobile();
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
