@@ -163,17 +163,35 @@ export default function Dashboard() {
     .reduce((s, apt) => s + Number(apt.price ?? 0), 0);
 
 
+  const todayLabel = useMemo(() => {
+    try {
+      return new Intl.DateTimeFormat(lang, {
+        weekday: "long", month: "long", day: "numeric", year: "numeric",
+      }).format(new Date());
+    } catch {
+      return new Date().toDateString();
+    }
+  }, [lang]);
+
   return (
     <AppLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("dashboard.greeting")}</h1>
-          <p className="text-muted-foreground mt-1">{t("dashboard.subtitle")}</p>
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="font-serif text-4xl sm:text-5xl leading-[1.05] text-foreground">
+              {t("dashboard.greeting")} <span className="inline-block">👋</span>
+            </h1>
+            <p className="text-muted-foreground mt-2">{t("dashboard.subtitle")}</p>
+          </div>
+          <div className="self-start sm:self-auto bg-card border border-border px-4 py-2 rounded-full text-sm font-medium text-muted-foreground shadow-sm whitespace-nowrap">
+            {todayLabel}
+          </div>
         </div>
 
         {/* A. Monthly Overview */}
         <section>
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-4">
             {t("ops.monthlyOverview")}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -185,50 +203,60 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* B. Daily Overview - split: Activity (left, counts) | Money (right, currency) */}
+        {/* B. Daily Overview - Activity | Money */}
         <section>
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-4">
             {t("ops.todayOverview")}
           </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* LEFT: Today's Activity (counts only) */}
-            <div className="bg-card border border-border rounded-xl p-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
-                {t("ops.todaysActivity")}
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <OverviewTile icon={Users} label={t("ops.clientsToday")} value={summary.clientCount.toString()} />
-                <OverviewTile icon={CalendarClock} label={t("ops.sessionsPlanned")} value={(summary.planned + summary.completed).toString()} />
-                <OverviewTile icon={CheckCircle2} label={t("ops.sessionsCompleted")} value={summary.completed.toString()} tone="success" />
-                
-                <OverviewTile icon={CheckCircle2} label={t("ops.donePaid")} value={completedPaidTotal.toString()} tone="success" />
-                <OverviewTile icon={Hourglass} label={t("ops.doneNotPaid")} value={completedUnpaidTotal.toString()} tone="warning" />
-                <OverviewTile icon={XCircle} label={t("ops.cancelledSessions")} value={cancelledTotal.toString()} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* LEFT: Today's Activity */}
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-5">
+                <PlayCircle className="h-4 w-4 text-primary" />
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  {t("ops.todaysActivity")}
+                </h3>
+              </div>
+              <div className="grid grid-cols-3 gap-x-4 gap-y-5">
+                <StatCell label={t("ops.clientsToday")} value={summary.clientCount.toString()} />
+                <StatCell label={t("ops.sessionsPlanned")} value={(summary.planned + summary.completed).toString()} />
+                <StatCell label={t("ops.sessionsCompleted")} value={summary.completed.toString()} tone="success" />
+                <StatCell label={t("ops.donePaid")} value={completedPaidTotal.toString()} tone="success" />
+                <StatCell label={t("ops.doneNotPaid")} value={completedUnpaidTotal.toString()} tone={completedUnpaidTotal > 0 ? "warning" : "muted"} />
+                <StatCell label={t("ops.cancelledSessions")} value={cancelledTotal.toString()} tone={cancelledTotal > 0 ? undefined : "muted"} />
               </div>
             </div>
 
-            {/* RIGHT: Today's Money (currency only) */}
-            <div className="bg-card border border-border rounded-xl p-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
-                {t("ops.todaysMoney")}
-              </h3>
-              <div className="grid grid-cols-2 gap-3">
-                <OverviewTile icon={DollarSign} label={t("ops.paidToday")} value={`${cs}${summary.amountReceived.toLocaleString()}`} tone="success" onClick={() => openWidget("daily_income", "/finances/income?range=today&tab=income")} />
-                <OverviewTile icon={Hourglass} label={t("ops.unpaidToday")} value={`${cs}${summary.amountPending.toLocaleString()}`} tone="warning" onClick={() => openWidget("unpaid_today", "/finances/income?range=today&tab=pending")} />
-                <OverviewTile icon={CalendarClock} label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} onClick={() => openWidget("expected_revenue_today", "/finances/income?range=today&tab=income")} />
-                <OverviewTile icon={Wallet} label={t("ops.outstandingBalance")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : undefined} onClick={() => openWidget("outstanding_balance", "/finances/income?range=all&tab=pending")} />
+            {/* RIGHT: Today's Money */}
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm flex flex-col">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-primary" />
+                  <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                    {t("ops.todaysMoney")}
+                  </h3>
+                </div>
               </div>
-
+              <div className="grid grid-cols-2 gap-3 flex-1">
+                <MoneyTile label={t("ops.paidToday")} value={`${cs}${summary.amountReceived.toLocaleString()}`} tone="success" onClick={() => openWidget("daily_income", "/finances/income?range=today&tab=income")} />
+                <MoneyTile label={t("ops.unpaidToday")} value={`${cs}${summary.amountPending.toLocaleString()}`} tone={summary.amountPending > 0 ? "warning" : "muted"} onClick={() => openWidget("unpaid_today", "/finances/income?range=today&tab=pending")} />
+                <MoneyTile label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} onClick={() => openWidget("expected_revenue_today", "/finances/income?range=today&tab=income")} />
+                <MoneyTile label={t("ops.outstandingBalance")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("outstanding_balance", "/finances/income?range=all&tab=pending")} />
+              </div>
+              <div className="mt-4 bg-secondary text-secondary-foreground rounded-xl px-5 py-4 flex justify-between items-center">
+                <span className="text-xs font-medium opacity-80 uppercase tracking-wider">{t("ops.paidToday")}</span>
+                <span className="font-serif text-2xl text-primary">{cs}{summary.amountReceived.toLocaleString()}</span>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* B. Now / Next */}
+        {/* C. Now / Next */}
         <section>
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-4">
             {t("ops.nowNext")}
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <NowNextCard
               kind="now"
               title={t("ops.now")}
@@ -254,19 +282,19 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* C. Today Schedule Snapshot */}
-        <section className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-foreground">{t("ops.scheduleSnapshot")}</h2>
+        {/* D. Today Schedule Snapshot */}
+        <section className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden animate-fade-in">
+          <div className="px-6 py-5 border-b border-border flex items-center justify-between">
+            <h2 className="font-serif text-2xl text-foreground">{t("ops.scheduleSnapshot")}</h2>
             <button
               onClick={() => navigate("/calendar")}
-              className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+              className="text-xs font-semibold inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted text-foreground hover:bg-muted/70 transition-colors"
             >
-              {t("nav.calendar")} <ArrowRight className="h-3 w-3" />
+              {t("nav.calendar")} <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </div>
           {todayAppointments.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">{t("ops.empty")}</p>
+            <p className="text-sm text-muted-foreground py-12 text-center">{t("ops.empty")}</p>
           ) : (
             <ul className="divide-y divide-border">
               {todayAppointments
@@ -275,26 +303,52 @@ export default function Dashboard() {
                 .map((apt) => {
                   const isGroup = !!apt.group_session_id;
                   const typeLabel = isGroup ? t("ops.group") : t("ops.individual");
+                  const now = Date.now();
+                  const start = new Date(apt.scheduled_at).getTime();
+                  const end = start + (apt.duration_minutes ?? 60) * 60_000;
+                  const isLive = start <= now && now < end && apt.status !== "cancelled";
+                  const accent =
+                    apt.status === "completed" ? "bg-success" :
+                    apt.status === "cancelled" ? "bg-destructive/40" :
+                    isLive ? "bg-primary" :
+                    "bg-border";
                   return (
-                    <li key={apt.id} className="py-3 flex items-center gap-4">
-                      <div className="text-center min-w-[56px]">
-                        <p className="text-sm font-semibold text-foreground">
+                    <li
+                      key={apt.id}
+                      className={cn(
+                        "group flex items-center gap-4 px-6 py-4 cursor-pointer transition-colors",
+                        isLive ? "bg-muted/40" : "hover:bg-muted/40",
+                      )}
+                      onClick={() => navigate(`/calendar?appointmentId=${apt.id}`)}
+                    >
+                      <div className="min-w-[64px]">
+                        <p className={cn("text-sm font-bold", isLive ? "text-primary" : "text-foreground")}>
                           {formatScheduledTime(apt.scheduled_at, use12h)}
                         </p>
-                        <p className="text-xs text-muted-foreground">{apt.duration_minutes}{t("common.min")}</p>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                          {apt.duration_minutes}{t("common.min")}
+                        </p>
                       </div>
+                      <div className={cn("self-stretch w-[3px] rounded-full", accent)} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">
+                        <p className="text-sm font-semibold text-foreground truncate">
                           {apt.clients?.name ?? "—"}
                         </p>
                         <p className="text-xs text-muted-foreground truncate">
                           {typeLabel} · {apt.services?.name ?? "—"}
                         </p>
                       </div>
-                      <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", statusBadgeClass(apt.status))}>
-                        {t((`status.${apt.status === "no-show" ? "noShow" : apt.status}`) as any)}
-                      </span>
-                      <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium hidden sm:inline-flex", paymentBadgeClass(apt.payment_status))}>
+                      {isLive ? (
+                        <span className="hidden sm:inline-flex text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground items-center gap-1.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                          {t("ops.now")}
+                        </span>
+                      ) : (
+                        <span className={cn("hidden sm:inline-flex text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full", statusBadgeClass(apt.status))}>
+                          {t((`status.${apt.status === "no-show" ? "noShow" : apt.status}`) as any)}
+                        </span>
+                      )}
+                      <span className={cn("hidden md:inline-flex text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full", paymentBadgeClass(apt.payment_status))}>
                         {PAID_STATUSES.has(apt.payment_status)
                           ? t("payment.paid")
                           : apt.payment_status === "waiting_for_payment"
@@ -303,13 +357,7 @@ export default function Dashboard() {
                           ? t("ops.unpaid")
                           : t("payment.na")}
                       </span>
-                      <button
-                        onClick={() => navigate(`/calendar?appointmentId=${apt.id}`)}
-                        className="text-xs text-muted-foreground hover:text-foreground p-1.5 rounded hover:bg-muted transition-colors"
-                        aria-label={t("ops.openRecord")}
-                      >
-                        <ArrowRight className="h-4 w-4" />
-                      </button>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
                     </li>
                   );
                 })}
@@ -321,6 +369,50 @@ export default function Dashboard() {
     </AppLayout>
   );
 }
+
+function StatCell({ label, value, tone }: { label: string; value: string; tone?: "success" | "warning" | "muted" }) {
+  const toneClass =
+    tone === "success" ? "text-success" :
+    tone === "warning" ? "text-warning" :
+    tone === "muted" ? "text-foreground/30" :
+    "text-foreground";
+  return (
+    <div className="space-y-1">
+      <p className={cn("font-serif text-3xl leading-none", toneClass)}>{value}</p>
+      <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+    </div>
+  );
+}
+
+function MoneyTile({
+  label, value, tone, onClick,
+}: { label: string; value: string; tone?: "success" | "warning" | "muted"; onClick?: () => void }) {
+  const toneClass =
+    tone === "success" ? "text-success" :
+    tone === "warning" ? "text-warning" :
+    tone === "muted" ? "text-foreground/30" :
+    "text-foreground";
+  const inner = (
+    <>
+      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className={cn("font-serif text-2xl mt-2", toneClass)}>{value}</p>
+    </>
+  );
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="text-left bg-background/50 border border-border rounded-xl p-4 hover:border-primary/40 hover:bg-background transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        aria-label={`${label}: ${value}`}
+      >
+        {inner}
+      </button>
+    );
+  }
+  return <div className="bg-background/50 border border-border rounded-xl p-4">{inner}</div>;
+}
+
 
 function OverviewTile({
   icon: Icon, label, value, tone, onClick,
