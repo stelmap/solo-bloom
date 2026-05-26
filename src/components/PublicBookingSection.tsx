@@ -260,7 +260,7 @@ export function PublicBookingSection() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: "Link regenerated. Old link no longer works." });
+      toast({ title: L.linkRegenerated });
       qc.invalidateQueries({ queryKey: ["booking_link", userId] });
     },
   });
