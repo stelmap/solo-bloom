@@ -251,9 +251,10 @@ export default function Dashboard() {
                 <MoneyTile label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} onClick={() => openWidget("expected_revenue_today", "/finances/income?range=today&tab=income")} />
                 <MoneyTile label={t("ops.outstandingBalance")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("outstanding_balance", "/finances/income?range=all&tab=pending")} />
               </div>
-              <div className="mt-4 bg-secondary text-secondary-foreground rounded-xl px-5 py-4 flex justify-between items-center">
-                <span className="text-xs font-medium opacity-80 uppercase tracking-wider">{t("ops.paidToday")}</span>
-                <span className="font-serif text-2xl text-primary">{cs}{summary.amountReceived.toLocaleString()}</span>
+              <div className="mt-4 relative overflow-hidden bg-gradient-dark text-secondary-foreground rounded-xl px-5 py-4 flex justify-between items-center shadow-elegant">
+                <div className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full bg-primary/25 blur-2xl" />
+                <span className="relative text-xs font-medium opacity-80 uppercase tracking-wider">{t("ops.paidToday")}</span>
+                <span className="relative font-serif text-3xl text-gradient-primary">{cs}{summary.amountReceived.toLocaleString()}</span>
               </div>
             </div>
           </div>
