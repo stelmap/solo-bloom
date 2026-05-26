@@ -1111,16 +1111,19 @@ export default function CalendarPage() {
                           </Select>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.daysOfWeek")}</Label>
-                          <div className="grid grid-cols-7 gap-1">
+                          <Label id="recur-days-label" className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.daysOfWeek")}</Label>
+                          <div role="group" aria-labelledby="recur-days-label" className="grid grid-cols-7 gap-1">
                             {DAY_KEYS.map((key, i) => {
                               const active = recurDays.includes(i + 1);
+                              const dayName = t(key as any);
                               return (
                                 <button key={i} type="button" onClick={() => toggleRecurDay(i + 1)}
-                                  className={cn("h-9 sm:h-8 rounded-md text-xs font-medium transition-colors border-2",
+                                  aria-pressed={active}
+                                  aria-label={dayName}
+                                  className={cn("h-9 sm:h-8 rounded-md text-xs font-medium transition-colors border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                                     active ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border text-foreground hover:border-muted-foreground/60"
                                   )}>
-                                  {t(key as any)}
+                                  {dayName}
                                 </button>
                               );
                             })}
