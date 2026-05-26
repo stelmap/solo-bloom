@@ -8,9 +8,9 @@ import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { formatScheduledTime } from "@/lib/timeFormat";
 import {
-  Users, CalendarClock, CheckCircle2, DollarSign, Hourglass,
-  PlayCircle, ArrowRight, Receipt, AlertCircle, XCircle, RotateCcw,
-  UserPlus, UserCheck, UserMinus, Wallet,
+  Users, DollarSign,
+  PlayCircle, ArrowRight, XCircle,
+  UserPlus, UserCheck, UserMinus,
 } from "lucide-react";
 
 type Apt = {
