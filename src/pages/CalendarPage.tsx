@@ -1485,46 +1485,96 @@ export default function CalendarPage() {
 
 
 
-        {/* Weekly capacity bar */}
+        {/* Period analytics — recomputes with selected Day / Week / Month view */}
         <div className="bg-card rounded-xl border border-border p-3 sm:p-4 animate-fade-in">
           <div className="flex items-center gap-2 sm:gap-3 mb-3 flex-wrap">
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">{t("capacity.title")}</span>
-            <div className="flex items-center gap-2 sm:gap-4 ml-auto text-xs text-muted-foreground">
-              <span>{t("capacity.totalSlots")}: {weekCapacity.totalSlots}</span>
-              <span>{t("capacity.booked")}: {weekCapacity.totalBooked}</span>
-              <span>{t("capacity.free")}: {weekCapacity.totalFree}</span>
+            <span className="text-sm font-medium text-foreground">
+              {effectiveView === "day"
+                ? format(currentDate, "EEE, MMM d", { locale: dateLocale })
+                : effectiveView === "month"
+                  ? format(currentDate, "MMMM yyyy", { locale: dateLocale })
+                  : `${format(weekStart, "MMM d", { locale: dateLocale })} – ${format(addDays(weekStart, 6), "MMM d", { locale: dateLocale })}`}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3 mb-3">
+            <button
+              type="button"
+              onClick={() => clearFilters()}
+              className="text-left rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-3"
+            >
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{t("capacity.totalSlots")}</p>
+              <p className="text-xl font-semibold text-foreground tabular-nums">{periodCapacity.totalSlots}</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilters(f => ({ ...f, status: f.status === "confirmed" ? "all" : "confirmed" }))}
+              className="text-left rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-3"
+            >
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{t("capacity.booked")}</p>
+              <p className="text-xl font-semibold text-foreground tabular-nums">{periodCapacity.totalBooked}</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => clearFilters()}
+              className="text-left rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-3"
+            >
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{t("capacity.free")}</p>
+              <p className="text-xl font-semibold text-foreground tabular-nums">{periodCapacity.totalFree}</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/income")}
+              className="text-left rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-3"
+            >
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{t("nav.income") || "Revenue"}</p>
+              <p className="text-xl font-semibold text-foreground tabular-nums">{cs}{periodCapacity.totalRevenue.toFixed(0)}</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setInboxOpen(true)}
+              className={cn(
+                "text-left rounded-lg border transition-colors p-3 relative",
+                periodCapacity.pendingInPeriod > 0
+                  ? "border-warning/40 bg-warning/10 hover:bg-warning/15"
+                  : "border-border bg-background hover:bg-accent/40",
+              )}
+            >
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{t("booking.pendingRequests") || "Pending requests"}</p>
+              <p className="text-xl font-semibold text-foreground tabular-nums">{periodCapacity.pendingInPeriod}</p>
+            </button>
+          </div>
+          {effectiveView !== "month" && (
+            <div className={cn("grid gap-0", isMobile ? "grid-cols-[56px_1fr]" : "grid-cols-[72px_repeat(7,1fr)]")}>
+              <div />{/* spacer for time column */}
+              {periodCapacity.dayStats.map((ds, i) => {
+                const dow = days[i].getDay();
+                const dayKeyIdx = dow === 0 ? 6 : dow - 1;
+                const pct = ds.slots > 0 ? (ds.booked / ds.slots) * 100 : 0;
+                const isFull = ds.slots > 0 && ds.booked >= ds.slots;
+                const isLow = ds.working && ds.slots > 0 && pct < 30;
+                return (
+                  <div key={i} className="text-center">
+                    <p className="text-xs text-muted-foreground mb-1">{t(DAY_KEYS[dayKeyIdx] as any)}</p>
+                    {ds.working ? (
+                      <>
+                        <Progress value={pct} className={cn("h-2", isFull ? "[&>div]:bg-destructive" : isLow ? "[&>div]:bg-warning" : "")} />
+                        <p className="text-xs mt-1">
+                          <span className="font-medium text-foreground">{ds.booked}</span>
+                          <span className="text-muted-foreground">/{ds.slots}</span>
+                        </p>
+                        {isFull && <Badge variant="outline" className="text-[10px] px-1 mt-0.5 border-destructive/30 text-destructive">{t("capacity.fullyBooked")}</Badge>}
+                      </>
+                    ) : (
+                      <div className="flex items-center justify-center h-6">
+                        <CalendarOff className="h-3.5 w-3.5 text-muted-foreground/40" />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          </div>
-          <div className={cn("grid gap-0", isMobile ? "grid-cols-[56px_1fr]" : "grid-cols-[72px_repeat(7,1fr)]")}>
-            <div />{/* spacer for time column */}
-            {weekCapacity.dayStats.map((ds, i) => {
-              const dow = days[i].getDay();
-              const dayKeyIdx = dow === 0 ? 6 : dow - 1;
-              const pct = ds.slots > 0 ? (ds.booked / ds.slots) * 100 : 0;
-              const isFull = ds.slots > 0 && ds.booked >= ds.slots;
-              const isLow = ds.working && ds.slots > 0 && pct < 30;
-              return (
-                <div key={i} className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">{t(DAY_KEYS[dayKeyIdx] as any)}</p>
-                  {ds.working ? (
-                    <>
-                      <Progress value={pct} className={cn("h-2", isFull ? "[&>div]:bg-destructive" : isLow ? "[&>div]:bg-warning" : "")} />
-                      <p className="text-xs mt-1">
-                        <span className="font-medium text-foreground">{ds.booked}</span>
-                        <span className="text-muted-foreground">/{ds.slots}</span>
-                      </p>
-                      {isFull && <Badge variant="outline" className="text-[10px] px-1 mt-0.5 border-destructive/30 text-destructive">{t("capacity.fullyBooked")}</Badge>}
-                    </>
-                  ) : (
-                    <div className="flex items-center justify-center h-6">
-                      <CalendarOff className="h-3.5 w-3.5 text-muted-foreground/40" />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          )}
         </div>
 
         <div
