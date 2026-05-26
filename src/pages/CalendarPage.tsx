@@ -1144,7 +1144,7 @@ export default function CalendarPage() {
                         )}
                         <Button
                           onClick={handleCreate}
-                          className="w-full h-10 text-sm font-semibold rounded-xl"
+                          className="w-full h-11 sm:h-10 text-sm font-semibold rounded-xl"
                           disabled={disabled}
                         >
                           {ctaLabel}
@@ -1153,7 +1153,7 @@ export default function CalendarPage() {
                           type="button"
                           variant="outline"
                           onClick={() => setCreateOpen(false)}
-                          className="w-full h-10 text-sm font-medium rounded-xl"
+                          className="w-full h-10 sm:h-9 text-sm font-medium rounded-xl"
                         >
                           {L.cancel}
                         </Button>
