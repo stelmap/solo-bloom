@@ -376,12 +376,12 @@ function StatCell({ label, value, tone }: { label: string; value: string; tone?:
   const toneClass =
     tone === "success" ? "text-success" :
     tone === "warning" ? "text-warning" :
-    tone === "muted" ? "text-muted-foreground/50" :
+    tone === "muted" ? "text-muted-foreground/60" :
     "text-foreground";
   return (
-    <div className="space-y-1.5">
-      <p className={cn("text-3xl font-bold leading-none tabular-nums", toneClass)}>{value}</p>
-      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em]">{label}</p>
+    <div className="bg-muted/40 border border-border rounded-2xl p-4 flex flex-col items-center justify-center text-center min-h-[110px]">
+      <p className={cn("text-3xl sm:text-4xl font-bold leading-none tabular-nums", toneClass)}>{value}</p>
+      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em] mt-2.5 leading-snug">{label}</p>
     </div>
   );
 }
@@ -392,27 +392,27 @@ function MoneyTile({
   const toneClass =
     tone === "success" ? "text-success" :
     tone === "warning" ? "text-warning" :
-    tone === "muted" ? "text-muted-foreground/50" :
+    tone === "muted" ? "text-muted-foreground/60" :
     "text-foreground";
   const inner = (
-    <>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{label}</p>
-      <p className={cn("text-2xl font-bold mt-2 tabular-nums", toneClass)}>{value}</p>
-    </>
+    <div className="flex flex-col items-center justify-center text-center h-full">
+      <p className={cn("text-2xl sm:text-3xl font-bold tabular-nums", toneClass)}>{value}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground mt-2 leading-snug">{label}</p>
+    </div>
   );
   if (onClick) {
     return (
       <button
         type="button"
         onClick={onClick}
-        className="text-left bg-muted/40 border border-border rounded-2xl p-4 hover:border-primary-border hover:bg-card transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="bg-muted/40 border border-border rounded-2xl p-4 min-h-[110px] hover:border-primary-border hover:bg-card transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         aria-label={`${label}: ${value}`}
       >
         {inner}
       </button>
     );
   }
-  return <div className="bg-muted/40 border border-border rounded-2xl p-4">{inner}</div>;
+  return <div className="bg-muted/40 border border-border rounded-2xl p-4 min-h-[110px]">{inner}</div>;
 }
 
 
@@ -420,7 +420,7 @@ function OverviewTile({
   icon: Icon, label, value, active, onClick,
 }: { icon: any; label: string; value: string; active?: boolean; onClick?: () => void }) {
   const base = cn(
-    "relative rounded-[18px] p-6 text-left w-full block transition-all border",
+    "relative rounded-[18px] p-5 text-center w-full block transition-all border flex flex-col items-center justify-between min-h-[170px]",
     active
       ? "bg-primary-soft border-primary shadow-glow"
       : "bg-card border-border shadow-card",
@@ -430,7 +430,7 @@ function OverviewTile({
     : "";
   const content = (
     <>
-      <div className="flex items-start justify-between mb-5">
+      <div className="w-full flex items-center justify-between">
         <div className={cn(
           "p-2 rounded-lg",
           active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
@@ -441,8 +441,8 @@ function OverviewTile({
           <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
         )}
       </div>
-      <p className={cn("text-4xl font-bold leading-none tabular-nums", active ? "text-primary" : "text-foreground")}>{value}</p>
-      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em] mt-3 truncate">{label}</p>
+      <p className={cn("text-5xl font-extrabold leading-none tabular-nums my-2", active ? "text-primary" : "text-foreground")}>{value}</p>
+      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em] leading-snug w-full">{label}</p>
     </>
   );
   if (onClick) {
