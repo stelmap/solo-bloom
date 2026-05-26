@@ -1527,7 +1527,7 @@ export default function CalendarPage() {
               onClick={() => navigate("/income")}
               className="text-left rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-3"
             >
-              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{t("nav.income") || "Revenue"}</p>
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Revenue</p>
               <p className="text-xl font-semibold text-foreground tabular-nums">{cs}{periodCapacity.totalRevenue.toFixed(0)}</p>
             </button>
             <button
