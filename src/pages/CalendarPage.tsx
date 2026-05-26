@@ -763,23 +763,40 @@ export default function CalendarPage() {
   const fmtHour = (hour: number) => formatTime(`${hour.toString().padStart(2, "0")}:00`, use12h);
   const fmtTime = (dateStr: string) => formatScheduledTime(dateStr, use12h);
 
-  // Weekly capacity calculations
-  const weekCapacity = useMemo(() => {
+  // Period capacity (Day / Week / Month) — analytics recompute by selected view
+  const periodCapacity = useMemo(() => {
     const sessionsPerDay = (profile as any)?.sessions_per_day ?? 6;
     let totalSlots = 0;
-    const dayStats = days.map(day => {
+    let totalBooked = 0;
+    let totalRevenue = 0;
+    const dayStats = periodDays.map(day => {
       const working = isDayWorking(day);
       const slots = working ? sessionsPerDay : 0;
       totalSlots += slots;
-      const booked = appointments.filter(apt => {
-        const dayStr = format(day, "yyyy-MM-dd");
-        return toUTCDateStr(new Date(apt.scheduled_at)) === dayStr && apt.status !== "cancelled";
-      }).length;
+      const dayStr = format(day, "yyyy-MM-dd");
+      const dayApts = appointments.filter(
+        apt => toUTCDateStr(new Date(apt.scheduled_at)) === dayStr && apt.status !== "cancelled",
+      );
+      const booked = dayApts.length;
+      totalBooked += booked;
+      totalRevenue += dayApts.reduce((s, a: any) => s + Number(a.price ?? 0), 0);
       return { day, working, slots, booked, free: Math.max(slots - booked, 0) };
     });
-    const totalBooked = dayStats.reduce((s, d) => s + d.booked, 0);
-    return { totalSlots, totalBooked, totalFree: Math.max(totalSlots - totalBooked, 0), dayStats };
-  }, [days, appointments, profile, scheduleMap, daysOffSet]);
+    const pendingInPeriod = pendingRequests.filter(r => {
+      const d = new Date(r.requested_slot_at);
+      return d >= periodStart && d <= periodEnd;
+    }).length;
+    return {
+      totalSlots,
+      totalBooked,
+      totalFree: Math.max(totalSlots - totalBooked, 0),
+      totalRevenue,
+      pendingInPeriod,
+      dayStats,
+    };
+  }, [periodDays, periodStart, periodEnd, appointments, profile, scheduleMap, daysOffSet, pendingRequests]);
+  // Back-compat alias used by the per-day bar (only relevant in Day/Week views)
+  const weekCapacity = periodCapacity;
 
   // Drag-and-drop handlers
   const canDropOnSlot = useCallback((day: Date, hour: number, aptId: string) => {
