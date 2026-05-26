@@ -277,7 +277,7 @@ export default function AuthPage() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col bg-background">
+      <div className="flex-1 flex flex-col" style={{ backgroundColor: "#1c2942" }}>
         <div className="flex flex-1 items-center justify-center p-6">
           <div className="w-full max-w-sm space-y-6">
             <div className="text-center space-y-2 lg:hidden">
