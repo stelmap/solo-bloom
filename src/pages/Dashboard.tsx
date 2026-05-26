@@ -175,23 +175,18 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="space-y-10">
-        {/* Header */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-hero border border-border/60 px-6 sm:px-10 py-8 sm:py-10 shadow-elegant">
-          <div className="pointer-events-none absolute -top-24 -right-16 h-72 w-72 rounded-full bg-primary/30 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-secondary/20 blur-3xl" />
-          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="space-y-8">
+        {/* Header — clean business style */}
+        <div className="bg-card border border-border rounded-[20px] px-6 sm:px-8 py-6 shadow-card">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-primary mb-3">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse-soft" />
-                {t("ops.todayOverview")}
-              </span>
-              <h1 className="font-serif text-4xl sm:text-6xl leading-[1.02] text-foreground">
-                {t("dashboard.greeting")} <span className="inline-block">👋</span>
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+                {t("dashboard.greeting")}
               </h1>
-              <p className="text-muted-foreground mt-3 text-base">{t("dashboard.subtitle")}</p>
+              <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">{t("dashboard.subtitle")}</p>
             </div>
-            <div className="self-start sm:self-auto bg-card/80 backdrop-blur border border-border px-4 py-2 rounded-full text-sm font-medium text-muted-foreground shadow-sm whitespace-nowrap">
+            <div className="self-start sm:self-auto inline-flex items-center gap-2 bg-muted border border-border px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
               {todayLabel}
             </div>
           </div>
@@ -199,29 +194,29 @@ export default function Dashboard() {
 
         {/* A. Monthly Overview */}
         <section>
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-4">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground mb-3">
             {t("ops.monthlyOverview")}
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            <OverviewTile icon={Users} label={t("ops.activeClientsThisMonth")} value={String(stats?.activeClientsThisMonth ?? 0)} tone="primary" onClick={() => openWidget("active_clients_this_month", "/clients?filter=activeThisMonth")} />
-            <OverviewTile icon={UserPlus} label={t("ops.newClientsThisMonth")} value={String(stats?.newClientsThisMonth ?? 0)} tone="success" onClick={() => openWidget("new_clients_this_month", "/clients?filter=newThisMonth")} />
-            <OverviewTile icon={UserCheck} label={t("ops.completedTherapyThisMonth")} value={String(stats?.completedTherapyThisMonth ?? 0)} tone="success" onClick={() => openWidget("completed_therapy_this_month", "/clients?filter=completedThisMonth")} />
-            <OverviewTile icon={UserMinus} label={t("ops.droppedTherapyThisMonth")} value={String(stats?.droppedTherapyThisMonth ?? 0)} tone="warning" onClick={() => openWidget("dropped_therapy_this_month", "/clients?filter=droppedThisMonth")} />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <OverviewTile icon={Users} label={t("ops.activeClientsThisMonth")} value={String(stats?.activeClientsThisMonth ?? 0)} active onClick={() => openWidget("active_clients_this_month", "/clients?filter=activeThisMonth")} />
+            <OverviewTile icon={UserPlus} label={t("ops.newClientsThisMonth")} value={String(stats?.newClientsThisMonth ?? 0)} onClick={() => openWidget("new_clients_this_month", "/clients?filter=newThisMonth")} />
+            <OverviewTile icon={UserCheck} label={t("ops.completedTherapyThisMonth")} value={String(stats?.completedTherapyThisMonth ?? 0)} onClick={() => openWidget("completed_therapy_this_month", "/clients?filter=completedThisMonth")} />
+            <OverviewTile icon={UserMinus} label={t("ops.droppedTherapyThisMonth")} value={String(stats?.droppedTherapyThisMonth ?? 0)} onClick={() => openWidget("dropped_therapy_this_month", "/clients?filter=droppedThisMonth")} />
             <OverviewTile icon={XCircle} label={t("ops.cancelledSessionsThisMonth")} value={String((stats as any)?.cancelledSessionsThisMonth ?? 0)} />
           </div>
         </section>
 
         {/* B. Daily Overview - Activity | Money */}
         <section>
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-4">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground mb-3">
             {t("ops.todayOverview")}
           </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* LEFT: Today's Activity */}
-            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
+            <div className="bg-card border border-border rounded-[20px] p-6 shadow-card">
               <div className="flex items-center gap-2 mb-5">
                 <PlayCircle className="h-4 w-4 text-primary" />
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                <h3 className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
                   {t("ops.todaysActivity")}
                 </h3>
               </div>
@@ -236,14 +231,12 @@ export default function Dashboard() {
             </div>
 
             {/* RIGHT: Today's Money */}
-            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm flex flex-col">
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-primary" />
-                  <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                    {t("ops.todaysMoney")}
-                  </h3>
-                </div>
+            <div className="bg-card border border-border rounded-[20px] p-6 shadow-card flex flex-col">
+              <div className="flex items-center gap-2 mb-5">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <h3 className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                  {t("ops.todaysMoney")}
+                </h3>
               </div>
               <div className="grid grid-cols-2 gap-3 flex-1">
                 <MoneyTile label={t("ops.paidToday")} value={`${cs}${summary.amountReceived.toLocaleString()}`} tone="success" onClick={() => openWidget("daily_income", "/finances/income?range=today&tab=income")} />
@@ -251,10 +244,9 @@ export default function Dashboard() {
                 <MoneyTile label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} onClick={() => openWidget("expected_revenue_today", "/finances/income?range=today&tab=income")} />
                 <MoneyTile label={t("ops.outstandingBalance")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("outstanding_balance", "/finances/income?range=all&tab=pending")} />
               </div>
-              <div className="mt-4 relative overflow-hidden bg-gradient-dark text-secondary-foreground rounded-xl px-5 py-4 flex justify-between items-center shadow-elegant">
-                <div className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full bg-primary/25 blur-2xl" />
-                <span className="relative text-xs font-medium opacity-80 uppercase tracking-wider">{t("ops.paidToday")}</span>
-                <span className="relative font-serif text-3xl text-gradient-primary">{cs}{summary.amountReceived.toLocaleString()}</span>
+              <div className="mt-4 bg-gradient-dark text-secondary-foreground rounded-2xl px-5 py-4 flex justify-between items-center">
+                <span className="text-[11px] font-semibold opacity-80 uppercase tracking-[0.06em]">{t("ops.paidToday")}</span>
+                <span className="text-2xl font-bold text-primary">{cs}{summary.amountReceived.toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -262,10 +254,10 @@ export default function Dashboard() {
 
         {/* C. Now / Next */}
         <section>
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-4">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground mb-3">
             {t("ops.nowNext")}
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <NowNextCard
               kind="now"
               title={t("ops.now")}
@@ -292,12 +284,12 @@ export default function Dashboard() {
         </section>
 
         {/* D. Today Schedule Snapshot */}
-        <section className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden animate-fade-in">
+        <section className="bg-card rounded-[20px] border border-border shadow-card overflow-hidden">
           <div className="px-6 py-5 border-b border-border flex items-center justify-between">
-            <h2 className="font-serif text-2xl text-foreground">{t("ops.scheduleSnapshot")}</h2>
+            <h2 className="text-lg font-semibold text-foreground">{t("ops.scheduleSnapshot")}</h2>
             <button
               onClick={() => navigate("/calendar")}
-              className="text-xs font-semibold inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted text-foreground hover:bg-muted/70 transition-colors"
+              className="text-xs font-semibold inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-muted text-foreground hover:bg-muted/70 transition-colors"
             >
               {t("nav.calendar")} <ArrowRight className="h-3.5 w-3.5" />
             </button>
@@ -326,12 +318,12 @@ export default function Dashboard() {
                       key={apt.id}
                       className={cn(
                         "group flex items-center gap-4 px-6 py-4 cursor-pointer transition-colors",
-                        isLive ? "bg-muted/40" : "hover:bg-muted/40",
+                        isLive ? "bg-primary-soft" : "hover:bg-muted/50",
                       )}
                       onClick={() => navigate(`/calendar?appointmentId=${apt.id}`)}
                     >
                       <div className="min-w-[64px]">
-                        <p className={cn("text-sm font-bold", isLive ? "text-primary" : "text-foreground")}>
+                        <p className={cn("text-sm font-semibold tabular-nums", isLive ? "text-primary" : "text-foreground")}>
                           {formatScheduledTime(apt.scheduled_at, use12h)}
                         </p>
                         <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -348,8 +340,8 @@ export default function Dashboard() {
                         </p>
                       </div>
                       {isLive ? (
-                        <span className="hidden sm:inline-flex text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground items-center gap-1.5">
-                          <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                        <span className="hidden sm:inline-flex text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-primary text-primary-foreground items-center gap-1.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-pulse" />
                           {t("ops.now")}
                         </span>
                       ) : (
@@ -378,6 +370,7 @@ export default function Dashboard() {
     </AppLayout>
   );
 }
+
 
 function StatCell({ label, value, tone }: { label: string; value: string; tone?: "success" | "warning" | "muted" }) {
   const toneClass =
