@@ -878,7 +878,7 @@ export default function CalendarPage() {
                 })()}
 
                 <DialogHeader className="px-4 pt-4 pb-1 space-y-0.5 text-left sm:px-5">
-                  <DialogTitle className="text-xl font-bold tracking-tight">{t("calendar.newAppointment")}</DialogTitle>
+                  <DialogTitle id="new-appointment-title" className="text-xl font-bold tracking-tight">{t("calendar.newAppointment")}</DialogTitle>
                   <DialogDescription className="text-sm text-muted-foreground">{L.modalSubtitle}</DialogDescription>
                 </DialogHeader>
 
