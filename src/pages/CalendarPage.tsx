@@ -1051,7 +1051,7 @@ export default function CalendarPage() {
                               aria-required="true"
                               aria-invalid={serviceError}
                               aria-describedby={serviceError ? "appt-service-error" : undefined}
-                              className={cn("flex-1", serviceError && "border-destructive")}
+                              className={cn("flex-1", D.field, serviceError && "border-destructive")}
                             >
                               <SelectValue placeholder={t("calendar.selectService")} />
                             </SelectTrigger>
