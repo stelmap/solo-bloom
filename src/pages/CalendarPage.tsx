@@ -1419,7 +1419,7 @@ export default function CalendarPage() {
         {pendingRequests.length > 0 && (
           <button
             type="button"
-            onClick={() => navigate("/booking-inbox")}
+            onClick={() => setInboxOpen(true)}
             className="w-full flex items-center gap-3 rounded-xl border border-warning/40 bg-warning/10 hover:bg-warning/15 p-3 sm:p-4 text-left animate-fade-in transition-colors"
           >
             <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warning/20">
@@ -1601,7 +1601,7 @@ export default function CalendarPage() {
                             return (
                               <div
                                 key={req.id}
-                                onClick={(e) => { e.stopPropagation(); navigate("/booking-inbox"); }}
+                                onClick={(e) => { e.stopPropagation(); setInboxOpen(true); }}
                                 className={cn(
                                   "absolute inset-x-1 rounded-md border-2 border-dashed border-warning/70 bg-warning/15 text-warning-foreground p-1.5 cursor-pointer hover:ring-2 hover:ring-warning/50 transition-all z-20 overflow-hidden shadow-sm",
                                   "animate-pulse-soft",
