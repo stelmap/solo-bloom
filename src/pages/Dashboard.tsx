@@ -175,17 +175,25 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="space-y-8">
+      <div className="space-y-10">
         {/* Header */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="font-serif text-4xl sm:text-5xl leading-[1.05] text-foreground">
-              {t("dashboard.greeting")} <span className="inline-block">👋</span>
-            </h1>
-            <p className="text-muted-foreground mt-2">{t("dashboard.subtitle")}</p>
-          </div>
-          <div className="self-start sm:self-auto bg-card border border-border px-4 py-2 rounded-full text-sm font-medium text-muted-foreground shadow-sm whitespace-nowrap">
-            {todayLabel}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-hero border border-border/60 px-6 sm:px-10 py-8 sm:py-10 shadow-elegant">
+          <div className="pointer-events-none absolute -top-24 -right-16 h-72 w-72 rounded-full bg-primary/30 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-secondary/20 blur-3xl" />
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-primary mb-3">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse-soft" />
+                {t("ops.todayOverview")}
+              </span>
+              <h1 className="font-serif text-4xl sm:text-6xl leading-[1.02] text-foreground">
+                {t("dashboard.greeting")} <span className="inline-block">👋</span>
+              </h1>
+              <p className="text-muted-foreground mt-3 text-base">{t("dashboard.subtitle")}</p>
+            </div>
+            <div className="self-start sm:self-auto bg-card/80 backdrop-blur border border-border px-4 py-2 rounded-full text-sm font-medium text-muted-foreground shadow-sm whitespace-nowrap">
+              {todayLabel}
+            </div>
           </div>
         </div>
 
@@ -195,7 +203,7 @@ export default function Dashboard() {
             {t("ops.monthlyOverview")}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            <OverviewTile icon={Users} label={t("ops.activeClientsThisMonth")} value={String(stats?.activeClientsThisMonth ?? 0)} onClick={() => openWidget("active_clients_this_month", "/clients?filter=activeThisMonth")} />
+            <OverviewTile icon={Users} label={t("ops.activeClientsThisMonth")} value={String(stats?.activeClientsThisMonth ?? 0)} tone="primary" onClick={() => openWidget("active_clients_this_month", "/clients?filter=activeThisMonth")} />
             <OverviewTile icon={UserPlus} label={t("ops.newClientsThisMonth")} value={String(stats?.newClientsThisMonth ?? 0)} tone="success" onClick={() => openWidget("new_clients_this_month", "/clients?filter=newThisMonth")} />
             <OverviewTile icon={UserCheck} label={t("ops.completedTherapyThisMonth")} value={String(stats?.completedTherapyThisMonth ?? 0)} tone="success" onClick={() => openWidget("completed_therapy_this_month", "/clients?filter=completedThisMonth")} />
             <OverviewTile icon={UserMinus} label={t("ops.droppedTherapyThisMonth")} value={String(stats?.droppedTherapyThisMonth ?? 0)} tone="warning" onClick={() => openWidget("dropped_therapy_this_month", "/clients?filter=droppedThisMonth")} />
@@ -243,9 +251,10 @@ export default function Dashboard() {
                 <MoneyTile label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} onClick={() => openWidget("expected_revenue_today", "/finances/income?range=today&tab=income")} />
                 <MoneyTile label={t("ops.outstandingBalance")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("outstanding_balance", "/finances/income?range=all&tab=pending")} />
               </div>
-              <div className="mt-4 bg-secondary text-secondary-foreground rounded-xl px-5 py-4 flex justify-between items-center">
-                <span className="text-xs font-medium opacity-80 uppercase tracking-wider">{t("ops.paidToday")}</span>
-                <span className="font-serif text-2xl text-primary">{cs}{summary.amountReceived.toLocaleString()}</span>
+              <div className="mt-4 relative overflow-hidden bg-gradient-dark text-secondary-foreground rounded-xl px-5 py-4 flex justify-between items-center shadow-elegant">
+                <div className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full bg-primary/25 blur-2xl" />
+                <span className="relative text-xs font-medium opacity-80 uppercase tracking-wider">{t("ops.paidToday")}</span>
+                <span className="relative font-serif text-3xl text-gradient-primary">{cs}{summary.amountReceived.toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -416,21 +425,30 @@ function MoneyTile({
 
 function OverviewTile({
   icon: Icon, label, value, tone, onClick,
-}: { icon: any; label: string; value: string; tone?: "success" | "warning"; onClick?: () => void }) {
+}: { icon: any; label: string; value: string; tone?: "success" | "warning" | "primary"; onClick?: () => void }) {
+  const isPrimary = tone === "primary";
   const toneClass =
     tone === "success" ? "text-success" :
     tone === "warning" ? "text-warning" :
+    isPrimary ? "text-gradient-primary" :
     "text-foreground";
   const iconTone =
     tone === "success" ? "text-success bg-success/10" :
     tone === "warning" ? "text-warning bg-warning/10" :
+    isPrimary ? "text-primary-foreground bg-gradient-primary shadow-glow" :
     "text-muted-foreground bg-muted";
-  const base = "relative bg-card border border-border rounded-2xl p-5 animate-fade-in text-left w-full block shadow-sm";
+  const base = cn(
+    "relative bg-card border rounded-2xl p-5 animate-fade-in text-left w-full block overflow-hidden",
+    isPrimary ? "border-primary/30 shadow-elegant" : "border-border shadow-sm",
+  );
   const interactive =
     "cursor-pointer transition-all hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background group";
   const content = (
     <>
-      <div className="flex items-start justify-between mb-4">
+      {isPrimary && (
+        <div className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full bg-primary/20 blur-2xl" />
+      )}
+      <div className="relative flex items-start justify-between mb-4">
         <div className={cn("p-2 rounded-lg", iconTone)}>
           <Icon className="h-4 w-4" />
         </div>
@@ -438,8 +456,8 @@ function OverviewTile({
           <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
         )}
       </div>
-      <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider truncate">{label}</p>
-      <p className={cn("font-serif text-3xl leading-none mt-2", toneClass)}>{value}</p>
+      <p className="relative text-[11px] font-medium text-muted-foreground uppercase tracking-wider truncate">{label}</p>
+      <p className={cn("relative font-serif text-3xl leading-none mt-2", toneClass)}>{value}</p>
     </>
   );
   if (onClick) {
@@ -472,14 +490,17 @@ function NowNextCard({
   return (
     <div
       className={cn(
-        "relative rounded-2xl p-6 sm:p-7 animate-fade-in overflow-hidden flex flex-col min-h-[180px] shadow-sm",
+        "relative rounded-2xl p-6 sm:p-7 animate-fade-in overflow-hidden flex flex-col min-h-[180px]",
         isNow
-          ? "bg-secondary text-secondary-foreground border border-secondary"
-          : "bg-card border border-border text-foreground",
+          ? "bg-gradient-dark text-secondary-foreground border border-secondary shadow-elegant"
+          : "bg-card border border-border text-foreground shadow-sm",
       )}
     >
       {isNow && (
-        <div className="pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full bg-primary/10 blur-2xl" />
+        <>
+          <div className="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-primary/30 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-20 -left-10 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
+        </>
       )}
       <div className="flex items-center gap-2 mb-5">
         {isNow ? (
