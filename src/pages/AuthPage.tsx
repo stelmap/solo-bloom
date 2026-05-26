@@ -277,7 +277,7 @@ export default function AuthPage() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col" style={{ backgroundColor: "#1c2942" }}>
+      <div className="flex-1 flex flex-col bg-background">
         <div className="flex flex-1 items-center justify-center p-6">
           <div className="w-full max-w-sm space-y-6">
             <div className="text-center space-y-2 lg:hidden">
@@ -322,7 +322,7 @@ export default function AuthPage() {
                     <GoogleSignInButton />
                     <div className="relative">
                       <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
-                      <div className="relative flex justify-center text-xs"><span className="px-2 text-muted-foreground" style={{ backgroundColor: "#1c2942" }}>{t("auth.orContinueWith")}</span></div>
+                      <div className="relative flex justify-center text-xs"><span className="bg-background px-2 text-muted-foreground">{t("auth.orContinueWith")}</span></div>
                     </div>
                   </div>
                 )}
