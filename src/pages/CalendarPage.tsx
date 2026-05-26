@@ -805,6 +805,34 @@ export default function CalendarPage() {
           </div>
         </div>
 
+        {pendingRequests.length > 0 && (
+          <button
+            type="button"
+            onClick={() => navigate("/booking-inbox")}
+            className="w-full flex items-center gap-3 rounded-xl border border-warning/40 bg-warning/10 hover:bg-warning/15 p-3 sm:p-4 text-left animate-fade-in transition-colors"
+          >
+            <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warning/20">
+              <Inbox className="h-4 w-4 text-warning" />
+              <span className="absolute inset-0 rounded-full ring-2 ring-warning/40 animate-ping" />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">
+                {pendingRequests.length === 1
+                  ? (t("booking.pendingBannerOne") || "1 new booking request awaiting your review")
+                  : (t("booking.pendingBannerMany") || `${pendingRequests.length} new booking requests awaiting your review`).replace("{count}", String(pendingRequests.length))}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {t("booking.pendingBannerHint") || "Pending requests are highlighted on the calendar below. Click to review and approve."}
+              </p>
+            </div>
+            <Badge variant="outline" className="border-warning/40 text-warning shrink-0">
+              {pendingRequests.length}
+            </Badge>
+          </button>
+        )}
+
+
+
         {/* Weekly capacity bar */}
         <div className="bg-card rounded-xl border border-border p-3 sm:p-4 animate-fade-in">
           <div className="flex items-center gap-2 sm:gap-3 mb-3 flex-wrap">
