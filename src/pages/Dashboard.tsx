@@ -467,27 +467,54 @@ function NowNextCard({
   openLabel: string;
   t: (k: any, p?: any) => string;
 }) {
-  const Icon = kind === "now" ? PlayCircle : ArrowRight;
+  const isNow = kind === "now";
+  const isPaid = apt && PAID_STATUSES.has(apt.payment_status);
   return (
-    <div className="bg-card border border-border rounded-xl p-5 animate-fade-in">
-      <div className="flex items-center gap-2 mb-3">
-        <Icon className={cn("h-4 w-4", kind === "now" ? "text-primary" : "text-muted-foreground")} />
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</p>
+    <div
+      className={cn(
+        "relative rounded-2xl p-6 sm:p-7 animate-fade-in overflow-hidden flex flex-col min-h-[180px] shadow-sm",
+        isNow
+          ? "bg-secondary text-secondary-foreground border border-secondary"
+          : "bg-card border border-border text-foreground",
+      )}
+    >
+      {isNow && (
+        <div className="pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full bg-primary/10 blur-2xl" />
+      )}
+      <div className="flex items-center gap-2 mb-5">
+        {isNow ? (
+          <>
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+            </span>
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">{title}</p>
+          </>
+        ) : (
+          <>
+            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{title}</p>
+          </>
+        )}
       </div>
       {!apt ? (
-        <p className="text-sm text-muted-foreground py-4">{emptyText}</p>
+        <p className={cn("text-sm py-4", isNow ? "text-secondary-foreground/60" : "text-muted-foreground")}>{emptyText}</p>
       ) : (
-        <div className="space-y-3">
+        <div className="flex-1 flex flex-col justify-between gap-5">
           <div>
-            <p className="text-base font-semibold text-foreground truncate">{apt.clients?.name ?? "—"}</p>
-            <p className="text-sm text-muted-foreground truncate">
-              {formatScheduledTime(apt.scheduled_at, use12h)} · {apt.services?.name ?? "—"}
-              {" · "}
-              {apt.group_session_id ? t("ops.group") : t("ops.individual")}
+            <p className="font-serif text-3xl sm:text-4xl leading-tight truncate">
+              {apt.clients?.name ?? "—"}
+            </p>
+            <p className={cn("text-sm mt-1 truncate", isNow ? "text-secondary-foreground/60" : "text-muted-foreground")}>
+              {formatScheduledTime(apt.scheduled_at, use12h)} · {apt.services?.name ?? "—"} · {apt.group_session_id ? t("ops.group") : t("ops.individual")}
             </p>
           </div>
-          <div className="flex items-center justify-between">
-            <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", paymentBadgeClass(apt.payment_status))}>
+          <div className="flex items-center justify-between gap-3">
+            <span className={cn(
+              "text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5",
+              isPaid ? (isNow ? "text-primary" : "text-success") : (isNow ? "text-warning" : "text-warning"),
+            )}>
+              <span className={cn("h-1.5 w-1.5 rounded-full", isPaid ? "bg-success" : "bg-warning")} />
               {PAID_STATUSES.has(apt.payment_status)
                 ? `${t("payment.paid")} · ${cs}${Number(apt.price).toFixed(0)}`
                 : apt.payment_status === "waiting_for_payment"
@@ -496,9 +523,14 @@ function NowNextCard({
             </span>
             <button
               onClick={onOpen}
-              className="text-xs font-medium text-primary hover:underline inline-flex items-center gap-1"
+              className={cn(
+                "inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all",
+                isNow
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "border border-border text-foreground hover:bg-muted",
+              )}
             >
-              {openLabel} <ArrowRight className="h-3 w-3" />
+              {openLabel} <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
