@@ -1133,18 +1133,18 @@ export default function CalendarPage() {
                       : (isGroupSession ? L.ctaGroup : L.ctaIndividual);
 
                     return (
-                      <div className="space-y-3 pt-1">
+                      <div className="space-y-2 pt-0.5">
                         {!missingRequired && summaryParts.length > 0 && (
-                          <div className="rounded-xl border-2 border-primary/40 bg-primary/10 px-4 py-3 flex items-center gap-3">
-                            <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                            <p className="text-sm font-medium text-foreground leading-relaxed">
+                          <div className="rounded-xl border-2 border-primary/40 bg-primary/10 px-3 py-2 flex items-center gap-2">
+                            <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                            <p className="text-xs font-medium text-foreground leading-relaxed">
                               {summaryParts.join(" · ")}
                             </p>
                           </div>
                         )}
                         <Button
                           onClick={handleCreate}
-                          className="w-full h-12 text-sm font-semibold rounded-xl"
+                          className="w-full h-10 text-sm font-semibold rounded-xl"
                           disabled={disabled}
                         >
                           {ctaLabel}
@@ -1153,7 +1153,7 @@ export default function CalendarPage() {
                           type="button"
                           variant="outline"
                           onClick={() => setCreateOpen(false)}
-                          className="w-full h-12 text-sm font-medium rounded-xl"
+                          className="w-full h-10 text-sm font-medium rounded-xl"
                         >
                           {L.cancel}
                         </Button>
