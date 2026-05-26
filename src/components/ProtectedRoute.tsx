@@ -6,19 +6,22 @@ import { useIdleTimeout } from "@/hooks/useIdleTimeout";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, isRecovery } = useAuth();
-  const { data: profile, isLoading: profileLoading } = useProfile();
+  // Kick off profile fetch in the background, but do NOT block rendering on it —
+  // pages already render skeletons while their own data resolves.
+  useProfile();
   // Seed a demo workspace on first login for unpaid users with no real data
   useAutoSeedDemo();
   // GDPR: auto sign-out on inactivity (configurable in Settings → Security)
   useIdleTimeout();
 
-  if (loading || (user && profileLoading)) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
     );
   }
+
 
   if (!user) {
     return <Navigate to="/auth" replace />;
