@@ -41,6 +41,85 @@ import { PublicBookingSection } from "@/components/PublicBookingSection";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
+type LangKey = "en" | "uk" | "fr" | "pl";
+const NEW_COPY: Record<LangKey, {
+  noClientsYet: string; addNewClient: string; noServicesYet: string; addNewService: string;
+  createFirstTitle: string; createFirstDesc: string;
+  stepAddClient: string; stepAddService: string; stepDateTime: string; stepSave: string;
+  disabledHint: string;
+  qaClientTitle: string; qaServiceTitle: string;
+  clientName: string; clientEmail: string; clientPhone: string;
+  serviceName: string; serviceDuration: string; servicePrice: string;
+  saveClient: string; saveService: string; cancel: string;
+  durationMin: string;
+}> = {
+  en: {
+    noClientsYet: "No clients yet. Add your first client to create a session.",
+    addNewClient: "Add new client",
+    noServicesYet: "No services yet. Add your first service to continue.",
+    addNewService: "Add new service",
+    createFirstTitle: "Create your first session",
+    createFirstDesc: "Add a client, choose a service, set the date and time, then save.",
+    stepAddClient: "Add client", stepAddService: "Add service",
+    stepDateTime: "Choose date & time", stepSave: "Save session",
+    disabledHint: "Please add a client, service, date and time to create a session.",
+    qaClientTitle: "Add new client", qaServiceTitle: "Add new service",
+    clientName: "Name", clientEmail: "Email (optional)", clientPhone: "Phone (optional)",
+    serviceName: "Name", serviceDuration: "Duration", servicePrice: "Price",
+    saveClient: "Save client", saveService: "Save service", cancel: "Cancel",
+    durationMin: "min",
+  },
+  uk: {
+    noClientsYet: "Ще немає клієнтів. Додайте першого клієнта, щоб створити сесію.",
+    addNewClient: "Додати клієнта",
+    noServicesYet: "Ще немає послуг. Додайте першу послугу, щоб продовжити.",
+    addNewService: "Додати послугу",
+    createFirstTitle: "Створіть першу сесію",
+    createFirstDesc: "Додайте клієнта, оберіть послугу, встановіть дату й час та збережіть.",
+    stepAddClient: "Додати клієнта", stepAddService: "Додати послугу",
+    stepDateTime: "Обрати дату й час", stepSave: "Зберегти сесію",
+    disabledHint: "Додайте клієнта, послугу, дату й час, щоб створити сесію.",
+    qaClientTitle: "Новий клієнт", qaServiceTitle: "Нова послуга",
+    clientName: "Ім'я", clientEmail: "Email (необов'язково)", clientPhone: "Телефон (необов'язково)",
+    serviceName: "Назва", serviceDuration: "Тривалість", servicePrice: "Ціна",
+    saveClient: "Зберегти клієнта", saveService: "Зберегти послугу", cancel: "Скасувати",
+    durationMin: "хв",
+  },
+  fr: {
+    noClientsYet: "Aucun client. Ajoutez votre premier client pour créer une séance.",
+    addNewClient: "Ajouter un client",
+    noServicesYet: "Aucun service. Ajoutez votre premier service pour continuer.",
+    addNewService: "Ajouter un service",
+    createFirstTitle: "Créez votre première séance",
+    createFirstDesc: "Ajoutez un client, choisissez un service, définissez la date et l'heure, puis enregistrez.",
+    stepAddClient: "Ajouter un client", stepAddService: "Ajouter un service",
+    stepDateTime: "Choisir date et heure", stepSave: "Enregistrer la séance",
+    disabledHint: "Veuillez ajouter un client, un service, une date et une heure.",
+    qaClientTitle: "Nouveau client", qaServiceTitle: "Nouveau service",
+    clientName: "Nom", clientEmail: "Email (optionnel)", clientPhone: "Téléphone (optionnel)",
+    serviceName: "Nom", serviceDuration: "Durée", servicePrice: "Prix",
+    saveClient: "Enregistrer", saveService: "Enregistrer", cancel: "Annuler",
+    durationMin: "min",
+  },
+  pl: {
+    noClientsYet: "Brak klientów. Dodaj pierwszego klienta, aby utworzyć sesję.",
+    addNewClient: "Dodaj klienta",
+    noServicesYet: "Brak usług. Dodaj pierwszą usługę, aby kontynuować.",
+    addNewService: "Dodaj usługę",
+    createFirstTitle: "Utwórz pierwszą sesję",
+    createFirstDesc: "Dodaj klienta, wybierz usługę, ustaw datę i godzinę, a następnie zapisz.",
+    stepAddClient: "Dodaj klienta", stepAddService: "Dodaj usługę",
+    stepDateTime: "Wybierz datę i godzinę", stepSave: "Zapisz sesję",
+    disabledHint: "Dodaj klienta, usługę, datę i godzinę, aby utworzyć sesję.",
+    qaClientTitle: "Nowy klient", qaServiceTitle: "Nowa usługa",
+    clientName: "Imię", clientEmail: "Email (opcjonalnie)", clientPhone: "Telefon (opcjonalnie)",
+    serviceName: "Nazwa", serviceDuration: "Czas trwania", servicePrice: "Cena",
+    saveClient: "Zapisz klienta", saveService: "Zapisz usługę", cancel: "Anuluj",
+    durationMin: "min",
+  },
+};
+
+
 
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
