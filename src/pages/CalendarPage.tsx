@@ -1039,10 +1039,10 @@ export default function CalendarPage() {
                     <button
                       type="button"
                       onClick={() => setIsRecurring(v => !v)}
-                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left min-h-[44px]"
                     >
                       <span className={cn(
-                        "relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors",
+                        "relative inline-flex h-5 w-9 sm:h-5 sm:w-9 shrink-0 rounded-full transition-colors",
                         isRecurring ? "bg-primary" : "bg-muted"
                       )}>
                         <span className={cn(
@@ -1066,7 +1066,7 @@ export default function CalendarPage() {
                         <div className="space-y-1 pt-2">
                           <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.intervalWeeks")}</Label>
                           <Select value={recurInterval.toString()} onValueChange={v => setRecurInterval(parseInt(v))}>
-                            <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="h-10 sm:h-9"><SelectValue /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="1">{t("recurring.weekly")}</SelectItem>
                               <SelectItem value="2">{t("recurring.biweekly")}</SelectItem>
@@ -1082,7 +1082,7 @@ export default function CalendarPage() {
                               const active = recurDays.includes(i + 1);
                               return (
                                 <button key={i} type="button" onClick={() => toggleRecurDay(i + 1)}
-                                  className={cn("h-8 rounded-md text-xs font-medium transition-colors border-2",
+                                  className={cn("h-9 sm:h-8 rounded-md text-xs font-medium transition-colors border-2",
                                     active ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border text-foreground hover:border-muted-foreground/60"
                                   )}>
                                   {t(key as any)}
