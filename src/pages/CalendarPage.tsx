@@ -1045,15 +1045,16 @@ export default function CalendarPage() {
                   />
 
                   {createValidation && !isRecurring && (
-                    <div className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
+                    <div role="alert" className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
                       ⚠️ {createValidation}
                     </div>
                   )}
 
                   {/* Notes */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-bold uppercase text-muted-foreground">{t("calendar.notes")}</Label>
+                    <Label htmlFor="appt-notes" className="text-xs font-bold uppercase text-muted-foreground">{t("calendar.notes")}</Label>
                     <Textarea
+                      id="appt-notes"
                       value={form.notes}
                       onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                       placeholder={isGroupSession ? L.notesGroupPlaceholder : L.notesPlaceholder}
