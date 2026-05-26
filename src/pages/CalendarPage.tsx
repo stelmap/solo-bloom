@@ -21,7 +21,7 @@ import {
 } from "@/lib/calendarVisuals";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { format, addDays, startOfWeek, isSameDay, isBefore, startOfDay } from "date-fns";
+import { format, addDays, startOfWeek, isSameDay, isBefore, startOfDay, addMonths, startOfMonth, endOfMonth, endOfWeek, endOfDay, eachDayOfInterval, isSameMonth } from "date-fns";
 import { getDateLocale } from "@/lib/dateLocale";
 import { formatTime, formatScheduledTime } from "@/lib/timeFormat";
 import {
@@ -424,7 +424,31 @@ export default function CalendarPage() {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const effectiveView: CalendarView = isMobile ? "day" : view;
-  const days = effectiveView === "day" ? [currentDate] : effectiveView === "month" ? weekDays : weekDays;
+  // Time-grid days (day or week view). Month view uses its own grid below.
+  const days = effectiveView === "day" ? [currentDate] : weekDays;
+
+  // Period selection (for analytics + month grid)
+  const periodStart = useMemo(() => {
+    if (effectiveView === "day") return startOfDay(currentDate);
+    if (effectiveView === "month") return startOfMonth(currentDate);
+    return weekStart;
+  }, [effectiveView, currentDate, weekStart]);
+  const periodEnd = useMemo(() => {
+    if (effectiveView === "day") return endOfDay(currentDate);
+    if (effectiveView === "month") return endOfMonth(currentDate);
+    return endOfDay(addDays(weekStart, 6));
+  }, [effectiveView, currentDate, weekStart]);
+  const periodDays = useMemo(
+    () => eachDayOfInterval({ start: periodStart, end: periodEnd }),
+    [periodStart, periodEnd],
+  );
+  // Full month grid (Mon-Sun rows) for month view
+  const monthGridDays = useMemo(() => {
+    if (effectiveView !== "month") return [] as Date[];
+    const gridStart = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 1 });
+    const gridEnd = endOfWeek(endOfMonth(currentDate), { weekStartsOn: 1 });
+    return eachDayOfInterval({ start: gridStart, end: gridEnd });
+  }, [effectiveView, currentDate]);
 
   const toggleRecurDay = (d: number) => {
     setRecurDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d].sort());
@@ -739,23 +763,40 @@ export default function CalendarPage() {
   const fmtHour = (hour: number) => formatTime(`${hour.toString().padStart(2, "0")}:00`, use12h);
   const fmtTime = (dateStr: string) => formatScheduledTime(dateStr, use12h);
 
-  // Weekly capacity calculations
-  const weekCapacity = useMemo(() => {
+  // Period capacity (Day / Week / Month) — analytics recompute by selected view
+  const periodCapacity = useMemo(() => {
     const sessionsPerDay = (profile as any)?.sessions_per_day ?? 6;
     let totalSlots = 0;
-    const dayStats = days.map(day => {
+    let totalBooked = 0;
+    let totalRevenue = 0;
+    const dayStats = periodDays.map(day => {
       const working = isDayWorking(day);
       const slots = working ? sessionsPerDay : 0;
       totalSlots += slots;
-      const booked = appointments.filter(apt => {
-        const dayStr = format(day, "yyyy-MM-dd");
-        return toUTCDateStr(new Date(apt.scheduled_at)) === dayStr && apt.status !== "cancelled";
-      }).length;
+      const dayStr = format(day, "yyyy-MM-dd");
+      const dayApts = appointments.filter(
+        apt => toUTCDateStr(new Date(apt.scheduled_at)) === dayStr && apt.status !== "cancelled",
+      );
+      const booked = dayApts.length;
+      totalBooked += booked;
+      totalRevenue += dayApts.reduce((s, a: any) => s + Number(a.price ?? 0), 0);
       return { day, working, slots, booked, free: Math.max(slots - booked, 0) };
     });
-    const totalBooked = dayStats.reduce((s, d) => s + d.booked, 0);
-    return { totalSlots, totalBooked, totalFree: Math.max(totalSlots - totalBooked, 0), dayStats };
-  }, [days, appointments, profile, scheduleMap, daysOffSet]);
+    const pendingInPeriod = pendingRequests.filter(r => {
+      const d = new Date(r.requested_slot_at);
+      return d >= periodStart && d <= periodEnd;
+    }).length;
+    return {
+      totalSlots,
+      totalBooked,
+      totalFree: Math.max(totalSlots - totalBooked, 0),
+      totalRevenue,
+      pendingInPeriod,
+      dayStats,
+    };
+  }, [periodDays, periodStart, periodEnd, appointments, profile, scheduleMap, daysOffSet, pendingRequests]);
+  // Back-compat alias used by the per-day bar (only relevant in Day/Week views)
+  const weekCapacity = periodCapacity;
 
   // Drag-and-drop handlers
   const canDropOnSlot = useCallback((day: Date, hour: number, aptId: string) => {
@@ -939,7 +980,7 @@ export default function CalendarPage() {
               </div>
             ) : (
               <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1">
-                <Button variant="ghost" size="icon" aria-label="Previous" onClick={() => setCurrentDate(d => addDays(d, effectiveView === "month" ? -30 : effectiveView === "day" ? -1 : -7))}><ChevronLeft className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" aria-label="Previous" onClick={() => setCurrentDate(d => effectiveView === "month" ? addMonths(d, -1) : addDays(d, effectiveView === "day" ? -1 : -7))}><ChevronLeft className="h-4 w-4" /></Button>
                 <span className="text-sm font-medium px-2 sm:px-3 text-foreground whitespace-nowrap">
                   {effectiveView === "day"
                     ? format(currentDate, "EEE, MMM d, yyyy", { locale: dateLocale })
@@ -947,7 +988,7 @@ export default function CalendarPage() {
                       ? format(currentDate, "MMMM yyyy", { locale: dateLocale })
                       : `${format(weekStart, "MMM d", { locale: dateLocale })} – ${format(addDays(weekStart, 6), "MMM d, yyyy", { locale: dateLocale })}`}
                 </span>
-                <Button variant="ghost" size="icon" aria-label="Next" onClick={() => setCurrentDate(d => addDays(d, effectiveView === "month" ? 30 : effectiveView === "day" ? 1 : 7))}><ChevronRight className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" aria-label="Next" onClick={() => setCurrentDate(d => effectiveView === "month" ? addMonths(d, 1) : addDays(d, effectiveView === "day" ? 1 : 7))}><ChevronRight className="h-4 w-4" /></Button>
               </div>
             )}
             {!isMobile && (
@@ -1444,48 +1485,187 @@ export default function CalendarPage() {
 
 
 
-        {/* Weekly capacity bar */}
+        {/* Period analytics — recomputes with selected Day / Week / Month view */}
         <div className="bg-card rounded-xl border border-border p-3 sm:p-4 animate-fade-in">
           <div className="flex items-center gap-2 sm:gap-3 mb-3 flex-wrap">
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">{t("capacity.title")}</span>
-            <div className="flex items-center gap-2 sm:gap-4 ml-auto text-xs text-muted-foreground">
-              <span>{t("capacity.totalSlots")}: {weekCapacity.totalSlots}</span>
-              <span>{t("capacity.booked")}: {weekCapacity.totalBooked}</span>
-              <span>{t("capacity.free")}: {weekCapacity.totalFree}</span>
+            <span className="text-sm font-medium text-foreground">
+              {effectiveView === "day"
+                ? format(currentDate, "EEE, MMM d", { locale: dateLocale })
+                : effectiveView === "month"
+                  ? format(currentDate, "MMMM yyyy", { locale: dateLocale })
+                  : `${format(weekStart, "MMM d", { locale: dateLocale })} – ${format(addDays(weekStart, 6), "MMM d", { locale: dateLocale })}`}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3 mb-3">
+            <button
+              type="button"
+              onClick={() => clearFilters()}
+              className="text-left rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-3"
+            >
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{t("capacity.totalSlots")}</p>
+              <p className="text-xl font-semibold text-foreground tabular-nums">{periodCapacity.totalSlots}</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilters(f => ({ ...f, status: f.status === "confirmed" ? "all" : "confirmed" }))}
+              className="text-left rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-3"
+            >
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{t("capacity.booked")}</p>
+              <p className="text-xl font-semibold text-foreground tabular-nums">{periodCapacity.totalBooked}</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => clearFilters()}
+              className="text-left rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-3"
+            >
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{t("capacity.free")}</p>
+              <p className="text-xl font-semibold text-foreground tabular-nums">{periodCapacity.totalFree}</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/income")}
+              className="text-left rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-3"
+            >
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Revenue</p>
+              <p className="text-xl font-semibold text-foreground tabular-nums">{cs}{periodCapacity.totalRevenue.toFixed(0)}</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setInboxOpen(true)}
+              className={cn(
+                "text-left rounded-lg border transition-colors p-3 relative",
+                periodCapacity.pendingInPeriod > 0
+                  ? "border-warning/40 bg-warning/10 hover:bg-warning/15"
+                  : "border-border bg-background hover:bg-accent/40",
+              )}
+            >
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{(t as any)("booking.pendingRequests") || "Pending requests"}</p>
+              <p className="text-xl font-semibold text-foreground tabular-nums">{periodCapacity.pendingInPeriod}</p>
+            </button>
+          </div>
+          {effectiveView !== "month" && (
+            <div className={cn("grid gap-0", isMobile ? "grid-cols-[56px_1fr]" : "grid-cols-[72px_repeat(7,1fr)]")}>
+              <div />{/* spacer for time column */}
+              {periodCapacity.dayStats.map((ds, i) => {
+                const dow = days[i].getDay();
+                const dayKeyIdx = dow === 0 ? 6 : dow - 1;
+                const pct = ds.slots > 0 ? (ds.booked / ds.slots) * 100 : 0;
+                const isFull = ds.slots > 0 && ds.booked >= ds.slots;
+                const isLow = ds.working && ds.slots > 0 && pct < 30;
+                return (
+                  <div key={i} className="text-center">
+                    <p className="text-xs text-muted-foreground mb-1">{t(DAY_KEYS[dayKeyIdx] as any)}</p>
+                    {ds.working ? (
+                      <>
+                        <Progress value={pct} className={cn("h-2", isFull ? "[&>div]:bg-destructive" : isLow ? "[&>div]:bg-warning" : "")} />
+                        <p className="text-xs mt-1">
+                          <span className="font-medium text-foreground">{ds.booked}</span>
+                          <span className="text-muted-foreground">/{ds.slots}</span>
+                        </p>
+                        {isFull && <Badge variant="outline" className="text-[10px] px-1 mt-0.5 border-destructive/30 text-destructive">{t("capacity.fullyBooked")}</Badge>}
+                      </>
+                    ) : (
+                      <div className="flex items-center justify-center h-6">
+                        <CalendarOff className="h-3.5 w-3.5 text-muted-foreground/40" />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          </div>
-          <div className={cn("grid gap-0", isMobile ? "grid-cols-[56px_1fr]" : "grid-cols-[72px_repeat(7,1fr)]")}>
-            <div />{/* spacer for time column */}
-            {weekCapacity.dayStats.map((ds, i) => {
-              const dow = days[i].getDay();
-              const dayKeyIdx = dow === 0 ? 6 : dow - 1;
-              const pct = ds.slots > 0 ? (ds.booked / ds.slots) * 100 : 0;
-              const isFull = ds.slots > 0 && ds.booked >= ds.slots;
-              const isLow = ds.working && ds.slots > 0 && pct < 30;
-              return (
-                <div key={i} className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">{t(DAY_KEYS[dayKeyIdx] as any)}</p>
-                  {ds.working ? (
-                    <>
-                      <Progress value={pct} className={cn("h-2", isFull ? "[&>div]:bg-destructive" : isLow ? "[&>div]:bg-warning" : "")} />
-                      <p className="text-xs mt-1">
-                        <span className="font-medium text-foreground">{ds.booked}</span>
-                        <span className="text-muted-foreground">/{ds.slots}</span>
-                      </p>
-                      {isFull && <Badge variant="outline" className="text-[10px] px-1 mt-0.5 border-destructive/30 text-destructive">{t("capacity.fullyBooked")}</Badge>}
-                    </>
-                  ) : (
-                    <div className="flex items-center justify-center h-6">
-                      <CalendarOff className="h-3.5 w-3.5 text-muted-foreground/40" />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          )}
         </div>
 
+        {effectiveView === "month" && (
+          <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
+            <div className="grid grid-cols-7 border-b border-border bg-muted/30">
+              {DAY_KEYS.map((dk) => (
+                <div key={dk} className="p-2 text-center text-xs font-medium text-muted-foreground">
+                  {t(dk as any)}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7">
+              {monthGridDays.map((day, i) => {
+                const dayStr = format(day, "yyyy-MM-dd");
+                const inMonth = isSameMonth(day, currentDate);
+                const dayOff = isDayOff(day);
+                const working = isDayWorking(day);
+                const dayApts = visibleAppointments.filter(
+                  (apt) => toUTCDateStr(new Date(apt.scheduled_at)) === dayStr && apt.status !== "cancelled",
+                );
+                const dayPending = visiblePendingRequests.filter(
+                  (r) => toUTCDateStr(new Date(r.requested_slot_at)) === dayStr,
+                );
+                const isToday = isSameDay(day, new Date());
+                return (
+                  <div
+                    key={i}
+                    onClick={() => {
+                      if (!working || dayOff) return;
+                      setForm((f) => ({ ...f, date: dayStr, time: f.time || "09:00" }));
+                      const dow = day.getDay();
+                      setRecurDays([dow === 0 ? 7 : dow]);
+                      setServiceError(false);
+                      setCreateOpen(true);
+                    }}
+                    className={cn(
+                      "min-h-[110px] border-l border-b border-border p-1.5 cursor-pointer transition-colors",
+                      !inMonth && "bg-muted/20 text-muted-foreground/60",
+                      dayOff && "bg-destructive/5",
+                      !working && inMonth && !dayOff && "bg-muted/10",
+                      working && !dayOff && "hover:bg-primary/5",
+                      isToday && "bg-accent",
+                    )}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={cn("text-xs font-semibold", isToday && "text-accent-foreground", dayOff && "text-destructive/60")}>
+                        {format(day, "d")}
+                      </span>
+                      {dayOff && <CalendarOff className="h-3 w-3 text-destructive/60" />}
+                    </div>
+                    <div className="space-y-0.5">
+                      {dayApts.slice(0, 3).map((apt: any) => {
+                        const si = statusInfo(apt.status);
+                        const isGroupEvt = !!apt.group_session_id;
+                        const groupName = apt.group_sessions?.groups?.name;
+                        const displayName = isGroupEvt && groupName ? groupName : apt.clients?.name;
+                        return (
+                          <div
+                            key={apt.id}
+                            onClick={(e) => { e.stopPropagation(); openSessionSheet(apt); }}
+                            className={cn("text-[10px] px-1.5 py-0.5 rounded truncate cursor-pointer hover:ring-1 hover:ring-ring/30", si.color)}
+                            title={`${fmtTime(apt.scheduled_at)} · ${displayName}`}
+                          >
+                            <span className="font-medium">{fmtTime(apt.scheduled_at)}</span> {displayName}
+                          </div>
+                        );
+                      })}
+                      {dayPending.slice(0, 1).map((req) => (
+                        <div
+                          key={req.id}
+                          onClick={(e) => { e.stopPropagation(); setInboxOpen(true); }}
+                          className="text-[10px] px-1.5 py-0.5 rounded truncate cursor-pointer border border-dashed border-warning/70 bg-warning/15 text-warning-foreground"
+                          title={t("booking.pendingRequest") || "Pending request"}
+                        >
+                          ⏳ {req.matched_client_name || req.first_name}
+                        </div>
+                      ))}
+                      {(dayApts.length + dayPending.length) > 4 && (
+                        <div className="text-[10px] text-muted-foreground px-1.5">
+                          +{dayApts.length + dayPending.length - 4} {(t as any)("calendar.more") || "more"}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {effectiveView !== "month" && (
         <div
           className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex flex-col"
           style={{ maxHeight: "calc(100vh - 180px)", minHeight: "480px", touchAction: isMobile ? "pan-y" : undefined }}
@@ -1672,6 +1852,7 @@ export default function CalendarPage() {
             </table>
           </div>
         </div>
+        )}
         </section>
 
         {flags.showLegend && (
