@@ -1577,6 +1577,95 @@ export default function CalendarPage() {
           )}
         </div>
 
+        {effectiveView === "month" && (
+          <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
+            <div className="grid grid-cols-7 border-b border-border bg-muted/30">
+              {DAY_KEYS.map((dk) => (
+                <div key={dk} className="p-2 text-center text-xs font-medium text-muted-foreground">
+                  {t(dk as any)}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7">
+              {monthGridDays.map((day, i) => {
+                const dayStr = format(day, "yyyy-MM-dd");
+                const inMonth = isSameMonth(day, currentDate);
+                const dayOff = isDayOff(day);
+                const working = isDayWorking(day);
+                const dayApts = visibleAppointments.filter(
+                  (apt) => toUTCDateStr(new Date(apt.scheduled_at)) === dayStr && apt.status !== "cancelled",
+                );
+                const dayPending = visiblePendingRequests.filter(
+                  (r) => toUTCDateStr(new Date(r.requested_slot_at)) === dayStr,
+                );
+                const isToday = isSameDay(day, new Date());
+                return (
+                  <div
+                    key={i}
+                    onClick={() => {
+                      if (!working || dayOff) return;
+                      setForm((f) => ({ ...f, date: dayStr, time: f.time || "09:00" }));
+                      const dow = day.getDay();
+                      setRecurDays([dow === 0 ? 7 : dow]);
+                      setServiceError(false);
+                      setCreateOpen(true);
+                    }}
+                    className={cn(
+                      "min-h-[110px] border-l border-b border-border p-1.5 cursor-pointer transition-colors",
+                      !inMonth && "bg-muted/20 text-muted-foreground/60",
+                      dayOff && "bg-destructive/5",
+                      !working && inMonth && !dayOff && "bg-muted/10",
+                      working && !dayOff && "hover:bg-primary/5",
+                      isToday && "bg-accent",
+                    )}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={cn("text-xs font-semibold", isToday && "text-accent-foreground", dayOff && "text-destructive/60")}>
+                        {format(day, "d")}
+                      </span>
+                      {dayOff && <CalendarOff className="h-3 w-3 text-destructive/60" />}
+                    </div>
+                    <div className="space-y-0.5">
+                      {dayApts.slice(0, 3).map((apt: any) => {
+                        const si = statusInfo(apt.status);
+                        const isGroupEvt = !!apt.group_session_id;
+                        const groupName = apt.group_sessions?.groups?.name;
+                        const displayName = isGroupEvt && groupName ? groupName : apt.clients?.name;
+                        return (
+                          <div
+                            key={apt.id}
+                            onClick={(e) => { e.stopPropagation(); openSessionSheet(apt); }}
+                            className={cn("text-[10px] px-1.5 py-0.5 rounded truncate cursor-pointer hover:ring-1 hover:ring-ring/30", si.color)}
+                            title={`${fmtTime(apt.scheduled_at)} · ${displayName}`}
+                          >
+                            <span className="font-medium">{fmtTime(apt.scheduled_at)}</span> {displayName}
+                          </div>
+                        );
+                      })}
+                      {dayPending.slice(0, 1).map((req) => (
+                        <div
+                          key={req.id}
+                          onClick={(e) => { e.stopPropagation(); setInboxOpen(true); }}
+                          className="text-[10px] px-1.5 py-0.5 rounded truncate cursor-pointer border border-dashed border-warning/70 bg-warning/15 text-warning-foreground"
+                          title={t("booking.pendingRequest") || "Pending request"}
+                        >
+                          ⏳ {req.matched_client_name || req.first_name}
+                        </div>
+                      ))}
+                      {(dayApts.length + dayPending.length) > 4 && (
+                        <div className="text-[10px] text-muted-foreground px-1.5">
+                          +{dayApts.length + dayPending.length - 4} {t("calendar.more") || "more"}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {effectiveView !== "month" && (
         <div
           className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex flex-col"
           style={{ maxHeight: "calc(100vh - 180px)", minHeight: "480px", touchAction: isMobile ? "pan-y" : undefined }}
