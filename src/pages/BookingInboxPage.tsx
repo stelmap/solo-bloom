@@ -412,6 +412,43 @@ export default function BookingInboxPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Create new client from request */}
+      <Dialog open={!!creatingFor} onOpenChange={(o) => !o && setCreatingFor(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create new client from request</DialogTitle>
+            <DialogDescription>
+              If a client with this email already exists, it will be linked instead of duplicated.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Name</label>
+              <Input value={newClientName} onChange={(e) => setNewClientName(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Email</label>
+              <Input type="email" value={newClientEmail} onChange={(e) => setNewClientEmail(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Phone</label>
+              <Input value={newClientPhone} onChange={(e) => setNewClientPhone(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Notes</label>
+              <Textarea rows={3} value={newClientNotes} onChange={(e) => setNewClientNotes(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreatingFor(null)}>Cancel</Button>
+            <Button disabled={createClient.isPending || link.isPending} onClick={handleCreateClientAndLink}>
+              {(createClient.isPending || link.isPending) ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Create & link
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
