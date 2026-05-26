@@ -980,13 +980,88 @@ export default function CalendarPage() {
                     )}
                   </div>
 
-                  <Button onClick={handleCreate} className="w-full"
-                    disabled={createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending || (!isRecurring && !isGroupSession && !!createValidation) || (isGroupSession && (!groupId || groupMembers.length === 0))}>
-                    {(createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending) ? t("calendar.creating") : (isGroupSession ? t("groups.groupSession") : isRecurring ? t("recurring.seriesCreated").split(" ")[0] + "..." : t("calendar.createAppointment"))}
-                  </Button>
+                  {(() => {
+                    const missingRequired = isGroupSession
+                      ? (!groupId || groupMembers.length === 0 || !form.service_id || !form.date || !form.time)
+                      : (!form.client_id || !form.service_id || !form.date || !form.time);
+                    const disabled = createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending
+                      || missingRequired
+                      || (!isRecurring && !isGroupSession && !!createValidation);
+                    return (
+                      <>
+                        <Button onClick={handleCreate} className="w-full" disabled={disabled}>
+                          {(createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending)
+                            ? t("calendar.creating")
+                            : (isGroupSession ? t("groups.groupSession") : isRecurring ? t("recurring.seriesCreated").split(" ")[0] + "..." : t("calendar.createAppointment"))}
+                        </Button>
+                        {missingRequired && (
+                          <p className="text-xs text-muted-foreground text-center">{L.disabledHint}</p>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
+
+                {/* Nested quick-add: client */}
+                <Dialog open={qaClientOpen} onOpenChange={setQaClientOpen}>
+                  <DialogContent>
+                    <DialogHeader><DialogTitle>{L.qaClientTitle}</DialogTitle></DialogHeader>
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <Label>{L.clientName} *</Label>
+                        <Input value={qaClient.name} onChange={e => setQaClient(s => ({ ...s, name: e.target.value }))} autoFocus />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>{L.clientEmail}</Label>
+                        <Input type="email" value={qaClient.email} onChange={e => setQaClient(s => ({ ...s, email: e.target.value }))} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>{L.clientPhone}</Label>
+                        <Input value={qaClient.phone} onChange={e => setQaClient(s => ({ ...s, phone: e.target.value }))} />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setQaClientOpen(false)}>{L.cancel}</Button>
+                      <Button onClick={handleQuickAddClient} disabled={!qaClient.name.trim() || createClient.isPending}>
+                        {createClient.isPending ? t("calendar.creating") : L.saveClient}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Nested quick-add: service */}
+                <Dialog open={qaServiceOpen} onOpenChange={setQaServiceOpen}>
+                  <DialogContent>
+                    <DialogHeader><DialogTitle>{L.qaServiceTitle}</DialogTitle></DialogHeader>
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <Label>{L.serviceName} *</Label>
+                        <Input value={qaService.name} onChange={e => setQaService(s => ({ ...s, name: e.target.value }))} autoFocus />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <Label>{L.serviceDuration} ({L.durationMin}) *</Label>
+                          <Input type="number" min={5} step={5} value={qaService.duration_minutes}
+                            onChange={e => setQaService(s => ({ ...s, duration_minutes: parseInt(e.target.value) || 0 }))} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>{L.servicePrice} ({cs})</Label>
+                          <Input type="number" min={0} step="0.01" value={qaService.price}
+                            onChange={e => setQaService(s => ({ ...s, price: parseFloat(e.target.value) || 0 }))} />
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setQaServiceOpen(false)}>{L.cancel}</Button>
+                      <Button onClick={handleQuickAddService} disabled={!qaService.name.trim() || qaService.duration_minutes <= 0 || createService.isPending}>
+                        {createService.isPending ? t("calendar.creating") : L.saveService}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </DialogContent>
             </Dialog>
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
