@@ -980,7 +980,7 @@ export default function CalendarPage() {
               </div>
             ) : (
               <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1">
-                <Button variant="ghost" size="icon" aria-label="Previous" onClick={() => setCurrentDate(d => addDays(d, effectiveView === "month" ? -30 : effectiveView === "day" ? -1 : -7))}><ChevronLeft className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" aria-label="Previous" onClick={() => setCurrentDate(d => effectiveView === "month" ? addMonths(d, -1) : addDays(d, effectiveView === "day" ? -1 : -7))}><ChevronLeft className="h-4 w-4" /></Button>
                 <span className="text-sm font-medium px-2 sm:px-3 text-foreground whitespace-nowrap">
                   {effectiveView === "day"
                     ? format(currentDate, "EEE, MMM d, yyyy", { locale: dateLocale })
