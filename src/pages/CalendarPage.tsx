@@ -861,7 +861,7 @@ export default function CalendarPage() {
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 mr-1" /> {t("calendar.newAppointment")}</Button>
               </DialogTrigger>
-              <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[520px] rounded-2xl shadow-2xl p-0">
+              <DialogContent className="max-h-[92vh] sm:max-h-[85vh] overflow-y-auto max-w-[calc(100vw-1rem)] sm:max-w-[520px] rounded-2xl shadow-2xl p-0 mx-2 sm:mx-0">
                 {(() => {
                   const stepClient = !!form.client_id || (isGroupSession && !!groupId);
                   const stepService = !!form.service_id;
@@ -869,7 +869,7 @@ export default function CalendarPage() {
                   const stepNotes = !!form.notes || stepDate;
                   const steps = [stepClient, stepService, stepDate, stepNotes];
                   return (
-                    <div className="grid grid-cols-4 gap-1.5 px-5 pt-4">
+                    <div className="grid grid-cols-4 gap-1.5 px-4 pt-4 sm:px-5">
                       {steps.map((done, i) => (
                         <div key={i} className={cn("h-1 rounded-full transition-colors", done ? "bg-primary" : "bg-muted")} />
                       ))}
@@ -877,19 +877,19 @@ export default function CalendarPage() {
                   );
                 })()}
 
-                <DialogHeader className="px-5 pt-4 pb-1 space-y-0.5 text-left">
+                <DialogHeader className="px-4 pt-4 pb-1 space-y-0.5 text-left sm:px-5">
                   <DialogTitle className="text-xl font-bold tracking-tight">{t("calendar.newAppointment")}</DialogTitle>
                   <DialogDescription className="text-sm text-muted-foreground">{L.modalSubtitle}</DialogDescription>
                 </DialogHeader>
 
-                <div className="px-5 pt-3 pb-5 space-y-4">
+                <div className="px-4 pt-3 pb-5 space-y-4 sm:px-5">
                   {/* Session type — two large pills */}
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => { setIsGroupSession(false); setGroupId(""); }}
                       className={cn(
-                        "flex items-center justify-center gap-1.5 h-9 rounded-xl border-2 text-sm font-medium transition-all",
+                        "flex items-center justify-center gap-1.5 h-10 sm:h-9 rounded-xl border-2 text-sm font-medium transition-all",
                         !isGroupSession
                           ? "border-foreground bg-background text-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60"
@@ -903,7 +903,7 @@ export default function CalendarPage() {
                       onClick={() => { setIsGroupSession(true); setForm(f => ({ ...f, client_id: "" })); }}
                       disabled={activeGroups.length === 0}
                       className={cn(
-                        "flex items-center justify-center gap-1.5 h-9 rounded-xl border-2 text-sm font-medium transition-all",
+                        "flex items-center justify-center gap-1.5 h-10 sm:h-9 rounded-xl border-2 text-sm font-medium transition-all",
                         isGroupSession
                           ? "border-foreground bg-background text-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60",
@@ -923,7 +923,7 @@ export default function CalendarPage() {
                       </Label>
                       <div className="flex gap-2">
                         <Select value={groupId} onValueChange={setGroupId}>
-                          <SelectTrigger className="h-9 flex-1"><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
+                          <SelectTrigger className="h-10 sm:h-9 flex-1"><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
                           <SelectContent>{activeGroups.map((g: any) => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
                         </Select>
                       </div>
@@ -951,20 +951,20 @@ export default function CalendarPage() {
                       {clients.length === 0 ? (
                         <div className="rounded-lg border border-dashed border-border p-3 space-y-1.5 bg-muted/20 text-center">
                           <p className="text-sm text-muted-foreground">{L.noClientsYet}</p>
-                          <Button type="button" variant="outline" size="sm" className="gap-1 h-8" onClick={() => setQaClientOpen(true)}>
+                          <Button type="button" variant="outline" size="sm" className="gap-1 h-9 sm:h-8" onClick={() => setQaClientOpen(true)}>
                             <UserPlus className="h-3.5 w-3.5" /> {L.addNewClient}
                           </Button>
                         </div>
                       ) : (
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <ClientPicker
                             clients={clients}
                             value={form.client_id}
                             onChange={v => setForm(f => ({ ...f, client_id: v }))}
                             placeholder={t("calendar.selectClient")}
-                            triggerClassName="h-9 flex-1"
+                            triggerClassName="h-10 sm:h-9 flex-1"
                           />
-                          <Button type="button" variant="outline" className="h-9 px-2.5 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaClientOpen(true)}>
+                          <Button type="button" variant="outline" className="h-10 sm:h-9 px-2.5 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaClientOpen(true)}>
                             <Plus className="h-3.5 w-3.5" /> {L.addNewClient}
                           </Button>
                         </div>
@@ -980,18 +980,18 @@ export default function CalendarPage() {
                     {services.length === 0 ? (
                       <div className="rounded-lg border border-dashed border-border p-3 space-y-1.5 bg-muted/20 text-center">
                         <p className="text-sm text-muted-foreground">{L.noServicesYet}</p>
-                        <Button type="button" variant="outline" size="sm" className="gap-1 h-8" onClick={() => setQaServiceOpen(true)}>
+                        <Button type="button" variant="outline" size="sm" className="gap-1 h-9 sm:h-8" onClick={() => setQaServiceOpen(true)}>
                           <Briefcase className="h-3.5 w-3.5" /> {L.addNewService}
                         </Button>
                       </div>
                     ) : (
                       <>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); }}>
-                            <SelectTrigger className={cn("h-9 flex-1", serviceError && "border-destructive")}><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
+                            <SelectTrigger className={cn("h-10 sm:h-9 flex-1", serviceError && "border-destructive")}><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
                             <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                           </Select>
-                          <Button type="button" variant="outline" className="h-9 px-2.5 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaServiceOpen(true)}>
+                          <Button type="button" variant="outline" className="h-10 sm:h-9 px-2.5 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaServiceOpen(true)}>
                             <Plus className="h-3.5 w-3.5" /> {L.addNewService}
                           </Button>
                         </div>
@@ -1039,10 +1039,10 @@ export default function CalendarPage() {
                     <button
                       type="button"
                       onClick={() => setIsRecurring(v => !v)}
-                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left min-h-[44px]"
                     >
                       <span className={cn(
-                        "relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors",
+                        "relative inline-flex h-5 w-9 sm:h-5 sm:w-9 shrink-0 rounded-full transition-colors",
                         isRecurring ? "bg-primary" : "bg-muted"
                       )}>
                         <span className={cn(
@@ -1066,7 +1066,7 @@ export default function CalendarPage() {
                         <div className="space-y-1 pt-2">
                           <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.intervalWeeks")}</Label>
                           <Select value={recurInterval.toString()} onValueChange={v => setRecurInterval(parseInt(v))}>
-                            <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="h-10 sm:h-9"><SelectValue /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="1">{t("recurring.weekly")}</SelectItem>
                               <SelectItem value="2">{t("recurring.biweekly")}</SelectItem>
@@ -1082,7 +1082,7 @@ export default function CalendarPage() {
                               const active = recurDays.includes(i + 1);
                               return (
                                 <button key={i} type="button" onClick={() => toggleRecurDay(i + 1)}
-                                  className={cn("h-8 rounded-md text-xs font-medium transition-colors border-2",
+                                  className={cn("h-9 sm:h-8 rounded-md text-xs font-medium transition-colors border-2",
                                     active ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border text-foreground hover:border-muted-foreground/60"
                                   )}>
                                   {t(key as any)}
@@ -1144,7 +1144,7 @@ export default function CalendarPage() {
                         )}
                         <Button
                           onClick={handleCreate}
-                          className="w-full h-10 text-sm font-semibold rounded-xl"
+                          className="w-full h-11 sm:h-10 text-sm font-semibold rounded-xl"
                           disabled={disabled}
                         >
                           {ctaLabel}
@@ -1153,7 +1153,7 @@ export default function CalendarPage() {
                           type="button"
                           variant="outline"
                           onClick={() => setCreateOpen(false)}
-                          className="w-full h-10 text-sm font-medium rounded-xl"
+                          className="w-full h-10 sm:h-9 text-sm font-medium rounded-xl"
                         >
                           {L.cancel}
                         </Button>
