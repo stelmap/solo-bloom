@@ -12,6 +12,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { TranslationKey } from "@/i18n/translations";
 import { useEntitlements, type FeatureCode } from "@/hooks/useEntitlements";
 import { useFreeStarterMode } from "@/hooks/useDemoWorkspace";
+import { useBookingInboxCount } from "@/hooks/useBookingInbox";
 
 
 type LeafItem = { kind: "leaf"; icon: any; labelKey: TranslationKey; path: string; requires?: FeatureCode };
@@ -65,6 +66,7 @@ export function AppSidebar() {
   const { isFreeStarter } = useFreeStarterMode();
   const { has, loading: entLoading } = useEntitlements();
   const [isAdmin, setIsAdmin] = useState(false);
+  const { data: inboxCount = 0 } = useBookingInboxCount();
   
 
 
@@ -208,6 +210,26 @@ export function AppSidebar() {
               </div>
             );
           })}
+
+          <Link
+            to="/booking-inbox"
+            onClick={() => setMobileOpen(false)}
+            className={cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+              isExactActive("/booking-inbox")
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+            )}
+          >
+            <Inbox className="h-4.5 w-4.5 shrink-0" />
+            <span className="flex-1 truncate">Booking inbox</span>
+            {inboxCount > 0 && (
+              <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold">
+                {inboxCount}
+              </span>
+            )}
+          </Link>
+
 
           {lockedCount > 0 && (
             <Link
