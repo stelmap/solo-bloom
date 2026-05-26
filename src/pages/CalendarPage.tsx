@@ -1852,6 +1852,7 @@ export default function CalendarPage() {
             </table>
           </div>
         </div>
+        )}
         </section>
 
         {flags.showLegend && (
