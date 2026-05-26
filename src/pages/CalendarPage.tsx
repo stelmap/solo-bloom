@@ -988,7 +988,7 @@ export default function CalendarPage() {
                       ? format(currentDate, "MMMM yyyy", { locale: dateLocale })
                       : `${format(weekStart, "MMM d", { locale: dateLocale })} – ${format(addDays(weekStart, 6), "MMM d, yyyy", { locale: dateLocale })}`}
                 </span>
-                <Button variant="ghost" size="icon" aria-label="Next" onClick={() => setCurrentDate(d => addDays(d, effectiveView === "month" ? 30 : effectiveView === "day" ? 1 : 7))}><ChevronRight className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" aria-label="Next" onClick={() => setCurrentDate(d => effectiveView === "month" ? addMonths(d, 1) : addDays(d, effectiveView === "day" ? 1 : 7))}><ChevronRight className="h-4 w-4" /></Button>
               </div>
             )}
             {!isMobile && (
