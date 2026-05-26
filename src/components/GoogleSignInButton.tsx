@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { getPostAuthRedirect } from "@/lib/authRedirect";
 import { lovable } from "@/integrations/lovable";
 
 interface Props {
@@ -32,7 +33,7 @@ export function GoogleSignInButton({ disabled }: Props) {
       }
       // On redirect, the browser will navigate away. On success with tokens, session is set.
       if (!result.redirected) {
-        window.location.href = "/dashboard";
+        window.location.href = getPostAuthRedirect();
       }
     } catch (e) {
       toast({
