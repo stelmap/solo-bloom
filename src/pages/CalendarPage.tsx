@@ -1094,7 +1094,7 @@ export default function CalendarPage() {
                       onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                       placeholder={isGroupSession ? L.notesGroupPlaceholder : L.notesPlaceholder}
                       rows={2}
-                      className=cn("resize-none rounded-lg", D.notes)
+                      className={cn("resize-none rounded-lg", D.notes)}
                     />
                   </div>
 
@@ -1223,13 +1223,13 @@ export default function CalendarPage() {
                             type="button"
                             variant="outline"
                             onClick={() => setCreateOpen(false)}
-                            className=cn("flex-1 text-sm font-medium rounded-xl", D.cta)
+                            className={cn("flex-1 text-sm font-medium rounded-xl", D.cta)}
                           >
                             {L.cancel}
                           </Button>
                           <Button
                             type="submit"
-                            className=cn("flex-[2] text-sm font-semibold rounded-xl", D.cta)
+                            className={cn("flex-[2] text-sm font-semibold rounded-xl", D.cta)}
                             disabled={disabled}
                             aria-disabled={disabled}
                           >
