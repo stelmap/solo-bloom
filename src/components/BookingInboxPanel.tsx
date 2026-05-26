@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
@@ -7,18 +8,20 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { ClientPicker } from "@/components/ClientPicker";
-import { useClients, useServices } from "@/hooks/useData";
+import { useClients, useServices, useCreateClient, useProfile } from "@/hooks/useData";
 import {
   useBookingRequests, useConfirmBookingRequest,
   useDeclineBookingRequest, useLinkBookingRequestClient,
   type BookingRequestRow,
 } from "@/hooks/useBookingInbox";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Loader2, Mail, Phone, CheckCircle2, XCircle, UserPlus,
   RefreshCw, Inbox, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
 
 function fmt(s: string) {
   try { return new Date(s).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }); }
