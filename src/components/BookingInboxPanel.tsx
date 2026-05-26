@@ -32,6 +32,8 @@ export function BookingInboxPanel({ className }: { className?: string }) {
   const { data: rows = [], isLoading, refetch, isFetching } = useBookingRequests();
   const { data: services = [] } = useServices();
   const { data: clients = [] } = useClients();
+  const { data: profile } = useProfile();
+  const createClient = useCreateClient();
 
   const pending = useMemo(
     () => rows.filter((r) => r.status === "pending" || r.status === "needs_linking"),
@@ -49,6 +51,52 @@ export function BookingInboxPanel({ className }: { className?: string }) {
   const [confirmClientId, setConfirmClientId] = useState<string>("");
   const [collapsedMobile, setCollapsedMobile] = useState(true);
 
+  // Create-client-from-request dialog state
+  const [creatingFor, setCreatingFor] = useState<BookingRequestRow | null>(null);
+  const [newClientName, setNewClientName] = useState("");
+  const [newClientEmail, setNewClientEmail] = useState("");
+  const [newClientPhone, setNewClientPhone] = useState("");
+  const [newClientNotes, setNewClientNotes] = useState("");
+
+  async function sendConfirmationEmail(req: BookingRequestRow, serviceId?: string) {
+    try {
+      const slot = new Date(req.requested_slot_at);
+      const lang = (profile as any)?.language || "en";
+      const dateFmt = slot.toLocaleDateString(lang, { year: "numeric", month: "long", day: "numeric" });
+      const timeFmt = slot.toLocaleTimeString(lang, { hour: "2-digit", minute: "2-digit" });
+      const therapistName =
+        (profile as any)?.business_name ||
+        (profile as any)?.full_name ||
+        "your specialist";
+      const serviceName =
+        (services as any[]).find((s) => s.id === serviceId)?.name ||
+        undefined;
+      const clientName =
+        `${req.first_name}${req.last_name ? " " + req.last_name : ""}`.trim() || "Client";
+
+      await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "booking-confirmation",
+          recipientEmail: req.email,
+          // Stable per-request key — system de-duplicates so multiple confirms
+          // (e.g. after refresh) won't trigger a second email.
+          idempotencyKey: `booking-confirm-${req.id}`,
+          templateData: {
+            clientName,
+            specialistName: therapistName,
+            sessionDate: dateFmt,
+            sessionTime: timeFmt,
+            serviceName,
+            language: lang,
+          },
+        },
+      });
+    } catch (e) {
+      // Email failure should not block the confirm flow itself
+      console.warn("booking-confirmation email failed", e);
+    }
+  }
+
   async function handleConfirm(req: BookingRequestRow) {
     const cid = req.client_id ?? confirmClientId;
     if (!cid) {
@@ -57,7 +105,9 @@ export function BookingInboxPanel({ className }: { className?: string }) {
     }
     try {
       await confirm.mutateAsync({ id: req.id, client_id: cid, service_id: confirmServiceId || undefined });
-      toast({ title: "Booking confirmed" });
+      // Notify the client at the exact email from the request
+      await sendConfirmationEmail(req, confirmServiceId || undefined);
+      toast({ title: "Booking confirmed", description: `Confirmation sent to ${req.email}` });
       setConfirmingFor(null); setConfirmClientId(""); setConfirmServiceId("");
     } catch (e: any) {
       toast({ title: "Could not confirm", description: e.message, variant: "destructive" });
@@ -83,6 +133,47 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       toast({ title: "Could not link", description: e.message, variant: "destructive" });
     }
   }
+
+  function openCreateClient(req: BookingRequestRow) {
+    setCreatingFor(req);
+    setNewClientName(`${req.first_name}${req.last_name ? " " + req.last_name : ""}`.trim());
+    setNewClientEmail(req.email);
+    setNewClientPhone(req.phone ?? "");
+    setNewClientNotes(req.comment ?? "");
+  }
+
+  async function handleCreateClientAndLink() {
+    if (!creatingFor) return;
+    const email = newClientEmail.trim().toLowerCase();
+    if (!newClientName.trim() || !email) {
+      toast({ title: "Name and email are required", variant: "destructive" });
+      return;
+    }
+    try {
+      // De-dup guard: if a client with this email already exists, link instead of creating
+      const existing = (clients as any[]).find(
+        (c) => (c.email || "").toLowerCase() === email,
+      );
+      const clientId = existing
+        ? existing.id
+        : (await createClient.mutateAsync({
+            name: newClientName.trim(),
+            email,
+            phone: newClientPhone.trim() || undefined,
+            notes: newClientNotes.trim() || undefined,
+          })).id;
+
+      await link.mutateAsync({ id: creatingFor.id, client_id: clientId });
+      toast({
+        title: existing ? "Linked to existing client" : "Client created and linked",
+        description: existing ? `Matched ${existing.name} by email` : undefined,
+      });
+      setCreatingFor(null);
+    } catch (e: any) {
+      toast({ title: "Could not create client", description: e.message, variant: "destructive" });
+    }
+  }
+
 
   return (
     <aside className={cn("bg-card rounded-xl border border-border flex flex-col", className)}>
