@@ -861,77 +861,72 @@ export default function CalendarPage() {
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 mr-1" /> {t("calendar.newAppointment")}</Button>
               </DialogTrigger>
-              <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-[620px] rounded-2xl shadow-2xl p-0">
-                <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/60">
-                  <DialogTitle className="text-xl font-semibold tracking-tight">{t("calendar.newAppointment")}</DialogTitle>
+              <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-[640px] rounded-2xl shadow-2xl p-0">
+                {(() => {
+                  const stepClient = !!form.client_id || (isGroupSession && !!groupId);
+                  const stepService = !!form.service_id;
+                  const stepDate = !!form.date && !!form.time;
+                  const stepNotes = !!form.notes || stepDate;
+                  const steps = [stepClient, stepService, stepDate, stepNotes];
+                  return (
+                    <div className="grid grid-cols-4 gap-1.5 px-6 pt-6">
+                      {steps.map((done, i) => (
+                        <div key={i} className={cn("h-1 rounded-full transition-colors", done ? "bg-primary" : "bg-muted")} />
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                <DialogHeader className="px-6 pt-5 pb-1 space-y-1 text-left">
+                  <DialogTitle className="text-2xl font-bold tracking-tight">{t("calendar.newAppointment")}</DialogTitle>
                   <DialogDescription className="text-sm text-muted-foreground">{L.modalSubtitle}</DialogDescription>
                 </DialogHeader>
-                <div className="px-6 py-5 space-y-5">
-                  {/* First-session helper (shown only when no appointments yet) */}
-                  {appointments.length === 0 && (
-                    <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-2">
-                      <p className="text-sm font-semibold">{L.createFirstTitle}</p>
-                      <p className="text-xs text-muted-foreground">{L.createFirstDesc}</p>
-                      <ul className="text-xs text-muted-foreground space-y-1 pt-1">
-                        {[
-                          { ok: !!form.client_id || (isGroupSession && !!groupId), label: L.stepAddClient },
-                          { ok: !!form.service_id, label: L.stepAddService },
-                          { ok: !!form.date && !!form.time, label: L.stepDateTime },
-                          { ok: false, label: L.stepSave },
-                        ].map((s, i) => (
-                          <li key={i} className="flex items-center gap-2">
-                            {s.ok
-                              ? <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-                              : <Circle className="h-3.5 w-3.5 text-muted-foreground/60" />}
-                            <span className={s.ok ? "text-foreground" : ""}>{s.label}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
 
-                  {/* Session type segmented control */}
-                  {activeGroups.length > 0 && (
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-foreground">{L.sessionTypeLabel}</Label>
-                      <div className="grid grid-cols-2 gap-1 p-1 bg-muted/50 rounded-lg border border-border/60">
-                        <button
-                          type="button"
-                          onClick={() => { setIsGroupSession(false); setGroupId(""); }}
-                          className={cn(
-                            "flex items-center justify-center gap-2 h-9 rounded-md text-sm font-medium transition-all",
-                            !isGroupSession
-                              ? "bg-primary text-primary-foreground shadow-sm"
-                              : "text-muted-foreground hover:text-foreground"
-                          )}
-                        >
-                          <UserPlus className="h-3.5 w-3.5" />
-                          <span>{L.individualSession}</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => { setIsGroupSession(true); setForm(f => ({ ...f, client_id: "" })); }}
-                          className={cn(
-                            "flex items-center justify-center gap-2 h-9 rounded-md text-sm font-medium transition-all",
-                            isGroupSession
-                              ? "bg-primary text-primary-foreground shadow-sm"
-                              : "text-muted-foreground hover:text-foreground"
-                          )}
-                        >
-                          <Users className="h-3.5 w-3.5" />
-                          <span>{L.groupSession}</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                <div className="px-6 pt-4 pb-6 space-y-5">
+                  {/* Session type — two large pills */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => { setIsGroupSession(false); setGroupId(""); }}
+                      className={cn(
+                        "flex items-center justify-center gap-2 h-12 rounded-xl border-2 text-sm font-medium transition-all",
+                        !isGroupSession
+                          ? "border-foreground bg-background text-foreground shadow-sm"
+                          : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60"
+                      )}
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      <span>{L.individualSession}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setIsGroupSession(true); setForm(f => ({ ...f, client_id: "" })); }}
+                      disabled={activeGroups.length === 0}
+                      className={cn(
+                        "flex items-center justify-center gap-2 h-12 rounded-xl border-2 text-sm font-medium transition-all",
+                        isGroupSession
+                          ? "border-foreground bg-background text-foreground shadow-sm"
+                          : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60",
+                        activeGroups.length === 0 && "opacity-50 cursor-not-allowed"
+                      )}
+                    >
+                      <Users className="h-4 w-4" />
+                      <span>{L.groupSession}</span>
+                    </button>
+                  </div>
 
+                  {/* Client / Group */}
                   {isGroupSession ? (
                     <div className="space-y-2">
-                      <Label>{t("groups.selectGroup")} *</Label>
-                      <Select value={groupId} onValueChange={setGroupId}>
-                        <SelectTrigger className="h-10"><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
-                        <SelectContent>{activeGroups.map((g: any) => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
-                      </Select>
+                      <Label className="text-xs font-bold uppercase text-muted-foreground">
+                        {t("groups.selectGroup")} <span className="text-primary">*</span>
+                      </Label>
+                      <div className="flex gap-2">
+                        <Select value={groupId} onValueChange={setGroupId}>
+                          <SelectTrigger className="h-11 flex-1"><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
+                          <SelectContent>{activeGroups.map((g: any) => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
                       {groupId && groupMembers.length > 0 && (
                         <div className="pt-1 space-y-1.5">
                           <p className="text-xs text-muted-foreground">{L.participants} · {groupMembers.length}</p>
@@ -950,7 +945,9 @@ export default function CalendarPage() {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <Label>{t("calendar.client")} *</Label>
+                      <Label className="text-xs font-bold uppercase text-muted-foreground">
+                        {t("calendar.client")} <span className="text-primary">*</span>
+                      </Label>
                       {clients.length === 0 ? (
                         <div className="rounded-lg border border-dashed border-border p-4 space-y-2 bg-muted/20 text-center">
                           <p className="text-sm text-muted-foreground">{L.noClientsYet}</p>
@@ -959,23 +956,27 @@ export default function CalendarPage() {
                           </Button>
                         </div>
                       ) : (
-                        <>
+                        <div className="flex gap-2">
                           <ClientPicker
                             clients={clients}
                             value={form.client_id}
                             onChange={v => setForm(f => ({ ...f, client_id: v }))}
                             placeholder={t("calendar.selectClient")}
+                            triggerClassName="h-11 flex-1"
                           />
-                          <Button type="button" variant="ghost" size="sm" className="h-auto p-0 text-xs text-primary gap-1 hover:bg-transparent hover:underline" onClick={() => setQaClientOpen(true)}>
-                            <UserPlus className="h-3.5 w-3.5" /> {L.addNewClient}
+                          <Button type="button" variant="outline" className="h-11 px-3 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaClientOpen(true)}>
+                            <Plus className="h-4 w-4" /> {L.addNewClient}
                           </Button>
-                        </>
+                        </div>
                       )}
                     </div>
                   )}
 
+                  {/* Service */}
                   <div className="space-y-2">
-                    <Label>{t("calendar.service")} *</Label>
+                    <Label className="text-xs font-bold uppercase text-muted-foreground">
+                      {t("calendar.service")} <span className="text-primary">*</span>
+                    </Label>
                     {services.length === 0 ? (
                       <div className="rounded-lg border border-dashed border-border p-4 space-y-2 bg-muted/20 text-center">
                         <p className="text-sm text-muted-foreground">{L.noServicesYet}</p>
@@ -985,13 +986,15 @@ export default function CalendarPage() {
                       </div>
                     ) : (
                       <>
-                        <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); }}>
-                          <SelectTrigger className={cn("h-10", serviceError && "border-destructive")}><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
-                          <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
-                        </Select>
-                        <Button type="button" variant="ghost" size="sm" className="h-auto p-0 text-xs text-primary gap-1 hover:bg-transparent hover:underline" onClick={() => setQaServiceOpen(true)}>
-                          <Briefcase className="h-3.5 w-3.5" /> {L.addNewService}
-                        </Button>
+                        <div className="flex gap-2">
+                          <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); }}>
+                            <SelectTrigger className={cn("h-11 flex-1", serviceError && "border-destructive")}><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
+                            <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
+                          </Select>
+                          <Button type="button" variant="outline" className="h-11 px-3 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaServiceOpen(true)}>
+                            <Plus className="h-4 w-4" /> {L.addNewService}
+                          </Button>
+                        </div>
                         {serviceError && (
                           <p className="text-sm text-destructive">⚠️ {t("calendar.service")} is required</p>
                         )}
@@ -999,6 +1002,7 @@ export default function CalendarPage() {
                     )}
                   </div>
 
+                  {/* Date / Time */}
                   <DateTimePicker
                     date={form.date}
                     time={form.time}
@@ -1015,31 +1019,54 @@ export default function CalendarPage() {
                     </div>
                   )}
 
+                  {/* Notes */}
                   <div className="space-y-2">
-                    <Label>{t("calendar.notes")}</Label>
+                    <Label className="text-xs font-bold uppercase text-muted-foreground">{t("calendar.notes")}</Label>
                     <Textarea
                       value={form.notes}
                       onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                       placeholder={isGroupSession ? L.notesGroupPlaceholder : L.notesPlaceholder}
                       rows={3}
-                      className="resize-none min-h-[88px]"
+                      className="resize-none min-h-[96px] rounded-lg"
                     />
                   </div>
 
-                  {/* Recurring section */}
-                  <div className="border-t border-border pt-4 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Checkbox id="recurring" checked={isRecurring} onCheckedChange={v => setIsRecurring(!!v)} />
-                      <Label htmlFor="recurring" className="flex items-center gap-1.5 cursor-pointer font-medium">
-                        <Repeat className="h-3.5 w-3.5" /> {t("recurring.setup")}
-                      </Label>
-                    </div>
+                  {/* Repeat session — orange highlighted toggle row */}
+                  <div className={cn(
+                    "rounded-xl border-2 transition-all overflow-hidden",
+                    isRecurring ? "border-primary bg-primary/10" : "border-border bg-background"
+                  )}>
+                    <button
+                      type="button"
+                      onClick={() => setIsRecurring(v => !v)}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left"
+                    >
+                      <span className={cn(
+                        "relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors",
+                        isRecurring ? "bg-primary" : "bg-muted"
+                      )}>
+                        <span className={cn(
+                          "inline-block h-5 w-5 rounded-full bg-background shadow transition-transform mt-0.5",
+                          isRecurring ? "translate-x-[22px]" : "translate-x-0.5"
+                        )} />
+                      </span>
+                      <span className="flex-1 font-medium text-sm text-foreground">{t("recurring.setup")}</span>
+                      {isRecurring && (() => {
+                        const freqLabel = recurInterval === 1 ? t("recurring.weekly")
+                          : recurInterval === 2 ? t("recurring.biweekly")
+                          : t("recurring.custom", { n: String(recurInterval) });
+                        const dayLabels = recurDays.map(d => t(DAY_KEYS[d - 1] as any)).join(", ");
+                        return (
+                          <span className="text-xs text-muted-foreground">{freqLabel}{dayLabels ? ` · ${dayLabels}` : ""}</span>
+                        );
+                      })()}
+                    </button>
                     {isRecurring && (
-                      <div className="space-y-3 pl-6 border-l-2 border-primary/20">
-                        <div className="space-y-2">
-                          <Label className="text-xs">{t("recurring.intervalWeeks")}</Label>
+                      <div className="px-4 pb-4 pt-1 space-y-4 bg-muted/30 border-t border-border/60">
+                        <div className="space-y-2 pt-3">
+                          <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.intervalWeeks")}</Label>
                           <Select value={recurInterval.toString()} onValueChange={v => setRecurInterval(parseInt(v))}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="1">{t("recurring.weekly")}</SelectItem>
                               <SelectItem value="2">{t("recurring.biweekly")}</SelectItem>
@@ -1049,20 +1076,23 @@ export default function CalendarPage() {
                           </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-xs">{t("recurring.daysOfWeek")}</Label>
-                          <div className="flex gap-1">
-                            {DAY_KEYS.map((key, i) => (
-                              <button key={i} onClick={() => toggleRecurDay(i + 1)}
-                                className={cn("w-9 h-9 rounded-md text-xs font-medium transition-colors border",
-                                  recurDays.includes(i + 1) ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground hover:bg-muted"
-                                )}>
-                                {t(key as any)}
-                              </button>
-                            ))}
+                          <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.daysOfWeek")}</Label>
+                          <div className="grid grid-cols-7 gap-1.5">
+                            {DAY_KEYS.map((key, i) => {
+                              const active = recurDays.includes(i + 1);
+                              return (
+                                <button key={i} type="button" onClick={() => toggleRecurDay(i + 1)}
+                                  className={cn("h-10 rounded-md text-xs font-medium transition-colors border-2",
+                                    active ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border text-foreground hover:border-muted-foreground/60"
+                                  )}>
+                                  {t(key as any)}
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-xs">{t("recurring.endDate")}</Label>
+                          <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.endDate")}</Label>
                           <DatePicker date={recurEndDate} onDateChange={setRecurEndDate} placeholder={t("recurring.ongoing")} />
                         </div>
                       </div>
@@ -1077,7 +1107,6 @@ export default function CalendarPage() {
                       || missingRequired
                       || (!isRecurring && !isGroupSession && !!createValidation);
 
-                    // Build summary
                     const selectedService = services.find(s => s.id === form.service_id);
                     const selectedClient = clients.find(c => c.id === form.client_id);
                     const selectedGroup = activeGroups.find((g: any) => g.id === groupId);
@@ -1085,16 +1114,18 @@ export default function CalendarPage() {
                     if (form.date) {
                       try {
                         const [y, m, d] = form.date.split("-").map(Number);
-                        summaryDate = format(new Date(y, m - 1, d), "d MMMM yyyy", { locale: dateLocale });
+                        summaryDate = format(new Date(y, m - 1, d), "d MMMM", { locale: dateLocale });
                       } catch { summaryDate = form.date; }
                     }
+                    const recurSummary = isRecurring
+                      ? `${(recurInterval === 1 ? t("recurring.weekly") : recurInterval === 2 ? t("recurring.biweekly") : t("recurring.custom", { n: String(recurInterval) })).toLowerCase()} ${recurDays.map(d => t(DAY_KEYS[d - 1] as any)).join(",")}`
+                      : "";
                     const summaryParts = [
-                      isGroupSession
-                        ? (selectedGroup ? `${selectedGroup.name}${groupMembers.length ? ` · ${groupMembers.length} ${t("groups.members").toLowerCase()}` : ""}` : "")
-                        : selectedClient?.name,
+                      isGroupSession ? selectedGroup?.name : selectedClient?.name,
                       summaryDate,
                       form.time ? formatTime(form.time, use12h) : "",
                       selectedService ? `${cs}${Number(selectedService.price).toFixed(0)}` : "",
+                      recurSummary,
                     ].filter(Boolean);
 
                     const ctaLabel = (createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending)
@@ -1102,19 +1133,29 @@ export default function CalendarPage() {
                       : (isGroupSession ? L.ctaGroup : L.ctaIndividual);
 
                     return (
-                      <div className="space-y-3 pt-2">
+                      <div className="space-y-3 pt-1">
                         {!missingRequired && summaryParts.length > 0 && (
-                          <div className="rounded-lg bg-muted/40 border border-border/60 p-3 space-y-1">
-                            <p className="text-xs font-medium text-muted-foreground">
-                              {isGroupSession ? L.summaryWillCreateGroup : L.summaryWillCreate}
-                            </p>
+                          <div className="rounded-xl border-2 border-primary/40 bg-primary/10 px-4 py-3 flex items-center gap-3">
+                            <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                             <p className="text-sm font-medium text-foreground leading-relaxed">
                               {summaryParts.join(" · ")}
                             </p>
                           </div>
                         )}
-                        <Button onClick={handleCreate} className="w-full h-11 text-sm font-semibold" disabled={disabled}>
+                        <Button
+                          onClick={handleCreate}
+                          className="w-full h-12 text-sm font-semibold rounded-xl"
+                          disabled={disabled}
+                        >
                           {ctaLabel}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setCreateOpen(false)}
+                          className="w-full h-12 text-sm font-medium rounded-xl"
+                        >
+                          {L.cancel}
                         </Button>
                         {missingRequired && (
                           <p className="text-xs text-muted-foreground text-center">{L.disabledHint}</p>
