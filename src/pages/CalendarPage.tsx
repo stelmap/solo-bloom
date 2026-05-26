@@ -893,7 +893,7 @@ export default function CalendarPage() {
                   {/* Session type segmented control */}
                   {activeGroups.length > 0 && (
                     <div className="space-y-2">
-                      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{L.sessionTypeLabel}</Label>
+                      <Label className="text-sm font-medium text-foreground">{L.sessionTypeLabel}</Label>
                       <div className="grid grid-cols-2 gap-1 p-1 bg-muted/50 rounded-lg border border-border/60">
                         <button
                           type="button"
