@@ -175,17 +175,25 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="space-y-8">
+      <div className="space-y-10">
         {/* Header */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="font-serif text-4xl sm:text-5xl leading-[1.05] text-foreground">
-              {t("dashboard.greeting")} <span className="inline-block">👋</span>
-            </h1>
-            <p className="text-muted-foreground mt-2">{t("dashboard.subtitle")}</p>
-          </div>
-          <div className="self-start sm:self-auto bg-card border border-border px-4 py-2 rounded-full text-sm font-medium text-muted-foreground shadow-sm whitespace-nowrap">
-            {todayLabel}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-hero border border-border/60 px-6 sm:px-10 py-8 sm:py-10 shadow-elegant">
+          <div className="pointer-events-none absolute -top-24 -right-16 h-72 w-72 rounded-full bg-primary/30 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-secondary/20 blur-3xl" />
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-primary mb-3">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse-soft" />
+                {t("ops.todayOverview")}
+              </span>
+              <h1 className="font-serif text-4xl sm:text-6xl leading-[1.02] text-foreground">
+                {t("dashboard.greeting")} <span className="inline-block">👋</span>
+              </h1>
+              <p className="text-muted-foreground mt-3 text-base">{t("dashboard.subtitle")}</p>
+            </div>
+            <div className="self-start sm:self-auto bg-card/80 backdrop-blur border border-border px-4 py-2 rounded-full text-sm font-medium text-muted-foreground shadow-sm whitespace-nowrap">
+              {todayLabel}
+            </div>
           </div>
         </div>
 
@@ -195,7 +203,7 @@ export default function Dashboard() {
             {t("ops.monthlyOverview")}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            <OverviewTile icon={Users} label={t("ops.activeClientsThisMonth")} value={String(stats?.activeClientsThisMonth ?? 0)} onClick={() => openWidget("active_clients_this_month", "/clients?filter=activeThisMonth")} />
+            <OverviewTile icon={Users} label={t("ops.activeClientsThisMonth")} value={String(stats?.activeClientsThisMonth ?? 0)} tone="primary" onClick={() => openWidget("active_clients_this_month", "/clients?filter=activeThisMonth")} />
             <OverviewTile icon={UserPlus} label={t("ops.newClientsThisMonth")} value={String(stats?.newClientsThisMonth ?? 0)} tone="success" onClick={() => openWidget("new_clients_this_month", "/clients?filter=newThisMonth")} />
             <OverviewTile icon={UserCheck} label={t("ops.completedTherapyThisMonth")} value={String(stats?.completedTherapyThisMonth ?? 0)} tone="success" onClick={() => openWidget("completed_therapy_this_month", "/clients?filter=completedThisMonth")} />
             <OverviewTile icon={UserMinus} label={t("ops.droppedTherapyThisMonth")} value={String(stats?.droppedTherapyThisMonth ?? 0)} tone="warning" onClick={() => openWidget("dropped_therapy_this_month", "/clients?filter=droppedThisMonth")} />
