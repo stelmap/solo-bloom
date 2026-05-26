@@ -861,7 +861,7 @@ export default function CalendarPage() {
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 mr-1" /> {t("calendar.newAppointment")}</Button>
               </DialogTrigger>
-              <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-[560px] rounded-2xl shadow-2xl p-0">
+              <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-[620px] rounded-2xl shadow-2xl p-0">
                 <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/60">
                   <DialogTitle className="text-xl font-semibold tracking-tight">{t("calendar.newAppointment")}</DialogTitle>
                   <DialogDescription className="text-sm text-muted-foreground">{L.modalSubtitle}</DialogDescription>
