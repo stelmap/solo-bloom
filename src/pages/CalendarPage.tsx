@@ -944,7 +944,7 @@ export default function CalendarPage() {
                       tabIndex={!isGroupSession ? 0 : -1}
                       onClick={() => { setIsGroupSession(false); setGroupId(""); }}
                       className={cn(
-                        "flex items-center justify-center gap-1.5 h-9 sm:h-8 rounded-xl border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                        "flex items-center justify-center gap-1.5 rounded-xl ${D.pill}  border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                         !isGroupSession
                           ? "border-foreground bg-background text-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60"
@@ -961,7 +961,7 @@ export default function CalendarPage() {
                       onClick={() => { setIsGroupSession(true); setForm(f => ({ ...f, client_id: "" })); }}
                       disabled={activeGroups.length === 0}
                       className={cn(
-                        "flex items-center justify-center gap-1.5 h-9 sm:h-8 rounded-xl border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                        "flex items-center justify-center gap-1.5 rounded-xl ${D.pill}  border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                         isGroupSession
                           ? "border-foreground bg-background text-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60",
@@ -981,7 +981,7 @@ export default function CalendarPage() {
                       </Label>
                       <div className="flex gap-2">
                         <Select value={groupId} onValueChange={setGroupId}>
-                          <SelectTrigger className="h-9 sm:h-8 flex-1"><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
+                          <SelectTrigger className="flex-1"><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
                           <SelectContent>{activeGroups.map((g: any) => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
                         </Select>
                       </div>
@@ -1020,9 +1020,9 @@ export default function CalendarPage() {
                             value={form.client_id}
                             onChange={v => setForm(f => ({ ...f, client_id: v }))}
                             placeholder={t("calendar.selectClient")}
-                            triggerClassName="h-9 sm:h-8 flex-1"
+                            triggerClassName="flex-1"
                           />
-                          <Button type="button" variant="outline" className="h-9 sm:h-8 px-2.5 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaClientOpen(true)}>
+                          <Button type="button" variant="outline" className="px-2.5 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaClientOpen(true)}>
                             <Plus className="h-3.5 w-3.5" /> {L.addNewClient}
                           </Button>
                         </div>
@@ -1051,13 +1051,13 @@ export default function CalendarPage() {
                               aria-required="true"
                               aria-invalid={serviceError}
                               aria-describedby={serviceError ? "appt-service-error" : undefined}
-                              className={cn("h-9 sm:h-8 flex-1", serviceError && "border-destructive")}
+                              className={cn("flex-1", serviceError && "border-destructive")}
                             >
                               <SelectValue placeholder={t("calendar.selectService")} />
                             </SelectTrigger>
                             <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                           </Select>
-                          <Button type="button" variant="outline" className="h-9 sm:h-8 px-2.5 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaServiceOpen(true)}>
+                          <Button type="button" variant="outline" className="px-2.5 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaServiceOpen(true)}>
                             <Plus className="h-3.5 w-3.5" aria-hidden="true" /> {L.addNewService}
                           </Button>
                         </div>
