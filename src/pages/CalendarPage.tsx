@@ -861,7 +861,7 @@ export default function CalendarPage() {
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 mr-1" /> {t("calendar.newAppointment")}</Button>
               </DialogTrigger>
-              <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[520px] rounded-2xl shadow-2xl p-0">
+              <DialogContent className="max-h-[92vh] sm:max-h-[85vh] overflow-y-auto max-w-[calc(100vw-1rem)] sm:max-w-[520px] rounded-2xl shadow-2xl p-0 mx-2 sm:mx-0">
                 {(() => {
                   const stepClient = !!form.client_id || (isGroupSession && !!groupId);
                   const stepService = !!form.service_id;
@@ -869,7 +869,7 @@ export default function CalendarPage() {
                   const stepNotes = !!form.notes || stepDate;
                   const steps = [stepClient, stepService, stepDate, stepNotes];
                   return (
-                    <div className="grid grid-cols-4 gap-1.5 px-5 pt-4">
+                    <div className="grid grid-cols-4 gap-1.5 px-4 pt-4 sm:px-5">
                       {steps.map((done, i) => (
                         <div key={i} className={cn("h-1 rounded-full transition-colors", done ? "bg-primary" : "bg-muted")} />
                       ))}
@@ -877,12 +877,12 @@ export default function CalendarPage() {
                   );
                 })()}
 
-                <DialogHeader className="px-5 pt-4 pb-1 space-y-0.5 text-left">
+                <DialogHeader className="px-4 pt-4 pb-1 space-y-0.5 text-left sm:px-5">
                   <DialogTitle className="text-xl font-bold tracking-tight">{t("calendar.newAppointment")}</DialogTitle>
                   <DialogDescription className="text-sm text-muted-foreground">{L.modalSubtitle}</DialogDescription>
                 </DialogHeader>
 
-                <div className="px-5 pt-3 pb-5 space-y-4">
+                <div className="px-4 pt-3 pb-5 space-y-4 sm:px-5">
                   {/* Session type — two large pills */}
                   <div className="grid grid-cols-2 gap-2">
                     <button
