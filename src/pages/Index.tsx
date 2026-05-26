@@ -1,4 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { getPostAuthRedirect } from "@/lib/authRedirect";
 import { Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 
@@ -18,7 +19,7 @@ export default function Index() {
   }
 
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={getPostAuthRedirect()} replace />;
   }
 
   return (

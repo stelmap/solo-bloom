@@ -11,6 +11,7 @@ import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { getStoredLang } from "@/i18n/LanguageContext";
 import { track } from "@/lib/analytics";
+import { getPostAuthRedirect } from "@/lib/authRedirect";
 import { PublicFooter } from "@/components/PublicFooter";
 import { SeoHead } from "@/components/SeoHead";
 
@@ -100,7 +101,7 @@ export default function AuthPage() {
         }
         if (serverCode === "already_subscribed") {
           toast({ title: "You're already subscribed", description: serverMsg });
-          navigate("/dashboard", { replace: true });
+          navigate(getPostAuthRedirect(), { replace: true });
           return;
         }
         throw new Error(serverMsg || error.message || "Failed to start checkout");
@@ -121,7 +122,7 @@ export default function AuthPage() {
     if (!user || !planParam) return;
 
     if (isFreeStarterPlan || !isCheckoutPlan) {
-      navigate("/dashboard", { replace: true });
+      navigate(getPostAuthRedirect(), { replace: true });
       return;
     }
 
@@ -132,7 +133,7 @@ export default function AuthPage() {
         title: "You're already subscribed",
         description: "Manage your plan from Settings → Subscription.",
       });
-      navigate("/dashboard", { replace: true });
+      navigate(getPostAuthRedirect(), { replace: true });
       return;
     }
 
@@ -148,7 +149,7 @@ export default function AuthPage() {
   }
 
   if (user && (!planParam || isFreeStarterPlan || !isCheckoutPlan)) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={getPostAuthRedirect()} replace />;
   }
 
   if (user && planParam && isCheckoutPlan && (subscription.loading || checkoutRedirecting || checkoutTriggeredRef.current) && !checkoutError) {
@@ -171,7 +172,7 @@ export default function AuthPage() {
           <p className="text-sm text-muted-foreground">{checkoutError}</p>
           <div className="flex gap-2 justify-center">
             <Button onClick={() => startPlanCheckout(planParam)}>Try again</Button>
-            <Button variant="outline" onClick={() => navigate("/dashboard", { replace: true })}>Cancel</Button>
+            <Button variant="outline" onClick={() => navigate(getPostAuthRedirect(), { replace: true })}>Cancel</Button>
           </div>
         </div>
       </div>
@@ -211,7 +212,7 @@ export default function AuthPage() {
         track("sign_up_started", { plan_type: planParam ?? undefined, lang });
         toast({ title: t("auth.accountCreated"), description: t("auth.checkEmail") });
         if (data.session) {
-          navigate(planParam ? `/auth?plan=${encodeURIComponent(planParam)}` : "/dashboard", { replace: true });
+          navigate(planParam ? `/auth?plan=${encodeURIComponent(planParam)}` : getPostAuthRedirect(), { replace: true });
         } else {
           setSent(true);
         }
@@ -219,7 +220,7 @@ export default function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
         track("login_completed", { plan_type: planParam ?? undefined, lang });
-        navigate(planParam ? `/auth?plan=${encodeURIComponent(planParam)}` : "/dashboard", { replace: true });
+        navigate(planParam ? `/auth?plan=${encodeURIComponent(planParam)}` : getPostAuthRedirect(), { replace: true });
       }
     } catch (error: any) {
       const message = mode === "login" ? t("auth.incorrectEmailOrPassword") : error.message;
