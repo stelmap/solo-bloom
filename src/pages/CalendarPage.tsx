@@ -1510,13 +1510,13 @@ export default function CalendarPage() {
               onClick={() => setInboxOpen(true)}
               className={cn(
                 "text-left rounded-lg border transition-colors p-3 relative",
-                periodCapacity.pendingInPeriod > 0
+                pendingRequests.length > 0
                   ? "border-warning/40 bg-warning/10 hover:bg-warning/15"
                   : "border-border bg-background hover:bg-accent/40",
               )}
             >
               <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{(t as any)("booking.pendingRequests") || "Pending requests"}</p>
-              <p className="text-xl font-semibold text-foreground tabular-nums">{periodCapacity.pendingInPeriod}</p>
+              <p className="text-xl font-semibold text-foreground tabular-nums">{pendingRequests.length}</p>
             </button>
           </div>
           {effectiveView !== "month" && (
