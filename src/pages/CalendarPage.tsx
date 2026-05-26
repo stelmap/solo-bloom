@@ -1171,36 +1171,38 @@ export default function CalendarPage() {
                       : (isGroupSession ? L.ctaGroup : L.ctaIndividual);
 
                     return (
-                      <div className="space-y-2 pt-0.5">
+                      <div className="space-y-1.5 pt-0.5">
                         <div aria-live="polite" aria-atomic="true">
                           {!missingRequired && summaryParts.length > 0 && (
-                            <div className="rounded-xl border-2 border-primary/40 bg-primary/10 px-3 py-2 flex items-center gap-2">
+                            <div className="rounded-lg border border-primary/40 bg-primary/10 px-2.5 py-1.5 flex items-center gap-2">
                               <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
-                              <p className="text-xs font-medium text-foreground leading-relaxed">
+                              <p className="text-xs font-medium text-foreground leading-tight">
                                 <span className="sr-only">{L.modalSubtitle}: </span>
                                 {summaryParts.join(" · ")}
                               </p>
                             </div>
                           )}
                         </div>
-                        <Button
-                          type="submit"
-                          className="w-full h-10 sm:h-9 text-sm font-semibold rounded-xl"
-                          disabled={disabled}
-                          aria-disabled={disabled}
-                        >
-                          {ctaLabel}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setCreateOpen(false)}
-                          className="w-full h-9 sm:h-8 text-sm font-medium rounded-xl"
-                        >
-                          {L.cancel}
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setCreateOpen(false)}
+                            className="flex-1 h-9 sm:h-9 text-sm font-medium rounded-xl"
+                          >
+                            {L.cancel}
+                          </Button>
+                          <Button
+                            type="submit"
+                            className="flex-[2] h-9 sm:h-9 text-sm font-semibold rounded-xl"
+                            disabled={disabled}
+                            aria-disabled={disabled}
+                          >
+                            {ctaLabel}
+                          </Button>
+                        </div>
                         {missingRequired && (
-                          <p className="text-xs text-muted-foreground text-center" role="status">{L.disabledHint}</p>
+                          <p className="text-[11px] text-muted-foreground text-center leading-tight" role="status">{L.disabledHint}</p>
                         )}
                       </div>
                     );
