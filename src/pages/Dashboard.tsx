@@ -420,7 +420,7 @@ function OverviewTile({
   icon: Icon, label, value, active, onClick,
 }: { icon: any; label: string; value: string; active?: boolean; onClick?: () => void }) {
   const base = cn(
-    "relative rounded-[18px] p-6 text-left w-full block transition-all border",
+    "relative rounded-[18px] p-5 text-center w-full block transition-all border flex flex-col items-center justify-between min-h-[170px]",
     active
       ? "bg-primary-soft border-primary shadow-glow"
       : "bg-card border-border shadow-card",
@@ -430,7 +430,7 @@ function OverviewTile({
     : "";
   const content = (
     <>
-      <div className="flex items-start justify-between mb-5">
+      <div className="w-full flex items-center justify-between">
         <div className={cn(
           "p-2 rounded-lg",
           active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
@@ -441,8 +441,8 @@ function OverviewTile({
           <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
         )}
       </div>
-      <p className={cn("text-4xl font-bold leading-none tabular-nums", active ? "text-primary" : "text-foreground")}>{value}</p>
-      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em] mt-3 truncate">{label}</p>
+      <p className={cn("text-5xl font-extrabold leading-none tabular-nums my-2", active ? "text-primary" : "text-foreground")}>{value}</p>
+      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em] leading-snug w-full">{label}</p>
     </>
   );
   if (onClick) {
