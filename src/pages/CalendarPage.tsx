@@ -1654,7 +1654,7 @@ export default function CalendarPage() {
                       ))}
                       {(dayApts.length + dayPending.length) > 4 && (
                         <div className="text-[10px] text-muted-foreground px-1.5">
-                          +{dayApts.length + dayPending.length - 4} {t("calendar.more") || "more"}
+                          +{dayApts.length + dayPending.length - 4} {(t as any)("calendar.more") || "more"}
                         </div>
                       )}
                     </div>
