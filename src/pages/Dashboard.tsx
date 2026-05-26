@@ -376,12 +376,12 @@ function StatCell({ label, value, tone }: { label: string; value: string; tone?:
   const toneClass =
     tone === "success" ? "text-success" :
     tone === "warning" ? "text-warning" :
-    tone === "muted" ? "text-muted-foreground/50" :
+    tone === "muted" ? "text-muted-foreground/60" :
     "text-foreground";
   return (
-    <div className="space-y-1.5">
-      <p className={cn("text-3xl font-bold leading-none tabular-nums", toneClass)}>{value}</p>
-      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em]">{label}</p>
+    <div className="bg-muted/40 border border-border rounded-2xl p-4 flex flex-col items-center justify-center text-center min-h-[110px]">
+      <p className={cn("text-3xl sm:text-4xl font-bold leading-none tabular-nums", toneClass)}>{value}</p>
+      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em] mt-2.5 leading-snug">{label}</p>
     </div>
   );
 }
