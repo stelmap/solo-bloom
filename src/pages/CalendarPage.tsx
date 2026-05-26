@@ -423,7 +423,8 @@ export default function CalendarPage() {
   const isMobile = useIsMobile();
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  const days = isMobile ? [currentDate] : weekDays;
+  const effectiveView: CalendarView = isMobile ? "day" : view;
+  const days = effectiveView === "day" ? [currentDate] : effectiveView === "month" ? weekDays : weekDays;
 
   const toggleRecurDay = (d: number) => {
     setRecurDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d].sort());
