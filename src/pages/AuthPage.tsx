@@ -264,16 +264,16 @@ export default function AuthPage() {
         title="Sign in or create your Solo Bizz account"
         description="Sign in to your Solo Bizz workspace or create a free account to manage clients, sessions, payments and income for your solo practice."
       />
-      <Link to="/" className="absolute top-4 left-4 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/80 hover:bg-muted text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+      <Link to="/" className="absolute top-4 left-4 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sidebar-background/80 hover:bg-sidebar-background text-sm font-medium text-sidebar-foreground hover:text-sidebar-primary-foreground transition-colors">
         <ArrowLeft className="h-4 w-4" />
         Main page
       </Link>
 
-      <div className="hidden lg:flex lg:w-1/2 bg-secondary items-center justify-center p-12 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-secondary via-accent to-secondary" />
+      <div className="hidden lg:flex lg:w-1/2 bg-sidebar-background items-center justify-center p-12 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-sidebar-background via-[hsl(222_40%_14%)] to-sidebar-background" />
         <div className="relative z-10 max-w-md space-y-6 text-center">
-          <h1 className="text-4xl font-bold text-secondary-foreground tracking-tight">Solo<span className="text-primary">Bizz</span></h1>
-          <p className="text-secondary-foreground/70 text-lg leading-relaxed">{t("auth.heroText")}</p>
+          <h1 className="text-4xl font-bold text-white tracking-tight">Solo<span className="text-primary">Bizz</span></h1>
+          <p className="text-white/70 text-lg leading-relaxed">{t("auth.heroText")}</p>
         </div>
       </div>
 
