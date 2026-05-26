@@ -1020,14 +1020,14 @@ export default function CalendarPage() {
                   )}
 
                   {/* Notes */}
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <Label className="text-xs font-bold uppercase text-muted-foreground">{t("calendar.notes")}</Label>
                     <Textarea
                       value={form.notes}
                       onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                       placeholder={isGroupSession ? L.notesGroupPlaceholder : L.notesPlaceholder}
-                      rows={3}
-                      className="resize-none min-h-[96px] rounded-lg"
+                      rows={2}
+                      className="resize-none min-h-[68px] rounded-lg"
                     />
                   </div>
 
@@ -1039,15 +1039,15 @@ export default function CalendarPage() {
                     <button
                       type="button"
                       onClick={() => setIsRecurring(v => !v)}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left"
                     >
                       <span className={cn(
-                        "relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors",
+                        "relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors",
                         isRecurring ? "bg-primary" : "bg-muted"
                       )}>
                         <span className={cn(
-                          "inline-block h-5 w-5 rounded-full bg-background shadow transition-transform mt-0.5",
-                          isRecurring ? "translate-x-[22px]" : "translate-x-0.5"
+                          "inline-block h-4 w-4 rounded-full bg-background shadow transition-transform mt-0.5",
+                          isRecurring ? "translate-x-[18px]" : "translate-x-0.5"
                         )} />
                       </span>
                       <span className="flex-1 font-medium text-sm text-foreground">{t("recurring.setup")}</span>
@@ -1062,11 +1062,11 @@ export default function CalendarPage() {
                       })()}
                     </button>
                     {isRecurring && (
-                      <div className="px-4 pb-4 pt-1 space-y-4 bg-muted/30 border-t border-border/60">
-                        <div className="space-y-2 pt-3">
+                      <div className="px-3 pb-3 pt-0.5 space-y-3 bg-muted/30 border-t border-border/60">
+                        <div className="space-y-1 pt-2">
                           <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.intervalWeeks")}</Label>
                           <Select value={recurInterval.toString()} onValueChange={v => setRecurInterval(parseInt(v))}>
-                            <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="1">{t("recurring.weekly")}</SelectItem>
                               <SelectItem value="2">{t("recurring.biweekly")}</SelectItem>
@@ -1075,14 +1075,14 @@ export default function CalendarPage() {
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-1">
                           <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.daysOfWeek")}</Label>
-                          <div className="grid grid-cols-7 gap-1.5">
+                          <div className="grid grid-cols-7 gap-1">
                             {DAY_KEYS.map((key, i) => {
                               const active = recurDays.includes(i + 1);
                               return (
                                 <button key={i} type="button" onClick={() => toggleRecurDay(i + 1)}
-                                  className={cn("h-10 rounded-md text-xs font-medium transition-colors border-2",
+                                  className={cn("h-8 rounded-md text-xs font-medium transition-colors border-2",
                                     active ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border text-foreground hover:border-muted-foreground/60"
                                   )}>
                                   {t(key as any)}
@@ -1091,7 +1091,7 @@ export default function CalendarPage() {
                             })}
                           </div>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-1">
                           <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.endDate")}</Label>
                           <DatePicker date={recurEndDate} onDateChange={setRecurEndDate} placeholder={t("recurring.ongoing")} />
                         </div>
