@@ -252,12 +252,18 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                 {r.comment}
               </p>
             )}
-            <div className="flex gap-1 pt-1">
+            <div className="flex flex-wrap gap-1 pt-1">
               {r.status === "needs_linking" && (
-                <Button size="sm" variant="outline" className="h-7 px-2 gap-1"
-                  onClick={() => { setLinkingFor(r); setLinkClientId(""); }}>
-                  <UserPlus className="h-3 w-3" /> Link
-                </Button>
+                <>
+                  <Button size="sm" variant="outline" className="h-7 px-2 gap-1"
+                    onClick={() => { setLinkingFor(r); setLinkClientId(""); }}>
+                    <UserPlus className="h-3 w-3" /> Link
+                  </Button>
+                  <Button size="sm" variant="outline" className="h-7 px-2 gap-1"
+                    onClick={() => openCreateClient(r)}>
+                    <UserPlus className="h-3 w-3" /> Create new
+                  </Button>
+                </>
               )}
               <Button size="sm" className="h-7 px-2 gap-1 flex-1"
                 onClick={() => {
@@ -271,6 +277,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                 <XCircle className="h-3.5 w-3.5" />
               </Button>
             </div>
+
           </div>
         ))}
       </div>
