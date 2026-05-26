@@ -882,20 +882,20 @@ export default function CalendarPage() {
                   <DialogDescription className="text-sm text-muted-foreground">{L.modalSubtitle}</DialogDescription>
                 </DialogHeader>
 
-                <div className="px-6 pt-4 pb-6 space-y-5">
+                <div className="px-5 pt-3 pb-5 space-y-4">
                   {/* Session type — two large pills */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => { setIsGroupSession(false); setGroupId(""); }}
                       className={cn(
-                        "flex items-center justify-center gap-2 h-12 rounded-xl border-2 text-sm font-medium transition-all",
+                        "flex items-center justify-center gap-1.5 h-9 rounded-xl border-2 text-sm font-medium transition-all",
                         !isGroupSession
                           ? "border-foreground bg-background text-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60"
                       )}
                     >
-                      <UserPlus className="h-4 w-4" />
+                      <UserPlus className="h-3.5 w-3.5" />
                       <span>{L.individualSession}</span>
                     </button>
                     <button
@@ -903,14 +903,14 @@ export default function CalendarPage() {
                       onClick={() => { setIsGroupSession(true); setForm(f => ({ ...f, client_id: "" })); }}
                       disabled={activeGroups.length === 0}
                       className={cn(
-                        "flex items-center justify-center gap-2 h-12 rounded-xl border-2 text-sm font-medium transition-all",
+                        "flex items-center justify-center gap-1.5 h-9 rounded-xl border-2 text-sm font-medium transition-all",
                         isGroupSession
                           ? "border-foreground bg-background text-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60",
                         activeGroups.length === 0 && "opacity-50 cursor-not-allowed"
                       )}
                     >
-                      <Users className="h-4 w-4" />
+                      <Users className="h-3.5 w-3.5" />
                       <span>{L.groupSession}</span>
                     </button>
                   </div>
