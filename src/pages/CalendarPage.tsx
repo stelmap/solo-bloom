@@ -8,7 +8,7 @@ import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { ClientPicker } from "@/components/ClientPicker";
 import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
 import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon } from "lucide-react";
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, addDays, startOfWeek, isSameDay, isBefore, startOfDay } from "date-fns";
 import { getDateLocale } from "@/lib/dateLocale";
@@ -74,6 +74,24 @@ export default function CalendarPage() {
   const { t, lang } = useLanguage();
   const dateLocale = getDateLocale(lang);
   const { symbol: cs } = useCurrency();
+
+  // Realtime: invalidate appointments + booking-requests when DB changes
+  useEffect(() => {
+    const channel = supabase
+      .channel("calendar-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "session_booking_requests" }, () => {
+        qc.invalidateQueries({ queryKey: ["booking-requests"] });
+        qc.invalidateQueries({ queryKey: ["booking-requests-count"] });
+        qc.invalidateQueries({ queryKey: ["appointments"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "appointments" }, () => {
+        qc.invalidateQueries({ queryKey: ["appointments"] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [qc]);
+
+
 
   // Drag-and-drop state
   const [dragAptId, setDragAptId] = useState<string | null>(null);
