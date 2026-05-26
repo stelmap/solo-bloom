@@ -1457,31 +1457,6 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        {pendingRequests.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setInboxOpen(true)}
-            className="w-full flex items-center gap-3 rounded-xl border border-warning/40 bg-warning/10 hover:bg-warning/15 p-3 sm:p-4 text-left animate-fade-in transition-colors"
-          >
-            <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warning/20">
-              <Inbox className="h-4 w-4 text-warning" />
-              <span className="absolute inset-0 rounded-full ring-2 ring-warning/40 animate-ping" />
-            </span>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground">
-                {pendingRequests.length === 1
-                  ? (t("booking.pendingBannerOne") || "1 new booking request awaiting your review")
-                  : (t("booking.pendingBannerMany") || `${pendingRequests.length} new booking requests awaiting your review`).replace("{count}", String(pendingRequests.length))}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {t("booking.pendingBannerHint") || "Pending requests are highlighted on the calendar below. Click to review and approve."}
-              </p>
-            </div>
-            <Badge variant="outline" className="border-warning/40 text-warning shrink-0">
-              {pendingRequests.length}
-            </Badge>
-          </button>
-        )}
 
 
 
@@ -1535,13 +1510,13 @@ export default function CalendarPage() {
               onClick={() => setInboxOpen(true)}
               className={cn(
                 "text-left rounded-lg border transition-colors p-3 relative",
-                periodCapacity.pendingInPeriod > 0
+                pendingRequests.length > 0
                   ? "border-warning/40 bg-warning/10 hover:bg-warning/15"
                   : "border-border bg-background hover:bg-accent/40",
               )}
             >
               <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{(t as any)("booking.pendingRequests") || "Pending requests"}</p>
-              <p className="text-xl font-semibold text-foreground tabular-nums">{periodCapacity.pendingInPeriod}</p>
+              <p className="text-xl font-semibold text-foreground tabular-nums">{pendingRequests.length}</p>
             </button>
           </div>
           {effectiveView !== "month" && (
