@@ -7,7 +7,18 @@ import { Progress } from "@/components/ui/progress";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { ClientPicker } from "@/components/ClientPicker";
 import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
-import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon, UserPlus, Briefcase, CheckCircle2, Circle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon, UserPlus, Briefcase, CheckCircle2, Circle, Flag, Search, X as XIcon, AlertTriangle } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import {
+  useCalendarDisplay, initialFilters, isFiltersActive,
+  type CalendarFilters, type CalendarView,
+} from "@/hooks/useCalendarDisplay";
+import {
+  isUrgent, toggleUrgent, isNew, markNew, markSeen,
+  isRescheduled, markRescheduled, getSessionKind,
+  typeColorClasses, typeDotClasses, statusOverlayClasses,
+  type SessionKind,
+} from "@/lib/calendarVisuals";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, addDays, startOfWeek, isSameDay, isBefore, startOfDay } from "date-fns";
@@ -209,6 +220,19 @@ export default function CalendarPage() {
   const { data: appointments = [] } = useAppointments(appointmentsRange);
   const { data: bookingRequests = [] } = useBookingRequests();
   const navigate = useNavigate();
+
+  // Calendar display preferences (view, density, flags) + filters + inbox drawer
+  const { view, setView, defaultView, setDefaultView, density: cardDensity, setDensity: setCardDensity, flags, setFlag } = useCalendarDisplay();
+  const [filters, setFilters] = useState<CalendarFilters>(initialFilters);
+  const [inboxOpen, setInboxOpen] = useState(false);
+  const [, setVisualsTick] = useState(0);
+  useEffect(() => {
+    const onChange = () => setVisualsTick(t => t + 1);
+    window.addEventListener("calendar-visuals-changed", onChange);
+    return () => window.removeEventListener("calendar-visuals-changed", onChange);
+  }, []);
+  const filtersActive = isFiltersActive(filters);
+  const clearFilters = () => setFilters(initialFilters);
   const pendingRequests = useMemo(
     () => bookingRequests.filter(r => r.status === "pending" || r.status === "needs_linking"),
     [bookingRequests],
@@ -399,7 +423,8 @@ export default function CalendarPage() {
   const isMobile = useIsMobile();
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  const days = isMobile ? [currentDate] : weekDays;
+  const effectiveView: CalendarView = isMobile ? "day" : view;
+  const days = effectiveView === "day" ? [currentDate] : effectiveView === "month" ? weekDays : weekDays;
 
   const toggleRecurDay = (d: number) => {
     setRecurDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d].sort());
@@ -450,6 +475,7 @@ export default function CalendarPage() {
             price: Number(service?.price ?? 0),
             notes: `[Group: ${groupName}] ${form.notes || ""}`.trim(),
           });
+          markNew((firstApt as any).id);
           await createGroupSession.mutateAsync({
             groupId,
             appointmentId: (firstApt as any).id,
@@ -524,6 +550,7 @@ export default function CalendarPage() {
             price: Number(service?.price ?? 0),
             notes: `[Group: ${groupName}] ${form.notes || ""}`.trim(),
           });
+          markNew((apt as any).id);
           await createGroupSession.mutateAsync({
             groupId,
             appointmentId: (apt as any).id,
@@ -550,13 +577,14 @@ export default function CalendarPage() {
     if (isRecurring) {
       try {
         // Create the first appointment immediately
-        await createAppointment.mutateAsync({
+        const firstRecApt = await createAppointment.mutateAsync({
           client_id: form.client_id, service_id: form.service_id,
           scheduled_at: `${form.date}T${form.time}:00Z`,
           duration_minutes: service?.duration_minutes ?? 60,
           price: Number(service?.price ?? 0),
           notes: form.notes || undefined,
         });
+        markNew((firstRecApt as any).id);
 
         // Close modal immediately
         const savedForm = { ...form };
@@ -589,13 +617,14 @@ export default function CalendarPage() {
       } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
     } else {
       try {
-        await createAppointment.mutateAsync({
+        const newApt = await createAppointment.mutateAsync({
           client_id: form.client_id, service_id: form.service_id,
           scheduled_at: `${form.date}T${form.time}:00Z`,
           duration_minutes: service?.duration_minutes ?? 60,
           price: Number(service?.price ?? 0),
           notes: form.notes || undefined,
         });
+        markNew((newApt as any).id);
         setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
         setServiceError(false);
         setCreateOpen(false);
@@ -607,6 +636,7 @@ export default function CalendarPage() {
   const openSessionSheet = (apt: any) => {
     setDetailApt(apt);
     setSessionSheetOpen(true);
+    if (apt?.id) markSeen(apt.id);
   };
 
   const handleQuickDayOff = async (date: Date) => {
@@ -650,9 +680,39 @@ export default function CalendarPage() {
   const toUTCDateStr = (d: Date) =>
     `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
 
+  // Apply user filters before the calendar reads events
+  const visibleAppointments = useMemo(() => {
+    const q = filters.search.trim().toLowerCase();
+    return appointments.filter(apt => {
+      const kind = getSessionKind(apt);
+      if (!filters.types[kind]) return false;
+      if (filters.status !== "all" && apt.status !== filters.status) return false;
+      if (filters.urgentOnly && !isUrgent(apt.id)) return false;
+      if (filters.newOnly && !isNew(apt.id, (apt as any).created_at)) return false;
+      if (q) {
+        const name = (apt as any).clients?.name || (apt as any).group_sessions?.groups?.name || "";
+        const svc = (apt as any).services?.name || "";
+        if (!name.toLowerCase().includes(q) && !svc.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+  }, [appointments, filters]);
+
+  const visiblePendingRequests = useMemo(() => {
+    const q = filters.search.trim().toLowerCase();
+    // Pending requests show only when status is "all" or "scheduled" (pending shows when no specific session-status filter)
+    if (filters.status !== "all") return [];
+    if (filters.newOnly || filters.urgentOnly) return pendingRequests; // still surface them
+    return pendingRequests.filter(req => {
+      if (!q) return true;
+      const name = `${req.first_name} ${req.last_name || ""} ${req.matched_client_name || ""}`.toLowerCase();
+      return name.includes(q);
+    });
+  }, [pendingRequests, filters]);
+
   const getEventsForDayHour = (day: Date, hour: number) => {
     const dayStr = format(day, "yyyy-MM-dd"); // local calendar day string
-    return appointments.filter(apt => {
+    return visibleAppointments.filter(apt => {
       const d = new Date(apt.scheduled_at);
       return toUTCDateStr(d) === dayStr && d.getUTCHours() === hour;
     });
@@ -660,7 +720,7 @@ export default function CalendarPage() {
 
   const getPendingRequestsForDayHour = (day: Date, hour: number): BookingRequestRow[] => {
     const dayStr = format(day, "yyyy-MM-dd");
-    return pendingRequests.filter(req => {
+    return visiblePendingRequests.filter(req => {
       const d = new Date(req.requested_slot_at);
       return toUTCDateStr(d) === dayStr && d.getUTCHours() === hour;
     });
@@ -743,6 +803,7 @@ export default function CalendarPage() {
         id: aptId,
         scheduled_at: `${newDate}T${newTime}:00Z`,
       });
+      markRescheduled(aptId);
       toast({ title: t("calendar.sessionMoved") });
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
@@ -878,12 +939,47 @@ export default function CalendarPage() {
               </div>
             ) : (
               <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1">
-                <Button variant="ghost" size="icon" aria-label="Previous week" onClick={() => setCurrentDate(d => addDays(d, -7))}><ChevronLeft className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" aria-label="Previous" onClick={() => setCurrentDate(d => addDays(d, effectiveView === "month" ? -30 : effectiveView === "day" ? -1 : -7))}><ChevronLeft className="h-4 w-4" /></Button>
                 <span className="text-sm font-medium px-2 sm:px-3 text-foreground whitespace-nowrap">
-                  {`${format(weekStart, "MMM d", { locale: dateLocale })} – ${format(addDays(weekStart, 6), "MMM d, yyyy", { locale: dateLocale })}`}
+                  {effectiveView === "day"
+                    ? format(currentDate, "EEE, MMM d, yyyy", { locale: dateLocale })
+                    : effectiveView === "month"
+                      ? format(currentDate, "MMMM yyyy", { locale: dateLocale })
+                      : `${format(weekStart, "MMM d", { locale: dateLocale })} – ${format(addDays(weekStart, 6), "MMM d, yyyy", { locale: dateLocale })}`}
                 </span>
-                <Button variant="ghost" size="icon" aria-label="Next week" onClick={() => setCurrentDate(d => addDays(d, 7))}><ChevronRight className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" aria-label="Next" onClick={() => setCurrentDate(d => addDays(d, effectiveView === "month" ? 30 : effectiveView === "day" ? 1 : 7))}><ChevronRight className="h-4 w-4" /></Button>
               </div>
+            )}
+            {!isMobile && (
+              <div role="tablist" aria-label="Calendar view" className="flex items-center gap-1 bg-card border border-border rounded-lg p-1">
+                {(["day","week","month"] as CalendarView[]).map(v => (
+                  <button
+                    key={v}
+                    role="tab"
+                    aria-selected={view === v}
+                    onClick={() => setView(v)}
+                    className={cn(
+                      "px-3 py-1 text-xs font-medium rounded-md transition-colors capitalize",
+                      view === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {t(`calendar.view.${v}` as any) || v}
+                  </button>
+                ))}
+              </div>
+            )}
+            {pendingRequests.length > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon" className="relative" aria-label="Booking inbox" onClick={() => setInboxOpen(true)}>
+                    <Inbox className="h-4 w-4" />
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                      {pendingRequests.length}
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t("booking.inbox") || "Booking inbox"}</TooltipContent>
+              </Tooltip>
             )}
             {isMobile && (
               <div className="w-full text-center text-sm font-semibold text-foreground" aria-live="polite">
@@ -1323,7 +1419,7 @@ export default function CalendarPage() {
         {pendingRequests.length > 0 && (
           <button
             type="button"
-            onClick={() => navigate("/booking-inbox")}
+            onClick={() => setInboxOpen(true)}
             className="w-full flex items-center gap-3 rounded-xl border border-warning/40 bg-warning/10 hover:bg-warning/15 p-3 sm:p-4 text-left animate-fade-in transition-colors"
           >
             <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warning/20">
@@ -1505,7 +1601,7 @@ export default function CalendarPage() {
                             return (
                               <div
                                 key={req.id}
-                                onClick={(e) => { e.stopPropagation(); navigate("/booking-inbox"); }}
+                                onClick={(e) => { e.stopPropagation(); setInboxOpen(true); }}
                                 className={cn(
                                   "absolute inset-x-1 rounded-md border-2 border-dashed border-warning/70 bg-warning/15 text-warning-foreground p-1.5 cursor-pointer hover:ring-2 hover:ring-warning/50 transition-all z-20 overflow-hidden shadow-sm",
                                   "animate-pulse-soft",
@@ -1578,24 +1674,92 @@ export default function CalendarPage() {
         </div>
         </section>
 
-        <section aria-label="Booking inbox">
-          <BookingInboxPanel className="w-full" />
-        </section>
+        {flags.showLegend && (
+          <div className="bg-card rounded-xl border border-border p-3 sm:p-4 text-xs animate-fade-in">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <span className="font-semibold uppercase text-muted-foreground">{t("calendar.legend") || "Legend"}:</span>
+              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-muted border border-border" /> {t("calendar.individual") || "Individual"}</span>
+              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-emerald-500/30 border border-emerald-500/50" /> {t("calendar.group") || "Group"}</span>
+              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-violet-500/30 border border-violet-500/50" /> {t("calendar.pair") || "Pair"}</span>
+              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-warning/30 border border-warning/50" /> {t("calendar.rescheduled") || "Rescheduled"}</span>
+              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-destructive/20 border-l-2 border-destructive" /> {t("calendar.urgent") || "Urgent"}</span>
+              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm border-2 border-dashed border-warning/70 bg-warning/15" /> {t("calendar.pending") || "Pending request"}</span>
+              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-full bg-destructive" /> {t("calendar.new") || "New"}</span>
+            </div>
+          </div>
+        )}
       </div>
 
+
+      <Sheet open={inboxOpen} onOpenChange={setInboxOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <Inbox className="h-4 w-4" /> {t("booking.inbox") || "Booking inbox"}
+              {pendingRequests.length > 0 && (
+                <Badge variant="outline" className="border-warning/40 text-warning">{pendingRequests.length}</Badge>
+              )}
+            </SheetTitle>
+          </SheetHeader>
+          <div className="mt-4">
+            <BookingInboxPanel className="w-full" />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
         <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
           <SheetHeader>
             <SheetTitle>{t("settings.calendarSettings") || "Calendar settings"}</SheetTitle>
           </SheetHeader>
-          <Tabs defaultValue="hours" className="mt-4 space-y-4">
+          <Tabs defaultValue="display" className="mt-4 space-y-4">
             <TabsList className="flex-wrap h-auto">
+              <TabsTrigger value="display">{t("settings.display") || "Display"}</TabsTrigger>
               <TabsTrigger value="hours">{t("settings.workingHours")}</TabsTrigger>
               <TabsTrigger value="daysOff">{t("settings.daysOff")}</TabsTrigger>
               <TabsTrigger value="booking">{t("settings.publicBooking")}</TabsTrigger>
               <TabsTrigger value="practice">{t("settings.practiceProfile")}</TabsTrigger>
             </TabsList>
+            <TabsContent value="display" className="space-y-4">
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold">{t("settings.markers") || "Markers"}</h3>
+                {([
+                  ["showColors", "Show type colors"],
+                  ["showLabels", "Show labels"],
+                  ["showUrgent", "Show urgent marker"],
+                  ["showNew", "Show new marker"],
+                  ["showRescheduled", "Show rescheduled marker"],
+                  ["showLegend", "Show legend"],
+                ] as const).map(([k, label]) => (
+                  <div key={k} className="flex items-center justify-between gap-3 rounded-md border border-border p-2.5">
+                    <Label htmlFor={`flag-${k}`} className="text-sm">{label}</Label>
+                    <Switch id={`flag-${k}`} checked={flags[k]} onCheckedChange={(v) => setFlag(k, v)} />
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold">{t("settings.defaultView") || "Default view"}</h3>
+                <Select value={defaultView} onValueChange={(v) => { setDefaultView(v as CalendarView); setView(v as CalendarView); }}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="day">Day</SelectItem>
+                    <SelectItem value="week">Week</SelectItem>
+                    <SelectItem value="month">Month</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold">{t("settings.cardDensity") || "Card density"}</h3>
+                <Select value={cardDensity} onValueChange={(v) => setCardDensity(v as any)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="compact">Compact</SelectItem>
+                    <SelectItem value="comfortable">Comfortable</SelectItem>
+                    <SelectItem value="detailed">Detailed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </TabsContent>
             <TabsContent value="hours"><WorkingHoursSection /></TabsContent>
             <TabsContent value="daysOff"><DaysOffSection /></TabsContent>
             <TabsContent value="booking"><PublicBookingSection /></TabsContent>
