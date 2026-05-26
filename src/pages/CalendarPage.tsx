@@ -981,7 +981,7 @@ export default function CalendarPage() {
                       </Label>
                       <div className="flex gap-2">
                         <Select value={groupId} onValueChange={setGroupId}>
-                          <SelectTrigger className="flex-1"><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
+                          <SelectTrigger className={cn("flex-1", D.field)}><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
                           <SelectContent>{activeGroups.map((g: any) => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
                         </Select>
                       </div>
@@ -1022,7 +1022,7 @@ export default function CalendarPage() {
                             placeholder={t("calendar.selectClient")}
                             triggerClassName="flex-1"
                           />
-                          <Button type="button" variant="outline" className="px-2.5 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaClientOpen(true)}>
+                          <Button type="button" variant="outline" className={cn("px-2.5 gap-1 whitespace-nowrap shrink-0", D.field)} onClick={() => setQaClientOpen(true)}>
                             <Plus className="h-3.5 w-3.5" /> {L.addNewClient}
                           </Button>
                         </div>
@@ -1057,7 +1057,7 @@ export default function CalendarPage() {
                             </SelectTrigger>
                             <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                           </Select>
-                          <Button type="button" variant="outline" className="px-2.5 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaServiceOpen(true)}>
+                          <Button type="button" variant="outline" className={cn("px-2.5 gap-1 whitespace-nowrap shrink-0", D.field)} onClick={() => setQaServiceOpen(true)}>
                             <Plus className="h-3.5 w-3.5" aria-hidden="true" /> {L.addNewService}
                           </Button>
                         </div>
@@ -1094,7 +1094,7 @@ export default function CalendarPage() {
                       onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                       placeholder={isGroupSession ? L.notesGroupPlaceholder : L.notesPlaceholder}
                       rows={2}
-                      className="resize-none min-h-[52px] rounded-lg"
+                      className=cn("resize-none rounded-lg", D.notes)
                     />
                   </div>
 
@@ -1223,13 +1223,13 @@ export default function CalendarPage() {
                             type="button"
                             variant="outline"
                             onClick={() => setCreateOpen(false)}
-                            className="flex-1 h-9 sm:h-9 text-sm font-medium rounded-xl"
+                            className=cn("flex-1 text-sm font-medium rounded-xl", D.cta)
                           >
                             {L.cancel}
                           </Button>
                           <Button
                             type="submit"
-                            className="flex-[2] h-9 sm:h-9 text-sm font-semibold rounded-xl"
+                            className=cn("flex-[2] text-sm font-semibold rounded-xl", D.cta)
                             disabled={disabled}
                             aria-disabled={disabled}
                           >
