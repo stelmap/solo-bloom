@@ -21,6 +21,127 @@ type PageInfo = {
   timezone: string;
 };
 
+type Lang = "en" | "uk" | "fr" | "pl";
+function normLang(v: unknown): Lang {
+  const s = String(v || "").toLowerCase().slice(0, 2);
+  return s === "uk" || s === "fr" || s === "pl" ? (s as Lang) : "en";
+}
+
+const COPY: Record<Lang, {
+  invalid: string; inactive: string;
+  thankYou: string; requestReceived: string; sessionConfirmed: string;
+  minSession: (n: number) => string;
+  chooseTime: string;
+  noSlots14: string; contactDirect: string;
+  slot: (n: number) => string;
+  noTimesThisDay: string;
+  changeTime: string;
+  yourSession: string;
+  minutes: (n: number) => string;
+  yourDetails: string;
+  firstName: string; lastName: string; email: string; phone: string; comment: string;
+  consent: string;
+  confirmBooking: string; requestBooking: string;
+  manualNote: string;
+  checkForm: string;
+  takenTitle: string; takenDesc: string; couldNotBook: string;
+}> = {
+  en: {
+    invalid: "This booking link is not valid or has been disabled.",
+    inactive: "This booking link is no longer active. Please contact the specialist directly.",
+    thankYou: "Thank you!",
+    requestReceived: "Your booking request has been received. The specialist will confirm it shortly via email.",
+    sessionConfirmed: "Your session has been confirmed. You will receive a confirmation email.",
+    minSession: (n) => `${n} min session`,
+    chooseTime: "Choose a time",
+    noSlots14: "No available slots in the next 14 days.",
+    contactDirect: "Please contact the specialist directly to arrange a time.",
+    slot: (n) => (n === 1 ? "slot" : "slots"),
+    noTimesThisDay: "No times available on this day.",
+    changeTime: "Change time",
+    yourSession: "Your session",
+    minutes: (n) => `${n} minutes`,
+    yourDetails: "Your details",
+    firstName: "First name *", lastName: "Last name", email: "Email *", phone: "Phone (optional)", comment: "Comment (optional)",
+    consent: "I consent to the processing of my personal data for the purpose of arranging this session.",
+    confirmBooking: "Confirm booking", requestBooking: "Request booking",
+    manualNote: "The specialist will review and confirm your request via email.",
+    checkForm: "Please check the form fields.",
+    takenTitle: "This time was just booked", takenDesc: "Please pick another available time.", couldNotBook: "Could not book",
+  },
+  uk: {
+    invalid: "Це посилання для бронювання недійсне або вимкнене.",
+    inactive: "Це посилання більше не активне. Будь ласка, зверніться до спеціаліста безпосередньо.",
+    thankYou: "Дякуємо!",
+    requestReceived: "Ваш запит на бронювання отримано. Спеціаліст незабаром підтвердить його електронною поштою.",
+    sessionConfirmed: "Ваш сеанс підтверджено. Ви отримаєте лист із підтвердженням.",
+    minSession: (n) => `Сеанс ${n} хв`,
+    chooseTime: "Оберіть час",
+    noSlots14: "Немає доступних слотів у найближчі 14 днів.",
+    contactDirect: "Будь ласка, зверніться до спеціаліста безпосередньо, щоб домовитися про час.",
+    slot: (_n) => "слотів",
+    noTimesThisDay: "На цей день немає доступного часу.",
+    changeTime: "Змінити час",
+    yourSession: "Ваш сеанс",
+    minutes: (n) => `${n} хвилин`,
+    yourDetails: "Ваші дані",
+    firstName: "Ім'я *", lastName: "Прізвище", email: "Email *", phone: "Телефон (необов'язково)", comment: "Коментар (необов'язково)",
+    consent: "Я погоджуюся на обробку моїх персональних даних для організації цього сеансу.",
+    confirmBooking: "Підтвердити бронювання", requestBooking: "Запросити бронювання",
+    manualNote: "Спеціаліст перегляне та підтвердить ваш запит електронною поштою.",
+    checkForm: "Будь ласка, перевірте поля форми.",
+    takenTitle: "Цей час щойно зайняли", takenDesc: "Будь ласка, оберіть інший доступний час.", couldNotBook: "Не вдалося забронювати",
+  },
+  fr: {
+    invalid: "Ce lien de réservation n'est pas valide ou a été désactivé.",
+    inactive: "Ce lien de réservation n'est plus actif. Veuillez contacter le spécialiste directement.",
+    thankYou: "Merci !",
+    requestReceived: "Votre demande de réservation a été reçue. Le spécialiste la confirmera bientôt par email.",
+    sessionConfirmed: "Votre séance a été confirmée. Vous recevrez un email de confirmation.",
+    minSession: (n) => `Séance de ${n} min`,
+    chooseTime: "Choisir un horaire",
+    noSlots14: "Aucun créneau disponible dans les 14 prochains jours.",
+    contactDirect: "Veuillez contacter le spécialiste directement pour fixer un rendez-vous.",
+    slot: (n) => (n === 1 ? "créneau" : "créneaux"),
+    noTimesThisDay: "Aucun horaire disponible ce jour-là.",
+    changeTime: "Changer l'horaire",
+    yourSession: "Votre séance",
+    minutes: (n) => `${n} minutes`,
+    yourDetails: "Vos coordonnées",
+    firstName: "Prénom *", lastName: "Nom", email: "Email *", phone: "Téléphone (optionnel)", comment: "Commentaire (optionnel)",
+    consent: "Je consens au traitement de mes données personnelles aux fins de l'organisation de cette séance.",
+    confirmBooking: "Confirmer la réservation", requestBooking: "Demander une réservation",
+    manualNote: "Le spécialiste examinera et confirmera votre demande par email.",
+    checkForm: "Veuillez vérifier les champs du formulaire.",
+    takenTitle: "Ce créneau vient d'être réservé", takenDesc: "Veuillez choisir un autre horaire disponible.", couldNotBook: "Échec de la réservation",
+  },
+  pl: {
+    invalid: "Ten link rezerwacji jest nieprawidłowy lub został wyłączony.",
+    inactive: "Ten link rezerwacji nie jest już aktywny. Skontaktuj się ze specjalistą bezpośrednio.",
+    thankYou: "Dziękujemy!",
+    requestReceived: "Twoja prośba o rezerwację została odebrana. Specjalista wkrótce ją potwierdzi przez email.",
+    sessionConfirmed: "Twoja sesja została potwierdzona. Otrzymasz email z potwierdzeniem.",
+    minSession: (n) => `Sesja ${n} min`,
+    chooseTime: "Wybierz termin",
+    noSlots14: "Brak dostępnych terminów w ciągu najbliższych 14 dni.",
+    contactDirect: "Skontaktuj się ze specjalistą bezpośrednio, aby umówić termin.",
+    slot: (n) => (n === 1 ? "termin" : "terminów"),
+    noTimesThisDay: "Brak dostępnych godzin tego dnia.",
+    changeTime: "Zmień termin",
+    yourSession: "Twoja sesja",
+    minutes: (n) => `${n} minut`,
+    yourDetails: "Twoje dane",
+    firstName: "Imię *", lastName: "Nazwisko", email: "Email *", phone: "Telefon (opcjonalnie)", comment: "Komentarz (opcjonalnie)",
+    consent: "Wyrażam zgodę na przetwarzanie moich danych osobowych w celu organizacji tej sesji.",
+    confirmBooking: "Potwierdź rezerwację", requestBooking: "Poproś o rezerwację",
+    manualNote: "Specjalista przejrzy i potwierdzi Twoją prośbę przez email.",
+    checkForm: "Sprawdź pola formularza.",
+    takenTitle: "Ten termin został właśnie zarezerwowany", takenDesc: "Wybierz inny dostępny termin.", couldNotBook: "Nie udało się zarezerwować",
+  },
+};
+
+const LOCALE_MAP: Record<Lang, string> = { en: "en-US", uk: "uk-UA", fr: "fr-FR", pl: "pl-PL" };
+
 const formSchema = z.object({
   first_name: z.string().trim().min(1).max(120),
   last_name: z.string().trim().max(120).optional().or(z.literal("")),
@@ -46,6 +167,10 @@ export default function PublicBookingPage() {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<{ requiresApproval: boolean } | null>(null);
 
+  const lang = normLang(info?.language);
+  const L = COPY[lang];
+  const intlLocale = LOCALE_MAP[lang];
+
   // noindex
   useEffect(() => {
     const meta = document.createElement("meta");
@@ -64,10 +189,10 @@ export default function PublicBookingPage() {
       const { data, error } = await supabase.rpc("public_get_booking_page", { p_token: token });
       if (!active) return;
       if (error || !data || (Array.isArray(data) && data.length === 0)) {
-        setError("This booking link is not valid or has been disabled.");
+        setError(COPY.en.invalid);
       } else {
         const row = (Array.isArray(data) ? data[0] : data) as PageInfo;
-        if (!row.is_active) setError("This booking link is no longer active. Please contact the specialist directly.");
+        if (!row.is_active) setError(COPY[normLang(row.language)].inactive);
         else setInfo(row);
       }
       setLoading(false);
@@ -102,8 +227,8 @@ export default function PublicBookingPage() {
     const m: Record<string, { label: string; slots: string[] }> = {};
     for (const s of slots) {
       const d = new Date(s);
-      const key = d.toLocaleDateString("en-CA", { timeZone: tz }); // YYYY-MM-DD stable
-      const label = d.toLocaleDateString(undefined, {
+      const key = d.toLocaleDateString("en-CA", { timeZone: tz });
+      const label = d.toLocaleDateString(intlLocale, {
         weekday: "short",
         month: "short",
         day: "numeric",
@@ -113,11 +238,10 @@ export default function PublicBookingPage() {
       m[key].slots.push(s);
     }
     return m;
-  }, [slots, tz]);
+  }, [slots, tz, intlLocale]);
 
   const dayKeys = useMemo(() => Object.keys(groupedByDay).sort(), [groupedByDay]);
 
-  // Auto-select first day with slots
   useEffect(() => {
     if (!activeDay && dayKeys.length > 0) setActiveDay(dayKeys[0]);
     if (activeDay && !dayKeys.includes(activeDay) && dayKeys.length > 0) setActiveDay(dayKeys[0]);
@@ -146,7 +270,7 @@ export default function PublicBookingPage() {
       consent: fd.get("consent") === "on",
     });
     if (!parsed.success) {
-      toast({ title: "Please check the form fields.", variant: "destructive" });
+      toast({ title: L.checkForm, variant: "destructive" });
       return;
     }
     if (fd.get("website")) return;
@@ -168,14 +292,11 @@ export default function PublicBookingPage() {
     if (error) {
       const isTaken = /no longer available/i.test(error.message);
       toast({
-        title: isTaken ? "This time was just booked" : "Could not book",
-        description: isTaken
-          ? "Please pick another available time."
-          : error.message,
+        title: isTaken ? L.takenTitle : L.couldNotBook,
+        description: isTaken ? L.takenDesc : error.message,
         variant: "destructive",
       });
       if (isTaken) {
-        // Refresh slots and step back
         setSelectedSlot(null);
         setSlotsLoading(true);
         const from = new Date();
@@ -219,11 +340,9 @@ export default function PublicBookingPage() {
         <Card className="max-w-md w-full">
           <CardContent className="pt-8 pb-8 text-center">
             <CheckCircle2 className="mx-auto h-12 w-12 text-primary mb-3" />
-            <h2 className="text-xl font-semibold mb-2">Thank you!</h2>
+            <h2 className="text-xl font-semibold mb-2">{L.thankYou}</h2>
             <p className="text-sm text-muted-foreground">
-              {done.requiresApproval
-                ? "Your booking request has been received. The specialist will confirm it shortly via email."
-                : "Your session has been confirmed. You will receive a confirmation email."}
+              {done.requiresApproval ? L.requestReceived : L.sessionConfirmed}
             </p>
           </CardContent>
         </Card>
@@ -241,7 +360,7 @@ export default function PublicBookingPage() {
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5" />
-              {info.session_duration_minutes} min session
+              {L.minSession(info.session_duration_minutes)}
             </span>
             <span className="inline-flex items-center gap-1.5">
               <Globe className="h-3.5 w-3.5" />
@@ -255,7 +374,7 @@ export default function PublicBookingPage() {
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <CalendarDays className="h-4 w-4" />
-                Choose a time
+                {L.chooseTime}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -275,23 +394,18 @@ export default function PublicBookingPage() {
               ) : dayKeys.length === 0 ? (
                 <div className="text-center py-10 space-y-2">
                   <MapPin className="h-8 w-8 text-muted-foreground mx-auto opacity-50" />
-                  <p className="text-sm text-muted-foreground">
-                    No available slots in the next 14 days.
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Please contact the specialist directly to arrange a time.
-                  </p>
+                  <p className="text-sm text-muted-foreground">{L.noSlots14}</p>
+                  <p className="text-xs text-muted-foreground">{L.contactDirect}</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {/* Day selector strip */}
                   <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
                     {dayKeys.map((key) => {
                       const isActive = key === activeDay;
                       const g = groupedByDay[key];
                       const d = new Date(`${key}T12:00:00Z`);
-                      const dayNum = d.toLocaleDateString(undefined, { day: "numeric", timeZone: tz });
-                      const dayWk = d.toLocaleDateString(undefined, { weekday: "short", timeZone: tz });
+                      const dayNum = d.toLocaleDateString(intlLocale, { day: "numeric", timeZone: tz });
+                      const dayWk = d.toLocaleDateString(intlLocale, { weekday: "short", timeZone: tz });
                       return (
                         <button
                           key={key}
@@ -309,14 +423,13 @@ export default function PublicBookingPage() {
                           </span>
                           <span className="text-lg font-semibold leading-tight">{dayNum}</span>
                           <span className={`text-[10px] ${isActive ? "opacity-90" : "text-muted-foreground"}`}>
-                            {g.slots.length} {g.slots.length === 1 ? "slot" : "slots"}
+                            {g.slots.length} {L.slot(g.slots.length)}
                           </span>
                         </button>
                       );
                     })}
                   </div>
 
-                  {/* Slots grid for selected day */}
                   {activeSlots.length > 0 ? (
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                       {activeSlots.map((s) => (
@@ -328,7 +441,7 @@ export default function PublicBookingPage() {
                           className="h-10"
                           onClick={() => setSelectedSlot(s)}
                         >
-                          {new Date(s).toLocaleTimeString([], {
+                          {new Date(s).toLocaleTimeString(intlLocale, {
                             hour: "2-digit",
                             minute: "2-digit",
                             timeZone: tz,
@@ -337,9 +450,7 @@ export default function PublicBookingPage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground text-center py-6">
-                      No times available on this day.
-                    </p>
+                    <p className="text-sm text-muted-foreground text-center py-6">{L.noTimesThisDay}</p>
                   )}
                 </div>
               )}
@@ -356,14 +467,14 @@ export default function PublicBookingPage() {
                 type="button"
               >
                 <ChevronLeft className="h-4 w-4" />
-                Change time
+                {L.changeTime}
               </Button>
               <div className="rounded-lg bg-muted p-4">
                 <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
-                  Your session
+                  {L.yourSession}
                 </div>
                 <div className="font-semibold text-base">
-                  {new Date(selectedSlot).toLocaleString([], {
+                  {new Date(selectedSlot).toLocaleString(intlLocale, {
                     weekday: "long",
                     month: "long",
                     day: "numeric",
@@ -374,10 +485,10 @@ export default function PublicBookingPage() {
                   })}
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {info.session_duration_minutes} minutes
+                  {L.minutes(info.session_duration_minutes)}
                 </div>
               </div>
-              <CardTitle className="text-base">Your details</CardTitle>
+              <CardTitle className="text-base">{L.yourDetails}</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -385,40 +496,38 @@ export default function PublicBookingPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <Label htmlFor="first_name">First name *</Label>
+                    <Label htmlFor="first_name">{L.firstName}</Label>
                     <Input id="first_name" name="first_name" required maxLength={120} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="last_name">Last name</Label>
+                    <Label htmlFor="last_name">{L.lastName}</Label>
                     <Input id="last_name" name="last_name" maxLength={120} />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
+                  <Label htmlFor="email">{L.email}</Label>
                   <Input id="email" name="email" type="email" required maxLength={254} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone (optional)</Label>
+                  <Label htmlFor="phone">{L.phone}</Label>
                   <Input id="phone" name="phone" type="tel" maxLength={40} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="comment">Comment (optional)</Label>
+                  <Label htmlFor="comment">{L.comment}</Label>
                   <Textarea id="comment" name="comment" rows={3} maxLength={2000} />
                 </div>
                 <div className="flex items-start gap-2">
                   <Checkbox id="consent" name="consent" required />
                   <Label htmlFor="consent" className="text-sm font-normal leading-snug">
-                    I consent to the processing of my personal data for the purpose of arranging this session.
+                    {L.consent}
                   </Label>
                 </div>
                 <Button type="submit" disabled={submitting} className="w-full gap-2" size="lg">
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                  {info.mode === "auto" ? "Confirm booking" : "Request booking"}
+                  {info.mode === "auto" ? L.confirmBooking : L.requestBooking}
                 </Button>
                 {info.mode === "manual" && (
-                  <p className="text-xs text-muted-foreground text-center">
-                    The specialist will review and confirm your request via email.
-                  </p>
+                  <p className="text-xs text-muted-foreground text-center">{L.manualNote}</p>
                 )}
               </form>
             </CardContent>
