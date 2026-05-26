@@ -12,6 +12,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { TranslationKey } from "@/i18n/translations";
 import { useEntitlements, type FeatureCode } from "@/hooks/useEntitlements";
 import { useFreeStarterMode } from "@/hooks/useDemoWorkspace";
+import { useBookingInboxCount } from "@/hooks/useBookingInbox";
 
 
 type LeafItem = { kind: "leaf"; icon: any; labelKey: TranslationKey; path: string; requires?: FeatureCode };
