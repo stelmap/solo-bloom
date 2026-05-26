@@ -179,15 +179,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => authSub.unsubscribe();
   }, []);
 
-  // Check subscription when session changes
+  // Check subscription when session changes — do NOT force; let the edge
+  // function serve its cached value so navigation isn't blocked on Stripe.
   useEffect(() => {
     if (session) {
-      refreshSubscription({ force: true });
+      refreshSubscription();
     } else {
       setSubscriptionError(null);
       setSubscription({ ...defaultSubscription, loading: false });
     }
   }, [session, refreshSubscription]);
+
 
   // Periodic refresh every 5 minutes (reduced from 60s to avoid Stripe rate limits at scale)
   useEffect(() => {
