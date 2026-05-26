@@ -164,8 +164,41 @@ const NEW_COPY: Record<LangKey, {
 
 
 
+type Density = "compact" | "cozy" | "comfortable";
+function useDensity(): Density {
+  const [d, setD] = useState<Density>(() => {
+    if (typeof window === "undefined") return "cozy";
+    const h = window.innerHeight;
+    return h < 760 ? "compact" : h < 1000 ? "cozy" : "comfortable";
+  });
+  useEffect(() => {
+    const onResize = () => {
+      const h = window.innerHeight;
+      setD(h < 760 ? "compact" : h < 1000 ? "cozy" : "comfortable");
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return d;
+}
+
 export default function CalendarPage() {
+  const density = useDensity();
+  const D = {
+    pad: density === "compact" ? "px-4 pt-2 pb-3 sm:px-5" : density === "cozy" ? "px-4 pt-3 pb-4 sm:px-5" : "px-5 pt-4 pb-5 sm:px-6",
+    gap: density === "compact" ? "space-y-2" : density === "cozy" ? "space-y-3" : "space-y-4",
+    field: density === "compact" ? "h-8" : density === "cozy" ? "h-9" : "h-10",
+    pill: density === "compact" ? "h-8" : density === "cozy" ? "h-9" : "h-10",
+    cta: density === "compact" ? "h-9" : density === "cozy" ? "h-10" : "h-11",
+    title: density === "compact" ? "text-base" : density === "cozy" ? "text-lg" : "text-xl",
+    subtitle: density !== "compact",
+    notes: density === "compact" ? "min-h-[44px]" : density === "cozy" ? "min-h-[56px]" : "min-h-[72px]",
+    label: density === "compact" ? "space-y-1" : "space-y-1.5",
+    headPad: density === "compact" ? "px-4 pt-2 pb-0 sm:px-5" : density === "cozy" ? "px-4 pt-3 pb-1 sm:px-5" : "px-5 pt-4 pb-1 sm:px-6",
+    maxW: density === "comfortable" ? "sm:max-w-[560px]" : "sm:max-w-[500px]",
+  };
   const [currentDate, setCurrentDate] = useState(new Date());
+
   const appointmentsRange = useMemo(() => {
     // Quantize to month so week-navigation reuses the cached window
     const anchor = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
