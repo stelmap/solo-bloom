@@ -128,7 +128,8 @@ export function PublicBookingSection() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const userId = user?.id;
-  const { t } = useLanguage();
+  const { t, lang: ctxLang } = useLanguage();
+  const L = COPY[normLang(ctxLang)];
   const tx = (key: string, fallback: string) => {
     const v = t(key as any);
     return !v || v === key ? fallback : v;
