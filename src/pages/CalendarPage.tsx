@@ -1157,18 +1157,22 @@ export default function CalendarPage() {
 
                     return (
                       <div className="space-y-2 pt-0.5">
-                        {!missingRequired && summaryParts.length > 0 && (
-                          <div className="rounded-xl border-2 border-primary/40 bg-primary/10 px-3 py-2 flex items-center gap-2">
-                            <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
-                            <p className="text-xs font-medium text-foreground leading-relaxed">
-                              {summaryParts.join(" · ")}
-                            </p>
-                          </div>
-                        )}
+                        <div aria-live="polite" aria-atomic="true">
+                          {!missingRequired && summaryParts.length > 0 && (
+                            <div className="rounded-xl border-2 border-primary/40 bg-primary/10 px-3 py-2 flex items-center gap-2">
+                              <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
+                              <p className="text-xs font-medium text-foreground leading-relaxed">
+                                <span className="sr-only">{L.modalSubtitle}: </span>
+                                {summaryParts.join(" · ")}
+                              </p>
+                            </div>
+                          )}
+                        </div>
                         <Button
-                          onClick={handleCreate}
+                          type="submit"
                           className="w-full h-11 sm:h-10 text-sm font-semibold rounded-xl"
                           disabled={disabled}
+                          aria-disabled={disabled}
                         >
                           {ctaLabel}
                         </Button>
@@ -1181,7 +1185,7 @@ export default function CalendarPage() {
                           {L.cancel}
                         </Button>
                         {missingRequired && (
-                          <p className="text-xs text-muted-foreground text-center">{L.disabledHint}</p>
+                          <p className="text-xs text-muted-foreground text-center" role="status">{L.disabledHint}</p>
                         )}
                       </div>
                     );
