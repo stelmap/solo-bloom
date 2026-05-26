@@ -1070,10 +1070,13 @@ export default function CalendarPage() {
                   )}>
                     <button
                       type="button"
+                      role="switch"
+                      aria-checked={isRecurring}
+                      aria-label={t("recurring.setup")}
                       onClick={() => setIsRecurring(v => !v)}
-                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left min-h-[44px]"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl"
                     >
-                      <span className={cn(
+                      <span aria-hidden="true" className={cn(
                         "relative inline-flex h-5 w-9 sm:h-5 sm:w-9 shrink-0 rounded-full transition-colors",
                         isRecurring ? "bg-primary" : "bg-muted"
                       )}>
