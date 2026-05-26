@@ -878,39 +878,62 @@ export default function CalendarPage() {
                 })()}
 
                 <DialogHeader className="px-4 pt-4 pb-1 space-y-0.5 text-left sm:px-5">
-                  <DialogTitle className="text-xl font-bold tracking-tight">{t("calendar.newAppointment")}</DialogTitle>
+                  <DialogTitle id="new-appointment-title" className="text-xl font-bold tracking-tight">{t("calendar.newAppointment")}</DialogTitle>
                   <DialogDescription className="text-sm text-muted-foreground">{L.modalSubtitle}</DialogDescription>
                 </DialogHeader>
 
-                <div className="px-4 pt-3 pb-5 space-y-4 sm:px-5">
+                <form
+                  className="px-4 pt-3 pb-5 space-y-4 sm:px-5"
+                  onSubmit={(e) => { e.preventDefault(); handleCreate(); }}
+                  aria-labelledby="new-appointment-title"
+                >
                   {/* Session type — two large pills */}
-                  <div className="grid grid-cols-2 gap-2">
+                  <div
+                    role="radiogroup"
+                    aria-label={L.individualSession + " / " + L.groupSession}
+                    className="grid grid-cols-2 gap-2"
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+                        e.preventDefault();
+                        if (activeGroups.length > 0) { setIsGroupSession(true); setForm(f => ({ ...f, client_id: "" })); }
+                      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+                        e.preventDefault();
+                        setIsGroupSession(false); setGroupId("");
+                      }
+                    }}
+                  >
                     <button
                       type="button"
+                      role="radio"
+                      aria-checked={!isGroupSession}
+                      tabIndex={!isGroupSession ? 0 : -1}
                       onClick={() => { setIsGroupSession(false); setGroupId(""); }}
                       className={cn(
-                        "flex items-center justify-center gap-1.5 h-10 sm:h-9 rounded-xl border-2 text-sm font-medium transition-all",
+                        "flex items-center justify-center gap-1.5 h-10 sm:h-9 rounded-xl border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                         !isGroupSession
                           ? "border-foreground bg-background text-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60"
                       )}
                     >
-                      <UserPlus className="h-3.5 w-3.5" />
+                      <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
                       <span>{L.individualSession}</span>
                     </button>
                     <button
                       type="button"
+                      role="radio"
+                      aria-checked={isGroupSession}
+                      tabIndex={isGroupSession ? 0 : -1}
                       onClick={() => { setIsGroupSession(true); setForm(f => ({ ...f, client_id: "" })); }}
                       disabled={activeGroups.length === 0}
                       className={cn(
-                        "flex items-center justify-center gap-1.5 h-10 sm:h-9 rounded-xl border-2 text-sm font-medium transition-all",
+                        "flex items-center justify-center gap-1.5 h-10 sm:h-9 rounded-xl border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                         isGroupSession
                           ? "border-foreground bg-background text-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60",
                         activeGroups.length === 0 && "opacity-50 cursor-not-allowed"
                       )}
                     >
-                      <Users className="h-3.5 w-3.5" />
+                      <Users className="h-3.5 w-3.5" aria-hidden="true" />
                       <span>{L.groupSession}</span>
                     </button>
                   </div>
@@ -974,29 +997,37 @@ export default function CalendarPage() {
 
                   {/* Service */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-bold uppercase text-muted-foreground">
-                      {t("calendar.service")} <span className="text-primary">*</span>
+                    <Label htmlFor="appt-service" className="text-xs font-bold uppercase text-muted-foreground">
+                      {t("calendar.service")} <span className="text-primary" aria-hidden="true">*</span>
                     </Label>
                     {services.length === 0 ? (
                       <div className="rounded-lg border border-dashed border-border p-3 space-y-1.5 bg-muted/20 text-center">
                         <p className="text-sm text-muted-foreground">{L.noServicesYet}</p>
                         <Button type="button" variant="outline" size="sm" className="gap-1 h-9 sm:h-8" onClick={() => setQaServiceOpen(true)}>
-                          <Briefcase className="h-3.5 w-3.5" /> {L.addNewService}
+                          <Briefcase className="h-3.5 w-3.5" aria-hidden="true" /> {L.addNewService}
                         </Button>
                       </div>
                     ) : (
                       <>
                         <div className="flex flex-col sm:flex-row gap-2">
                           <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); }}>
-                            <SelectTrigger className={cn("h-10 sm:h-9 flex-1", serviceError && "border-destructive")}><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
+                            <SelectTrigger
+                              id="appt-service"
+                              aria-required="true"
+                              aria-invalid={serviceError}
+                              aria-describedby={serviceError ? "appt-service-error" : undefined}
+                              className={cn("h-10 sm:h-9 flex-1", serviceError && "border-destructive")}
+                            >
+                              <SelectValue placeholder={t("calendar.selectService")} />
+                            </SelectTrigger>
                             <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                           </Select>
                           <Button type="button" variant="outline" className="h-10 sm:h-9 px-2.5 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaServiceOpen(true)}>
-                            <Plus className="h-3.5 w-3.5" /> {L.addNewService}
+                            <Plus className="h-3.5 w-3.5" aria-hidden="true" /> {L.addNewService}
                           </Button>
                         </div>
                         {serviceError && (
-                          <p className="text-sm text-destructive">⚠️ {t("calendar.service")} is required</p>
+                          <p id="appt-service-error" role="alert" className="text-sm text-destructive">⚠️ {t("calendar.service")} is required</p>
                         )}
                       </>
                     )}
@@ -1014,15 +1045,16 @@ export default function CalendarPage() {
                   />
 
                   {createValidation && !isRecurring && (
-                    <div className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
+                    <div role="alert" className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
                       ⚠️ {createValidation}
                     </div>
                   )}
 
                   {/* Notes */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-bold uppercase text-muted-foreground">{t("calendar.notes")}</Label>
+                    <Label htmlFor="appt-notes" className="text-xs font-bold uppercase text-muted-foreground">{t("calendar.notes")}</Label>
                     <Textarea
+                      id="appt-notes"
                       value={form.notes}
                       onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                       placeholder={isGroupSession ? L.notesGroupPlaceholder : L.notesPlaceholder}
@@ -1038,10 +1070,13 @@ export default function CalendarPage() {
                   )}>
                     <button
                       type="button"
+                      role="switch"
+                      aria-checked={isRecurring}
+                      aria-label={t("recurring.setup")}
                       onClick={() => setIsRecurring(v => !v)}
-                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left min-h-[44px]"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl"
                     >
-                      <span className={cn(
+                      <span aria-hidden="true" className={cn(
                         "relative inline-flex h-5 w-9 sm:h-5 sm:w-9 shrink-0 rounded-full transition-colors",
                         isRecurring ? "bg-primary" : "bg-muted"
                       )}>
@@ -1076,16 +1111,19 @@ export default function CalendarPage() {
                           </Select>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.daysOfWeek")}</Label>
-                          <div className="grid grid-cols-7 gap-1">
+                          <Label id="recur-days-label" className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.daysOfWeek")}</Label>
+                          <div role="group" aria-labelledby="recur-days-label" className="grid grid-cols-7 gap-1">
                             {DAY_KEYS.map((key, i) => {
                               const active = recurDays.includes(i + 1);
+                              const dayName = t(key as any);
                               return (
                                 <button key={i} type="button" onClick={() => toggleRecurDay(i + 1)}
-                                  className={cn("h-9 sm:h-8 rounded-md text-xs font-medium transition-colors border-2",
+                                  aria-pressed={active}
+                                  aria-label={dayName}
+                                  className={cn("h-9 sm:h-8 rounded-md text-xs font-medium transition-colors border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                                     active ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border text-foreground hover:border-muted-foreground/60"
                                   )}>
-                                  {t(key as any)}
+                                  {dayName}
                                 </button>
                               );
                             })}
@@ -1134,18 +1172,22 @@ export default function CalendarPage() {
 
                     return (
                       <div className="space-y-2 pt-0.5">
-                        {!missingRequired && summaryParts.length > 0 && (
-                          <div className="rounded-xl border-2 border-primary/40 bg-primary/10 px-3 py-2 flex items-center gap-2">
-                            <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
-                            <p className="text-xs font-medium text-foreground leading-relaxed">
-                              {summaryParts.join(" · ")}
-                            </p>
-                          </div>
-                        )}
+                        <div aria-live="polite" aria-atomic="true">
+                          {!missingRequired && summaryParts.length > 0 && (
+                            <div className="rounded-xl border-2 border-primary/40 bg-primary/10 px-3 py-2 flex items-center gap-2">
+                              <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
+                              <p className="text-xs font-medium text-foreground leading-relaxed">
+                                <span className="sr-only">{L.modalSubtitle}: </span>
+                                {summaryParts.join(" · ")}
+                              </p>
+                            </div>
+                          )}
+                        </div>
                         <Button
-                          onClick={handleCreate}
+                          type="submit"
                           className="w-full h-11 sm:h-10 text-sm font-semibold rounded-xl"
                           disabled={disabled}
+                          aria-disabled={disabled}
                         >
                           {ctaLabel}
                         </Button>
@@ -1158,12 +1200,12 @@ export default function CalendarPage() {
                           {L.cancel}
                         </Button>
                         {missingRequired && (
-                          <p className="text-xs text-muted-foreground text-center">{L.disabledHint}</p>
+                          <p className="text-xs text-muted-foreground text-center" role="status">{L.disabledHint}</p>
                         )}
                       </div>
                     );
                   })()}
-                </div>
+                </form>
 
                 {/* Nested quick-add: client */}
                 <Dialog open={qaClientOpen} onOpenChange={setQaClientOpen}>
