@@ -220,6 +220,19 @@ export default function CalendarPage() {
   const { data: appointments = [] } = useAppointments(appointmentsRange);
   const { data: bookingRequests = [] } = useBookingRequests();
   const navigate = useNavigate();
+
+  // Calendar display preferences (view, density, flags) + filters + inbox drawer
+  const { view, setView, defaultView, setDefaultView, density: cardDensity, setDensity: setCardDensity, flags, setFlag } = useCalendarDisplay();
+  const [filters, setFilters] = useState<CalendarFilters>(initialFilters);
+  const [inboxOpen, setInboxOpen] = useState(false);
+  const [, setVisualsTick] = useState(0);
+  useEffect(() => {
+    const onChange = () => setVisualsTick(t => t + 1);
+    window.addEventListener("calendar-visuals-changed", onChange);
+    return () => window.removeEventListener("calendar-visuals-changed", onChange);
+  }, []);
+  const filtersActive = isFiltersActive(filters);
+  const clearFilters = () => setFilters(initialFilters);
   const pendingRequests = useMemo(
     () => bookingRequests.filter(r => r.status === "pending" || r.status === "needs_linking"),
     [bookingRequests],
