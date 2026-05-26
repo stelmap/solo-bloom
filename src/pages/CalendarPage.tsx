@@ -861,7 +861,7 @@ export default function CalendarPage() {
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 mr-1" /> {t("calendar.newAppointment")}</Button>
               </DialogTrigger>
-              <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-[640px] rounded-2xl shadow-2xl p-0">
+              <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[520px] rounded-2xl shadow-2xl p-0">
                 {(() => {
                   const stepClient = !!form.client_id || (isGroupSession && !!groupId);
                   const stepService = !!form.service_id;
@@ -869,7 +869,7 @@ export default function CalendarPage() {
                   const stepNotes = !!form.notes || stepDate;
                   const steps = [stepClient, stepService, stepDate, stepNotes];
                   return (
-                    <div className="grid grid-cols-4 gap-1.5 px-6 pt-6">
+                    <div className="grid grid-cols-4 gap-1.5 px-5 pt-4">
                       {steps.map((done, i) => (
                         <div key={i} className={cn("h-1 rounded-full transition-colors", done ? "bg-primary" : "bg-muted")} />
                       ))}
@@ -877,25 +877,25 @@ export default function CalendarPage() {
                   );
                 })()}
 
-                <DialogHeader className="px-6 pt-5 pb-1 space-y-1 text-left">
-                  <DialogTitle className="text-2xl font-bold tracking-tight">{t("calendar.newAppointment")}</DialogTitle>
+                <DialogHeader className="px-5 pt-4 pb-1 space-y-0.5 text-left">
+                  <DialogTitle className="text-xl font-bold tracking-tight">{t("calendar.newAppointment")}</DialogTitle>
                   <DialogDescription className="text-sm text-muted-foreground">{L.modalSubtitle}</DialogDescription>
                 </DialogHeader>
 
-                <div className="px-6 pt-4 pb-6 space-y-5">
+                <div className="px-5 pt-3 pb-5 space-y-4">
                   {/* Session type — two large pills */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => { setIsGroupSession(false); setGroupId(""); }}
                       className={cn(
-                        "flex items-center justify-center gap-2 h-12 rounded-xl border-2 text-sm font-medium transition-all",
+                        "flex items-center justify-center gap-1.5 h-9 rounded-xl border-2 text-sm font-medium transition-all",
                         !isGroupSession
                           ? "border-foreground bg-background text-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60"
                       )}
                     >
-                      <UserPlus className="h-4 w-4" />
+                      <UserPlus className="h-3.5 w-3.5" />
                       <span>{L.individualSession}</span>
                     </button>
                     <button
@@ -903,36 +903,36 @@ export default function CalendarPage() {
                       onClick={() => { setIsGroupSession(true); setForm(f => ({ ...f, client_id: "" })); }}
                       disabled={activeGroups.length === 0}
                       className={cn(
-                        "flex items-center justify-center gap-2 h-12 rounded-xl border-2 text-sm font-medium transition-all",
+                        "flex items-center justify-center gap-1.5 h-9 rounded-xl border-2 text-sm font-medium transition-all",
                         isGroupSession
                           ? "border-foreground bg-background text-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60",
                         activeGroups.length === 0 && "opacity-50 cursor-not-allowed"
                       )}
                     >
-                      <Users className="h-4 w-4" />
+                      <Users className="h-3.5 w-3.5" />
                       <span>{L.groupSession}</span>
                     </button>
                   </div>
 
                   {/* Client / Group */}
                   {isGroupSession ? (
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       <Label className="text-xs font-bold uppercase text-muted-foreground">
                         {t("groups.selectGroup")} <span className="text-primary">*</span>
                       </Label>
                       <div className="flex gap-2">
                         <Select value={groupId} onValueChange={setGroupId}>
-                          <SelectTrigger className="h-11 flex-1"><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
+                          <SelectTrigger className="h-9 flex-1"><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
                           <SelectContent>{activeGroups.map((g: any) => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
                         </Select>
                       </div>
                       {groupId && groupMembers.length > 0 && (
-                        <div className="pt-1 space-y-1.5">
+                        <div className="pt-0.5 space-y-1">
                           <p className="text-xs text-muted-foreground">{L.participants} · {groupMembers.length}</p>
-                          <div className="flex flex-wrap gap-1.5">
+                          <div className="flex flex-wrap gap-1">
                             {groupMembers.map((m: any) => (
-                              <span key={m.client_id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-foreground border border-border">
+                              <span key={m.client_id} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-foreground border border-border">
                                 {m.clients?.name}
                               </span>
                             ))}
@@ -944,15 +944,15 @@ export default function CalendarPage() {
                       )}
                     </div>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       <Label className="text-xs font-bold uppercase text-muted-foreground">
                         {t("calendar.client")} <span className="text-primary">*</span>
                       </Label>
                       {clients.length === 0 ? (
-                        <div className="rounded-lg border border-dashed border-border p-4 space-y-2 bg-muted/20 text-center">
+                        <div className="rounded-lg border border-dashed border-border p-3 space-y-1.5 bg-muted/20 text-center">
                           <p className="text-sm text-muted-foreground">{L.noClientsYet}</p>
-                          <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setQaClientOpen(true)}>
-                            <UserPlus className="h-4 w-4" /> {L.addNewClient}
+                          <Button type="button" variant="outline" size="sm" className="gap-1 h-8" onClick={() => setQaClientOpen(true)}>
+                            <UserPlus className="h-3.5 w-3.5" /> {L.addNewClient}
                           </Button>
                         </div>
                       ) : (
@@ -962,10 +962,10 @@ export default function CalendarPage() {
                             value={form.client_id}
                             onChange={v => setForm(f => ({ ...f, client_id: v }))}
                             placeholder={t("calendar.selectClient")}
-                            triggerClassName="h-11 flex-1"
+                            triggerClassName="h-9 flex-1"
                           />
-                          <Button type="button" variant="outline" className="h-11 px-3 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaClientOpen(true)}>
-                            <Plus className="h-4 w-4" /> {L.addNewClient}
+                          <Button type="button" variant="outline" className="h-9 px-2.5 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaClientOpen(true)}>
+                            <Plus className="h-3.5 w-3.5" /> {L.addNewClient}
                           </Button>
                         </div>
                       )}
@@ -973,26 +973,26 @@ export default function CalendarPage() {
                   )}
 
                   {/* Service */}
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <Label className="text-xs font-bold uppercase text-muted-foreground">
                       {t("calendar.service")} <span className="text-primary">*</span>
                     </Label>
                     {services.length === 0 ? (
-                      <div className="rounded-lg border border-dashed border-border p-4 space-y-2 bg-muted/20 text-center">
+                      <div className="rounded-lg border border-dashed border-border p-3 space-y-1.5 bg-muted/20 text-center">
                         <p className="text-sm text-muted-foreground">{L.noServicesYet}</p>
-                        <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setQaServiceOpen(true)}>
-                          <Briefcase className="h-4 w-4" /> {L.addNewService}
+                        <Button type="button" variant="outline" size="sm" className="gap-1 h-8" onClick={() => setQaServiceOpen(true)}>
+                          <Briefcase className="h-3.5 w-3.5" /> {L.addNewService}
                         </Button>
                       </div>
                     ) : (
                       <>
                         <div className="flex gap-2">
                           <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); }}>
-                            <SelectTrigger className={cn("h-11 flex-1", serviceError && "border-destructive")}><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
+                            <SelectTrigger className={cn("h-9 flex-1", serviceError && "border-destructive")}><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
                             <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                           </Select>
-                          <Button type="button" variant="outline" className="h-11 px-3 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaServiceOpen(true)}>
-                            <Plus className="h-4 w-4" /> {L.addNewService}
+                          <Button type="button" variant="outline" className="h-9 px-2.5 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaServiceOpen(true)}>
+                            <Plus className="h-3.5 w-3.5" /> {L.addNewService}
                           </Button>
                         </div>
                         {serviceError && (
@@ -1020,14 +1020,14 @@ export default function CalendarPage() {
                   )}
 
                   {/* Notes */}
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <Label className="text-xs font-bold uppercase text-muted-foreground">{t("calendar.notes")}</Label>
                     <Textarea
                       value={form.notes}
                       onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                       placeholder={isGroupSession ? L.notesGroupPlaceholder : L.notesPlaceholder}
-                      rows={3}
-                      className="resize-none min-h-[96px] rounded-lg"
+                      rows={2}
+                      className="resize-none min-h-[68px] rounded-lg"
                     />
                   </div>
 
@@ -1039,15 +1039,15 @@ export default function CalendarPage() {
                     <button
                       type="button"
                       onClick={() => setIsRecurring(v => !v)}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left"
                     >
                       <span className={cn(
-                        "relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors",
+                        "relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors",
                         isRecurring ? "bg-primary" : "bg-muted"
                       )}>
                         <span className={cn(
-                          "inline-block h-5 w-5 rounded-full bg-background shadow transition-transform mt-0.5",
-                          isRecurring ? "translate-x-[22px]" : "translate-x-0.5"
+                          "inline-block h-4 w-4 rounded-full bg-background shadow transition-transform mt-0.5",
+                          isRecurring ? "translate-x-[18px]" : "translate-x-0.5"
                         )} />
                       </span>
                       <span className="flex-1 font-medium text-sm text-foreground">{t("recurring.setup")}</span>
@@ -1062,11 +1062,11 @@ export default function CalendarPage() {
                       })()}
                     </button>
                     {isRecurring && (
-                      <div className="px-4 pb-4 pt-1 space-y-4 bg-muted/30 border-t border-border/60">
-                        <div className="space-y-2 pt-3">
+                      <div className="px-3 pb-3 pt-0.5 space-y-3 bg-muted/30 border-t border-border/60">
+                        <div className="space-y-1 pt-2">
                           <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.intervalWeeks")}</Label>
                           <Select value={recurInterval.toString()} onValueChange={v => setRecurInterval(parseInt(v))}>
-                            <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="1">{t("recurring.weekly")}</SelectItem>
                               <SelectItem value="2">{t("recurring.biweekly")}</SelectItem>
@@ -1075,14 +1075,14 @@ export default function CalendarPage() {
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-1">
                           <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.daysOfWeek")}</Label>
-                          <div className="grid grid-cols-7 gap-1.5">
+                          <div className="grid grid-cols-7 gap-1">
                             {DAY_KEYS.map((key, i) => {
                               const active = recurDays.includes(i + 1);
                               return (
                                 <button key={i} type="button" onClick={() => toggleRecurDay(i + 1)}
-                                  className={cn("h-10 rounded-md text-xs font-medium transition-colors border-2",
+                                  className={cn("h-8 rounded-md text-xs font-medium transition-colors border-2",
                                     active ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border text-foreground hover:border-muted-foreground/60"
                                   )}>
                                   {t(key as any)}
@@ -1091,7 +1091,7 @@ export default function CalendarPage() {
                             })}
                           </div>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-1">
                           <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.endDate")}</Label>
                           <DatePicker date={recurEndDate} onDateChange={setRecurEndDate} placeholder={t("recurring.ongoing")} />
                         </div>
@@ -1133,18 +1133,18 @@ export default function CalendarPage() {
                       : (isGroupSession ? L.ctaGroup : L.ctaIndividual);
 
                     return (
-                      <div className="space-y-3 pt-1">
+                      <div className="space-y-2 pt-0.5">
                         {!missingRequired && summaryParts.length > 0 && (
-                          <div className="rounded-xl border-2 border-primary/40 bg-primary/10 px-4 py-3 flex items-center gap-3">
-                            <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                            <p className="text-sm font-medium text-foreground leading-relaxed">
+                          <div className="rounded-xl border-2 border-primary/40 bg-primary/10 px-3 py-2 flex items-center gap-2">
+                            <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                            <p className="text-xs font-medium text-foreground leading-relaxed">
                               {summaryParts.join(" · ")}
                             </p>
                           </div>
                         )}
                         <Button
                           onClick={handleCreate}
-                          className="w-full h-12 text-sm font-semibold rounded-xl"
+                          className="w-full h-10 text-sm font-semibold rounded-xl"
                           disabled={disabled}
                         >
                           {ctaLabel}
@@ -1153,7 +1153,7 @@ export default function CalendarPage() {
                           type="button"
                           variant="outline"
                           onClick={() => setCreateOpen(false)}
-                          className="w-full h-12 text-sm font-medium rounded-xl"
+                          className="w-full h-10 text-sm font-medium rounded-xl"
                         >
                           {L.cancel}
                         </Button>
