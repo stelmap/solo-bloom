@@ -939,12 +939,47 @@ export default function CalendarPage() {
               </div>
             ) : (
               <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1">
-                <Button variant="ghost" size="icon" aria-label="Previous week" onClick={() => setCurrentDate(d => addDays(d, -7))}><ChevronLeft className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" aria-label="Previous" onClick={() => setCurrentDate(d => addDays(d, effectiveView === "month" ? -30 : effectiveView === "day" ? -1 : -7))}><ChevronLeft className="h-4 w-4" /></Button>
                 <span className="text-sm font-medium px-2 sm:px-3 text-foreground whitespace-nowrap">
-                  {`${format(weekStart, "MMM d", { locale: dateLocale })} – ${format(addDays(weekStart, 6), "MMM d, yyyy", { locale: dateLocale })}`}
+                  {effectiveView === "day"
+                    ? format(currentDate, "EEE, MMM d, yyyy", { locale: dateLocale })
+                    : effectiveView === "month"
+                      ? format(currentDate, "MMMM yyyy", { locale: dateLocale })
+                      : `${format(weekStart, "MMM d", { locale: dateLocale })} – ${format(addDays(weekStart, 6), "MMM d, yyyy", { locale: dateLocale })}`}
                 </span>
-                <Button variant="ghost" size="icon" aria-label="Next week" onClick={() => setCurrentDate(d => addDays(d, 7))}><ChevronRight className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" aria-label="Next" onClick={() => setCurrentDate(d => addDays(d, effectiveView === "month" ? 30 : effectiveView === "day" ? 1 : 7))}><ChevronRight className="h-4 w-4" /></Button>
               </div>
+            )}
+            {!isMobile && (
+              <div role="tablist" aria-label="Calendar view" className="flex items-center gap-1 bg-card border border-border rounded-lg p-1">
+                {(["day","week","month"] as CalendarView[]).map(v => (
+                  <button
+                    key={v}
+                    role="tab"
+                    aria-selected={view === v}
+                    onClick={() => setView(v)}
+                    className={cn(
+                      "px-3 py-1 text-xs font-medium rounded-md transition-colors capitalize",
+                      view === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {t(`calendar.view.${v}` as any) || v}
+                  </button>
+                ))}
+              </div>
+            )}
+            {pendingRequests.length > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon" className="relative" aria-label="Booking inbox" onClick={() => setInboxOpen(true)}>
+                    <Inbox className="h-4 w-4" />
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                      {pendingRequests.length}
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t("booking.inbox") || "Booking inbox"}</TooltipContent>
+              </Tooltip>
             )}
             {isMobile && (
               <div className="w-full text-center text-sm font-semibold text-foreground" aria-live="polite">
