@@ -269,8 +269,8 @@ export default function AuthPage() {
         Main page
       </Link>
 
-      <div className="hidden lg:flex lg:w-1/2 bg-sidebar-background items-center justify-center p-12 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-sidebar-background via-[hsl(222_40%_14%)] to-sidebar-background" />
+      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 relative overflow-hidden" style={{ backgroundColor: "#1c2942" }}>
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1c2942] via-[#1c2942] to-[#161f33]" />
         <div className="relative z-10 max-w-md space-y-6 text-center">
           <h1 className="text-4xl font-bold text-white tracking-tight">Solo<span className="text-primary">Bizz</span></h1>
           <p className="text-white/70 text-lg leading-relaxed">{t("auth.heroText")}</p>
