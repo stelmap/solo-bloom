@@ -490,14 +490,17 @@ function NowNextCard({
   return (
     <div
       className={cn(
-        "relative rounded-2xl p-6 sm:p-7 animate-fade-in overflow-hidden flex flex-col min-h-[180px] shadow-sm",
+        "relative rounded-2xl p-6 sm:p-7 animate-fade-in overflow-hidden flex flex-col min-h-[180px]",
         isNow
-          ? "bg-secondary text-secondary-foreground border border-secondary"
-          : "bg-card border border-border text-foreground",
+          ? "bg-gradient-dark text-secondary-foreground border border-secondary shadow-elegant"
+          : "bg-card border border-border text-foreground shadow-sm",
       )}
     >
       {isNow && (
-        <div className="pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full bg-primary/10 blur-2xl" />
+        <>
+          <div className="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-primary/30 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-20 -left-10 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
+        </>
       )}
       <div className="flex items-center gap-2 mb-5">
         {isNow ? (
