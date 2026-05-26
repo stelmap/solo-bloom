@@ -145,7 +145,7 @@ export default function AuthPage() {
   }, [user, planParam, isCheckoutPlan, isFreeStarterPlan, subscription.loading, subscription.subscribed, subscription.on_trial]);
 
   if (authLoading) {
-    return <div className="min-h-screen bg-secondary flex items-center justify-center"><div className="animate-pulse text-secondary-foreground/50">{t("common.loading")}</div></div>;
+    return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-pulse text-muted-foreground">{t("common.loading")}</div></div>;
   }
 
   if (user && (!planParam || isFreeStarterPlan || !isCheckoutPlan)) {
