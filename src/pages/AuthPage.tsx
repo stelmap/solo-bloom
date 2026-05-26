@@ -11,6 +11,7 @@ import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { getStoredLang } from "@/i18n/LanguageContext";
 import { track } from "@/lib/analytics";
+import { getPostAuthRedirect } from "@/lib/authRedirect";
 import { PublicFooter } from "@/components/PublicFooter";
 import { SeoHead } from "@/components/SeoHead";
 
