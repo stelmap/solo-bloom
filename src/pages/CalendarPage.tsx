@@ -550,6 +550,7 @@ export default function CalendarPage() {
             price: Number(service?.price ?? 0),
             notes: `[Group: ${groupName}] ${form.notes || ""}`.trim(),
           });
+          markNew((apt as any).id);
           await createGroupSession.mutateAsync({
             groupId,
             appointmentId: (apt as any).id,
