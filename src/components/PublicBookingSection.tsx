@@ -27,11 +27,109 @@ const WEEKDAY_KEYS = [
 
 type DayRow = { is_enabled: boolean; start_time: string; end_time: string };
 
+type Lang = "en" | "uk" | "fr" | "pl";
+const normLang = (v: unknown): Lang => {
+  const s = String(v || "en").toLowerCase();
+  return (["en", "uk", "fr", "pl"].includes(s) ? s : "en") as Lang;
+};
+
+const COPY: Record<Lang, {
+  cardTitle: string; cardDesc: string;
+  enable: string; displayName: string; displayNamePh: string;
+  customHandle: string; handleHelp: string; handlePh: string;
+  mode: string; modeManual: string; modeAuto: string;
+  timezone: string; timezoneHelp: string; tzPh: string;
+  yourLink: string; linkCopied: string; linkRegenerated: string;
+  regenerateConfirm: string;
+}> = {
+  en: {
+    cardTitle: "Public booking link",
+    cardDesc: "Share a single link clients can use to book a session. They only see free time — never any private calendar data.",
+    enable: "Enable public booking",
+    displayName: "Display name (shown to clients)",
+    displayNamePh: "Your name or practice",
+    customHandle: "Custom handle (optional)",
+    handleHelp: "3–40 chars: lowercase letters, digits, hyphens. Leave empty to fall back to the auto-generated secret link.",
+    handlePh: "your-name",
+    mode: "Booking mode",
+    modeManual: "Manual approval (recommended)",
+    modeAuto: "Auto-confirm (matched clients only)",
+    timezone: "Timezone (shown to clients)",
+    timezoneHelp: "All booking times on the public page will be shown in this timezone.",
+    tzPh: "e.g. Europe/Kyiv",
+    yourLink: "Your booking link",
+    linkCopied: "Link copied",
+    linkRegenerated: "Link regenerated. Old link no longer works.",
+    regenerateConfirm: "Regenerate link? The old link will stop working immediately.",
+  },
+  uk: {
+    cardTitle: "Посилання для публічного бронювання",
+    cardDesc: "Поділіться одним посиланням, за яким клієнти зможуть забронювати сесію. Вони бачать лише вільний час — жодних приватних даних календаря.",
+    enable: "Увімкнути публічне бронювання",
+    displayName: "Ім'я для відображення (видно клієнтам)",
+    displayNamePh: "Ваше ім'я або практика",
+    customHandle: "Власний ідентифікатор (опційно)",
+    handleHelp: "3–40 символів: малі літери, цифри, дефіси. Залиште порожнім, щоб використати автоматично згенероване секретне посилання.",
+    handlePh: "ваше-імʼя",
+    mode: "Режим бронювання",
+    modeManual: "Ручне підтвердження (рекомендовано)",
+    modeAuto: "Авто-підтвердження (лише для відомих клієнтів)",
+    timezone: "Часовий пояс (видно клієнтам)",
+    timezoneHelp: "Усі часи бронювання на публічній сторінці показуватимуться в цьому часовому поясі.",
+    tzPh: "напр. Europe/Kyiv",
+    yourLink: "Ваше посилання для бронювання",
+    linkCopied: "Посилання скопійовано",
+    linkRegenerated: "Посилання оновлено. Старе більше не працює.",
+    regenerateConfirm: "Згенерувати нове посилання? Старе перестане працювати негайно.",
+  },
+  fr: {
+    cardTitle: "Lien de réservation public",
+    cardDesc: "Partagez un seul lien que vos clients peuvent utiliser pour réserver une séance. Ils ne voient que les créneaux libres — jamais vos données privées du calendrier.",
+    enable: "Activer la réservation publique",
+    displayName: "Nom affiché (visible par les clients)",
+    displayNamePh: "Votre nom ou cabinet",
+    customHandle: "Identifiant personnalisé (facultatif)",
+    handleHelp: "3 à 40 caractères : lettres minuscules, chiffres, tirets. Laisser vide pour utiliser le lien secret généré automatiquement.",
+    handlePh: "votre-nom",
+    mode: "Mode de réservation",
+    modeManual: "Validation manuelle (recommandé)",
+    modeAuto: "Confirmation automatique (clients connus uniquement)",
+    timezone: "Fuseau horaire (visible par les clients)",
+    timezoneHelp: "Tous les horaires affichés sur la page publique seront dans ce fuseau.",
+    tzPh: "ex. Europe/Paris",
+    yourLink: "Votre lien de réservation",
+    linkCopied: "Lien copié",
+    linkRegenerated: "Lien régénéré. L'ancien lien ne fonctionne plus.",
+    regenerateConfirm: "Régénérer le lien ? L'ancien cessera immédiatement de fonctionner.",
+  },
+  pl: {
+    cardTitle: "Publiczny link do rezerwacji",
+    cardDesc: "Udostępnij jeden link, którego klienci mogą użyć do rezerwacji sesji. Widzą tylko wolne terminy — nigdy prywatnych danych kalendarza.",
+    enable: "Włącz publiczną rezerwację",
+    displayName: "Nazwa wyświetlana (widoczna dla klientów)",
+    displayNamePh: "Twoje imię lub nazwa praktyki",
+    customHandle: "Własny identyfikator (opcjonalnie)",
+    handleHelp: "3–40 znaków: małe litery, cyfry, myślniki. Pozostaw puste, aby użyć automatycznie wygenerowanego sekretnego linku.",
+    handlePh: "twoja-nazwa",
+    mode: "Tryb rezerwacji",
+    modeManual: "Ręczna akceptacja (zalecane)",
+    modeAuto: "Auto-potwierdzenie (tylko znani klienci)",
+    timezone: "Strefa czasowa (widoczna dla klientów)",
+    timezoneHelp: "Wszystkie godziny rezerwacji na publicznej stronie będą w tej strefie czasowej.",
+    tzPh: "np. Europe/Warsaw",
+    yourLink: "Twój link do rezerwacji",
+    linkCopied: "Link skopiowany",
+    linkRegenerated: "Link wygenerowany ponownie. Stary link już nie działa.",
+    regenerateConfirm: "Wygenerować nowy link? Stary natychmiast przestanie działać.",
+  },
+};
+
 export function PublicBookingSection() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const userId = user?.id;
-  const { t } = useLanguage();
+  const { t, lang: ctxLang } = useLanguage();
+  const L = COPY[normLang(ctxLang)];
   const tx = (key: string, fallback: string) => {
     const v = t(key as any);
     return !v || v === key ? fallback : v;
@@ -162,7 +260,7 @@ export function PublicBookingSection() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: "Link regenerated. Old link no longer works." });
+      toast({ title: L.linkRegenerated });
       qc.invalidateQueries({ queryKey: ["booking_link", userId] });
     },
   });
@@ -257,30 +355,27 @@ export function PublicBookingSection() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Public booking link</CardTitle>
-          <CardDescription>
-            Share a single link clients can use to book a session. They only see free time — never any private calendar
-            data.
-          </CardDescription>
+          <CardTitle>{L.cardTitle}</CardTitle>
+          <CardDescription>{L.cardDesc}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label htmlFor="bk-active">Enable public booking</Label>
+            <Label htmlFor="bk-active">{L.enable}</Label>
             <Switch id="bk-active" checked={isActive} onCheckedChange={setIsActive} />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="bk-display">Display name (shown to clients)</Label>
+            <Label htmlFor="bk-display">{L.displayName}</Label>
             <Input
               id="bk-display"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Your name or practice"
+              placeholder={L.displayNamePh}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="bk-slug">Custom handle (optional)</Label>
+            <Label htmlFor="bk-slug">{L.customHandle}</Label>
             <div className="flex items-stretch rounded-md border border-input overflow-hidden focus-within:ring-2 focus-within:ring-ring">
               <span className="px-3 flex items-center text-xs text-muted-foreground bg-muted border-r border-input whitespace-nowrap">
                 {typeof window !== "undefined" ? window.location.host : ""}/book/
@@ -289,29 +384,27 @@ export function PublicBookingSection() {
                 id="bk-slug"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
-                placeholder="your-name"
+                placeholder={L.handlePh}
                 maxLength={40}
                 className="flex-1 px-3 py-2 text-sm bg-background outline-none"
               />
             </div>
-            <p className="text-xs text-muted-foreground">
-              3–40 chars: lowercase letters, digits, hyphens. Leave empty to fall back to the auto-generated secret link.
-            </p>
+            <p className="text-xs text-muted-foreground">{L.handleHelp}</p>
           </div>
 
           <div className="space-y-2">
-            <Label>Booking mode</Label>
+            <Label>{L.mode}</Label>
             <Select value={mode} onValueChange={(v) => setMode(v as any)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="manual">Manual approval (recommended)</SelectItem>
-                <SelectItem value="auto">Auto-confirm (matched clients only)</SelectItem>
+                <SelectItem value="manual">{L.modeManual}</SelectItem>
+                <SelectItem value="auto">{L.modeAuto}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label>Timezone (shown to clients)</Label>
+            <Label>{L.timezone}</Label>
             {tzOptions.length > 0 ? (
               <Select value={timezone} onValueChange={setTimezone}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -322,16 +415,14 @@ export function PublicBookingSection() {
                 </SelectContent>
               </Select>
             ) : (
-              <Input value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="e.g. Europe/Kyiv" />
+              <Input value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder={L.tzPh} />
             )}
-            <p className="text-xs text-muted-foreground">
-              All booking times on the public page will be shown in this timezone.
-            </p>
+            <p className="text-xs text-muted-foreground">{L.timezoneHelp}</p>
           </div>
 
           {url && (
             <div className="space-y-2">
-              <Label>Your booking link</Label>
+              <Label>{L.yourLink}</Label>
               <div className="flex gap-2">
                 <Input value={url} readOnly className="font-mono text-xs" />
                 <Button
@@ -340,7 +431,7 @@ export function PublicBookingSection() {
                   size="icon"
                   onClick={() => {
                     navigator.clipboard.writeText(url);
-                    toast({ title: "Link copied" });
+                    toast({ title: L.linkCopied });
                   }}
                 >
                   <Copy className="h-4 w-4" />
@@ -355,7 +446,7 @@ export function PublicBookingSection() {
                   variant="outline"
                   size="icon"
                   onClick={() => {
-                    if (confirm("Regenerate link? The old link will stop working immediately.")) regenerate.mutate();
+                    if (confirm(L.regenerateConfirm)) regenerate.mutate();
                   }}
                   disabled={regenerate.isPending}
                 >
