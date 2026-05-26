@@ -1136,7 +1136,7 @@ export default function CalendarPage() {
                         <div className="space-y-1 pt-2">
                           <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.intervalWeeks")}</Label>
                           <Select value={recurInterval.toString()} onValueChange={v => setRecurInterval(parseInt(v))}>
-                            <SelectTrigger className="h-9 sm:h-8"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className={D.field}><SelectValue /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="1">{t("recurring.weekly")}</SelectItem>
                               <SelectItem value="2">{t("recurring.biweekly")}</SelectItem>
