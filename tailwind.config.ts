@@ -15,7 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
-        serif: ['"Instrument Serif"', 'ui-serif', 'Georgia', 'serif'],
+        serif: ['var(--font-sans)', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

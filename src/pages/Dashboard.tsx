@@ -175,23 +175,18 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="space-y-10">
-        {/* Header */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-hero border border-border/60 px-6 sm:px-10 py-8 sm:py-10 shadow-elegant">
-          <div className="pointer-events-none absolute -top-24 -right-16 h-72 w-72 rounded-full bg-primary/30 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-secondary/20 blur-3xl" />
-          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="space-y-8">
+        {/* Header — clean business style */}
+        <div className="bg-card border border-border rounded-[20px] px-6 sm:px-8 py-6 shadow-card">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-primary mb-3">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse-soft" />
-                {t("ops.todayOverview")}
-              </span>
-              <h1 className="font-serif text-4xl sm:text-6xl leading-[1.02] text-foreground">
-                {t("dashboard.greeting")} <span className="inline-block">👋</span>
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+                {t("dashboard.greeting")}
               </h1>
-              <p className="text-muted-foreground mt-3 text-base">{t("dashboard.subtitle")}</p>
+              <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">{t("dashboard.subtitle")}</p>
             </div>
-            <div className="self-start sm:self-auto bg-card/80 backdrop-blur border border-border px-4 py-2 rounded-full text-sm font-medium text-muted-foreground shadow-sm whitespace-nowrap">
+            <div className="self-start sm:self-auto inline-flex items-center gap-2 bg-muted border border-border px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
               {todayLabel}
             </div>
           </div>
@@ -199,29 +194,29 @@ export default function Dashboard() {
 
         {/* A. Monthly Overview */}
         <section>
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-4">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground mb-3">
             {t("ops.monthlyOverview")}
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            <OverviewTile icon={Users} label={t("ops.activeClientsThisMonth")} value={String(stats?.activeClientsThisMonth ?? 0)} tone="primary" onClick={() => openWidget("active_clients_this_month", "/clients?filter=activeThisMonth")} />
-            <OverviewTile icon={UserPlus} label={t("ops.newClientsThisMonth")} value={String(stats?.newClientsThisMonth ?? 0)} tone="success" onClick={() => openWidget("new_clients_this_month", "/clients?filter=newThisMonth")} />
-            <OverviewTile icon={UserCheck} label={t("ops.completedTherapyThisMonth")} value={String(stats?.completedTherapyThisMonth ?? 0)} tone="success" onClick={() => openWidget("completed_therapy_this_month", "/clients?filter=completedThisMonth")} />
-            <OverviewTile icon={UserMinus} label={t("ops.droppedTherapyThisMonth")} value={String(stats?.droppedTherapyThisMonth ?? 0)} tone="warning" onClick={() => openWidget("dropped_therapy_this_month", "/clients?filter=droppedThisMonth")} />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <OverviewTile icon={Users} label={t("ops.activeClientsThisMonth")} value={String(stats?.activeClientsThisMonth ?? 0)} active onClick={() => openWidget("active_clients_this_month", "/clients?filter=activeThisMonth")} />
+            <OverviewTile icon={UserPlus} label={t("ops.newClientsThisMonth")} value={String(stats?.newClientsThisMonth ?? 0)} onClick={() => openWidget("new_clients_this_month", "/clients?filter=newThisMonth")} />
+            <OverviewTile icon={UserCheck} label={t("ops.completedTherapyThisMonth")} value={String(stats?.completedTherapyThisMonth ?? 0)} onClick={() => openWidget("completed_therapy_this_month", "/clients?filter=completedThisMonth")} />
+            <OverviewTile icon={UserMinus} label={t("ops.droppedTherapyThisMonth")} value={String(stats?.droppedTherapyThisMonth ?? 0)} onClick={() => openWidget("dropped_therapy_this_month", "/clients?filter=droppedThisMonth")} />
             <OverviewTile icon={XCircle} label={t("ops.cancelledSessionsThisMonth")} value={String((stats as any)?.cancelledSessionsThisMonth ?? 0)} />
           </div>
         </section>
 
         {/* B. Daily Overview - Activity | Money */}
         <section>
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-4">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground mb-3">
             {t("ops.todayOverview")}
           </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* LEFT: Today's Activity */}
-            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
+            <div className="bg-card border border-border rounded-[20px] p-6 shadow-card">
               <div className="flex items-center gap-2 mb-5">
                 <PlayCircle className="h-4 w-4 text-primary" />
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                <h3 className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
                   {t("ops.todaysActivity")}
                 </h3>
               </div>
@@ -236,14 +231,12 @@ export default function Dashboard() {
             </div>
 
             {/* RIGHT: Today's Money */}
-            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm flex flex-col">
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-primary" />
-                  <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                    {t("ops.todaysMoney")}
-                  </h3>
-                </div>
+            <div className="bg-card border border-border rounded-[20px] p-6 shadow-card flex flex-col">
+              <div className="flex items-center gap-2 mb-5">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <h3 className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                  {t("ops.todaysMoney")}
+                </h3>
               </div>
               <div className="grid grid-cols-2 gap-3 flex-1">
                 <MoneyTile label={t("ops.paidToday")} value={`${cs}${summary.amountReceived.toLocaleString()}`} tone="success" onClick={() => openWidget("daily_income", "/finances/income?range=today&tab=income")} />
@@ -251,10 +244,9 @@ export default function Dashboard() {
                 <MoneyTile label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} onClick={() => openWidget("expected_revenue_today", "/finances/income?range=today&tab=income")} />
                 <MoneyTile label={t("ops.outstandingBalance")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("outstanding_balance", "/finances/income?range=all&tab=pending")} />
               </div>
-              <div className="mt-4 relative overflow-hidden bg-gradient-dark text-secondary-foreground rounded-xl px-5 py-4 flex justify-between items-center shadow-elegant">
-                <div className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full bg-primary/25 blur-2xl" />
-                <span className="relative text-xs font-medium opacity-80 uppercase tracking-wider">{t("ops.paidToday")}</span>
-                <span className="relative font-serif text-3xl text-gradient-primary">{cs}{summary.amountReceived.toLocaleString()}</span>
+              <div className="mt-4 bg-gradient-dark text-secondary-foreground rounded-2xl px-5 py-4 flex justify-between items-center">
+                <span className="text-[11px] font-semibold opacity-80 uppercase tracking-[0.06em]">{t("ops.paidToday")}</span>
+                <span className="text-2xl font-bold text-primary">{cs}{summary.amountReceived.toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -262,10 +254,10 @@ export default function Dashboard() {
 
         {/* C. Now / Next */}
         <section>
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-4">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground mb-3">
             {t("ops.nowNext")}
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <NowNextCard
               kind="now"
               title={t("ops.now")}
@@ -292,12 +284,12 @@ export default function Dashboard() {
         </section>
 
         {/* D. Today Schedule Snapshot */}
-        <section className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden animate-fade-in">
+        <section className="bg-card rounded-[20px] border border-border shadow-card overflow-hidden">
           <div className="px-6 py-5 border-b border-border flex items-center justify-between">
-            <h2 className="font-serif text-2xl text-foreground">{t("ops.scheduleSnapshot")}</h2>
+            <h2 className="text-lg font-semibold text-foreground">{t("ops.scheduleSnapshot")}</h2>
             <button
               onClick={() => navigate("/calendar")}
-              className="text-xs font-semibold inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted text-foreground hover:bg-muted/70 transition-colors"
+              className="text-xs font-semibold inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-muted text-foreground hover:bg-muted/70 transition-colors"
             >
               {t("nav.calendar")} <ArrowRight className="h-3.5 w-3.5" />
             </button>
@@ -326,12 +318,12 @@ export default function Dashboard() {
                       key={apt.id}
                       className={cn(
                         "group flex items-center gap-4 px-6 py-4 cursor-pointer transition-colors",
-                        isLive ? "bg-muted/40" : "hover:bg-muted/40",
+                        isLive ? "bg-primary-soft" : "hover:bg-muted/50",
                       )}
                       onClick={() => navigate(`/calendar?appointmentId=${apt.id}`)}
                     >
                       <div className="min-w-[64px]">
-                        <p className={cn("text-sm font-bold", isLive ? "text-primary" : "text-foreground")}>
+                        <p className={cn("text-sm font-semibold tabular-nums", isLive ? "text-primary" : "text-foreground")}>
                           {formatScheduledTime(apt.scheduled_at, use12h)}
                         </p>
                         <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -348,8 +340,8 @@ export default function Dashboard() {
                         </p>
                       </div>
                       {isLive ? (
-                        <span className="hidden sm:inline-flex text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground items-center gap-1.5">
-                          <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                        <span className="hidden sm:inline-flex text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-primary text-primary-foreground items-center gap-1.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-pulse" />
                           {t("ops.now")}
                         </span>
                       ) : (
@@ -379,16 +371,17 @@ export default function Dashboard() {
   );
 }
 
+
 function StatCell({ label, value, tone }: { label: string; value: string; tone?: "success" | "warning" | "muted" }) {
   const toneClass =
     tone === "success" ? "text-success" :
     tone === "warning" ? "text-warning" :
-    tone === "muted" ? "text-foreground/30" :
+    tone === "muted" ? "text-muted-foreground/50" :
     "text-foreground";
   return (
-    <div className="space-y-1">
-      <p className={cn("font-serif text-3xl leading-none", toneClass)}>{value}</p>
-      <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+    <div className="space-y-1.5">
+      <p className={cn("text-3xl font-bold leading-none tabular-nums", toneClass)}>{value}</p>
+      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em]">{label}</p>
     </div>
   );
 }
@@ -399,12 +392,12 @@ function MoneyTile({
   const toneClass =
     tone === "success" ? "text-success" :
     tone === "warning" ? "text-warning" :
-    tone === "muted" ? "text-foreground/30" :
+    tone === "muted" ? "text-muted-foreground/50" :
     "text-foreground";
   const inner = (
     <>
-      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className={cn("font-serif text-2xl mt-2", toneClass)}>{value}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{label}</p>
+      <p className={cn("text-2xl font-bold mt-2 tabular-nums", toneClass)}>{value}</p>
     </>
   );
   if (onClick) {
@@ -412,52 +405,44 @@ function MoneyTile({
       <button
         type="button"
         onClick={onClick}
-        className="text-left bg-background/50 border border-border rounded-xl p-4 hover:border-primary/40 hover:bg-background transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="text-left bg-muted/40 border border-border rounded-2xl p-4 hover:border-primary-border hover:bg-card transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         aria-label={`${label}: ${value}`}
       >
         {inner}
       </button>
     );
   }
-  return <div className="bg-background/50 border border-border rounded-xl p-4">{inner}</div>;
+  return <div className="bg-muted/40 border border-border rounded-2xl p-4">{inner}</div>;
 }
 
 
 function OverviewTile({
-  icon: Icon, label, value, tone, onClick,
-}: { icon: any; label: string; value: string; tone?: "success" | "warning" | "primary"; onClick?: () => void }) {
-  const isPrimary = tone === "primary";
-  const toneClass =
-    tone === "success" ? "text-success" :
-    tone === "warning" ? "text-warning" :
-    isPrimary ? "text-gradient-primary" :
-    "text-foreground";
-  const iconTone =
-    tone === "success" ? "text-success bg-success/10" :
-    tone === "warning" ? "text-warning bg-warning/10" :
-    isPrimary ? "text-primary-foreground bg-gradient-primary shadow-glow" :
-    "text-muted-foreground bg-muted";
+  icon: Icon, label, value, active, onClick,
+}: { icon: any; label: string; value: string; active?: boolean; onClick?: () => void }) {
   const base = cn(
-    "relative bg-card border rounded-2xl p-5 animate-fade-in text-left w-full block overflow-hidden",
-    isPrimary ? "border-primary/30 shadow-elegant" : "border-border shadow-sm",
+    "relative rounded-[18px] p-6 text-left w-full block transition-all border",
+    active
+      ? "bg-primary-soft border-primary shadow-glow"
+      : "bg-card border-border shadow-card",
   );
-  const interactive =
-    "cursor-pointer transition-all hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background group";
+  const interactive = onClick
+    ? "cursor-pointer hover:border-primary-border hover:shadow-elegant focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background group"
+    : "";
   const content = (
     <>
-      {isPrimary && (
-        <div className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full bg-primary/20 blur-2xl" />
-      )}
-      <div className="relative flex items-start justify-between mb-4">
-        <div className={cn("p-2 rounded-lg", iconTone)}>
+      <div className="flex items-start justify-between mb-5">
+        <div className={cn(
+          "p-2 rounded-lg",
+          active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+        )}>
           <Icon className="h-4 w-4" />
         </div>
         {onClick && (
-          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
+          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
         )}
       </div>
-      <p className="relative text-[11px] font-medium text-muted-foreground uppercase tracking-wider truncate">{label}</p>
-      <p className={cn("relative font-serif text-3xl leading-none mt-2", toneClass)}>{value}</p>
+      <p className={cn("text-4xl font-bold leading-none tabular-nums", active ? "text-primary" : "text-foreground")}>{value}</p>
+      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em] mt-3 truncate">{label}</p>
     </>
   );
   if (onClick) {
@@ -490,18 +475,12 @@ function NowNextCard({
   return (
     <div
       className={cn(
-        "relative rounded-2xl p-6 sm:p-7 animate-fade-in overflow-hidden flex flex-col min-h-[180px]",
+        "rounded-[20px] p-6 sm:p-7 flex flex-col min-h-[180px] border",
         isNow
-          ? "bg-gradient-dark text-secondary-foreground border border-secondary shadow-elegant"
-          : "bg-card border border-border text-foreground shadow-sm",
+          ? "bg-gradient-dark text-secondary-foreground border-secondary shadow-elegant"
+          : "bg-card border-border text-foreground shadow-card",
       )}
     >
-      {isNow && (
-        <>
-          <div className="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-primary/30 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-20 -left-10 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
-        </>
-      )}
       <div className="flex items-center gap-2 mb-5">
         {isNow ? (
           <>
@@ -509,12 +488,12 @@ function NowNextCard({
               <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
             </span>
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">{title}</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-primary">{title}</p>
           </>
         ) : (
           <>
             <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{title}</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">{title}</p>
           </>
         )}
       </div>
@@ -523,17 +502,17 @@ function NowNextCard({
       ) : (
         <div className="flex-1 flex flex-col justify-between gap-5">
           <div>
-            <p className="font-serif text-3xl sm:text-4xl leading-tight truncate">
+            <p className="text-2xl sm:text-3xl font-semibold leading-tight truncate">
               {apt.clients?.name ?? "—"}
             </p>
-            <p className={cn("text-sm mt-1 truncate", isNow ? "text-secondary-foreground/60" : "text-muted-foreground")}>
+            <p className={cn("text-sm mt-1.5 truncate", isNow ? "text-secondary-foreground/60" : "text-muted-foreground")}>
               {formatScheduledTime(apt.scheduled_at, use12h)} · {apt.services?.name ?? "—"} · {apt.group_session_id ? t("ops.group") : t("ops.individual")}
             </p>
           </div>
           <div className="flex items-center justify-between gap-3">
             <span className={cn(
               "text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5",
-              isPaid ? (isNow ? "text-primary" : "text-success") : (isNow ? "text-warning" : "text-warning"),
+              isPaid ? (isNow ? "text-primary" : "text-success") : "text-warning",
             )}>
               <span className={cn("h-1.5 w-1.5 rounded-full", isPaid ? "bg-success" : "bg-warning")} />
               {PAID_STATUSES.has(apt.payment_status)
@@ -545,7 +524,7 @@ function NowNextCard({
             <button
               onClick={onOpen}
               className={cn(
-                "inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all",
+                "inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-all",
                 isNow
                   ? "bg-primary text-primary-foreground hover:bg-primary/90"
                   : "border border-border text-foreground hover:bg-muted",
@@ -559,3 +538,4 @@ function NowNextCard({
     </div>
   );
 }
+
