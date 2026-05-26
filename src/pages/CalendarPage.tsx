@@ -675,9 +675,39 @@ export default function CalendarPage() {
   const toUTCDateStr = (d: Date) =>
     `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
 
+  // Apply user filters before the calendar reads events
+  const visibleAppointments = useMemo(() => {
+    const q = filters.search.trim().toLowerCase();
+    return appointments.filter(apt => {
+      const kind = getSessionKind(apt);
+      if (!filters.types[kind]) return false;
+      if (filters.status !== "all" && apt.status !== filters.status) return false;
+      if (filters.urgentOnly && !isUrgent(apt.id)) return false;
+      if (filters.newOnly && !isNew(apt.id, (apt as any).created_at)) return false;
+      if (q) {
+        const name = (apt as any).clients?.name || (apt as any).group_sessions?.groups?.name || "";
+        const svc = (apt as any).services?.name || "";
+        if (!name.toLowerCase().includes(q) && !svc.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+  }, [appointments, filters]);
+
+  const visiblePendingRequests = useMemo(() => {
+    const q = filters.search.trim().toLowerCase();
+    // Pending requests show only when status is "all" or "scheduled" (pending shows when no specific session-status filter)
+    if (filters.status !== "all") return [];
+    if (filters.newOnly || filters.urgentOnly) return pendingRequests; // still surface them
+    return pendingRequests.filter(req => {
+      if (!q) return true;
+      const name = `${req.first_name} ${req.last_name || ""} ${req.matched_client_name || ""}`.toLowerCase();
+      return name.includes(q);
+    });
+  }, [pendingRequests, filters]);
+
   const getEventsForDayHour = (day: Date, hour: number) => {
     const dayStr = format(day, "yyyy-MM-dd"); // local calendar day string
-    return appointments.filter(apt => {
+    return visibleAppointments.filter(apt => {
       const d = new Date(apt.scheduled_at);
       return toUTCDateStr(d) === dayStr && d.getUTCHours() === hour;
     });
@@ -685,7 +715,7 @@ export default function CalendarPage() {
 
   const getPendingRequestsForDayHour = (day: Date, hour: number): BookingRequestRow[] => {
     const dayStr = format(day, "yyyy-MM-dd");
-    return pendingRequests.filter(req => {
+    return visiblePendingRequests.filter(req => {
       const d = new Date(req.requested_slot_at);
       return toUTCDateStr(d) === dayStr && d.getUTCHours() === hour;
     });
