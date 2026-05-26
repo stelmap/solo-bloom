@@ -39,14 +39,14 @@ export function DemoBanner() {
   const cta = tx("freeStarter.choosePlan", "Choose a plan");
 
   return (
-    <div className="sticky top-0 z-30 border-b border-primary/25 bg-background/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/85">
+    <div className="sticky top-0 z-30 border-b border-primary/25 bg-gradient-dark shadow-elegant backdrop-blur supports-[backdrop-filter]:bg-secondary/90">
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-2.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 lg:pl-0 pl-12">
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/15 px-2.5 py-1 text-[10px] sm:text-xs font-bold uppercase text-primary whitespace-nowrap shrink-0">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/15 px-2.5 py-1 text-[10px] sm:text-xs font-bold uppercase text-primary whitespace-nowrap shrink-0">
             <Sparkles className="h-3.5 w-3.5" />
             {badge}
           </span>
-          <p className="text-sm text-foreground min-w-0 truncate">
+          <p className="text-sm text-secondary-foreground min-w-0 truncate">
             <span className="font-semibold">{headline}</span>{" "}
             <span className="text-muted-foreground hidden md:inline">
               {sub}
