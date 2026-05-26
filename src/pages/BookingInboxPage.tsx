@@ -290,14 +290,24 @@ export default function BookingInboxPage() {
                       {actionable ? (
                         <div className="flex justify-end gap-1 flex-wrap">
                           {r.status === "needs_linking" && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="gap-1"
-                              onClick={() => { setLinkingFor(r); setLinkClientId(""); }}
-                            >
-                              <UserPlus className="h-3.5 w-3.5" /> Link
-                            </Button>
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="gap-1"
+                                onClick={() => { setLinkingFor(r); setLinkClientId(""); }}
+                              >
+                                <UserPlus className="h-3.5 w-3.5" /> Link
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="gap-1"
+                                onClick={() => openCreateClient(r)}
+                              >
+                                <UserPlus className="h-3.5 w-3.5" /> Create new
+                              </Button>
+                            </>
                           )}
                           <Button
                             size="sm"
