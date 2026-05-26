@@ -889,7 +889,7 @@ export default function CalendarPage() {
                       type="button"
                       onClick={() => { setIsGroupSession(false); setGroupId(""); }}
                       className={cn(
-                        "flex items-center justify-center gap-1.5 h-9 rounded-xl border-2 text-sm font-medium transition-all",
+                        "flex items-center justify-center gap-1.5 h-10 sm:h-9 rounded-xl border-2 text-sm font-medium transition-all",
                         !isGroupSession
                           ? "border-foreground bg-background text-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60"
@@ -903,7 +903,7 @@ export default function CalendarPage() {
                       onClick={() => { setIsGroupSession(true); setForm(f => ({ ...f, client_id: "" })); }}
                       disabled={activeGroups.length === 0}
                       className={cn(
-                        "flex items-center justify-center gap-1.5 h-9 rounded-xl border-2 text-sm font-medium transition-all",
+                        "flex items-center justify-center gap-1.5 h-10 sm:h-9 rounded-xl border-2 text-sm font-medium transition-all",
                         isGroupSession
                           ? "border-foreground bg-background text-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60",
