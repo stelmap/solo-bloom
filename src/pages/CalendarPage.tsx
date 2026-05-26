@@ -997,29 +997,37 @@ export default function CalendarPage() {
 
                   {/* Service */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-bold uppercase text-muted-foreground">
-                      {t("calendar.service")} <span className="text-primary">*</span>
+                    <Label htmlFor="appt-service" className="text-xs font-bold uppercase text-muted-foreground">
+                      {t("calendar.service")} <span className="text-primary" aria-hidden="true">*</span>
                     </Label>
                     {services.length === 0 ? (
                       <div className="rounded-lg border border-dashed border-border p-3 space-y-1.5 bg-muted/20 text-center">
                         <p className="text-sm text-muted-foreground">{L.noServicesYet}</p>
                         <Button type="button" variant="outline" size="sm" className="gap-1 h-9 sm:h-8" onClick={() => setQaServiceOpen(true)}>
-                          <Briefcase className="h-3.5 w-3.5" /> {L.addNewService}
+                          <Briefcase className="h-3.5 w-3.5" aria-hidden="true" /> {L.addNewService}
                         </Button>
                       </div>
                     ) : (
                       <>
                         <div className="flex flex-col sm:flex-row gap-2">
                           <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); }}>
-                            <SelectTrigger className={cn("h-10 sm:h-9 flex-1", serviceError && "border-destructive")}><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
+                            <SelectTrigger
+                              id="appt-service"
+                              aria-required="true"
+                              aria-invalid={serviceError}
+                              aria-describedby={serviceError ? "appt-service-error" : undefined}
+                              className={cn("h-10 sm:h-9 flex-1", serviceError && "border-destructive")}
+                            >
+                              <SelectValue placeholder={t("calendar.selectService")} />
+                            </SelectTrigger>
                             <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                           </Select>
                           <Button type="button" variant="outline" className="h-10 sm:h-9 px-2.5 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaServiceOpen(true)}>
-                            <Plus className="h-3.5 w-3.5" /> {L.addNewService}
+                            <Plus className="h-3.5 w-3.5" aria-hidden="true" /> {L.addNewService}
                           </Button>
                         </div>
                         {serviceError && (
-                          <p className="text-sm text-destructive">⚠️ {t("calendar.service")} is required</p>
+                          <p id="appt-service-error" role="alert" className="text-sm text-destructive">⚠️ {t("calendar.service")} is required</p>
                         )}
                       </>
                     )}
