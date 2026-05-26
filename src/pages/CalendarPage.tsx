@@ -632,6 +632,7 @@ export default function CalendarPage() {
   const openSessionSheet = (apt: any) => {
     setDetailApt(apt);
     setSessionSheetOpen(true);
+    if (apt?.id) markSeen(apt.id);
   };
 
   const handleQuickDayOff = async (date: Date) => {
