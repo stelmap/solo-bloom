@@ -53,6 +53,12 @@ const NEW_COPY: Record<LangKey, {
   serviceName: string; serviceDuration: string; servicePrice: string;
   saveClient: string; saveService: string; cancel: string;
   durationMin: string;
+  modalSubtitle: string;
+  sessionTypeLabel: string; individualSession: string; groupSession: string;
+  participants: string;
+  notesPlaceholder: string; notesGroupPlaceholder: string;
+  ctaIndividual: string; ctaGroup: string;
+  summaryWillCreate: string; summaryWillCreateGroup: string;
 }> = {
   en: {
     noClientsYet: "No clients yet. Add your first client to create a session.",
@@ -63,12 +69,21 @@ const NEW_COPY: Record<LangKey, {
     createFirstDesc: "Add a client, choose a service, set the date and time, then save.",
     stepAddClient: "Add client", stepAddService: "Add service",
     stepDateTime: "Choose date & time", stepSave: "Save session",
-    disabledHint: "Please add a client, service, date and time to create a session.",
+    disabledHint: "Fill required fields to create a session.",
     qaClientTitle: "Add new client", qaServiceTitle: "Add new service",
     clientName: "Name", clientEmail: "Email (optional)", clientPhone: "Phone (optional)",
     serviceName: "Name", serviceDuration: "Duration", servicePrice: "Price",
     saveClient: "Save client", saveService: "Save service", cancel: "Cancel",
     durationMin: "min",
+    modalSubtitle: "Schedule an individual or group session",
+    sessionTypeLabel: "Session type",
+    individualSession: "Individual session", groupSession: "Group session",
+    participants: "Participants",
+    notesPlaceholder: "Add a short note for the session",
+    notesGroupPlaceholder: "Add a note for the group session",
+    ctaIndividual: "Create session", ctaGroup: "Create group session",
+    summaryWillCreate: "Will create session:",
+    summaryWillCreateGroup: "Will create group session:",
   },
   uk: {
     noClientsYet: "Ще немає клієнтів. Додайте першого клієнта, щоб створити сесію.",
@@ -79,12 +94,21 @@ const NEW_COPY: Record<LangKey, {
     createFirstDesc: "Додайте клієнта, оберіть послугу, встановіть дату й час та збережіть.",
     stepAddClient: "Додати клієнта", stepAddService: "Додати послугу",
     stepDateTime: "Обрати дату й час", stepSave: "Зберегти сесію",
-    disabledHint: "Додайте клієнта, послугу, дату й час, щоб створити сесію.",
+    disabledHint: "Заповніть обовʼязкові поля, щоб створити сесію.",
     qaClientTitle: "Новий клієнт", qaServiceTitle: "Нова послуга",
     clientName: "Ім'я", clientEmail: "Email (необов'язково)", clientPhone: "Телефон (необов'язково)",
     serviceName: "Назва", serviceDuration: "Тривалість", servicePrice: "Ціна",
     saveClient: "Зберегти клієнта", saveService: "Зберегти послугу", cancel: "Скасувати",
     durationMin: "хв",
+    modalSubtitle: "Заплануйте індивідуальну або групову сесію",
+    sessionTypeLabel: "Тип сесії",
+    individualSession: "Індивідуальна сесія", groupSession: "Групова сесія",
+    participants: "Учасники",
+    notesPlaceholder: "Додайте коротку нотатку до сесії",
+    notesGroupPlaceholder: "Додайте нотатку для групової сесії",
+    ctaIndividual: "Створити сесію", ctaGroup: "Створити групову сесію",
+    summaryWillCreate: "Буде створено сесію:",
+    summaryWillCreateGroup: "Буде створено групову сесію:",
   },
   fr: {
     noClientsYet: "Aucun client. Ajoutez votre premier client pour créer une séance.",
@@ -95,12 +119,21 @@ const NEW_COPY: Record<LangKey, {
     createFirstDesc: "Ajoutez un client, choisissez un service, définissez la date et l'heure, puis enregistrez.",
     stepAddClient: "Ajouter un client", stepAddService: "Ajouter un service",
     stepDateTime: "Choisir date et heure", stepSave: "Enregistrer la séance",
-    disabledHint: "Veuillez ajouter un client, un service, une date et une heure.",
+    disabledHint: "Remplissez les champs requis pour créer une séance.",
     qaClientTitle: "Nouveau client", qaServiceTitle: "Nouveau service",
     clientName: "Nom", clientEmail: "Email (optionnel)", clientPhone: "Téléphone (optionnel)",
     serviceName: "Nom", serviceDuration: "Durée", servicePrice: "Prix",
     saveClient: "Enregistrer", saveService: "Enregistrer", cancel: "Annuler",
     durationMin: "min",
+    modalSubtitle: "Planifiez une séance individuelle ou de groupe",
+    sessionTypeLabel: "Type de séance",
+    individualSession: "Séance individuelle", groupSession: "Séance de groupe",
+    participants: "Participants",
+    notesPlaceholder: "Ajoutez une courte note pour la séance",
+    notesGroupPlaceholder: "Ajoutez une note pour la séance de groupe",
+    ctaIndividual: "Créer la séance", ctaGroup: "Créer la séance de groupe",
+    summaryWillCreate: "Séance à créer :",
+    summaryWillCreateGroup: "Séance de groupe à créer :",
   },
   pl: {
     noClientsYet: "Brak klientów. Dodaj pierwszego klienta, aby utworzyć sesję.",
@@ -111,12 +144,21 @@ const NEW_COPY: Record<LangKey, {
     createFirstDesc: "Dodaj klienta, wybierz usługę, ustaw datę i godzinę, a następnie zapisz.",
     stepAddClient: "Dodaj klienta", stepAddService: "Dodaj usługę",
     stepDateTime: "Wybierz datę i godzinę", stepSave: "Zapisz sesję",
-    disabledHint: "Dodaj klienta, usługę, datę i godzinę, aby utworzyć sesję.",
+    disabledHint: "Wypełnij wymagane pola, aby utworzyć sesję.",
     qaClientTitle: "Nowy klient", qaServiceTitle: "Nowa usługa",
     clientName: "Imię", clientEmail: "Email (opcjonalnie)", clientPhone: "Telefon (opcjonalnie)",
     serviceName: "Nazwa", serviceDuration: "Czas trwania", servicePrice: "Cena",
     saveClient: "Zapisz klienta", saveService: "Zapisz usługę", cancel: "Anuluj",
     durationMin: "min",
+    modalSubtitle: "Zaplanuj sesję indywidualną lub grupową",
+    sessionTypeLabel: "Typ sesji",
+    individualSession: "Sesja indywidualna", groupSession: "Sesja grupowa",
+    participants: "Uczestnicy",
+    notesPlaceholder: "Dodaj krótką notatkę do sesji",
+    notesGroupPlaceholder: "Dodaj notatkę do sesji grupowej",
+    ctaIndividual: "Utwórz sesję", ctaGroup: "Utwórz sesję grupową",
+    summaryWillCreate: "Zostanie utworzona sesja:",
+    summaryWillCreateGroup: "Zostanie utworzona sesja grupowa:",
   },
 };
 
