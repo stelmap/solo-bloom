@@ -917,22 +917,22 @@ export default function CalendarPage() {
 
                   {/* Client / Group */}
                   {isGroupSession ? (
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       <Label className="text-xs font-bold uppercase text-muted-foreground">
                         {t("groups.selectGroup")} <span className="text-primary">*</span>
                       </Label>
                       <div className="flex gap-2">
                         <Select value={groupId} onValueChange={setGroupId}>
-                          <SelectTrigger className="h-11 flex-1"><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
+                          <SelectTrigger className="h-9 flex-1"><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
                           <SelectContent>{activeGroups.map((g: any) => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
                         </Select>
                       </div>
                       {groupId && groupMembers.length > 0 && (
-                        <div className="pt-1 space-y-1.5">
+                        <div className="pt-0.5 space-y-1">
                           <p className="text-xs text-muted-foreground">{L.participants} · {groupMembers.length}</p>
-                          <div className="flex flex-wrap gap-1.5">
+                          <div className="flex flex-wrap gap-1">
                             {groupMembers.map((m: any) => (
-                              <span key={m.client_id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-foreground border border-border">
+                              <span key={m.client_id} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-foreground border border-border">
                                 {m.clients?.name}
                               </span>
                             ))}
@@ -944,15 +944,15 @@ export default function CalendarPage() {
                       )}
                     </div>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       <Label className="text-xs font-bold uppercase text-muted-foreground">
                         {t("calendar.client")} <span className="text-primary">*</span>
                       </Label>
                       {clients.length === 0 ? (
-                        <div className="rounded-lg border border-dashed border-border p-4 space-y-2 bg-muted/20 text-center">
+                        <div className="rounded-lg border border-dashed border-border p-3 space-y-1.5 bg-muted/20 text-center">
                           <p className="text-sm text-muted-foreground">{L.noClientsYet}</p>
-                          <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setQaClientOpen(true)}>
-                            <UserPlus className="h-4 w-4" /> {L.addNewClient}
+                          <Button type="button" variant="outline" size="sm" className="gap-1 h-8" onClick={() => setQaClientOpen(true)}>
+                            <UserPlus className="h-3.5 w-3.5" /> {L.addNewClient}
                           </Button>
                         </div>
                       ) : (
@@ -962,10 +962,10 @@ export default function CalendarPage() {
                             value={form.client_id}
                             onChange={v => setForm(f => ({ ...f, client_id: v }))}
                             placeholder={t("calendar.selectClient")}
-                            triggerClassName="h-11 flex-1"
+                            triggerClassName="h-9 flex-1"
                           />
-                          <Button type="button" variant="outline" className="h-11 px-3 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaClientOpen(true)}>
-                            <Plus className="h-4 w-4" /> {L.addNewClient}
+                          <Button type="button" variant="outline" className="h-9 px-2.5 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaClientOpen(true)}>
+                            <Plus className="h-3.5 w-3.5" /> {L.addNewClient}
                           </Button>
                         </div>
                       )}
@@ -973,26 +973,26 @@ export default function CalendarPage() {
                   )}
 
                   {/* Service */}
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <Label className="text-xs font-bold uppercase text-muted-foreground">
                       {t("calendar.service")} <span className="text-primary">*</span>
                     </Label>
                     {services.length === 0 ? (
-                      <div className="rounded-lg border border-dashed border-border p-4 space-y-2 bg-muted/20 text-center">
+                      <div className="rounded-lg border border-dashed border-border p-3 space-y-1.5 bg-muted/20 text-center">
                         <p className="text-sm text-muted-foreground">{L.noServicesYet}</p>
-                        <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setQaServiceOpen(true)}>
-                          <Briefcase className="h-4 w-4" /> {L.addNewService}
+                        <Button type="button" variant="outline" size="sm" className="gap-1 h-8" onClick={() => setQaServiceOpen(true)}>
+                          <Briefcase className="h-3.5 w-3.5" /> {L.addNewService}
                         </Button>
                       </div>
                     ) : (
                       <>
                         <div className="flex gap-2">
                           <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); }}>
-                            <SelectTrigger className={cn("h-11 flex-1", serviceError && "border-destructive")}><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
+                            <SelectTrigger className={cn("h-9 flex-1", serviceError && "border-destructive")}><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
                             <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                           </Select>
-                          <Button type="button" variant="outline" className="h-11 px-3 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaServiceOpen(true)}>
-                            <Plus className="h-4 w-4" /> {L.addNewService}
+                          <Button type="button" variant="outline" className="h-9 px-2.5 gap-1 whitespace-nowrap shrink-0" onClick={() => setQaServiceOpen(true)}>
+                            <Plus className="h-3.5 w-3.5" /> {L.addNewService}
                           </Button>
                         </div>
                         {serviceError && (
