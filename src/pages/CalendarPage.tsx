@@ -882,35 +882,58 @@ export default function CalendarPage() {
                   <DialogDescription className="text-sm text-muted-foreground">{L.modalSubtitle}</DialogDescription>
                 </DialogHeader>
 
-                <div className="px-4 pt-3 pb-5 space-y-4 sm:px-5">
+                <form
+                  className="px-4 pt-3 pb-5 space-y-4 sm:px-5"
+                  onSubmit={(e) => { e.preventDefault(); handleCreate(); }}
+                  aria-labelledby="new-appointment-title"
+                >
                   {/* Session type — two large pills */}
-                  <div className="grid grid-cols-2 gap-2">
+                  <div
+                    role="radiogroup"
+                    aria-label={L.individualSession + " / " + L.groupSession}
+                    className="grid grid-cols-2 gap-2"
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+                        e.preventDefault();
+                        if (activeGroups.length > 0) { setIsGroupSession(true); setForm(f => ({ ...f, client_id: "" })); }
+                      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+                        e.preventDefault();
+                        setIsGroupSession(false); setGroupId("");
+                      }
+                    }}
+                  >
                     <button
                       type="button"
+                      role="radio"
+                      aria-checked={!isGroupSession}
+                      tabIndex={!isGroupSession ? 0 : -1}
                       onClick={() => { setIsGroupSession(false); setGroupId(""); }}
                       className={cn(
-                        "flex items-center justify-center gap-1.5 h-10 sm:h-9 rounded-xl border-2 text-sm font-medium transition-all",
+                        "flex items-center justify-center gap-1.5 h-10 sm:h-9 rounded-xl border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                         !isGroupSession
                           ? "border-foreground bg-background text-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60"
                       )}
                     >
-                      <UserPlus className="h-3.5 w-3.5" />
+                      <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
                       <span>{L.individualSession}</span>
                     </button>
                     <button
                       type="button"
+                      role="radio"
+                      aria-checked={isGroupSession}
+                      tabIndex={isGroupSession ? 0 : -1}
                       onClick={() => { setIsGroupSession(true); setForm(f => ({ ...f, client_id: "" })); }}
                       disabled={activeGroups.length === 0}
                       className={cn(
-                        "flex items-center justify-center gap-1.5 h-10 sm:h-9 rounded-xl border-2 text-sm font-medium transition-all",
+                        "flex items-center justify-center gap-1.5 h-10 sm:h-9 rounded-xl border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                         isGroupSession
                           ? "border-foreground bg-background text-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60",
                         activeGroups.length === 0 && "opacity-50 cursor-not-allowed"
                       )}
                     >
-                      <Users className="h-3.5 w-3.5" />
+                      <Users className="h-3.5 w-3.5" aria-hidden="true" />
                       <span>{L.groupSession}</span>
                     </button>
                   </div>
