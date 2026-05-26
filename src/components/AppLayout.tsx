@@ -11,7 +11,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <AppSidebar />
       <main className="lg:ml-64 min-h-screen">
         <DemoBanner />
-        <div className="p-4 lg:p-8 pt-16 lg:pt-8 max-w-7xl mx-auto">
+        <div className="p-4 lg:px-10 xl:px-14 lg:py-8 pt-16 lg:pt-8 max-w-[1600px] mx-auto">
           {children}
         </div>
       </main>
