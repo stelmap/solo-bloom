@@ -11,8 +11,10 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { ClientPicker } from "@/components/ClientPicker";
-import { useClients, useServices } from "@/hooks/useData";
+import { useClients, useCreateClient, useServices } from "@/hooks/useData";
 import {
   useBookingRequests, useConfirmBookingRequest,
   useDeclineBookingRequest, useLinkBookingRequestClient,
@@ -54,12 +56,18 @@ export default function BookingInboxPage() {
   const confirm = useConfirmBookingRequest();
   const decline = useDeclineBookingRequest();
   const link = useLinkBookingRequestClient();
+  const createClient = useCreateClient();
 
   const [linkingFor, setLinkingFor] = useState<BookingRequestRow | null>(null);
   const [linkClientId, setLinkClientId] = useState<string>("");
   const [confirmingFor, setConfirmingFor] = useState<BookingRequestRow | null>(null);
   const [confirmServiceId, setConfirmServiceId] = useState<string>("");
   const [confirmClientId, setConfirmClientId] = useState<string>("");
+  const [creatingFor, setCreatingFor] = useState<BookingRequestRow | null>(null);
+  const [newClientName, setNewClientName] = useState("");
+  const [newClientEmail, setNewClientEmail] = useState("");
+  const [newClientPhone, setNewClientPhone] = useState("");
+  const [newClientNotes, setNewClientNotes] = useState("");
 
   const counts = useMemo(() => {
     const c = { pending: 0, needs_linking: 0 };
@@ -105,6 +113,42 @@ export default function BookingInboxPage() {
       setLinkClientId("");
     } catch (e: any) {
       toast({ title: "Could not link", description: e.message, variant: "destructive" });
+    }
+  }
+
+  function openCreateClient(req: BookingRequestRow) {
+    setCreatingFor(req);
+    setNewClientName(`${req.first_name}${req.last_name ? " " + req.last_name : ""}`.trim());
+    setNewClientEmail(req.email);
+    setNewClientPhone(req.phone ?? "");
+    setNewClientNotes(req.comment ?? "");
+  }
+
+  async function handleCreateClientAndLink() {
+    if (!creatingFor) return;
+    const email = newClientEmail.trim().toLowerCase();
+    if (!newClientName.trim() || !email) {
+      toast({ title: "Name and email are required", variant: "destructive" });
+      return;
+    }
+    try {
+      const existing = (clients as any[]).find((c) => (c.email || "").toLowerCase() === email);
+      const clientId = existing
+        ? existing.id
+        : (await createClient.mutateAsync({
+            name: newClientName.trim(),
+            email,
+            phone: newClientPhone.trim() || undefined,
+            notes: newClientNotes.trim() || undefined,
+          })).id;
+      await link.mutateAsync({ id: creatingFor.id, client_id: clientId });
+      toast({
+        title: existing ? "Linked to existing client" : "Client created and linked",
+        description: existing ? `Matched ${existing.name} by email` : undefined,
+      });
+      setCreatingFor(null);
+    } catch (e: any) {
+      toast({ title: "Could not create client", description: e.message, variant: "destructive" });
     }
   }
 
@@ -246,14 +290,24 @@ export default function BookingInboxPage() {
                       {actionable ? (
                         <div className="flex justify-end gap-1 flex-wrap">
                           {r.status === "needs_linking" && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="gap-1"
-                              onClick={() => { setLinkingFor(r); setLinkClientId(""); }}
-                            >
-                              <UserPlus className="h-3.5 w-3.5" /> Link
-                            </Button>
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="gap-1"
+                                onClick={() => { setLinkingFor(r); setLinkClientId(""); }}
+                              >
+                                <UserPlus className="h-3.5 w-3.5" /> Link
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="gap-1"
+                                onClick={() => openCreateClient(r)}
+                              >
+                                <UserPlus className="h-3.5 w-3.5" /> Create new
+                              </Button>
+                            </>
                           )}
                           <Button
                             size="sm"
@@ -354,6 +408,43 @@ export default function BookingInboxPage() {
             >
               {confirm.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Confirm booking
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create new client from request */}
+      <Dialog open={!!creatingFor} onOpenChange={(o) => !o && setCreatingFor(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create new client from request</DialogTitle>
+            <DialogDescription>
+              If a client with this email already exists, it will be linked instead of duplicated.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Name</label>
+              <Input value={newClientName} onChange={(e) => setNewClientName(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Email</label>
+              <Input type="email" value={newClientEmail} onChange={(e) => setNewClientEmail(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Phone</label>
+              <Input value={newClientPhone} onChange={(e) => setNewClientPhone(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Notes</label>
+              <Textarea rows={3} value={newClientNotes} onChange={(e) => setNewClientNotes(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreatingFor(null)}>Cancel</Button>
+            <Button disabled={createClient.isPending || link.isPending} onClick={handleCreateClientAndLink}>
+              {(createClient.isPending || link.isPending) ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Create & link
             </Button>
           </DialogFooter>
         </DialogContent>
