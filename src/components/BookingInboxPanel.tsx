@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
@@ -7,18 +8,20 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { ClientPicker } from "@/components/ClientPicker";
-import { useClients, useServices } from "@/hooks/useData";
+import { useClients, useServices, useCreateClient, useProfile } from "@/hooks/useData";
 import {
   useBookingRequests, useConfirmBookingRequest,
   useDeclineBookingRequest, useLinkBookingRequestClient,
   type BookingRequestRow,
 } from "@/hooks/useBookingInbox";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Loader2, Mail, Phone, CheckCircle2, XCircle, UserPlus,
   RefreshCw, Inbox, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
 
 function fmt(s: string) {
   try { return new Date(s).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }); }
@@ -29,6 +32,8 @@ export function BookingInboxPanel({ className }: { className?: string }) {
   const { data: rows = [], isLoading, refetch, isFetching } = useBookingRequests();
   const { data: services = [] } = useServices();
   const { data: clients = [] } = useClients();
+  const { data: profile } = useProfile();
+  const createClient = useCreateClient();
 
   const pending = useMemo(
     () => rows.filter((r) => r.status === "pending" || r.status === "needs_linking"),
@@ -46,6 +51,52 @@ export function BookingInboxPanel({ className }: { className?: string }) {
   const [confirmClientId, setConfirmClientId] = useState<string>("");
   const [collapsedMobile, setCollapsedMobile] = useState(true);
 
+  // Create-client-from-request dialog state
+  const [creatingFor, setCreatingFor] = useState<BookingRequestRow | null>(null);
+  const [newClientName, setNewClientName] = useState("");
+  const [newClientEmail, setNewClientEmail] = useState("");
+  const [newClientPhone, setNewClientPhone] = useState("");
+  const [newClientNotes, setNewClientNotes] = useState("");
+
+  async function sendConfirmationEmail(req: BookingRequestRow, serviceId?: string) {
+    try {
+      const slot = new Date(req.requested_slot_at);
+      const lang = (profile as any)?.language || "en";
+      const dateFmt = slot.toLocaleDateString(lang, { year: "numeric", month: "long", day: "numeric" });
+      const timeFmt = slot.toLocaleTimeString(lang, { hour: "2-digit", minute: "2-digit" });
+      const therapistName =
+        (profile as any)?.business_name ||
+        (profile as any)?.full_name ||
+        "your specialist";
+      const serviceName =
+        (services as any[]).find((s) => s.id === serviceId)?.name ||
+        undefined;
+      const clientName =
+        `${req.first_name}${req.last_name ? " " + req.last_name : ""}`.trim() || "Client";
+
+      await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "booking-confirmation",
+          recipientEmail: req.email,
+          // Stable per-request key — system de-duplicates so multiple confirms
+          // (e.g. after refresh) won't trigger a second email.
+          idempotencyKey: `booking-confirm-${req.id}`,
+          templateData: {
+            clientName,
+            specialistName: therapistName,
+            sessionDate: dateFmt,
+            sessionTime: timeFmt,
+            serviceName,
+            language: lang,
+          },
+        },
+      });
+    } catch (e) {
+      // Email failure should not block the confirm flow itself
+      console.warn("booking-confirmation email failed", e);
+    }
+  }
+
   async function handleConfirm(req: BookingRequestRow) {
     const cid = req.client_id ?? confirmClientId;
     if (!cid) {
@@ -54,7 +105,9 @@ export function BookingInboxPanel({ className }: { className?: string }) {
     }
     try {
       await confirm.mutateAsync({ id: req.id, client_id: cid, service_id: confirmServiceId || undefined });
-      toast({ title: "Booking confirmed" });
+      // Notify the client at the exact email from the request
+      await sendConfirmationEmail(req, confirmServiceId || undefined);
+      toast({ title: "Booking confirmed", description: `Confirmation sent to ${req.email}` });
       setConfirmingFor(null); setConfirmClientId(""); setConfirmServiceId("");
     } catch (e: any) {
       toast({ title: "Could not confirm", description: e.message, variant: "destructive" });
@@ -80,6 +133,47 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       toast({ title: "Could not link", description: e.message, variant: "destructive" });
     }
   }
+
+  function openCreateClient(req: BookingRequestRow) {
+    setCreatingFor(req);
+    setNewClientName(`${req.first_name}${req.last_name ? " " + req.last_name : ""}`.trim());
+    setNewClientEmail(req.email);
+    setNewClientPhone(req.phone ?? "");
+    setNewClientNotes(req.comment ?? "");
+  }
+
+  async function handleCreateClientAndLink() {
+    if (!creatingFor) return;
+    const email = newClientEmail.trim().toLowerCase();
+    if (!newClientName.trim() || !email) {
+      toast({ title: "Name and email are required", variant: "destructive" });
+      return;
+    }
+    try {
+      // De-dup guard: if a client with this email already exists, link instead of creating
+      const existing = (clients as any[]).find(
+        (c) => (c.email || "").toLowerCase() === email,
+      );
+      const clientId = existing
+        ? existing.id
+        : (await createClient.mutateAsync({
+            name: newClientName.trim(),
+            email,
+            phone: newClientPhone.trim() || undefined,
+            notes: newClientNotes.trim() || undefined,
+          })).id;
+
+      await link.mutateAsync({ id: creatingFor.id, client_id: clientId });
+      toast({
+        title: existing ? "Linked to existing client" : "Client created and linked",
+        description: existing ? `Matched ${existing.name} by email` : undefined,
+      });
+      setCreatingFor(null);
+    } catch (e: any) {
+      toast({ title: "Could not create client", description: e.message, variant: "destructive" });
+    }
+  }
+
 
   return (
     <aside className={cn("bg-card rounded-xl border border-border flex flex-col", className)}>
@@ -158,12 +252,18 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                 {r.comment}
               </p>
             )}
-            <div className="flex gap-1 pt-1">
+            <div className="flex flex-wrap gap-1 pt-1">
               {r.status === "needs_linking" && (
-                <Button size="sm" variant="outline" className="h-7 px-2 gap-1"
-                  onClick={() => { setLinkingFor(r); setLinkClientId(""); }}>
-                  <UserPlus className="h-3 w-3" /> Link
-                </Button>
+                <>
+                  <Button size="sm" variant="outline" className="h-7 px-2 gap-1"
+                    onClick={() => { setLinkingFor(r); setLinkClientId(""); }}>
+                    <UserPlus className="h-3 w-3" /> Link
+                  </Button>
+                  <Button size="sm" variant="outline" className="h-7 px-2 gap-1"
+                    onClick={() => openCreateClient(r)}>
+                    <UserPlus className="h-3 w-3" /> Create new
+                  </Button>
+                </>
               )}
               <Button size="sm" className="h-7 px-2 gap-1 flex-1"
                 onClick={() => {
@@ -177,6 +277,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                 <XCircle className="h-3.5 w-3.5" />
               </Button>
             </div>
+
           </div>
         ))}
       </div>
@@ -238,6 +339,45 @@ export function BookingInboxPanel({ className }: { className?: string }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Create new client from request */}
+      <Dialog open={!!creatingFor} onOpenChange={(o) => !o && setCreatingFor(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create new client from request</DialogTitle>
+            <DialogDescription>
+              Pre-filled from the booking request. Review and edit before saving.
+              If a client with this email already exists, it will be linked instead of duplicated.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Name</label>
+              <Input value={newClientName} onChange={(e) => setNewClientName(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Email</label>
+              <Input type="email" value={newClientEmail} onChange={(e) => setNewClientEmail(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Phone</label>
+              <Input value={newClientPhone} onChange={(e) => setNewClientPhone(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Notes</label>
+              <Input value={newClientNotes} onChange={(e) => setNewClientNotes(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreatingFor(null)}>Cancel</Button>
+            <Button disabled={createClient.isPending || link.isPending} onClick={handleCreateClientAndLink}>
+              {(createClient.isPending || link.isPending) ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Save client
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </aside>
+
   );
 }
