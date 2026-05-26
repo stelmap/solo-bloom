@@ -116,6 +116,42 @@ export default function BookingInboxPage() {
     }
   }
 
+  function openCreateClient(req: BookingRequestRow) {
+    setCreatingFor(req);
+    setNewClientName(`${req.first_name}${req.last_name ? " " + req.last_name : ""}`.trim());
+    setNewClientEmail(req.email);
+    setNewClientPhone(req.phone ?? "");
+    setNewClientNotes(req.comment ?? "");
+  }
+
+  async function handleCreateClientAndLink() {
+    if (!creatingFor) return;
+    const email = newClientEmail.trim().toLowerCase();
+    if (!newClientName.trim() || !email) {
+      toast({ title: "Name and email are required", variant: "destructive" });
+      return;
+    }
+    try {
+      const existing = (clients as any[]).find((c) => (c.email || "").toLowerCase() === email);
+      const clientId = existing
+        ? existing.id
+        : (await createClient.mutateAsync({
+            name: newClientName.trim(),
+            email,
+            phone: newClientPhone.trim() || undefined,
+            notes: newClientNotes.trim() || undefined,
+          })).id;
+      await link.mutateAsync({ id: creatingFor.id, client_id: clientId });
+      toast({
+        title: existing ? "Linked to existing client" : "Client created and linked",
+        description: existing ? `Matched ${existing.name} by email` : undefined,
+      });
+      setCreatingFor(null);
+    } catch (e: any) {
+      toast({ title: "Could not create client", description: e.message, variant: "destructive" });
+    }
+  }
+
   return (
     <AppLayout>
       <div className="space-y-6">
