@@ -424,7 +424,31 @@ export default function CalendarPage() {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const effectiveView: CalendarView = isMobile ? "day" : view;
-  const days = effectiveView === "day" ? [currentDate] : effectiveView === "month" ? weekDays : weekDays;
+  // Time-grid days (day or week view). Month view uses its own grid below.
+  const days = effectiveView === "day" ? [currentDate] : weekDays;
+
+  // Period selection (for analytics + month grid)
+  const periodStart = useMemo(() => {
+    if (effectiveView === "day") return startOfDay(currentDate);
+    if (effectiveView === "month") return startOfMonth(currentDate);
+    return weekStart;
+  }, [effectiveView, currentDate, weekStart]);
+  const periodEnd = useMemo(() => {
+    if (effectiveView === "day") return endOfDay(currentDate);
+    if (effectiveView === "month") return endOfMonth(currentDate);
+    return endOfDay(addDays(weekStart, 6));
+  }, [effectiveView, currentDate, weekStart]);
+  const periodDays = useMemo(
+    () => eachDayOfInterval({ start: periodStart, end: periodEnd }),
+    [periodStart, periodEnd],
+  );
+  // Full month grid (Mon-Sun rows) for month view
+  const monthGridDays = useMemo(() => {
+    if (effectiveView !== "month") return [] as Date[];
+    const gridStart = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 1 });
+    const gridEnd = endOfWeek(endOfMonth(currentDate), { weekStartsOn: 1 });
+    return eachDayOfInterval({ start: gridStart, end: gridEnd });
+  }, [effectiveView, currentDate]);
 
   const toggleRecurDay = (d: number) => {
     setRecurDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d].sort());
