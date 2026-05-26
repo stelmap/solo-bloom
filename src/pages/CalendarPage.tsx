@@ -805,6 +805,34 @@ export default function CalendarPage() {
           </div>
         </div>
 
+        {pendingRequests.length > 0 && (
+          <button
+            type="button"
+            onClick={() => navigate("/booking-inbox")}
+            className="w-full flex items-center gap-3 rounded-xl border border-warning/40 bg-warning/10 hover:bg-warning/15 p-3 sm:p-4 text-left animate-fade-in transition-colors"
+          >
+            <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warning/20">
+              <Inbox className="h-4 w-4 text-warning" />
+              <span className="absolute inset-0 rounded-full ring-2 ring-warning/40 animate-ping" />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">
+                {pendingRequests.length === 1
+                  ? (t("booking.pendingBannerOne") || "1 new booking request awaiting your review")
+                  : (t("booking.pendingBannerMany") || `${pendingRequests.length} new booking requests awaiting your review`).replace("{count}", String(pendingRequests.length))}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {t("booking.pendingBannerHint") || "Pending requests are highlighted on the calendar below. Click to review and approve."}
+              </p>
+            </div>
+            <Badge variant="outline" className="border-warning/40 text-warning shrink-0">
+              {pendingRequests.length}
+            </Badge>
+          </button>
+        )}
+
+
+
         {/* Weekly capacity bar */}
         <div className="bg-card rounded-xl border border-border p-3 sm:p-4 animate-fade-in">
           <div className="flex items-center gap-2 sm:gap-3 mb-3 flex-wrap">
@@ -964,8 +992,10 @@ export default function CalendarPage() {
                                 key={req.id}
                                 onClick={(e) => { e.stopPropagation(); navigate("/booking-inbox"); }}
                                 className={cn(
-                                  "absolute inset-x-1 rounded-md border border-dashed border-warning/60 bg-warning/10 text-warning-foreground p-1.5 cursor-pointer hover:ring-2 hover:ring-warning/40 transition-all z-20 overflow-hidden",
+                                  "absolute inset-x-1 rounded-md border-2 border-dashed border-warning/70 bg-warning/15 text-warning-foreground p-1.5 cursor-pointer hover:ring-2 hover:ring-warning/50 transition-all z-20 overflow-hidden shadow-sm",
+                                  "animate-pulse-soft",
                                 )}
+
                                 style={{ top: `${idx * 4}px`, height: `${heightPx}px` }}
                                 title={t("booking.pendingRequest") || "Pending booking request"}
                               >
