@@ -424,21 +424,30 @@ function MoneyTile({
 
 function OverviewTile({
   icon: Icon, label, value, tone, onClick,
-}: { icon: any; label: string; value: string; tone?: "success" | "warning"; onClick?: () => void }) {
+}: { icon: any; label: string; value: string; tone?: "success" | "warning" | "primary"; onClick?: () => void }) {
+  const isPrimary = tone === "primary";
   const toneClass =
     tone === "success" ? "text-success" :
     tone === "warning" ? "text-warning" :
+    isPrimary ? "text-gradient-primary" :
     "text-foreground";
   const iconTone =
     tone === "success" ? "text-success bg-success/10" :
     tone === "warning" ? "text-warning bg-warning/10" :
+    isPrimary ? "text-primary-foreground bg-gradient-primary shadow-glow" :
     "text-muted-foreground bg-muted";
-  const base = "relative bg-card border border-border rounded-2xl p-5 animate-fade-in text-left w-full block shadow-sm";
+  const base = cn(
+    "relative bg-card border rounded-2xl p-5 animate-fade-in text-left w-full block overflow-hidden",
+    isPrimary ? "border-primary/30 shadow-elegant" : "border-border shadow-sm",
+  );
   const interactive =
     "cursor-pointer transition-all hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background group";
   const content = (
     <>
-      <div className="flex items-start justify-between mb-4">
+      {isPrimary && (
+        <div className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full bg-primary/20 blur-2xl" />
+      )}
+      <div className="relative flex items-start justify-between mb-4">
         <div className={cn("p-2 rounded-lg", iconTone)}>
           <Icon className="h-4 w-4" />
         </div>
@@ -446,8 +455,8 @@ function OverviewTile({
           <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
         )}
       </div>
-      <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider truncate">{label}</p>
-      <p className={cn("font-serif text-3xl leading-none mt-2", toneClass)}>{value}</p>
+      <p className="relative text-[11px] font-medium text-muted-foreground uppercase tracking-wider truncate">{label}</p>
+      <p className={cn("relative font-serif text-3xl leading-none mt-2", toneClass)}>{value}</p>
     </>
   );
   if (onClick) {
