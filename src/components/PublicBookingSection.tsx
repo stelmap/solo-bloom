@@ -355,30 +355,27 @@ export function PublicBookingSection() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Public booking link</CardTitle>
-          <CardDescription>
-            Share a single link clients can use to book a session. They only see free time — never any private calendar
-            data.
-          </CardDescription>
+          <CardTitle>{L.cardTitle}</CardTitle>
+          <CardDescription>{L.cardDesc}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label htmlFor="bk-active">Enable public booking</Label>
+            <Label htmlFor="bk-active">{L.enable}</Label>
             <Switch id="bk-active" checked={isActive} onCheckedChange={setIsActive} />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="bk-display">Display name (shown to clients)</Label>
+            <Label htmlFor="bk-display">{L.displayName}</Label>
             <Input
               id="bk-display"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Your name or practice"
+              placeholder={L.displayNamePh}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="bk-slug">Custom handle (optional)</Label>
+            <Label htmlFor="bk-slug">{L.customHandle}</Label>
             <div className="flex items-stretch rounded-md border border-input overflow-hidden focus-within:ring-2 focus-within:ring-ring">
               <span className="px-3 flex items-center text-xs text-muted-foreground bg-muted border-r border-input whitespace-nowrap">
                 {typeof window !== "undefined" ? window.location.host : ""}/book/
@@ -387,29 +384,27 @@ export function PublicBookingSection() {
                 id="bk-slug"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
-                placeholder="your-name"
+                placeholder={L.handlePh}
                 maxLength={40}
                 className="flex-1 px-3 py-2 text-sm bg-background outline-none"
               />
             </div>
-            <p className="text-xs text-muted-foreground">
-              3–40 chars: lowercase letters, digits, hyphens. Leave empty to fall back to the auto-generated secret link.
-            </p>
+            <p className="text-xs text-muted-foreground">{L.handleHelp}</p>
           </div>
 
           <div className="space-y-2">
-            <Label>Booking mode</Label>
+            <Label>{L.mode}</Label>
             <Select value={mode} onValueChange={(v) => setMode(v as any)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="manual">Manual approval (recommended)</SelectItem>
-                <SelectItem value="auto">Auto-confirm (matched clients only)</SelectItem>
+                <SelectItem value="manual">{L.modeManual}</SelectItem>
+                <SelectItem value="auto">{L.modeAuto}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label>Timezone (shown to clients)</Label>
+            <Label>{L.timezone}</Label>
             {tzOptions.length > 0 ? (
               <Select value={timezone} onValueChange={setTimezone}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -420,16 +415,14 @@ export function PublicBookingSection() {
                 </SelectContent>
               </Select>
             ) : (
-              <Input value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="e.g. Europe/Kyiv" />
+              <Input value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder={L.tzPh} />
             )}
-            <p className="text-xs text-muted-foreground">
-              All booking times on the public page will be shown in this timezone.
-            </p>
+            <p className="text-xs text-muted-foreground">{L.timezoneHelp}</p>
           </div>
 
           {url && (
             <div className="space-y-2">
-              <Label>Your booking link</Label>
+              <Label>{L.yourLink}</Label>
               <div className="flex gap-2">
                 <Input value={url} readOnly className="font-mono text-xs" />
                 <Button
@@ -438,7 +431,7 @@ export function PublicBookingSection() {
                   size="icon"
                   onClick={() => {
                     navigator.clipboard.writeText(url);
-                    toast({ title: "Link copied" });
+                    toast({ title: L.linkCopied });
                   }}
                 >
                   <Copy className="h-4 w-4" />
@@ -453,7 +446,7 @@ export function PublicBookingSection() {
                   variant="outline"
                   size="icon"
                   onClick={() => {
-                    if (confirm("Regenerate link? The old link will stop working immediately.")) regenerate.mutate();
+                    if (confirm(L.regenerateConfirm)) regenerate.mutate();
                   }}
                   disabled={regenerate.isPending}
                 >
