@@ -17,7 +17,7 @@ import {
   useAppointments, useCreateAppointment, useUpdateAppointment,
   useClients, useServices, useProfile, useCreateRecurringRule,
   useWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff,
-  useBulkCancelForDayOff,
+  useBulkCancelForDayOff, useCreateClient, useCreateService,
 } from "@/hooks/useData";
 import { useGroups, useGroupMembers, useCreateGroupSession } from "@/hooks/useGroups";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
