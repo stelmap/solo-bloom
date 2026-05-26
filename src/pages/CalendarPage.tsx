@@ -1186,7 +1186,7 @@ export default function CalendarPage() {
                       </div>
                     );
                   })()}
-                </div>
+                </form>
 
                 {/* Nested quick-add: client */}
                 <Dialog open={qaClientOpen} onOpenChange={setQaClientOpen}>
