@@ -75,6 +75,24 @@ export default function CalendarPage() {
   const dateLocale = getDateLocale(lang);
   const { symbol: cs } = useCurrency();
 
+  // Realtime: invalidate appointments + booking-requests when DB changes
+  useEffect(() => {
+    const channel = supabase
+      .channel("calendar-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "session_booking_requests" }, () => {
+        qc.invalidateQueries({ queryKey: ["booking-requests"] });
+        qc.invalidateQueries({ queryKey: ["booking-requests-count"] });
+        qc.invalidateQueries({ queryKey: ["appointments"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "appointments" }, () => {
+        qc.invalidateQueries({ queryKey: ["appointments"] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [qc]);
+
+
+
   // Drag-and-drop state
   const [dragAptId, setDragAptId] = useState<string | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<string | null>(null);
