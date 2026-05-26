@@ -421,21 +421,25 @@ function OverviewTile({
     tone === "success" ? "text-success" :
     tone === "warning" ? "text-warning" :
     "text-foreground";
-  const base = "relative bg-card border border-border rounded-xl p-4 animate-fade-in text-left w-full block";
+  const iconTone =
+    tone === "success" ? "text-success bg-success/10" :
+    tone === "warning" ? "text-warning bg-warning/10" :
+    "text-muted-foreground bg-muted";
+  const base = "relative bg-card border border-border rounded-2xl p-5 animate-fade-in text-left w-full block shadow-sm";
   const interactive =
-    "cursor-pointer transition-all hover:bg-muted/50 hover:border-foreground/30 hover:shadow-sm hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background group";
+    "cursor-pointer transition-all hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background group";
   const content = (
     <>
-      <div className="flex items-center justify-between gap-2 text-muted-foreground">
-        <div className="flex items-center gap-2 min-w-0">
-          <Icon className="h-4 w-4 shrink-0" />
-          <p className="text-xs truncate">{label}</p>
+      <div className="flex items-start justify-between mb-4">
+        <div className={cn("p-2 rounded-lg", iconTone)}>
+          <Icon className="h-4 w-4" />
         </div>
         {onClick && (
-          <ArrowRight className="h-3.5 w-3.5 shrink-0 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
         )}
       </div>
-      <p className={cn("text-xl font-bold mt-1.5", toneClass)}>{value}</p>
+      <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider truncate">{label}</p>
+      <p className={cn("font-serif text-3xl leading-none mt-2", toneClass)}>{value}</p>
     </>
   );
   if (onClick) {
