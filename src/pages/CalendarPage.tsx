@@ -617,13 +617,14 @@ export default function CalendarPage() {
       } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
     } else {
       try {
-        await createAppointment.mutateAsync({
+        const newApt = await createAppointment.mutateAsync({
           client_id: form.client_id, service_id: form.service_id,
           scheduled_at: `${form.date}T${form.time}:00Z`,
           duration_minutes: service?.duration_minutes ?? 60,
           price: Number(service?.price ?? 0),
           notes: form.notes || undefined,
         });
+        markNew((newApt as any).id);
         setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
         setServiceError(false);
         setCreateOpen(false);
