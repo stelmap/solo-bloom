@@ -992,8 +992,10 @@ export default function CalendarPage() {
                                 key={req.id}
                                 onClick={(e) => { e.stopPropagation(); navigate("/booking-inbox"); }}
                                 className={cn(
-                                  "absolute inset-x-1 rounded-md border border-dashed border-warning/60 bg-warning/10 text-warning-foreground p-1.5 cursor-pointer hover:ring-2 hover:ring-warning/40 transition-all z-20 overflow-hidden",
+                                  "absolute inset-x-1 rounded-md border-2 border-dashed border-warning/70 bg-warning/15 text-warning-foreground p-1.5 cursor-pointer hover:ring-2 hover:ring-warning/50 transition-all z-20 overflow-hidden shadow-sm",
+                                  "animate-pulse-soft",
                                 )}
+
                                 style={{ top: `${idx * 4}px`, height: `${heightPx}px` }}
                                 title={t("booking.pendingRequest") || "Pending booking request"}
                               >
