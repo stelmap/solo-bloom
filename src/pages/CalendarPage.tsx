@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { ClientPicker } from "@/components/ClientPicker";
 import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
-import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon, UserPlus, Briefcase, CheckCircle2, Circle } from "lucide-react";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, addDays, startOfWeek, isSameDay, isBefore, startOfDay } from "date-fns";
@@ -17,7 +17,7 @@ import {
   useAppointments, useCreateAppointment, useUpdateAppointment,
   useClients, useServices, useProfile, useCreateRecurringRule,
   useWorkingSchedule, useDaysOff, useCreateDayOff, useDeleteDayOff,
-  useBulkCancelForDayOff,
+  useBulkCancelForDayOff, useCreateClient, useCreateService,
 } from "@/hooks/useData";
 import { useGroups, useGroupMembers, useCreateGroupSession } from "@/hooks/useGroups";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
@@ -40,6 +40,85 @@ import { WorkingHoursSection, DaysOffSection, PracticeProfileSection } from "@/c
 import { PublicBookingSection } from "@/components/PublicBookingSection";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
+
+type LangKey = "en" | "uk" | "fr" | "pl";
+const NEW_COPY: Record<LangKey, {
+  noClientsYet: string; addNewClient: string; noServicesYet: string; addNewService: string;
+  createFirstTitle: string; createFirstDesc: string;
+  stepAddClient: string; stepAddService: string; stepDateTime: string; stepSave: string;
+  disabledHint: string;
+  qaClientTitle: string; qaServiceTitle: string;
+  clientName: string; clientEmail: string; clientPhone: string;
+  serviceName: string; serviceDuration: string; servicePrice: string;
+  saveClient: string; saveService: string; cancel: string;
+  durationMin: string;
+}> = {
+  en: {
+    noClientsYet: "No clients yet. Add your first client to create a session.",
+    addNewClient: "Add new client",
+    noServicesYet: "No services yet. Add your first service to continue.",
+    addNewService: "Add new service",
+    createFirstTitle: "Create your first session",
+    createFirstDesc: "Add a client, choose a service, set the date and time, then save.",
+    stepAddClient: "Add client", stepAddService: "Add service",
+    stepDateTime: "Choose date & time", stepSave: "Save session",
+    disabledHint: "Please add a client, service, date and time to create a session.",
+    qaClientTitle: "Add new client", qaServiceTitle: "Add new service",
+    clientName: "Name", clientEmail: "Email (optional)", clientPhone: "Phone (optional)",
+    serviceName: "Name", serviceDuration: "Duration", servicePrice: "Price",
+    saveClient: "Save client", saveService: "Save service", cancel: "Cancel",
+    durationMin: "min",
+  },
+  uk: {
+    noClientsYet: "Ще немає клієнтів. Додайте першого клієнта, щоб створити сесію.",
+    addNewClient: "Додати клієнта",
+    noServicesYet: "Ще немає послуг. Додайте першу послугу, щоб продовжити.",
+    addNewService: "Додати послугу",
+    createFirstTitle: "Створіть першу сесію",
+    createFirstDesc: "Додайте клієнта, оберіть послугу, встановіть дату й час та збережіть.",
+    stepAddClient: "Додати клієнта", stepAddService: "Додати послугу",
+    stepDateTime: "Обрати дату й час", stepSave: "Зберегти сесію",
+    disabledHint: "Додайте клієнта, послугу, дату й час, щоб створити сесію.",
+    qaClientTitle: "Новий клієнт", qaServiceTitle: "Нова послуга",
+    clientName: "Ім'я", clientEmail: "Email (необов'язково)", clientPhone: "Телефон (необов'язково)",
+    serviceName: "Назва", serviceDuration: "Тривалість", servicePrice: "Ціна",
+    saveClient: "Зберегти клієнта", saveService: "Зберегти послугу", cancel: "Скасувати",
+    durationMin: "хв",
+  },
+  fr: {
+    noClientsYet: "Aucun client. Ajoutez votre premier client pour créer une séance.",
+    addNewClient: "Ajouter un client",
+    noServicesYet: "Aucun service. Ajoutez votre premier service pour continuer.",
+    addNewService: "Ajouter un service",
+    createFirstTitle: "Créez votre première séance",
+    createFirstDesc: "Ajoutez un client, choisissez un service, définissez la date et l'heure, puis enregistrez.",
+    stepAddClient: "Ajouter un client", stepAddService: "Ajouter un service",
+    stepDateTime: "Choisir date et heure", stepSave: "Enregistrer la séance",
+    disabledHint: "Veuillez ajouter un client, un service, une date et une heure.",
+    qaClientTitle: "Nouveau client", qaServiceTitle: "Nouveau service",
+    clientName: "Nom", clientEmail: "Email (optionnel)", clientPhone: "Téléphone (optionnel)",
+    serviceName: "Nom", serviceDuration: "Durée", servicePrice: "Prix",
+    saveClient: "Enregistrer", saveService: "Enregistrer", cancel: "Annuler",
+    durationMin: "min",
+  },
+  pl: {
+    noClientsYet: "Brak klientów. Dodaj pierwszego klienta, aby utworzyć sesję.",
+    addNewClient: "Dodaj klienta",
+    noServicesYet: "Brak usług. Dodaj pierwszą usługę, aby kontynuować.",
+    addNewService: "Dodaj usługę",
+    createFirstTitle: "Utwórz pierwszą sesję",
+    createFirstDesc: "Dodaj klienta, wybierz usługę, ustaw datę i godzinę, a następnie zapisz.",
+    stepAddClient: "Dodaj klienta", stepAddService: "Dodaj usługę",
+    stepDateTime: "Wybierz datę i godzinę", stepSave: "Zapisz sesję",
+    disabledHint: "Dodaj klienta, usługę, datę i godzinę, aby utworzyć sesję.",
+    qaClientTitle: "Nowy klient", qaServiceTitle: "Nowa usługa",
+    clientName: "Imię", clientEmail: "Email (opcjonalnie)", clientPhone: "Telefon (opcjonalnie)",
+    serviceName: "Nazwa", serviceDuration: "Czas trwania", servicePrice: "Cena",
+    saveClient: "Zapisz klienta", saveService: "Zapisz usługę", cancel: "Anuluj",
+    durationMin: "min",
+  },
+};
+
 
 
 export default function CalendarPage() {
@@ -192,6 +271,54 @@ export default function CalendarPage() {
   const [recurInterval, setRecurInterval] = useState(1);
   const [recurDays, setRecurDays] = useState<number[]>([1]);
   const [recurEndDate, setRecurEndDate] = useState("");
+
+  // Localized copy for new empty-state / onboarding UI inside the create modal
+  const L = NEW_COPY[(["en", "uk", "fr", "pl"].includes(lang as any) ? lang : "en") as LangKey];
+
+  // Quick-add nested dialogs (open from inside the create-session modal,
+  // form state is preserved because it lives in the parent component).
+  const createClient = useCreateClient();
+  const createService = useCreateService();
+  const [qaClientOpen, setQaClientOpen] = useState(false);
+  const [qaServiceOpen, setQaServiceOpen] = useState(false);
+  const [qaClient, setQaClient] = useState({ name: "", email: "", phone: "" });
+  const [qaService, setQaService] = useState({ name: "", duration_minutes: 60, price: 0 });
+
+  const handleQuickAddClient = async () => {
+    const name = qaClient.name.trim();
+    if (!name) return;
+    try {
+      const c: any = await createClient.mutateAsync({
+        name,
+        email: qaClient.email.trim() || undefined,
+        phone: qaClient.phone.trim() || undefined,
+      });
+      setForm(f => ({ ...f, client_id: c.id }));
+      setQaClient({ name: "", email: "", phone: "" });
+      setQaClientOpen(false);
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleQuickAddService = async () => {
+    const name = qaService.name.trim();
+    if (!name || qaService.duration_minutes <= 0) return;
+    try {
+      const s: any = await createService.mutateAsync({
+        name,
+        duration_minutes: Number(qaService.duration_minutes),
+        price: Number(qaService.price || 0),
+      });
+      setForm(f => ({ ...f, service_id: s.id }));
+      setServiceError(false);
+      setQaService({ name: "", duration_minutes: 60, price: 0 });
+      setQaServiceOpen(false);
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
+
 
   const isMobile = useIsMobile();
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -694,12 +821,36 @@ export default function CalendarPage() {
               <DialogContent className="max-h-[85vh] overflow-y-auto">
                 <DialogHeader><DialogTitle>{t("calendar.newAppointment")}</DialogTitle></DialogHeader>
                 <div className="space-y-4">
+                  {/* First-session helper (shown only when no appointments yet) */}
+                  {appointments.length === 0 && (
+                    <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+                      <p className="text-sm font-semibold">{L.createFirstTitle}</p>
+                      <p className="text-xs text-muted-foreground">{L.createFirstDesc}</p>
+                      <ul className="text-xs text-muted-foreground space-y-1 pt-1">
+                        {[
+                          { ok: !!form.client_id || (isGroupSession && !!groupId), label: L.stepAddClient },
+                          { ok: !!form.service_id, label: L.stepAddService },
+                          { ok: !!form.date && !!form.time, label: L.stepDateTime },
+                          { ok: false, label: L.stepSave },
+                        ].map((s, i) => (
+                          <li key={i} className="flex items-center gap-2">
+                            {s.ok
+                              ? <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                              : <Circle className="h-3.5 w-3.5 text-muted-foreground/60" />}
+                            <span className={s.ok ? "text-foreground" : ""}>{s.label}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
                   {/* Group session toggle */}
                   {activeGroups.length > 0 && (
                     <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/30 border border-border">
                       <Checkbox id="groupSession" checked={isGroupSession} onCheckedChange={v => { setIsGroupSession(!!v); if (!v) setGroupId(""); }} />
-                      <Label htmlFor="groupSession" className="flex items-center gap-1 cursor-pointer">
-                        <Users className="h-3.5 w-3.5" /> {t("groups.groupSession")}
+                      <Label htmlFor="groupSession" className="flex items-center gap-2 cursor-pointer">
+                        <Users className="h-3.5 w-3.5 shrink-0" />
+                        <span>{t("groups.groupSession")}</span>
                       </Label>
                     </div>
                   )}
@@ -721,24 +872,53 @@ export default function CalendarPage() {
                   ) : (
                     <div className="space-y-2">
                       <Label>{t("calendar.client")} *</Label>
-                      <ClientPicker
-                        clients={clients}
-                        value={form.client_id}
-                        onChange={v => setForm(f => ({ ...f, client_id: v }))}
-                        placeholder={t("calendar.selectClient")}
-                      />
+                      {clients.length === 0 ? (
+                        <div className="rounded-md border border-dashed border-border p-3 space-y-2 bg-muted/20">
+                          <p className="text-sm text-muted-foreground">{L.noClientsYet}</p>
+                          <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setQaClientOpen(true)}>
+                            <UserPlus className="h-4 w-4" /> {L.addNewClient}
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          <ClientPicker
+                            clients={clients}
+                            value={form.client_id}
+                            onChange={v => setForm(f => ({ ...f, client_id: v }))}
+                            placeholder={t("calendar.selectClient")}
+                          />
+                          <Button type="button" variant="ghost" size="sm" className="h-auto p-0 text-xs text-primary gap-1" onClick={() => setQaClientOpen(true)}>
+                            <UserPlus className="h-3.5 w-3.5" /> {L.addNewClient}
+                          </Button>
+                        </>
+                      )}
                     </div>
                   )}
                   <div className="space-y-2">
                     <Label>{t("calendar.service")} *</Label>
-                    <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); }}>
-                      <SelectTrigger className={serviceError ? "border-destructive" : ""}><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
-                      <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
-                    </Select>
-                    {serviceError && (
-                      <p className="text-sm text-destructive">⚠️ {t("calendar.service")} is required</p>
+                    {services.length === 0 ? (
+                      <div className="rounded-md border border-dashed border-border p-3 space-y-2 bg-muted/20">
+                        <p className="text-sm text-muted-foreground">{L.noServicesYet}</p>
+                        <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setQaServiceOpen(true)}>
+                          <Briefcase className="h-4 w-4" /> {L.addNewService}
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); }}>
+                          <SelectTrigger className={serviceError ? "border-destructive" : ""}><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
+                          <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
+                        </Select>
+                        <Button type="button" variant="ghost" size="sm" className="h-auto p-0 text-xs text-primary gap-1" onClick={() => setQaServiceOpen(true)}>
+                          <Briefcase className="h-3.5 w-3.5" /> {L.addNewService}
+                        </Button>
+                        {serviceError && (
+                          <p className="text-sm text-destructive">⚠️ {t("calendar.service")} is required</p>
+                        )}
+                      </>
                     )}
                   </div>
+
                   <DateTimePicker
                     date={form.date}
                     time={form.time}
@@ -800,13 +980,88 @@ export default function CalendarPage() {
                     )}
                   </div>
 
-                  <Button onClick={handleCreate} className="w-full"
-                    disabled={createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending || (!isRecurring && !isGroupSession && !!createValidation) || (isGroupSession && (!groupId || groupMembers.length === 0))}>
-                    {(createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending) ? t("calendar.creating") : (isGroupSession ? t("groups.groupSession") : isRecurring ? t("recurring.seriesCreated").split(" ")[0] + "..." : t("calendar.createAppointment"))}
-                  </Button>
+                  {(() => {
+                    const missingRequired = isGroupSession
+                      ? (!groupId || groupMembers.length === 0 || !form.service_id || !form.date || !form.time)
+                      : (!form.client_id || !form.service_id || !form.date || !form.time);
+                    const disabled = createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending
+                      || missingRequired
+                      || (!isRecurring && !isGroupSession && !!createValidation);
+                    return (
+                      <>
+                        <Button onClick={handleCreate} className="w-full" disabled={disabled}>
+                          {(createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending)
+                            ? t("calendar.creating")
+                            : (isGroupSession ? t("groups.groupSession") : isRecurring ? t("recurring.seriesCreated").split(" ")[0] + "..." : t("calendar.createAppointment"))}
+                        </Button>
+                        {missingRequired && (
+                          <p className="text-xs text-muted-foreground text-center">{L.disabledHint}</p>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
+
+                {/* Nested quick-add: client */}
+                <Dialog open={qaClientOpen} onOpenChange={setQaClientOpen}>
+                  <DialogContent>
+                    <DialogHeader><DialogTitle>{L.qaClientTitle}</DialogTitle></DialogHeader>
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <Label>{L.clientName} *</Label>
+                        <Input value={qaClient.name} onChange={e => setQaClient(s => ({ ...s, name: e.target.value }))} autoFocus />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>{L.clientEmail}</Label>
+                        <Input type="email" value={qaClient.email} onChange={e => setQaClient(s => ({ ...s, email: e.target.value }))} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>{L.clientPhone}</Label>
+                        <Input value={qaClient.phone} onChange={e => setQaClient(s => ({ ...s, phone: e.target.value }))} />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setQaClientOpen(false)}>{L.cancel}</Button>
+                      <Button onClick={handleQuickAddClient} disabled={!qaClient.name.trim() || createClient.isPending}>
+                        {createClient.isPending ? t("calendar.creating") : L.saveClient}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Nested quick-add: service */}
+                <Dialog open={qaServiceOpen} onOpenChange={setQaServiceOpen}>
+                  <DialogContent>
+                    <DialogHeader><DialogTitle>{L.qaServiceTitle}</DialogTitle></DialogHeader>
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <Label>{L.serviceName} *</Label>
+                        <Input value={qaService.name} onChange={e => setQaService(s => ({ ...s, name: e.target.value }))} autoFocus />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <Label>{L.serviceDuration} ({L.durationMin}) *</Label>
+                          <Input type="number" min={5} step={5} value={qaService.duration_minutes}
+                            onChange={e => setQaService(s => ({ ...s, duration_minutes: parseInt(e.target.value) || 0 }))} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>{L.servicePrice} ({cs})</Label>
+                          <Input type="number" min={0} step="0.01" value={qaService.price}
+                            onChange={e => setQaService(s => ({ ...s, price: parseFloat(e.target.value) || 0 }))} />
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setQaServiceOpen(false)}>{L.cancel}</Button>
+                      <Button onClick={handleQuickAddService} disabled={!qaService.name.trim() || qaService.duration_minutes <= 0 || createService.isPending}>
+                        {createService.isPending ? t("calendar.creating") : L.saveService}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </DialogContent>
             </Dialog>
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
