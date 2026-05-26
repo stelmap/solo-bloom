@@ -56,12 +56,18 @@ export default function BookingInboxPage() {
   const confirm = useConfirmBookingRequest();
   const decline = useDeclineBookingRequest();
   const link = useLinkBookingRequestClient();
+  const createClient = useCreateClient();
 
   const [linkingFor, setLinkingFor] = useState<BookingRequestRow | null>(null);
   const [linkClientId, setLinkClientId] = useState<string>("");
   const [confirmingFor, setConfirmingFor] = useState<BookingRequestRow | null>(null);
   const [confirmServiceId, setConfirmServiceId] = useState<string>("");
   const [confirmClientId, setConfirmClientId] = useState<string>("");
+  const [creatingFor, setCreatingFor] = useState<BookingRequestRow | null>(null);
+  const [newClientName, setNewClientName] = useState("");
+  const [newClientEmail, setNewClientEmail] = useState("");
+  const [newClientPhone, setNewClientPhone] = useState("");
+  const [newClientNotes, setNewClientNotes] = useState("");
 
   const counts = useMemo(() => {
     const c = { pending: 0, needs_linking: 0 };
