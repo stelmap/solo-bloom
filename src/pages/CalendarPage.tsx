@@ -20,7 +20,8 @@ import {
   useBulkCancelForDayOff, useCreateClient, useCreateService,
 } from "@/hooks/useData";
 import { useGroups, useGroupMembers, useCreateGroupSession } from "@/hooks/useGroups";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -52,6 +53,12 @@ const NEW_COPY: Record<LangKey, {
   serviceName: string; serviceDuration: string; servicePrice: string;
   saveClient: string; saveService: string; cancel: string;
   durationMin: string;
+  modalSubtitle: string;
+  sessionTypeLabel: string; individualSession: string; groupSession: string;
+  participants: string;
+  notesPlaceholder: string; notesGroupPlaceholder: string;
+  ctaIndividual: string; ctaGroup: string;
+  summaryWillCreate: string; summaryWillCreateGroup: string;
 }> = {
   en: {
     noClientsYet: "No clients yet. Add your first client to create a session.",
@@ -62,12 +69,21 @@ const NEW_COPY: Record<LangKey, {
     createFirstDesc: "Add a client, choose a service, set the date and time, then save.",
     stepAddClient: "Add client", stepAddService: "Add service",
     stepDateTime: "Choose date & time", stepSave: "Save session",
-    disabledHint: "Please add a client, service, date and time to create a session.",
+    disabledHint: "Fill required fields to create a session.",
     qaClientTitle: "Add new client", qaServiceTitle: "Add new service",
     clientName: "Name", clientEmail: "Email (optional)", clientPhone: "Phone (optional)",
     serviceName: "Name", serviceDuration: "Duration", servicePrice: "Price",
     saveClient: "Save client", saveService: "Save service", cancel: "Cancel",
     durationMin: "min",
+    modalSubtitle: "Schedule an individual or group session",
+    sessionTypeLabel: "Session type",
+    individualSession: "Individual session", groupSession: "Group session",
+    participants: "Participants",
+    notesPlaceholder: "Add a short note for the session",
+    notesGroupPlaceholder: "Add a note for the group session",
+    ctaIndividual: "Create session", ctaGroup: "Create group session",
+    summaryWillCreate: "Will create session:",
+    summaryWillCreateGroup: "Will create group session:",
   },
   uk: {
     noClientsYet: "Ще немає клієнтів. Додайте першого клієнта, щоб створити сесію.",
@@ -78,12 +94,21 @@ const NEW_COPY: Record<LangKey, {
     createFirstDesc: "Додайте клієнта, оберіть послугу, встановіть дату й час та збережіть.",
     stepAddClient: "Додати клієнта", stepAddService: "Додати послугу",
     stepDateTime: "Обрати дату й час", stepSave: "Зберегти сесію",
-    disabledHint: "Додайте клієнта, послугу, дату й час, щоб створити сесію.",
+    disabledHint: "Заповніть обовʼязкові поля, щоб створити сесію.",
     qaClientTitle: "Новий клієнт", qaServiceTitle: "Нова послуга",
     clientName: "Ім'я", clientEmail: "Email (необов'язково)", clientPhone: "Телефон (необов'язково)",
     serviceName: "Назва", serviceDuration: "Тривалість", servicePrice: "Ціна",
     saveClient: "Зберегти клієнта", saveService: "Зберегти послугу", cancel: "Скасувати",
     durationMin: "хв",
+    modalSubtitle: "Заплануйте індивідуальну або групову сесію",
+    sessionTypeLabel: "Тип сесії",
+    individualSession: "Індивідуальна сесія", groupSession: "Групова сесія",
+    participants: "Учасники",
+    notesPlaceholder: "Додайте коротку нотатку до сесії",
+    notesGroupPlaceholder: "Додайте нотатку для групової сесії",
+    ctaIndividual: "Створити сесію", ctaGroup: "Створити групову сесію",
+    summaryWillCreate: "Буде створено сесію:",
+    summaryWillCreateGroup: "Буде створено групову сесію:",
   },
   fr: {
     noClientsYet: "Aucun client. Ajoutez votre premier client pour créer une séance.",
@@ -94,12 +119,21 @@ const NEW_COPY: Record<LangKey, {
     createFirstDesc: "Ajoutez un client, choisissez un service, définissez la date et l'heure, puis enregistrez.",
     stepAddClient: "Ajouter un client", stepAddService: "Ajouter un service",
     stepDateTime: "Choisir date et heure", stepSave: "Enregistrer la séance",
-    disabledHint: "Veuillez ajouter un client, un service, une date et une heure.",
+    disabledHint: "Remplissez les champs requis pour créer une séance.",
     qaClientTitle: "Nouveau client", qaServiceTitle: "Nouveau service",
     clientName: "Nom", clientEmail: "Email (optionnel)", clientPhone: "Téléphone (optionnel)",
     serviceName: "Nom", serviceDuration: "Durée", servicePrice: "Prix",
     saveClient: "Enregistrer", saveService: "Enregistrer", cancel: "Annuler",
     durationMin: "min",
+    modalSubtitle: "Planifiez une séance individuelle ou de groupe",
+    sessionTypeLabel: "Type de séance",
+    individualSession: "Séance individuelle", groupSession: "Séance de groupe",
+    participants: "Participants",
+    notesPlaceholder: "Ajoutez une courte note pour la séance",
+    notesGroupPlaceholder: "Ajoutez une note pour la séance de groupe",
+    ctaIndividual: "Créer la séance", ctaGroup: "Créer la séance de groupe",
+    summaryWillCreate: "Séance à créer :",
+    summaryWillCreateGroup: "Séance de groupe à créer :",
   },
   pl: {
     noClientsYet: "Brak klientów. Dodaj pierwszego klienta, aby utworzyć sesję.",
@@ -110,12 +144,21 @@ const NEW_COPY: Record<LangKey, {
     createFirstDesc: "Dodaj klienta, wybierz usługę, ustaw datę i godzinę, a następnie zapisz.",
     stepAddClient: "Dodaj klienta", stepAddService: "Dodaj usługę",
     stepDateTime: "Wybierz datę i godzinę", stepSave: "Zapisz sesję",
-    disabledHint: "Dodaj klienta, usługę, datę i godzinę, aby utworzyć sesję.",
+    disabledHint: "Wypełnij wymagane pola, aby utworzyć sesję.",
     qaClientTitle: "Nowy klient", qaServiceTitle: "Nowa usługa",
     clientName: "Imię", clientEmail: "Email (opcjonalnie)", clientPhone: "Telefon (opcjonalnie)",
     serviceName: "Nazwa", serviceDuration: "Czas trwania", servicePrice: "Cena",
     saveClient: "Zapisz klienta", saveService: "Zapisz usługę", cancel: "Anuluj",
     durationMin: "min",
+    modalSubtitle: "Zaplanuj sesję indywidualną lub grupową",
+    sessionTypeLabel: "Typ sesji",
+    individualSession: "Sesja indywidualna", groupSession: "Sesja grupowa",
+    participants: "Uczestnicy",
+    notesPlaceholder: "Dodaj krótką notatkę do sesji",
+    notesGroupPlaceholder: "Dodaj notatkę do sesji grupowej",
+    ctaIndividual: "Utwórz sesję", ctaGroup: "Utwórz sesję grupową",
+    summaryWillCreate: "Zostanie utworzona sesja:",
+    summaryWillCreateGroup: "Zostanie utworzona sesja grupowa:",
   },
 };
 
@@ -818,12 +861,15 @@ export default function CalendarPage() {
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 mr-1" /> {t("calendar.newAppointment")}</Button>
               </DialogTrigger>
-              <DialogContent className="max-h-[85vh] overflow-y-auto">
-                <DialogHeader><DialogTitle>{t("calendar.newAppointment")}</DialogTitle></DialogHeader>
-                <div className="space-y-4">
+              <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-[560px] rounded-2xl shadow-2xl p-0">
+                <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/60">
+                  <DialogTitle className="text-xl font-semibold tracking-tight">{t("calendar.newAppointment")}</DialogTitle>
+                  <DialogDescription className="text-sm text-muted-foreground">{L.modalSubtitle}</DialogDescription>
+                </DialogHeader>
+                <div className="px-6 py-5 space-y-5">
                   {/* First-session helper (shown only when no appointments yet) */}
                   {appointments.length === 0 && (
-                    <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+                    <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-2">
                       <p className="text-sm font-semibold">{L.createFirstTitle}</p>
                       <p className="text-xs text-muted-foreground">{L.createFirstDesc}</p>
                       <ul className="text-xs text-muted-foreground space-y-1 pt-1">
@@ -844,14 +890,38 @@ export default function CalendarPage() {
                     </div>
                   )}
 
-                  {/* Group session toggle */}
+                  {/* Session type segmented control */}
                   {activeGroups.length > 0 && (
-                    <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/30 border border-border">
-                      <Checkbox id="groupSession" checked={isGroupSession} onCheckedChange={v => { setIsGroupSession(!!v); if (!v) setGroupId(""); }} />
-                      <Label htmlFor="groupSession" className="flex items-center gap-2 cursor-pointer">
-                        <Users className="h-3.5 w-3.5 shrink-0" />
-                        <span>{t("groups.groupSession")}</span>
-                      </Label>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{L.sessionTypeLabel}</Label>
+                      <div className="grid grid-cols-2 gap-1 p-1 bg-muted/50 rounded-lg border border-border/60">
+                        <button
+                          type="button"
+                          onClick={() => { setIsGroupSession(false); setGroupId(""); }}
+                          className={cn(
+                            "flex items-center justify-center gap-2 h-9 rounded-md text-sm font-medium transition-all",
+                            !isGroupSession
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          <UserPlus className="h-3.5 w-3.5" />
+                          <span>{L.individualSession}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setIsGroupSession(true); setForm(f => ({ ...f, client_id: "" })); }}
+                          className={cn(
+                            "flex items-center justify-center gap-2 h-9 rounded-md text-sm font-medium transition-all",
+                            isGroupSession
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          <Users className="h-3.5 w-3.5" />
+                          <span>{L.groupSession}</span>
+                        </button>
+                      </div>
                     </div>
                   )}
 
@@ -859,11 +929,20 @@ export default function CalendarPage() {
                     <div className="space-y-2">
                       <Label>{t("groups.selectGroup")} *</Label>
                       <Select value={groupId} onValueChange={setGroupId}>
-                        <SelectTrigger><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
+                        <SelectTrigger className="h-10"><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
                         <SelectContent>{activeGroups.map((g: any) => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
                       </Select>
                       {groupId && groupMembers.length > 0 && (
-                        <p className="text-xs text-muted-foreground">{groupMembers.length} {t("groups.members").toLowerCase()}: {groupMembers.map((m: any) => m.clients?.name).join(", ")}</p>
+                        <div className="pt-1 space-y-1.5">
+                          <p className="text-xs text-muted-foreground">{L.participants} · {groupMembers.length}</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {groupMembers.map((m: any) => (
+                              <span key={m.client_id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-foreground border border-border">
+                                {m.clients?.name}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       )}
                       {groupId && groupMembers.length === 0 && (
                         <p className="text-xs text-warning">{t("groups.noMembers")}</p>
@@ -873,7 +952,7 @@ export default function CalendarPage() {
                     <div className="space-y-2">
                       <Label>{t("calendar.client")} *</Label>
                       {clients.length === 0 ? (
-                        <div className="rounded-md border border-dashed border-border p-3 space-y-2 bg-muted/20">
+                        <div className="rounded-lg border border-dashed border-border p-4 space-y-2 bg-muted/20 text-center">
                           <p className="text-sm text-muted-foreground">{L.noClientsYet}</p>
                           <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setQaClientOpen(true)}>
                             <UserPlus className="h-4 w-4" /> {L.addNewClient}
@@ -887,17 +966,18 @@ export default function CalendarPage() {
                             onChange={v => setForm(f => ({ ...f, client_id: v }))}
                             placeholder={t("calendar.selectClient")}
                           />
-                          <Button type="button" variant="ghost" size="sm" className="h-auto p-0 text-xs text-primary gap-1" onClick={() => setQaClientOpen(true)}>
+                          <Button type="button" variant="ghost" size="sm" className="h-auto p-0 text-xs text-primary gap-1 hover:bg-transparent hover:underline" onClick={() => setQaClientOpen(true)}>
                             <UserPlus className="h-3.5 w-3.5" /> {L.addNewClient}
                           </Button>
                         </>
                       )}
                     </div>
                   )}
+
                   <div className="space-y-2">
                     <Label>{t("calendar.service")} *</Label>
                     {services.length === 0 ? (
-                      <div className="rounded-md border border-dashed border-border p-3 space-y-2 bg-muted/20">
+                      <div className="rounded-lg border border-dashed border-border p-4 space-y-2 bg-muted/20 text-center">
                         <p className="text-sm text-muted-foreground">{L.noServicesYet}</p>
                         <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setQaServiceOpen(true)}>
                           <Briefcase className="h-4 w-4" /> {L.addNewService}
@@ -906,10 +986,10 @@ export default function CalendarPage() {
                     ) : (
                       <>
                         <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); }}>
-                          <SelectTrigger className={serviceError ? "border-destructive" : ""}><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
+                          <SelectTrigger className={cn("h-10", serviceError && "border-destructive")}><SelectValue placeholder={t("calendar.selectService")} /></SelectTrigger>
                           <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                         </Select>
-                        <Button type="button" variant="ghost" size="sm" className="h-auto p-0 text-xs text-primary gap-1" onClick={() => setQaServiceOpen(true)}>
+                        <Button type="button" variant="ghost" size="sm" className="h-auto p-0 text-xs text-primary gap-1 hover:bg-transparent hover:underline" onClick={() => setQaServiceOpen(true)}>
                           <Briefcase className="h-3.5 w-3.5" /> {L.addNewService}
                         </Button>
                         {serviceError && (
@@ -935,13 +1015,22 @@ export default function CalendarPage() {
                     </div>
                   )}
 
-                  <div className="space-y-2"><Label>{t("calendar.notes")}</Label><Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
+                  <div className="space-y-2">
+                    <Label>{t("calendar.notes")}</Label>
+                    <Textarea
+                      value={form.notes}
+                      onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                      placeholder={isGroupSession ? L.notesGroupPlaceholder : L.notesPlaceholder}
+                      rows={3}
+                      className="resize-none"
+                    />
+                  </div>
 
                   {/* Recurring section */}
                   <div className="border-t border-border pt-4 space-y-3">
                     <div className="flex items-center gap-2">
                       <Checkbox id="recurring" checked={isRecurring} onCheckedChange={v => setIsRecurring(!!v)} />
-                      <Label htmlFor="recurring" className="flex items-center gap-1">
+                      <Label htmlFor="recurring" className="flex items-center gap-1.5 cursor-pointer font-medium">
                         <Repeat className="h-3.5 w-3.5" /> {t("recurring.setup")}
                       </Label>
                     </div>
@@ -987,17 +1076,50 @@ export default function CalendarPage() {
                     const disabled = createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending
                       || missingRequired
                       || (!isRecurring && !isGroupSession && !!createValidation);
+
+                    // Build summary
+                    const selectedService = services.find(s => s.id === form.service_id);
+                    const selectedClient = clients.find(c => c.id === form.client_id);
+                    const selectedGroup = activeGroups.find((g: any) => g.id === groupId);
+                    let summaryDate = "";
+                    if (form.date) {
+                      try {
+                        const [y, m, d] = form.date.split("-").map(Number);
+                        summaryDate = format(new Date(y, m - 1, d), "d MMMM yyyy", { locale: dateLocale });
+                      } catch { summaryDate = form.date; }
+                    }
+                    const summaryParts = [
+                      isGroupSession
+                        ? (selectedGroup ? `${selectedGroup.name}${groupMembers.length ? ` · ${groupMembers.length} ${t("groups.members").toLowerCase()}` : ""}` : "")
+                        : selectedClient?.name,
+                      summaryDate,
+                      form.time ? formatTime(form.time, use12h) : "",
+                      selectedService ? `${cs}${Number(selectedService.price).toFixed(0)}` : "",
+                    ].filter(Boolean);
+
+                    const ctaLabel = (createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending)
+                      ? t("calendar.creating")
+                      : (isGroupSession ? L.ctaGroup : L.ctaIndividual);
+
                     return (
-                      <>
-                        <Button onClick={handleCreate} className="w-full" disabled={disabled}>
-                          {(createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending)
-                            ? t("calendar.creating")
-                            : (isGroupSession ? t("groups.groupSession") : isRecurring ? t("recurring.seriesCreated").split(" ")[0] + "..." : t("calendar.createAppointment"))}
+                      <div className="space-y-3 pt-2">
+                        {!missingRequired && summaryParts.length > 0 && (
+                          <div className="rounded-lg bg-muted/40 border border-border/60 p-3 space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground">
+                              {isGroupSession ? L.summaryWillCreateGroup : L.summaryWillCreate}
+                            </p>
+                            <p className="text-sm font-medium text-foreground leading-relaxed">
+                              {summaryParts.join(" · ")}
+                            </p>
+                          </div>
+                        )}
+                        <Button onClick={handleCreate} className="w-full h-11 text-sm font-semibold" disabled={disabled}>
+                          {ctaLabel}
                         </Button>
                         {missingRequired && (
                           <p className="text-xs text-muted-foreground text-center">{L.disabledHint}</p>
                         )}
-                      </>
+                      </div>
                     );
                   })()}
                 </div>
