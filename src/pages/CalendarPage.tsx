@@ -799,6 +799,7 @@ export default function CalendarPage() {
         id: aptId,
         scheduled_at: `${newDate}T${newTime}:00Z`,
       });
+      markRescheduled(aptId);
       toast({ title: t("calendar.sessionMoved") });
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
