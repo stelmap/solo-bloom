@@ -11,8 +11,10 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { ClientPicker } from "@/components/ClientPicker";
-import { useClients, useServices } from "@/hooks/useData";
+import { useClients, useCreateClient, useServices } from "@/hooks/useData";
 import {
   useBookingRequests, useConfirmBookingRequest,
   useDeclineBookingRequest, useLinkBookingRequestClient,
