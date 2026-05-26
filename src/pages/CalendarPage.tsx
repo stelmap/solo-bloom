@@ -1022,7 +1022,7 @@ export default function CalendarPage() {
                       onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                       placeholder={isGroupSession ? L.notesGroupPlaceholder : L.notesPlaceholder}
                       rows={3}
-                      className="resize-none"
+                      className="resize-none min-h-[88px]"
                     />
                   </div>
 
