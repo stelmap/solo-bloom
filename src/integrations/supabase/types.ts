@@ -118,6 +118,7 @@ export type Database = {
           max_horizon_days: number
           min_notice_hours: number
           session_duration_minutes: number
+          sort_order: number
           start_time: string
           updated_at: string
           user_id: string
@@ -132,6 +133,7 @@ export type Database = {
           max_horizon_days?: number
           min_notice_hours?: number
           session_duration_minutes?: number
+          sort_order?: number
           start_time?: string
           updated_at?: string
           user_id: string
@@ -146,6 +148,7 @@ export type Database = {
           max_horizon_days?: number
           min_notice_hours?: number
           session_duration_minutes?: number
+          sort_order?: number
           start_time?: string
           updated_at?: string
           user_id?: string
