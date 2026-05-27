@@ -68,6 +68,33 @@ export default function AuthPage() {
     setRecoveryCode("");
     setFormError(null);
     setSent(false);
+    setSignupOutcome(null);
+    setNeedsConfirmation(false);
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!email.trim()) return;
+    setResendLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: email.trim(),
+        options: { emailRedirectTo: `${window.location.origin}/calendar` },
+      });
+      if (error) throw error;
+      toast({
+        title: "Confirmation email sent",
+        description: "A new confirmation email has been sent. Please check your inbox.",
+      });
+    } catch (err: any) {
+      toast({
+        title: t("common.error"),
+        description: err?.message || "We could not send the confirmation email. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setResendLoading(false);
+    }
   };
 
   const validateForm = () => {
