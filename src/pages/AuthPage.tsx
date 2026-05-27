@@ -204,7 +204,7 @@ export default function AuthPage() {
           email: email.trim(),
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: `${window.location.origin}/calendar`,
             data: { language: lang },
           },
         });
