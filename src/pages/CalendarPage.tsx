@@ -20,7 +20,7 @@ import {
   type SessionKind,
 } from "@/lib/calendarVisuals";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { format, addDays, startOfWeek, isSameDay, isBefore, startOfDay, addMonths, startOfMonth, endOfMonth, endOfWeek, endOfDay, eachDayOfInterval, isSameMonth } from "date-fns";
 import { getDateLocale } from "@/lib/dateLocale";
 import { formatTime, formatScheduledTime } from "@/lib/timeFormat";
@@ -242,6 +242,17 @@ export default function CalendarPage() {
   const { data: profile } = useProfile();
   const { data: workingSchedule = [] } = useWorkingSchedule();
   const { data: daysOff = [] } = useDaysOff();
+  const { data: bookingAvailability = [] } = useQuery({
+    queryKey: ["booking-availability-buffer"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("booking_availability")
+        .select("buffer_minutes")
+        .limit(1);
+      return data || [];
+    },
+  });
+  const bufferMinutes = Math.max(0, Number((bookingAvailability as any[])[0]?.buffer_minutes) || 0);
   const createAppointment = useCreateAppointment();
   const updateAppointment = useUpdateAppointment();
   const createRecurringRule = useCreateRecurringRule();
@@ -842,55 +853,50 @@ export default function CalendarPage() {
       return total;
     };
 
+    const slotUnit = defaultDuration + bufferMinutes;
+
     const computeRange = (rangeStart: Date, rangeEnd: Date) => {
       const days = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
       let totalWorkingMinutes = 0;
-      let totalOccupiedMinutes = 0;
-
-      // Pre-collect events with their start/end Date
-      const events: Array<{ start: Date; end: Date }> = [];
-      for (const a of appointments) {
-        if (a.status === "cancelled" || a.status === "deleted") continue;
-        const s = new Date(a.scheduled_at);
-        const dur = Number((a as any).duration_minutes) || defaultDuration;
-        events.push({ start: s, end: new Date(s.getTime() + dur * 60000) });
-      }
-      for (const r of pendingRequests as any[]) {
-        if (r.status && (r.status === "rejected" || r.status === "cancelled")) continue;
-        const s = new Date(r.requested_slot_at);
-        const dur = Number(r.duration_minutes) || defaultDuration;
-        events.push({ start: s, end: new Date(s.getTime() + dur * 60000) });
-      }
+      const rangeStartMs = startOfDay(rangeStart).getTime();
+      const rangeEndMs = endOfDay(rangeEnd).getTime();
 
       for (const day of days) {
         const win = workingWindow(day);
         if (!win) continue;
-        const [wStart, wEnd] = win;
-        const workingMin = wEnd - wStart;
-        totalWorkingMinutes += workingMin;
-
-        const dayStart = startOfDay(day).getTime();
-        // Collect intervals (in minutes from midnight of this day) clipped to working window
-        const dayIntervals: Array<[number, number]> = [];
-        for (const ev of events) {
-          const evStartMin = (ev.start.getTime() - dayStart) / 60000;
-          const evEndMin = (ev.end.getTime() - dayStart) / 60000;
-          if (evEndMin <= 0 || evStartMin >= 24 * 60) continue;
-          const s = Math.max(evStartMin, wStart);
-          const e = Math.min(evEndMin, wEnd);
-          if (e > s) dayIntervals.push([s, e]);
-        }
-        totalOccupiedMinutes += unionMinutes(dayIntervals);
+        totalWorkingMinutes += win[1] - win[0];
       }
 
-      const slots = Math.floor(totalWorkingMinutes / defaultDuration);
-      const occupiedRaw = Math.round(totalOccupiedMinutes / defaultDuration);
-      const occupied = Math.min(occupiedRaw, slots);
-      const pctRaw = totalWorkingMinutes > 0
-        ? (totalOccupiedMinutes / totalWorkingMinutes) * 100
+      // Count occupied minutes per session = (duration + buffer)
+      // Group sessions counted once (appointments table already has one row per group session).
+      let totalOccupiedMinutes = 0;
+      for (const a of appointments) {
+        if (a.status === "cancelled" || a.status === "deleted") continue;
+        const t = new Date(a.scheduled_at).getTime();
+        if (t < rangeStartMs || t > rangeEndMs) continue;
+        const dur = Number((a as any).duration_minutes) || defaultDuration;
+        totalOccupiedMinutes += dur + bufferMinutes;
+      }
+      for (const r of pendingRequests as any[]) {
+        if (r.status && (r.status === "rejected" || r.status === "cancelled")) continue;
+        const t = new Date(r.requested_slot_at).getTime();
+        if (t < rangeStartMs || t > rangeEndMs) continue;
+        const dur = Number(r.duration_minutes) || defaultDuration;
+        totalOccupiedMinutes += dur + bufferMinutes;
+      }
+
+      const slots = slotUnit > 0 ? Math.floor(totalWorkingMinutes / slotUnit) : 0;
+      const availableMinutes = slots * slotUnit;
+      const occupiedMinutes = Math.min(totalOccupiedMinutes, availableMinutes);
+      const pctRaw = availableMinutes > 0
+        ? (occupiedMinutes / availableMinutes) * 100
         : 0;
-      const pct = Math.min(100, Math.round(pctRaw));
-      return { slots, occupied, pct };
+      const pct = Math.min(100, Math.round(pctRaw * 10) / 10);
+      const occupiedHours = Math.round((occupiedMinutes / 60) * 10) / 10;
+      const availableHours = Math.round((availableMinutes / 60) * 10) / 10;
+      // Back-compat: keep occupied as slot count for any callers
+      const occupied = slotUnit > 0 ? Math.round(occupiedMinutes / slotUnit) : 0;
+      return { slots, occupied, pct, occupiedMinutes, availableMinutes, occupiedHours, availableHours };
     };
 
     return {
@@ -898,7 +904,7 @@ export default function CalendarPage() {
       nextWeek: computeRange(nextWeekStart, nextWeekEnd),
       next30: computeRange(next30Start, next30End),
     };
-  }, [appointments, pendingRequests, profile, scheduleMap, daysOffSet, startHour, endHour]);
+  }, [appointments, pendingRequests, profile, scheduleMap, daysOffSet, startHour, endHour, bufferMinutes]);
   // Back-compat alias used by the per-day bar (only relevant in Day/Week views)
   const weekCapacity = periodCapacity;
 
@@ -1592,7 +1598,7 @@ export default function CalendarPage() {
             >
               <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.thisWeek.pct}%</p>
               <p className="text-xs text-muted-foreground mt-1">{t("capacity.fillRateThisWeek")}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.thisWeek.occupied}/{fillRates.thisWeek.slots}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.thisWeek.occupiedHours} / {fillRates.thisWeek.availableHours} h</p>
             </button>
             <button
               type="button"
@@ -1601,7 +1607,7 @@ export default function CalendarPage() {
             >
               <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.nextWeek.pct}%</p>
               <p className="text-xs text-muted-foreground mt-1">{t("capacity.fillRateNextWeek")}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.nextWeek.occupied}/{fillRates.nextWeek.slots}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.nextWeek.occupiedHours} / {fillRates.nextWeek.availableHours} h</p>
             </button>
             <button
               type="button"
@@ -1610,7 +1616,7 @@ export default function CalendarPage() {
             >
               <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.next30.pct}%</p>
               <p className="text-xs text-muted-foreground mt-1">{t("capacity.fillRateNext30")}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.next30.occupied}/{fillRates.next30.slots}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.next30.occupiedHours} / {fillRates.next30.availableHours} h</p>
             </button>
             <button
               type="button"
