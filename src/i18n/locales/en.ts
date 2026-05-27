@@ -1420,4 +1420,7 @@ export default {
   "ops.monthsShort": "mo",
   "ops.clientsActiveCompletedSub": "{active} active · {completed} completed",
   "ops.perSession": "per session",
+  "booking.confirm": "Confirm",
+  "booking.decline": "Decline",
+  "booking.open": "Open",
 } as const;
