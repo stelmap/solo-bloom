@@ -1703,6 +1703,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           business_address: string | null
           business_id: string | null
           business_name: string | null
@@ -1716,8 +1717,10 @@ export type Database = {
           mfa_required: boolean
           onboarding_completed: boolean
           phone: string | null
+          public_email: string | null
           reminder_minutes: number
           sessions_per_day: number
+          show_practice_profile_on_booking: boolean
           time_format: string
           timezone: string | null
           updated_at: string
@@ -1729,6 +1732,7 @@ export type Database = {
           working_days_per_week: number
         }
         Insert: {
+          avatar_url?: string | null
           business_address?: string | null
           business_id?: string | null
           business_name?: string | null
@@ -1742,8 +1746,10 @@ export type Database = {
           mfa_required?: boolean
           onboarding_completed?: boolean
           phone?: string | null
+          public_email?: string | null
           reminder_minutes?: number
           sessions_per_day?: number
+          show_practice_profile_on_booking?: boolean
           time_format?: string
           timezone?: string | null
           updated_at?: string
@@ -1755,6 +1761,7 @@ export type Database = {
           working_days_per_week?: number
         }
         Update: {
+          avatar_url?: string | null
           business_address?: string | null
           business_id?: string | null
           business_name?: string | null
@@ -1768,8 +1775,10 @@ export type Database = {
           mfa_required?: boolean
           onboarding_completed?: boolean
           phone?: string | null
+          public_email?: string | null
           reminder_minutes?: number
           sessions_per_day?: number
+          show_practice_profile_on_booking?: boolean
           time_format?: string
           timezone?: string | null
           updated_at?: string
