@@ -1420,4 +1420,7 @@ export default {
   "ops.monthsShort": "міс",
   "ops.clientsActiveCompletedSub": "{active} активних · {completed} завершили",
   "ops.perSession": "за сеанс",
+  "booking.confirm": "Підтвердити",
+  "booking.decline": "Відхилити",
+  "booking.open": "Відкрити запит",
 } as const;
