@@ -20,7 +20,7 @@ import {
   type SessionKind,
 } from "@/lib/calendarVisuals";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { format, addDays, startOfWeek, isSameDay, isBefore, startOfDay, addMonths, startOfMonth, endOfMonth, endOfWeek, endOfDay, eachDayOfInterval, isSameMonth } from "date-fns";
 import { getDateLocale } from "@/lib/dateLocale";
 import { formatTime, formatScheduledTime } from "@/lib/timeFormat";
