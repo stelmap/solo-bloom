@@ -360,7 +360,38 @@ export default function PublicBookingPage() {
   return (
     <div className="min-h-screen bg-muted/30 py-8 px-4">
       <div className="max-w-2xl mx-auto space-y-6">
-        <header className="text-center space-y-2">
+        <header className="text-center space-y-3">
+          {info.show_practice_profile !== false && (info.avatar_url || info.business_name || info.business_address || info.practice_email) && (
+            <div className="flex flex-col items-center gap-3 pb-2">
+              {info.avatar_url && (
+                <img
+                  src={info.avatar_url}
+                  alt={info.business_name || info.display_name}
+                  className="h-20 w-20 rounded-full object-cover border border-border shadow-sm"
+                />
+              )}
+              {info.business_name && (
+                <div className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground">
+                  <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                  {info.business_name}
+                </div>
+              )}
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                {info.business_address && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {info.business_address}
+                  </span>
+                )}
+                {info.practice_email && (
+                  <a href={`mailto:${info.practice_email}`} className="inline-flex items-center gap-1.5 hover:text-foreground">
+                    <Mail className="h-3.5 w-3.5" />
+                    {info.practice_email}
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
           <h1 className="text-2xl font-semibold tracking-tight">{info.display_name}</h1>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
