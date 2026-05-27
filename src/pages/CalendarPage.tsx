@@ -242,6 +242,17 @@ export default function CalendarPage() {
   const { data: profile } = useProfile();
   const { data: workingSchedule = [] } = useWorkingSchedule();
   const { data: daysOff = [] } = useDaysOff();
+  const { data: bookingAvailability = [] } = useQuery({
+    queryKey: ["booking-availability-buffer"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("booking_availability")
+        .select("buffer_minutes")
+        .limit(1);
+      return data || [];
+    },
+  });
+  const bufferMinutes = Math.max(0, Number((bookingAvailability as any[])[0]?.buffer_minutes) || 0);
   const createAppointment = useCreateAppointment();
   const updateAppointment = useUpdateAppointment();
   const createRecurringRule = useCreateRecurringRule();
