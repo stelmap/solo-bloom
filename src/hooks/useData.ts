@@ -2073,8 +2073,13 @@ export function useDashboardStats() {
       const freeSlots = Math.max(capacity.weeklyCapacity - bookedSlots, 0);
 
       // ===== Outstanding balance calculation =====
+      // Count only sessions that still owe money after applying confirmed
+      // allocations. This keeps Dashboard's "Unpaid sessions" count in sync
+      // with the Pending payments list (useExpectedPayments) and with the
+      // calendar's payment-status badges, all derived from the same source.
       const outstandingApts = (outstandingAptRes.data ?? []) as Array<{ id: string; price: number; client_id: string }>;
       let outstandingBalance = 0;
+      let unpaidSessionsCount = 0;
       if (outstandingApts.length > 0) {
         const aptIds = outstandingApts.map((a) => a.id);
         const { data: allocs } = await supabase
@@ -2087,7 +2092,11 @@ export function useDashboardStats() {
         }
         for (const apt of outstandingApts) {
           const paid = allocByApt.get(apt.id) ?? 0;
-          outstandingBalance += Math.max(Number(apt.price) - paid, 0);
+          const remaining = Math.max(Number(apt.price) - paid, 0);
+          if (remaining > 0) {
+            outstandingBalance += remaining;
+            unpaidSessionsCount += 1;
+          }
         }
       }
 
