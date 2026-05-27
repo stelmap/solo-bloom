@@ -44,6 +44,9 @@ export default function AuthPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [signupOutcome, setSignupOutcome] = useState<"sent" | "already_confirmed" | "unconfirmed" | null>(null);
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const checkoutTriggeredRef = useRef(false);
   const { toast } = useToast();
   const { t } = useLanguage();
