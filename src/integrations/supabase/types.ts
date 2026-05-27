@@ -2681,11 +2681,16 @@ export type Database = {
       public_get_booking_page: {
         Args: { p_token: string }
         Returns: {
+          avatar_url: string
+          business_address: string
+          business_name: string
           display_name: string
           is_active: boolean
           language: string
           mode: string
+          practice_email: string
           session_duration_minutes: number
+          show_practice_profile: boolean
           timezone: string
         }[]
       }
