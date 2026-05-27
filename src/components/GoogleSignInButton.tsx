@@ -33,7 +33,7 @@ export function GoogleSignInButton({ disabled }: Props) {
       }
       // On redirect, the browser will navigate away. On success with tokens, session is set.
       if (!result.redirected) {
-        window.location.href = getPostAuthRedirect();
+        window.location.href = "/calendar";
       }
     } catch (e) {
       toast({
