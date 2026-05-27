@@ -7,7 +7,9 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { EntitlementGate } from "@/components/EntitlementGate";
-import { lazy, Suspense, ComponentType } from "react";
+import { lazy, Suspense, ComponentType, useEffect } from "react";
+import { CookieConsent } from "@/components/CookieConsent";
+import { bootConsent } from "@/lib/consent";
 
 // Wrap lazy() so stale-chunk errors after a deploy trigger a one-time reload
 // instead of leaving the user on a blank screen.
