@@ -254,7 +254,7 @@ export default function Dashboard() {
 
         {/* C. Now / Next */}
         <section>
-          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground mb-3">
+          <h2 className="text-sm font-semibold text-muted-foreground mb-3">
             {t("ops.nowNext")}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
