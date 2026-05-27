@@ -860,11 +860,14 @@ export function useMarkExpectedPaymentPaid() {
         ? new Date(aptData.scheduled_at).toISOString().split("T")[0]
         : payDate;
 
-      const { error: epErr } = await supabase
+      // Clean up any legacy expected_payments rows for this appointment so the
+      // pending list and dashboard counts (now both derived from appointments)
+      // stay in sync. Missing rows are fine — the table is no longer the
+      // source of truth.
+      await supabase
         .from("expected_payments")
-        .update({ status: "paid", paid_at: new Date(payDate + "T12:00:00").toISOString(), payment_method: paymentMethod } as any)
-        .eq("id", id);
-      if (epErr) throw epErr;
+        .delete()
+        .eq("appointment_id", appointmentId);
 
       await supabase.from("appointments").update({ payment_status: "paid_now" } as any).eq("id", appointmentId);
 
