@@ -2035,6 +2035,10 @@ export function useDashboardStats() {
           .lte("archived_at", monthEndStr + "T23:59:59"),
         // Fallback for new clients: created this month
         supabase.from("clients").select("id, created_at"),
+        // Active clients for "without next session" metric
+        supabase.from("clients").select("id").eq("status", "active"),
+        // Future non-cancelled appointments for "without next session" metric
+        supabase.from("appointments").select("client_id").gt("scheduled_at", new Date().toISOString()).neq("status", "cancelled"),
       ]);
 
       const dateOf = (row: any) => row[recognitionField];
