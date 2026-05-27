@@ -591,8 +591,8 @@ function MoneyTile({
 
 
 function OverviewTile({
-  icon: Icon, label, value, active, onClick,
-}: { icon: any; label: string; value: string; active?: boolean; onClick?: () => void }) {
+  icon: Icon, label, value, active, onClick, trend, trendLabel,
+}: { icon: any; label: string; value: string; active?: boolean; onClick?: () => void; trend?: { dir: "up" | "down" | "flat"; pct: number; positive: boolean }; trendLabel?: string }) {
   const base = cn(
     "relative rounded-[18px] p-5 text-center w-full block transition-all border flex flex-col items-center justify-between min-h-[170px]",
     active
