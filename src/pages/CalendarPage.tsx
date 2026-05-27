@@ -860,7 +860,7 @@ export default function CalendarPage() {
       return total;
     };
 
-    const slotUnit = defaultDuration + bufferMinutes;
+    const slotUnit = defaultDuration;
 
     const computeRange = (rangeStart: Date, rangeEnd: Date) => {
       const days = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
