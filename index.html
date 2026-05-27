@@ -112,24 +112,13 @@
   </head>
 
   <body>
-    <!-- Meta Pixel Code (noscript fallback) -->
-    <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=2059708747919020&ev=PageView&noscript=1"
-    /></noscript>
-    <!-- End Meta Pixel Code (noscript fallback) -->
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-
-    <!-- BEGIN PLERDY CODE -->
-    <script type="text/javascript" defer data-plerdy_code='1'>
-      var _protocol="https:"==document.location.protocol?"https://":"http://";
-      _site_hash_code = "3450f58221ecff5c47954f42faec50a7",_suid=76008, plerdyScript=document.createElement("script");
-      plerdyScript.setAttribute("defer",""),plerdyScript.dataset.plerdymainscript="plerdymainscript",
-      plerdyScript.src="https://a.plerdy.com/public/js/click/main.js?v="+Math.random();
-      var plerdymainscript=document.querySelector("[data-plerdymainscript='plerdymainscript']");
-      plerdymainscript&&plerdymainscript.parentNode.removeChild(plerdymainscript);
-      try{document.head.appendChild(plerdyScript)}catch(t){console.log(t,"unable add script tag")}
-    </script>
-    <!-- END PLERDY CODE -->
+    <!--
+      Plerdy analytics is loaded ONLY after the user opts in via the
+      cookie consent banner (analytics category). See src/lib/consent.ts.
+    -->
+  </body>
+</html>
   </body>
 </html>
