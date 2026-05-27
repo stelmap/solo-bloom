@@ -19,6 +19,11 @@ type PageInfo = {
   is_active: boolean;
   language: string;
   timezone: string;
+  show_practice_profile?: boolean;
+  business_name?: string | null;
+  business_address?: string | null;
+  practice_email?: string | null;
+  avatar_url?: string | null;
 };
 
 type Lang = "en" | "uk" | "fr" | "pl";
