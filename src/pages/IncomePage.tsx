@@ -322,7 +322,7 @@ export default function IncomePage() {
               </div>
               <div className="space-y-2">
                 <Label>{t("common.paymentDate")}</Label>
-                <Input type="date" value={payDate} onChange={e => setPayDate(e.target.value)} />
+                <DatePicker date={payDate} onDateChange={setPayDate} />
               </div>
               <div className="space-y-2">
                 <Label>{t("calendar.paymentMethod")}</Label>
