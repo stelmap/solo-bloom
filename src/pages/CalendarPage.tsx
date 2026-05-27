@@ -790,13 +790,22 @@ export default function CalendarPage() {
     let totalRevenue = 0;
     const dayStats = periodDays.map(day => {
       const working = isDayWorking(day);
-      const slots = working ? sessionsPerDay : 0;
+      // Slot count = working hours per day (60-min slots), fallback to sessionsPerDay
+      let slots = 0;
+      if (working) {
+        const dow = getDayOfWeek(day);
+        const sched = scheduleMap[dow];
+        const sh = sched ? (parseInt(sched.start_time) || startHour) : startHour;
+        const eh = sched ? (parseInt(sched.end_time) || endHour) : endHour;
+        slots = eh > sh ? (eh - sh) : sessionsPerDay;
+      }
       totalSlots += slots;
       const dayStr = format(day, "yyyy-MM-dd");
       const dayApts = appointments.filter(
         apt => toUTCDateStr(new Date(apt.scheduled_at)) === dayStr && apt.status !== "cancelled",
       );
-      const booked = dayApts.length;
+      const bookedRaw = dayApts.length;
+      const booked = Math.min(bookedRaw, slots);
       totalBooked += booked;
       totalRevenue += dayApts.reduce((s, a: any) => s + Number(a.price ?? 0), 0);
       return { day, working, slots, booked, free: Math.max(slots - booked, 0) };
@@ -813,7 +822,7 @@ export default function CalendarPage() {
       pendingInPeriod,
       dayStats,
     };
-  }, [periodDays, periodStart, periodEnd, appointments, profile, scheduleMap, daysOffSet, pendingRequests]);
+  }, [periodDays, periodStart, periodEnd, appointments, profile, scheduleMap, daysOffSet, pendingRequests, startHour, endHour]);
 
   // Fill-rate forecasts: this week, next week, next 30 days
   // Based on real working hours per day, default session duration, and unique
