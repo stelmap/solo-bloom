@@ -795,6 +795,43 @@ export default function CalendarPage() {
       dayStats,
     };
   }, [periodDays, periodStart, periodEnd, appointments, profile, scheduleMap, daysOffSet, pendingRequests]);
+
+  // Fill-rate forecasts: this week, next week, next 30 days
+  const fillRates = useMemo(() => {
+    const sessionsPerDay = (profile as any)?.sessions_per_day ?? 6;
+    const today = startOfDay(new Date());
+    const thisWeekStart = startOfWeek(today, { weekStartsOn: 1 });
+    const thisWeekEnd = endOfDay(addDays(thisWeekStart, 6));
+    const nextWeekStart = addDays(thisWeekStart, 7);
+    const nextWeekEnd = endOfDay(addDays(nextWeekStart, 6));
+    const next30Start = today;
+    const next30End = endOfDay(addDays(today, 29));
+
+    const computeRange = (start: Date, end: Date) => {
+      const days = eachDayOfInterval({ start, end });
+      let slots = 0;
+      for (const d of days) if (isDayWorking(d)) slots += sessionsPerDay;
+      const startMs = start.getTime();
+      const endMs = end.getTime();
+      const booked = appointments.filter(a => {
+        const t = new Date(a.scheduled_at).getTime();
+        return t >= startMs && t <= endMs && a.status !== "cancelled";
+      }).length;
+      const pending = pendingRequests.filter(r => {
+        const t = new Date(r.requested_slot_at).getTime();
+        return t >= startMs && t <= endMs;
+      }).length;
+      const occupied = booked + pending;
+      const pct = slots > 0 ? Math.round((occupied / slots) * 100) : 0;
+      return { slots, occupied, pct };
+    };
+
+    return {
+      thisWeek: computeRange(thisWeekStart, thisWeekEnd),
+      nextWeek: computeRange(nextWeekStart, nextWeekEnd),
+      next30: computeRange(next30Start, next30End),
+    };
+  }, [appointments, pendingRequests, profile, scheduleMap, daysOffSet]);
   // Back-compat alias used by the per-day bar (only relevant in Day/Week views)
   const weekCapacity = periodCapacity;
 
@@ -1478,32 +1515,35 @@ export default function CalendarPage() {
               onClick={() => clearFilters()}
               className="flex flex-col items-center justify-center text-center rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-4 min-h-[88px]"
             >
-              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{periodCapacity.totalSlots}</p>
-              <p className="text-xs text-muted-foreground mt-2">{t("capacity.totalSlots")}</p>
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilters(f => ({ ...f, status: f.status === "confirmed" ? "all" : "confirmed" }))}
-              className="flex flex-col items-center justify-center text-center rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-4 min-h-[88px]"
-            >
-              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{periodCapacity.totalBooked}</p>
-              <p className="text-xs text-muted-foreground mt-2">{t("capacity.booked")}</p>
+              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.thisWeek.slots}</p>
+              <p className="text-xs text-muted-foreground mt-2">{t("capacity.totalSlotsThisWeek")}</p>
             </button>
             <button
               type="button"
               onClick={() => clearFilters()}
               className="flex flex-col items-center justify-center text-center rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-4 min-h-[88px]"
             >
-              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{periodCapacity.totalFree}</p>
-              <p className="text-xs text-muted-foreground mt-2">{t("capacity.free")}</p>
+              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.thisWeek.pct}%</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("capacity.fillRateThisWeek")}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.thisWeek.occupied}/{fillRates.thisWeek.slots}</p>
             </button>
             <button
               type="button"
-              onClick={() => navigate("/income")}
+              onClick={() => clearFilters()}
               className="flex flex-col items-center justify-center text-center rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-4 min-h-[88px]"
             >
-              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{cs}{periodCapacity.totalRevenue.toFixed(0)}</p>
-              <p className="text-xs text-muted-foreground mt-2">Revenue</p>
+              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.nextWeek.pct}%</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("capacity.fillRateNextWeek")}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.nextWeek.occupied}/{fillRates.nextWeek.slots}</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => clearFilters()}
+              className="flex flex-col items-center justify-center text-center rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-4 min-h-[88px]"
+            >
+              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.next30.pct}%</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("capacity.fillRateNext30")}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.next30.occupied}/{fillRates.next30.slots}</p>
             </button>
             <button
               type="button"
