@@ -194,7 +194,7 @@ export default function Dashboard() {
 
         {/* A. Monthly Overview */}
         <section>
-          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground mb-3">
+          <h2 className="text-sm font-semibold text-muted-foreground mb-3">
             {t("ops.monthlyOverview")}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -208,7 +208,7 @@ export default function Dashboard() {
 
         {/* B. Daily Overview - Activity | Money */}
         <section>
-          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground mb-3">
+          <h2 className="text-sm font-semibold text-muted-foreground mb-3">
             {t("ops.todayOverview")}
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -216,7 +216,7 @@ export default function Dashboard() {
             <div className="bg-card border border-border rounded-[20px] p-6 shadow-card">
               <div className="flex items-center gap-2 mb-5">
                 <PlayCircle className="h-4 w-4 text-primary" />
-                <h3 className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                <h3 className="text-sm font-semibold text-muted-foreground">
                   {t("ops.todaysActivity")}
                 </h3>
               </div>
@@ -234,7 +234,7 @@ export default function Dashboard() {
             <div className="bg-card border border-border rounded-[20px] p-6 shadow-card flex flex-col">
               <div className="flex items-center gap-2 mb-5">
                 <DollarSign className="h-4 w-4 text-primary" />
-                <h3 className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                <h3 className="text-sm font-semibold text-muted-foreground">
                   {t("ops.todaysMoney")}
                 </h3>
               </div>
@@ -245,7 +245,7 @@ export default function Dashboard() {
                 <MoneyTile label={t("ops.outstandingBalance")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("outstanding_balance", "/finances/income?range=all&tab=pending")} />
               </div>
               <div className="mt-4 bg-gradient-dark text-secondary-foreground rounded-2xl px-5 py-4 flex justify-between items-center">
-                <span className="text-[11px] font-semibold opacity-80 uppercase tracking-[0.06em]">{t("ops.paidToday")}</span>
+                <span className="text-xs font-semibold opacity-80">{t("ops.paidToday")}</span>
                 <span className="text-2xl font-bold text-primary">{cs}{summary.amountReceived.toLocaleString()}</span>
               </div>
             </div>
@@ -254,7 +254,7 @@ export default function Dashboard() {
 
         {/* C. Now / Next */}
         <section>
-          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground mb-3">
+          <h2 className="text-sm font-semibold text-muted-foreground mb-3">
             {t("ops.nowNext")}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -381,7 +381,7 @@ function StatCell({ label, value, tone }: { label: string; value: string; tone?:
   return (
     <div className="bg-muted/40 border border-border rounded-2xl p-4 flex flex-col items-center justify-center text-center min-h-[110px]">
       <p className={cn("text-3xl sm:text-4xl font-bold leading-none tabular-nums", toneClass)}>{value}</p>
-      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em] mt-2.5 leading-snug">{label}</p>
+      <p className="text-xs text-muted-foreground mt-2.5 leading-snug">{label}</p>
     </div>
   );
 }
@@ -397,7 +397,7 @@ function MoneyTile({
   const inner = (
     <div className="flex flex-col items-center justify-center text-center h-full">
       <p className={cn("text-2xl sm:text-3xl font-bold tabular-nums", toneClass)}>{value}</p>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground mt-2 leading-snug">{label}</p>
+      <p className="text-xs text-muted-foreground mt-2 leading-snug">{label}</p>
     </div>
   );
   if (onClick) {
@@ -442,7 +442,7 @@ function OverviewTile({
         )}
       </div>
       <p className={cn("text-5xl font-extrabold leading-none tabular-nums my-2", active ? "text-primary" : "text-foreground")}>{value}</p>
-      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em] leading-snug w-full">{label}</p>
+      <p className="text-xs text-muted-foreground leading-snug w-full">{label}</p>
     </>
   );
   if (onClick) {
