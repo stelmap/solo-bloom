@@ -1831,20 +1831,6 @@ export default function CalendarPage() {
         )}
         </section>
 
-        {flags.showLegend && (
-          <div className="bg-card rounded-xl border border-border p-3 sm:p-4 text-xs animate-fade-in">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <span className="font-semibold uppercase text-muted-foreground">{t("calendar.legend") || "Legend"}:</span>
-              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-muted border border-border" /> {t("calendar.individual") || "Individual"}</span>
-              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-emerald-500/30 border border-emerald-500/50" /> {t("calendar.group") || "Group"}</span>
-              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-violet-500/30 border border-violet-500/50" /> {t("calendar.pair") || "Pair"}</span>
-              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-warning/30 border border-warning/50" /> {t("calendar.rescheduled") || "Rescheduled"}</span>
-              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-destructive/20 border-l-2 border-destructive" /> {t("calendar.urgent") || "Urgent"}</span>
-              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm border-2 border-dashed border-warning/70 bg-warning/15" /> {t("calendar.pending") || "Pending request"}</span>
-              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-full bg-destructive" /> {t("calendar.new") || "New"}</span>
-            </div>
-          </div>
-        )}
       </div>
 
 
