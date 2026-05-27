@@ -65,20 +65,20 @@ describe("auth email i18n", () => {
     const uk = getStrings("uk");
 
     it("translates signup email", () => {
-      expect(uk.signup.heading).toContain("Вітаємо");
+      expect(uk.signup.heroTitle).toContain("Підтвердіть");
       expect(uk.signup.cta).toBe("Підтвердити пошту");
       expect(uk.signup.intro("Solo.Biz")).toContain("Дякуємо");
     });
 
     it("translates magic link, recovery, invite, email change, reauth", () => {
       expect(uk.magicLink.cta).toBe("Увійти");
-      expect(uk.recovery.heading).toBe("Скиньте свій пароль");
+      expect(uk.recovery.heroTitle).toBe("Скиньте свій пароль");
       expect(uk.invite.cta).toBe("Прийняти запрошення");
-      expect(uk.emailChange.cta).toBe("Підтвердити зміну пошти");
+      expect(uk.emailChange.cta).toBe("Підтвердити зміну");
       expect(uk.emailChange.body("a@x.ua", "b@x.ua")).toContain(
         "з a@x.ua на b@x.ua",
       );
-      expect(uk.reauthentication.heading).toBe("Підтвердіть свою особу");
+      expect(uk.reauthentication.heroTitle).toBe("Підтвердіть свою особу");
     });
 
     it("provides Ukrainian subjects for every auth event", () => {
