@@ -291,7 +291,7 @@ export default function ExpensesPage() {
                 {form.recurrence === "one_time" ? (
                   <div className="space-y-1">
                     <Label>{t("common.date")}</Label>
-                    <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
+                    <DatePicker date={form.date} onDateChange={(d) => setForm(f => ({ ...f, date: d }))} />
                     <p className="text-xs text-muted-foreground">{explainExpenseDate({ recurrence: "one_time", date: form.date })}</p>
                   </div>
                 ) : (
