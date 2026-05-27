@@ -442,7 +442,7 @@ function OverviewTile({
         )}
       </div>
       <p className={cn("text-5xl font-extrabold leading-none tabular-nums my-2", active ? "text-primary" : "text-foreground")}>{value}</p>
-      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em] leading-snug w-full">{label}</p>
+      <p className="text-xs text-muted-foreground leading-snug w-full">{label}</p>
     </>
   );
   if (onClick) {
