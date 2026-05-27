@@ -149,7 +149,7 @@ export default function ClientsPage() {
     return map;
   })();
 
-  const monthFilter = searchParams.get("filter") as "activeThisMonth" | "newThisMonth" | "completedThisMonth" | "droppedThisMonth" | null;
+  const monthFilter = searchParams.get("filter") as "activeThisMonth" | "newThisMonth" | "completedThisMonth" | "droppedThisMonth" | "withoutNextSession" | null;
 
   const isThisMonth = (dateStr: string | null | undefined) => {
     if (!dateStr) return false;
