@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarDays, CheckCircle2, ChevronLeft, Clock, Globe, Loader2, MapPin } from "lucide-react";
+import { CalendarDays, CheckCircle2, ChevronLeft, Clock, Globe, Loader2, MapPin, Mail, Building2 } from "lucide-react";
 import { z } from "zod";
 import { toast } from "@/hooks/use-toast";
 
