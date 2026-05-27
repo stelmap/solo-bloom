@@ -18,7 +18,7 @@ export function GoogleSignInButton({ disabled }: Props) {
     setLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: `${window.location.origin}/calendar`,
       });
       if (result.error) {
         const msg = (result.error as any)?.message?.toLowerCase?.() ?? "";
@@ -33,7 +33,7 @@ export function GoogleSignInButton({ disabled }: Props) {
       }
       // On redirect, the browser will navigate away. On success with tokens, session is set.
       if (!result.redirected) {
-        window.location.href = getPostAuthRedirect();
+        window.location.href = "/calendar";
       }
     } catch (e) {
       toast({
