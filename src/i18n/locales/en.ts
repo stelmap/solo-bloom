@@ -1408,6 +1408,8 @@ export default {
   "ops.monthlyExpensesTotal": "Total expenses this month",
   "ops.unpaidSessionsCount": "Unpaid sessions",
   "ops.currentDebt": "Current debt",
+  "ops.clientsWithoutNextSession": "Clients without next session",
+  "ops.clientsWithoutNextSessionHint": "Active clients who do not have any future session scheduled. This may indicate a retention risk or a need for follow-up.",
   "ops.todayDebt": "Today's debt",
   "ops.totalDebt": "Total debt",
   "ops.practiceHealth": "Practice health · All time",
