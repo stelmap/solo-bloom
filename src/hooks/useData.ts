@@ -2089,6 +2089,107 @@ export function useDashboardStats() {
         else droppedTherapyThisMonth++;
       }
 
+      // ===== Lost income from cancellations this month =====
+      const cancelledMonthRes = await supabase
+        .from("appointments")
+        .select("price")
+        .eq("status", "cancelled")
+        .gte("scheduled_at", monthStart + "T00:00:00")
+        .lte("scheduled_at", monthEndStr + "T23:59:59");
+      const lostIncomeThisMonth = (cancelledMonthRes.data ?? [])
+        .reduce((s: number, a: any) => s + Number(a.price ?? 0), 0);
+
+      // ===== Unpaid sessions count (all-time payable, unpaid) =====
+      const unpaidSessionsCount = outstandingApts.length;
+
+      // ===== Previous month for trend comparisons =====
+      const prevMonthStartD = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const prevMonthEndD = new Date(now.getFullYear(), now.getMonth(), 0);
+      const prevMonthStart = prevMonthStartD.toISOString().split("T")[0];
+      const prevMonthEnd = prevMonthEndD.toISOString().split("T")[0];
+      const [prevMonthAptsRes, prevArchivedRes] = await Promise.all([
+        supabase.from("appointments")
+          .select("client_id, status, scheduled_at")
+          .gte("scheduled_at", prevMonthStart + "T00:00:00")
+          .lte("scheduled_at", prevMonthEnd + "T23:59:59"),
+        supabase.from("clients")
+          .select("archive_reason, archived_at")
+          .eq("status", "archived")
+          .gte("archived_at", prevMonthStart + "T00:00:00")
+          .lte("archived_at", prevMonthEnd + "T23:59:59"),
+      ]);
+      const prevMonthApts = (prevMonthAptsRes.data ?? []) as Array<{ client_id: string; status: string; scheduled_at: string }>;
+      const prevActiveClients = new Set(prevMonthApts.map(a => a.client_id)).size;
+      const prevCancelled = prevMonthApts.filter(a => a.status === "cancelled").length;
+      const prevMonthStartTs = prevMonthStartD.getTime();
+      const prevMonthEndTs = new Date(prevMonthEnd + "T23:59:59").getTime();
+      let prevNewClients = 0;
+      for (const [, firstAt] of firstSessionByClient) {
+        const t = new Date(firstAt).getTime();
+        if (t >= prevMonthStartTs && t <= prevMonthEndTs) prevNewClients++;
+      }
+      let prevCompletedTherapy = 0, prevDroppedTherapy = 0;
+      for (const c of (prevArchivedRes.data ?? []) as Array<{ archive_reason: string | null }>) {
+        const r = c.archive_reason ?? "other";
+        if (COMPLETED_REASONS.has(r)) prevCompletedTherapy++;
+        else prevDroppedTherapy++;
+      }
+
+      // ===== Practice Health (all-time) =====
+      const [allClientsHealthRes, completedAptsCountRes, allAptsCountRes, cancelledAptsCountRes, allExpensesRes, allClientSessionsRes] = await Promise.all([
+        supabase.from("clients").select("id, status, archive_reason"),
+        supabase.from("appointments").select("id", { count: "exact", head: true }).eq("status", "completed"),
+        supabase.from("appointments").select("id", { count: "exact", head: true }),
+        supabase.from("appointments").select("id", { count: "exact", head: true }).eq("status", "cancelled"),
+        supabase.from("expenses").select("amount").eq("is_template", false).neq("instance_status", "cancelled"),
+        supabase.from("appointments").select("client_id, scheduled_at").neq("status", "cancelled"),
+      ]);
+      const allClientsData = (allClientsHealthRes.data ?? []) as Array<{ id: string; status: string; archive_reason: string | null }>;
+      const totalClients = allClientsData.length;
+      const activeClientsTotal = allClientsData.filter(c => c.status === "active").length;
+      const completedClientsTotal = allClientsData.filter(c => c.status === "archived" && COMPLETED_REASONS.has(c.archive_reason ?? "")).length;
+      const conductedSessions = completedAptsCountRes.count ?? 0;
+      const totalSessionsAll = allAptsCountRes.count ?? 0;
+      const cancelledSessionsAll = cancelledAptsCountRes.count ?? 0;
+      const completionRate = totalClients > 0 ? Math.round((completedClientsTotal / totalClients) * 100) : 0;
+      const cancellationRate = totalSessionsAll > 0 ? Math.round((cancelledSessionsAll / totalSessionsAll) * 100) : 0;
+      const allExpensesSum = (allExpensesRes.data ?? []).reduce((s: number, e: any) => s + Number(e.amount ?? 0), 0);
+      const sessionCost = conductedSessions > 0 ? allExpensesSum / conductedSessions : 0;
+      const perClientDates = new Map<string, { min: number; max: number }>();
+      for (const a of (allClientSessionsRes.data ?? []) as Array<{ client_id: string; scheduled_at: string }>) {
+        const t = new Date(a.scheduled_at).getTime();
+        const cur = perClientDates.get(a.client_id);
+        if (!cur) perClientDates.set(a.client_id, { min: t, max: t });
+        else { if (t < cur.min) cur.min = t; if (t > cur.max) cur.max = t; }
+      }
+      let durSum = 0, durCount = 0;
+      const MS_MONTH = 1000 * 60 * 60 * 24 * 30.4375;
+      for (const v of perClientDates.values()) {
+        const months = (v.max - v.min) / MS_MONTH;
+        if (months > 0) { durSum += months; durCount++; }
+      }
+      const avgTherapyMonths = durCount > 0 ? durSum / durCount : 0;
+
+      // ===== Today debt =====
+      const todayAptsTyped = (todayAptRes.data ?? []) as Array<{ id: string; price: number; payment_status: string; status: string }>;
+      const PAID_SET = new Set(["paid_now", "paid_in_advance", "paid_from_prepayment"]);
+      const todayUnpaidApts = todayAptsTyped.filter(a => a.status !== "cancelled" && !PAID_SET.has(a.payment_status));
+      let todayDebt = 0;
+      if (todayUnpaidApts.length) {
+        const ids = todayUnpaidApts.map(a => a.id);
+        const { data: tAllocs } = await supabase
+          .from("income_session_allocations")
+          .select("appointment_id, allocated_amount")
+          .in("appointment_id", ids);
+        const byApt = new Map<string, number>();
+        for (const a of tAllocs ?? []) {
+          byApt.set(a.appointment_id, (byApt.get(a.appointment_id) ?? 0) + Number(a.allocated_amount || 0));
+        }
+        for (const apt of todayUnpaidApts) {
+          todayDebt += Math.max(Number(apt.price) - (byApt.get(apt.id) ?? 0), 0);
+        }
+      }
+
       return {
         todayIncome, monthlyIncome, monthlyExpenses,
         netProfit: monthlyIncome - monthlyExpenses,
@@ -2110,6 +2211,22 @@ export function useDashboardStats() {
         completedTherapyThisMonth,
         droppedTherapyThisMonth,
         cancelledSessionsThisMonth,
+        lostIncomeThisMonth,
+        unpaidSessionsCount,
+        todayDebt,
+        prevActiveClients,
+        prevNewClients,
+        prevCompletedTherapy,
+        prevDroppedTherapy,
+        prevCancelled,
+        totalClients,
+        activeClientsTotal,
+        completedClientsTotal,
+        avgTherapyMonths,
+        completionRate,
+        cancellationRate,
+        conductedSessions,
+        sessionCost,
       };
     },
     enabled: !!user,

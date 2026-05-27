@@ -1,5 +1,6 @@
 import { AppLayout } from "@/components/AppLayout";
 import { useDashboardStats, useProfile } from "@/hooks/useData";
+import { useBookingRequests, useConfirmBookingRequest, useDeclineBookingRequest } from "@/hooks/useBookingInbox";
 import { useEffect, useMemo } from "react";
 import { track } from "@/lib/analytics";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -7,11 +8,14 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { formatScheduledTime } from "@/lib/timeFormat";
+import { toast } from "@/hooks/use-toast";
 import {
   Users, DollarSign,
-  PlayCircle, ArrowRight, XCircle,
-  UserPlus, UserCheck, UserMinus,
+  PlayCircle, ArrowRight, XCircle, Inbox,
+  UserPlus, UserCheck, UserMinus, TrendingUp, TrendingDown, Minus,
+  AlertTriangle, Activity, CheckCircle2, Clock, Wallet, Heart,
 } from "lucide-react";
+
 
 type Apt = {
   id: string;
@@ -192,17 +196,33 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Booking Requests Attention */}
+        <BookingAttention navigate={navigate} t={t} use12h={use12h} />
+
         {/* A. Monthly Overview */}
         <section>
           <h2 className="text-sm font-semibold text-muted-foreground mb-3">
             {t("ops.monthlyOverview")}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <OverviewTile icon={Users} label={t("ops.activeClientsThisMonth")} value={String(stats?.activeClientsThisMonth ?? 0)} active onClick={() => openWidget("active_clients_this_month", "/clients?filter=activeThisMonth")} />
-            <OverviewTile icon={UserPlus} label={t("ops.newClientsThisMonth")} value={String(stats?.newClientsThisMonth ?? 0)} onClick={() => openWidget("new_clients_this_month", "/clients?filter=newThisMonth")} />
-            <OverviewTile icon={UserCheck} label={t("ops.completedTherapyThisMonth")} value={String(stats?.completedTherapyThisMonth ?? 0)} onClick={() => openWidget("completed_therapy_this_month", "/clients?filter=completedThisMonth")} />
-            <OverviewTile icon={UserMinus} label={t("ops.droppedTherapyThisMonth")} value={String(stats?.droppedTherapyThisMonth ?? 0)} onClick={() => openWidget("dropped_therapy_this_month", "/clients?filter=droppedThisMonth")} />
-            <OverviewTile icon={XCircle} label={t("ops.cancelledSessionsThisMonth")} value={String((stats as any)?.cancelledSessionsThisMonth ?? 0)} />
+            <OverviewTile icon={Users} label={t("ops.activeClientsThisMonth")} value={String(stats?.activeClientsThisMonth ?? 0)} trend={trendPct(stats?.activeClientsThisMonth ?? 0, (stats as any)?.prevActiveClients ?? 0)} trendLabel={t("dash.vsLastMonth")} active onClick={() => openWidget("active_clients_this_month", "/clients?filter=activeThisMonth")} />
+            <OverviewTile icon={UserPlus} label={t("ops.newClientsThisMonth")} value={String(stats?.newClientsThisMonth ?? 0)} trend={trendPct(stats?.newClientsThisMonth ?? 0, (stats as any)?.prevNewClients ?? 0)} trendLabel={t("dash.vsLastMonth")} onClick={() => openWidget("new_clients_this_month", "/clients?filter=newThisMonth")} />
+            <OverviewTile icon={UserCheck} label={t("ops.completedTherapyThisMonth")} value={String(stats?.completedTherapyThisMonth ?? 0)} trend={trendPct(stats?.completedTherapyThisMonth ?? 0, (stats as any)?.prevCompletedTherapy ?? 0)} trendLabel={t("dash.vsLastMonth")} onClick={() => openWidget("completed_therapy_this_month", "/clients?filter=completedThisMonth")} />
+            <OverviewTile icon={UserMinus} label={t("ops.droppedTherapyThisMonth")} value={String(stats?.droppedTherapyThisMonth ?? 0)} trend={trendPct(stats?.droppedTherapyThisMonth ?? 0, (stats as any)?.prevDroppedTherapy ?? 0, true)} trendLabel={t("dash.vsLastMonth")} onClick={() => openWidget("dropped_therapy_this_month", "/clients?filter=droppedThisMonth")} />
+            <OverviewTile icon={XCircle} label={t("ops.cancelledSessionsThisMonth")} value={String((stats as any)?.cancelledSessionsThisMonth ?? 0)} trend={trendPct(stats?.cancelledSessionsThisMonth ?? 0, (stats as any)?.prevCancelled ?? 0, true)} trendLabel={t("dash.vsLastMonth")} />
+          </div>
+        </section>
+
+        {/* A2. Monthly Financial Risk */}
+        <section>
+          <h2 className="text-sm font-semibold text-muted-foreground mb-3">
+            {t("dash.financialRisk")}
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <MoneyTile label={t("ops.lostIncomeCancellations")} value={`${cs}${Number((stats as any)?.lostIncomeThisMonth ?? 0).toLocaleString()}`} tone={Number((stats as any)?.lostIncomeThisMonth ?? 0) > 0 ? "warning" : "muted"} />
+            <MoneyTile label={t("ops.monthlyExpensesTotal")} value={`${cs}${Number(stats?.monthlyExpenses ?? 0).toLocaleString()}`} onClick={() => openWidget("monthly_expenses", "/finances/expenses")} />
+            <MoneyTile label={t("ops.unpaidSessionsCount")} value={String((stats as any)?.unpaidSessionsCount ?? 0)} tone={((stats as any)?.unpaidSessionsCount ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("unpaid_sessions", "/finances/income?tab=pending")} />
+            <MoneyTile label={t("ops.currentDebt")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("current_debt", "/finances/income?range=all&tab=pending")} />
           </div>
         </section>
 
@@ -212,7 +232,7 @@ export default function Dashboard() {
             {t("ops.todayOverview")}
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* LEFT: Today's Activity */}
+            {/* LEFT: Today's Activity (3 metrics) */}
             <div className="bg-card border border-border rounded-[20px] p-6 shadow-card">
               <div className="flex items-center gap-2 mb-5">
                 <PlayCircle className="h-4 w-4 text-primary" />
@@ -220,17 +240,14 @@ export default function Dashboard() {
                   {t("ops.todaysActivity")}
                 </h3>
               </div>
-              <div className="grid grid-cols-3 gap-x-4 gap-y-5">
+              <div className="grid grid-cols-3 gap-4">
                 <StatCell label={t("ops.clientsToday")} value={summary.clientCount.toString()} />
                 <StatCell label={t("ops.sessionsPlanned")} value={(summary.planned + summary.completed).toString()} />
-                <StatCell label={t("ops.sessionsCompleted")} value={summary.completed.toString()} tone="success" />
-                <StatCell label={t("ops.donePaid")} value={completedPaidTotal.toString()} tone="success" />
-                <StatCell label={t("ops.doneNotPaid")} value={completedUnpaidTotal.toString()} tone={completedUnpaidTotal > 0 ? "warning" : "muted"} />
-                <StatCell label={t("ops.cancelledSessions")} value={cancelledTotal.toString()} tone={cancelledTotal > 0 ? undefined : "muted"} />
+                <StatCell label={t("ops.cancelledSessions")} value={cancelledTotal.toString()} tone={cancelledTotal > 0 ? "warning" : "muted"} />
               </div>
             </div>
 
-            {/* RIGHT: Today's Money */}
+            {/* RIGHT: Today's Money (3 metrics) */}
             <div className="bg-card border border-border rounded-[20px] p-6 shadow-card flex flex-col">
               <div className="flex items-center gap-2 mb-5">
                 <DollarSign className="h-4 w-4 text-primary" />
@@ -238,19 +255,19 @@ export default function Dashboard() {
                   {t("ops.todaysMoney")}
                 </h3>
               </div>
-              <div className="grid grid-cols-2 gap-3 flex-1">
-                <MoneyTile label={t("ops.paidToday")} value={`${cs}${summary.amountReceived.toLocaleString()}`} tone="success" onClick={() => openWidget("daily_income", "/finances/income?range=today&tab=income")} />
-                <MoneyTile label={t("ops.unpaidToday")} value={`${cs}${summary.amountPending.toLocaleString()}`} tone={summary.amountPending > 0 ? "warning" : "muted"} onClick={() => openWidget("unpaid_today", "/finances/income?range=today&tab=pending")} />
+              <div className="grid grid-cols-3 gap-3 flex-1">
+                <MoneyTile label={t("ops.paidToday")} value={`${cs}${Number(stats?.todayIncome ?? 0).toLocaleString()}`} tone="success" onClick={() => openWidget("paid_today", "/finances/income?range=today&tab=income")} />
                 <MoneyTile label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} onClick={() => openWidget("expected_revenue_today", "/finances/income?range=today&tab=income")} />
-                <MoneyTile label={t("ops.outstandingBalance")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("outstanding_balance", "/finances/income?range=all&tab=pending")} />
+                <MoneyTile label={t("ops.todayDebt")} value={`${cs}${Number((stats as any)?.todayDebt ?? 0).toLocaleString()}`} tone={Number((stats as any)?.todayDebt ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("today_debt", "/finances/income?range=today&tab=pending")} />
               </div>
               <div className="mt-4 bg-gradient-dark text-secondary-foreground rounded-2xl px-5 py-4 flex justify-between items-center">
-                <span className="text-xs font-semibold opacity-80">{t("ops.paidToday")}</span>
-                <span className="text-2xl font-bold text-primary">{cs}{summary.amountReceived.toLocaleString()}</span>
+                <span className="text-xs font-semibold opacity-80">{t("ops.totalDebt")}</span>
+                <span className="text-2xl font-bold text-primary">{cs}{Number(stats?.outstandingBalance ?? 0).toLocaleString()}</span>
               </div>
             </div>
           </div>
         </section>
+
 
         {/* C. Now / Next */}
         <section>
@@ -366,10 +383,167 @@ export default function Dashboard() {
           )}
         </section>
 
+        {/* E. Practice Health (all-time) */}
+        <PracticeHealth stats={stats} t={t} cs={cs} />
+
       </div>
     </AppLayout>
   );
 }
+
+function trendPct(curr: number, prev: number, inverse = false): { dir: "up" | "down" | "flat"; pct: number; positive: boolean } {
+  if (!prev && !curr) return { dir: "flat", pct: 0, positive: true };
+  if (!prev) return { dir: "up", pct: 100, positive: !inverse };
+  const diff = curr - prev;
+  if (diff === 0) return { dir: "flat", pct: 0, positive: true };
+  const pct = Math.round((diff / prev) * 100);
+  const dir = diff > 0 ? "up" : "down";
+  const positive = inverse ? diff < 0 : diff > 0;
+  return { dir, pct: Math.abs(pct), positive };
+}
+
+function TrendBadge({ trend, label }: { trend: ReturnType<typeof trendPct>; label?: string }) {
+  const Icon = trend.dir === "up" ? TrendingUp : trend.dir === "down" ? TrendingDown : Minus;
+  const tone = trend.dir === "flat"
+    ? "text-muted-foreground"
+    : trend.positive ? "text-success" : "text-destructive";
+  const sign = trend.dir === "up" ? "+" : trend.dir === "down" ? "-" : "";
+  return (
+    <span className={cn("inline-flex items-center gap-1 text-[10px] font-semibold leading-none mt-1.5", tone)}>
+      <Icon className="h-3 w-3" />
+      <span className="tabular-nums">{sign}{trend.pct}%</span>
+      {label && <span className="text-muted-foreground font-medium ml-0.5 truncate">{label}</span>}
+    </span>
+  );
+}
+
+function BookingAttention({ navigate, t, use12h }: { navigate: (p: string) => void; t: (k: any, p?: any) => string; use12h: boolean }) {
+  const { data: rows = [] } = useBookingRequests();
+  const pending = useMemo(() => rows.filter(r => r.status === "pending" || r.status === "needs_linking"), [rows]);
+  const confirm = useConfirmBookingRequest();
+  const decline = useDeclineBookingRequest();
+
+  if (!pending.length) {
+    return (
+      <section className="bg-card border border-border rounded-[20px] px-6 py-5 shadow-card flex items-center gap-3">
+        <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center">
+          <Inbox className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <p className="text-sm text-muted-foreground">{t("dash.bookingEmpty")}</p>
+      </section>
+    );
+  }
+  const top = pending.slice(0, 5);
+  const headerLabel = pending.length === 1
+    ? t("dash.bookingAttention", { count: pending.length })
+    : t("dash.bookingAttention_plural", { count: pending.length });
+
+  return (
+    <section className="bg-card border border-warning/30 rounded-[20px] shadow-card overflow-hidden">
+      <div className="px-6 py-4 flex items-center justify-between border-b border-border bg-warning/5">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-lg bg-warning/15 flex items-center justify-center">
+            <AlertTriangle className="h-4 w-4 text-warning" />
+          </div>
+          <p className="text-sm font-semibold text-foreground">{headerLabel}</p>
+        </div>
+        {pending.length > 5 && (
+          <button
+            onClick={() => navigate("/booking-inbox")}
+            className="text-xs font-semibold inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted hover:bg-muted/70 transition-colors"
+          >
+            {t("dash.viewAllRequests")} <ArrowRight className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+      <ul className="divide-y divide-border">
+        {top.map((r) => {
+          const name = `${r.first_name}${r.last_name ? " " + r.last_name : ""}`.trim();
+          return (
+            <li key={r.id} className="px-6 py-3.5 flex items-center gap-4 flex-wrap">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">{name || r.email}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {formatScheduledTime(r.requested_slot_at, use12h)} · {new Date(r.requested_slot_at).toLocaleDateString()} · {r.duration_minutes}{t("common.min")}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={async () => {
+                    if (!r.client_id) { navigate("/booking-inbox"); return; }
+                    try { await confirm.mutateAsync({ id: r.id, client_id: r.client_id }); toast({ title: "OK" }); }
+                    catch (e: any) { toast({ title: e.message, variant: "destructive" }); }
+                  }}
+                  className="text-xs font-semibold px-3 py-1.5 rounded-full bg-success/10 text-success hover:bg-success/20 inline-flex items-center gap-1"
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5" /> {t("booking.confirm") || "Підтвердити"}
+                </button>
+                <button
+                  onClick={async () => {
+                    try { await decline.mutateAsync({ id: r.id }); }
+                    catch (e: any) { toast({ title: e.message, variant: "destructive" }); }
+                  }}
+                  className="text-xs font-semibold px-3 py-1.5 rounded-full bg-destructive/10 text-destructive hover:bg-destructive/20 inline-flex items-center gap-1"
+                >
+                  <XCircle className="h-3.5 w-3.5" /> {t("booking.decline") || "Відхилити"}
+                </button>
+                <button
+                  onClick={() => navigate("/booking-inbox")}
+                  className="text-xs font-semibold px-3 py-1.5 rounded-full border border-border hover:bg-muted inline-flex items-center gap-1"
+                >
+                  {t("booking.open") || "Відкрити"} <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+function PracticeHealth({ stats, t, cs }: { stats: any; t: (k: any, p?: any) => string; cs: string }) {
+  const total = Number(stats?.totalClients ?? 0);
+  const active = Number(stats?.activeClientsTotal ?? 0);
+  const completed = Number(stats?.completedClientsTotal ?? 0);
+  const avgMonths = Number(stats?.avgTherapyMonths ?? 0);
+  const completionRate = Number(stats?.completionRate ?? 0);
+  const cancellationRate = Number(stats?.cancellationRate ?? 0);
+  const conducted = Number(stats?.conductedSessions ?? 0);
+  const sessionCost = Number(stats?.sessionCost ?? 0);
+
+  return (
+    <section>
+      <h2 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+        <Heart className="h-4 w-4 text-primary" />
+        {t("ops.practiceHealth")}
+      </h2>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <HealthTile icon={Users} label={t("ops.totalClients")} value={String(total)} sub={t("ops.clientsActiveCompletedSub", { active, completed })} />
+        <HealthTile icon={Clock} label={t("ops.avgTherapyDuration")} value={avgMonths > 0 ? `${avgMonths.toFixed(1)} ${t("ops.monthsShort")}` : "—"} />
+        <HealthTile icon={CheckCircle2} label={t("ops.completionRate")} value={`${completionRate}%`} />
+        <HealthTile icon={XCircle} label={t("ops.cancellationRate")} value={`${cancellationRate}%`} />
+        <HealthTile icon={Activity} label={t("ops.conductedSessions")} value={String(conducted)} />
+        <HealthTile icon={Wallet} label={t("ops.sessionCost")} value={`${cs}${sessionCost.toFixed(0)}`} sub={t("ops.perSession")} />
+      </div>
+    </section>
+  );
+}
+
+function HealthTile({ icon: Icon, label, value, sub }: { icon: any; label: string; value: string; sub?: string }) {
+  return (
+    <div className="bg-card border border-border rounded-[18px] p-5 shadow-card flex flex-col items-center text-center min-h-[140px] justify-center">
+      <div className="p-2 rounded-lg bg-muted text-muted-foreground mb-3">
+        <Icon className="h-4 w-4" />
+      </div>
+      <p className="text-3xl font-bold leading-none tabular-nums text-foreground">{value}</p>
+      <p className="text-xs text-muted-foreground mt-2 leading-snug">{label}</p>
+      {sub && <p className="text-[10px] text-muted-foreground/70 mt-1 leading-snug">{sub}</p>}
+    </div>
+  );
+}
+
+
 
 
 function StatCell({ label, value, tone }: { label: string; value: string; tone?: "success" | "warning" | "muted" }) {
@@ -417,8 +591,8 @@ function MoneyTile({
 
 
 function OverviewTile({
-  icon: Icon, label, value, active, onClick,
-}: { icon: any; label: string; value: string; active?: boolean; onClick?: () => void }) {
+  icon: Icon, label, value, active, onClick, trend, trendLabel,
+}: { icon: any; label: string; value: string; active?: boolean; onClick?: () => void; trend?: { dir: "up" | "down" | "flat"; pct: number; positive: boolean }; trendLabel?: string }) {
   const base = cn(
     "relative rounded-[18px] p-5 text-center w-full block transition-all border flex flex-col items-center justify-between min-h-[170px]",
     active
@@ -443,6 +617,7 @@ function OverviewTile({
       </div>
       <p className={cn("text-5xl font-extrabold leading-none tabular-nums my-2", active ? "text-primary" : "text-foreground")}>{value}</p>
       <p className="text-xs text-muted-foreground leading-snug w-full">{label}</p>
+      {trend && <TrendBadge trend={trend} label={trendLabel} />}
     </>
   );
   if (onClick) {
