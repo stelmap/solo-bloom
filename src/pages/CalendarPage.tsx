@@ -1598,7 +1598,7 @@ export default function CalendarPage() {
             >
               <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.thisWeek.pct}%</p>
               <p className="text-xs text-muted-foreground mt-1">{t("capacity.fillRateThisWeek")}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.thisWeek.occupied}/{fillRates.thisWeek.slots}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.thisWeek.occupiedHours} / {fillRates.thisWeek.availableHours} h</p>
             </button>
             <button
               type="button"
@@ -1607,7 +1607,7 @@ export default function CalendarPage() {
             >
               <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.nextWeek.pct}%</p>
               <p className="text-xs text-muted-foreground mt-1">{t("capacity.fillRateNextWeek")}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.nextWeek.occupied}/{fillRates.nextWeek.slots}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.nextWeek.occupiedHours} / {fillRates.nextWeek.availableHours} h</p>
             </button>
             <button
               type="button"
@@ -1616,7 +1616,7 @@ export default function CalendarPage() {
             >
               <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.next30.pct}%</p>
               <p className="text-xs text-muted-foreground mt-1">{t("capacity.fillRateNext30")}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.next30.occupied}/{fillRates.next30.slots}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.next30.occupiedHours} / {fillRates.next30.availableHours} h</p>
             </button>
             <button
               type="button"
