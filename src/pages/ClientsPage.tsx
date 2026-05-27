@@ -229,6 +229,12 @@ export default function ClientsPage() {
           isThisMonth(c.archived_at)
         );
       }
+      if (monthFilter === "withoutNextSession") {
+        return (
+          (c.status ?? "active") === "active" &&
+          !clientsWithFutureSession.has(c.id)
+        );
+      }
       return true;
     })
     .filter((c: any) => {
