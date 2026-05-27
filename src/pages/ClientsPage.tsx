@@ -438,6 +438,8 @@ export default function ClientsPage() {
                 ? t("ops.newClientsThisMonth")
                 : monthFilter === "completedThisMonth"
                 ? t("ops.completedTherapyThisMonth")
+                : monthFilter === "withoutNextSession"
+                ? t("ops.clientsWithoutNextSession")
                 : t("ops.droppedTherapyThisMonth")}
             </Badge>
             <button
