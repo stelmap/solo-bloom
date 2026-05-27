@@ -297,7 +297,7 @@ export default function ExpensesPage() {
                 ) : (
                   <div className="space-y-1">
                     <Label>{form.recurrence === "yearly" ? "Yearly start date" : t("expenses.recurringStartDate")}</Label>
-                    <Input type="date" value={form.recurring_start_date} onChange={e => setForm(f => ({ ...f, recurring_start_date: e.target.value, date: e.target.value }))} />
+                    <DatePicker date={form.recurring_start_date} onDateChange={(d) => setForm(f => ({ ...f, recurring_start_date: d, date: d }))} />
                     <p className="text-xs text-muted-foreground">{explainExpenseDate({ recurrence: form.recurrence, date: form.recurring_start_date })}</p>
                   </div>
                 )}
