@@ -1607,7 +1607,7 @@ export default function CalendarPage() {
             >
               <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.nextWeek.pct}%</p>
               <p className="text-xs text-muted-foreground mt-1">{t("capacity.fillRateNextWeek")}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.nextWeek.occupiedHours} / {fillRates.nextWeek.availableHours} h</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.nextWeek.occupied} / {fillRates.nextWeek.slots}</p>
             </button>
             <button
               type="button"
