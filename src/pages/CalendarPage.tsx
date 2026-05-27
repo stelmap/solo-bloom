@@ -887,15 +887,15 @@ export default function CalendarPage() {
 
       const slots = slotUnit > 0 ? Math.floor(totalWorkingMinutes / slotUnit) : 0;
       const availableMinutes = slots * slotUnit;
-      const occupiedMinutes = Math.min(totalOccupiedMinutes, availableMinutes);
-      const pctRaw = availableMinutes > 0
-        ? (occupiedMinutes / availableMinutes) * 100
+      const occupied = slotUnit > 0
+        ? Math.min(slots, Math.round(totalOccupiedMinutes / slotUnit))
         : 0;
-      const pct = Math.min(100, Math.round(pctRaw * 10) / 10);
+      const occupiedMinutes = Math.min(totalOccupiedMinutes, availableMinutes);
+      // Slot-based fill rate: booked slots / total slots
+      const pctRaw = slots > 0 ? (occupied / slots) * 100 : 0;
+      const pct = Math.min(100, Math.round(pctRaw * 100) / 100);
       const occupiedHours = Math.round((occupiedMinutes / 60) * 10) / 10;
       const availableHours = Math.round((availableMinutes / 60) * 10) / 10;
-      // Back-compat: keep occupied as slot count for any callers
-      const occupied = slotUnit > 0 ? Math.round(occupiedMinutes / slotUnit) : 0;
       return { slots, occupied, pct, occupiedMinutes, availableMinutes, occupiedHours, availableHours };
     };
 
