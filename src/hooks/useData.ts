@@ -781,18 +781,58 @@ export function useBulkCancelForDayOff() {
 }
 
 // Expected Payments
+/**
+ * Returns sessions that owe money. Derived directly from `appointments`
+ * (the source of truth) joined with confirmed income allocations, so the
+ * count and list always match Dashboard's "Unpaid sessions" metric and
+ * the calendar's payment-status badges. Shape stays compatible with the
+ * legacy `expected_payments` consumers (IncomePage pending tab).
+ */
 export function useExpectedPayments() {
   const { user } = useAuth();
   return useQuery({
     queryKey: ["expected-payments", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("expected_payments")
-        .select("*, clients(name), appointments(scheduled_at, status, services(name))")
-        .eq("status", "pending")
-        .order("created_at", { ascending: false });
+      const { data: apts, error } = await supabase
+        .from("appointments")
+        .select("id, price, client_id, scheduled_at, status, payment_status, services(name), clients(name)")
+        .eq("status", "completed")
+        .gt("price", 0)
+        .in("payment_status", ["unpaid", "waiting_for_payment", "partially_paid", "partially_paid_from_prepayment"])
+        .order("scheduled_at", { ascending: false });
       if (error) throw error;
-      return data;
+      const list = (apts ?? []) as any[];
+      if (list.length === 0) return [];
+
+      const ids = list.map((a) => a.id);
+      const { data: allocs } = await supabase
+        .from("income_session_allocations")
+        .select("appointment_id, allocated_amount")
+        .in("appointment_id", ids);
+      const paidByApt = new Map<string, number>();
+      for (const a of (allocs ?? []) as any[]) {
+        paidByApt.set(a.appointment_id, (paidByApt.get(a.appointment_id) ?? 0) + Number(a.allocated_amount || 0));
+      }
+
+      return list
+        .map((a) => {
+          const outstanding = Math.max(Number(a.price) - (paidByApt.get(a.id) ?? 0), 0);
+          return {
+            // Keep field names compatible with previous expected_payments shape
+            id: a.id,
+            appointment_id: a.id,
+            client_id: a.client_id,
+            amount: outstanding,
+            status: "pending" as const,
+            clients: a.clients,
+            appointments: {
+              scheduled_at: a.scheduled_at,
+              status: a.status,
+              services: a.services,
+            },
+          };
+        })
+        .filter((r) => r.amount > 0);
     },
     enabled: !!user,
     staleTime: STALE_MEDIUM,
@@ -820,11 +860,14 @@ export function useMarkExpectedPaymentPaid() {
         ? new Date(aptData.scheduled_at).toISOString().split("T")[0]
         : payDate;
 
-      const { error: epErr } = await supabase
+      // Clean up any legacy expected_payments rows for this appointment so the
+      // pending list and dashboard counts (now both derived from appointments)
+      // stay in sync. Missing rows are fine — the table is no longer the
+      // source of truth.
+      await supabase
         .from("expected_payments")
-        .update({ status: "paid", paid_at: new Date(payDate + "T12:00:00").toISOString(), payment_method: paymentMethod } as any)
-        .eq("id", id);
-      if (epErr) throw epErr;
+        .delete()
+        .eq("appointment_id", appointmentId);
 
       await supabase.from("appointments").update({ payment_status: "paid_now" } as any).eq("id", appointmentId);
 
@@ -2030,8 +2073,13 @@ export function useDashboardStats() {
       const freeSlots = Math.max(capacity.weeklyCapacity - bookedSlots, 0);
 
       // ===== Outstanding balance calculation =====
+      // Count only sessions that still owe money after applying confirmed
+      // allocations. This keeps Dashboard's "Unpaid sessions" count in sync
+      // with the Pending payments list (useExpectedPayments) and with the
+      // calendar's payment-status badges, all derived from the same source.
       const outstandingApts = (outstandingAptRes.data ?? []) as Array<{ id: string; price: number; client_id: string }>;
       let outstandingBalance = 0;
+      let unpaidSessionsCount = 0;
       if (outstandingApts.length > 0) {
         const aptIds = outstandingApts.map((a) => a.id);
         const { data: allocs } = await supabase
@@ -2044,7 +2092,11 @@ export function useDashboardStats() {
         }
         for (const apt of outstandingApts) {
           const paid = allocByApt.get(apt.id) ?? 0;
-          outstandingBalance += Math.max(Number(apt.price) - paid, 0);
+          const remaining = Math.max(Number(apt.price) - paid, 0);
+          if (remaining > 0) {
+            outstandingBalance += remaining;
+            unpaidSessionsCount += 1;
+          }
         }
       }
 
@@ -2099,8 +2151,7 @@ export function useDashboardStats() {
       const lostIncomeThisMonth = (cancelledMonthRes.data ?? [])
         .reduce((s: number, a: any) => s + Number(a.price ?? 0), 0);
 
-      // ===== Unpaid sessions count (all-time payable, unpaid) =====
-      const unpaidSessionsCount = outstandingApts.length;
+      // (unpaidSessionsCount computed above alongside outstandingBalance)
 
       // ===== Previous month for trend comparisons =====
       const prevMonthStartD = new Date(now.getFullYear(), now.getMonth() - 1, 1);
