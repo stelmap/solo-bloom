@@ -781,18 +781,58 @@ export function useBulkCancelForDayOff() {
 }
 
 // Expected Payments
+/**
+ * Returns sessions that owe money. Derived directly from `appointments`
+ * (the source of truth) joined with confirmed income allocations, so the
+ * count and list always match Dashboard's "Unpaid sessions" metric and
+ * the calendar's payment-status badges. Shape stays compatible with the
+ * legacy `expected_payments` consumers (IncomePage pending tab).
+ */
 export function useExpectedPayments() {
   const { user } = useAuth();
   return useQuery({
     queryKey: ["expected-payments", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("expected_payments")
-        .select("*, clients(name), appointments(scheduled_at, status, services(name))")
-        .eq("status", "pending")
-        .order("created_at", { ascending: false });
+      const { data: apts, error } = await supabase
+        .from("appointments")
+        .select("id, price, client_id, scheduled_at, status, payment_status, services(name), clients(name)")
+        .eq("status", "completed")
+        .gt("price", 0)
+        .in("payment_status", ["unpaid", "waiting_for_payment", "partially_paid", "partially_paid_from_prepayment"])
+        .order("scheduled_at", { ascending: false });
       if (error) throw error;
-      return data;
+      const list = (apts ?? []) as any[];
+      if (list.length === 0) return [];
+
+      const ids = list.map((a) => a.id);
+      const { data: allocs } = await supabase
+        .from("income_session_allocations")
+        .select("appointment_id, allocated_amount")
+        .in("appointment_id", ids);
+      const paidByApt = new Map<string, number>();
+      for (const a of (allocs ?? []) as any[]) {
+        paidByApt.set(a.appointment_id, (paidByApt.get(a.appointment_id) ?? 0) + Number(a.allocated_amount || 0));
+      }
+
+      return list
+        .map((a) => {
+          const outstanding = Math.max(Number(a.price) - (paidByApt.get(a.id) ?? 0), 0);
+          return {
+            // Keep field names compatible with previous expected_payments shape
+            id: a.id,
+            appointment_id: a.id,
+            client_id: a.client_id,
+            amount: outstanding,
+            status: "pending" as const,
+            clients: a.clients,
+            appointments: {
+              scheduled_at: a.scheduled_at,
+              status: a.status,
+              services: a.services,
+            },
+          };
+        })
+        .filter((r) => r.amount > 0);
     },
     enabled: !!user,
     staleTime: STALE_MEDIUM,
