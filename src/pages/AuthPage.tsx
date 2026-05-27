@@ -44,6 +44,9 @@ export default function AuthPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [signupOutcome, setSignupOutcome] = useState<"sent" | "already_confirmed" | "unconfirmed" | null>(null);
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const checkoutTriggeredRef = useRef(false);
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -65,6 +68,33 @@ export default function AuthPage() {
     setRecoveryCode("");
     setFormError(null);
     setSent(false);
+    setSignupOutcome(null);
+    setNeedsConfirmation(false);
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!email.trim()) return;
+    setResendLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: email.trim(),
+        options: { emailRedirectTo: `${window.location.origin}/calendar` },
+      });
+      if (error) throw error;
+      toast({
+        title: "Confirmation email sent",
+        description: "A new confirmation email has been sent. Please check your inbox.",
+      });
+    } catch (err: any) {
+      toast({
+        title: t("common.error"),
+        description: err?.message || "We could not send the confirmation email. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setResendLoading(false);
+    }
   };
 
   const validateForm = () => {
@@ -210,10 +240,22 @@ export default function AuthPage() {
         });
         if (error) throw error;
         track("sign_up_started", { plan_type: planParam ?? undefined, lang });
-        toast({ title: t("auth.accountCreated"), description: t("auth.checkEmail") });
+
         if (data.session) {
+          // Auto-confirm enabled (rare) — straight to app
           navigate(planParam ? `/auth?plan=${encodeURIComponent(planParam)}` : getPostAuthRedirect(), { replace: true });
         } else {
+          // Supabase obfuscates duplicate signups: when an existing CONFIRMED user
+          // signs up again, it returns a user object with an empty identities array
+          // and does NOT send an email. Detect that and tell the user clearly.
+          const identities = (data.user as any)?.identities;
+          if (data.user && Array.isArray(identities) && identities.length === 0) {
+            setSignupOutcome("already_confirmed");
+          } else {
+            // New signup OR existing unconfirmed user (Supabase re-sends confirmation).
+            setSignupOutcome("sent");
+            toast({ title: t("auth.accountCreated"), description: t("auth.checkEmail") });
+          }
           setSent(true);
         }
       } else {
@@ -223,9 +265,22 @@ export default function AuthPage() {
         navigate(planParam ? `/auth?plan=${encodeURIComponent(planParam)}` : getPostAuthRedirect(), { replace: true });
       }
     } catch (error: any) {
-      const message = mode === "login" ? t("auth.incorrectEmailOrPassword") : error.message;
-      setFormError(message);
-      toast({ title: t("common.error"), description: message, variant: "destructive" });
+      const rawMsg: string = error?.message || "";
+      const code: string = (error as any)?.code || "";
+      const notConfirmed =
+        code === "email_not_confirmed" ||
+        /email\s*not\s*confirmed/i.test(rawMsg) ||
+        /confirm/i.test(rawMsg) && mode === "login";
+      if (mode === "login" && notConfirmed) {
+        setNeedsConfirmation(true);
+        const msg = "Please confirm your email before logging in. You can resend the confirmation email.";
+        setFormError(msg);
+        toast({ title: t("common.error"), description: msg, variant: "destructive" });
+      } else {
+        const message = mode === "login" ? t("auth.incorrectEmailOrPassword") : rawMsg;
+        setFormError(message);
+        toast({ title: t("common.error"), description: message, variant: "destructive" });
+      }
     } finally {
       setLoading(false);
     }
@@ -304,10 +359,31 @@ export default function AuthPage() {
                     <div><Button variant="outline" className="w-full" onClick={() => resetMode("login")}>{t("auth.backToLogin")}</Button></div>
                   </div>
                 </div>
+              ) : signupOutcome === "already_confirmed" ? (
+                <div className="space-y-4 text-center">
+                  <h2 className="text-xl font-bold text-foreground">This email is already registered</h2>
+                  <p className="text-sm text-muted-foreground">
+                    An account with <strong>{email}</strong> already exists. Please log in instead.
+                  </p>
+                  <Button className="w-full" onClick={() => resetMode("login")}>Go to Login</Button>
+                  <Button variant="outline" className="w-full" onClick={() => resetMode("forgot")}>
+                    {t("auth.forgotPassword")}
+                  </Button>
+                </div>
               ) : (
                 <div className="space-y-4 text-center">
                   <h2 className="text-xl font-bold text-foreground">{t("auth.checkEmailToContinue")}</h2>
-                  <p className="text-sm text-muted-foreground">{t("auth.checkEmail")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    We sent a confirmation link to <strong>{email}</strong>. Click the link to activate your account.
+                  </p>
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={handleResendConfirmation}
+                    disabled={resendLoading}
+                  >
+                    {resendLoading ? t("common.loading") : "Resend confirmation email"}
+                  </Button>
                   <Button variant="outline" className="w-full" onClick={() => resetMode("login")}>{t("auth.backToLogin")}</Button>
                 </div>
               )
@@ -354,6 +430,17 @@ export default function AuthPage() {
                     </div>
                   )}
                   {formError && <p className="text-sm text-destructive" role="alert">{formError}</p>}
+                  {mode === "login" && needsConfirmation && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="w-full"
+                      onClick={handleResendConfirmation}
+                      disabled={resendLoading || !email.trim()}
+                    >
+                      {resendLoading ? t("common.loading") : "Resend confirmation email"}
+                    </Button>
+                  )}
                   <Button type="submit" className="w-full" disabled={loading}>{loading ? t("common.loading") : modeCopy.button}</Button>
                 </form>
                 <div className="space-y-3 text-center text-sm text-muted-foreground">
