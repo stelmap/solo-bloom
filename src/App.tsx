@@ -114,6 +114,7 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <CookieConsent />
           <BrowserRouter>
             <Suspense fallback={<PageFallback />}>
               <Routes>
