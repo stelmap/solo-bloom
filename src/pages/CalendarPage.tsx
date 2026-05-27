@@ -54,6 +54,11 @@ import { PublicBookingSection } from "@/components/PublicBookingSection";
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
 type LangKey = "en" | "uk" | "fr" | "pl";
+type BookingAvailabilityRule = {
+  session_duration_minutes?: number | null;
+  buffer_minutes?: number | null;
+};
+
 const NEW_COPY: Record<LangKey, {
   noClientsYet: string; addNewClient: string; noServicesYet: string; addNewService: string;
   createFirstTitle: string; createFirstDesc: string;
@@ -252,8 +257,9 @@ export default function CalendarPage() {
       return data || [];
     },
   });
-  const bookingSessionDuration = Math.max(15, Number((bookingAvailability as any[])[0]?.session_duration_minutes) || 0);
-  const bufferMinutes = Math.max(0, Number((bookingAvailability as any[])[0]?.buffer_minutes) || 0);
+  const firstBookingRule = (bookingAvailability as BookingAvailabilityRule[])[0];
+  const bookingSessionDuration = Math.max(15, Number(firstBookingRule?.session_duration_minutes) || 0);
+  const bufferMinutes = Math.max(0, Number(firstBookingRule?.buffer_minutes) || 0);
   const createAppointment = useCreateAppointment();
   const updateAppointment = useUpdateAppointment();
   const createRecurringRule = useCreateRecurringRule();
