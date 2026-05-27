@@ -240,10 +240,22 @@ export default function AuthPage() {
         });
         if (error) throw error;
         track("sign_up_started", { plan_type: planParam ?? undefined, lang });
-        toast({ title: t("auth.accountCreated"), description: t("auth.checkEmail") });
+
         if (data.session) {
+          // Auto-confirm enabled (rare) — straight to app
           navigate(planParam ? `/auth?plan=${encodeURIComponent(planParam)}` : getPostAuthRedirect(), { replace: true });
         } else {
+          // Supabase obfuscates duplicate signups: when an existing CONFIRMED user
+          // signs up again, it returns a user object with an empty identities array
+          // and does NOT send an email. Detect that and tell the user clearly.
+          const identities = (data.user as any)?.identities;
+          if (data.user && Array.isArray(identities) && identities.length === 0) {
+            setSignupOutcome("already_confirmed");
+          } else {
+            // New signup OR existing unconfirmed user (Supabase re-sends confirmation).
+            setSignupOutcome("sent");
+            toast({ title: t("auth.accountCreated"), description: t("auth.checkEmail") });
+          }
           setSent(true);
         }
       } else {
@@ -253,9 +265,22 @@ export default function AuthPage() {
         navigate(planParam ? `/auth?plan=${encodeURIComponent(planParam)}` : getPostAuthRedirect(), { replace: true });
       }
     } catch (error: any) {
-      const message = mode === "login" ? t("auth.incorrectEmailOrPassword") : error.message;
-      setFormError(message);
-      toast({ title: t("common.error"), description: message, variant: "destructive" });
+      const rawMsg: string = error?.message || "";
+      const code: string = (error as any)?.code || "";
+      const notConfirmed =
+        code === "email_not_confirmed" ||
+        /email\s*not\s*confirmed/i.test(rawMsg) ||
+        /confirm/i.test(rawMsg) && mode === "login";
+      if (mode === "login" && notConfirmed) {
+        setNeedsConfirmation(true);
+        const msg = "Please confirm your email before logging in. You can resend the confirmation email.";
+        setFormError(msg);
+        toast({ title: t("common.error"), description: msg, variant: "destructive" });
+      } else {
+        const message = mode === "login" ? t("auth.incorrectEmailOrPassword") : rawMsg;
+        setFormError(message);
+        toast({ title: t("common.error"), description: message, variant: "destructive" });
+      }
     } finally {
       setLoading(false);
     }
