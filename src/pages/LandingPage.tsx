@@ -1741,6 +1741,15 @@ function LandingFooter() {
             <Link to="/cookie-policy" className="text-xs text-muted-foreground hover:text-foreground">
               {isUk ? "Cookies" : "Cookies"}
             </Link>
+            <button
+              type="button"
+              onClick={() => {
+                try { window.dispatchEvent(new CustomEvent("cookie_consent_open")); } catch {}
+              }}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              {isUk ? "Керувати cookies" : "Manage cookies"}
+            </button>
           </nav>
         </div>
       </div>
