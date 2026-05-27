@@ -397,7 +397,7 @@ function MoneyTile({
   const inner = (
     <div className="flex flex-col items-center justify-center text-center h-full">
       <p className={cn("text-2xl sm:text-3xl font-bold tabular-nums", toneClass)}>{value}</p>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground mt-2 leading-snug">{label}</p>
+      <p className="text-xs text-muted-foreground mt-2 leading-snug">{label}</p>
     </div>
   );
   if (onClick) {
