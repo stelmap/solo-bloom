@@ -2241,9 +2241,17 @@ export function useDashboardStats() {
         for (const a of tAllocs ?? []) {
           byApt.set(a.appointment_id, (byApt.get(a.appointment_id) ?? 0) + Number(a.allocated_amount || 0));
         }
-        for (const apt of todayUnpaidApts) {
+      for (const apt of todayUnpaidApts) {
           todayDebt += Math.max(Number(apt.price) - (byApt.get(apt.id) ?? 0), 0);
         }
+      }
+
+      // ===== Clients without next scheduled session =====
+      const activeClientIds = new Set((activeClientsRes.data ?? []).map((c: any) => c.id));
+      const clientsWithFutureApt = new Set((futureAptsRes.data ?? []).map((a: any) => a.client_id));
+      let clientsWithoutNextSession = 0;
+      for (const cid of activeClientIds) {
+        if (!clientsWithFutureApt.has(cid)) clientsWithoutNextSession++;
       }
 
       return {
