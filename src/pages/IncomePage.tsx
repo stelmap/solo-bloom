@@ -156,7 +156,7 @@ export default function IncomePage() {
               <DialogHeader><DialogTitle>{t("income.addIncome")}</DialogTitle></DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2"><Label>{t("common.amount")} *</Label><Input type="number" step="0.01" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} /></div>
-                <div className="space-y-2"><Label>{t("common.date")}</Label><Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>{t("common.date")}</Label><DatePicker date={form.date} onDateChange={(d) => setForm(f => ({ ...f, date: d }))} /></div>
                 <div className="space-y-2"><Label>{t("common.description")}</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
                 <div className="space-y-2">
                   <Label>{t("income.paidBy")}</Label>
