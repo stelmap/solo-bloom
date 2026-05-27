@@ -381,7 +381,7 @@ function StatCell({ label, value, tone }: { label: string; value: string; tone?:
   return (
     <div className="bg-muted/40 border border-border rounded-2xl p-4 flex flex-col items-center justify-center text-center min-h-[110px]">
       <p className={cn("text-3xl sm:text-4xl font-bold leading-none tabular-nums", toneClass)}>{value}</p>
-      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em] mt-2.5 leading-snug">{label}</p>
+      <p className="text-xs text-muted-foreground mt-2.5 leading-snug">{label}</p>
     </div>
   );
 }
