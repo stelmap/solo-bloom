@@ -822,10 +822,28 @@ export default function CalendarPage() {
     // Always use 60-minute slots for capacity counting (1 slot = 1 hour)
     const defaultDuration = 60;
     const today = startOfDay(new Date());
-    const thisWeekStart = startOfWeek(today, { weekStartsOn: 1 });
-    const thisWeekEnd = endOfDay(addDays(thisWeekStart, 6));
-    const nextWeekStart = addDays(thisWeekStart, 7);
-    const nextWeekEnd = endOfDay(addDays(nextWeekStart, 6));
+
+    // Current range follows the selected calendar view (day / week / month)
+    let curStart: Date;
+    let curEnd: Date;
+    let nextStart: Date;
+    let nextEnd: Date;
+    if (effectiveView === "day") {
+      curStart = startOfDay(currentDate);
+      curEnd = endOfDay(currentDate);
+      nextStart = startOfDay(addDays(currentDate, 1));
+      nextEnd = endOfDay(addDays(currentDate, 1));
+    } else if (effectiveView === "month") {
+      curStart = startOfMonth(currentDate);
+      curEnd = endOfMonth(currentDate);
+      nextStart = startOfMonth(addMonths(currentDate, 1));
+      nextEnd = endOfMonth(addMonths(currentDate, 1));
+    } else {
+      curStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+      curEnd = endOfDay(addDays(curStart, 6));
+      nextStart = addDays(curStart, 7);
+      nextEnd = endOfDay(addDays(nextStart, 6));
+    }
     const next30Start = today;
     const next30End = endOfDay(addDays(today, 29));
 
@@ -844,24 +862,6 @@ export default function CalendarPage() {
       return [sh * 60, eh * 60];
     };
 
-    // Merge overlapping intervals and return total covered minutes
-    const unionMinutes = (intervals: Array<[number, number]>) => {
-      if (intervals.length === 0) return 0;
-      const sorted = intervals.slice().sort((a, b) => a[0] - b[0]);
-      let total = 0;
-      let [cs, ce] = sorted[0];
-      for (let i = 1; i < sorted.length; i++) {
-        const [s, e] = sorted[i];
-        if (s <= ce) ce = Math.max(ce, e);
-        else {
-          total += ce - cs;
-          cs = s; ce = e;
-        }
-      }
-      total += ce - cs;
-      return total;
-    };
-
     const slotUnit = defaultDuration;
 
     const computeRange = (rangeStart: Date, rangeEnd: Date) => {
@@ -876,8 +876,6 @@ export default function CalendarPage() {
         totalWorkingMinutes += win[1] - win[0];
       }
 
-      // Count occupied minutes per session = (duration + buffer)
-      // Group sessions counted once (appointments table already has one row per group session).
       let totalOccupiedMinutes = 0;
       for (const a of appointments) {
         if (a.status === "cancelled" || a.status === "deleted") continue;
@@ -900,7 +898,6 @@ export default function CalendarPage() {
         ? Math.min(slots, Math.round(totalOccupiedMinutes / slotUnit))
         : 0;
       const occupiedMinutes = Math.min(totalOccupiedMinutes, availableMinutes);
-      // Slot-based fill rate: booked slots / total slots
       const pctRaw = slots > 0 ? (occupied / slots) * 100 : 0;
       const pct = Math.min(100, Math.round(pctRaw * 100) / 100);
       const occupiedHours = Math.round((occupiedMinutes / 60) * 10) / 10;
@@ -909,11 +906,11 @@ export default function CalendarPage() {
     };
 
     return {
-      thisWeek: computeRange(thisWeekStart, thisWeekEnd),
-      nextWeek: computeRange(nextWeekStart, nextWeekEnd),
+      thisWeek: computeRange(curStart, curEnd),
+      nextWeek: computeRange(nextStart, nextEnd),
       next30: computeRange(next30Start, next30End),
     };
-  }, [appointments, pendingRequests, profile, scheduleMap, daysOffSet, startHour, endHour, bookingSessionDuration, bufferMinutes]);
+  }, [appointments, pendingRequests, scheduleMap, daysOffSet, startHour, endHour, effectiveView, currentDate]);
   // Back-compat alias used by the per-day bar (only relevant in Day/Week views)
   const weekCapacity = periodCapacity;
 
