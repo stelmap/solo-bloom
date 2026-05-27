@@ -9,20 +9,12 @@ import { MagicLinkEmail } from '../_shared/email-templates/magic-link.tsx'
 import { RecoveryEmail } from '../_shared/email-templates/recovery.tsx'
 import { EmailChangeEmail } from '../_shared/email-templates/email-change.tsx'
 import { ReauthenticationEmail } from '../_shared/email-templates/reauthentication.tsx'
+import { getSubject, normalizeLang } from '../_shared/email-templates/i18n.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers':
     'authorization, x-client-info, apikey, content-type, x-lovable-signature, x-lovable-timestamp, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-}
-
-const EMAIL_SUBJECTS: Record<string, string> = {
-  signup: 'Confirm your email',
-  invite: "You've been invited",
-  magiclink: 'Your login link',
-  recovery: 'Reset your password',
-  email_change: 'Confirm your new email',
-  reauthentication: 'Your verification code',
 }
 
 // Template mapping
@@ -50,34 +42,20 @@ const SAMPLE_PROJECT_URL = "https://solo-bizz.lovable.app"
 const SAMPLE_EMAIL = "user@example.test"
 const SAMPLE_DATA: Record<string, object> = {
   signup: {
-    siteName: SITE_NAME,
-    siteUrl: SAMPLE_PROJECT_URL,
-    recipient: SAMPLE_EMAIL,
-    confirmationUrl: SAMPLE_PROJECT_URL,
+    siteName: SITE_NAME, siteUrl: SAMPLE_PROJECT_URL,
+    recipient: SAMPLE_EMAIL, confirmationUrl: SAMPLE_PROJECT_URL, language: 'en',
   },
-  magiclink: {
-    siteName: SITE_NAME,
-    confirmationUrl: SAMPLE_PROJECT_URL,
-  },
-  recovery: {
-    siteName: SITE_NAME,
-    confirmationUrl: SAMPLE_PROJECT_URL,
-  },
+  magiclink: { siteName: SITE_NAME, confirmationUrl: SAMPLE_PROJECT_URL, language: 'en' },
+  recovery: { siteName: SITE_NAME, confirmationUrl: SAMPLE_PROJECT_URL, token: '123456', language: 'en' },
   invite: {
-    siteName: SITE_NAME,
-    siteUrl: SAMPLE_PROJECT_URL,
-    confirmationUrl: SAMPLE_PROJECT_URL,
+    siteName: SITE_NAME, siteUrl: SAMPLE_PROJECT_URL,
+    confirmationUrl: SAMPLE_PROJECT_URL, language: 'en',
   },
   email_change: {
-    siteName: SITE_NAME,
-    oldEmail: SAMPLE_EMAIL,
-    email: SAMPLE_EMAIL,
-    newEmail: SAMPLE_EMAIL,
-    confirmationUrl: SAMPLE_PROJECT_URL,
+    siteName: SITE_NAME, oldEmail: SAMPLE_EMAIL, email: SAMPLE_EMAIL,
+    newEmail: SAMPLE_EMAIL, confirmationUrl: SAMPLE_PROJECT_URL, language: 'en',
   },
-  reauthentication: {
-    token: '123456',
-  },
+  reauthentication: { token: '123456', language: 'en' },
 }
 
 // Preview endpoint handler - returns rendered HTML without sending email
@@ -218,6 +196,36 @@ async function handleWebhook(req: Request): Promise<Response> {
     )
   }
 
+  // Look up recipient's preferred language from their profile (best-effort).
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  )
+
+  let language: string = 'en'
+  try {
+    const recipientEmail: string | undefined = payload.data.email
+    if (recipientEmail) {
+      const { data: userRow } = await supabase
+        .schema('auth' as any)
+        .from('users')
+        .select('id')
+        .eq('email', recipientEmail)
+        .maybeSingle()
+      if (userRow?.id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('language')
+          .eq('user_id', userRow.id)
+          .maybeSingle()
+        if (profile?.language) language = String(profile.language)
+      }
+    }
+  } catch (e) {
+    console.warn('Language lookup failed, defaulting to en', { error: e })
+  }
+  const lang = normalizeLang(language)
+
   // Build template props from payload.data (HookData structure)
   const templateProps = {
     siteName: SITE_NAME,
@@ -228,6 +236,7 @@ async function handleWebhook(req: Request): Promise<Response> {
     email: payload.data.email,
     oldEmail: payload.data.old_email,
     newEmail: payload.data.new_email,
+    language: lang,
   }
 
   // Render React Email to HTML and plain text
@@ -235,12 +244,6 @@ async function handleWebhook(req: Request): Promise<Response> {
   const text = await renderAsync(React.createElement(EmailTemplate, templateProps), {
     plainText: true,
   })
-
-  // Enqueue email for async processing by the dispatcher (process-email-queue).
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  )
 
   const messageId = crypto.randomUUID()
 
@@ -252,6 +255,8 @@ async function handleWebhook(req: Request): Promise<Response> {
     status: 'pending',
   })
 
+  const subject = getSubject(emailType as any, lang) || 'Notification'
+
   const { error: enqueueError } = await supabase.rpc('enqueue_email', {
     queue_name: 'auth_emails',
     payload: {
@@ -260,7 +265,7 @@ async function handleWebhook(req: Request): Promise<Response> {
       to: payload.data.email,
       from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
       sender_domain: SENDER_DOMAIN,
-      subject: EMAIL_SUBJECTS[emailType] || 'Notification',
+      subject,
       html,
       text,
       purpose: 'transactional',
