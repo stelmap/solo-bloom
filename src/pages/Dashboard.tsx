@@ -216,7 +216,7 @@ export default function Dashboard() {
             <div className="bg-card border border-border rounded-[20px] p-6 shadow-card">
               <div className="flex items-center gap-2 mb-5">
                 <PlayCircle className="h-4 w-4 text-primary" />
-                <h3 className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                <h3 className="text-sm font-semibold text-muted-foreground">
                   {t("ops.todaysActivity")}
                 </h3>
               </div>
