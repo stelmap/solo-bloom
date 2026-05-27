@@ -54,6 +54,11 @@ import { PublicBookingSection } from "@/components/PublicBookingSection";
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
 type LangKey = "en" | "uk" | "fr" | "pl";
+type BookingAvailabilityRule = {
+  session_duration_minutes?: number | null;
+  buffer_minutes?: number | null;
+};
+
 const NEW_COPY: Record<LangKey, {
   noClientsYet: string; addNewClient: string; noServicesYet: string; addNewService: string;
   createFirstTitle: string; createFirstDesc: string;
@@ -243,16 +248,19 @@ export default function CalendarPage() {
   const { data: workingSchedule = [] } = useWorkingSchedule();
   const { data: daysOff = [] } = useDaysOff();
   const { data: bookingAvailability = [] } = useQuery({
-    queryKey: ["booking-availability-buffer"],
+    queryKey: ["booking-availability-rules"],
     queryFn: async () => {
       const { data } = await supabase
         .from("booking_availability")
-        .select("buffer_minutes")
+        .select("session_duration_minutes, buffer_minutes")
         .limit(1);
       return data || [];
     },
   });
-  const bufferMinutes = Math.max(0, Number((bookingAvailability as any[])[0]?.buffer_minutes) || 0);
+  const firstBookingRule = (bookingAvailability as BookingAvailabilityRule[])[0];
+  const bookingSessionDurationValue = Number(firstBookingRule?.session_duration_minutes) || 0;
+  const bookingSessionDuration = bookingSessionDurationValue > 0 ? Math.max(15, bookingSessionDurationValue) : null;
+  const bufferMinutes = Math.max(0, Number(firstBookingRule?.buffer_minutes) || 0);
   const createAppointment = useCreateAppointment();
   const updateAppointment = useUpdateAppointment();
   const createRecurringRule = useCreateRecurringRule();
@@ -811,7 +819,7 @@ export default function CalendarPage() {
   // Based on real working hours per day, default session duration, and unique
   // booked minutes (clipped to working window, overlaps merged).
   const fillRates = useMemo(() => {
-    const defaultDuration = Math.max(15, Number((profile as any)?.default_duration) || 60);
+    const defaultDuration = bookingSessionDuration || Math.max(15, Number((profile as any)?.default_duration) || 60);
     const today = startOfDay(new Date());
     const thisWeekStart = startOfWeek(today, { weekStartsOn: 1 });
     const thisWeekEnd = endOfDay(addDays(thisWeekStart, 6));
@@ -853,7 +861,7 @@ export default function CalendarPage() {
       return total;
     };
 
-    const slotUnit = defaultDuration + bufferMinutes;
+    const slotUnit = defaultDuration;
 
     const computeRange = (rangeStart: Date, rangeEnd: Date) => {
       const days = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
@@ -875,14 +883,14 @@ export default function CalendarPage() {
         const t = new Date(a.scheduled_at).getTime();
         if (t < rangeStartMs || t > rangeEndMs) continue;
         const dur = Number((a as any).duration_minutes) || defaultDuration;
-        totalOccupiedMinutes += dur + bufferMinutes;
+        totalOccupiedMinutes += dur;
       }
       for (const r of pendingRequests as any[]) {
         if (r.status && (r.status === "rejected" || r.status === "cancelled")) continue;
         const t = new Date(r.requested_slot_at).getTime();
         if (t < rangeStartMs || t > rangeEndMs) continue;
         const dur = Number(r.duration_minutes) || defaultDuration;
-        totalOccupiedMinutes += dur + bufferMinutes;
+        totalOccupiedMinutes += dur;
       }
 
       const slots = slotUnit > 0 ? Math.floor(totalWorkingMinutes / slotUnit) : 0;
@@ -904,7 +912,7 @@ export default function CalendarPage() {
       nextWeek: computeRange(nextWeekStart, nextWeekEnd),
       next30: computeRange(next30Start, next30End),
     };
-  }, [appointments, pendingRequests, profile, scheduleMap, daysOffSet, startHour, endHour, bufferMinutes]);
+  }, [appointments, pendingRequests, profile, scheduleMap, daysOffSet, startHour, endHour, bookingSessionDuration, bufferMinutes]);
   // Back-compat alias used by the per-day bar (only relevant in Day/Week views)
   const weekCapacity = periodCapacity;
 
