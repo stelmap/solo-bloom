@@ -200,7 +200,7 @@ export default function AdminBookingRequestsPage() {
           </div>
           <div>
             <Label className="text-xs">Від</Label>
-            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <DatePicker date={from} onDateChange={setFrom} />
           </div>
           <div>
             <Label className="text-xs">До</Label>
