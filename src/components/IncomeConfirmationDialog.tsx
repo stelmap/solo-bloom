@@ -226,7 +226,7 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
             </div>
             <div className="space-y-2">
               <Label>{t("incomeConfirm.date")} *</Label>
-              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+              <DatePicker date={date} onDateChange={setDate} />
             </div>
             <div className="space-y-2">
               <Label>{t("incomeConfirm.method")}</Label>
