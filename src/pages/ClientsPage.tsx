@@ -198,6 +198,17 @@ export default function ClientsPage() {
     return ids;
   }, [appointments, clients]);
 
+  const clientsWithFutureSession = useMemo(() => {
+    const ids = new Set<string>();
+    const now = new Date().toISOString();
+    for (const a of appointments as any[]) {
+      if (a.status !== "cancelled" && a.scheduled_at > now) {
+        ids.add(a.client_id);
+      }
+    }
+    return ids;
+  }, [appointments]);
+
   const q = debouncedSearch.trim().toLowerCase();
   const filtered = clients
     .filter((c: any) => effectiveStatusFilter === "all" ? true : (c.status ?? "active") === effectiveStatusFilter)
