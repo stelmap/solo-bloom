@@ -30,21 +30,21 @@ describe("auth email i18n", () => {
     const pl = getStrings("pl");
 
     it("translates signup email", () => {
-      expect(pl.signup.heading).toContain("Witamy");
+      expect(pl.signup.heroTitle).toContain("Potwierdź");
       expect(pl.signup.cta).toBe("Potwierdź e-mail");
       expect(pl.signup.intro("Solo.Biz")).toContain("Dziękujemy");
-      expect(pl.signup.confirmIntro("a@b.pl")).toContain("a@b.pl");
+      expect(pl.signup.signingInAs).toContain("Logowanie");
     });
 
     it("translates magic link, recovery, invite, email change, reauth", () => {
       expect(pl.magicLink.cta).toBe("Zaloguj się");
-      expect(pl.recovery.heading).toBe("Zresetuj swoje hasło");
+      expect(pl.recovery.heroTitle).toBe("Zresetuj swoje hasło");
       expect(pl.invite.cta).toBe("Przyjmij zaproszenie");
-      expect(pl.emailChange.cta).toBe("Potwierdź zmianę e-maila");
+      expect(pl.emailChange.cta).toBe("Potwierdź zmianę");
       expect(pl.emailChange.body("old@x.pl", "new@x.pl")).toContain(
         "z old@x.pl na new@x.pl",
       );
-      expect(pl.reauthentication.heading).toBe("Potwierdź swoją tożsamość");
+      expect(pl.reauthentication.heroTitle).toBe("Potwierdź swoją tożsamość");
     });
 
     it("provides Polish subjects for every auth event", () => {
@@ -65,20 +65,20 @@ describe("auth email i18n", () => {
     const uk = getStrings("uk");
 
     it("translates signup email", () => {
-      expect(uk.signup.heading).toContain("Вітаємо");
+      expect(uk.signup.heroTitle).toContain("Підтвердіть");
       expect(uk.signup.cta).toBe("Підтвердити пошту");
       expect(uk.signup.intro("Solo.Biz")).toContain("Дякуємо");
     });
 
     it("translates magic link, recovery, invite, email change, reauth", () => {
       expect(uk.magicLink.cta).toBe("Увійти");
-      expect(uk.recovery.heading).toBe("Скиньте свій пароль");
+      expect(uk.recovery.heroTitle).toBe("Скиньте свій пароль");
       expect(uk.invite.cta).toBe("Прийняти запрошення");
-      expect(uk.emailChange.cta).toBe("Підтвердити зміну пошти");
+      expect(uk.emailChange.cta).toBe("Підтвердити зміну");
       expect(uk.emailChange.body("a@x.ua", "b@x.ua")).toContain(
         "з a@x.ua на b@x.ua",
       );
-      expect(uk.reauthentication.heading).toBe("Підтвердіть свою особу");
+      expect(uk.reauthentication.heroTitle).toBe("Підтвердіть свою особу");
     });
 
     it("provides Ukrainian subjects for every auth event", () => {

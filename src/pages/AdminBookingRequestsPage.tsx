@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-time-picker";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -199,11 +200,11 @@ export default function AdminBookingRequestsPage() {
           </div>
           <div>
             <Label className="text-xs">Від</Label>
-            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <DatePicker date={from} onDateChange={setFrom} />
           </div>
           <div>
             <Label className="text-xs">До</Label>
-            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+            <DatePicker date={to} onDateChange={setTo} />
           </div>
           <div>
             <Label className="text-xs">Пошук</Label>

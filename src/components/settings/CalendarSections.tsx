@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-time-picker";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -320,7 +321,7 @@ export function DaysOffSection() {
           <DialogContent>
             <DialogHeader><DialogTitle>{t("settings.addDayOff")}</DialogTitle></DialogHeader>
             <div className="space-y-4">
-              <div className="space-y-2"><Label>{t("common.date")} *</Label><Input type="date" value={dayOffForm.date} onChange={e => setDayOffForm(f => ({ ...f, date: e.target.value }))} /></div>
+              <div className="space-y-2"><Label>{t("common.date")} *</Label><DatePicker date={dayOffForm.date} onDateChange={(d) => setDayOffForm(f => ({ ...f, date: d }))} /></div>
               <div className="space-y-2">
                 <Label>{t("settings.dayOffType")}</Label>
                 <Select value={dayOffForm.type} onValueChange={v => setDayOffForm(f => ({ ...f, type: v }))}>

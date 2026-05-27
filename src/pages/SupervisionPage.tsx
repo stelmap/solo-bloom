@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-time-picker";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -330,7 +331,7 @@ export default function SupervisionPage() {
             })()}
             <div className="space-y-2">
               <Label>{t("supervision.date")} *</Label>
-              <Input type="date" value={createForm.supervision_date} onChange={e => setCreateForm(f => ({ ...f, supervision_date: e.target.value }))} />
+              <DatePicker date={createForm.supervision_date} onDateChange={(d) => setCreateForm(f => ({ ...f, supervision_date: d }))} />
             </div>
             <div className="space-y-2">
               <Label>{t("supervision.paidAmount")} *</Label>

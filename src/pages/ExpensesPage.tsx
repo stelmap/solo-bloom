@@ -2,6 +2,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { ListSkeleton } from "@/components/ListSkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-time-picker";
 import { Label } from "@/components/ui/label";
 import { Plus, Pencil, Trash2, Download, Check, X } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
@@ -290,13 +291,13 @@ export default function ExpensesPage() {
                 {form.recurrence === "one_time" ? (
                   <div className="space-y-1">
                     <Label>{t("common.date")}</Label>
-                    <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
+                    <DatePicker date={form.date} onDateChange={(d) => setForm(f => ({ ...f, date: d }))} />
                     <p className="text-xs text-muted-foreground">{explainExpenseDate({ recurrence: "one_time", date: form.date })}</p>
                   </div>
                 ) : (
                   <div className="space-y-1">
                     <Label>{form.recurrence === "yearly" ? "Yearly start date" : t("expenses.recurringStartDate")}</Label>
-                    <Input type="date" value={form.recurring_start_date} onChange={e => setForm(f => ({ ...f, recurring_start_date: e.target.value, date: e.target.value }))} />
+                    <DatePicker date={form.recurring_start_date} onDateChange={(d) => setForm(f => ({ ...f, recurring_start_date: d, date: d }))} />
                     <p className="text-xs text-muted-foreground">{explainExpenseDate({ recurrence: form.recurrence, date: form.recurring_start_date })}</p>
                   </div>
                 )}

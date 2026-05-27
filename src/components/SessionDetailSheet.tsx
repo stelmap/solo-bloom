@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { InvoiceButton } from "@/components/InvoiceButton";
 import { ClientPicker } from "@/components/ClientPicker";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
+import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
 import { format } from "date-fns";
 import { useDateLocale } from "@/lib/dateLocale";
 import { formatTime, formatScheduledTime } from "@/lib/timeFormat";
@@ -976,7 +976,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   </div>
                   <div className="space-y-2">
                     <Label>{t("common.paymentDate")}</Label>
-                    <Input type="date" value={paymentDate} onChange={e => setPaymentDate(e.target.value)} />
+                    <DatePicker date={paymentDate} onDateChange={setPaymentDate} />
                   </div>
                   <div className="space-y-2">
                     <Label>{t("calendar.paymentMethod")}</Label>

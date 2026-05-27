@@ -4,6 +4,7 @@ import { useDateLocale } from "@/lib/dateLocale";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-time-picker";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -225,7 +226,7 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
             </div>
             <div className="space-y-2">
               <Label>{t("incomeConfirm.date")} *</Label>
-              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+              <DatePicker date={date} onDateChange={setDate} />
             </div>
             <div className="space-y-2">
               <Label>{t("incomeConfirm.method")}</Label>
