@@ -430,6 +430,17 @@ export default function AuthPage() {
                     </div>
                   )}
                   {formError && <p className="text-sm text-destructive" role="alert">{formError}</p>}
+                  {mode === "login" && needsConfirmation && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="w-full"
+                      onClick={handleResendConfirmation}
+                      disabled={resendLoading || !email.trim()}
+                    >
+                      {resendLoading ? t("common.loading") : "Resend confirmation email"}
+                    </Button>
+                  )}
                   <Button type="submit" className="w-full" disabled={loading}>{loading ? t("common.loading") : modeCopy.button}</Button>
                 </form>
                 <div className="space-y-3 text-center text-sm text-muted-foreground">
