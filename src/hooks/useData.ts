@@ -2151,8 +2151,7 @@ export function useDashboardStats() {
       const lostIncomeThisMonth = (cancelledMonthRes.data ?? [])
         .reduce((s: number, a: any) => s + Number(a.price ?? 0), 0);
 
-      // ===== Unpaid sessions count (all-time payable, unpaid) =====
-      const unpaidSessionsCount = outstandingApts.length;
+      // (unpaidSessionsCount computed above alongside outstandingBalance)
 
       // ===== Previous month for trend comparisons =====
       const prevMonthStartD = new Date(now.getFullYear(), now.getMonth() - 1, 1);
