@@ -321,7 +321,7 @@ export function DaysOffSection() {
           <DialogContent>
             <DialogHeader><DialogTitle>{t("settings.addDayOff")}</DialogTitle></DialogHeader>
             <div className="space-y-4">
-              <div className="space-y-2"><Label>{t("common.date")} *</Label><Input type="date" value={dayOffForm.date} onChange={e => setDayOffForm(f => ({ ...f, date: e.target.value }))} /></div>
+              <div className="space-y-2"><Label>{t("common.date")} *</Label><DatePicker date={dayOffForm.date} onDateChange={(d) => setDayOffForm(f => ({ ...f, date: d }))} /></div>
               <div className="space-y-2">
                 <Label>{t("settings.dayOffType")}</Label>
                 <Select value={dayOffForm.type} onValueChange={v => setDayOffForm(f => ({ ...f, type: v }))}>
