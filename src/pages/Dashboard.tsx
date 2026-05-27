@@ -1,5 +1,6 @@
 import { AppLayout } from "@/components/AppLayout";
 import { useDashboardStats, useProfile } from "@/hooks/useData";
+import { useBookingRequests, useConfirmBookingRequest, useDeclineBookingRequest } from "@/hooks/useBookingInbox";
 import { useEffect, useMemo } from "react";
 import { track } from "@/lib/analytics";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -7,11 +8,14 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { formatScheduledTime } from "@/lib/timeFormat";
+import { toast } from "@/hooks/use-toast";
 import {
   Users, DollarSign,
-  PlayCircle, ArrowRight, XCircle,
-  UserPlus, UserCheck, UserMinus,
+  PlayCircle, ArrowRight, XCircle, Inbox,
+  UserPlus, UserCheck, UserMinus, TrendingUp, TrendingDown, Minus,
+  AlertTriangle, Activity, CheckCircle2, Clock, Wallet, Heart,
 } from "lucide-react";
+
 
 type Apt = {
   id: string;
