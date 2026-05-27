@@ -1990,6 +1990,7 @@ export function useDashboardStats() {
         incomeRes, lastWeekIncomeRes, expenseRes, clientRes,
         todayAptRes, monthAptRes, profileRes, scheduleRes, daysOffRes,
         outstandingAptRes, monthClientsRes, archivedThisMonthRes, allClientsRes,
+        activeClientsRes, futureAptsRes,
       ] = await Promise.all([
         supabase.from("income").select(`amount, ${recognitionField}`).gte(recognitionField, monthStart),
         supabase.from("income").select(`amount, ${recognitionField}`).gte(recognitionField, lastMondayStr).lte(recognitionField, lastSundayStr),
