@@ -359,10 +359,31 @@ export default function AuthPage() {
                     <div><Button variant="outline" className="w-full" onClick={() => resetMode("login")}>{t("auth.backToLogin")}</Button></div>
                   </div>
                 </div>
+              ) : signupOutcome === "already_confirmed" ? (
+                <div className="space-y-4 text-center">
+                  <h2 className="text-xl font-bold text-foreground">This email is already registered</h2>
+                  <p className="text-sm text-muted-foreground">
+                    An account with <strong>{email}</strong> already exists. Please log in instead.
+                  </p>
+                  <Button className="w-full" onClick={() => resetMode("login")}>Go to Login</Button>
+                  <Button variant="outline" className="w-full" onClick={() => resetMode("forgot")}>
+                    {t("auth.forgotPassword")}
+                  </Button>
+                </div>
               ) : (
                 <div className="space-y-4 text-center">
                   <h2 className="text-xl font-bold text-foreground">{t("auth.checkEmailToContinue")}</h2>
-                  <p className="text-sm text-muted-foreground">{t("auth.checkEmail")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    We sent a confirmation link to <strong>{email}</strong>. Click the link to activate your account.
+                  </p>
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={handleResendConfirmation}
+                    disabled={resendLoading}
+                  >
+                    {resendLoading ? t("common.loading") : "Resend confirmation email"}
+                  </Button>
                   <Button variant="outline" className="w-full" onClick={() => resetMode("login")}>{t("auth.backToLogin")}</Button>
                 </div>
               )
