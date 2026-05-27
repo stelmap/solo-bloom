@@ -258,7 +258,8 @@ export default function CalendarPage() {
     },
   });
   const firstBookingRule = (bookingAvailability as BookingAvailabilityRule[])[0];
-  const bookingSessionDuration = Math.max(15, Number(firstBookingRule?.session_duration_minutes) || 0);
+  const bookingSessionDurationValue = Number(firstBookingRule?.session_duration_minutes) || 0;
+  const bookingSessionDuration = bookingSessionDurationValue > 0 ? Math.max(15, bookingSessionDurationValue) : null;
   const bufferMinutes = Math.max(0, Number(firstBookingRule?.buffer_minutes) || 0);
   const createAppointment = useCreateAppointment();
   const updateAppointment = useUpdateAppointment();
@@ -882,14 +883,14 @@ export default function CalendarPage() {
         const t = new Date(a.scheduled_at).getTime();
         if (t < rangeStartMs || t > rangeEndMs) continue;
         const dur = Number((a as any).duration_minutes) || defaultDuration;
-        totalOccupiedMinutes += dur + bufferMinutes;
+        totalOccupiedMinutes += dur;
       }
       for (const r of pendingRequests as any[]) {
         if (r.status && (r.status === "rejected" || r.status === "cancelled")) continue;
         const t = new Date(r.requested_slot_at).getTime();
         if (t < rangeStartMs || t > rangeEndMs) continue;
         const dur = Number(r.duration_minutes) || defaultDuration;
-        totalOccupiedMinutes += dur + bufferMinutes;
+        totalOccupiedMinutes += dur;
       }
 
       const slots = slotUnit > 0 ? Math.floor(totalWorkingMinutes / slotUnit) : 0;
