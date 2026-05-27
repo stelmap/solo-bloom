@@ -194,7 +194,7 @@ export default function Dashboard() {
 
         {/* A. Monthly Overview */}
         <section>
-          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground mb-3">
+          <h2 className="text-sm font-semibold text-muted-foreground mb-3">
             {t("ops.monthlyOverview")}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
