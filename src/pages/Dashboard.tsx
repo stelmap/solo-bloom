@@ -245,7 +245,7 @@ export default function Dashboard() {
                 <MoneyTile label={t("ops.outstandingBalance")} value={`${cs}${Number(stats?.outstandingBalance ?? 0).toLocaleString()}`} tone={Number(stats?.outstandingBalance ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("outstanding_balance", "/finances/income?range=all&tab=pending")} />
               </div>
               <div className="mt-4 bg-gradient-dark text-secondary-foreground rounded-2xl px-5 py-4 flex justify-between items-center">
-                <span className="text-[11px] font-semibold opacity-80 uppercase tracking-[0.06em]">{t("ops.paidToday")}</span>
+                <span className="text-xs font-semibold opacity-80">{t("ops.paidToday")}</span>
                 <span className="text-2xl font-bold text-primary">{cs}{summary.amountReceived.toLocaleString()}</span>
               </div>
             </div>
