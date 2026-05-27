@@ -1515,32 +1515,35 @@ export default function CalendarPage() {
               onClick={() => clearFilters()}
               className="flex flex-col items-center justify-center text-center rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-4 min-h-[88px]"
             >
-              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{periodCapacity.totalSlots}</p>
-              <p className="text-xs text-muted-foreground mt-2">{t("capacity.totalSlots")}</p>
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilters(f => ({ ...f, status: f.status === "confirmed" ? "all" : "confirmed" }))}
-              className="flex flex-col items-center justify-center text-center rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-4 min-h-[88px]"
-            >
-              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{periodCapacity.totalBooked}</p>
-              <p className="text-xs text-muted-foreground mt-2">{t("capacity.booked")}</p>
+              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.thisWeek.slots}</p>
+              <p className="text-xs text-muted-foreground mt-2">{t("capacity.totalSlotsThisWeek")}</p>
             </button>
             <button
               type="button"
               onClick={() => clearFilters()}
               className="flex flex-col items-center justify-center text-center rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-4 min-h-[88px]"
             >
-              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{periodCapacity.totalFree}</p>
-              <p className="text-xs text-muted-foreground mt-2">{t("capacity.free")}</p>
+              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.thisWeek.pct}%</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("capacity.fillRateThisWeek")}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.thisWeek.occupied}/{fillRates.thisWeek.slots}</p>
             </button>
             <button
               type="button"
-              onClick={() => navigate("/income")}
+              onClick={() => clearFilters()}
               className="flex flex-col items-center justify-center text-center rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-4 min-h-[88px]"
             >
-              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{cs}{periodCapacity.totalRevenue.toFixed(0)}</p>
-              <p className="text-xs text-muted-foreground mt-2">Revenue</p>
+              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.nextWeek.pct}%</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("capacity.fillRateNextWeek")}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.nextWeek.occupied}/{fillRates.nextWeek.slots}</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => clearFilters()}
+              className="flex flex-col items-center justify-center text-center rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-4 min-h-[88px]"
+            >
+              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.next30.pct}%</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("capacity.fillRateNext30")}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.next30.occupied}/{fillRates.next30.slots}</p>
             </button>
             <button
               type="button"
