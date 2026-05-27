@@ -221,8 +221,8 @@ export default function CalendarPage() {
   const { data: bookingRequests = [] } = useBookingRequests();
   const navigate = useNavigate();
 
-  // Calendar display preferences (view, density, flags) + filters + inbox drawer
-  const { view, setView, defaultView, setDefaultView, density: cardDensity, setDensity: setCardDensity, flags, setFlag } = useCalendarDisplay();
+  // Calendar view + filters + inbox drawer
+  const { view, setView } = useCalendarDisplay();
   const [filters, setFilters] = useState<CalendarFilters>(initialFilters);
   const [inboxOpen, setInboxOpen] = useState(false);
   const [, setVisualsTick] = useState(0);
@@ -1831,20 +1831,6 @@ export default function CalendarPage() {
         )}
         </section>
 
-        {flags.showLegend && (
-          <div className="bg-card rounded-xl border border-border p-3 sm:p-4 text-xs animate-fade-in">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <span className="font-semibold uppercase text-muted-foreground">{t("calendar.legend") || "Legend"}:</span>
-              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-muted border border-border" /> {t("calendar.individual") || "Individual"}</span>
-              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-emerald-500/30 border border-emerald-500/50" /> {t("calendar.group") || "Group"}</span>
-              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-violet-500/30 border border-violet-500/50" /> {t("calendar.pair") || "Pair"}</span>
-              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-warning/30 border border-warning/50" /> {t("calendar.rescheduled") || "Rescheduled"}</span>
-              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-destructive/20 border-l-2 border-destructive" /> {t("calendar.urgent") || "Urgent"}</span>
-              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm border-2 border-dashed border-warning/70 bg-warning/15" /> {t("calendar.pending") || "Pending request"}</span>
-              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-full bg-destructive" /> {t("calendar.new") || "New"}</span>
-            </div>
-          </div>
-        )}
       </div>
 
 
@@ -1869,54 +1855,13 @@ export default function CalendarPage() {
           <SheetHeader>
             <SheetTitle>{t("settings.calendarSettings") || "Calendar settings"}</SheetTitle>
           </SheetHeader>
-          <Tabs defaultValue="display" className="mt-4 space-y-4">
+          <Tabs defaultValue="hours" className="mt-4 space-y-4">
             <TabsList className="flex-wrap h-auto">
-              <TabsTrigger value="display">{t("settings.display") || "Display"}</TabsTrigger>
               <TabsTrigger value="hours">{t("settings.workingHours")}</TabsTrigger>
               <TabsTrigger value="daysOff">{t("settings.daysOff")}</TabsTrigger>
               <TabsTrigger value="booking">{t("settings.publicBooking")}</TabsTrigger>
               <TabsTrigger value="practice">{t("settings.practiceProfile")}</TabsTrigger>
             </TabsList>
-            <TabsContent value="display" className="space-y-4">
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold">{t("settings.markers") || "Markers"}</h3>
-                {([
-                  ["showColors", "Show type colors"],
-                  ["showLabels", "Show labels"],
-                  ["showUrgent", "Show urgent marker"],
-                  ["showNew", "Show new marker"],
-                  ["showRescheduled", "Show rescheduled marker"],
-                  ["showLegend", "Show legend"],
-                ] as const).map(([k, label]) => (
-                  <div key={k} className="flex items-center justify-between gap-3 rounded-md border border-border p-2.5">
-                    <Label htmlFor={`flag-${k}`} className="text-sm">{label}</Label>
-                    <Switch id={`flag-${k}`} checked={flags[k]} onCheckedChange={(v) => setFlag(k, v)} />
-                  </div>
-                ))}
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold">{t("settings.defaultView") || "Default view"}</h3>
-                <Select value={defaultView} onValueChange={(v) => { setDefaultView(v as CalendarView); setView(v as CalendarView); }}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="day">Day</SelectItem>
-                    <SelectItem value="week">Week</SelectItem>
-                    <SelectItem value="month">Month</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold">{t("settings.cardDensity") || "Card density"}</h3>
-                <Select value={cardDensity} onValueChange={(v) => setCardDensity(v as any)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="compact">Compact</SelectItem>
-                    <SelectItem value="comfortable">Comfortable</SelectItem>
-                    <SelectItem value="detailed">Detailed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </TabsContent>
             <TabsContent value="hours"><WorkingHoursSection /></TabsContent>
             <TabsContent value="daysOff"><DaysOffSection /></TabsContent>
             <TabsContent value="booking"><PublicBookingSection /></TabsContent>

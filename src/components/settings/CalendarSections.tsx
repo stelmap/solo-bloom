@@ -382,11 +382,18 @@ export function DaysOffSection() {
 export function PracticeProfileSection() {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { user } = useAuth();
   const { data: profile } = useProfile();
   const updateProfile = useUpdateProfile();
 
   const [form, setForm] = useState({
-    full_name: "", business_name: "", phone: "", business_address: "",
+    full_name: "",
+    business_name: "",
+    phone: "",
+    business_address: "",
+    public_email: "",
+    avatar_url: "" as string,
+    show_practice_profile_on_booking: true,
   });
   useEffect(() => {
     if (profile) {
@@ -395,16 +402,63 @@ export function PracticeProfileSection() {
         business_name: profile.business_name || "",
         phone: profile.phone || "",
         business_address: (profile as any).business_address || "",
+        public_email: (profile as any).public_email || "",
+        avatar_url: (profile as any).avatar_url || "",
+        show_practice_profile_on_booking:
+          (profile as any).show_practice_profile_on_booking ?? true,
       });
     }
   }, [profile]);
 
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const handleSave = async () => {
     try {
-      await updateProfile.mutateAsync(form);
+      await updateProfile.mutateAsync(form as any);
       setSavedAt(Date.now());
+      toast({ title: t("settings.saved") });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !user) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: t("common.error"), description: "Please upload an image file.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: t("common.error"), description: "Image must be smaller than 5MB.", variant: "destructive" });
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("practice-avatars")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("practice-avatars").getPublicUrl(path);
+      const url = pub.publicUrl;
+      await updateProfile.mutateAsync({ avatar_url: url } as any);
+      setForm((f) => ({ ...f, avatar_url: url }));
+      toast({ title: t("settings.saved") });
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    try {
+      await updateProfile.mutateAsync({ avatar_url: null } as any);
+      setForm((f) => ({ ...f, avatar_url: "" }));
       toast({ title: t("settings.saved") });
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
@@ -422,15 +476,67 @@ export function PracticeProfileSection() {
       </div>
 
       <div className="flex items-start gap-4">
-        <div className="h-20 w-20 rounded-xl bg-muted border border-dashed border-border flex items-center justify-center text-muted-foreground shrink-0">
-          <ImageIcon className="h-7 w-7" />
+        <div className="relative h-20 w-20 rounded-xl bg-muted border border-dashed border-border flex items-center justify-center text-muted-foreground shrink-0 overflow-hidden">
+          {form.avatar_url ? (
+            <img src={form.avatar_url} alt="Practice avatar" className="h-full w-full object-cover" />
+          ) : (
+            <ImageIcon className="h-7 w-7" />
+          )}
         </div>
-        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2"><Label>{t("settings.displayName")}</Label><Input value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))} placeholder="Dr. Jane Doe" /></div>
-          <div className="space-y-2"><Label>{t("common.businessName")}</Label><Input value={form.business_name} onChange={e => setForm(f => ({ ...f, business_name: e.target.value }))} /></div>
-          <div className="space-y-2"><Label>{t("common.phone")}</Label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
-          <div className="space-y-2"><Label>{t("settings.businessAddress")}</Label><Input value={form.business_address} onChange={e => setForm(f => ({ ...f, business_address: e.target.value }))} /></div>
+        <div className="flex-1 space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild variant="outline" size="sm" disabled={uploading}>
+              <label className="cursor-pointer">
+                {uploading ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("common.uploading") || "Uploading…"}</>
+                ) : form.avatar_url ? (
+                  t("settings.replacePhoto") || "Replace photo"
+                ) : (
+                  t("settings.uploadPhoto") || "Upload photo"
+                )}
+                <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
+              </label>
+            </Button>
+            {form.avatar_url && (
+              <Button type="button" variant="ghost" size="sm" onClick={handleRemoveImage} disabled={uploading}>
+                <Trash2 className="h-4 w-4 mr-1" /> {t("common.remove") || "Remove"}
+              </Button>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">{t("settings.photoHint") || "PNG, JPG up to 5MB."}</p>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2"><Label>{t("settings.displayName")}</Label><Input value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))} placeholder="Dr. Jane Doe" /></div>
+        <div className="space-y-2"><Label>{t("common.businessName")}</Label><Input value={form.business_name} onChange={e => setForm(f => ({ ...f, business_name: e.target.value }))} /></div>
+        <div className="space-y-2"><Label>{t("common.phone")}</Label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
+        <div className="space-y-2"><Label>{t("settings.businessAddress")}</Label><Input value={form.business_address} onChange={e => setForm(f => ({ ...f, business_address: e.target.value }))} /></div>
+        <div className="space-y-2 sm:col-span-2">
+          <Label>{t("settings.publicEmail") || "Public email (shown on booking page)"}</Label>
+          <Input
+            type="email"
+            value={form.public_email}
+            onChange={e => setForm(f => ({ ...f, public_email: e.target.value }))}
+            placeholder={user?.email || ""}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-start justify-between gap-3 rounded-lg border border-border bg-muted/30 p-3">
+        <div className="flex-1">
+          <Label htmlFor="show-practice-profile" className="cursor-pointer">
+            {t("settings.showPracticeProfileOnBooking") || "Show practice profile on public booking page"}
+          </Label>
+          <p className="text-xs text-muted-foreground mt-1">
+            {t("settings.showPracticeProfileOnBookingHint") || "When enabled, your photo, business name, address and email are shown to clients on your booking page."}
+          </p>
+        </div>
+        <Switch
+          id="show-practice-profile"
+          checked={form.show_practice_profile_on_booking}
+          onCheckedChange={(v) => setForm((f) => ({ ...f, show_practice_profile_on_booking: v }))}
+        />
       </div>
 
       <div className="flex justify-end pt-2">
