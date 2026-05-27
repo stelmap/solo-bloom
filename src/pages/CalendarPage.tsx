@@ -221,8 +221,8 @@ export default function CalendarPage() {
   const { data: bookingRequests = [] } = useBookingRequests();
   const navigate = useNavigate();
 
-  // Calendar display preferences (view, density, flags) + filters + inbox drawer
-  const { view, setView, defaultView, setDefaultView, density: cardDensity, setDensity: setCardDensity, flags, setFlag } = useCalendarDisplay();
+  // Calendar view + filters + inbox drawer
+  const { view, setView } = useCalendarDisplay();
   const [filters, setFilters] = useState<CalendarFilters>(initialFilters);
   const [inboxOpen, setInboxOpen] = useState(false);
   const [, setVisualsTick] = useState(0);
