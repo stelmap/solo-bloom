@@ -165,6 +165,8 @@ export default function ClientsPage() {
   const effectiveStatusFilter =
     monthFilter === "completedThisMonth" || monthFilter === "droppedThisMonth"
       ? "archived"
+      : monthFilter === "withoutNextSession"
+      ? "active"
       : statusFilter;
 
   const activeClientIdsThisMonth = useMemo(() => {
