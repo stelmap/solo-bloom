@@ -617,6 +617,7 @@ function OverviewTile({
       </div>
       <p className={cn("text-5xl font-extrabold leading-none tabular-nums my-2", active ? "text-primary" : "text-foreground")}>{value}</p>
       <p className="text-xs text-muted-foreground leading-snug w-full">{label}</p>
+      {trend && <TrendBadge trend={trend} label={trendLabel} />}
     </>
   );
   if (onClick) {
