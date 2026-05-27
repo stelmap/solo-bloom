@@ -103,31 +103,11 @@
     </script>
     <!-- FAQPage JSON-LD lives on the homepage component, where the FAQ content is. -->
 
-    <!-- Meta Pixel — deferred to idle so it doesn't block first paint -->
-    <script>
-    (function () {
-      function loadPixel() {
-        if (window.fbq) return;
-        var n = window.fbq = function () {
-          n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
-        };
-        if (!window._fbq) window._fbq = n;
-        n.push = n; n.loaded = true; n.version = '2.0'; n.queue = [];
-        var t = document.createElement('script');
-        t.async = true;
-        t.src = 'https://connect.facebook.net/en_US/fbevents.js';
-        document.head.appendChild(t);
-        n('init', '2059708747919020');
-        n('track', 'PageView');
-      }
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(loadPixel, { timeout: 4000 });
-      } else {
-        window.addEventListener('load', function () { setTimeout(loadPixel, 1500); });
-      }
-    })();
-    </script>
-    <!-- End Meta Pixel Code -->
+    <!--
+      Meta Pixel and other tracking scripts are loaded ONLY after explicit
+      user consent (GDPR / ePrivacy). See src/lib/consent.ts and the
+      CookieConsent banner in src/components/CookieConsent.tsx.
+    -->
 
   </head>
 
