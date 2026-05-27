@@ -2278,6 +2278,7 @@ export function useDashboardStats() {
         lostIncomeThisMonth,
         unpaidSessionsCount,
         todayDebt,
+        clientsWithoutNextSession,
         prevActiveClients,
         prevNewClients,
         prevCompletedTherapy,
