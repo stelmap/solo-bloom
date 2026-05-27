@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
-import { Copy, RefreshCw, Loader2, ExternalLink } from "lucide-react";
+import { Copy, RefreshCw, Loader2, ExternalLink, Plus, X } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useWorkingSchedule } from "@/hooks/useData";
 import {
@@ -25,7 +25,8 @@ const WEEKDAY_KEYS = [
   "day.thursday", "day.friday", "day.saturday",
 ] as const;
 
-type DayRow = { is_enabled: boolean; start_time: string; end_time: string };
+type Interval = { start: string; end: string };
+type DayState = { is_enabled: boolean; intervals: Interval[] };
 
 type Lang = "en" | "uk" | "fr" | "pl";
 const normLang = (v: unknown): Lang => {
@@ -41,6 +42,8 @@ const COPY: Record<Lang, {
   timezone: string; timezoneHelp: string; tzPh: string;
   yourLink: string; linkCopied: string; linkRegenerated: string;
   regenerateConfirm: string;
+  addBlock: string; removeBlock: string;
+  errOrder: string; errOverlap: string; errEmpty: string;
 }> = {
   en: {
     cardTitle: "Public booking link",
@@ -61,6 +64,11 @@ const COPY: Record<Lang, {
     linkCopied: "Link copied",
     linkRegenerated: "Link regenerated. Old link no longer works.",
     regenerateConfirm: "Regenerate link? The old link will stop working immediately.",
+    addBlock: "Add time block",
+    removeBlock: "Remove time block",
+    errOrder: "Start time must be before end time",
+    errOverlap: "Time blocks cannot overlap",
+    errEmpty: "Enabled days need at least one time block",
   },
   uk: {
     cardTitle: "Посилання для публічного бронювання",
@@ -81,6 +89,11 @@ const COPY: Record<Lang, {
     linkCopied: "Посилання скопійовано",
     linkRegenerated: "Посилання оновлено. Старе більше не працює.",
     regenerateConfirm: "Згенерувати нове посилання? Старе перестане працювати негайно.",
+    addBlock: "Додати інтервал",
+    removeBlock: "Видалити інтервал",
+    errOrder: "Час початку має бути раніше часу завершення",
+    errOverlap: "Інтервали не можуть перетинатися",
+    errEmpty: "Увімкнені дні потребують щонайменше одного інтервалу",
   },
   fr: {
     cardTitle: "Lien de réservation public",
@@ -101,6 +114,11 @@ const COPY: Record<Lang, {
     linkCopied: "Lien copié",
     linkRegenerated: "Lien régénéré. L'ancien lien ne fonctionne plus.",
     regenerateConfirm: "Régénérer le lien ? L'ancien cessera immédiatement de fonctionner.",
+    addBlock: "Ajouter un créneau",
+    removeBlock: "Supprimer le créneau",
+    errOrder: "L'heure de début doit précéder l'heure de fin",
+    errOverlap: "Les créneaux ne peuvent pas se chevaucher",
+    errEmpty: "Les jours activés doivent avoir au moins un créneau",
   },
   pl: {
     cardTitle: "Publiczny link do rezerwacji",
@@ -121,8 +139,68 @@ const COPY: Record<Lang, {
     linkCopied: "Link skopiowany",
     linkRegenerated: "Link wygenerowany ponownie. Stary link już nie działa.",
     regenerateConfirm: "Wygenerować nowy link? Stary natychmiast przestanie działać.",
+    addBlock: "Dodaj blok czasowy",
+    removeBlock: "Usuń blok czasowy",
+    errOrder: "Czas rozpoczęcia musi być wcześniejszy niż czas zakończenia",
+    errOverlap: "Bloki czasowe nie mogą się nakładać",
+    errEmpty: "Włączone dni wymagają przynajmniej jednego bloku czasowego",
   },
 };
+
+// Generate time options every 15 minutes from 00:00 to 23:45
+const TIME_OPTIONS = (() => {
+  const arr: string[] = [];
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += 15) {
+      arr.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+    }
+  }
+  return arr;
+})();
+
+function TimeSelect({
+  value, onChange, disabled, className,
+}: { value: string; onChange: (v: string) => void; disabled?: boolean; className?: string }) {
+  // Always show provided value, even if not 15-min aligned
+  const opts = useMemo(() => {
+    if (value && !TIME_OPTIONS.includes(value)) return [value, ...TIME_OPTIONS];
+    return TIME_OPTIONS;
+  }, [value]);
+  return (
+    <Select value={value} onValueChange={onChange} disabled={disabled}>
+      <SelectTrigger className={className || "w-28"}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent className="max-h-72">
+        {opts.map((t) => (
+          <SelectItem key={t} value={t}>{t}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+const norm = (s: string) => (s && s.length >= 5 ? s.slice(0, 5) : s);
+const toMin = (s: string) => {
+  const [h, m] = s.split(":").map(Number);
+  return (h || 0) * 60 + (m || 0);
+};
+
+function validateDays(days: Record<number, DayState>, L: typeof COPY[Lang]): string | null {
+  for (let wd = 0; wd < 7; wd++) {
+    const d = days[wd];
+    if (!d || !d.is_enabled) continue;
+    if (!d.intervals.length) return L.errEmpty;
+    for (const iv of d.intervals) {
+      if (toMin(iv.start) >= toMin(iv.end)) return L.errOrder;
+    }
+    const sorted = d.intervals.slice().sort((a, b) => toMin(a.start) - toMin(b.start));
+    for (let i = 1; i < sorted.length; i++) {
+      if (toMin(sorted[i].start) < toMin(sorted[i - 1].end)) return L.errOverlap;
+    }
+  }
+  return null;
+}
 
 export function PublicBookingSection() {
   const { user } = useAuth();
@@ -157,7 +235,12 @@ export function PublicBookingSection() {
     queryKey: ["booking_availability", userId],
     enabled: !!userId,
     queryFn: async () => {
-      const { data } = await supabase.from("booking_availability").select("*").order("weekday");
+      const { data } = await supabase
+        .from("booking_availability")
+        .select("*")
+        .order("weekday")
+        .order("sort_order")
+        .order("start_time");
       return data || [];
     },
   });
@@ -185,7 +268,7 @@ export function PublicBookingSection() {
   const [slug, setSlug] = useState("");
   const [timezone, setTimezone] = useState("");
   const [inherit, setInheritState] = useState<boolean>(false);
-  const [days, setDays] = useState<Record<number, DayRow>>({});
+  const [days, setDays] = useState<Record<number, DayState>>({});
   const [duration, setDuration] = useState(60);
   const [buffer, setBuffer] = useState(10);
   const [minNotice, setMinNotice] = useState(24);
@@ -212,20 +295,30 @@ export function PublicBookingSection() {
 
   useEffect(() => {
     if (!availability) return;
-    const m: Record<number, DayRow> = {};
-    for (const r of availability) {
-      m[r.weekday] = {
-        is_enabled: r.is_enabled,
-        start_time: (r.start_time || "09:00").slice(0, 5),
-        end_time: (r.end_time || "18:00").slice(0, 5),
-      };
+    const m: Record<number, DayState> = {};
+    for (let wd = 0; wd < 7; wd++) m[wd] = { is_enabled: false, intervals: [] };
+    for (const r of availability as any[]) {
+      const wd = r.weekday as number;
+      if (!m[wd]) m[wd] = { is_enabled: false, intervals: [] };
+      // Day is enabled if any row for it is enabled
+      if (r.is_enabled) m[wd].is_enabled = true;
+      if (r.is_enabled) {
+        m[wd].intervals.push({
+          start: norm(r.start_time || "09:00"),
+          end: norm(r.end_time || "18:00"),
+        });
+      }
+    }
+    // Sort intervals within each day
+    for (const wd of Object.keys(m)) {
+      m[+wd].intervals.sort((a, b) => toMin(a.start) - toMin(b.start));
     }
     setDays(m);
     if (availability[0]) {
-      setDuration(availability[0].session_duration_minutes);
-      setBuffer(availability[0].buffer_minutes);
-      setMinNotice(availability[0].min_notice_hours);
-      setMaxHorizon(availability[0].max_horizon_days);
+      setDuration((availability[0] as any).session_duration_minutes);
+      setBuffer((availability[0] as any).buffer_minutes);
+      setMinNotice((availability[0] as any).min_notice_hours);
+      setMaxHorizon((availability[0] as any).max_horizon_days);
     }
   }, [availability]);
 
@@ -233,16 +326,21 @@ export function PublicBookingSection() {
   const displayDays = useMemo(() => {
     if (!inherit) return days;
     if (!workingSchedule) return days;
-    const m: Record<number, DayRow> = {};
+    const m: Record<number, DayState> = {};
+    for (let wd = 0; wd < 7; wd++) m[wd] = { is_enabled: false, intervals: [] };
     for (const ws of workingSchedule) {
-      m[dowToWeekday(ws.day_of_week)] = {
+      const wd = dowToWeekday(ws.day_of_week);
+      m[wd] = {
         is_enabled: ws.is_working,
-        start_time: (ws.start_time || "09:00").slice(0, 5),
-        end_time: (ws.end_time || "18:00").slice(0, 5),
+        intervals: ws.is_working
+          ? [{ start: norm(ws.start_time || "09:00"), end: norm(ws.end_time || "18:00") }]
+          : [],
       };
     }
     return m;
   }, [inherit, days, workingSchedule]);
+
+  const validationError = useMemo(() => (inherit ? null : validateDays(days, L)), [inherit, days, L]);
 
   const tzOptions = useMemo(() => {
     try {
@@ -269,6 +367,10 @@ export function PublicBookingSection() {
 
   const handleSave = async () => {
     if (!userId) return;
+    if (validationError) {
+      toast({ title: tx("common.error", "Error"), description: validationError, variant: "destructive" });
+      return;
+    }
     setSaving(true);
     try {
       // 1. Profile timezone
@@ -292,7 +394,6 @@ export function PublicBookingSection() {
       setInheritFlag(userId, inherit);
       if (inherit && workingSchedule && workingSchedule.length > 0) {
         await syncBookingAvailabilityFromSchedule(userId, workingSchedule);
-        // Then update shared rules on top
         await supabase
           .from("booking_availability")
           .update({
@@ -303,30 +404,51 @@ export function PublicBookingSection() {
           })
           .eq("user_id", userId);
       } else {
-        // Save each weekday row
-        const byDayServer: Record<number, any> = {};
-        for (const r of availability || []) byDayServer[r.weekday] = r;
+        // Replace all rows for this user with the new interval set.
+        const { error: delErr } = await supabase
+          .from("booking_availability")
+          .delete()
+          .eq("user_id", userId);
+        if (delErr) throw delErr;
+
+        const rows: any[] = [];
         for (let wd = 0; wd < 7; wd++) {
-          const row = days[wd] || { is_enabled: false, start_time: "09:00", end_time: "18:00" };
-          const payload = {
-            user_id: userId,
-            weekday: wd,
-            is_enabled: row.is_enabled,
-            start_time: row.start_time,
-            end_time: row.end_time,
-            session_duration_minutes: duration,
-            buffer_minutes: buffer,
-            min_notice_hours: minNotice,
-            max_horizon_days: maxHorizon,
-          };
-          const existing = byDayServer[wd];
-          if (existing) {
-            const { error } = await supabase.from("booking_availability").update(payload).eq("id", existing.id);
-            if (error) throw error;
+          const d = days[wd];
+          if (d && d.is_enabled && d.intervals.length > 0) {
+            const sorted = d.intervals.slice().sort((a, b) => toMin(a.start) - toMin(b.start));
+            sorted.forEach((iv, idx) => {
+              rows.push({
+                user_id: userId,
+                weekday: wd,
+                is_enabled: true,
+                start_time: `${iv.start}:00`,
+                end_time: `${iv.end}:00`,
+                sort_order: idx,
+                session_duration_minutes: duration,
+                buffer_minutes: buffer,
+                min_notice_hours: minNotice,
+                max_horizon_days: maxHorizon,
+              });
+            });
           } else {
-            const { error } = await supabase.from("booking_availability").insert(payload as any);
-            if (error) throw error;
+            // Keep a disabled row so settings (duration/buffer/...) survive in case of empty day
+            rows.push({
+              user_id: userId,
+              weekday: wd,
+              is_enabled: false,
+              start_time: "09:00:00",
+              end_time: "18:00:00",
+              sort_order: 0,
+              session_duration_minutes: duration,
+              buffer_minutes: buffer,
+              min_notice_hours: minNotice,
+              max_horizon_days: maxHorizon,
+            });
           }
+        }
+        if (rows.length > 0) {
+          const { error: insErr } = await supabase.from("booking_availability").insert(rows as any);
+          if (insErr) throw insErr;
         }
       }
 
@@ -344,11 +466,45 @@ export function PublicBookingSection() {
   const handle = slug || link?.token || "";
   const url = handle ? `${window.location.origin}/book/${handle}` : "";
 
-  const updateDay = (wd: number, patch: Partial<DayRow>) => {
-    setDays((prev) => ({
-      ...prev,
-      [wd]: { ...(prev[wd] || { is_enabled: false, start_time: "09:00", end_time: "18:00" }), ...patch },
-    }));
+  const setDay = (wd: number, patch: Partial<DayState>) => {
+    setDays((prev) => {
+      const cur = prev[wd] || { is_enabled: false, intervals: [] };
+      return { ...prev, [wd]: { ...cur, ...patch } };
+    });
+  };
+  const toggleDay = (wd: number, on: boolean) => {
+    setDays((prev) => {
+      const cur = prev[wd] || { is_enabled: false, intervals: [] };
+      // When turning a day on with no intervals, seed one default block
+      const intervals = on && cur.intervals.length === 0
+        ? [{ start: "09:00", end: "18:00" }]
+        : cur.intervals;
+      return { ...prev, [wd]: { is_enabled: on, intervals } };
+    });
+  };
+  const addInterval = (wd: number) => {
+    setDays((prev) => {
+      const cur = prev[wd] || { is_enabled: true, intervals: [] };
+      const last = cur.intervals[cur.intervals.length - 1];
+      const start = last ? last.end : "09:00";
+      const startMin = toMin(start);
+      const end = TIME_OPTIONS.find((t) => toMin(t) > startMin + 30) || "18:00";
+      return { ...prev, [wd]: { ...cur, is_enabled: true, intervals: [...cur.intervals, { start, end }] } };
+    });
+  };
+  const removeInterval = (wd: number, idx: number) => {
+    setDays((prev) => {
+      const cur = prev[wd] || { is_enabled: false, intervals: [] };
+      const next = cur.intervals.filter((_, i) => i !== idx);
+      return { ...prev, [wd]: { ...cur, intervals: next, is_enabled: cur.is_enabled && next.length > 0 } };
+    });
+  };
+  const updateInterval = (wd: number, idx: number, patch: Partial<Interval>) => {
+    setDays((prev) => {
+      const cur = prev[wd] || { is_enabled: false, intervals: [] };
+      const intervals = cur.intervals.map((iv, i) => (i === idx ? { ...iv, ...patch } : iv));
+      return { ...prev, [wd]: { ...cur, intervals } };
+    });
   };
 
   return (
@@ -505,49 +661,91 @@ export function PublicBookingSection() {
             </div>
           </div>
 
-          <div className="space-y-2 pt-2 border-t">
+          <div className="space-y-3 pt-2 border-t">
             {inherit && (
               <p className="text-xs text-muted-foreground italic pb-1">
                 {tx("settings.inheritedReadOnly", "Inherited from your working schedule. Uncheck the option above to customize.")}
               </p>
             )}
             {WEEKDAY_KEYS.map((dayKey, weekday) => {
-              const row = displayDays[weekday] || { is_enabled: false, start_time: "09:00", end_time: "18:00" };
+              const row = displayDays[weekday] || { is_enabled: false, intervals: [] as Interval[] };
               const disabled = inherit;
               return (
-                <div key={weekday} className="flex items-center gap-3 py-1">
-                  <div className="flex items-center gap-2 w-32">
-                    <Checkbox
-                      checked={row.is_enabled}
-                      disabled={disabled}
-                      onCheckedChange={(v) => updateDay(weekday, { is_enabled: !!v })}
-                    />
-                    <span className="text-sm">{tx(dayKey, dayKey)}</span>
+                <div key={weekday} className="rounded-lg border p-3 space-y-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 w-36">
+                      <Checkbox
+                        checked={row.is_enabled}
+                        disabled={disabled}
+                        onCheckedChange={(v) => toggleDay(weekday, !!v)}
+                      />
+                      <span className="text-sm font-medium">{tx(dayKey, dayKey)}</span>
+                    </div>
+                    {!row.is_enabled && (
+                      <span className="text-xs text-muted-foreground">
+                        {tx("settings.dayDisabled", "Not available for booking")}
+                      </span>
+                    )}
                   </div>
-                  <Input
-                    type="time"
-                    value={row.start_time}
-                    disabled={disabled || !row.is_enabled}
-                    onChange={(e) => updateDay(weekday, { start_time: e.target.value })}
-                    className="w-28"
-                  />
-                  <span className="text-muted-foreground text-xs">{tx("common.to", "to")}</span>
-                  <Input
-                    type="time"
-                    value={row.end_time}
-                    disabled={disabled || !row.is_enabled}
-                    onChange={(e) => updateDay(weekday, { end_time: e.target.value })}
-                    className="w-28"
-                  />
+
+                  {row.is_enabled && (
+                    <div className="pl-8 space-y-2">
+                      {row.intervals.length === 0 && (
+                        <p className="text-xs text-destructive">{L.errEmpty}</p>
+                      )}
+                      {row.intervals.map((iv, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <TimeSelect
+                            value={iv.start}
+                            disabled={disabled}
+                            onChange={(v) => updateInterval(weekday, idx, { start: v })}
+                          />
+                          <span className="text-muted-foreground text-xs">
+                            {tx("common.to", "to")}
+                          </span>
+                          <TimeSelect
+                            value={iv.end}
+                            disabled={disabled}
+                            onChange={(v) => updateInterval(weekday, idx, { end: v })}
+                          />
+                          {!disabled && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              aria-label={L.removeBlock}
+                              onClick={() => removeInterval(weekday, idx)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      {!disabled && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addInterval(weekday)}
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          {L.addBlock}
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
+            {validationError && (
+              <p className="text-sm text-destructive">{validationError}</p>
+            )}
           </div>
         </CardContent>
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={saving}>
+        <Button onClick={handleSave} disabled={saving || !!validationError}>
           {saving ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />{tx("common.saving", "Saving…")}</>) : tx("common.save", "Save Changes")}
         </Button>
       </div>

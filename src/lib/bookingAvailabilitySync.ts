@@ -30,27 +30,20 @@ export async function syncBookingAvailabilityFromSchedule(
     max_horizon_days: first?.max_horizon_days ?? 30,
   };
 
-  const byWeekday: Record<number, any> = {};
-  for (const r of (existing as any[]) || []) byWeekday[r.weekday] = r;
+  // Replace all rows for this user with one row per weekday from the schedule
+  await supabase.from("booking_availability").delete().eq("user_id", userId);
 
-  for (const day of schedule) {
-    const weekday = dowToWeekday(day.day_of_week);
-    const payload = {
-      user_id: userId,
-      weekday,
-      is_enabled: day.is_working,
-      start_time: t(day.start_time),
-      end_time: t(day.end_time),
-      ...shared,
-    };
-    if (byWeekday[weekday]) {
-      await supabase
-        .from("booking_availability")
-        .update(payload)
-        .eq("id", byWeekday[weekday].id);
-    } else {
-      await supabase.from("booking_availability").insert(payload as any);
-    }
+  const rows = schedule.map((day) => ({
+    user_id: userId,
+    weekday: dowToWeekday(day.day_of_week),
+    is_enabled: day.is_working,
+    start_time: t(day.start_time),
+    end_time: t(day.end_time),
+    sort_order: 0,
+    ...shared,
+  }));
+  if (rows.length > 0) {
+    await supabase.from("booking_availability").insert(rows as any);
   }
 }
 
