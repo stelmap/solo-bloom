@@ -795,6 +795,43 @@ export default function CalendarPage() {
       dayStats,
     };
   }, [periodDays, periodStart, periodEnd, appointments, profile, scheduleMap, daysOffSet, pendingRequests]);
+
+  // Fill-rate forecasts: this week, next week, next 30 days
+  const fillRates = useMemo(() => {
+    const sessionsPerDay = (profile as any)?.sessions_per_day ?? 6;
+    const today = startOfDay(new Date());
+    const thisWeekStart = startOfWeek(today, { weekStartsOn: 1 });
+    const thisWeekEnd = endOfDay(addDays(thisWeekStart, 6));
+    const nextWeekStart = addDays(thisWeekStart, 7);
+    const nextWeekEnd = endOfDay(addDays(nextWeekStart, 6));
+    const next30Start = today;
+    const next30End = endOfDay(addDays(today, 29));
+
+    const computeRange = (start: Date, end: Date) => {
+      const days = eachDayOfInterval({ start, end });
+      let slots = 0;
+      for (const d of days) if (isDayWorking(d)) slots += sessionsPerDay;
+      const startMs = start.getTime();
+      const endMs = end.getTime();
+      const booked = appointments.filter(a => {
+        const t = new Date(a.scheduled_at).getTime();
+        return t >= startMs && t <= endMs && a.status !== "cancelled";
+      }).length;
+      const pending = pendingRequests.filter(r => {
+        const t = new Date(r.requested_slot_at).getTime();
+        return t >= startMs && t <= endMs;
+      }).length;
+      const occupied = booked + pending;
+      const pct = slots > 0 ? Math.round((occupied / slots) * 100) : 0;
+      return { slots, occupied, pct };
+    };
+
+    return {
+      thisWeek: computeRange(thisWeekStart, thisWeekEnd),
+      nextWeek: computeRange(nextWeekStart, nextWeekEnd),
+      next30: computeRange(next30Start, next30End),
+    };
+  }, [appointments, pendingRequests, profile, scheduleMap, daysOffSet]);
   // Back-compat alias used by the per-day bar (only relevant in Day/Week views)
   const weekCapacity = periodCapacity;
 
