@@ -797,8 +797,10 @@ export default function CalendarPage() {
   }, [periodDays, periodStart, periodEnd, appointments, profile, scheduleMap, daysOffSet, pendingRequests]);
 
   // Fill-rate forecasts: this week, next week, next 30 days
+  // Based on real working hours per day, default session duration, and unique
+  // booked minutes (clipped to working window, overlaps merged).
   const fillRates = useMemo(() => {
-    const sessionsPerDay = (profile as any)?.sessions_per_day ?? 6;
+    const defaultDuration = Math.max(15, Number((profile as any)?.default_duration) || 60);
     const today = startOfDay(new Date());
     const thisWeekStart = startOfWeek(today, { weekStartsOn: 1 });
     const thisWeekEnd = endOfDay(addDays(thisWeekStart, 6));
@@ -807,22 +809,87 @@ export default function CalendarPage() {
     const next30Start = today;
     const next30End = endOfDay(addDays(today, 29));
 
-    const computeRange = (start: Date, end: Date) => {
-      const days = eachDayOfInterval({ start, end });
-      let slots = 0;
-      for (const d of days) if (isDayWorking(d)) slots += sessionsPerDay;
-      const startMs = start.getTime();
-      const endMs = end.getTime();
-      const booked = appointments.filter(a => {
-        const t = new Date(a.scheduled_at).getTime();
-        return t >= startMs && t <= endMs && a.status !== "cancelled";
-      }).length;
-      const pending = pendingRequests.filter(r => {
-        const t = new Date(r.requested_slot_at).getTime();
-        return t >= startMs && t <= endMs;
-      }).length;
-      const occupied = booked + pending;
-      const pct = slots > 0 ? Math.round((occupied / slots) * 100) : 0;
+    // Working window [startMin, endMin) in minutes-from-midnight for a given day
+    const workingWindow = (date: Date): [number, number] | null => {
+      if (!isDayWorking(date)) return null;
+      const dow = getDayOfWeek(date);
+      const sched = scheduleMap[dow];
+      let sh = startHour;
+      let eh = endHour;
+      if (sched) {
+        sh = parseInt(sched.start_time) || startHour;
+        eh = parseInt(sched.end_time) || endHour;
+      }
+      if (eh <= sh) return null;
+      return [sh * 60, eh * 60];
+    };
+
+    // Merge overlapping intervals and return total covered minutes
+    const unionMinutes = (intervals: Array<[number, number]>) => {
+      if (intervals.length === 0) return 0;
+      const sorted = intervals.slice().sort((a, b) => a[0] - b[0]);
+      let total = 0;
+      let [cs, ce] = sorted[0];
+      for (let i = 1; i < sorted.length; i++) {
+        const [s, e] = sorted[i];
+        if (s <= ce) ce = Math.max(ce, e);
+        else {
+          total += ce - cs;
+          cs = s; ce = e;
+        }
+      }
+      total += ce - cs;
+      return total;
+    };
+
+    const computeRange = (rangeStart: Date, rangeEnd: Date) => {
+      const days = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
+      let totalWorkingMinutes = 0;
+      let totalOccupiedMinutes = 0;
+
+      // Pre-collect events with their start/end Date
+      const events: Array<{ start: Date; end: Date }> = [];
+      for (const a of appointments) {
+        if (a.status === "cancelled" || a.status === "deleted") continue;
+        const s = new Date(a.scheduled_at);
+        const dur = Number((a as any).duration_minutes) || defaultDuration;
+        events.push({ start: s, end: new Date(s.getTime() + dur * 60000) });
+      }
+      for (const r of pendingRequests as any[]) {
+        if (r.status && (r.status === "rejected" || r.status === "cancelled")) continue;
+        const s = new Date(r.requested_slot_at);
+        const dur = Number(r.duration_minutes) || defaultDuration;
+        events.push({ start: s, end: new Date(s.getTime() + dur * 60000) });
+      }
+
+      for (const day of days) {
+        const win = workingWindow(day);
+        if (!win) continue;
+        const [wStart, wEnd] = win;
+        const workingMin = wEnd - wStart;
+        totalWorkingMinutes += workingMin;
+
+        const dayStart = startOfDay(day).getTime();
+        // Collect intervals (in minutes from midnight of this day) clipped to working window
+        const dayIntervals: Array<[number, number]> = [];
+        for (const ev of events) {
+          const evStartMin = (ev.start.getTime() - dayStart) / 60000;
+          const evEndMin = (ev.end.getTime() - dayStart) / 60000;
+          if (evEndMin <= 0 || evStartMin >= 24 * 60) continue;
+          const s = Math.max(evStartMin, wStart);
+          const e = Math.min(evEndMin, wEnd);
+          if (e > s) dayIntervals.push([s, e]);
+        }
+        totalOccupiedMinutes += unionMinutes(dayIntervals);
+      }
+
+      const slots = Math.floor(totalWorkingMinutes / defaultDuration);
+      const occupiedRaw = Math.round(totalOccupiedMinutes / defaultDuration);
+      const occupied = Math.min(occupiedRaw, slots);
+      const pctRaw = totalWorkingMinutes > 0
+        ? (totalOccupiedMinutes / totalWorkingMinutes) * 100
+        : 0;
+      const pct = Math.min(100, Math.round(pctRaw));
       return { slots, occupied, pct };
     };
 
@@ -831,7 +898,7 @@ export default function CalendarPage() {
       nextWeek: computeRange(nextWeekStart, nextWeekEnd),
       next30: computeRange(next30Start, next30End),
     };
-  }, [appointments, pendingRequests, profile, scheduleMap, daysOffSet]);
+  }, [appointments, pendingRequests, profile, scheduleMap, daysOffSet, startHour, endHour]);
   // Back-compat alias used by the per-day bar (only relevant in Day/Week views)
   const weekCapacity = periodCapacity;
 
