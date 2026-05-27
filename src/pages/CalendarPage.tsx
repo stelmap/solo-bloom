@@ -819,7 +819,8 @@ export default function CalendarPage() {
   // Based on real working hours per day, default session duration, and unique
   // booked minutes (clipped to working window, overlaps merged).
   const fillRates = useMemo(() => {
-    const defaultDuration = bookingSessionDuration || Math.max(15, Number((profile as any)?.default_duration) || 60);
+    // Always use 60-minute slots for capacity counting (1 slot = 1 hour)
+    const defaultDuration = 60;
     const today = startOfDay(new Date());
     const thisWeekStart = startOfWeek(today, { weekStartsOn: 1 });
     const thisWeekEnd = endOfDay(addDays(thisWeekStart, 6));
