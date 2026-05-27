@@ -243,15 +243,16 @@ export default function CalendarPage() {
   const { data: workingSchedule = [] } = useWorkingSchedule();
   const { data: daysOff = [] } = useDaysOff();
   const { data: bookingAvailability = [] } = useQuery({
-    queryKey: ["booking-availability-buffer"],
+    queryKey: ["booking-availability-rules"],
     queryFn: async () => {
       const { data } = await supabase
         .from("booking_availability")
-        .select("buffer_minutes")
+        .select("session_duration_minutes, buffer_minutes")
         .limit(1);
       return data || [];
     },
   });
+  const bookingSessionDuration = Math.max(15, Number((bookingAvailability as any[])[0]?.session_duration_minutes) || 0);
   const bufferMinutes = Math.max(0, Number((bookingAvailability as any[])[0]?.buffer_minutes) || 0);
   const createAppointment = useCreateAppointment();
   const updateAppointment = useUpdateAppointment();
@@ -811,7 +812,7 @@ export default function CalendarPage() {
   // Based on real working hours per day, default session duration, and unique
   // booked minutes (clipped to working window, overlaps merged).
   const fillRates = useMemo(() => {
-    const defaultDuration = Math.max(15, Number((profile as any)?.default_duration) || 60);
+    const defaultDuration = bookingSessionDuration || Math.max(15, Number((profile as any)?.default_duration) || 60);
     const today = startOfDay(new Date());
     const thisWeekStart = startOfWeek(today, { weekStartsOn: 1 });
     const thisWeekEnd = endOfDay(addDays(thisWeekStart, 6));
@@ -904,7 +905,7 @@ export default function CalendarPage() {
       nextWeek: computeRange(nextWeekStart, nextWeekEnd),
       next30: computeRange(next30Start, next30End),
     };
-  }, [appointments, pendingRequests, profile, scheduleMap, daysOffSet, startHour, endHour, bufferMinutes]);
+  }, [appointments, pendingRequests, profile, scheduleMap, daysOffSet, startHour, endHour, bookingSessionDuration, bufferMinutes]);
   // Back-compat alias used by the per-day bar (only relevant in Day/Week views)
   const weekCapacity = periodCapacity;
 
