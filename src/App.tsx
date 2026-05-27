@@ -103,7 +103,11 @@ function PageFallback() {
   );
 }
 
-const App = () => (
+const App = () => {
+  useEffect(() => {
+    bootConsent();
+  }, []);
+  return (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <LanguageProvider>
