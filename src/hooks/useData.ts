@@ -1990,6 +1990,7 @@ export function useDashboardStats() {
         incomeRes, lastWeekIncomeRes, expenseRes, clientRes,
         todayAptRes, monthAptRes, profileRes, scheduleRes, daysOffRes,
         outstandingAptRes, monthClientsRes, archivedThisMonthRes, allClientsRes,
+        activeClientsRes, futureAptsRes,
       ] = await Promise.all([
         supabase.from("income").select(`amount, ${recognitionField}`).gte(recognitionField, monthStart),
         supabase.from("income").select(`amount, ${recognitionField}`).gte(recognitionField, lastMondayStr).lte(recognitionField, lastSundayStr),
@@ -2034,6 +2035,10 @@ export function useDashboardStats() {
           .lte("archived_at", monthEndStr + "T23:59:59"),
         // Fallback for new clients: created this month
         supabase.from("clients").select("id, created_at"),
+        // Active clients for "without next session" metric
+        supabase.from("clients").select("id").eq("status", "active"),
+        // Future non-cancelled appointments for "without next session" metric
+        supabase.from("appointments").select("client_id").gt("scheduled_at", new Date().toISOString()).neq("status", "cancelled"),
       ]);
 
       const dateOf = (row: any) => row[recognitionField];
@@ -2236,9 +2241,17 @@ export function useDashboardStats() {
         for (const a of tAllocs ?? []) {
           byApt.set(a.appointment_id, (byApt.get(a.appointment_id) ?? 0) + Number(a.allocated_amount || 0));
         }
-        for (const apt of todayUnpaidApts) {
+      for (const apt of todayUnpaidApts) {
           todayDebt += Math.max(Number(apt.price) - (byApt.get(apt.id) ?? 0), 0);
         }
+      }
+
+      // ===== Clients without next scheduled session =====
+      const activeClientIds = new Set((activeClientsRes.data ?? []).map((c: any) => c.id));
+      const clientsWithFutureApt = new Set((futureAptsRes.data ?? []).map((a: any) => a.client_id));
+      let clientsWithoutNextSession = 0;
+      for (const cid of activeClientIds) {
+        if (!clientsWithFutureApt.has(cid)) clientsWithoutNextSession++;
       }
 
       return {
@@ -2265,6 +2278,7 @@ export function useDashboardStats() {
         lostIncomeThisMonth,
         unpaidSessionsCount,
         todayDebt,
+        clientsWithoutNextSession,
         prevActiveClients,
         prevNewClients,
         prevCompletedTherapy,

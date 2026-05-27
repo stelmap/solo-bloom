@@ -149,7 +149,7 @@ export default function ClientsPage() {
     return map;
   })();
 
-  const monthFilter = searchParams.get("filter") as "activeThisMonth" | "newThisMonth" | "completedThisMonth" | "droppedThisMonth" | null;
+  const monthFilter = searchParams.get("filter") as "activeThisMonth" | "newThisMonth" | "completedThisMonth" | "droppedThisMonth" | "withoutNextSession" | null;
 
   const isThisMonth = (dateStr: string | null | undefined) => {
     if (!dateStr) return false;
@@ -165,6 +165,8 @@ export default function ClientsPage() {
   const effectiveStatusFilter =
     monthFilter === "completedThisMonth" || monthFilter === "droppedThisMonth"
       ? "archived"
+      : monthFilter === "withoutNextSession"
+      ? "active"
       : statusFilter;
 
   const activeClientIdsThisMonth = useMemo(() => {
@@ -196,6 +198,17 @@ export default function ClientsPage() {
     return ids;
   }, [appointments, clients]);
 
+  const clientsWithFutureSession = useMemo(() => {
+    const ids = new Set<string>();
+    const now = new Date().toISOString();
+    for (const a of appointments as any[]) {
+      if (a.status !== "cancelled" && a.scheduled_at > now) {
+        ids.add(a.client_id);
+      }
+    }
+    return ids;
+  }, [appointments]);
+
   const q = debouncedSearch.trim().toLowerCase();
   const filtered = clients
     .filter((c: any) => effectiveStatusFilter === "all" ? true : (c.status ?? "active") === effectiveStatusFilter)
@@ -214,6 +227,12 @@ export default function ClientsPage() {
           c.status === "archived" &&
           DROPPED_ARCHIVE_REASONS.has(c.archive_reason ?? "") &&
           isThisMonth(c.archived_at)
+        );
+      }
+      if (monthFilter === "withoutNextSession") {
+        return (
+          (c.status ?? "active") === "active" &&
+          !clientsWithFutureSession.has(c.id)
         );
       }
       return true;
@@ -419,6 +438,8 @@ export default function ClientsPage() {
                 ? t("ops.newClientsThisMonth")
                 : monthFilter === "completedThisMonth"
                 ? t("ops.completedTherapyThisMonth")
+                : monthFilter === "withoutNextSession"
+                ? t("ops.clientsWithoutNextSession")
                 : t("ops.droppedTherapyThisMonth")}
             </Badge>
             <button

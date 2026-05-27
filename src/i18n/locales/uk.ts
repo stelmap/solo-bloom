@@ -1408,6 +1408,8 @@ export default {
   "ops.monthlyExpensesTotal": "Загальні витрати цього місяця",
   "ops.unpaidSessionsCount": "Неоплачені сеанси",
   "ops.currentDebt": "Заборгованість зараз",
+  "ops.clientsWithoutNextSession": "Клієнти без наступної сесії",
+  "ops.clientsWithoutNextSessionHint": "Активні клієнти, для яких не запланована жодна майбутня сесія. Це може означати ризик втрати клієнта або потребу у follow-up.",
   "ops.todayDebt": "Заборгованість сьогодні",
   "ops.totalDebt": "Загальна заборгованість",
   "ops.practiceHealth": "Здоров’я практики · Весь час",
