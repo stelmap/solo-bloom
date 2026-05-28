@@ -420,7 +420,8 @@ export default function ClientDetailPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
           {([
             { key: "all", value: totalSessions, label: t("clientDetail.totalSessions"), color: "text-foreground", border: "border-border" },
-            { key: "completed", value: completedSessions, label: t("clientDetail.completedSessions"), color: "text-foreground", border: "border-border" },
+            { key: "prepaid", value: prepaidSessions, label: t("clientDetail.prepaidSessions"), color: prepaidSessions > 0 ? "text-success" : "text-muted-foreground", border: "border-success/30", sub: prepaidSessions > 0 ? `${cs}${prepaidAmount.toFixed(0)}` : undefined },
+
             { key: "paid", value: paidSessions, label: t("clientDetail.paidSessions"), color: "text-primary", border: "border-primary/30", icon: <CreditCard className="h-4 w-4 text-primary" />, sub: `${cs}${paidAmount.toFixed(0)}` },
             { key: "awaiting", value: awaitingSessions, label: t("clientDetail.pendingPayments"), color: "text-warning", border: "border-border" },
             { key: "cancelled", value: cancelledSessions, label: t("clientDetail.cancelled"), color: "text-destructive", border: "border-border" },
