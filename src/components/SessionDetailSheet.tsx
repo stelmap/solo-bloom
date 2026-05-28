@@ -1058,7 +1058,9 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                     : "text-success")} />
                 <div>
                   <p className="text-sm font-semibold text-foreground">
-                    {paymentStatus === "waiting_for_payment"
+                    {paymentStatus === "already_paid"
+                      ? t("prepayment.willMarkAlreadyPaid", { symbol: cs, amount: alreadyAllocated.toFixed(2) })
+                      : paymentStatus === "waiting_for_payment"
                       ? t("calendar.willBeExpected", { symbol: cs, amount: completePrice.toFixed(2) })
                       : paymentStatus === "paid_from_prepayment"
                       ? (prepaymentCovers >= sessionPrice
@@ -1066,6 +1068,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                           : t("prepayment.willPartiallyDeduct", { symbol: cs, covered: prepaymentCovers.toFixed(2), remaining: (sessionPrice - prepaymentCovers).toFixed(2) }))
                       : t("calendar.willBeIncome", { symbol: cs, amount: amountPaid.toFixed(2) })}
                   </p>
+
                 </div>
               </div>
 
