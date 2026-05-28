@@ -203,6 +203,30 @@ const C = {
   feat12Title: { en: "The full client journey", fr: "Le parcours client complet", uk: "Повний шлях клієнта", pl: "Pełna ścieżka klienta" },
   feat12Desc: { en: "From first contact to end of therapy — in one system.", fr: "Du premier contact à la fin de la thérapie — dans un seul système.", uk: "Від першого контакту до завершення терапії — в одній системі.", pl: "Od pierwszego kontaktu do zakończenia terapii — w jednym systemie." },
 
+  // CTAs under What Changes / Features
+  whatChangesSummaryHighlight: { en: "what truly matters", fr: "ce qui compte vraiment", uk: "що справді важливо", pl: "co naprawdę się liczy" },
+  whatChangesCta: { en: "Start free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
+  whatChangesCtaNote: { en: "No card required. You can start in a few minutes.", fr: "Sans carte. Vous pouvez commencer en quelques minutes.", uk: "Без картки. Можна почати за кілька хвилин.", pl: "Bez karty. Możesz zacząć w kilka minut." },
+  featCta: { en: "Try SoloBizz for free", fr: "Essayer SoloBizz gratuitement", uk: "Спробувати SoloBizz безкоштовно", pl: "Wypróbuj SoloBizz za darmo" },
+  featCtaNote: { en: "All key features available from day one.", fr: "Toutes les fonctionnalités clés disponibles dès le premier jour.", uk: "Усі ключові функції доступні з першого дня.", pl: "Wszystkie kluczowe funkcje dostępne od pierwszego dnia." },
+
+  // Switched therapists section
+  switchedEyebrow: { en: "FOR THOSE MOVING TO A SYSTEMATIC PRACTICE", fr: "POUR CEUX QUI PASSENT À UNE GESTION STRUCTURÉE", uk: "ДЛЯ ТИХ, ХТО ПЕРЕХОДИТЬ НА СИСТЕМНИЙ ОБЛІК", pl: "DLA TYCH, KTÓRZY PRZECHODZĄ NA SYSTEMOWĄ EWIDENCJĘ" },
+  switchedHeadline: { en: "When a therapist switches to SoloBizz, the practice becomes clearer.", fr: "Quand un thérapeute passe à SoloBizz, sa pratique devient plus claire.", uk: "Коли терапевт переходить на SoloBizz, практика стає зрозумілішою.", pl: "Gdy terapeuta przechodzi na SoloBizz, praktyka staje się bardziej przejrzysta." },
+  switchedSub: { en: "Fewer manual checks. Less payment chaos. More clarity before every working day.", fr: "Moins de vérifications manuelles. Moins de chaos dans les paiements. Plus de clarté avant chaque journée.", uk: "Менше ручних перевірок. Менше хаосу в оплатах. Більше ясності перед кожним робочим днем.", pl: "Mniej ręcznych sprawdzeń. Mniej chaosu w płatnościach. Więcej jasności przed każdym dniem pracy." },
+  switchedBefore: { en: "Before SoloBizz", fr: "Avant SoloBizz", uk: "До SoloBizz", pl: "Przed SoloBizz" },
+  switchedAfter: { en: "With SoloBizz", fr: "Avec SoloBizz", uk: "З SoloBizz", pl: "Z SoloBizz" },
+  switchedClients: { en: "Clients", fr: "Clients", uk: "Клієнти", pl: "Klienci" },
+  switchedSessions: { en: "Sessions", fr: "Séances", uk: "Сесії", pl: "Sesje" },
+  switchedPayments: { en: "Payments", fr: "Paiements", uk: "Оплати", pl: "Płatności" },
+  switchedRevenue: { en: "Revenue", fr: "Revenus", uk: "Дохід", pl: "Przychód" },
+  switchedPending: { en: "Pending", fr: "En attente", uk: "Очікує оплату", pl: "Oczekuje" },
+  switchedConfirmed: { en: "Confirmed", fr: "Confirmé", uk: "Підтверджено", pl: "Potwierdzone" },
+  switchedCompleted: { en: "Completed", fr: "Réalisé", uk: "Проведено", pl: "Zrealizowane" },
+  switchedBeforeNote: { en: "Notes scattered across spreadsheets, messengers and paper.", fr: "Notes éparpillées entre tableurs, messageries et papier.", uk: "Записи розкидані по таблицях, месенджерах і паперу.", pl: "Notatki rozrzucone po arkuszach, komunikatorach i papierze." },
+  switchedAfterNote: { en: "Everything in one structured place — clients, sessions, payments.", fr: "Tout au même endroit, structuré — clients, séances, paiements.", uk: "Усе в одному структурованому місці — клієнти, сесії, оплати.", pl: "Wszystko w jednym uporządkowanym miejscu — klienci, sesje, płatności." },
+
+
   // Audience
   audTitle: { en: "Who SoloBizz is for", fr: "À qui s'adresse SoloBizz", uk: "Кому підходить SoloBizz", pl: "Dla kogo jest SoloBizz" },
   audSub: {
@@ -939,21 +963,21 @@ function WhatChangesSection() {
             </ul>
           </div>
 
-          {/* With SoloBizz card */}
-          <div className="relative flex flex-col p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-primary/[0.06] via-card to-primary/[0.04] border-2 border-primary/40 shadow-lg shadow-primary/10">
+          {/* With SoloBizz card — green success accent */}
+          <div className="relative flex flex-col p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-emerald-50 via-card to-emerald-50/60 dark:from-emerald-950/30 dark:via-card dark:to-emerald-950/20 border-2 border-emerald-500/40 shadow-lg shadow-emerald-500/10">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-xl sm:text-2xl font-bold text-foreground">
                 {t("whatChangesWithTitle")}
               </h3>
-              <span className="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-primary/15 text-primary">
+              <span className="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
                 {t("cmpSoloBadge")}
               </span>
             </div>
             <ul className="space-y-3.5 flex-1">
               {withItems.map((k) => (
                 <li key={k} className="flex items-start gap-3 text-foreground">
-                  <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/15 shrink-0">
-                    <Check className="h-4 w-4 text-primary" />
+                  <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 shrink-0">
+                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                   </span>
                   <span className="text-base leading-relaxed font-medium">{t(k)}</span>
                 </li>
@@ -962,11 +986,33 @@ function WhatChangesSection() {
           </div>
         </div>
 
-        <div className="mt-10 text-center">
-          <p className="text-lg sm:text-xl font-semibold text-foreground max-w-3xl mx-auto leading-relaxed">
-            {t("whatChangesSummary")}
+        <div className="mt-12 text-center max-w-[760px] mx-auto">
+          <p className="text-lg sm:text-xl font-semibold text-foreground leading-relaxed">
+            {(() => {
+              const full = t("whatChangesSummary");
+              const hi = t("whatChangesSummaryHighlight");
+              const idx = full.toLowerCase().indexOf(hi.toLowerCase());
+              if (idx === -1) return full;
+              return (
+                <>
+                  {full.slice(0, idx)}
+                  <span className="text-primary font-bold">{full.slice(idx, idx + hi.length)}</span>
+                  {full.slice(idx + hi.length)}
+                </>
+              );
+            })()}
           </p>
+          <div className="mt-6 flex flex-col items-center gap-3">
+            <PrimaryCta
+              label={t("whatChangesCta")}
+              source="/"
+              cta="what_changes_cta"
+              className="rounded-full px-8"
+            />
+            <p className="text-sm text-muted-foreground">{t("whatChangesCtaNote")}</p>
+          </div>
         </div>
+
       </div>
     </section>
   );
@@ -1023,10 +1069,96 @@ function FeaturesSection() {
             </div>
           ))}
         </div>
+
+        <div className="mt-12 sm:mt-14 flex flex-col items-center gap-3 text-center">
+          <PrimaryCta
+            label={t("featCta")}
+            source="/"
+            cta="features_cta"
+            className="rounded-full px-8"
+          />
+          <p className="text-sm text-muted-foreground">{t("featCtaNote")}</p>
+        </div>
       </div>
     </section>
   );
 }
+
+// ── Switched therapists ──────────────────────────────────────────────
+
+function SwitchedSection() {
+  const { t } = useLandingLang();
+  const beforeRows = [
+    { label: t("switchedClients"), value: "?", tone: "muted" as const },
+    { label: t("switchedSessions"), value: "?", tone: "muted" as const },
+    { label: t("switchedPayments"), value: t("switchedPending"), tone: "warn" as const },
+    { label: t("switchedRevenue"), value: "—", tone: "muted" as const },
+  ];
+  const afterRows = [
+    { label: t("switchedClients"), value: "42", tone: "ok" as const },
+    { label: t("switchedSessions"), value: "18 / " + t("switchedCompleted"), tone: "ok" as const },
+    { label: t("switchedPayments"), value: t("switchedConfirmed"), tone: "ok" as const },
+    { label: t("switchedRevenue"), value: "€ 2 480", tone: "ok" as const },
+  ];
+  return (
+    <section className="py-20 px-4 sm:px-6 bg-muted/30">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <div className="text-xs sm:text-sm font-semibold uppercase tracking-[0.18em] text-primary mb-4">
+            {t("switchedEyebrow")}
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4 leading-tight">
+            {t("switchedHeadline")}
+          </h2>
+          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+            {t("switchedSub")}
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6 items-stretch">
+          {/* Before mockup */}
+          <div className="flex flex-col rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+            <div className="px-6 py-4 bg-rose-50 dark:bg-rose-950/30 border-b border-border flex items-center justify-between">
+              <span className="font-semibold text-foreground">{t("switchedBefore")}</span>
+              <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-400">
+                {t("cmpManualBadge")}
+              </span>
+            </div>
+            <div className="p-6 flex-1 space-y-3">
+              {beforeRows.map((r) => (
+                <div key={r.label} className="flex items-center justify-between py-2 border-b border-border/60 last:border-b-0">
+                  <span className="text-sm text-muted-foreground">{r.label}</span>
+                  <span className={`text-sm font-semibold ${r.tone === "warn" ? "text-rose-600 dark:text-rose-400" : "text-muted-foreground"}`}>{r.value}</span>
+                </div>
+              ))}
+              <p className="pt-3 text-sm text-muted-foreground italic">{t("switchedBeforeNote")}</p>
+            </div>
+          </div>
+
+          {/* After mockup */}
+          <div className="flex flex-col rounded-2xl border-2 border-emerald-500/40 bg-card shadow-lg shadow-emerald-500/10 overflow-hidden">
+            <div className="px-6 py-4 bg-emerald-50 dark:bg-emerald-950/30 border-b border-emerald-500/30 flex items-center justify-between">
+              <span className="font-semibold text-foreground">{t("switchedAfter")}</span>
+              <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+                {t("cmpSoloBadge")}
+              </span>
+            </div>
+            <div className="p-6 flex-1 space-y-3">
+              {afterRows.map((r) => (
+                <div key={r.label} className="flex items-center justify-between py-2 border-b border-border/60 last:border-b-0">
+                  <span className="text-sm text-muted-foreground">{r.label}</span>
+                  <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">{r.value}</span>
+                </div>
+              ))}
+              <p className="pt-3 text-sm text-foreground/80 italic">{t("switchedAfterNote")}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 
 // ── Audience ──────────────────────────────────────────────────────────
 
@@ -1962,9 +2094,10 @@ export default function LandingPage() {
           <PainSection />
           <WhatChangesSection />
           <FeaturesSection />
+          <SwitchedSection />
           <AudienceSection />
           <PricingSection />
-          <TestimonialsSection />
+
           <FaqSection />
           <FinalCTA />
           <AboutContactsSection />
