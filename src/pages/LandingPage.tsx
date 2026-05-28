@@ -1286,7 +1286,7 @@ function PricingSection() {
 
 const FACEBOOK_URL = "[ADD_FACEBOOK_PAGE_URL]";
 const YOUTUBE_CHANNEL_URL = "[ADD_YOUTUBE_CHANNEL_URL]";
-const FAQ_EMAIL = "info@solobizz.com";
+const FAQ_EMAIL = "info@solo-bizz.com";
 
 type FaqItem = { q: Record<Language, string>; a: Record<Language, ReactNode> | ReactNode };
 
@@ -1294,10 +1294,10 @@ function FaqSection() {
   const { t, lang } = useLandingLang();
 
   const fb = (label: string) => (
-    <a href={FACEBOOK_URL} target="_blank" rel="noreferrer" className="text-primary underline-offset-4 hover:underline">{label}</a>
+    <a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer" className="text-primary underline-offset-4 hover:underline">{label}</a>
   );
   const yt = (label: string) => (
-    <a href={YOUTUBE_CHANNEL_URL} target="_blank" rel="noreferrer" className="text-primary underline-offset-4 hover:underline">{label}</a>
+    <a href={YOUTUBE_CHANNEL_URL} target="_blank" rel="noopener noreferrer" className="text-primary underline-offset-4 hover:underline">{label}</a>
   );
   const mail = (
     <a href={`mailto:${FAQ_EMAIL}`} className="text-primary underline-offset-4 hover:underline">{FAQ_EMAIL}</a>
