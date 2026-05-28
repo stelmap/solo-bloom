@@ -763,6 +763,19 @@ export function useBulkCancelForDayOff() {
         } as any).eq("id", id);
         if (error) throw error;
 
+        // If this appointment is a group session, mark all participant
+        // attendance as N/A so the cancelled session is excluded from stats.
+        const { data: gs } = await supabase
+          .from("group_sessions" as any)
+          .select("id")
+          .eq("appointment_id", id)
+          .maybeSingle();
+        if ((gs as any)?.id) {
+          await supabase.from("group_attendance" as any)
+            .update({ status: "n_a" })
+            .eq("group_session_id", (gs as any).id);
+        }
+
         // Send cancellation email if client wants email notifications
         const client = (apt as any)?.clients;
         if (client?.email && ['email_only', 'email_and_telegram'].includes(client.notification_preference)) {
