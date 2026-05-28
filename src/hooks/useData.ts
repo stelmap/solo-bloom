@@ -2776,44 +2776,49 @@ export function useClientCreditBalance(clientId: string | undefined) {
   return useQuery({
     queryKey: ["client-credit-balance", clientId],
     queryFn: async () => {
-      // Available prepaid balance = confirmed income received from this client
-      // MINUS amounts already allocated to specific sessions (past or future).
-      // This catches both legacy `client_credits` rows AND incomes that were
-      // saved without explicit allocations (which are effectively unallocated
-      // prepayment from the therapist's perspective).
-      const [{ data: incomes, error: incErr }, { data: allocs, error: allocErr }, { data: legacy, error: legacyErr }] = await Promise.all([
+      // Available prepaid balance, matching the Client Card definition:
+      //   confirmed income received from the client
+      //   MINUS total price of completed payable sessions.
+      // This is the surplus the client has paid beyond what they owe for
+      // completed work, i.e. money available to consume against upcoming
+      // (or just-finished) sessions. Legacy `client_credits` rows are
+      // additive for backwards compatibility with old data.
+      const [{ data: incomes, error: incErr }, { data: appts, error: aptErr }, { data: legacy, error: legacyErr }] = await Promise.all([
         (supabase as any)
           .from("income")
-          .select("id, amount, status")
+          .select("amount, status")
           .eq("client_id", clientId!),
         (supabase as any)
-          .from("income_session_allocations")
-          .select("allocated_amount, income:income_id(client_id, status)")
-          .eq("income.client_id", clientId!),
+          .from("appointments")
+          .select("price, status, payment_status")
+          .eq("client_id", clientId!),
         (supabase as any)
           .from("client_credits")
           .select("amount")
           .eq("client_id", clientId!),
       ]);
       if (incErr) throw incErr;
-      if (allocErr) throw allocErr;
+      if (aptErr) throw aptErr;
       if (legacyErr) throw legacyErr;
 
       const totalIncome = (incomes ?? [])
         .filter((i: any) => (i.status ?? "confirmed") === "confirmed")
         .reduce((s: number, i: any) => s + Number(i.amount || 0), 0);
-      const totalAllocated = (allocs ?? [])
-        .filter((r: any) => r.income && (r.income.status ?? "confirmed") === "confirmed")
-        .reduce((s: number, r: any) => s + Number(r.allocated_amount || 0), 0);
+      const totalPayableCompleted = (appts ?? [])
+        .filter((a: any) =>
+          a.status === "completed" &&
+          Number(a.price || 0) > 0 &&
+          a.payment_status !== "not_applicable"
+        )
+        .reduce((s: number, a: any) => s + Number(a.price || 0), 0);
       const legacyCredit = (legacy ?? []).reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
 
-      const balance = Math.max(0, totalIncome - totalAllocated) + legacyCredit;
+      const balance = Math.max(0, totalIncome - totalPayableCompleted) + legacyCredit;
       return balance as number;
     },
     enabled: !!user && !!clientId,
   });
 }
-
 
 export function useSaveIncomeConfirmation() {
   const qc = useQueryClient();
