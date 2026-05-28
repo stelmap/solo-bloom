@@ -727,7 +727,7 @@ function LandingNav() {
 // ── Hero ──────────────────────────────────────────────────────────────
 
 function HeroSection() {
-  const { t, lang } = useLandingLang();
+  const { t } = useLandingLang();
   const accent = t("heroTitleAccent");
   return (
     <section className="pt-40 pb-28 sm:pt-44 sm:pb-32 px-4 sm:px-6">
