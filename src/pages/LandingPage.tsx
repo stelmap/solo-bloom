@@ -173,6 +173,36 @@ const C = {
   whatChangesWith6: { en: "The start of the week is calm and under control.", fr: "Le début de la semaine est calme et sous contrôle.", uk: "Початок тижня — це спокій і контроль.", pl: "Początek tygodnia to spokój i kontrola." },
   whatChangesSummary: { en: "The difference isn't how many hours you work. It's how many of them go to what truly matters.", fr: "La différence n'est pas le nombre d'heures travaillées. C'est combien d'entre elles sont consacrées à ce qui compte vraiment.", uk: "Різниця не в тому, скільки годин ви працюєте. Різниця в тому, скільки з них йде на те, що справді важливо.", pl: "Różnica nie polega na tym, ile godzin pracujesz. Chodzi o to, ile z nich idzie na to, co naprawdę się liczy." },
 
+  // What's included (feature overview)
+  featEyebrow: { en: "WHAT'S INCLUDED", fr: "CE QUI EST INCLUS", uk: "ЩО ВКЛЮЧЕНО", pl: "CO JEST W ZESTAWIE" },
+  featHeadline: { en: "Everything you need for your practice. In one system.", fr: "Tout ce dont vous avez besoin pour votre pratique. Dans un seul système.", uk: "Все необхідне для практики. В одній системі.", pl: "Wszystko, czego potrzebujesz w praktyce. W jednym systemie." },
+  featSub: { en: "No integrations. No complex setup. One system — from the first session to the final payment.", fr: "Sans intégrations. Sans configuration complexe. Un seul système — de la première séance au paiement final.", uk: "Без інтеграцій. Без складного налаштування. Одна система — від першої сесії до фінальної оплати.", pl: "Bez integracji. Bez skomplikowanej konfiguracji. Jeden system — od pierwszej sesji do finalnej płatności." },
+
+  feat1Title: { en: "Client management", fr: "Gestion des clients", uk: "Управління клієнтами", pl: "Zarządzanie klientami" },
+  feat1Desc: { en: "All profiles, notes and client history — in one structured place.", fr: "Tous les profils, notes et historiques clients — en un seul endroit structuré.", uk: "Усі профілі, нотатки та історія клієнта — в одному структурованому місці.", pl: "Wszystkie profile, notatki i historia klienta — w jednym uporządkowanym miejscu." },
+  feat2Title: { en: "Calendar & scheduling", fr: "Calendrier et planning", uk: "Календар і розклад", pl: "Kalendarz i harmonogram" },
+  feat2Desc: { en: "Plan and manage sessions in one convenient practice calendar.", fr: "Planifiez et gérez les séances dans un calendrier de pratique pratique.", uk: "Плануйте та керуйте сесіями в одному зручному календарі практики.", pl: "Planuj i zarządzaj sesjami w jednym wygodnym kalendarzu praktyki." },
+  feat3Title: { en: "Public booking link", fr: "Lien public de réservation", uk: "Публічне посилання для запису", pl: "Publiczny link do rezerwacji" },
+  feat3Desc: { en: "Clients book a convenient time directly from your page.", fr: "Les clients réservent un créneau directement depuis votre page.", uk: "Клієнти бронюють зручний час напряму з вашої сторінки.", pl: "Klienci rezerwują dogodny czas bezpośrednio z Twojej strony." },
+  feat4Title: { en: "Reminders & confirmations", fr: "Rappels et confirmations", uk: "Нагадування та підтвердження", pl: "Przypomnienia i potwierdzenia" },
+  feat4Desc: { en: "Automatic reminders reduce the number of missed sessions.", fr: "Les rappels automatiques réduisent les séances manquées.", uk: "Автоматичні нагадування скорочують кількість пропущених сесій.", pl: "Automatyczne przypomnienia zmniejszają liczbę nieodbytych sesji." },
+  feat5Title: { en: "Payment tracking", fr: "Suivi des paiements", uk: "Відстеження оплат", pl: "Śledzenie płatności" },
+  feat5Desc: { en: "See who paid, who owes and who prepaid — at a glance.", fr: "Voyez qui a payé, qui doit et qui a payé d'avance — d'un coup d'œil.", uk: "Бачите, хто заплатив, хто винен і хто має передоплату — з першого погляду.", pl: "Zobacz, kto zapłacił, kto jest dłużny, a kto zapłacił z góry — na pierwszy rzut oka." },
+  feat6Title: { en: "Invoices", fr: "Factures", uk: "Рахунки-фактури", pl: "Faktury" },
+  feat6Desc: { en: "Create and send invoices in seconds, straight from sessions.", fr: "Créez et envoyez des factures en quelques secondes, directement depuis les séances.", uk: "Створюйте та надсилайте рахунки за секунди прямо із сесій.", pl: "Twórz i wysyłaj faktury w kilka sekund, prosto z sesji." },
+  feat7Title: { en: "Financial analytics", fr: "Analyse financière", uk: "Фінансова аналітика", pl: "Analityka finansowa" },
+  feat7Desc: { en: "Monthly income, expenses and unpaid sessions always in plain sight.", fr: "Revenus mensuels, dépenses et séances impayées toujours visibles.", uk: "Місячний дохід, витрати та неоплачені сесії завжди перед очима.", pl: "Miesięczny dochód, wydatki i nieopłacone sesje zawsze pod ręką." },
+  feat8Title: { en: "Client notes", fr: "Notes clients", uk: "Нотатки клієнта", pl: "Notatki klienta" },
+  feat8Desc: { en: "Structured notes linked to every client journey.", fr: "Notes structurées liées à chaque parcours client.", uk: "Структуровані нотатки, прив'язані до кожного клієнтського шляху.", pl: "Uporządkowane notatki powiązane z każdą ścieżką klienta." },
+  feat9Title: { en: "Data protection", fr: "Protection des données", uk: "Захист даних", pl: "Ochrona danych" },
+  feat9Desc: { en: "Client data is fully private. SoloBizz has no access to it. The system follows a GDPR-compliant approach.", fr: "Les données clients sont entièrement privées. SoloBizz n'y a pas accès. Le système suit une approche conforme au RGPD.", uk: "Дані клієнтів повністю приватні. SoloBizz не має до них доступу. Система підтримує GDPR-compliant підхід.", pl: "Dane klientów są w pełni prywatne. SoloBizz nie ma do nich dostępu. System jest zgodny z RODO." },
+  feat10Title: { en: "Session cost calculator", fr: "Calcul du coût des séances", uk: "Розрахунок вартості сесії", pl: "Wyliczanie kosztu sesji" },
+  feat10Desc: { en: "Understand the real cost of one session and the financial state of your practice.", fr: "Comprenez le coût réel d'une séance et l'état financier de votre pratique.", uk: "Зрозумійте реальну вартість однієї сесії та фінансовий стан практики.", pl: "Zrozum rzeczywisty koszt jednej sesji i stan finansowy swojej praktyki." },
+  feat11Title: { en: "Supervision tracking", fr: "Suivi des supervisions", uk: "Відстеження супервізій", pl: "Śledzenie superwizji" },
+  feat11Desc: { en: "Create and keep supervision records as part of your professional work.", fr: "Créez et conservez les enregistrements de supervision dans le cadre de votre travail.", uk: "Створюйте та ведіть записи супервізій як частину вашої професійної роботи.", pl: "Twórz i prowadź zapisy superwizji jako część swojej pracy zawodowej." },
+  feat12Title: { en: "The full client journey", fr: "Le parcours client complet", uk: "Повний шлях клієнта", pl: "Pełna ścieżka klienta" },
+  feat12Desc: { en: "From first contact to end of therapy — in one system.", fr: "Du premier contact à la fin de la thérapie — dans un seul système.", uk: "Від першого контакту до завершення терапії — в одній системі.", pl: "Od pierwszego kontaktu do zakończenia terapii — w jednym systemie." },
+
   // Audience
   audTitle: { en: "Who SoloBizz is for", fr: "À qui s'adresse SoloBizz", uk: "Кому підходить SoloBizz", pl: "Dla kogo jest SoloBizz" },
   audSub: {
