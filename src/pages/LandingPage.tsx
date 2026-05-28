@@ -11,7 +11,7 @@ import { getStoredLang, setPreLoginLang } from "@/i18n/LanguageContext";
 import type { Language } from "@/i18n/translations";
 import { track } from "@/lib/analytics";
 import {
-  ArrowRight, CheckCircle2, AlertTriangle, TrendingUp,
+  ArrowRight, CheckCircle2, AlertTriangle, AlertCircle, TrendingUp,
   Calendar as CalendarIcon, Users, Sparkles, ShieldCheck,
   X, Check, HeartHandshake, Presentation, BookOpen, Clock, Timer,
   Quote, MessageCircle, Mail, Phone, MapPin, Send,
@@ -273,12 +273,25 @@ const C = {
   },
 
   // Pricing
-  pricingTitle: { en: "Your full practice, organised from day one. Free until you grow.", fr: "Toute votre pratique, organisée dès le premier jour. Gratuite jusqu'à ce que vous grandissiez.", uk: "Уся ваша практика впорядкована з першого дня. Безкоштовно, поки ви ростете.", pl: "Cała Twoja praktyka uporządkowana od pierwszego dnia. Darmowa, dopóki rośniesz." },
+  pricingEyebrow: { en: "Pricing", fr: "Tarifs", uk: "Ціни", pl: "Cennik" },
+  pricingTitle: { en: "Your full practice, organised from day one.", fr: "Toute votre pratique, organisée dès le premier jour.", uk: "Ваша повна практика, організована з першого дня.", pl: "Cała Twoja praktyka uporządkowana od pierwszego dnia." },
   pricingSub: {
-    en: "All core features are included in every plan. The only difference is the number of active clients you can manage. No hidden feature locks. No calendar limits.",
-    fr: "Toutes les fonctionnalités principales sont incluses dans chaque forfait. La seule différence est le nombre de clients actifs que vous pouvez gérer. Aucune fonctionnalité bloquée. Aucune limite de calendrier.",
-    uk: "Усі основні функції доступні в кожному плані. Єдина різниця — кількість активних клієнтів, з якими ви працюєте. Жодних прихованих обмежень. Жодних лімітів календаря.",
-    pl: "Wszystkie kluczowe funkcje są zawarte w każdym planie. Jedyna różnica to liczba aktywnych klientów, którymi możesz zarządzać. Żadnych ukrytych blokad. Żadnych limitów kalendarza.",
+    en: "All core features are included in every plan. The only difference is the number of active clients. No hidden limits.",
+    fr: "Toutes les fonctionnalités principales sont incluses dans chaque forfait. La seule différence — le nombre de clients actifs. Aucune limite cachée.",
+    uk: "Всі основні функції включені в кожен план. Єдина різниця — кількість активних клієнтів. Жодних прихованих обмежень.",
+    pl: "Wszystkie kluczowe funkcje są zawarte w każdym planie. Jedyna różnica to liczba aktywnych klientów. Żadnych ukrytych ograniczeń.",
+  },
+  pricingAllFeaturesBadge: {
+    en: "All features available from day one — on any plan",
+    fr: "Toutes les fonctionnalités dès le premier jour — sur n'importe quel forfait",
+    uk: "Усі функції доступні з першого дня — на будь-якому плані",
+    pl: "Wszystkie funkcje dostępne od pierwszego dnia — w każdym planie",
+  },
+  pricingCompare: {
+    en: "Compared to alternatives: SimplePractice costs €46–73/mo, TherapyNotes — €64/mo. SoloBizz offers the full toolkit for managing a private practice at €12/mo — without insurance modules and extra features a private therapist will never need.",
+    fr: "Par rapport aux alternatives : SimplePractice coûte €46–73/mois, TherapyNotes — €64/mois. SoloBizz propose la boîte à outils complète pour gérer une pratique privée à €12/mois — sans modules d'assurance ni fonctionnalités superflues dont un thérapeute privé n'aura jamais besoin.",
+    uk: "Порівняно з аналогами: SimplePractice коштує €46–73/міс, TherapyNotes — €64/міс. SoloBizz пропонує повний набір інструментів для управління практикою за €12/міс — без страхових модулів та зайвих функцій, які ніколи не знадобляться приватному терапевту.",
+    pl: "W porównaniu z alternatywami: SimplePractice kosztuje €46–73/mies, TherapyNotes — €64/mies. SoloBizz oferuje pełny zestaw narzędzi do prowadzenia praktyki za €12/mies — bez modułów ubezpieczeniowych i zbędnych funkcji, których prywatny terapeuta nigdy nie potrzebuje.",
   },
 
   monthly: { en: "Monthly", fr: "Mensuel", uk: "Щомісяця", pl: "Miesięcznie" },
@@ -986,7 +999,7 @@ function fmtEuro(n: number): string {
 }
 
 function PricingSection() {
-  const { t } = useLandingLang();
+  const { t, lang } = useLandingLang();
   const [cycle, setCycle] = useState<Cycle>("monthly");
 
   const plans: PlanRow[] = [
@@ -1031,17 +1044,25 @@ function PricingSection() {
     <section id="pricing" className="py-20 px-4 sm:px-6 bg-muted/40">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">{t("pricingTitle")}</h2>
+          <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-4">{t("pricingEyebrow")}</p>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">{t("pricingTitle")}</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("pricingSub")}</p>
-        </div>
-
-        <div className="max-w-3xl mx-auto mb-10 rounded-2xl border border-primary/25 bg-primary/5 p-5 sm:p-6 flex items-start gap-3">
-          <Clock className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-          <div className="text-left">
-            <p className="text-base text-foreground/90 leading-relaxed">{t("pricingValue")}</p>
-            <p className="text-sm text-muted-foreground mt-2">{t("pricingValueNote")}</p>
+          <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700">
+            <Check className="h-4 w-4 shrink-0" />
+            <span className="text-sm font-medium">{t("pricingAllFeaturesBadge")}</span>
           </div>
         </div>
+
+        <div className="max-w-4xl mx-auto mb-10 rounded-2xl border border-amber-200 bg-amber-50/60 p-5 sm:p-6 flex items-start gap-3">
+          <div className="h-6 w-6 rounded-full bg-amber-500/15 flex items-center justify-center shrink-0 mt-0.5">
+            <AlertCircle className="h-4 w-4 text-amber-600" />
+          </div>
+          <p className="text-base text-foreground/90 leading-relaxed text-left">
+            <span className="font-semibold">{({ en: "Compared to alternatives:", fr: "Par rapport aux alternatives :", uk: "Порівняно з аналогами:", pl: "W porównaniu z alternatywami:" } as Record<string, string>)[lang] || "Compared to alternatives:"}</span>{" "}
+            {t("pricingCompare").replace(/^[^:]+:\s*/, "")}
+          </p>
+        </div>
+
 
         <div className="flex justify-center mb-10">
           <div className="inline-flex items-center gap-1 p-1 rounded-full bg-card border border-border">
