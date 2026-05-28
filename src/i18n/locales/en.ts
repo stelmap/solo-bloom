@@ -126,6 +126,7 @@ export default {
   "prepayment.sessionAlreadyCovered": "This session is already covered by prepayment ({symbol}{amount})",
   "prepayment.sessionPartiallyCovered": "This session is partially covered by prepayment ({symbol}{covered}). Remaining: {symbol}{remaining}",
   "prepayment.willMarkAlreadyPaid": "Will be marked as paid from existing prepayment ({symbol}{amount})",
+  "prepayment.lockedNote": "Payment for this session was already received earlier as prepayment. It will be deducted from the prepaid balance — no new payment is recorded.",
   "payment.alreadyPaid": "Already paid (prepayment)",
   "payment.alreadyPaidDesc": "This session has {symbol}{amount} already allocated from a prior prepayment",
   "toast.sessionAlreadyPaid": "Session marked as completed — covered by prepayment ({symbol}{amount})",
