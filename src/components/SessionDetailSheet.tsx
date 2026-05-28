@@ -1317,6 +1317,34 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>{t("cancelSession.title")}</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">{t("cancelSession.description")}</p>
+          <div className="space-y-2">
+            <Button variant="outline" className="w-full justify-start" onClick={() => handleStatusChange("cancelled", false)}>
+              <DollarSign className="h-4 w-4 mr-2 text-warning" />
+              <div className="text-left">
+                <p className="text-sm font-medium">{t("noShow.charge")}</p>
+                <p className="text-xs text-muted-foreground">{cs}{Number(apt.price).toFixed(2)} {t("noShow.chargeDesc")}</p>
+              </div>
+            </Button>
+            <Button variant="outline" className="w-full justify-start" onClick={() => handleStatusChange("cancelled", true)}>
+              <XCircle className="h-4 w-4 mr-2 text-muted-foreground" />
+              <div className="text-left">
+                <p className="text-sm font-medium">{t("noShow.waive")}</p>
+                <p className="text-xs text-muted-foreground">{t("noShow.waiveDesc")}</p>
+              </div>
+            </Button>
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setCancelOpen(false)}>
+              <X className="h-4 w-4 mr-2" />
+              <p className="text-sm font-medium">{t("common.back")}</p>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </>
   );
 }
