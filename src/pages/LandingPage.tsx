@@ -203,6 +203,30 @@ const C = {
   feat12Title: { en: "The full client journey", fr: "Le parcours client complet", uk: "Повний шлях клієнта", pl: "Pełna ścieżka klienta" },
   feat12Desc: { en: "From first contact to end of therapy — in one system.", fr: "Du premier contact à la fin de la thérapie — dans un seul système.", uk: "Від першого контакту до завершення терапії — в одній системі.", pl: "Od pierwszego kontaktu do zakończenia terapii — w jednym systemie." },
 
+  // CTAs under What Changes / Features
+  whatChangesSummaryHighlight: { en: "what truly matters", fr: "ce qui compte vraiment", uk: "що справді важливо", pl: "co naprawdę się liczy" },
+  whatChangesCta: { en: "Start free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
+  whatChangesCtaNote: { en: "No card required. You can start in a few minutes.", fr: "Sans carte. Vous pouvez commencer en quelques minutes.", uk: "Без картки. Можна почати за кілька хвилин.", pl: "Bez karty. Możesz zacząć w kilka minut." },
+  featCta: { en: "Try SoloBizz for free", fr: "Essayer SoloBizz gratuitement", uk: "Спробувати SoloBizz безкоштовно", pl: "Wypróbuj SoloBizz za darmo" },
+  featCtaNote: { en: "All key features available from day one.", fr: "Toutes les fonctionnalités clés disponibles dès le premier jour.", uk: "Усі ключові функції доступні з першого дня.", pl: "Wszystkie kluczowe funkcje dostępne od pierwszego dnia." },
+
+  // Switched therapists section
+  switchedEyebrow: { en: "FOR THOSE MOVING TO A SYSTEMATIC PRACTICE", fr: "POUR CEUX QUI PASSENT À UNE GESTION STRUCTURÉE", uk: "ДЛЯ ТИХ, ХТО ПЕРЕХОДИТЬ НА СИСТЕМНИЙ ОБЛІК", pl: "DLA TYCH, KTÓRZY PRZECHODZĄ NA SYSTEMOWĄ EWIDENCJĘ" },
+  switchedHeadline: { en: "When a therapist switches to SoloBizz, the practice becomes clearer.", fr: "Quand un thérapeute passe à SoloBizz, sa pratique devient plus claire.", uk: "Коли терапевт переходить на SoloBizz, практика стає зрозумілішою.", pl: "Gdy terapeuta przechodzi na SoloBizz, praktyka staje się bardziej przejrzysta." },
+  switchedSub: { en: "Fewer manual checks. Less payment chaos. More clarity before every working day.", fr: "Moins de vérifications manuelles. Moins de chaos dans les paiements. Plus de clarté avant chaque journée.", uk: "Менше ручних перевірок. Менше хаосу в оплатах. Більше ясності перед кожним робочим днем.", pl: "Mniej ręcznych sprawdzeń. Mniej chaosu w płatnościach. Więcej jasności przed każdym dniem pracy." },
+  switchedBefore: { en: "Before SoloBizz", fr: "Avant SoloBizz", uk: "До SoloBizz", pl: "Przed SoloBizz" },
+  switchedAfter: { en: "With SoloBizz", fr: "Avec SoloBizz", uk: "З SoloBizz", pl: "Z SoloBizz" },
+  switchedClients: { en: "Clients", fr: "Clients", uk: "Клієнти", pl: "Klienci" },
+  switchedSessions: { en: "Sessions", fr: "Séances", uk: "Сесії", pl: "Sesje" },
+  switchedPayments: { en: "Payments", fr: "Paiements", uk: "Оплати", pl: "Płatności" },
+  switchedRevenue: { en: "Revenue", fr: "Revenus", uk: "Дохід", pl: "Przychód" },
+  switchedPending: { en: "Pending", fr: "En attente", uk: "Очікує оплату", pl: "Oczekuje" },
+  switchedConfirmed: { en: "Confirmed", fr: "Confirmé", uk: "Підтверджено", pl: "Potwierdzone" },
+  switchedCompleted: { en: "Completed", fr: "Réalisé", uk: "Проведено", pl: "Zrealizowane" },
+  switchedBeforeNote: { en: "Notes scattered across spreadsheets, messengers and paper.", fr: "Notes éparpillées entre tableurs, messageries et papier.", uk: "Записи розкидані по таблицях, месенджерах і паперу.", pl: "Notatki rozrzucone po arkuszach, komunikatorach i papierze." },
+  switchedAfterNote: { en: "Everything in one structured place — clients, sessions, payments.", fr: "Tout au même endroit, structuré — clients, séances, paiements.", uk: "Усе в одному структурованому місці — клієнти, сесії, оплати.", pl: "Wszystko w jednym uporządkowanym miejscu — klienci, sesje, płatności." },
+
+
   // Audience
   audTitle: { en: "Who SoloBizz is for", fr: "À qui s'adresse SoloBizz", uk: "Кому підходить SoloBizz", pl: "Dla kogo jest SoloBizz" },
   audSub: {
