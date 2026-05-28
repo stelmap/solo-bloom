@@ -1445,7 +1445,7 @@ function FaqSection() {
   ];
 
   return (
-    <section id="faq" className="py-24 px-4 sm:px-6 bg-secondary">
+    <section id="faq" className="py-24 px-4 sm:px-6 bg-muted/40">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-14">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary mb-5">
