@@ -81,7 +81,7 @@ export function MfaAndTimeoutSection() {
         friendlyName: `${ISSUER} (${email ?? "account"})`,
       });
       if (error || !data) {
-        toast({ title: "Error", description: error?.message ?? "Failed to start enrollment", variant: "destructive" });
+        toast({ title: t("mfa.error"), description: error?.message ?? t("mfa.startFail"), variant: "destructive" });
         return;
       }
 
