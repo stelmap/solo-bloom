@@ -983,7 +983,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
               )}
 
               {/* Prepayment banner (unused client credit) */}
-              {hasPrepayment && (
+              {hasPrepayment && !prepaymentInsufficient && (
                 <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
                   <p className="font-medium text-foreground">
                     {t("prepayment.clientHasCredit", { symbol: cs, amount: Number(clientCredit).toFixed(2) })}
@@ -995,6 +995,23 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   </p>
                 </div>
               )}
+
+              {/* Insufficient prepayment warning */}
+              {prepaymentInsufficient && (
+                <div className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
+                  <p className="font-medium text-foreground">
+                    {t("prepayment.insufficientWarning")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("prepayment.insufficientDetails", {
+                      symbol: cs,
+                      balance: Number(clientCredit).toFixed(2),
+                      price: sessionPrice.toFixed(2),
+                    })}
+                  </p>
+                </div>
+              )}
+
 
 
               {/* Notes before completing */}
