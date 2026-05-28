@@ -1488,19 +1488,23 @@ function TestimonialsSection() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center max-w-2xl mx-auto mb-10">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary mb-4">
-            From therapists who switched
+            {t("testEyebrow")}
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
-            Trusted by private practitioners
+            {t("testHeadline")}
           </h2>
           <p className="text-lg text-muted-foreground">
-            Psychologists, psychotherapists and supervisors use SoloBizz to manage their practice with less admin chaos.
+            {t("testHeadSub")}
           </p>
         </div>
 
         {/* Metrics row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-          {SOCIAL_PROOF_METRICS.map((m) => (
+          {([
+            { value: t("metric1Value"), label: t("metric1Label") },
+            { value: t("metric2Value"), label: t("metric2Label") },
+            { value: t("metric3Value"), label: t("metric3Label") },
+          ]).map((m) => (
             <div
               key={m.label}
               className="rounded-2xl bg-card border border-border p-6 text-center shadow-sm"
@@ -1513,14 +1517,18 @@ function TestimonialsSection() {
 
         {/* Placeholder testimonials (spec) */}
         <div className="grid md:grid-cols-3 gap-5 items-start mb-10">
-          {PLACEHOLDER_TESTIMONIALS.map((tt) => (
+          {([
+            { quote: t("ph1Quote"), name: t("ph1Name"), role: t("ph1Role") },
+            { quote: t("ph2Quote"), name: t("ph2Name"), role: t("ph2Role") },
+            { quote: t("ph3Quote"), name: t("ph3Name"), role: t("ph3Role") },
+          ]).map((tt) => (
             <figure
               key={tt.name}
               className="p-6 rounded-2xl bg-card border border-border flex flex-col shadow-sm h-full"
             >
               <Quote className="h-6 w-6 text-primary mb-3" />
               <blockquote className="text-base text-foreground leading-relaxed flex-1">
-                "{tt.quote}"
+                «{tt.quote}»
               </blockquote>
               <figcaption className="mt-5 pt-4 border-t border-border text-sm">
                 <div className="font-semibold text-foreground">— {tt.name}</div>
@@ -1534,12 +1542,13 @@ function TestimonialsSection() {
         <div className="rounded-2xl bg-secondary border border-border p-6 sm:p-8 text-center mb-14">
           <Quote className="h-7 w-7 text-primary mx-auto mb-3" />
           <p className="text-lg sm:text-xl font-semibold text-secondary-foreground leading-relaxed max-w-3xl mx-auto">
-            "{HIGHLIGHT_QUOTE.quote}"
+            «{t("highlightQuote")}»
           </p>
           <p className="mt-4 text-sm text-muted-foreground">
-            — {HIGHLIGHT_QUOTE.name}, {HIGHLIGHT_QUOTE.role}
+            — {t("highlightName")}, {t("highlightRole")}
           </p>
         </div>
+
 
         {/* Real early-user testimonials */}
         <div className="text-center max-w-2xl mx-auto mb-8">
