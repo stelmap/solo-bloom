@@ -740,7 +740,6 @@ export function useCancelAppointment() {
     },
   });
 }
-}
 
 // Bulk cancel appointments for day-off + send cancellation emails
 export function useBulkCancelForDayOff() {
