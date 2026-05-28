@@ -454,45 +454,6 @@ const C = {
     pl: "SoloBizz daje każdemu terapeucie kompletny system zarządzania praktyką już od pierwszej sesji.",
   },
 
-  // Inline pricing FAQ
-  pfaq1Q: {
-    en: "Do paid plans unlock extra features?",
-    fr: "Les forfaits payants débloquent-ils des fonctionnalités supplémentaires ?",
-    uk: "Чи відкривають платні плани додаткові функції?",
-    pl: "Czy plany płatne odblokowują dodatkowe funkcje?",
-  },
-  pfaq1A: {
-    en: "No. SoloBizz is one complete system — every feature is available on every plan, including Free Starter. Paid plans only raise the active-client limit and add priority support on Pro.",
-    fr: "Non. SoloBizz est un système complet — toutes les fonctionnalités sont disponibles sur chaque forfait, y compris Free Starter. Les forfaits payants augmentent uniquement la limite de clients actifs et ajoutent le support prioritaire sur Pro.",
-    uk: "Ні. SoloBizz — це одна повна система: усі функції доступні на кожному плані, включно з Free Starter. Платні плани лише збільшують ліміт активних клієнтів і додають пріоритетну підтримку на Pro.",
-    pl: "Nie. SoloBizz to jeden kompletny system — wszystkie funkcje są dostępne w każdym planie, łącznie z Free Starter. Plany płatne tylko zwiększają limit aktywnych klientów i dodają wsparcie priorytetowe w Pro.",
-  },
-  pfaq2Q: {
-    en: "What happens when I add a 6th client?",
-    fr: "Que se passe-t-il quand j'ajoute un 6ᵉ client ?",
-    uk: "Що станеться, коли я додам 6-го клієнта?",
-    pl: "Co się stanie, gdy dodam 6. klienta?",
-  },
-  pfaq2A: {
-    en: "The system suggests upgrading to a plan with a higher active-client limit. Your data and settings stay — only the limit changes.",
-    fr: "Le système vous propose de passer à un forfait avec une limite plus élevée. Vos données et réglages restent — seule la limite change.",
-    uk: "Система запропонує перейти на план із вищим лімітом активних клієнтів. Дані та налаштування залишаються — змінюється лише ліміт.",
-    pl: "System zaproponuje przejście na plan z wyższym limitem aktywnych klientów. Dane i ustawienia zostają — zmienia się tylko limit.",
-  },
-  pfaq3Q: {
-    en: "Can I cancel my subscription?",
-    fr: "Puis-je annuler mon abonnement ?",
-    uk: "Чи можна скасувати підписку?",
-    pl: "Czy mogę anulować subskrypcję?",
-  },
-  pfaq3A: {
-    en: "Yes, you can cancel anytime. Free Starter remains available within its 5 active client limit.",
-    fr: "Oui, vous pouvez annuler à tout moment. Free Starter reste disponible dans la limite de 5 clients actifs.",
-    uk: "Так, скасувати можна будь-коли. Free Starter залишається доступним у межах ліміту 5 активних клієнтів.",
-    pl: "Tak, możesz anulować w dowolnej chwili. Free Starter pozostaje dostępny w ramach limitu 5 aktywnych klientów.",
-  },
-
-  // ROI / time saving — comparison tiles
   roiTilesTitle: {
     en: "What manual admin can cost you",
     fr: "Ce que peut coûter l'admin manuelle",
@@ -1314,29 +1275,6 @@ function PricingSection() {
           {t("privacyShort")}
         </p>
 
-        <div className="mt-12 max-w-3xl mx-auto">
-          <Accordion type="single" collapsible className="rounded-2xl border border-border bg-card divide-y divide-border">
-            {[
-              { q: "pfaq1Q" as CopyKey, a: "pfaq1A" as CopyKey },
-              { q: "pfaq2Q" as CopyKey, a: "pfaq2A" as CopyKey },
-              { q: "pfaq3Q" as CopyKey, a: "pfaq3A" as CopyKey },
-            ].map((it, idx) => (
-              <AccordionItem key={it.q} value={`pfaq-${idx}`} className="border-0 px-5">
-                <AccordionTrigger
-                  onClick={() =>
-                    track("cta_clicked", { source_page: "/#pricing", cta: "landing_pricing_faq_open", plan_type: it.q })
-                  }
-                  className="text-left text-base font-semibold text-foreground"
-                >
-                  {t(it.q)}
-                </AccordionTrigger>
-                <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
-                  {t(it.a)}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
       </div>
     </section>
     </BillingCycleContext.Provider>
