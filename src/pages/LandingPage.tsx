@@ -50,6 +50,18 @@ const C = {
     uk: "Уся ваша приватна практика. В одному місці.",
     pl: "Cała Twoja prywatna praktyka. W jednym miejscu.",
   },
+  heroTitlePrefix: {
+    en: "Your full private practice.",
+    fr: "Toute votre pratique privée.",
+    uk: "Уся ваша приватна практика.",
+    pl: "Cała Twoja prywatna praktyka.",
+  },
+  heroTitleAccent: {
+    en: "Organised in one place.",
+    fr: "Organisée au même endroit.",
+    uk: "В одному місці.",
+    pl: "W jednym miejscu.",
+  },
   heroSub: {
     en: "SoloBizz manages your clients, calendar, bookings, payments, invoices and financial reports — automatically. So you spend your time on clients, not spreadsheets.",
     fr: "SoloBizz gère vos clients, agenda, réservations, paiements, factures et rapports financiers — automatiquement. Vous consacrez votre temps aux clients, pas aux tableurs.",
@@ -57,13 +69,18 @@ const C = {
     pl: "SoloBizz prowadzi klientów, kalendarz, zapisy, płatności, faktury i raporty finansowe — automatycznie. Czas poświęcasz klientom, a nie arkuszom.",
   },
   heroCta: { en: "Start free — no card needed", fr: "Commencer gratuitement — sans carte", uk: "Почати безкоштовно — без картки", pl: "Zacznij za darmo — bez karty" },
-  heroSecondary: { en: "See how it works", fr: "Voir comment ça marche", uk: "Подивитись, як це працює", pl: "Zobacz, jak to działa" },
+  heroSecondary: { en: "See pricing", fr: "Voir les tarifs", uk: "Подивитись ціни", pl: "Zobacz cennik" },
   heroSubCta: {
     en: "Free Starter: free forever, up to 5 active clients. No credit card required.",
     fr: "Free Starter : gratuit pour toujours, jusqu'à 5 clients actifs. Sans carte bancaire.",
     uk: "Free Starter: безкоштовно назавжди, до 5 активних клієнтів. Без банківської картки.",
     pl: "Free Starter: za darmo na zawsze, do 5 aktywnych klientów. Bez karty kredytowej.",
   },
+  // Stats
+  statsTherapists: { en: "therapists already use SoloBizz", fr: "thérapeutes utilisent déjà SoloBizz", uk: "терапевтів вже користуються SoloBizz", pl: "terapeutów już korzysta z SoloBizz" },
+  statsTime: { en: "of admin time saved every week", fr: "de temps admin économisé chaque semaine", uk: "адмін-часу заощаджується щотижня", pl: "czasu administracyjnego oszczędzane co tydzień" },
+  statsSetup: { en: "average practice setup time", fr: "temps moyen d'installation de la pratique", uk: "середній час налаштування практики", pl: "średni czas konfiguracji praktyki" },
+  setupAssist: { en: "Want a fast start? Leave a request — and we'll help set up your practice.", fr: "Vous voulez démarrer vite ? Laissez une demande — nous vous aidons à configurer votre pratique.", uk: "Хочете швидкий старт? Залиште заявку — і ми допоможемо налаштувати практику.", pl: "Chcesz szybki start? Zostaw zgłoszenie — pomożemy skonfigurować praktykę." },
 
   heroRoi: {
     en: "With 20+ clients, manual admin can take 4–8+ hours a week. SoloBizz helps you win that time back.",
@@ -804,7 +821,8 @@ function HeroSection() {
           {t("heroBadge")}
         </div>
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground tracking-tight leading-[1.1] mb-5">
-          {t("heroTitle")}
+          <span>{t("heroTitlePrefix")}</span>{" "}
+          <span className="text-primary">{t("heroTitleAccent")}</span>
         </h1>
         <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
           {t("heroSub")}
@@ -813,23 +831,48 @@ function HeroSection() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <PrimaryCta label={t("heroCta")} source="/" cta="hero" className="text-base px-8 h-12" />
             <a
-              href="#comparison"
+              href="#pricing"
               className="inline-flex items-center justify-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-4 h-12"
             >
               {t("heroSecondary")}
             </a>
           </div>
           <p className="text-sm text-muted-foreground">{t("heroSubCta")}</p>
-          <div className="mt-2 inline-flex items-start gap-2 max-w-xl rounded-xl border border-primary/30 bg-primary/5 px-4 py-2.5 text-left">
-            <Clock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-            <p className="text-sm font-medium text-foreground/90 leading-snug">{t("heroRoi")}</p>
-          </div>
           <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground mt-2">
-            <li className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-primary" /> {t("trustData")}</li>
-            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> {t("trustStripe")}</li>
-            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> {t("trustGdpr")}</li>
-            <li className="inline-flex items-center gap-1.5"><MessageCircle className="h-3.5 w-3.5 text-primary" /> {t("trustSupport")}</li>
+            <li className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-success" /> {t("trustData")}</li>
+            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-success" /> {t("trustStripe")}</li>
+            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-success" /> {t("trustGdpr")}</li>
+            <li className="inline-flex items-center gap-1.5"><MessageCircle className="h-3.5 w-3.5 text-success" /> {t("trustSupport")}</li>
           </ul>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────
+
+function StatsSection() {
+  const { t } = useLandingLang();
+  const stats = [
+    { num: "300+", label: t("statsTherapists") },
+    { num: "4–8h", label: t("statsTime") },
+    { num: "15 min", label: t("statsSetup") },
+  ];
+  return (
+    <section className="px-4 sm:px-6 pb-4">
+      <div className="max-w-5xl mx-auto rounded-2xl bg-secondary text-secondary-foreground px-6 sm:px-10 py-10 shadow-elegant">
+        <div className="grid grid-cols-1 sm:grid-cols-3 sm:divide-x sm:divide-white/10 gap-6 sm:gap-0">
+          {stats.map((s) => (
+            <div key={s.num} className="text-center px-4">
+              <div className="text-4xl sm:text-5xl font-bold text-primary mb-2 tracking-tight">{s.num}</div>
+              <div className="text-sm text-secondary-foreground/75 leading-snug">{s.label}</div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-8 flex items-center justify-center gap-2 text-sm text-secondary-foreground/80">
+          <Sparkles className="h-4 w-4 text-primary shrink-0" />
+          <span>{t("setupAssist")}</span>
         </div>
       </div>
     </section>
@@ -1939,6 +1982,7 @@ export default function LandingPage() {
         <LandingNav />
         <main>
           <HeroSection />
+          <StatsSection />
           <PainSection />
           <AudienceSection />
           <DemoSection />
