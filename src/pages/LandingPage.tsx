@@ -796,40 +796,25 @@ function DashboardPreview() {
 
 function HeroSection() {
   const { t } = useLandingLang();
-  const fullTitle = t("heroTitle");
-  // Split on the last period so the final sentence renders in serif italic accent
-  const match = fullTitle.match(/^(.*\.)\s+([^.]+\.?)$/);
-  const titleLead = match ? match[1] : fullTitle;
-  const titleAccent = match ? match[2] : "";
   return (
-    <section className="relative pt-28 pb-20 px-4 sm:px-6 overflow-hidden">
-      <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-primary-soft via-background to-background" />
-      <div aria-hidden className="absolute top-20 left-1/2 -translate-x-1/2 h-[420px] w-[820px] max-w-[95vw] rounded-full bg-primary/15 blur-3xl opacity-60 -z-10" />
+    <section className="pt-28 pb-16 px-4 sm:px-6">
       <div className="max-w-5xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8 border border-primary/20">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
           <Sparkles className="h-3.5 w-3.5" />
           {t("heroBadge")}
         </div>
-        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-foreground tracking-tight leading-[1.05] mb-6">
-          {titleLead}
-          {titleAccent && (
-            <>
-              <br />
-              <span className="font-serif-display text-primary text-[1.05em] leading-[1.1]">
-                {titleAccent}
-              </span>
-            </>
-          )}
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground tracking-tight leading-[1.1] mb-5">
+          {t("heroTitle")}
         </h1>
-        <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
+        <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
           {t("heroSub")}
         </p>
-        <div className="flex flex-col items-center gap-5">
+        <div className="flex flex-col items-center gap-4">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <PrimaryCta label={t("heroCta")} source="/" cta="hero" className="text-base px-8 h-14 rounded-xl shadow-glow" />
+            <PrimaryCta label={t("heroCta")} source="/" cta="hero" className="text-base px-8 h-12" />
             <a
               href="#comparison"
-              className="inline-flex items-center justify-center text-base font-medium text-foreground/80 hover:text-foreground transition-colors px-5 h-14"
+              className="inline-flex items-center justify-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-4 h-12"
             >
               {t("heroSecondary")}
             </a>
@@ -839,11 +824,11 @@ function HeroSection() {
             <Clock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
             <p className="text-sm font-medium text-foreground/90 leading-snug">{t("heroRoi")}</p>
           </div>
-          <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs sm:text-sm text-muted-foreground mt-3">
-            <li className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-primary" /> {t("trustData")}</li>
-            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-primary" /> {t("trustStripe")}</li>
-            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-primary" /> {t("trustGdpr")}</li>
-            <li className="inline-flex items-center gap-1.5"><MessageCircle className="h-4 w-4 text-primary" /> {t("trustSupport")}</li>
+          <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground mt-2">
+            <li className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-primary" /> {t("trustData")}</li>
+            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> {t("trustStripe")}</li>
+            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> {t("trustGdpr")}</li>
+            <li className="inline-flex items-center gap-1.5"><MessageCircle className="h-3.5 w-3.5 text-primary" /> {t("trustSupport")}</li>
           </ul>
         </div>
       </div>
