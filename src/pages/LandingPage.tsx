@@ -963,21 +963,21 @@ function WhatChangesSection() {
             </ul>
           </div>
 
-          {/* With SoloBizz card */}
-          <div className="relative flex flex-col p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-primary/[0.06] via-card to-primary/[0.04] border-2 border-primary/40 shadow-lg shadow-primary/10">
+          {/* With SoloBizz card — green success accent */}
+          <div className="relative flex flex-col p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-emerald-50 via-card to-emerald-50/60 dark:from-emerald-950/30 dark:via-card dark:to-emerald-950/20 border-2 border-emerald-500/40 shadow-lg shadow-emerald-500/10">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-xl sm:text-2xl font-bold text-foreground">
                 {t("whatChangesWithTitle")}
               </h3>
-              <span className="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-primary/15 text-primary">
+              <span className="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
                 {t("cmpSoloBadge")}
               </span>
             </div>
             <ul className="space-y-3.5 flex-1">
               {withItems.map((k) => (
                 <li key={k} className="flex items-start gap-3 text-foreground">
-                  <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/15 shrink-0">
-                    <Check className="h-4 w-4 text-primary" />
+                  <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 shrink-0">
+                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                   </span>
                   <span className="text-base leading-relaxed font-medium">{t(k)}</span>
                 </li>
@@ -986,11 +986,33 @@ function WhatChangesSection() {
           </div>
         </div>
 
-        <div className="mt-10 text-center">
-          <p className="text-lg sm:text-xl font-semibold text-foreground max-w-3xl mx-auto leading-relaxed">
-            {t("whatChangesSummary")}
+        <div className="mt-12 text-center max-w-[760px] mx-auto">
+          <p className="text-lg sm:text-xl font-semibold text-foreground leading-relaxed">
+            {(() => {
+              const full = t("whatChangesSummary");
+              const hi = t("whatChangesSummaryHighlight");
+              const idx = full.toLowerCase().indexOf(hi.toLowerCase());
+              if (idx === -1) return full;
+              return (
+                <>
+                  {full.slice(0, idx)}
+                  <span className="text-primary font-bold">{full.slice(idx, idx + hi.length)}</span>
+                  {full.slice(idx + hi.length)}
+                </>
+              );
+            })()}
           </p>
+          <div className="mt-6 flex flex-col items-center gap-3">
+            <PrimaryCta
+              label={t("whatChangesCta")}
+              source="/"
+              cta="what_changes_cta"
+              className="rounded-full px-8"
+            />
+            <p className="text-sm text-muted-foreground">{t("whatChangesCtaNote")}</p>
+          </div>
         </div>
+
       </div>
     </section>
   );
