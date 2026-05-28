@@ -2107,7 +2107,10 @@ export function useDashboardStats() {
 
       // ===== Monthly metrics =====
       const monthApts = (monthAptRes.data ?? []) as Array<{ client_id: string; status: string; scheduled_at: string }>;
-      const activeClientsThisMonth = new Set(monthApts.map((a) => a.client_id)).size;
+      // Match ClientsPage filter (activeThisMonth): exclude cancelled sessions
+      const activeClientsThisMonth = new Set(
+        monthApts.filter((a) => a.status !== "cancelled").map((a) => a.client_id)
+      ).size;
 
       // New clients: first session date in current month
       const allApts = (monthClientsRes.data ?? []) as Array<{ client_id: string; scheduled_at: string }>;
