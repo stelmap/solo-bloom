@@ -911,6 +911,7 @@ export default {
   "groups.attended": "Присутній",
   "groups.absent": "Відсутній",
   "groups.skipped": "Пропущено",
+  "groups.n_a": "Н/Д",
   "groups.analytics": "Аналітика",
   "groups.totalSessions": "Всього сеансів",
   "groups.completedSessions": "Завершених",
