@@ -53,6 +53,10 @@ export default {
   "calendar.cancel": "Cancel",
   "calendar.noShow": "No-show",
   "noShow.description": "How should this no-show be handled?",
+  "cancelSession.title": "Cancel session",
+  "cancelSession.description": "Should the client still be charged for this session?",
+  "common.back": "Back",
+
   "noShow.charge": "Charge the client",
   "noShow.chargeDesc": "will be added as a pending payment",
   "noShow.waive": "Waive the fee",
