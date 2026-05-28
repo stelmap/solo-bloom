@@ -17,8 +17,12 @@ export function GoogleSignInButton({ disabled }: Props) {
   const handleClick = async () => {
     setLoading(true);
     try {
+      // Use the site root as redirect_uri — this is what Lovable's OAuth broker
+      // expects and what is allow-listed for preview, published, and custom
+      // domains. Once the session is set, Index.tsx will route the
+      // authenticated user to the post-auth destination (calendar).
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/calendar`,
+        redirect_uri: window.location.origin,
       });
       if (result.error) {
         const msg = (result.error as any)?.message?.toLowerCase?.() ?? "";
@@ -31,9 +35,12 @@ export function GoogleSignInButton({ disabled }: Props) {
         setLoading(false);
         return;
       }
-      // On redirect, the browser will navigate away. On success with tokens, session is set.
+      // If the broker redirected the browser, navigation already happened.
+      // Otherwise tokens were returned + session is now set — force a full
+      // navigation to the post-auth destination so all providers re-init
+      // with the fresh session.
       if (!result.redirected) {
-        window.location.href = "/calendar";
+        window.location.href = getPostAuthRedirect();
       }
     } catch (e) {
       toast({
@@ -44,6 +51,7 @@ export function GoogleSignInButton({ disabled }: Props) {
       setLoading(false);
     }
   };
+
 
   return (
     <Button
