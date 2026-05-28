@@ -434,7 +434,7 @@ export default function CalendarPage() {
         duration_minutes: Number(qaService.duration_minutes),
         price: Number(qaService.price || 0),
       });
-      qcRef.setQueryData(["services", user?.id], (prev: any[] | undefined) =>
+      qc.setQueryData(["services", currentUserId], (prev: any[] | undefined) =>
         prev ? [...prev, s] : [s],
       );
       setForm(f => ({ ...f, service_id: s.id }));
