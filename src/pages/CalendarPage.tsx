@@ -412,6 +412,11 @@ export default function CalendarPage() {
         email: qaClient.email.trim() || undefined,
         phone: qaClient.phone.trim() || undefined,
       });
+      // Push into the clients cache immediately so the Select can render
+      // the new option on the same tick (invalidate refetch is async).
+      qc.setQueriesData({ queryKey: ["clients"] }, (prev: any) =>
+        prev ? [...prev, c] : [c],
+      );
       setForm(f => ({ ...f, client_id: c.id }));
       setQaClient({ name: "", email: "", phone: "" });
       setQaClientOpen(false);
@@ -429,6 +434,9 @@ export default function CalendarPage() {
         duration_minutes: Number(qaService.duration_minutes),
         price: Number(qaService.price || 0),
       });
+      qc.setQueriesData({ queryKey: ["services"] }, (prev: any) =>
+        prev ? [...prev, s] : [s],
+      );
       setForm(f => ({ ...f, service_id: s.id }));
       setServiceError(false);
       setQaService({ name: "", duration_minutes: 60, price: 0 });
@@ -1283,6 +1291,8 @@ export default function CalendarPage() {
                             onChange={v => setForm(f => ({ ...f, client_id: v }))}
                             placeholder={t("calendar.selectClient")}
                             triggerClassName={cn("flex-1", D.field)}
+                            onAddNew={() => setQaClientOpen(true)}
+                            addNewLabel={L.addNewClient}
                           />
                           <Button type="button" variant="outline" className={cn("px-2.5 gap-1 whitespace-nowrap shrink-0", D.field)} onClick={() => setQaClientOpen(true)}>
                             <Plus className="h-3.5 w-3.5" /> {L.addNewClient}
@@ -1546,11 +1556,13 @@ export default function CalendarPage() {
                         <div className="space-y-1.5">
                           <Label>{L.serviceDuration} ({L.durationMin}) *</Label>
                           <Input type="number" min={5} step={5} value={qaService.duration_minutes}
+                            onFocus={e => e.currentTarget.select()}
                             onChange={e => setQaService(s => ({ ...s, duration_minutes: parseInt(e.target.value) || 0 }))} />
                         </div>
                         <div className="space-y-1.5">
                           <Label>{L.servicePrice} ({cs})</Label>
                           <Input type="number" min={0} step="0.01" value={qaService.price}
+                            onFocus={e => e.currentTarget.select()}
                             onChange={e => setQaService(s => ({ ...s, price: parseFloat(e.target.value) || 0 }))} />
                         </div>
                       </div>
