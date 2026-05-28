@@ -28,6 +28,7 @@ const TELEGRAM_URL = "https://t.me/solobizzcontact";
 const TELEGRAM_HANDLE = "@solobizzcontact";
 const PHONE_NUMBER = "+48 572 600 256";
 const OFFICE_ADDRESS = "Poland, Wrocław, Gwiaździsta 16";
+const OFFICE_ADDRESS_LVIV = "Львів, вулиця Червоної калини, 46";
 const VACANCIES_URL = "/careers";
 
 // ── Local landing-page copy (EN / FR / UK / PL) ───────────────────────
@@ -1739,6 +1740,15 @@ function AboutContactsSection() {
               </div>
             </li>
             <li className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
+              <MapPin className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+              <div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">
+                  {isUk ? "Локація" : "Location"}
+                </div>
+                <div className="text-foreground">{OFFICE_ADDRESS_LVIV}</div>
+              </div>
+            </li>
+            <li className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
               <Mail className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
                 <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">Email</div>
@@ -1812,6 +1822,10 @@ function LandingFooter() {
             <p className="text-sm text-muted-foreground flex items-start gap-2">
               <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
               {OFFICE_ADDRESS}
+            </p>
+            <p className="text-sm text-muted-foreground flex items-start gap-2 mt-1">
+              <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              {OFFICE_ADDRESS_LVIV}
             </p>
           </div>
           {groups.map((g) => (
