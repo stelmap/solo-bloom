@@ -727,7 +727,8 @@ function LandingNav() {
 // ── Hero ──────────────────────────────────────────────────────────────
 
 function HeroSection() {
-  const { t } = useLandingLang();
+  const { t, lang } = useLandingLang();
+  const accent = t("heroTitleAccent");
   return (
     <section className="pt-40 pb-28 sm:pt-44 sm:pb-32 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto text-center">
@@ -737,10 +738,13 @@ function HeroSection() {
         </div>
         <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground tracking-tight leading-[1.1] mb-8 max-w-5xl mx-auto">
           <span className="block">{t("heroTitlePrefix")}</span>
-          <span className="block text-primary mt-2">{t("heroTitleAccent")}</span>
+          {accent && <span className="block text-primary mt-2">{accent}</span>}
         </h1>
-        <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
+        <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto mb-6 leading-relaxed">
           {t("heroSub")}
+        </p>
+        <p className="text-base sm:text-lg text-foreground/80 max-w-3xl mx-auto mb-10 leading-relaxed">
+          {t("heroSocialProof")}
         </p>
         <div className="flex flex-col items-center gap-8">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -755,8 +759,8 @@ function HeroSection() {
           <p className="text-sm text-muted-foreground">{t("heroSubCta")}</p>
           <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs sm:text-sm text-muted-foreground mt-4">
             <li className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-success" /> {t("trustData")}</li>
-            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /> {t("trustStripe")}</li>
             <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /> {t("trustGdpr")}</li>
+            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /> {t("trustStripe")}</li>
             <li className="inline-flex items-center gap-1.5"><MessageCircle className="h-4 w-4 text-success" /> {t("trustSupport")}</li>
           </ul>
         </div>
