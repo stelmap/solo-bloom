@@ -1107,10 +1107,9 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                       : paymentStatus === "waiting_for_payment"
                       ? t("calendar.willBeExpected", { symbol: cs, amount: sessionPrice.toFixed(2) })
                       : paymentStatus === "paid_from_prepayment"
-                      ? (prepaymentCovers >= sessionPrice
-                          ? t("prepayment.willDeduct", { symbol: cs, amount: sessionPrice.toFixed(2), remaining: prepaymentRemainingAfter.toFixed(2) })
-                          : t("prepayment.willPartiallyDeduct", { symbol: cs, covered: prepaymentCovers.toFixed(2), remaining: (sessionPrice - prepaymentCovers).toFixed(2) }))
+                      ? t("prepayment.willDeduct", { symbol: cs, amount: sessionPrice.toFixed(2), remaining: prepaymentRemainingAfter.toFixed(2) })
                       : t("calendar.willBeIncome", { symbol: cs, amount: amountPaid.toFixed(2) })}
+
                   </p>
 
                 </div>
