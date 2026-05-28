@@ -1277,25 +1277,6 @@ function PricingSection() {
 
         <div className="mt-12 max-w-3xl mx-auto">
           <Accordion type="single" collapsible className="rounded-2xl border border-border bg-card divide-y divide-border">
-            {[
-              { q: "pfaq1Q" as CopyKey, a: "pfaq1A" as CopyKey },
-              { q: "pfaq2Q" as CopyKey, a: "pfaq2A" as CopyKey },
-              { q: "pfaq3Q" as CopyKey, a: "pfaq3A" as CopyKey },
-            ].map((it, idx) => (
-              <AccordionItem key={it.q} value={`pfaq-${idx}`} className="border-0 px-5">
-                <AccordionTrigger
-                  onClick={() =>
-                    track("cta_clicked", { source_page: "/#pricing", cta: "landing_pricing_faq_open", plan_type: it.q })
-                  }
-                  className="text-left text-base font-semibold text-foreground"
-                >
-                  {t(it.q)}
-                </AccordionTrigger>
-                <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
-                  {t(it.a)}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
           </Accordion>
         </div>
       </div>
