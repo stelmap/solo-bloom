@@ -551,7 +551,8 @@ const C = {
 
 
   // FAQ
-  faqTitle: { en: "Frequently asked questions", fr: "Questions fréquentes", uk: "Питання, які часто виникають", pl: "Często zadawane pytania" },
+  faqEyebrow: { en: "Questions before you start", fr: "Questions avant de commencer", uk: "Питання перед початком", pl: "Pytania przed startem" },
+  faqTitle: { en: "Answers to the main questions", fr: "Réponses aux questions principales", uk: "Відповіді на головні питання", pl: "Odpowiedzi na główne pytania" },
   faq1Q: { en: "Is it hard to start using SoloBizz?", fr: "Est-ce compliqué de démarrer avec SoloBizz ?", uk: "Чи складно почати користуватись SoloBizz?", pl: "Czy trudno zacząć korzystać z SoloBizz?" },
   faq1A: {
     en: "No. Sign up with the Free Starter plan and start using SoloBizz right away — no setup required.",
