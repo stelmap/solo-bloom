@@ -53,13 +53,13 @@ const C = {
   heroTitlePrefix: {
     en: "Your full private practice.",
     fr: "Toute votre pratique privée.",
-    uk: "Ваша практика заслуговує на систему.",
+    uk: "Уся ваша приватна практика.",
     pl: "Cała Twoja prywatna praktyka.",
   },
   heroTitleAccent: {
     en: "Organised in one place.",
     fr: "Organisée au même endroit.",
-    uk: "",
+    uk: "В одному місці.",
     pl: "W jednym miejscu.",
   },
   heroSub: {
@@ -774,7 +774,7 @@ function HeroSection() {
 function StatsSection() {
   const { t } = useLandingLang();
   const stats = [
-    { num: "100+", label: t("statsTherapists") },
+    { num: "300+", label: t("statsTherapists") },
     { num: "4–8 год", label: t("statsTime") },
     { num: "15 хв", label: t("statsSetup") },
   ];
