@@ -53,6 +53,10 @@ export default {
   "calendar.cancel": "Annuler",
   "calendar.noShow": "Absence",
   "noShow.description": "Comment traiter cette absence ?",
+  "cancelSession.title": "Annuler la séance",
+  "cancelSession.description": "Faut-il facturer cette séance au client ?",
+  "common.back": "Retour",
+
   "noShow.charge": "Facturer le client",
   "noShow.chargeDesc": "sera ajouté comme paiement en attente",
   "noShow.waive": "Annuler les frais",

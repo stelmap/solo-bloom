@@ -90,7 +90,9 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [editChoiceOpen, setEditChoiceOpen] = useState(false);
   const [paymentEditOpen, setPaymentEditOpen] = useState(false);
   const [noShowOpen, setNoShowOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
   const [sendingReminder, setSendingReminder] = useState(false);
+
 
   // Edit form
   const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "", notes: "", price: 0, days_of_week: [1] as number[], interval_weeks: 1, price_override_reason: "" });
@@ -171,23 +173,39 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const fullyPreallocated = sessionPrice > 0 && alreadyAllocated + 0.001 >= sessionPrice;
   const partiallyPreallocated = !fullyPreallocated && alreadyAllocated > 0.001;
 
-  const PAYMENT_STATUSES = [
-    ...(fullyPreallocated && !isGroupSession ? [{
-      value: "already_paid",
-      label: t("payment.alreadyPaid"),
-      description: t("payment.alreadyPaidDesc", { symbol: cs, amount: alreadyAllocated.toFixed(2) }),
-    }] : []),
-    ...(hasPrepayment && !isGroupSession ? [{
-      value: "paid_from_prepayment",
-      label: t("payment.paidFromPrepayment"),
-      description: prepaymentCovers >= sessionPrice
-        ? t("payment.paidFromPrepaymentDesc", { symbol: cs, amount: prepaymentRemainingAfter.toFixed(2) })
-        : t("payment.paidFromPrepaymentPartialDesc", { symbol: cs, covered: prepaymentCovers.toFixed(2), remaining: (sessionPrice - prepaymentCovers).toFixed(2) }),
-    }] : []),
-    { value: "paid_now", label: t("payment.paidNow"), description: t("payment.paidNowDesc") },
-    { value: "paid_in_advance", label: t("payment.paidInAdvance"), description: t("payment.paidInAdvanceDesc") },
-    { value: "waiting_for_payment", label: t("payment.waitingForPayment"), description: t("payment.waitingForPaymentDesc") },
-  ];
+  // When the session is already covered by an existing prepayment or by the
+  // client's prepaid balance, the only valid completion outcome is "paid in
+  // advance". Hide all other payment options so the user cannot accidentally
+  // record a duplicate payment or leave it pending.
+  const fullyCoveredByPrepayment =
+    !isGroupSession && (fullyPreallocated || (hasPrepayment && prepaymentCovers >= sessionPrice - 0.001));
+
+  const PAYMENT_STATUSES = fullyCoveredByPrepayment
+    ? [
+        fullyPreallocated
+          ? {
+              value: "already_paid",
+              label: t("payment.alreadyPaid"),
+              description: t("payment.alreadyPaidDesc", { symbol: cs, amount: alreadyAllocated.toFixed(2) }),
+            }
+          : {
+              value: "paid_from_prepayment",
+              label: t("payment.paidFromPrepayment"),
+              description: t("payment.paidFromPrepaymentDesc", { symbol: cs, amount: prepaymentRemainingAfter.toFixed(2) }),
+            },
+      ]
+    : [
+        ...(hasPrepayment && !isGroupSession ? [{
+          value: "paid_from_prepayment",
+          label: t("payment.paidFromPrepayment"),
+          description: prepaymentCovers >= sessionPrice
+            ? t("payment.paidFromPrepaymentDesc", { symbol: cs, amount: prepaymentRemainingAfter.toFixed(2) })
+            : t("payment.paidFromPrepaymentPartialDesc", { symbol: cs, covered: prepaymentCovers.toFixed(2), remaining: (sessionPrice - prepaymentCovers).toFixed(2) }),
+        }] : []),
+        { value: "paid_now", label: t("payment.paidNow"), description: t("payment.paidNowDesc") },
+        { value: "paid_in_advance", label: t("payment.paidInAdvance"), description: t("payment.paidInAdvanceDesc") },
+        { value: "waiting_for_payment", label: t("payment.waitingForPayment"), description: t("payment.waitingForPaymentDesc") },
+      ];
 
 
   const PAYMENT_STATUS_STYLES: Record<string, { label: string; color: string }> = {
@@ -198,7 +216,9 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     paid_from_prepayment: { label: t("payment.paidFromPrepaymentShort"), color: "text-success" },
     partially_paid_from_prepayment: { label: t("payment.partiallyPaidFromPrepayment"), color: "text-warning" },
     partially_paid: { label: t("payment.partiallyPaid"), color: "text-warning" },
+    not_applicable: { label: t("payment.na"), color: "text-muted-foreground" },
   };
+
 
   const statusInfo = STATUSES[apt.status] || STATUSES.scheduled;
   const payInfo = PAYMENT_STATUS_STYLES[apt.payment_status] || PAYMENT_STATUS_STYLES.unpaid;
@@ -485,19 +505,22 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       if (status === "cancelled" || status === "no-show") {
         await cancelAppointment.mutateAsync({
           id: apt.id, status,
-          clientId: waiveFee ? undefined : apt.client_id,
-          price: waiveFee ? 0 : Number(apt.price),
+          clientId: apt.client_id,
+          price: Number(apt.price),
+          chargeFee: !waiveFee,
         });
       } else {
         await updateAppointment.mutateAsync({ id: apt.id, status });
       }
       toast({ title: t("toast.statusUpdated", { status: STATUSES[status]?.label || status }) });
       setNoShowOpen(false);
+      setCancelOpen(false);
       onOpenChange(false);
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
+
 
   const handleDelete = async () => {
     try {
@@ -783,7 +806,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
               {isActive && (
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => handleStatusChange("cancelled")} className="text-destructive hover:text-destructive">
+                  <Button variant="outline" size="sm" onClick={() => setCancelOpen(true)} className="text-destructive hover:text-destructive">
+
                     <XCircle className="h-3.5 w-3.5 mr-1" /> {t("calendar.cancel")}
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => setNoShowOpen(true)} className="text-warning hover:text-warning">
@@ -818,10 +842,11 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                       </Button>
                     )}
                     {apt.status !== "cancelled" && (
-                      <Button variant="outline" size="sm" onClick={() => handleStatusChange("cancelled")} className="text-destructive hover:text-destructive">
+                      <Button variant="outline" size="sm" onClick={() => setCancelOpen(true)} className="text-destructive hover:text-destructive">
                         <XCircle className="h-3.5 w-3.5 mr-1" /> {t("calendar.cancel")}
                       </Button>
                     )}
+
                     {apt.status !== "no-show" && (
                       <Button variant="outline" size="sm" onClick={() => setNoShowOpen(true)} className="text-warning hover:text-warning">
                         <Ban className="h-3.5 w-3.5 mr-1" /> {t("calendar.noShow")}
@@ -1292,6 +1317,34 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>{t("cancelSession.title")}</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">{t("cancelSession.description")}</p>
+          <div className="space-y-2">
+            <Button variant="outline" className="w-full justify-start" onClick={() => handleStatusChange("cancelled", false)}>
+              <DollarSign className="h-4 w-4 mr-2 text-warning" />
+              <div className="text-left">
+                <p className="text-sm font-medium">{t("noShow.charge")}</p>
+                <p className="text-xs text-muted-foreground">{cs}{Number(apt.price).toFixed(2)} {t("noShow.chargeDesc")}</p>
+              </div>
+            </Button>
+            <Button variant="outline" className="w-full justify-start" onClick={() => handleStatusChange("cancelled", true)}>
+              <XCircle className="h-4 w-4 mr-2 text-muted-foreground" />
+              <div className="text-left">
+                <p className="text-sm font-medium">{t("noShow.waive")}</p>
+                <p className="text-xs text-muted-foreground">{t("noShow.waiveDesc")}</p>
+              </div>
+            </Button>
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setCancelOpen(false)}>
+              <X className="h-4 w-4 mr-2" />
+              <p className="text-sm font-medium">{t("common.back")}</p>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </>
   );
 }

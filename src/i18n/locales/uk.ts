@@ -53,6 +53,10 @@ export default {
   "calendar.cancel": "Скасувати",
   "calendar.noShow": "Неявка",
   "noShow.description": "Як обробити цю неявку?",
+  "cancelSession.title": "Скасувати сесію",
+  "cancelSession.description": "Чи потрібно стягнути оплату за цю сесію?",
+  "common.back": "Назад",
+
   "noShow.charge": "Стягнути оплату",
   "noShow.chargeDesc": "буде додано як очікуваний платіж",
   "noShow.waive": "Не стягувати оплату",
