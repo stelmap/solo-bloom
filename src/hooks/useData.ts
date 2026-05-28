@@ -1166,7 +1166,7 @@ export function useUpdateExpense() {
         .neq("instance_status", "paid");
       if (instErr) throw instErr;
     },
-    onSuccess: () => { track("expense_updated"); ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("expense_updated"); [...INVALIDATE_FINANCIAL, "expenses-aggregates", "expense-categories"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
