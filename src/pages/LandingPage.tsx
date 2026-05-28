@@ -153,6 +153,25 @@ const C = {
   },
   painCta: { en: "See how SoloBizz works", fr: "Voir comment SoloBizz fonctionne", uk: "Дивись, як це працює в SoloBizz", pl: "Zobacz, jak działa SoloBizz" },
 
+  // What Changes
+  whatChangesEyebrow: { en: "WHAT CHANGES", fr: "CE QUI CHANGE", uk: "ЩО ЗМІНЮЄТЬСЯ", pl: "CO SIĘ ZMIENIA" },
+  whatChangesHeadline: { en: "The same Monday. A completely different start to the day.", fr: "Le même lundi. Un tout autre début de journée.", uk: "Той самий понеділок. Зовсім інший початок дня.", pl: "Ten sam poniedziałek. Zupełnie inny początek dnia." },
+  whatChangesSub: { en: "See how one tool replaces the morning chaos with clarity and control.", fr: "Découvrez comment un seul outil remplace le chaos matinal par la clarté et le contrôle.", uk: "Подивіться, як один інструмент замінює ранковий хаос на ясність і контроль.", pl: "Zobacz, jak jedno narzędzie zastępuje poranny chaos przejrzystością i kontrolą." },
+  whatChangesWithoutTitle: { en: "Monday without SoloBizz", fr: "Lundi sans SoloBizz", uk: "Понеділок без SoloBizz", pl: "Poniedziałek bez SoloBizz" },
+  whatChangesWithTitle: { en: "Monday with SoloBizz", fr: "Lundi avec SoloBizz", uk: "Понеділок з SoloBizz", pl: "Poniedziałek z SoloBizz" },
+  whatChangesWithout1: { en: "You open 5 different apps to remember who's coming today.", fr: "Vous ouvrez 5 applications différentes pour vous rappeler qui vient aujourd'hui.", uk: "Відкриваєте 5 різних додатків, щоб згадати, хто сьогодні на прийомі.", pl: "Otwierasz 5 różnych aplikacji, żeby przypomnieć sobie, kto dziś przychodzi." },
+  whatChangesWithout2: { en: "You check payments manually — and worry about missing something.", fr: "Vous vérifiez les paiements manuellement — et craignez d'oublier quelque chose.", uk: "Перевіряєте оплати вручну — і боїтеся щось упустити.", pl: "Sprawdzasz płatności ręcznie — i boisz się, że coś przeoczysz." },
+  whatChangesWithout3: { en: "You spend 30+ minutes sending reminders to clients.", fr: "Vous passez 30+ minutes à envoyer des rappels aux clients.", uk: "Тратите 30+ хвилин на розсилку нагадувань клієнтам.", pl: "Spędzasz 30+ minut na wysyłaniu przypomnień klientom." },
+  whatChangesWithout4: { en: "You don't know exactly how much you earned last week.", fr: "Vous ne savez pas exactement combien vous avez gagné la semaine dernière.", uk: "Не знаєте точно, скільки заробили за минулий тиждень.", pl: "Nie wiesz dokładnie, ile zarobiłeś w zeszłym tygodniu." },
+  whatChangesWithout5: { en: "You plan your schedule by eye, without knowing your workload.", fr: "Vous planifiez votre emploi du temps à l'œil nu, sans connaître votre charge.", uk: "Плануєте розклад «на око», без розуміння завантаженості.", pl: "Planujesz harmonogram „na oko”, bez zrozumienia obciążenia." },
+  whatChangesWithout6: { en: "The start of the week is stress and chaos.", fr: "Le début de la semaine, c'est le stress et le chaos.", uk: "Початок тижня — це стрес і хаос.", pl: "Początek tygodnia to stres i chaos." },
+  whatChangesWith1: { en: "One glance at the calendar — and you see your whole day.", fr: "Un coup d'œil au calendrier — et vous voyez toute votre journée.", uk: "Один погляд на календар — і ви бачите весь день.", pl: "Jedno spojrzenie na kalendarz — i widzisz cały dzień." },
+  whatChangesWith2: { en: "All payments and debts are highlighted automatically.", fr: "Tous les paiements et dettes sont mis en surbrillance automatiquement.", uk: "Всі оплати й борги підсвічені автоматично.", pl: "Wszystkie płatności i długi są podświetlane automatycznie." },
+  whatChangesWith3: { en: "Reminders are sent on their own — no effort needed.", fr: "Les rappels sont envoyés tout seuls — sans effort.", uk: "Нагадування відправляються самі — без вашої участі.", pl: "Przypomnienia wysyłają się same — bez twojego wysiłku." },
+  whatChangesWith4: { en: "Income and profit are calculated in real time.", fr: "Les revenus et les bénéfices sont calculés en temps réel.", uk: "Дохід і прибуток рахуються в реальному часі.", pl: "Dochód i zysk są obliczane w czasie rzeczywistym." },
+  whatChangesWith5: { en: "Clients book themselves through your link.", fr: "Les clients réservent eux-mêmes via votre lien.", uk: "Клієнти записуються самі через ваше посилання.", pl: "Klienci zapisują się sami przez twój link." },
+  whatChangesWith6: { en: "The start of the week is calm and under control.", fr: "Le début de la semaine est calme et sous contrôle.", uk: "Початок тижня — це спокій і контроль.", pl: "Początek tygodnia to spokój i kontrola." },
+  whatChangesSummary: { en: "The difference isn't how many hours you work. It's how many of them go to what truly matters.", fr: "La différence n'est pas le nombre d'heures travaillées. C'est combien d'entre elles sont consacrées à ce qui compte vraiment.", uk: "Різниця не в тому, скільки годин ви працюєте. Різниця в тому, скільки з них йде на те, що справді важливо.", pl: "Różnica nie polega na tym, ile godzin pracujesz. Chodzi o to, ile z nich idzie na to, co naprawdę się liczy." },
 
   // Audience
   audTitle: { en: "Who SoloBizz is for", fr: "À qui s'adresse SoloBizz", uk: "Кому підходить SoloBizz", pl: "Dla kogo jest SoloBizz" },
