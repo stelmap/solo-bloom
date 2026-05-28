@@ -945,7 +945,18 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
             <div className="space-y-5">
               <p className="text-sm text-muted-foreground">{t("calendar.confirmOutcome")}</p>
 
-              {/* Prepayment banner */}
+              {/* Pre-allocated prepayment banner (income already linked to this session) */}
+              {(fullyPreallocated || partiallyPreallocated) && (
+                <div className="rounded-lg border border-success/30 bg-success/5 p-3 text-sm">
+                  <p className="font-medium text-foreground">
+                    {fullyPreallocated
+                      ? t("prepayment.sessionAlreadyCovered", { symbol: cs, amount: alreadyAllocated.toFixed(2) })
+                      : t("prepayment.sessionPartiallyCovered", { symbol: cs, covered: alreadyAllocated.toFixed(2), remaining: (sessionPrice - alreadyAllocated).toFixed(2) })}
+                  </p>
+                </div>
+              )}
+
+              {/* Prepayment banner (unused client credit) */}
               {hasPrepayment && (
                 <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
                   <p className="font-medium text-foreground">
@@ -958,6 +969,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   </p>
                 </div>
               )}
+
 
               {/* Notes before completing */}
               <div className="space-y-2">
