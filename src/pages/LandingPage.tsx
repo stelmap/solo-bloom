@@ -1019,8 +1019,8 @@ function FeaturesSection() {
             label={t("featCta")}
             source="/"
             cta="features_cta"
-            className="rounded-full px-8"
           />
+
           <p className="text-sm text-white/60">{t("featCtaNote")}</p>
         </div>
       </div>
