@@ -325,10 +325,11 @@ export default function ExpensesPage() {
                   // Parse yyyy-mm-dd as a local date so timezone shifts don't move the day
                   const fmt = (d: string) => {
                     const [y, m, day] = d.split("-").map(Number);
-                    return new Date(y, m - 1, day).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+                    return new Date(y, m - 1, day).toLocaleDateString(dateLocale, { year: "numeric", month: "short", day: "numeric" });
                   };
-                  const startDay = Number(form.recurring_start_date.split("-")[2]);
+                  const startDay = Number(form.recurring_start_date.split("-")[2]) || 1;
                   const hasShortMonthClamp = form.recurrence === "monthly" && !isLast && startDay >= 29;
+                  const monthlyDayText = t("expenses.previewMonthlyDay", { day: startDay }).replace(/\{\s*day\s*\}/g, String(startDay));
                   return (
                     <div className="rounded-md border border-border bg-muted/30 p-3 text-xs space-y-1">
                       <p className="font-medium text-foreground">{t("common.preview")}</p>
@@ -336,8 +337,9 @@ export default function ExpensesPage() {
                         {form.recurrence === "monthly"
                           ? (isLast
                               ? t("expenses.previewMonthlyLastDay")
-                              : `${t("expenses.previewMonthlyDay", { day: startDay })}${hasShortMonthClamp ? ` ${t("expenses.previewMonthlyDayClamp")}` : ""}`)
+                              : `${monthlyDayText}${hasShortMonthClamp ? ` ${t("expenses.previewMonthlyDayClamp")}` : ""}`)
                           : t("expenses.previewYearly")}
+                      </p>
                       </p>
                       <p className="text-muted-foreground">{t("expenses.firstPlanned")} <span className="text-foreground">{fmt(dates[0])}</span></p>
                       <p className="text-muted-foreground">{t("expenses.nextPlanned")} <span className="text-foreground">{dates.slice(1).map(fmt).join(", ")}</span></p>
