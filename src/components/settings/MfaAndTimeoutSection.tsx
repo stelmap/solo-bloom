@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useToast } from "@/hooks/use-toast";
 import { ShieldCheck, Timer, KeyRound, Trash2, Eye, EyeOff, Copy, Check, Maximize2 } from "lucide-react";
 import { readIdleTimeoutMinutes, writeIdleTimeoutMinutes } from "@/hooks/useIdleTimeout";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface MfaFactor {
   id: string;
