@@ -813,7 +813,7 @@ function HeroSection() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <PrimaryCta label={t("heroCta")} source="/" cta="hero" className="text-base px-8 h-12" />
             <a
-              href="#pricing"
+              href="#comparison"
               className="inline-flex items-center justify-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-4 h-12"
             >
               {t("heroSecondary")}
