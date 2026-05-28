@@ -53,13 +53,13 @@ const C = {
   heroTitlePrefix: {
     en: "Your full private practice.",
     fr: "Toute votre pratique privée.",
-    uk: "Уся ваша приватна практика.",
+    uk: "Ваша практика заслуговує на систему.",
     pl: "Cała Twoja prywatna praktyka.",
   },
   heroTitleAccent: {
     en: "Organised in one place.",
     fr: "Organisée au même endroit.",
-    uk: "В одному місці.",
+    uk: "",
     pl: "W jednym miejscu.",
   },
   heroSub: {
