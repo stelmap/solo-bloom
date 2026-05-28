@@ -43,38 +43,44 @@ const C = {
   navTry: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
 
   // Hero
-  heroBadge: { en: "For psychologists, psychotherapists, supervisors and educators", fr: "Pour psychologues, psychothérapeutes, superviseurs et formateurs", uk: "Для психологів, психотерапевтів, супервізорів і викладачів", pl: "Dla psychologów, psychoterapeutów, superwizorów i edukatorów" },
+  heroBadge: { en: "For psychologists, psychotherapists, supervisors and educators", fr: "Pour psychologues, psychothérapeutes, superviseurs et formateurs", uk: "ПОЧНІТЬ СЬОГОДНІ — БЕЗКОШТОВНО, БЕЗ КАРТКИ", pl: "Dla psychologów, psychoterapeutów, superwizorów i edukatorów" },
   heroTitle: {
     en: "Your full private practice. Organised in one place.",
     fr: "Toute votre pratique privée. Organisée au même endroit.",
-    uk: "Уся ваша приватна практика. В одному місці.",
+    uk: "Ваша практика заслуговує на систему.",
     pl: "Cała Twoja prywatna praktyka. W jednym miejscu.",
   },
   heroTitlePrefix: {
     en: "Your full private practice.",
     fr: "Toute votre pratique privée.",
-    uk: "Уся ваша приватна практика.",
+    uk: "Ваша практика заслуговує на систему.",
     pl: "Cała Twoja prywatna praktyka.",
   },
   heroTitleAccent: {
     en: "Organised in one place.",
     fr: "Organisée au même endroit.",
-    uk: "В одному місці.",
+    uk: "",
     pl: "W jednym miejscu.",
   },
   heroSub: {
     en: "SoloBizz manages your clients, calendar, bookings, payments, invoices and financial reports — automatically. So you spend your time on clients, not spreadsheets.",
     fr: "SoloBizz gère vos clients, agenda, réservations, paiements, factures et rapports financiers — automatiquement. Vous consacrez votre temps aux clients, pas aux tableurs.",
-    uk: "SoloBizz керує клієнтами, календарем, записами, оплатами, рахунками та фінансовими звітами — автоматично. Ви витрачаєте час на клієнтів, а не на таблиці.",
+    uk: "SoloBizz допомагає бачити клієнтів, записи, оплати, дохід і прибуток в одній зрозумілій системі.",
     pl: "SoloBizz prowadzi klientów, kalendarz, zapisy, płatności, faktury i raporty finansowe — automatycznie. Czas poświęcasz klientom, a nie arkuszom.",
   },
-  heroCta: { en: "Start free — no card needed", fr: "Commencer gratuitement — sans carte", uk: "Почати безкоштовно — без картки", pl: "Zacznij za darmo — bez karty" },
+  heroCta: { en: "Start free — no card needed", fr: "Commencer gratuitement — sans carte", uk: "Почати безкоштовно — займає 5 хвилин →", pl: "Zacznij za darmo — bez karty" },
   heroSecondary: { en: "See pricing", fr: "Voir les tarifs", uk: "Подивитись ціни", pl: "Zobacz cennik" },
   heroSubCta: {
     en: "Free Starter: free forever, up to 5 active clients. No credit card required.",
     fr: "Free Starter : gratuit pour toujours, jusqu'à 5 clients actifs. Sans carte bancaire.",
-    uk: "Free Starter: безкоштовно назавжди, до 5 активних клієнтів. Без банківської картки.",
+    uk: "Free Starter: €0 назавжди · до 5 активних клієнтів · всі функції включені · скасування будь-коли",
     pl: "Free Starter: za darmo na zawsze, do 5 aktywnych klientów. Bez karty kredytowej.",
+  },
+  heroSocialProof: {
+    en: "Join 100+ psychologists, psychotherapists and supervisors already working in our system.",
+    fr: "Rejoignez 100+ psychologues, psychothérapeutes et superviseurs qui travaillent déjà dans notre système.",
+    uk: "Приєднайтесь до 100+ психологів, психотерапевтів і супервізорів, які вже працюють у нашій системі.",
+    pl: "Dołącz do 100+ psychologów, psychoterapeutów i superwizorów, którzy już pracują w naszym systemie.",
   },
   // Stats
   statsTherapists: { en: "therapists already use SoloBizz", fr: "thérapeutes utilisent déjà SoloBizz", uk: "терапевтів вже користуються SoloBizz", pl: "terapeutów już korzysta z SoloBizz" },
@@ -89,9 +95,9 @@ const C = {
     pl: "Przy 20+ klientach ręczna administracja może zajmować 4–8+ godzin tygodniowo. SoloBizz pomaga odzyskać ten czas.",
   },
   trustData: { en: "Client data is protected", fr: "Données clients protégées", uk: "Дані клієнтів захищені", pl: "Dane klientów chronione" },
-  trustStripe: { en: "Secure Stripe payments", fr: "Paiements sécurisés via Stripe", uk: "Безпечна оплата через Stripe", pl: "Bezpieczne płatności przez Stripe" },
+  trustStripe: { en: "Secure Stripe payments", fr: "Paiements sécurisés via Stripe", uk: "Без картки для Free Starter", pl: "Bezpieczne płatności przez Stripe" },
   trustGdpr: { en: "GDPR compliant", fr: "Conforme RGPD", uk: "Відповідає GDPR", pl: "Zgodne z RODO" },
-  trustSupport: { en: "Email support", fr: "Support email", uk: "Підтримка через email", pl: "Wsparcie przez email" },
+  trustSupport: { en: "Email support", fr: "Support email", uk: "Скасування будь-коли", pl: "Wsparcie przez email" },
 
   // Dashboard preview
   dpClients: { en: "Active clients", fr: "Clients actifs", uk: "Активні клієнти", pl: "Aktywni klienci" },
@@ -722,6 +728,7 @@ function LandingNav() {
 
 function HeroSection() {
   const { t } = useLandingLang();
+  const accent = t("heroTitleAccent");
   return (
     <section className="pt-40 pb-28 sm:pt-44 sm:pb-32 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto text-center">
@@ -731,10 +738,13 @@ function HeroSection() {
         </div>
         <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground tracking-tight leading-[1.1] mb-8 max-w-5xl mx-auto">
           <span className="block">{t("heroTitlePrefix")}</span>
-          <span className="block text-primary mt-2">{t("heroTitleAccent")}</span>
+          {accent && <span className="block text-primary mt-2">{accent}</span>}
         </h1>
-        <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
+        <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto mb-6 leading-relaxed">
           {t("heroSub")}
+        </p>
+        <p className="text-base sm:text-lg text-foreground/80 max-w-3xl mx-auto mb-10 leading-relaxed">
+          {t("heroSocialProof")}
         </p>
         <div className="flex flex-col items-center gap-8">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -749,8 +759,8 @@ function HeroSection() {
           <p className="text-sm text-muted-foreground">{t("heroSubCta")}</p>
           <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs sm:text-sm text-muted-foreground mt-4">
             <li className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-success" /> {t("trustData")}</li>
-            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /> {t("trustStripe")}</li>
             <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /> {t("trustGdpr")}</li>
+            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /> {t("trustStripe")}</li>
             <li className="inline-flex items-center gap-1.5"><MessageCircle className="h-4 w-4 text-success" /> {t("trustSupport")}</li>
           </ul>
         </div>
@@ -764,7 +774,7 @@ function HeroSection() {
 function StatsSection() {
   const { t } = useLandingLang();
   const stats = [
-    { num: "300+", label: t("statsTherapists") },
+    { num: "100+", label: t("statsTherapists") },
     { num: "4–8 год", label: t("statsTime") },
     { num: "15 хв", label: t("statsSetup") },
   ];
