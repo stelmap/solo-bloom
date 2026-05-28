@@ -1823,6 +1823,10 @@ function LandingFooter() {
               <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
               {OFFICE_ADDRESS}
             </p>
+            <p className="text-sm text-muted-foreground flex items-start gap-2 mt-1">
+              <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              {OFFICE_ADDRESS_LVIV}
+            </p>
           </div>
           {groups.map((g) => (
             <div key={g.title}>
