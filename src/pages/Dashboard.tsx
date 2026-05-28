@@ -247,7 +247,7 @@ export default function Dashboard() {
             <MoneyTile label={t("ops.monthlyExpensesTotal")} value={`${cs}${Number(stats?.monthlyExpenses ?? 0).toLocaleString()}`} onClick={() => openWidget("monthly_expenses", "/finances/expenses")} />
             <MoneyTile label={t("ops.unpaidSessionsCount")} value={String((stats as any)?.unpaidSessionsCount ?? 0)} tone={((stats as any)?.unpaidSessionsCount ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("unpaid_sessions", "/finances/income?tab=pending&range=all")} />
 
-            <MoneyTile label={t("ops.clientsWithoutNextSession")} value={String((stats as any)?.clientsWithoutNextSession ?? 0)} tone={((stats as any)?.clientsWithoutNextSession ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("clients_without_next_session", "/clients?filter=withoutNextSession")} />
+            <MoneyTile label={t("ops.clientsWithoutNextSession")} value={String(clientsWithoutNextSessionCount)} tone={clientsWithoutNextSessionCount > 0 ? "warning" : "muted"} onClick={() => openWidget("clients_without_next_session", "/clients?filter=withoutNextSession")} />
           </div>
         </section>
 
