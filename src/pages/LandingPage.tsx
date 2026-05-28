@@ -212,82 +212,6 @@ const C = {
 
 
 
-  // Audience
-  audTitle: { en: "Who SoloBizz is for", fr: "À qui s'adresse SoloBizz", uk: "Кому підходить SoloBizz", pl: "Dla kogo jest SoloBizz" },
-  audSub: {
-    en: "One tool for specialists who work with people, schedules, payments and results.",
-    fr: "Un outil pour les pros qui travaillent avec des personnes, des plannings, des paiements et des résultats.",
-    uk: "Один інструмент для спеціалістів, які працюють з людьми, розкладом, оплатами та результатами.",
-    pl: "Jedno narzędzie dla specjalistów pracujących z ludźmi, harmonogramem, płatnościami i wynikami.",
-  },
-
-  aud1Title: { en: "Private practitioners", fr: "Praticiens en libéral", uk: "Приватним практикам", pl: "Prywatni praktycy" },
-  aud1Desc: {
-    en: "For psychologists and therapists who want to run their practice without spreadsheets and chaos.",
-    fr: "Pour les psychologues et thérapeutes qui veulent gérer leur pratique sans tableurs ni chaos.",
-    uk: "Для психологів і терапевтів, які хочуть вести практику без таблиць і хаосу.",
-    pl: "Dla psychologów i terapeutów, którzy chcą prowadzić praktykę bez arkuszy i chaosu.",
-  },
-  aud1B1: { en: "Individual and group sessions", fr: "Séances individuelles et de groupe", uk: "Індивідуальні та групові сесії", pl: "Sesje indywidualne i grupowe" },
-  aud1B2: { en: "Payments and debts under control", fr: "Paiements et dettes sous contrôle", uk: "Контроль оплат і боргів", pl: "Kontrola płatności i długów" },
-  aud1B3: { en: "Income and expense tracking", fr: "Suivi des revenus et des dépenses", uk: "Облік доходів і витрат", pl: "Ewidencja przychodów i wydatków" },
-  aud1B4: { en: "Financial result forecast", fr: "Prévision du résultat financier", uk: "Прогноз фінансового результату", pl: "Prognoza wyniku finansowego" },
-  aud1B5: { en: "Decisions based on data, not feelings", fr: "Des décisions basées sur les données", uk: "Рішення на основі даних, а не відчуттів", pl: "Decyzje oparte na danych, nie na intuicji" },
-
-  aud2Title: { en: "Supervisors", fr: "Superviseurs", uk: "Супервізорам", pl: "Superwizorzy" },
-  aud2Desc: {
-    en: "For supervisors who run individual and group sessions.",
-    fr: "Pour les superviseurs qui mènent des séances individuelles et de groupe.",
-    uk: "Для супервізорів, які працюють з індивідуальними та груповими зустрічами.",
-    pl: "Dla superwizorów, którzy prowadzą spotkania indywidualne i grupowe.",
-  },
-  aud2B1: { en: "Supervision tracking", fr: "Suivi des supervisions", uk: "Облік супервізій", pl: "Ewidencja superwizji" },
-  aud2B2: { en: "Attendance control", fr: "Contrôle des présences", uk: "Контроль присутності учасників", pl: "Kontrola obecności uczestników" },
-  aud2B3: { en: "Payment analytics", fr: "Analytique des paiements", uk: "Аналітика оплат", pl: "Analityka płatności" },
-  aud2B4: { en: "History of past meetings", fr: "Historique des séances passées", uk: "Історія проведених зустрічей", pl: "Historia odbytych spotkań" },
-  aud2B5: { en: "Less manual calculation", fr: "Moins de calculs manuels", uk: "Менше ручної роботи з підрахунками", pl: "Mniej ręcznych obliczeń" },
-
-  aud3Title: { en: "Early-career therapists", fr: "Thérapeutes en début de carrière", uk: "Початківцям", pl: "Początkujący psychoterapeuci" },
-  aud3Desc: {
-    en: "For specialists who are just launching a practice and want to run it structurally from day one.",
-    fr: "Pour les pros qui démarrent leur pratique et veulent la structurer dès le premier jour.",
-    uk: "Для спеціалістів, які тільки запускають практику і хочуть одразу вести її структурно.",
-    pl: "Dla specjalistów, którzy dopiero zaczynają praktykę i chcą prowadzić ją strukturalnie od pierwszego dnia.",
-  },
-  aud3B1: { en: "Number of sessions delivered", fr: "Nombre de séances réalisées", uk: "Кількість проведених сесій", pl: "Liczba przeprowadzonych sesji" },
-  aud3B2: { en: "Practice progress", fr: "Progression de la pratique", uk: "Прогрес практики", pl: "Postęp praktyki" },
-  aud3B3: { en: "Client notes", fr: "Notes clients", uk: "Нотатки по клієнтах", pl: "Notatki o klientach" },
-  aud3B4: { en: "Clear interaction history", fr: "Historique d'interaction clair", uk: "Зрозуміла історія взаємодії", pl: "Czytelna historia interakcji" },
-  aud3B5: { en: "Visible growth from your first clients", fr: "Une croissance visible dès les premiers clients", uk: "Видимість росту з перших клієнтів", pl: "Widoczny wzrost od pierwszych klientów" },
-
-  aud4Title: { en: "Teachers and mentors", fr: "Enseignants et mentors", uk: "Викладачам / менторам", pl: "Nauczyciele i mentorzy" },
-  aud4Desc: {
-    en: "For those who run consultations, training or mentoring sessions.",
-    fr: "Pour celles et ceux qui mènent consultations, formations ou sessions de mentorat.",
-    uk: "Для тих, хто проводить консультації, навчання або менторські сесії.",
-    pl: "Dla tych, którzy prowadzą konsultacje, szkolenia lub sesje mentorskie.",
-  },
-  aud4B1: { en: "Lesson schedule", fr: "Planning des cours", uk: "Розклад занять", pl: "Harmonogram zajęć" },
-  aud4B2: { en: "Student notes", fr: "Notes élèves", uk: "Нотатки по учнях", pl: "Notatki o uczniach" },
-  aud4B3: { en: "Payment control", fr: "Contrôle des paiements", uk: "Контроль оплат", pl: "Kontrola płatności" },
-  aud4B4: { en: "Learning progress", fr: "Progression d'apprentissage", uk: "Прогрес навчання", pl: "Postępy nauki" },
-  aud4B5: { en: "Convenient organization of work", fr: "Organisation simple de votre travail", uk: "Зручна організація роботи", pl: "Wygodna organizacja pracy" },
-
-  audValueTitle: { en: "What you get", fr: "Ce que vous y gagnez", uk: "Що це дає?", pl: "Co dzięki temu zyskujesz?" },
-  audValueText: {
-    en: "SoloBizz takes the routine out of private practice: bookings, confirmations, payments, debts, financial calculations and spreadsheet chaos. With 20+ clients, manual admin can eat hours every week — SoloBizz helps you put that time back into client work, supervision or rest.",
-    fr: "SoloBizz retire la routine de la pratique privée : RDV, confirmations, paiements, créances, calculs financiers et chaos des tableurs. Avec 20+ clients, l'admin manuelle peut consommer des heures chaque semaine — SoloBizz vous aide à remettre ce temps dans le travail clinique, la supervision ou le repos.",
-    uk: "SoloBizz забирає рутину з приватної практики: записи, підтвердження, оплати, борги, фінансові підрахунки й хаос у таблицях. Якщо у вас 20+ клієнтів, ручна адмінка може забирати години щотижня — SoloBizz допомагає повернути цей час у роботу з клієнтами, супервізію або відпочинок.",
-    pl: "SoloBizz zdejmuje rutynę z prywatnej praktyki: zapisy, potwierdzenia, płatności, długi, obliczenia finansowe i chaos arkuszy. Przy 20+ klientach ręczna administracja może pochłaniać godziny tygodniowo — SoloBizz pomaga oddać ten czas pracy z klientami, superwizji lub odpoczynkowi.",
-  },
-  audCtaPrimary: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
-  audCtaSecondary: { en: "See plans", fr: "Voir les formules", uk: "Переглянути плани", pl: "Zobacz plany" },
-  audCtaSub: {
-    en: "Free Starter — free forever · up to 5 active clients · no card required",
-    fr: "Free Starter — gratuit pour toujours · jusqu'à 5 clients actifs · sans carte",
-    uk: "Free Starter — безкоштовно назавжди · до 5 клієнтів · без картки",
-    pl: "Free Starter — za darmo na zawsze · do 5 klientów · bez karty",
-  },
   demoTitle: {
     en: "See how your practice could look in 60 seconds",
     fr: "Voyez à quoi votre cabinet peut ressembler en 60 secondes",
@@ -1071,84 +995,6 @@ function FeaturesSection() {
 
 
 
-// ── Audience ──────────────────────────────────────────────────────────
-
-type AudienceCard = {
-  icon: React.ComponentType<{ className?: string }>;
-  titleKey: CopyKey;
-  descKey: CopyKey;
-  bullets: CopyKey[];
-};
-
-function AudienceSection() {
-  const { t } = useLandingLang();
-  const cards: AudienceCard[] = [
-    { icon: HeartHandshake, titleKey: "aud1Title", descKey: "aud1Desc", bullets: ["aud1B1", "aud1B2", "aud1B3", "aud1B4", "aud1B5"] },
-    { icon: Users, titleKey: "aud2Title", descKey: "aud2Desc", bullets: ["aud2B1", "aud2B2", "aud2B3", "aud2B4", "aud2B5"] },
-    { icon: Sparkles, titleKey: "aud3Title", descKey: "aud3Desc", bullets: ["aud3B1", "aud3B2", "aud3B3", "aud3B4", "aud3B5"] },
-    { icon: Presentation, titleKey: "aud4Title", descKey: "aud4Desc", bullets: ["aud4B1", "aud4B2", "aud4B3", "aud4B4", "aud4B5"] },
-  ];
-  return (
-    <section id="audience" className="py-20 px-4 sm:px-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">{t("audTitle")}</h2>
-          <p className="text-lg text-muted-foreground">{t("audSub")}</p>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {cards.map((c) => {
-            const Icon = c.icon;
-            return (
-              <div key={c.titleKey} className="flex flex-col p-6 rounded-2xl bg-card border border-border hover:border-primary/40 transition-colors">
-                <div className="h-11 w-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">{t(c.titleKey)}</h3>
-                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{t(c.descKey)}</p>
-                <ul className="space-y-2 mt-auto">
-                  {c.bullets.map((b) => (
-                    <li key={b} className="flex items-start gap-2 text-sm text-foreground">
-                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                      <span>{t(b)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-10 max-w-3xl mx-auto rounded-2xl border-2 border-primary/30 bg-primary/5 p-6 sm:p-8 text-center">
-          <h3 className="text-2xl font-bold text-foreground mb-3">{t("audValueTitle")}</h3>
-          <p className="text-base sm:text-lg text-foreground/80 leading-relaxed mb-6">{t("audValueText")}</p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              to="/auth?mode=signup"
-              onClick={() =>
-                track("cta_clicked", { source_page: "/#audience", cta: "landing_audience_cta_click", plan_type: "free_starter" })
-              }
-            >
-              <Button size="lg" className="gap-2 h-12 px-8 text-base">
-                {t("audCtaPrimary")} <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <a
-              href="#pricing"
-              onClick={() =>
-                track("cta_clicked", { source_page: "/#audience", cta: "landing_audience_cta_click", plan_type: "see_plans" })
-              }
-            >
-              <Button size="lg" variant="outline" className="gap-2 h-12 px-8 text-base">
-                {t("audCtaSecondary")}
-              </Button>
-            </a>
-          </div>
-          <p className="text-xs text-muted-foreground mt-4">{t("audCtaSub")}</p>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 
 // ── Pricing ───────────────────────────────────────────────────────────
@@ -2006,7 +1852,6 @@ export default function LandingPage() {
           <WhatChangesSection />
           <FeaturesSection />
           <TestimonialsSection />
-          <AudienceSection />
           <PricingSection />
 
           <FaqSection />
