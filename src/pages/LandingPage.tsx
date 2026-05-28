@@ -16,8 +16,6 @@ import {
   X, Check, HeartHandshake, Presentation, BookOpen, Clock, Timer,
   Quote, MessageCircle, Mail, Phone, MapPin, Send,
 } from "lucide-react";
-import manualTrackingImg from "@/assets/manual-tracking-spreadsheet.png";
-import soloBizzPreviewImg from "@/assets/solobizz-client-profile.png";
 
 // ── Configurable external links (replace as needed) ───────────────────
 const YOUTUBE_URL = "https://www.youtube.com/@OneBizz_SoloBizz";
@@ -750,80 +748,6 @@ function LandingNav() {
   );
 }
 
-// ── Dashboard preview (visual-only mock) ──────────────────────────────
-
-function DashboardPreview() {
-  const { t } = useLandingLang();
-  return (
-    <div className="relative mx-auto max-w-4xl">
-      <div aria-hidden className="absolute -inset-4 sm:-inset-8 bg-primary/20 blur-3xl rounded-full opacity-40" />
-      <div className="relative rounded-2xl border border-border bg-card shadow-2xl overflow-hidden">
-        <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border bg-muted/40">
-          <span className="h-2.5 w-2.5 rounded-full bg-destructive/60" />
-          <span className="h-2.5 w-2.5 rounded-full bg-primary/40" />
-          <span className="h-2.5 w-2.5 rounded-full bg-primary/70" />
-          <span className="ml-3 text-xs text-muted-foreground">solo-bizz.com / dashboard</span>
-        </div>
-
-        <div className="p-5 sm:p-7 grid sm:grid-cols-3 gap-4">
-          <div className="rounded-xl border border-border bg-background p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-muted-foreground">{t("dpClients")}</span>
-              <Users className="h-4 w-4 text-primary" />
-            </div>
-            <div className="text-2xl font-bold text-foreground">24</div>
-            <div className="text-xs text-primary mt-1">+3 this month</div>
-          </div>
-          <div className="rounded-xl border border-border bg-background p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-muted-foreground">{t("dpSessions")}</span>
-              <CalendarIcon className="h-4 w-4 text-primary" />
-            </div>
-            <div className="text-2xl font-bold text-foreground">18</div>
-            <div className="text-xs text-muted-foreground mt-1">6 today</div>
-          </div>
-          <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-muted-foreground">{t("dpIncome")}</span>
-              <TrendingUp className="h-4 w-4 text-primary" />
-            </div>
-            <div className="text-2xl font-bold text-foreground">€4,820</div>
-            <div className="text-xs text-primary mt-1">+12% vs last</div>
-          </div>
-        </div>
-
-        <div className="px-5 sm:px-7 pb-6">
-          <div className="text-xs font-medium text-muted-foreground mb-3">{t("dpUpcoming")}</div>
-          <div className="space-y-2">
-            {[
-              { name: "Anna L.", time: "10:00", price: "€80", paid: true },
-              { name: "Marc D.", time: "11:30", price: "€80", paid: true },
-              { name: "Sofia P.", time: "14:00", price: "€80", paid: false },
-            ].map((row) => (
-              <div key={row.name} className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
-                <div className="flex items-center gap-3">
-                  <div className="h-7 w-7 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center">
-                    {row.name[0]}
-                  </div>
-                  <span className="text-sm font-medium text-foreground">{row.name}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground">{row.time}</span>
-                  <span className="text-sm font-semibold text-foreground">{row.price}</span>
-                  <span className={`text-[10px] uppercase tracking-wide font-semibold px-2 py-0.5 rounded-full ${
-                    row.paid ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-                  }`}>
-                    {row.paid ? t("dpPaid") : t("dpPending")}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ── Hero ──────────────────────────────────────────────────────────────
 
