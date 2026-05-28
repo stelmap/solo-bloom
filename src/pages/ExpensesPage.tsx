@@ -164,7 +164,7 @@ export default function ExpensesPage() {
     if (!form.amount) return;
     const isRecurring = form.recurrence !== "one_time";
     if (isRecurring && !form.recurring_start_date) {
-      toast({ title: t("common.error"), description: "Recurring start date is required", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("expenses.recurringStartDateRequired"), variant: "destructive" });
       return;
     }
     try {
@@ -273,7 +273,7 @@ export default function ExpensesPage() {
                 <div className="space-y-2"><Label>{t("common.amount")} *</Label><Input type="number" step="0.01" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} /></div>
 
                 <div className="space-y-2">
-                  <Label>Recurrence</Label>
+                  <Label>{t("expenses.recurrence")}</Label>
                   <Select value={form.recurrence} onValueChange={(v: any) => setForm(f => ({
                     ...f,
                     recurrence: v,
@@ -281,9 +281,9 @@ export default function ExpensesPage() {
                   }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="one_time">One-time</SelectItem>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                      <SelectItem value="yearly">Yearly</SelectItem>
+                      <SelectItem value="one_time">{t("expenses.oneTime")}</SelectItem>
+                      <SelectItem value="monthly">{t("expenses.monthly")}</SelectItem>
+                      <SelectItem value="yearly">{t("expenses.yearly")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -296,7 +296,7 @@ export default function ExpensesPage() {
                   </div>
                 ) : (
                   <div className="space-y-1">
-                    <Label>{form.recurrence === "yearly" ? "Yearly start date" : t("expenses.recurringStartDate")}</Label>
+                    <Label>{form.recurrence === "yearly" ? t("expenses.yearlyStartDate") : t("expenses.recurringStartDate")}</Label>
                     <DatePicker date={form.recurring_start_date} onDateChange={(d) => setForm(f => ({ ...f, recurring_start_date: d, date: d }))} />
                     <p className="text-xs text-muted-foreground">{explainExpenseDate({ recurrence: form.recurrence, date: form.recurring_start_date })}</p>
                   </div>
@@ -305,13 +305,13 @@ export default function ExpensesPage() {
                 <div className="space-y-2"><Label>{t("common.description")}</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
 
                 <div className="space-y-2">
-                  <Label>Status</Label>
+                  <Label>{t("common.status")}</Label>
                   <Select value={form.instance_status} onValueChange={(v: any) => setForm(f => ({ ...f, instance_status: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="planned">Planned</SelectItem>
-                      <SelectItem value="paid">Paid</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                      <SelectItem value="planned">{t("expenses.planned")}</SelectItem>
+                      <SelectItem value="paid">{t("payment.paid")}</SelectItem>
+                      <SelectItem value="cancelled">{t("status.cancelled")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -330,18 +330,18 @@ export default function ExpensesPage() {
                   const hasShortMonthClamp = form.recurrence === "monthly" && !isLast && startDay >= 29;
                   return (
                     <div className="rounded-md border border-border bg-muted/30 p-3 text-xs space-y-1">
-                      <p className="font-medium text-foreground">Preview</p>
+                      <p className="font-medium text-foreground">{t("common.preview")}</p>
                       <p className="text-muted-foreground">
                         {form.recurrence === "monthly"
                           ? (isLast
-                              ? "This expense will be planned on the last day of each month (e.g. Jan 31 → Feb 28/29 → Mar 31 → Apr 30)."
-                              : `This expense will be planned monthly on day ${startDay}.${hasShortMonthClamp ? " In months with fewer days, it shifts to the last available day." : ""}`)
-                          : "This expense will be planned once a year on the same day (Feb 29 falls back to Feb 28 in non-leap years)."}
+                              ? t("expenses.previewMonthlyLastDay")
+                              : `${t("expenses.previewMonthlyDay", { day: startDay })}${hasShortMonthClamp ? ` ${t("expenses.previewMonthlyDayClamp")}` : ""}`)
+                          : t("expenses.previewYearly")}
                       </p>
-                      <p className="text-muted-foreground">First planned expense: <span className="text-foreground">{fmt(dates[0])}</span></p>
-                      <p className="text-muted-foreground">Next planned expenses: <span className="text-foreground">{dates.slice(1).map(fmt).join(", ")}</span></p>
-                      <p className="text-muted-foreground">Default status: <span className="text-foreground capitalize">{form.instance_status}</span></p>
-                      {form.recurrence === "monthly" && <p className="text-muted-foreground">12 months will be generated and extended automatically.</p>}
+                      <p className="text-muted-foreground">{t("expenses.firstPlanned")} <span className="text-foreground">{fmt(dates[0])}</span></p>
+                      <p className="text-muted-foreground">{t("expenses.nextPlanned")} <span className="text-foreground">{dates.slice(1).map(fmt).join(", ")}</span></p>
+                      <p className="text-muted-foreground">{t("expenses.defaultStatus")} <span className="text-foreground capitalize">{form.instance_status === "planned" ? t("expenses.planned") : form.instance_status === "paid" ? t("payment.paid") : t("status.cancelled")}</span></p>
+                      {form.recurrence === "monthly" && <p className="text-muted-foreground">{t("expenses.monthsAutoGenerated")}</p>}
                     </div>
                   );
                 })()}
