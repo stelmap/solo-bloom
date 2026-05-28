@@ -326,9 +326,22 @@ export default function ClientDetailPage() {
 
 
   const derivePaymentStatus = (apt: any): string => {
-    if (apt.status === "cancelled" || apt.status === "no-show" || apt.status === "rescheduled") {
+    if (apt.status === "cancelled" || apt.status === "no-show") {
+      // Therapist may have chosen to bill the cancelled / missed session.
+      // Respect the stored payment_status; otherwise N/A.
+      if (
+        apt.payment_status === "waiting_for_payment" ||
+        apt.payment_status === "unpaid" ||
+        apt.payment_status === "partially_paid" ||
+        apt.payment_status === "paid_now" ||
+        apt.payment_status === "paid_in_advance" ||
+        apt.payment_status === "paid_from_prepayment"
+      ) {
+        return apt.payment_status;
+      }
       return "not_applicable";
     }
+    if (apt.status === "rescheduled") return "not_applicable";
     // Non-completed (planned/confirmed/reminder_sent) → not payable yet
     if (apt.status !== "completed") {
       const info = allocByApt[apt.id];
@@ -341,6 +354,7 @@ export default function ClientDetailPage() {
       }
       return "not_applicable";
     }
+
     const price = Number(apt.price || 0);
     const info = allocByApt[apt.id];
     const paid = info?.paid || 0;
