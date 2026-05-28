@@ -11,13 +11,11 @@ import { getStoredLang, setPreLoginLang } from "@/i18n/LanguageContext";
 import type { Language } from "@/i18n/translations";
 import { track } from "@/lib/analytics";
 import {
-  ArrowRight, CheckCircle2, AlertTriangle, Eye, TrendingUp,
+  ArrowRight, CheckCircle2, AlertTriangle, TrendingUp,
   Calendar as CalendarIcon, Users, Sparkles, ShieldCheck,
-  Play, X, Check, HeartHandshake, Presentation, BookOpen, Clock, Timer,
+  X, Check, HeartHandshake, Presentation, BookOpen, Clock, Timer,
   Quote, MessageCircle, Mail, Phone, MapPin, Send,
 } from "lucide-react";
-import manualTrackingImg from "@/assets/manual-tracking-spreadsheet.png";
-import soloBizzPreviewImg from "@/assets/solobizz-client-profile.png";
 
 // ── Configurable external links (replace as needed) ───────────────────
 const YOUTUBE_URL = "https://www.youtube.com/@OneBizz_SoloBizz";
@@ -153,6 +151,25 @@ const C = {
   },
   painCta: { en: "See how SoloBizz works", fr: "Voir comment SoloBizz fonctionne", uk: "Дивись, як це працює в SoloBizz", pl: "Zobacz, jak działa SoloBizz" },
 
+  // What Changes
+  whatChangesEyebrow: { en: "WHAT CHANGES", fr: "CE QUI CHANGE", uk: "ЩО ЗМІНЮЄТЬСЯ", pl: "CO SIĘ ZMIENIA" },
+  whatChangesHeadline: { en: "The same Monday. A completely different start to the day.", fr: "Le même lundi. Un tout autre début de journée.", uk: "Той самий понеділок. Зовсім інший початок дня.", pl: "Ten sam poniedziałek. Zupełnie inny początek dnia." },
+  whatChangesSub: { en: "See how one tool replaces the morning chaos with clarity and control.", fr: "Découvrez comment un seul outil remplace le chaos matinal par la clarté et le contrôle.", uk: "Подивіться, як один інструмент замінює ранковий хаос на ясність і контроль.", pl: "Zobacz, jak jedno narzędzie zastępuje poranny chaos przejrzystością i kontrolą." },
+  whatChangesWithoutTitle: { en: "Monday without SoloBizz", fr: "Lundi sans SoloBizz", uk: "Понеділок без SoloBizz", pl: "Poniedziałek bez SoloBizz" },
+  whatChangesWithTitle: { en: "Monday with SoloBizz", fr: "Lundi avec SoloBizz", uk: "Понеділок з SoloBizz", pl: "Poniedziałek z SoloBizz" },
+  whatChangesWithout1: { en: "You open 5 different apps to remember who's coming today.", fr: "Vous ouvrez 5 applications différentes pour vous rappeler qui vient aujourd'hui.", uk: "Відкриваєте 5 різних додатків, щоб згадати, хто сьогодні на прийомі.", pl: "Otwierasz 5 różnych aplikacji, żeby przypomnieć sobie, kto dziś przychodzi." },
+  whatChangesWithout2: { en: "You check payments manually — and worry about missing something.", fr: "Vous vérifiez les paiements manuellement — et craignez d'oublier quelque chose.", uk: "Перевіряєте оплати вручну — і боїтеся щось упустити.", pl: "Sprawdzasz płatności ręcznie — i boisz się, że coś przeoczysz." },
+  whatChangesWithout3: { en: "You spend 30+ minutes sending reminders to clients.", fr: "Vous passez 30+ minutes à envoyer des rappels aux clients.", uk: "Тратите 30+ хвилин на розсилку нагадувань клієнтам.", pl: "Spędzasz 30+ minut na wysyłaniu przypomnień klientom." },
+  whatChangesWithout4: { en: "You don't know exactly how much you earned last week.", fr: "Vous ne savez pas exactement combien vous avez gagné la semaine dernière.", uk: "Не знаєте точно, скільки заробили за минулий тиждень.", pl: "Nie wiesz dokładnie, ile zarobiłeś w zeszłym tygodniu." },
+  whatChangesWithout5: { en: "You plan your schedule by eye, without knowing your workload.", fr: "Vous planifiez votre emploi du temps à l'œil nu, sans connaître votre charge.", uk: "Плануєте розклад «на око», без розуміння завантаженості.", pl: "Planujesz harmonogram „na oko”, bez zrozumienia obciążenia." },
+  whatChangesWithout6: { en: "The start of the week is stress and chaos.", fr: "Le début de la semaine, c'est le stress et le chaos.", uk: "Початок тижня — це стрес і хаос.", pl: "Początek tygodnia to stres i chaos." },
+  whatChangesWith1: { en: "One glance at the calendar — and you see your whole day.", fr: "Un coup d'œil au calendrier — et vous voyez toute votre journée.", uk: "Один погляд на календар — і ви бачите весь день.", pl: "Jedno spojrzenie na kalendarz — i widzisz cały dzień." },
+  whatChangesWith2: { en: "All payments and debts are highlighted automatically.", fr: "Tous les paiements et dettes sont mis en surbrillance automatiquement.", uk: "Всі оплати й борги підсвічені автоматично.", pl: "Wszystkie płatności i długi są podświetlane automatycznie." },
+  whatChangesWith3: { en: "Reminders are sent on their own — no effort needed.", fr: "Les rappels sont envoyés tout seuls — sans effort.", uk: "Нагадування відправляються самі — без вашої участі.", pl: "Przypomnienia wysyłają się same — bez twojego wysiłku." },
+  whatChangesWith4: { en: "Income and profit are calculated in real time.", fr: "Les revenus et les bénéfices sont calculés en temps réel.", uk: "Дохід і прибуток рахуються в реальному часі.", pl: "Dochód i zysk są obliczane w czasie rzeczywistym." },
+  whatChangesWith5: { en: "Clients book themselves through your link.", fr: "Les clients réservent eux-mêmes via votre lien.", uk: "Клієнти записуються самі через ваше посилання.", pl: "Klienci zapisują się sami przez twój link." },
+  whatChangesWith6: { en: "The start of the week is calm and under control.", fr: "Le début de la semaine est calme et sous contrôle.", uk: "Початок тижня — це спокій і контроль.", pl: "Początek tygodnia to spokój i kontrola." },
+  whatChangesSummary: { en: "The difference isn't how many hours you work. It's how many of them go to what truly matters.", fr: "La différence n'est pas le nombre d'heures travaillées. C'est combien d'entre elles sont consacrées à ce qui compte vraiment.", uk: "Різниця не в тому, скільки годин ви працюєте. Різниця в тому, скільки з них йде на те, що справді важливо.", pl: "Różnica nie polega na tym, ile godzin pracujesz. Chodzi o to, ile z nich idzie na to, co naprawdę się liczy." },
 
   // Audience
   audTitle: { en: "Who SoloBizz is for", fr: "À qui s'adresse SoloBizz", uk: "Кому підходить SoloBizz", pl: "Dla kogo jest SoloBizz" },
@@ -685,21 +702,6 @@ function PrimaryCta({
   );
 }
 
-function VideoCta({ label, source, className = "" }: { label: string; source: string; className?: string }) {
-  const { lang } = useLandingLang();
-  return (
-    <a
-      href={YOUTUBE_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={() => track("cta_clicked", { source_page: source, cta: "watch_video", lang })}
-    >
-      <Button size="lg" variant="outline" className={`gap-2 ${className}`}>
-        <Play className="h-4 w-4" /> {label}
-      </Button>
-    </a>
-  );
-}
 
 // ── Nav ───────────────────────────────────────────────────────────────
 
@@ -746,80 +748,6 @@ function LandingNav() {
   );
 }
 
-// ── Dashboard preview (visual-only mock) ──────────────────────────────
-
-function DashboardPreview() {
-  const { t } = useLandingLang();
-  return (
-    <div className="relative mx-auto max-w-4xl">
-      <div aria-hidden className="absolute -inset-4 sm:-inset-8 bg-primary/20 blur-3xl rounded-full opacity-40" />
-      <div className="relative rounded-2xl border border-border bg-card shadow-2xl overflow-hidden">
-        <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border bg-muted/40">
-          <span className="h-2.5 w-2.5 rounded-full bg-destructive/60" />
-          <span className="h-2.5 w-2.5 rounded-full bg-primary/40" />
-          <span className="h-2.5 w-2.5 rounded-full bg-primary/70" />
-          <span className="ml-3 text-xs text-muted-foreground">solo-bizz.com / dashboard</span>
-        </div>
-
-        <div className="p-5 sm:p-7 grid sm:grid-cols-3 gap-4">
-          <div className="rounded-xl border border-border bg-background p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-muted-foreground">{t("dpClients")}</span>
-              <Users className="h-4 w-4 text-primary" />
-            </div>
-            <div className="text-2xl font-bold text-foreground">24</div>
-            <div className="text-xs text-primary mt-1">+3 this month</div>
-          </div>
-          <div className="rounded-xl border border-border bg-background p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-muted-foreground">{t("dpSessions")}</span>
-              <CalendarIcon className="h-4 w-4 text-primary" />
-            </div>
-            <div className="text-2xl font-bold text-foreground">18</div>
-            <div className="text-xs text-muted-foreground mt-1">6 today</div>
-          </div>
-          <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-muted-foreground">{t("dpIncome")}</span>
-              <TrendingUp className="h-4 w-4 text-primary" />
-            </div>
-            <div className="text-2xl font-bold text-foreground">€4,820</div>
-            <div className="text-xs text-primary mt-1">+12% vs last</div>
-          </div>
-        </div>
-
-        <div className="px-5 sm:px-7 pb-6">
-          <div className="text-xs font-medium text-muted-foreground mb-3">{t("dpUpcoming")}</div>
-          <div className="space-y-2">
-            {[
-              { name: "Anna L.", time: "10:00", price: "€80", paid: true },
-              { name: "Marc D.", time: "11:30", price: "€80", paid: true },
-              { name: "Sofia P.", time: "14:00", price: "€80", paid: false },
-            ].map((row) => (
-              <div key={row.name} className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
-                <div className="flex items-center gap-3">
-                  <div className="h-7 w-7 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center">
-                    {row.name[0]}
-                  </div>
-                  <span className="text-sm font-medium text-foreground">{row.name}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground">{row.time}</span>
-                  <span className="text-sm font-semibold text-foreground">{row.price}</span>
-                  <span className={`text-[10px] uppercase tracking-wide font-semibold px-2 py-0.5 rounded-full ${
-                    row.paid ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-                  }`}>
-                    {row.paid ? t("dpPaid") : t("dpPending")}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ── Hero ──────────────────────────────────────────────────────────────
 
@@ -923,6 +851,95 @@ function PainSection() {
   );
 }
 
+// ── What Changes ───────────────────────────────────────────────────────
+
+function WhatChangesSection() {
+  const { t } = useLandingLang();
+  const withoutItems: CopyKey[] = [
+    "whatChangesWithout1",
+    "whatChangesWithout2",
+    "whatChangesWithout3",
+    "whatChangesWithout4",
+    "whatChangesWithout5",
+    "whatChangesWithout6",
+  ];
+  const withItems: CopyKey[] = [
+    "whatChangesWith1",
+    "whatChangesWith2",
+    "whatChangesWith3",
+    "whatChangesWith4",
+    "whatChangesWith5",
+    "whatChangesWith6",
+  ];
+  return (
+    <section id="comparison" className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-b from-background via-muted/30 to-background">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wide mb-4">
+            {t("whatChangesEyebrow")}
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
+            {t("whatChangesHeadline")}
+          </h2>
+          <p className="text-lg text-muted-foreground">{t("whatChangesSub")}</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6 items-stretch">
+          {/* Without SoloBizz card */}
+          <div className="relative flex flex-col p-6 sm:p-8 rounded-2xl bg-card border border-border shadow-sm">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-xl sm:text-2xl font-semibold text-muted-foreground">
+                {t("whatChangesWithoutTitle")}
+              </h3>
+              <span className="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-destructive/10 text-destructive">
+                {t("cmpManualBadge")}
+              </span>
+            </div>
+            <ul className="space-y-3.5 flex-1">
+              {withoutItems.map((k) => (
+                <li key={k} className="flex items-start gap-3 text-foreground/80">
+                  <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-destructive/10 shrink-0">
+                    <X className="h-4 w-4 text-destructive" />
+                  </span>
+                  <span className="text-base leading-relaxed">{t(k)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* With SoloBizz card */}
+          <div className="relative flex flex-col p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-primary/[0.06] via-card to-primary/[0.04] border-2 border-primary/40 shadow-lg shadow-primary/10">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-xl sm:text-2xl font-bold text-foreground">
+                {t("whatChangesWithTitle")}
+              </h3>
+              <span className="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-primary/15 text-primary">
+                {t("cmpSoloBadge")}
+              </span>
+            </div>
+            <ul className="space-y-3.5 flex-1">
+              {withItems.map((k) => (
+                <li key={k} className="flex items-start gap-3 text-foreground">
+                  <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/15 shrink-0">
+                    <Check className="h-4 w-4 text-primary" />
+                  </span>
+                  <span className="text-base leading-relaxed font-medium">{t(k)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-10 text-center">
+          <p className="text-lg sm:text-xl font-semibold text-foreground max-w-3xl mx-auto leading-relaxed">
+            {t("whatChangesSummary")}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── Audience ──────────────────────────────────────────────────────────
 
 type AudienceCard = {
@@ -1002,149 +1019,6 @@ function AudienceSection() {
   );
 }
 
-// ── Demo / Wow ────────────────────────────────────────────────────────
-
-function DemoSection() {
-  const { t } = useLandingLang();
-  return (
-    <section className="py-20 px-4 sm:px-6 bg-muted/40">
-      <div className="max-w-5xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wide mb-4">
-          <Eye className="h-3.5 w-3.5" /> Live preview
-        </div>
-        <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-          {t("demoTitle")}
-        </h2>
-        <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-10">
-          {t("demoText")}
-        </p>
-        <DashboardPreview />
-        <div className="mt-10 flex justify-center">
-          <PrimaryCta label={t("heroCta")} source="/#preview" cta="preview" className="text-base px-8 h-12" />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ── Comparison ────────────────────────────────────────────────────────
-
-function ComparisonSection() {
-  const { t } = useLandingLang();
-  const manual: CopyKey[] = ["cmpM1", "cmpM2", "cmpM3", "cmpM4", "cmpM5", "cmpM6"];
-  const solo: CopyKey[] = ["cmpS1", "cmpS2", "cmpS3", "cmpS4", "cmpS5", "cmpS6"];
-  return (
-    <section id="comparison" className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-b from-background via-muted/30 to-background">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">{t("cmpTitle")}</h2>
-          <p className="text-lg text-muted-foreground">{t("cmpSub")}</p>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-6 items-stretch">
-          {/* Manual tracking card */}
-          <div className="relative flex flex-col p-6 sm:p-8 rounded-2xl bg-card border border-border shadow-sm">
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-xl sm:text-2xl font-semibold text-muted-foreground">
-                {t("cmpManual")}
-              </h3>
-              <span className="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-destructive/10 text-destructive">
-                {t("cmpManualBadge")}
-              </span>
-            </div>
-            <div className="mb-6 rounded-xl overflow-hidden border border-border bg-muted/40 aspect-[16/9]">
-              <img
-                src={manualTrackingImg}
-                alt="Spreadsheet with manual client and payment tracking"
-                loading="lazy"
-                className="w-full h-full object-cover object-top grayscale-[35%] opacity-90"
-              />
-            </div>
-            <ul className="space-y-3.5 flex-1">
-              {manual.map((k) => (
-                <li key={k} className="flex items-start gap-3 text-foreground/80">
-                  <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-destructive/10 shrink-0">
-                    <X className="h-4 w-4 text-destructive" />
-                  </span>
-                  <span className="text-base leading-relaxed">{t(k)}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* SoloBizz card */}
-          <div className="relative flex flex-col p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-primary/[0.06] via-card to-primary/[0.04] border-2 border-primary/40 shadow-lg shadow-primary/10">
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-xl sm:text-2xl font-bold text-foreground">
-                {t("cmpSolo")}
-              </h3>
-              <span className="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-primary/15 text-primary">
-                {t("cmpSoloBadge")}
-              </span>
-            </div>
-            <div className="mb-6 rounded-xl overflow-hidden border border-primary/20 bg-background shadow-sm aspect-[16/9]">
-              <img
-                src={soloBizzPreviewImg}
-                alt="SoloBizz client profile dashboard"
-                loading="lazy"
-                className="w-full h-full object-cover object-top"
-              />
-            </div>
-            <ul className="space-y-3.5 flex-1">
-              {solo.map((k) => (
-                <li key={k} className="flex items-start gap-3 text-foreground">
-                  <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/15 shrink-0">
-                    <Check className="h-4 w-4 text-primary" />
-                  </span>
-                  <span className="text-base leading-relaxed font-medium">{t(k)}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* ROI / time-saving tiles */}
-        <div className="mt-10">
-          <h3 className="sr-only">{t("roiTilesTitle")}</h3>
-          <div className="grid sm:grid-cols-3 gap-4">
-            {[
-              { Icon: Clock, value: t("roiT1Value"), sub: t("roiT1Sub") },
-              { Icon: Timer, value: t("roiT2Value"), sub: t("roiT2Sub") },
-              { Icon: TrendingUp, value: t("roiT3Value"), sub: t("roiT3Sub") },
-            ].map((tile) => (
-              <div
-                key={tile.value}
-                className="rounded-2xl border border-primary/25 bg-primary/5 p-5 flex items-start gap-3"
-              >
-                <div className="h-9 w-9 rounded-lg bg-primary/15 text-primary flex items-center justify-center shrink-0">
-                  <tile.Icon className="h-4 w-4" />
-                </div>
-                <div>
-                  <div className="text-xl font-bold text-foreground leading-tight">{tile.value}</div>
-                  <div className="text-sm text-muted-foreground mt-1 leading-snug">{tile.sub}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-8 flex flex-col items-center gap-3">
-          <Link
-            to="/auth?mode=signup"
-            onClick={() =>
-              track("cta_clicked", { source_page: "/#comparison", cta: "free_starter_selected", plan_type: "free_starter" })
-            }
-          >
-            <Button size="lg" className="gap-2 h-12 px-8 text-base">
-              {t("audCtaPrimary")} <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-          <p className="text-xs text-muted-foreground text-center max-w-md">{t("audCtaSub")}</p>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 // ── Pricing ───────────────────────────────────────────────────────────
 
@@ -1998,9 +1872,8 @@ export default function LandingPage() {
           <HeroSection />
           <StatsSection />
           <PainSection />
+          <WhatChangesSection />
           <AudienceSection />
-          <DemoSection />
-          <ComparisonSection />
           <PricingSection />
           <TestimonialsSection />
           <FaqSection />
