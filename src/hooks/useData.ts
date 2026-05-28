@@ -1098,12 +1098,13 @@ export function useExpenseAggregates(filters?: ExpenseFilters) {
     queryFn: async () => {
       let q = supabase
         .from("expenses")
-        .select("amount, category, is_recurring, payment_status, instance_status")
+        .select("amount, category, is_recurring, payment_status, instance_status, date")
         .eq("is_template", false);
       q = applyExpenseFilters(q, filters);
       const { data, error } = await q.range(0, 9999);
       if (error) throw error;
       const rows = (data ?? []) as any[];
+      const todayStr = new Date().toISOString().slice(0, 10);
       let total = 0, tax = 0, recurring = 0, unpaid = 0;
       for (const e of rows) {
         // Cancelled expenses are excluded from ALL financial aggregations.
@@ -1112,7 +1113,12 @@ export function useExpenseAggregates(filters?: ExpenseFilters) {
         total += amt;
         if (e.category === "Tax") tax += amt;
         if (e.is_recurring) recurring += amt;
-        if (e.payment_status === "unpaid") unpaid += amt;
+        // Unpaid only counts expenses that are actually due (date <= today).
+        // Future-dated planned/unpaid expenses are forecasted, not unpaid.
+        const dueOrPast = !e.date || e.date <= todayStr;
+        if (e.payment_status === "unpaid" && e.instance_status !== "paid" && dueOrPast) {
+          unpaid += amt;
+        }
       }
       return { total, tax, recurring, unpaid, exTax: total - tax };
     },
