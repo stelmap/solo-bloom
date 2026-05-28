@@ -1553,32 +1553,70 @@ export function useGenerateTaxExpenses() {
   const assertCanWrite = useDemoWriteGuard();
   return useMutation({
     mutationFn: async ({ taxSettingId, entries }: {
+
       taxSettingId: string;
       entries: Array<{ date: string; amount: number; description: string }>;
     }) => {
       assertCanWrite();
-      // Delete ALL existing generated entries for this tax (regardless of payment status)
-      // to prevent duplicates accumulating across syncs.
-      await supabase.from("expenses").delete()
+
+      // Fetch existing auto-generated rows so we can preserve user-edited
+      // payment_status / paid_date instead of wiping them on every sync.
+      const { data: existing } = await supabase
+        .from("expenses")
+        .select("id, date, amount, description, payment_status, paid_date")
         .eq("tax_setting_id", taxSettingId);
-      
-      // Insert new entries
-      if (entries.length > 0) {
-        const rows = entries.map(e => ({
-          user_id: user!.id,
-          category: "Tax",
-          amount: e.amount,
-          date: e.date,
-          description: e.description,
-          is_recurring: true,
-          tax_setting_id: taxSettingId,
-          payment_status: "unpaid",
-        }));
-        const { error } = await supabase.from("expenses").insert(rows as any);
+      const existingByDate = new Map<string, any>();
+      for (const row of (existing ?? []) as any[]) {
+        existingByDate.set(row.date, row);
+      }
+
+      const newDates = new Set(entries.map(e => e.date));
+      const toInsert: any[] = [];
+      const toUpdate: Array<{ id: string; amount: number; description: string }> = [];
+
+      for (const e of entries) {
+        const match = existingByDate.get(e.date);
+        if (match) {
+          // Only push update if amount/description actually changed — keep
+          // user-edited payment_status & paid_date untouched.
+          if (Number(match.amount) !== Number(e.amount) || (match.description ?? "") !== e.description) {
+            toUpdate.push({ id: match.id, amount: e.amount, description: e.description });
+          }
+        } else {
+          toInsert.push({
+            user_id: user!.id,
+            category: "Tax",
+            amount: e.amount,
+            date: e.date,
+            description: e.description,
+            is_recurring: true,
+            tax_setting_id: taxSettingId,
+            payment_status: "unpaid",
+          });
+        }
+      }
+
+      // Delete rows whose period no longer exists in the new schedule.
+      const staleIds = ((existing ?? []) as any[])
+        .filter(r => !newDates.has(r.date))
+        .map(r => r.id);
+      if (staleIds.length > 0) {
+        await supabase.from("expenses").delete().in("id", staleIds);
+      }
+
+      for (const u of toUpdate) {
+        await supabase.from("expenses")
+          .update({ amount: u.amount, description: u.description } as any)
+          .eq("id", u.id);
+      }
+
+      if (toInsert.length > 0) {
+        const { error } = await supabase.from("expenses").insert(toInsert as any);
         if (error) throw error;
       }
       return entries.length;
     },
+
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["expenses"] });
       qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
