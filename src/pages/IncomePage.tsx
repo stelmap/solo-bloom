@@ -117,9 +117,15 @@ export default function IncomePage() {
     if (!payDialog) return;
     try {
       await markPaid.mutateAsync({
-        id: payDialog.id, appointmentId: payDialog.appointment_id,
-        amount: Number(payDialog.amount), paymentMethod: payMethod, paymentDate: payDate,
+        id: payDialog.id,
+        appointmentId: payDialog.appointment_id ?? null,
+        amount: Number(payDialog.amount),
+        paymentMethod: payMethod,
+        paymentDate: payDate,
+        kind: payDialog.kind ?? "individual",
+        groupSessionPaymentId: payDialog.group_session_payment_id ?? null,
       });
+
       setPayDialog(null);
       toast({ title: t("toast.paymentReceived"), description: t("toast.paymentRecordedDesc", { symbol: cs, amount: Number(payDialog.amount).toFixed(2) }) });
     } catch (e: any) {
