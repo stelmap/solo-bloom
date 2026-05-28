@@ -2094,9 +2094,10 @@ export default function LandingPage() {
           <PainSection />
           <WhatChangesSection />
           <FeaturesSection />
+          <SwitchedSection />
           <AudienceSection />
           <PricingSection />
-          <TestimonialsSection />
+
           <FaqSection />
           <FinalCTA />
           <AboutContactsSection />
