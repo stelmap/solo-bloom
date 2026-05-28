@@ -1753,7 +1753,9 @@ export function useUpdateExpensePaymentStatus() {
       const { error } = await supabase.from("expenses").update(patch).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => {
+      [...INVALIDATE_FINANCIAL, "expenses-aggregates", "expense-categories"].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+    },
   });
 }
 
