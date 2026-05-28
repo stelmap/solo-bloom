@@ -999,7 +999,7 @@ function fmtEuro(n: number): string {
 }
 
 function PricingSection() {
-  const { t } = useLandingLang();
+  const { t, lang } = useLandingLang();
   const [cycle, setCycle] = useState<Cycle>("monthly");
 
   const plans: PlanRow[] = [
@@ -1058,7 +1058,7 @@ function PricingSection() {
             <AlertCircle className="h-4 w-4 text-amber-600" />
           </div>
           <p className="text-base text-foreground/90 leading-relaxed text-left">
-            <span className="font-semibold">{({ en: "Compared to alternatives:", fr: "Par rapport aux alternatives :", uk: "Порівняно з аналогами:", pl: "W porównaniu z alternatywami:" } as Record<string, string>)[locale] || "Compared to alternatives:"}</span>{" "}
+            <span className="font-semibold">{({ en: "Compared to alternatives:", fr: "Par rapport aux alternatives :", uk: "Порівняно з аналогами:", pl: "W porównaniu z alternatywami:" } as Record<string, string>)[lang] || "Compared to alternatives:"}</span>{" "}
             {t("pricingCompare").replace(/^[^:]+:\s*/, "")}
           </p>
         </div>
