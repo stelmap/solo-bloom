@@ -809,7 +809,11 @@ export function useBulkCancelForDayOff() {
         }
       }
     },
-    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => {
+      [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+      qc.invalidateQueries({ queryKey: ["group-attendance"] });
+      qc.invalidateQueries({ queryKey: ["group-all-attendance"] });
+    },
   });
 }
 
