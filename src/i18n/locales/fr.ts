@@ -126,6 +126,7 @@ export default {
   "prepayment.sessionAlreadyCovered": "Cette séance est déjà couverte par un acompte ({symbol}{amount})",
   "prepayment.sessionPartiallyCovered": "Cette séance est partiellement couverte par un acompte ({symbol}{covered}). Restant : {symbol}{remaining}",
   "prepayment.willMarkAlreadyPaid": "Sera marquée comme payée depuis l'acompte existant ({symbol}{amount})",
+  "prepayment.lockedNote": "Le paiement de cette séance a déjà été reçu en tant qu'acompte. Elle sera déduite du solde prépayé — aucun nouveau paiement n'est enregistré.",
   "payment.alreadyPaid": "Déjà payée (acompte)",
   "payment.alreadyPaidDesc": "Cette séance a déjà {symbol}{amount} attribués depuis un acompte précédent",
   "toast.sessionAlreadyPaid": "Séance terminée — couverte par l'acompte ({symbol}{amount})",
