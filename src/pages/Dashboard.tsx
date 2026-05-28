@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/AppLayout";
-import { useDashboardStats, useProfile } from "@/hooks/useData";
+import { useDashboardStats, useProfile, useClients, useAppointments } from "@/hooks/useData";
 import { useBookingRequests, useConfirmBookingRequest, useDeclineBookingRequest } from "@/hooks/useBookingInbox";
 import { useEffect, useMemo } from "react";
 import { track } from "@/lib/analytics";
