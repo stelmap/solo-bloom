@@ -53,6 +53,10 @@ export default {
   "calendar.cancel": "Anuluj",
   "calendar.noShow": "Nieobecność",
   "noShow.description": "Jak postąpić w przypadku nieobecności klienta?",
+  "cancelSession.title": "Anuluj sesję",
+  "cancelSession.description": "Czy klient powinien zostać obciążony za tę sesję?",
+  "common.back": "Wstecz",
+
   "noShow.charge": "Obciąż klienta",
   "noShow.chargeDesc": "zostanie dodane jako płatność oczekująca",
   "noShow.waive": "Zrezygnuj z opłaty",
