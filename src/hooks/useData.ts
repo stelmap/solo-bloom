@@ -1181,7 +1181,7 @@ export function useUpdateExpenseSeries() {
         .neq("instance_status", "paid");
       if (error) throw error;
     },
-    onSuccess: () => { track("expense_updated", { scope: "series" }); ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("expense_updated", { scope: "series" }); [...INVALIDATE_FINANCIAL, "expenses-aggregates", "expense-categories"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
