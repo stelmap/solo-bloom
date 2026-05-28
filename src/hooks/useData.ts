@@ -1221,7 +1221,7 @@ export function useDeleteExpense() {
       const { error: tplErr } = await supabase.from("expenses").delete().eq("id", templateId);
       if (tplErr) throw tplErr;
     },
-    onSuccess: () => { track("expense_deleted"); ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("expense_deleted"); [...INVALIDATE_FINANCIAL, "expenses-aggregates", "expense-categories"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
