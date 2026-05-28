@@ -1098,12 +1098,13 @@ export function useExpenseAggregates(filters?: ExpenseFilters) {
     queryFn: async () => {
       let q = supabase
         .from("expenses")
-        .select("amount, category, is_recurring, payment_status, instance_status")
+        .select("amount, category, is_recurring, payment_status, instance_status, date")
         .eq("is_template", false);
       q = applyExpenseFilters(q, filters);
       const { data, error } = await q.range(0, 9999);
       if (error) throw error;
       const rows = (data ?? []) as any[];
+      const todayStr = new Date().toISOString().slice(0, 10);
       let total = 0, tax = 0, recurring = 0, unpaid = 0;
       for (const e of rows) {
         // Cancelled expenses are excluded from ALL financial aggregations.
@@ -1112,7 +1113,12 @@ export function useExpenseAggregates(filters?: ExpenseFilters) {
         total += amt;
         if (e.category === "Tax") tax += amt;
         if (e.is_recurring) recurring += amt;
-        if (e.payment_status === "unpaid") unpaid += amt;
+        // Unpaid only counts expenses that are actually due (date <= today).
+        // Future-dated planned/unpaid expenses are forecasted, not unpaid.
+        const dueOrPast = !e.date || e.date <= todayStr;
+        if (e.payment_status === "unpaid" && e.instance_status !== "paid" && dueOrPast) {
+          unpaid += amt;
+        }
       }
       return { total, tax, recurring, unpaid, exTax: total - tax };
     },
@@ -2251,9 +2257,15 @@ export function useDashboardStats() {
       const allExpenses = expenseRes.data ?? [];
       const todayIncome = monthIncome.filter((i: any) => dateOf(i) === today).reduce((s: number, i: any) => s + Number(i.amount), 0);
       const monthlyIncome = monthIncome.reduce((s: number, i: any) => s + Number(i.amount), 0);
-      // Sum all non-template expense rows in this month (planned + paid; excludes cancelled).
+      // Sum non-template expense rows in this month that are already real as of today:
+      // paid up to today, or unpaid/planned with due date today or earlier.
+      // Excludes cancelled and future-dated planned/unpaid (those are forecast, not actual).
       const monthlyExpenses = allExpenses
-        .filter((e: any) => e.instance_status !== "cancelled")
+        .filter((e: any) => {
+          if (e.instance_status === "cancelled") return false;
+          if (e.instance_status === "paid") return !e.date || e.date <= today;
+          return !e.date || e.date <= today;
+        })
         .reduce((s: number, e: any) => s + Number(e.amount), 0);
       const thisWeekIncome = monthIncome.filter((i: any) => dateOf(i) >= thisMondayStr && dateOf(i) <= today).reduce((s: number, i: any) => s + Number(i.amount), 0);
       const lastWeekIncome = (lastWeekIncomeRes.data ?? []).reduce((s, i) => s + Number(i.amount), 0);
