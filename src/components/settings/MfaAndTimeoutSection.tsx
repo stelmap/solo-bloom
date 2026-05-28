@@ -60,7 +60,7 @@ export function MfaAndTimeoutSection() {
     setLoading(true);
     const { data, error } = await supabase.auth.mfa.listFactors();
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: t("mfa.error"), description: error.message, variant: "destructive" });
     } else {
       setFactors([...(data?.totp ?? [])] as MfaFactor[]);
     }
