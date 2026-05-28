@@ -182,10 +182,22 @@ export default function PaymentAuditPage() {
         raw: inc,
       };
     });
+    const UNPAID_STATES = new Set([
+      "unpaid",
+      "waiting_for_payment",
+      "partially_paid",
+      "partially_paid_from_prepayment",
+    ]);
     const expectedRows = (data.expected || [])
-      // Only count expected payments tied to a completed session.
-      // Cancelled / no-show / future scheduled sessions should not be "Awaiting".
-      .filter((ep: any) => ep.appointments?.status === "completed")
+      // Only count expected payments tied to a completed session that is
+      // still actually unpaid. Stale rows (appointment already paid /
+      // cancelled / future) must not appear in the audit, otherwise they
+      // would diverge from the Income page "Pending payments" list which
+      // is derived from the appointments table.
+      .filter((ep: any) =>
+        ep.appointments?.status === "completed" &&
+        UNPAID_STATES.has(ep.appointments?.payment_status),
+      )
       .map(ep => ({
         kind: "expected" as const,
         id: ep.id,
