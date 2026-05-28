@@ -273,12 +273,25 @@ const C = {
   },
 
   // Pricing
-  pricingTitle: { en: "Your full practice, organised from day one. Free until you grow.", fr: "Toute votre pratique, organisée dès le premier jour. Gratuite jusqu'à ce que vous grandissiez.", uk: "Уся ваша практика впорядкована з першого дня. Безкоштовно, поки ви ростете.", pl: "Cała Twoja praktyka uporządkowana od pierwszego dnia. Darmowa, dopóki rośniesz." },
+  pricingEyebrow: { en: "Pricing", fr: "Tarifs", uk: "Ціни", pl: "Cennik" },
+  pricingTitle: { en: "Your full practice, organised from day one.", fr: "Toute votre pratique, organisée dès le premier jour.", uk: "Ваша повна практика, організована з першого дня.", pl: "Cała Twoja praktyka uporządkowana od pierwszego dnia." },
   pricingSub: {
-    en: "All core features are included in every plan. The only difference is the number of active clients you can manage. No hidden feature locks. No calendar limits.",
-    fr: "Toutes les fonctionnalités principales sont incluses dans chaque forfait. La seule différence est le nombre de clients actifs que vous pouvez gérer. Aucune fonctionnalité bloquée. Aucune limite de calendrier.",
-    uk: "Усі основні функції доступні в кожному плані. Єдина різниця — кількість активних клієнтів, з якими ви працюєте. Жодних прихованих обмежень. Жодних лімітів календаря.",
-    pl: "Wszystkie kluczowe funkcje są zawarte w każdym planie. Jedyna różnica to liczba aktywnych klientów, którymi możesz zarządzać. Żadnych ukrytych blokad. Żadnych limitów kalendarza.",
+    en: "All core features are included in every plan. The only difference is the number of active clients. No hidden limits.",
+    fr: "Toutes les fonctionnalités principales sont incluses dans chaque forfait. La seule différence — le nombre de clients actifs. Aucune limite cachée.",
+    uk: "Всі основні функції включені в кожен план. Єдина різниця — кількість активних клієнтів. Жодних прихованих обмежень.",
+    pl: "Wszystkie kluczowe funkcje są zawarte w każdym planie. Jedyna różnica to liczba aktywnych klientów. Żadnych ukrytych ograniczeń.",
+  },
+  pricingAllFeaturesBadge: {
+    en: "All features available from day one — on any plan",
+    fr: "Toutes les fonctionnalités dès le premier jour — sur n'importe quel forfait",
+    uk: "Усі функції доступні з першого дня — на будь-якому плані",
+    pl: "Wszystkie funkcje dostępne od pierwszego dnia — w każdym planie",
+  },
+  pricingCompare: {
+    en: "Compared to alternatives: SimplePractice costs €46–73/mo, TherapyNotes — €64/mo. SoloBizz offers the full toolkit for managing a private practice at €12/mo — without insurance modules and extra features a private therapist will never need.",
+    fr: "Par rapport aux alternatives : SimplePractice coûte €46–73/mois, TherapyNotes — €64/mois. SoloBizz propose la boîte à outils complète pour gérer une pratique privée à €12/mois — sans modules d'assurance ni fonctionnalités superflues dont un thérapeute privé n'aura jamais besoin.",
+    uk: "Порівняно з аналогами: SimplePractice коштує €46–73/міс, TherapyNotes — €64/міс. SoloBizz пропонує повний набір інструментів для управління практикою за €12/міс — без страхових модулів та зайвих функцій, які ніколи не знадобляться приватному терапевту.",
+    pl: "W porównaniu z alternatywami: SimplePractice kosztuje €46–73/mies, TherapyNotes — €64/mies. SoloBizz oferuje pełny zestaw narzędzi do prowadzenia praktyki za €12/mies — bez modułów ubezpieczeniowych i zbędnych funkcji, których prywatny terapeuta nigdy nie potrzebuje.",
   },
 
   monthly: { en: "Monthly", fr: "Mensuel", uk: "Щомісяця", pl: "Miesięcznie" },
