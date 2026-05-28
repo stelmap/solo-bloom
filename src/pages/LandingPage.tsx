@@ -307,6 +307,31 @@ const C = {
   billedQ: { en: "Billed every 3 months", fr: "Facturé tous les 3 mois", uk: "Оплата раз на 3 місяці", pl: "Rozliczane co 3 miesiące" },
   billedY: { en: "Billed yearly", fr: "Facturé annuellement", uk: "Оплата раз на рік", pl: "Rozliczane co rok" },
 
+  // Billing cycle switcher
+  cycleMonthly: { en: "Monthly", fr: "Mensuel", uk: "Щомісяця", pl: "Miesięcznie" },
+  cycleQuarterly: { en: "Quarterly", fr: "Trimestriel", uk: "Щокварталу", pl: "Kwartalnie" },
+  cycleYearly: { en: "Yearly", fr: "Annuel", uk: "Щороку", pl: "Rocznie" },
+  saveQ15: { en: "−15%", fr: "−15 %", uk: "−15%", pl: "−15%" },
+  saveY25: { en: "−25%", fr: "−25 %", uk: "−25%", pl: "−25%" },
+  equivQuarter: {
+    en: "{price} / month when billed quarterly",
+    fr: "{price} / mois en paiement trimestriel",
+    uk: "{price} / міс при оплаті щокварталу",
+    pl: "{price} / mies. przy rozliczeniu kwartalnym",
+  },
+  equivYear: {
+    en: "{price} / month when billed yearly",
+    fr: "{price} / mois en paiement annuel",
+    uk: "{price} / міс при оплаті щороку",
+    pl: "{price} / mies. przy rozliczeniu rocznym",
+  },
+  mfaSecurity: {
+    en: "MFA & data protection",
+    fr: "MFA et protection des données",
+    uk: "MFA та захист даних",
+    pl: "MFA i ochrona danych",
+  },
+
   // Free Starter
   freeName: { en: "Free Starter", fr: "Free Starter", uk: "Free Starter", pl: "Free Starter" },
   freeDesc: {
