@@ -942,6 +942,95 @@ function PainSection() {
   );
 }
 
+// ── What Changes ───────────────────────────────────────────────────────
+
+function WhatChangesSection() {
+  const { t } = useLandingLang();
+  const withoutItems: CopyKey[] = [
+    "whatChangesWithout1",
+    "whatChangesWithout2",
+    "whatChangesWithout3",
+    "whatChangesWithout4",
+    "whatChangesWithout5",
+    "whatChangesWithout6",
+  ];
+  const withItems: CopyKey[] = [
+    "whatChangesWith1",
+    "whatChangesWith2",
+    "whatChangesWith3",
+    "whatChangesWith4",
+    "whatChangesWith5",
+    "whatChangesWith6",
+  ];
+  return (
+    <section id="comparison" className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-b from-background via-muted/30 to-background">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wide mb-4">
+            {t("whatChangesEyebrow")}
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
+            {t("whatChangesHeadline")}
+          </h2>
+          <p className="text-lg text-muted-foreground">{t("whatChangesSub")}</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6 items-stretch">
+          {/* Without SoloBizz card */}
+          <div className="relative flex flex-col p-6 sm:p-8 rounded-2xl bg-card border border-border shadow-sm">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-xl sm:text-2xl font-semibold text-muted-foreground">
+                {t("whatChangesWithoutTitle")}
+              </h3>
+              <span className="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-destructive/10 text-destructive">
+                {t("cmpManualBadge")}
+              </span>
+            </div>
+            <ul className="space-y-3.5 flex-1">
+              {withoutItems.map((k) => (
+                <li key={k} className="flex items-start gap-3 text-foreground/80">
+                  <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-destructive/10 shrink-0">
+                    <X className="h-4 w-4 text-destructive" />
+                  </span>
+                  <span className="text-base leading-relaxed">{t(k)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* With SoloBizz card */}
+          <div className="relative flex flex-col p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-primary/[0.06] via-card to-primary/[0.04] border-2 border-primary/40 shadow-lg shadow-primary/10">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-xl sm:text-2xl font-bold text-foreground">
+                {t("whatChangesWithTitle")}
+              </h3>
+              <span className="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-primary/15 text-primary">
+                {t("cmpSoloBadge")}
+              </span>
+            </div>
+            <ul className="space-y-3.5 flex-1">
+              {withItems.map((k) => (
+                <li key={k} className="flex items-start gap-3 text-foreground">
+                  <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/15 shrink-0">
+                    <Check className="h-4 w-4 text-primary" />
+                  </span>
+                  <span className="text-base leading-relaxed font-medium">{t(k)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-10 text-center">
+          <p className="text-lg sm:text-xl font-semibold text-foreground max-w-3xl mx-auto leading-relaxed">
+            {t("whatChangesSummary")}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── Audience ──────────────────────────────────────────────────────────
 
 type AudienceCard = {
