@@ -1982,6 +1982,7 @@ export default function LandingPage() {
         <LandingNav />
         <main>
           <HeroSection />
+          <StatsSection />
           <PainSection />
           <AudienceSection />
           <DemoSection />
