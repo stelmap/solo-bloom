@@ -743,9 +743,6 @@ function HeroSection() {
         <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto mb-6 leading-relaxed">
           {t("heroSub")}
         </p>
-        <p className="text-base sm:text-lg text-foreground/80 max-w-3xl mx-auto mb-10 leading-relaxed">
-          {t("heroSocialProof")}
-        </p>
         <div className="flex flex-col items-center gap-8">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <PrimaryCta label={t("heroCta")} source="/" cta="hero" />
