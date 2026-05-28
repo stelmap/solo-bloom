@@ -717,20 +717,45 @@ export function useCancelAppointment() {
   const { user } = useAuth();
   const { isDemoMode } = useDemoMode();
   return useMutation({
-    mutationFn: async ({ id, status, clientId, price, cancellationReason }: { id: string; status: "cancelled" | "no-show"; clientId?: string; price?: number; cancellationReason?: string }) => {
+    mutationFn: async ({
+      id, status, clientId, price, cancellationReason, chargeFee = false,
+    }: {
+      id: string;
+      status: "cancelled" | "no-show";
+      clientId?: string;
+      price?: number;
+      cancellationReason?: string;
+      /**
+       * Whether the therapist explicitly chose to bill this cancelled / no-show
+       * session. When false (default) the session becomes "not_applicable" and
+       * is wiped from income/expected_payments. When true the session is
+       * billable: payment_status = waiting_for_payment, plus an
+       * expected_payment row is created for the full price.
+       */
+       chargeFee?: boolean;
+    }) => {
+      // Always clear any pre-existing income/expected so we start clean.
       await supabase.from("income").delete().eq("appointment_id", id);
       await supabase.from("expected_payments").delete().eq("appointment_id", id);
 
-      // No-show and cancelled sessions are NOT payable by default.
-      // (Future "Charge no-show" setting can override this.)
+      const nextPaymentStatus = chargeFee ? "waiting_for_payment" : "not_applicable";
       const { error } = await supabase.from("appointments").update({
-        status, payment_status: "not_applicable",
+        status, payment_status: nextPaymentStatus,
         ...(cancellationReason ? { cancellation_reason: cancellationReason } : {}),
       } as any).eq("id", id);
       if (error) throw error;
 
-      // If this appointment is a group session, mark all participant attendance
-      // as N/A so the cancelled session does not count toward attendance stats.
+      if (chargeFee && clientId && price && Number(price) > 0) {
+        await supabase.from("expected_payments").insert({
+          user_id: user!.id, appointment_id: id,
+          client_id: clientId, amount: Number(price), status: "pending",
+          ...(isDemoMode ? { is_demo: true } : {}),
+        } as any);
+      }
+
+      // Group session attendance: if cancelled and not billable, mark N/A so it
+      // is excluded from attendance stats. If billable we still mark N/A (the
+      // attendance itself isn't tracked once cancelled).
       if (status === "cancelled") {
         const { data: gs } = await supabase
           .from("group_sessions" as any)
@@ -743,17 +768,19 @@ export function useCancelAppointment() {
             .eq("group_session_id", (gs as any).id);
         }
       }
-      // Suppress unused-var warnings for now-unused params
-      void clientId; void price; void user; void isDemoMode;
+      void isDemoMode;
     },
     onSuccess: (_d, vars) => {
-      track("session_canceled", { status: vars.status });
+      track("session_canceled", { status: vars.status, charge_fee: !!vars.chargeFee });
       [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
       qc.invalidateQueries({ queryKey: ["group-attendance"] });
       qc.invalidateQueries({ queryKey: ["group-all-attendance"] });
+      qc.invalidateQueries({ queryKey: ["client-debt"] });
+      qc.invalidateQueries({ queryKey: ["expected-payments"] });
     },
   });
 }
+
 
 // Bulk cancel appointments for day-off + send cancellation emails
 export function useBulkCancelForDayOff() {
