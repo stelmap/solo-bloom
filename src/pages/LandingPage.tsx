@@ -72,7 +72,7 @@ const C = {
   },
   trustData: { en: "Client data is protected", fr: "Données clients protégées", uk: "Дані клієнтів захищені", pl: "Dane klientów chronione" },
   trustStripe: { en: "Secure Stripe payments", fr: "Paiements sécurisés via Stripe", uk: "Безпечна оплата через Stripe", pl: "Bezpieczne płatności przez Stripe" },
-  trustGdpr: { en: "GDPR-friendly", fr: "Compatible RGPD", uk: "GDPR-friendly підхід", pl: "Zgodne z RODO" },
+  trustGdpr: { en: "GDPR compliant", fr: "Conforme RGPD", uk: "Відповідає GDPR", pl: "Zgodne z RODO" },
   trustSupport: { en: "Email support", fr: "Support email", uk: "Підтримка через email", pl: "Wsparcie przez email" },
 
   // Dashboard preview
