@@ -424,10 +424,11 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     setPaymentStatus(
       fullyPreallocated && !isGroupSession
         ? "already_paid"
-        : hasPrepayment && !isGroupSession
+        : hasPrepayment && !isGroupSession && Number(clientCredit) >= p - 0.001
           ? "paid_from_prepayment"
           : "paid_now"
     );
+
 
     setGroupPaymentState("paid_now");
     setGroupPaymentMethod("cash");
