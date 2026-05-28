@@ -79,7 +79,7 @@ const C = {
   heroSocialProof: {
     en: "Join 100+ psychologists, psychotherapists and supervisors already working in our system.",
     fr: "Rejoignez 100+ psychologues, psychothérapeutes et superviseurs qui travaillent déjà dans notre système.",
-    uk: "Приєднайтесь до 100+ психологів, психотерапевтів і супервізорів, які вже працюють у нашій системі.",
+    uk: "Приєднайтесь до 300+ психологів, психотерапевтів і супервізорів, які замінили розрізнені таблиці та забуті рахунки однією чіткою системою. Безкоштовно для початку. Налаштування за 5 хвилин.",
     pl: "Dołącz do 100+ psychologów, psychoterapeutów i superwizorów, którzy już pracują w naszym systemie.",
   },
   // Stats
@@ -94,8 +94,8 @@ const C = {
     uk: "Коли у вас 20+ клієнтів, ручна адмінка може забирати 4–8+ годин на тиждень. SoloBizz допомагає повернути цей час назад.",
     pl: "Przy 20+ klientach ręczna administracja może zajmować 4–8+ godzin tygodniowo. SoloBizz pomaga odzyskać ten czas.",
   },
-  trustData: { en: "Client data is protected", fr: "Données clients protégées", uk: "Дані клієнтів захищені", pl: "Dane klientów chronione" },
-  trustStripe: { en: "Secure Stripe payments", fr: "Paiements sécurisés via Stripe", uk: "Без картки для Free Starter", pl: "Bezpieczne płatności przez Stripe" },
+  trustData: { en: "Client data is protected", fr: "Données clients protégées", uk: "Дані клієнтів приватні", pl: "Dane klientów chronione" },
+  trustStripe: { en: "Secure Stripe payments", fr: "Paiements sécurisés via Stripe", uk: "Без картки для Free", pl: "Bezpieczne płatności przez Stripe" },
   trustGdpr: { en: "GDPR compliant", fr: "Conforme RGPD", uk: "Відповідає GDPR", pl: "Zgodne z RODO" },
   trustSupport: { en: "Email support", fr: "Support email", uk: "Скасування будь-коли", pl: "Wsparcie przez email" },
 
