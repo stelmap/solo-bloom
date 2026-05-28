@@ -171,25 +171,39 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     (s: number, r: any) => s + Number(r.allocated_amount || 0), 0
   );
   const fullyPreallocated = sessionPrice > 0 && alreadyAllocated + 0.001 >= sessionPrice;
-  const partiallyPreallocated = !fullyPreallocated && alreadyAllocated > 0.001;
+  // When the session is already covered by an existing prepayment or by the
+  // client's prepaid balance, the only valid completion outcome is "paid in
+  // advance". Hide all other payment options so the user cannot accidentally
+  // record a duplicate payment or leave it pending.
+  const fullyCoveredByPrepayment =
+    !isGroupSession && (fullyPreallocated || (hasPrepayment && prepaymentCovers >= sessionPrice - 0.001));
 
-  const PAYMENT_STATUSES = [
-    ...(fullyPreallocated && !isGroupSession ? [{
-      value: "already_paid",
-      label: t("payment.alreadyPaid"),
-      description: t("payment.alreadyPaidDesc", { symbol: cs, amount: alreadyAllocated.toFixed(2) }),
-    }] : []),
-    ...(hasPrepayment && !isGroupSession ? [{
-      value: "paid_from_prepayment",
-      label: t("payment.paidFromPrepayment"),
-      description: prepaymentCovers >= sessionPrice
-        ? t("payment.paidFromPrepaymentDesc", { symbol: cs, amount: prepaymentRemainingAfter.toFixed(2) })
-        : t("payment.paidFromPrepaymentPartialDesc", { symbol: cs, covered: prepaymentCovers.toFixed(2), remaining: (sessionPrice - prepaymentCovers).toFixed(2) }),
-    }] : []),
-    { value: "paid_now", label: t("payment.paidNow"), description: t("payment.paidNowDesc") },
-    { value: "paid_in_advance", label: t("payment.paidInAdvance"), description: t("payment.paidInAdvanceDesc") },
-    { value: "waiting_for_payment", label: t("payment.waitingForPayment"), description: t("payment.waitingForPaymentDesc") },
-  ];
+  const PAYMENT_STATUSES = fullyCoveredByPrepayment
+    ? [
+        fullyPreallocated
+          ? {
+              value: "already_paid",
+              label: t("payment.alreadyPaid"),
+              description: t("payment.alreadyPaidDesc", { symbol: cs, amount: alreadyAllocated.toFixed(2) }),
+            }
+          : {
+              value: "paid_from_prepayment",
+              label: t("payment.paidFromPrepayment"),
+              description: t("payment.paidFromPrepaymentDesc", { symbol: cs, amount: prepaymentRemainingAfter.toFixed(2) }),
+            },
+      ]
+    : [
+        ...(hasPrepayment && !isGroupSession ? [{
+          value: "paid_from_prepayment",
+          label: t("payment.paidFromPrepayment"),
+          description: prepaymentCovers >= sessionPrice
+            ? t("payment.paidFromPrepaymentDesc", { symbol: cs, amount: prepaymentRemainingAfter.toFixed(2) })
+            : t("payment.paidFromPrepaymentPartialDesc", { symbol: cs, covered: prepaymentCovers.toFixed(2), remaining: (sessionPrice - prepaymentCovers).toFixed(2) }),
+        }] : []),
+        { value: "paid_now", label: t("payment.paidNow"), description: t("payment.paidNowDesc") },
+        { value: "paid_in_advance", label: t("payment.paidInAdvance"), description: t("payment.paidInAdvanceDesc") },
+        { value: "waiting_for_payment", label: t("payment.waitingForPayment"), description: t("payment.waitingForPaymentDesc") },
+      ];
 
 
   const PAYMENT_STATUS_STYLES: Record<string, { label: string; color: string }> = {
@@ -200,6 +214,9 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     paid_from_prepayment: { label: t("payment.paidFromPrepaymentShort"), color: "text-success" },
     partially_paid_from_prepayment: { label: t("payment.partiallyPaidFromPrepayment"), color: "text-warning" },
     partially_paid: { label: t("payment.partiallyPaid"), color: "text-warning" },
+    not_applicable: { label: t("payment.na"), color: "text-muted-foreground" },
+  };
+
   };
 
   const statusInfo = STATUSES[apt.status] || STATUSES.scheduled;
