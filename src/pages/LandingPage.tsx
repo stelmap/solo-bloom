@@ -814,20 +814,20 @@ function DashboardPreview() {
 function HeroSection() {
   const { t } = useLandingLang();
   return (
-    <section className="min-h-[78vh] flex flex-col justify-center pt-24 pb-16 px-4 sm:px-6">
-      <div className="max-w-6xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8">
+    <section className="pt-20 pb-10 md:pt-24 md:pb-12 px-4 sm:px-6">
+      <div className="max-w-5xl mx-auto text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
           <Sparkles className="h-3.5 w-3.5" />
           {t("heroBadge")}
         </div>
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground tracking-tight leading-[1.1] mb-8 max-w-5xl mx-auto">
+        <h1 className="text-[2rem] sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight leading-[1.1] mb-6 max-w-4xl mx-auto">
           <span className="block">{t("heroTitlePrefix")}</span>
-          <span className="block text-primary mt-2">{t("heroTitleAccent")}</span>
+          <span className="block text-primary mt-1">{t("heroTitleAccent")}</span>
         </h1>
-        <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto mb-10 leading-relaxed">
+        <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
           {t("heroSub")}
         </p>
-        <div className="flex flex-col items-center gap-6">
+        <div className="flex flex-col items-center gap-5">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <PrimaryCta label={t("heroCta")} source="/" cta="hero" className="text-base px-8 h-12" />
             <a
@@ -838,7 +838,7 @@ function HeroSection() {
             </a>
           </div>
           <p className="text-sm text-muted-foreground">{t("heroSubCta")}</p>
-          <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs sm:text-sm text-muted-foreground mt-2">
+          <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs sm:text-sm text-muted-foreground">
             <li className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-success" /> {t("trustData")}</li>
             <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /> {t("trustStripe")}</li>
             <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /> {t("trustGdpr")}</li>
@@ -860,17 +860,17 @@ function StatsSection() {
     { num: "15 хв", label: t("statsSetup") },
   ];
   return (
-    <section className="bg-secondary text-secondary-foreground px-4 sm:px-6 py-12 md:py-20 -mt-6 md:-mt-10 rounded-t-[32px] relative z-10">
+    <section className="bg-secondary text-secondary-foreground px-4 sm:px-6 py-12 md:py-16 rounded-t-[32px] relative z-10">
       <div className="max-w-6xl mx-auto w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-3 sm:divide-x sm:divide-white/10 gap-12 sm:gap-0">
+        <div className="grid grid-cols-1 sm:grid-cols-3 sm:divide-x sm:divide-white/10 gap-10 sm:gap-0">
           {stats.map((s) => (
             <div key={s.num} className="text-center px-4">
-              <div className="text-5xl sm:text-6xl lg:text-7xl font-bold text-primary mb-4 tracking-tight">{s.num}</div>
-              <div className="text-base sm:text-lg text-secondary-foreground/80 leading-snug">{s.label}</div>
+              <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary mb-3 tracking-tight">{s.num}</div>
+              <div className="text-sm sm:text-base text-secondary-foreground/80 leading-snug">{s.label}</div>
             </div>
           ))}
         </div>
-        <div className="mt-10 md:mt-12 flex items-center justify-center gap-2 text-sm md:text-base text-secondary-foreground/80 text-center">
+        <div className="mt-8 md:mt-10 flex items-center justify-center gap-2 text-sm md:text-base text-secondary-foreground/80 text-center">
           <span>✦ {t("setupAssist")}</span>
         </div>
       </div>
