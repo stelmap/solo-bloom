@@ -1392,7 +1392,7 @@ function FinalCTA() {
           {t("finalDesc")}
         </p>
         <div className="flex items-center justify-center">
-          <PrimaryCta label={t("finalCta")} source="/" cta="final" className="text-base px-8 h-12" />
+          <PrimaryCta label={t("finalCta")} source="/" cta="final" />
         </div>
 
         <div id="contact" className="mt-14 max-w-2xl mx-auto rounded-2xl border border-sidebar-border bg-accent/30 p-6 sm:p-10 text-center">
