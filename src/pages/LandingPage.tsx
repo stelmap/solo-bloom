@@ -11,7 +11,7 @@ import { getStoredLang, setPreLoginLang } from "@/i18n/LanguageContext";
 import type { Language } from "@/i18n/translations";
 import { track } from "@/lib/analytics";
 import {
-  ArrowRight, CheckCircle2, AlertTriangle, TrendingUp,
+  ArrowRight, CheckCircle2, AlertTriangle, AlertCircle, TrendingUp,
   Calendar as CalendarIcon, Users, Sparkles, ShieldCheck,
   X, Check, HeartHandshake, Presentation, BookOpen, Clock, Timer,
   Quote, MessageCircle, Mail, Phone, MapPin, Send,
