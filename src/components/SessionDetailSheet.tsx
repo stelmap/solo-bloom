@@ -446,6 +446,15 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
             ? t("toast.sessionCompletedFromPrepayment", { symbol: cs, amount: completePrice.toFixed(2) })
             : t("toast.sessionCompletedFromPrepaymentPartial", { symbol: cs, covered: consumed.toFixed(2), remaining: (completePrice - consumed).toFixed(2) }),
         });
+      } else if (paymentStatus === "already_paid") {
+        await completeAppointment.mutateAsync({
+          appointmentId: apt.id, clientId: apt.client_id,
+          price: completePrice, paymentMethod, paymentStatus: "already_paid",
+        });
+        toast({
+          title: t("toast.appointmentCompleted"),
+          description: t("toast.sessionAlreadyPaid", { symbol: cs, amount: alreadyAllocated.toFixed(2) }),
+        });
       } else {
         await completeAppointment.mutateAsync({
           appointmentId: apt.id, clientId: apt.client_id,
@@ -463,6 +472,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
               : t("toast.sessionCompletedIncome", { symbol: cs, amount: completePrice.toString() });
         toast({ title: t("toast.appointmentCompleted"), description: msg });
       }
+
       onOpenChange(false);
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
