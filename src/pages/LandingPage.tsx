@@ -43,27 +43,28 @@ const C = {
   navTry: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
 
   // Hero
-  heroBadge: { en: "For psychologists & solo professionals", fr: "Pour psychologues & indépendants", uk: "Для психологів, супервізорів та викладачів", pl: "Dla psychologów i solowych profesjonalistów" },
+  heroBadge: { en: "For psychologists, psychotherapists, supervisors and educators", fr: "Pour psychologues, psychothérapeutes, superviseurs et formateurs", uk: "Для психологів, психотерапевтів, супервізорів і викладачів", pl: "Dla psychologów, psychoterapeutów, superwizorów i edukatorów" },
   heroTitle: {
-    en: "Control your clients and income — without Excel and chaos",
-    fr: "Maîtrisez vos clients et vos revenus — sans Excel ni chaos",
-    uk: "Контроль клієнтів і доходу без Excel і хаосу",
-    pl: "Kontroluj klientów i dochód — bez Excela i chaosu",
+    en: "Your full private practice. Organised in one place.",
+    fr: "Toute votre pratique privée. Organisée au même endroit.",
+    uk: "Уся ваша приватна практика. В одному місці.",
+    pl: "Cała Twoja prywatna praktyka. W jednym miejscu.",
   },
   heroSub: {
-    en: "A CRM for psychologists, psychotherapists, supervisors and teachers that automatically tracks sessions, payments, income and profit.",
-    fr: "Un CRM pour psychologues, psychothérapeutes, superviseurs et enseignants qui suit automatiquement les séances, paiements, revenus et bénéfices.",
-    uk: "CRM для психологів, психотерапевтів, супервізорів і викладачів, яка автоматично рахує записи, оплати, дохід і прибуток.",
-    pl: "CRM dla psychologów, psychoterapeutów, superwizorów i nauczycieli, który automatycznie liczy sesje, płatności, dochód i zysk.",
+    en: "SoloBizz manages your clients, calendar, bookings, payments, invoices and financial reports — automatically. So you spend your time on clients, not spreadsheets.",
+    fr: "SoloBizz gère vos clients, agenda, réservations, paiements, factures et rapports financiers — automatiquement. Vous consacrez votre temps aux clients, pas aux tableurs.",
+    uk: "SoloBizz керує клієнтами, календарем, записами, оплатами, рахунками та фінансовими звітами — автоматично. Ви витрачаєте час на клієнтів, а не на таблиці.",
+    pl: "SoloBizz prowadzi klientów, kalendarz, zapisy, płatności, faktury i raporty finansowe — automatycznie. Czas poświęcasz klientom, a nie arkuszom.",
   },
-  heroCta: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
-  heroSecondary: { en: "See pricing", fr: "Voir les tarifs", uk: "Переглянути ціни", pl: "Zobacz cennik" },
+  heroCta: { en: "Start free — no card needed", fr: "Commencer gratuitement — sans carte", uk: "Почати безкоштовно — без картки", pl: "Zacznij za darmo — bez karty" },
+  heroSecondary: { en: "See how it works", fr: "Voir comment ça marche", uk: "Подивитись, як це працює", pl: "Zobacz, jak to działa" },
   heroSubCta: {
-    en: "Free Starter: no payment while you have up to 5 active clients.",
-    fr: "Free Starter : sans paiement tant que vous avez jusqu'à 5 clients actifs.",
-    uk: "Free Starter: без оплати, поки у вас до 5 активних клієнтів.",
-    pl: "Free Starter: bez opłat, dopóki masz do 5 aktywnych klientów.",
+    en: "Free Starter: free forever, up to 5 active clients. No credit card required.",
+    fr: "Free Starter : gratuit pour toujours, jusqu'à 5 clients actifs. Sans carte bancaire.",
+    uk: "Free Starter: безкоштовно назавжди, до 5 активних клієнтів. Без банківської картки.",
+    pl: "Free Starter: za darmo na zawsze, do 5 aktywnych klientów. Bez karty kredytowej.",
   },
+
   heroRoi: {
     en: "With 20+ clients, manual admin can take 4–8+ hours a week. SoloBizz helps you win that time back.",
     fr: "Avec 20+ clients, l'admin manuelle peut prendre 4 à 8+ heures par semaine. SoloBizz vous aide à récupérer ce temps.",
@@ -84,7 +85,7 @@ const C = {
   dpPending: { en: "Pending", fr: "En attente", uk: "Очікує", pl: "Oczekujące" },
 
   // Pain
-  painTitle: { en: "This is probably happening to you:", fr: "Voilà ce qui vous arrive sûrement :", uk: "Ймовірно, це відбувається з вами:", pl: "Prawdopodobnie dotyczy Cię to:" },
+  painTitle: { en: "Does this sound familiar?", fr: "Ça vous parle ?", uk: "Звучить знайомо?", pl: "Brzmi znajomo?" },
   pain1: {
     en: "You don't know your real monthly income",
     fr: "Vous ignorez vos vrais revenus mensuels",
@@ -116,12 +117,13 @@ const C = {
     pl: "Rutyna zjada czas, który mógłbyś poświęcić klientom i rozwojowi",
   },
   painBottom: {
-    en: "This is not a productivity issue. This is lack of system.",
-    fr: "Ce n'est pas un problème de productivité. C'est un manque de système.",
-    uk: "Це не проблема продуктивності. Це відсутність системи.",
-    pl: "To nie problem produktywności. To brak systemu.",
+    en: "This isn't a productivity problem. It's the absence of a system built for private practice. SoloBizz is that system.",
+    fr: "Ce n'est pas un problème de productivité. C'est l'absence d'un système conçu pour la pratique privée. SoloBizz est ce système.",
+    uk: "Це не проблема продуктивності. Це відсутність системи, створеної для приватної практики. SoloBizz — це та система.",
+    pl: "To nie jest problem produktywności. To brak systemu stworzonego dla prywatnej praktyki. SoloBizz to ten system.",
   },
-  painCta: { en: "Fix this in 5 minutes", fr: "Réglez ça en 5 minutes", uk: "Виправити за 5 хвилин", pl: "Napraw to w 5 minut" },
+  painCta: { en: "See how SoloBizz works", fr: "Voir comment SoloBizz fonctionne", uk: "Подивитись, як працює SoloBizz", pl: "Zobacz, jak działa SoloBizz" },
+
 
   // Audience
   audTitle: { en: "Who SoloBizz is for", fr: "À qui s'adresse SoloBizz", uk: "Кому підходить SoloBizz", pl: "Dla kogo jest SoloBizz" },
@@ -260,13 +262,14 @@ const C = {
   },
 
   // Pricing
-  pricingTitle: { en: "One system. Choose by active clients.", fr: "Un seul système. Choisissez par clients actifs.", uk: "Одна система. Обирайте за кількістю активних клієнтів.", pl: "Jeden system. Wybierz wg aktywnych klientów." },
+  pricingTitle: { en: "Your full practice, organised from day one. Free until you grow.", fr: "Toute votre pratique, organisée dès le premier jour. Gratuite jusqu'à ce que vous grandissiez.", uk: "Уся ваша практика впорядкована з першого дня. Безкоштовно, поки ви ростете.", pl: "Cała Twoja praktyka uporządkowana od pierwszego dnia. Darmowa, dopóki rośniesz." },
   pricingSub: {
-    en: "SoloBizz is one complete system — all features are available from day one. Plans differ only in the number of active clients you can manage.",
-    fr: "SoloBizz est un système complet — toutes les fonctionnalités sont disponibles dès le premier jour. Les forfaits ne diffèrent que par le nombre de clients actifs que vous pouvez gérer.",
-    uk: "SoloBizz — це одна повна система. Усі функції доступні з першого дня. Плани відрізняються лише кількістю активних клієнтів, з якими ви працюєте.",
-    pl: "SoloBizz to jeden kompletny system — wszystkie funkcje są dostępne od pierwszego dnia. Plany różnią się tylko liczbą aktywnych klientów, którymi możesz zarządzać.",
+    en: "All core features are included in every plan. The only difference is the number of active clients you can manage. No hidden feature locks. No calendar limits.",
+    fr: "Toutes les fonctionnalités principales sont incluses dans chaque forfait. La seule différence est le nombre de clients actifs que vous pouvez gérer. Aucune fonctionnalité bloquée. Aucune limite de calendrier.",
+    uk: "Усі основні функції доступні в кожному плані. Єдина різниця — кількість активних клієнтів, з якими ви працюєте. Жодних прихованих обмежень. Жодних лімітів календаря.",
+    pl: "Wszystkie kluczowe funkcje są zawarte w każdym planie. Jedyna różnica to liczba aktywnych klientów, którymi możesz zarządzać. Żadnych ukrytych blokad. Żadnych limitów kalendarza.",
   },
+
   monthly: { en: "Monthly", fr: "Mensuel", uk: "Щомісяця", pl: "Miesięcznie" },
   quarterly: { en: "Quarterly", fr: "Trimestriel", uk: "Щокварталу", pl: "Kwartalnie" },
   yearly: { en: "Yearly", fr: "Annuel", uk: "Щороку", pl: "Rocznie" },
@@ -810,7 +813,7 @@ function HeroSection() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <PrimaryCta label={t("heroCta")} source="/" cta="hero" className="text-base px-8 h-12" />
             <a
-              href="#pricing"
+              href="#comparison"
               className="inline-flex items-center justify-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-4 h-12"
             >
               {t("heroSecondary")}
