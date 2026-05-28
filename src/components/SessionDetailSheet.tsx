@@ -194,17 +194,19 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
             },
       ]
     : [
-        ...(hasPrepayment && !isGroupSession ? [{
+        ...(hasPrepayment && !isGroupSession && prepaymentCovers >= sessionPrice - 0.001 ? [{
           value: "paid_from_prepayment",
           label: t("payment.paidFromPrepayment"),
-          description: prepaymentCovers >= sessionPrice
-            ? t("payment.paidFromPrepaymentDesc", { symbol: cs, amount: prepaymentRemainingAfter.toFixed(2) })
-            : t("payment.paidFromPrepaymentPartialDesc", { symbol: cs, covered: prepaymentCovers.toFixed(2), remaining: (sessionPrice - prepaymentCovers).toFixed(2) }),
+          description: t("payment.paidFromPrepaymentDesc", { symbol: cs, amount: prepaymentRemainingAfter.toFixed(2) }),
         }] : []),
         { value: "paid_now", label: t("payment.paidNow"), description: t("payment.paidNowDesc") },
         { value: "paid_in_advance", label: t("payment.paidInAdvance"), description: t("payment.paidInAdvanceDesc") },
         { value: "waiting_for_payment", label: t("payment.waitingForPayment"), description: t("payment.waitingForPaymentDesc") },
       ];
+
+  const prepaymentInsufficient =
+    hasPrepayment && !isGroupSession && !fullyCoveredByPrepayment && prepaymentCovers < sessionPrice - 0.001;
+
 
 
   const PAYMENT_STATUS_STYLES: Record<string, { label: string; color: string }> = {
