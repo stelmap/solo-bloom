@@ -78,9 +78,13 @@ export default function IncomePage() {
       return d >= dateFrom;
     });
   }, [expectedPayments, dateFrom, dateRange, todayStr]);
+  const pendingTotal = filteredExpected.reduce((s: number, ep: any) => s + Number(ep.amount), 0);
 
+  const { data: activeMethods = [] } = useActivePaymentMethods();
+  const PAYMENT_METHODS = activeMethods.map(m => ({ value: m.code, label: localizedMethodName(m, t) }));
 
   const paymentLabel = (method: string) => PAYMENT_METHODS.find(m => m.value === method)?.label || method;
+
 
   const handleCreate = async () => {
     if (!form.amount) return;
