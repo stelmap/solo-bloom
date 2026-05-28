@@ -103,35 +103,47 @@ const C = {
 
   // Pain
   painTitle: { en: "Does this sound familiar?", fr: "Ça vous parle ?", uk: "Звучить знайомо?", pl: "Brzmi znajomo?" },
+  painHeadline: {
+    en: "This happens in most private practices",
+    fr: "Cela arrive dans la plupart des pratiques privées",
+    uk: "Це відбувається у більшості приватних практик",
+    pl: "To się dzieje w większości prywatnych praktyk",
+  },
   pain1: {
-    en: "You don't know your real monthly income",
-    fr: "Vous ignorez vos vrais revenus mensuels",
-    uk: "Ви не знаєте реального місячного доходу",
-    pl: "Nie znasz swoich rzeczywistych miesięcznych dochodów",
+    en: "You don't know your real monthly income until you calculate everything manually.",
+    fr: "Vous ne connaissez pas vos vrais revenus mensuels tant que vous ne faites pas les calculs à la main.",
+    uk: "Ви не знаєте реального місячного доходу, доки не рахуєте все вручну.",
+    pl: "Nie znasz swoich rzeczywistych miesięcznych dochodów, dopóki nie policzysz wszystkiego ręcznie.",
   },
   pain2: {
-    en: "Records live in different places: calendar, messengers, Excel, notes",
-    fr: "Vos données sont éparpillées : calendrier, messageries, Excel, notes",
-    uk: "Записи ведуться в різних місцях: календар, месенджери, Excel, нотатки",
-    pl: "Zapisy są w różnych miejscach: kalendarz, komunikatory, Excel, notatki",
+    en: "Records are scattered in different places: calendar, messengers, Excel and notes.",
+    fr: "Les données sont éparpillées : calendrier, messageries, Excel et notes.",
+    uk: "Записи розкидані в різних місцях: календар, месенджери, Excel і нотатки.",
+    pl: "Zapisy są rozrzucone w różnych miejscach: kalendarz, komunikatory, Excel i notatki.",
   },
   pain3: {
-    en: "Payments, debts and prepayments have to be remembered manually",
-    fr: "Paiements, dettes et avances : tout est mémorisé à la main",
-    uk: "Оплати, борги та передоплати доводиться згадувати вручну",
-    pl: "Płatności, długi i zaliczki trzeba pamiętać ręcznie",
+    en: "Payments, debts and prepayments have to be remembered or checked manually.",
+    fr: "Paiements, dettes et avances : il faut se les rappeler ou les vérifier manuellement.",
+    uk: "Оплати, борги та передоплати доводиться згадувати або перевіряти вручну.",
+    pl: "Płatności, długi i zaliczki trzeba pamiętać lub sprawdzać ręcznie.",
   },
   pain4: {
-    en: "You feel busy, but you can't see how profitable your practice really is",
-    fr: "Vous êtes occupé sans voir si votre activité est vraiment rentable",
-    uk: "Ви зайняті, але не бачите, наскільки прибуткова ваша практика",
-    pl: "Jesteś zajęty, ale nie widzisz, jak rentowna jest Twoja praktyka",
+    en: "You may be losing clients because you don't have time to respond in time.",
+    fr: "Vous pouvez perdre des clients parce que vous n'avez pas le temps de répondre à temps.",
+    uk: "Ви можете втрачати клієнтів, бо не встигаєте відповісти їм вчасно.",
+    pl: "Możesz tracić klientów, ponieważ nie zdążasz odpowiedzieć na czas.",
   },
   pain5: {
-    en: "Routine eats time you could spend on clients, learning and growth",
-    fr: "La routine vous prend du temps utile à vos clients et à votre développement",
-    uk: "Багато часу йде на рутину, замість клієнтів, навчання і розвитку",
-    pl: "Rutyna zjada czas, który mógłbyś poświęcić klientom i rozwojowi",
+    en: "It's hard to understand what session price to set so the practice is profitable.",
+    fr: "Il est difficile de savoir quel tarif de séance fixer pour que la pratique soit rentable.",
+    uk: "Складно зрозуміти, яку вартість сесії ставити, щоб практика була прибутковою.",
+    pl: "Trudno zrozumieć, jaką cenę sesji ustalić, aby praktyka była rentowna.",
+  },
+  pain6: {
+    en: "Too much time goes to routine, yet the full picture of the practice is still not visible.",
+    fr: "Trop de temps part en routine, et pourtant la vue d'ensemble de la pratique reste invisible.",
+    uk: "Забагато часу йде на рутину, а цілісної картини практики все одно не видно.",
+    pl: "Zbyt dużo czasu idzie na rutynę, a pełnego obrazu praktyki wciąż nie widać.",
   },
   painBottom: {
     en: "This isn't a productivity problem. It's the absence of a system built for private practice. SoloBizz is that system.",
@@ -139,7 +151,7 @@ const C = {
     uk: "Це не проблема продуктивності. Це відсутність системи, створеної для приватної практики. SoloBizz — це та система.",
     pl: "To nie jest problem produktywności. To brak systemu stworzonego dla prywatnej praktyki. SoloBizz to ten system.",
   },
-  painCta: { en: "See how SoloBizz works", fr: "Voir comment SoloBizz fonctionne", uk: "Подивитись, як працює SoloBizz", pl: "Zobacz, jak działa SoloBizz" },
+  painCta: { en: "See how SoloBizz works", fr: "Voir comment SoloBizz fonctionne", uk: "Дивись, як це працює в SoloBizz", pl: "Zobacz, jak działa SoloBizz" },
 
 
   // Audience
