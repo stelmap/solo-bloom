@@ -1093,16 +1093,6 @@ function PricingSection() {
           </div>
         </div>
 
-        {/* Privacy / trust block — placed near pricing to reduce hesitation */}
-        <div className="max-w-3xl mx-auto mb-10 rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/5 to-transparent p-5 sm:p-6 flex items-start gap-4">
-          <div className="h-10 w-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-            <ShieldCheck className="h-5 w-5 text-primary" />
-          </div>
-          <div className="text-left">
-            <p className="text-base font-semibold text-foreground">{t("privacyTitle")}</p>
-            <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{t("privacyLong")}</p>
-          </div>
-        </div>
 
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
           {/* Free Starter card */}
