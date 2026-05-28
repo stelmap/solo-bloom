@@ -1554,11 +1554,13 @@ export default function CalendarPage() {
                         <div className="space-y-1.5">
                           <Label>{L.serviceDuration} ({L.durationMin}) *</Label>
                           <Input type="number" min={5} step={5} value={qaService.duration_minutes}
+                            onFocus={e => e.currentTarget.select()}
                             onChange={e => setQaService(s => ({ ...s, duration_minutes: parseInt(e.target.value) || 0 }))} />
                         </div>
                         <div className="space-y-1.5">
                           <Label>{L.servicePrice} ({cs})</Label>
                           <Input type="number" min={0} step="0.01" value={qaService.price}
+                            onFocus={e => e.currentTarget.select()}
                             onChange={e => setQaService(s => ({ ...s, price: parseFloat(e.target.value) || 0 }))} />
                         </div>
                       </div>
