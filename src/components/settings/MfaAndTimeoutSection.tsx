@@ -116,7 +116,7 @@ export function MfaAndTimeoutSection() {
     try {
       const { data: challenge, error: cErr } = await supabase.auth.mfa.challenge({ factorId: enrollData.factorId });
       if (cErr || !challenge) {
-        toast({ title: "Invalid authentication code", description: "Please try again.", variant: "destructive" });
+        toast({ title: t("mfa.invalidCode"), description: t("mfa.invalidCodeDesc"), variant: "destructive" });
         return;
       }
       const { error } = await supabase.auth.mfa.verify({
@@ -125,10 +125,10 @@ export function MfaAndTimeoutSection() {
         code: verifyCode.trim(),
       });
       if (error) {
-        toast({ title: "Invalid authentication code", description: "Please try again.", variant: "destructive" });
+        toast({ title: t("mfa.invalidCode"), description: t("mfa.invalidCodeDesc"), variant: "destructive" });
         return;
       }
-      toast({ title: "Two-factor enabled" });
+      toast({ title: t("mfa.toastEnabled") });
       setEnrollData(null);
       setVerifyCode("");
       setShowSecret(false);
