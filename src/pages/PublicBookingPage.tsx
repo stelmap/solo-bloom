@@ -247,7 +247,11 @@ export default function PublicBookingPage() {
       });
   }, [info, token]);
 
-  const tz = info?.timezone || "UTC";
+  // Display label for the practitioner's working timezone (informational only).
+  const tzLabel = info?.timezone || "UTC";
+  // Slot timestamps are stored in wall-clock UTC (same convention as the
+  // internal Calendar), so render them in UTC to stay in sync.
+  const tz = "UTC";
 
   const groupedByDay = useMemo(() => {
     const m: Record<string, { label: string; slots: string[] }> = {};
@@ -435,7 +439,7 @@ export default function PublicBookingPage() {
             </span>
             <span className="inline-flex items-center gap-1.5">
               <Globe className="h-3.5 w-3.5" />
-              {tz}
+              {tzLabel}
             </span>
           </div>
         </header>
