@@ -41,7 +41,7 @@ export default function CookiePolicyPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-foreground">5. Contact</h2>
-            <p className="text-muted-foreground leading-relaxed">If you have questions about this Cookie Policy, contact us at solobizz75@gmail.com.</p>
+            <p className="text-muted-foreground leading-relaxed">If you have questions about this Cookie Policy, contact us at info@solo-bizz.com.</p>
           </section>
         </div>
       </div>
