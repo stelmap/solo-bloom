@@ -2257,7 +2257,6 @@ export function useDashboardStats() {
       const conductedSessions = completedAptsCountRes.count ?? 0;
       const totalSessionsAll = allAptsCountRes.count ?? 0;
       const cancelledSessionsAll = cancelledAptsCountRes.count ?? 0;
-      const cancelledSessionsAll = cancelledAptsCountRes.count ?? 0;
       const completionRate = totalClients > 0 ? Math.round((completedClientsTotal / totalClients) * 100) : 0;
       const cancellationRate = totalSessionsAll > 0 ? Math.round((cancelledSessionsAll / totalSessionsAll) * 100) : 0;
       const allExpensesSum = (allExpensesRes.data ?? []).reduce((s: number, e: any) => s + Number(e.amount ?? 0), 0);
