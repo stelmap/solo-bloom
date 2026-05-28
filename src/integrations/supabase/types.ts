@@ -2562,6 +2562,7 @@ export type Database = {
         Args: { p_client_id: string }
         Returns: number
       }
+      backfill_group_expected_payments: { Args: never; Returns: number }
       check_client_revenue_consistency: {
         Args: never
         Returns: {
