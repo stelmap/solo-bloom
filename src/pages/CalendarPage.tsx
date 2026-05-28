@@ -414,7 +414,7 @@ export default function CalendarPage() {
       });
       // Push into the clients cache immediately so the Select can render
       // the new option on the same tick (invalidate refetch is async).
-      qcRef.setQueryData(["clients", user?.id], (prev: any[] | undefined) =>
+      qc.setQueryData(["clients", currentUserId], (prev: any[] | undefined) =>
         prev ? [...prev, c] : [c],
       );
       setForm(f => ({ ...f, client_id: c.id }));
