@@ -1073,20 +1073,61 @@ type SimplePlan = {
 
 function PricingSection() {
   const { t, lang } = useLandingLang();
+  const [cycle, setCycle] = useState<Cycle>("monthly");
 
-  const plans: SimplePlan[] = [
+  const fmt = (n: number): string => {
+    if (n === 0) return "€0";
+    return Number.isInteger(n) ? `€${n}` : `€${n.toFixed(2)}`;
+  };
+
+  const PRICES: Record<"free" | "solo" | "pro", { monthly: number; quarterly: number; yearly: number }> = {
+    free: { monthly: 0, quarterly: 0, yearly: 0 },
+    solo: { monthly: 12, quarterly: 30.6, yearly: 108 },
+    pro: { monthly: 24, quarterly: 61.2, yearly: 216 },
+  };
+
+  const perLabel: Record<Cycle, string> = {
+    monthly: t("perMonth"),
+    quarterly: t("perQuarter"),
+    yearly: t("perYear"),
+  };
+
+  const billedLabel: Record<Cycle, string> = {
+    monthly: t("billedMo"),
+    quarterly: t("billedQ"),
+    yearly: t("billedY"),
+  };
+
+  const cycleOptions: { id: Cycle; label: string; save?: string }[] = [
+    { id: "monthly", label: t("cycleMonthly") },
+    { id: "quarterly", label: t("cycleQuarterly"), save: t("saveQ15") },
+    { id: "yearly", label: t("cycleYearly"), save: t("saveY25") },
+  ];
+
+  type LocalPlan = {
+    id: "free" | "solo" | "pro";
+    name: string;
+    desc: string;
+    pill: string;
+    bullets: string[];
+    cta: string;
+    ctaHrefBase: string;
+    ctaTracking: string;
+    badge?: string;
+    badgeColor?: "primary" | "emerald";
+    highlighted?: boolean;
+    variant: "filled" | "outline";
+  };
+
+  const plans: LocalPlan[] = [
     {
       id: "free",
       name: t("freeName"),
       desc: t("freeDesc"),
-      price: "€0",
-      priceMicro: t("freeBadgeForever"),
-      priceMicroAccent: true,
-      priceSubMicro: t("freeMicro"),
       pill: t("freeF1"),
-      bullets: [t("freeF2"), t("freeF3"), t("freeF4"), t("freeF5")],
+      bullets: [t("freeF2"), t("freeF3"), t("freeF4"), t("freeF5"), t("mfaSecurity")],
       cta: t("freeCta"),
-      ctaHref: "/auth?mode=signup",
+      ctaHrefBase: "/auth?mode=signup",
       ctaTracking: "free_starter_selected",
       variant: "outline",
     },
@@ -1094,12 +1135,10 @@ function PricingSection() {
       id: "solo",
       name: t("soloName"),
       desc: t("soloDesc"),
-      price: "€12",
-      priceMicro: t("soloMicro"),
       pill: t("soloPill"),
-      bullets: [t("soloF2"), t("soloF3"), t("soloF4"), t("soloF5")],
+      bullets: [t("soloF2"), t("soloF1"), t("soloF3"), t("soloF4"), t("mfaSecurity"), t("soloF5")],
       cta: t("soloCta"),
-      ctaHref: "/auth?plan=solo_monthly",
+      ctaHrefBase: "/auth?plan=solo",
       ctaTracking: "upgrade_plan_selected",
       badge: t("soloBadge"),
       badgeColor: "primary",
@@ -1110,12 +1149,10 @@ function PricingSection() {
       id: "pro",
       name: t("proName"),
       desc: t("proDesc"),
-      price: "€24",
-      priceMicro: t("soloMicro"),
       pill: t("proPill"),
-      bullets: [t("proF1"), t("proF2"), t("proF3"), t("proF4"), t("proF5")],
+      bullets: [t("proF1"), t("proF2"), t("proF3"), t("proF4"), t("mfaSecurity")],
       cta: t("proCta"),
-      ctaHref: "/auth?plan=pro_monthly",
+      ctaHrefBase: "/auth?plan=pro",
       ctaTracking: "upgrade_plan_selected",
       badge: t("proBadge"),
       badgeColor: "emerald",
@@ -1124,10 +1161,10 @@ function PricingSection() {
   ];
 
   return (
-    <BillingCycleContext.Provider value="monthly">
+    <BillingCycleContext.Provider value={cycle}>
     <section id="pricing" className="py-20 px-4 sm:px-6 bg-muted/40">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-4">{t("pricingEyebrow")}</p>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">{t("pricingTitle")}</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("pricingSub")}</p>
@@ -1137,10 +1174,63 @@ function PricingSection() {
           </div>
         </div>
 
+        {/* Billing cycle switcher */}
+        <div className="flex justify-center mb-10">
+          <div className="inline-flex rounded-full border border-border bg-card p-1 shadow-sm">
+            {cycleOptions.map((opt) => {
+              const active = cycle === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setCycle(opt.id)}
+                  className={`relative px-4 sm:px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                    active
+                      ? "bg-primary text-primary-foreground shadow"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {opt.label}
+                  {opt.save && (
+                    <span
+                      className={`ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold ${
+                        active ? "bg-primary-foreground/20 text-primary-foreground" : "bg-emerald-100 text-emerald-700"
+                      }`}
+                    >
+                      {opt.save}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-stretch pt-4">
           {plans.map((p) => {
             const isFilled = p.variant === "filled";
             const isPrimaryBadge = p.badgeColor === "primary";
+            const priceNum = PRICES[p.id][cycle];
+            const isFree = p.id === "free";
+            const equivPerMonth =
+              !isFree && cycle === "quarterly"
+                ? fmt(Number((priceNum / 3).toFixed(2)))
+                : !isFree && cycle === "yearly"
+                  ? fmt(Number((priceNum / 12).toFixed(2)))
+                  : null;
+            const subMicro =
+              !isFree && cycle === "quarterly"
+                ? t("equivQuarter").replace("{price}", equivPerMonth || "")
+                : !isFree && cycle === "yearly"
+                  ? t("equivYear").replace("{price}", equivPerMonth || "")
+                  : isFree
+                    ? t("freeMicro")
+                    : "";
+            const microMain = isFree ? t("freeBadgeForever") : billedLabel[cycle];
+            const ctaHref = isFree
+              ? p.ctaHrefBase
+              : `${p.ctaHrefBase}_${cycle === "monthly" ? "monthly" : cycle === "quarterly" ? "quarterly" : "yearly"}`;
+
             return (
               <div
                 key={p.id}
@@ -1164,19 +1254,19 @@ function PricingSection() {
                 <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed min-h-[3rem]">{p.desc}</p>
 
                 <div className="flex items-baseline gap-1 mb-2">
-                  <span className="text-5xl font-bold text-foreground">{p.price}</span>
-                  <span className="text-muted-foreground text-base">{t("perMonth")}</span>
+                  <span className="text-5xl font-bold text-foreground">{fmt(priceNum)}</span>
+                  <span className="text-muted-foreground text-base">{perLabel[cycle]}</span>
                 </div>
 
                 <p
                   className={`text-sm mb-1 ${
-                    p.priceMicroAccent ? "font-semibold text-primary" : "text-muted-foreground"
+                    isFree ? "font-semibold text-primary" : "text-muted-foreground"
                   }`}
                 >
-                  {p.priceMicro}
+                  {microMain}
                 </p>
                 <p className="text-xs text-muted-foreground mb-5 min-h-[1rem]">
-                  {p.priceSubMicro || "\u00A0"}
+                  {subMicro || "\u00A0"}
                 </p>
 
                 <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-muted/60 border border-border mb-6">
@@ -1187,20 +1277,28 @@ function PricingSection() {
                 <ul className="space-y-3 mb-8 flex-1">
                   {p.bullets.map((f) => (
                     <li key={f} className="flex items-start gap-3 text-foreground">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                      <CheckCircle2
+                        className={`h-4 w-4 shrink-0 mt-0.5 ${
+                          p.id === "solo"
+                            ? "text-primary"
+                            : p.id === "pro"
+                              ? "text-emerald-500"
+                              : "text-muted-foreground"
+                        }`}
+                      />
                       <span className="text-sm">{f}</span>
                     </li>
                   ))}
                 </ul>
 
                 <Link
-                  to={p.ctaHref}
+                  to={ctaHref}
                   onClick={() =>
                     track("cta_clicked", {
                       source_page: `/#pricing-${p.id}`,
                       cta: p.ctaTracking,
                       plan_type: p.id,
-                      billing_cycle: "monthly",
+                      billing_cycle: cycle,
                       lang,
                     })
                   }
