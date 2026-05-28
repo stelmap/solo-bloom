@@ -36,7 +36,9 @@ function sampleProps(type: string, lang: Lang) {
     confirmationUrl: SAMPLE_URL,
     token: '123456',
     email: SAMPLE_EMAIL,
+    oldEmail: SAMPLE_EMAIL,
     newEmail: SAMPLE_NEW_EMAIL,
+    language: lang,
     lang,
   }
   return base
