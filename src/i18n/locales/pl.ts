@@ -924,6 +924,7 @@ export default {
   "groups.attended": "Obecny",
   "groups.absent": "Nieobecny",
   "groups.skipped": "Opuszczone",
+  "groups.n_a": "N/D",
   "groups.analytics": "Analityka",
   "groups.totalSessions": "Wszystkie sesje",
   "groups.completedSessions": "Ukończone",
