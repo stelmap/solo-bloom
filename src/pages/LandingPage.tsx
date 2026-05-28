@@ -911,16 +911,16 @@ function FeaturesSection() {
     { icon: Route, titleKey: "feat12Title", descKey: "feat12Desc" },
   ];
   return (
-    <section id="features" className="py-16 sm:py-24 px-4 sm:px-6 bg-background">
+    <section id="features" className="py-16 sm:py-24 px-4 sm:px-6 bg-gradient-dark text-white">
       <div className="max-w-7xl mx-auto">
         <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-14">
           <div className="text-xs sm:text-sm font-semibold uppercase tracking-[0.18em] text-primary mb-4">
             {t("featEyebrow")}
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-5 leading-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-5 leading-tight">
             {t("featHeadline")}
           </h2>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg text-white/70 max-w-2xl mx-auto leading-relaxed">
             {t("featSub")}
           </p>
         </div>
@@ -929,7 +929,7 @@ function FeaturesSection() {
           {cards.map(({ icon: Icon, titleKey, descKey }) => (
             <div
               key={titleKey}
-              className="flex flex-col p-7 sm:p-8 rounded-2xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow"
+              className="flex flex-col p-7 sm:p-8 rounded-2xl bg-card border border-white/10 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
                 <Icon className="h-6 w-6 text-primary" />
@@ -951,7 +951,7 @@ function FeaturesSection() {
             cta="features_cta"
             className="rounded-full px-8"
           />
-          <p className="text-sm text-muted-foreground">{t("featCtaNote")}</p>
+          <p className="text-sm text-white/60">{t("featCtaNote")}</p>
         </div>
       </div>
     </section>
