@@ -1740,6 +1740,15 @@ function AboutContactsSection() {
               </div>
             </li>
             <li className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
+              <MapPin className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+              <div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">
+                  {isUk ? "Локація" : "Location"}
+                </div>
+                <div className="text-foreground">{OFFICE_ADDRESS_LVIV}</div>
+              </div>
+            </li>
+            <li className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
               <Mail className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
                 <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">Email</div>
