@@ -870,7 +870,7 @@ function StatsSection() {
             </div>
           ))}
         </div>
-        <div className="mt-16 flex items-center justify-center gap-2 text-base text-secondary-foreground/80 text-center">
+        <div className="mt-10 md:mt-12 flex items-center justify-center gap-2 text-sm md:text-base text-secondary-foreground/80 text-center">
           <span>✦ {t("setupAssist")}</span>
         </div>
       </div>
