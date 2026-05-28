@@ -769,7 +769,7 @@ function HeroSection() {
         </p>
         <div className="flex flex-col items-center gap-8">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <PrimaryCta label={t("heroCta")} source="/" cta="hero" className="text-base px-8 h-12" />
+            <PrimaryCta label={t("heroCta")} source="/" cta="hero" />
             <a
               href="#pricing"
               className="inline-flex items-center justify-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-4 h-12"
