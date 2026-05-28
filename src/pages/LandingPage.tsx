@@ -816,18 +816,18 @@ function HeroSection() {
   return (
     <section className="pt-24 pb-16 sm:pt-28 sm:pb-20 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8">
           <Sparkles className="h-3.5 w-3.5" />
           {t("heroBadge")}
         </div>
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight leading-[1.1] mb-4 max-w-5xl mx-auto">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground tracking-tight leading-[1.1] mb-8 max-w-5xl mx-auto">
           <span className="block">{t("heroTitlePrefix")}</span>
-          <span className="block text-primary mt-1">{t("heroTitleAccent")}</span>
+          <span className="block text-primary mt-2">{t("heroTitleAccent")}</span>
         </h1>
-        <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto mb-6 leading-relaxed">
+        <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto mb-10 leading-relaxed">
           {t("heroSub")}
         </p>
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-6">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <PrimaryCta label={t("heroCta")} source="/" cta="hero" className="text-base px-8 h-12" />
             <a
@@ -838,7 +838,7 @@ function HeroSection() {
             </a>
           </div>
           <p className="text-sm text-muted-foreground">{t("heroSubCta")}</p>
-          <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs sm:text-sm text-muted-foreground mt-1">
+          <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs sm:text-sm text-muted-foreground mt-2">
             <li className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-success" /> {t("trustData")}</li>
             <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /> {t("trustStripe")}</li>
             <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /> {t("trustGdpr")}</li>
