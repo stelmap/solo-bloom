@@ -53,19 +53,19 @@ const C = {
   heroTitlePrefix: {
     en: "Your full private practice.",
     fr: "Toute votre pratique privée.",
-    uk: "Уся ваша приватна практика.",
+    uk: "Ваша практика заслуговує на систему.",
     pl: "Cała Twoja prywatna praktyka.",
   },
   heroTitleAccent: {
     en: "Organised in one place.",
     fr: "Organisée au même endroit.",
-    uk: "В одному місці.",
+    uk: "",
     pl: "W jednym miejscu.",
   },
   heroSub: {
     en: "SoloBizz manages your clients, calendar, bookings, payments, invoices and financial reports — automatically. So you spend your time on clients, not spreadsheets.",
     fr: "SoloBizz gère vos clients, agenda, réservations, paiements, factures et rapports financiers — automatiquement. Vous consacrez votre temps aux clients, pas aux tableurs.",
-    uk: "SoloBizz керує клієнтами, календарем, записами, оплатами, рахунками та фінансовими звітами — автоматично. Ви витрачаєте час на клієнтів, а не на таблиці.",
+    uk: "Приєднайтесь до 300+ психологів, психотерапевтів і супервізорів, які замінили розрізнені таблиці та забуті рахунки однією чіткою системою. Безкоштовно для початку. Налаштування за 5 хвилин.",
     pl: "SoloBizz prowadzi klientów, kalendarz, zapisy, płatności, faktury i raporty finansowe — automatycznie. Czas poświęcasz klientom, a nie arkuszom.",
   },
   heroCta: { en: "Start free — no card needed", fr: "Commencer gratuitement — sans carte", uk: "Почати безкоштовно — займає 5 хвилин →", pl: "Zacznij za darmo — bez karty" },
