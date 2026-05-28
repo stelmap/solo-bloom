@@ -1284,9 +1284,9 @@ function PricingSection() {
 
 // ── FAQ ───────────────────────────────────────────────────────────────
 
-const FACEBOOK_URL = "[ADD_FACEBOOK_PAGE_URL]";
-const YOUTUBE_CHANNEL_URL = "[ADD_YOUTUBE_CHANNEL_URL]";
-const FAQ_EMAIL = "info@solo-bizz.com";
+const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61589480870290";
+const YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@olga.stelmakh";
+const FAQ_EMAIL = "info@solobizz.com";
 
 type FaqItem = { q: Record<Language, string>; a: Record<Language, ReactNode> | ReactNode };
 
