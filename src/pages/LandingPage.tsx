@@ -307,6 +307,31 @@ const C = {
   billedQ: { en: "Billed every 3 months", fr: "Facturé tous les 3 mois", uk: "Оплата раз на 3 місяці", pl: "Rozliczane co 3 miesiące" },
   billedY: { en: "Billed yearly", fr: "Facturé annuellement", uk: "Оплата раз на рік", pl: "Rozliczane co rok" },
 
+  // Billing cycle switcher
+  cycleMonthly: { en: "Monthly", fr: "Mensuel", uk: "Щомісяця", pl: "Miesięcznie" },
+  cycleQuarterly: { en: "Quarterly", fr: "Trimestriel", uk: "Щокварталу", pl: "Kwartalnie" },
+  cycleYearly: { en: "Yearly", fr: "Annuel", uk: "Щороку", pl: "Rocznie" },
+  saveQ15: { en: "−15%", fr: "−15 %", uk: "−15%", pl: "−15%" },
+  saveY25: { en: "−25%", fr: "−25 %", uk: "−25%", pl: "−25%" },
+  equivQuarter: {
+    en: "{price} / month when billed quarterly",
+    fr: "{price} / mois en paiement trimestriel",
+    uk: "{price} / міс при оплаті щокварталу",
+    pl: "{price} / mies. przy rozliczeniu kwartalnym",
+  },
+  equivYear: {
+    en: "{price} / month when billed yearly",
+    fr: "{price} / mois en paiement annuel",
+    uk: "{price} / міс при оплаті щороку",
+    pl: "{price} / mies. przy rozliczeniu rocznym",
+  },
+  mfaSecurity: {
+    en: "MFA & data protection",
+    fr: "MFA et protection des données",
+    uk: "MFA та захист даних",
+    pl: "MFA i ochrona danych",
+  },
+
   // Free Starter
   freeName: { en: "Free Starter", fr: "Free Starter", uk: "Free Starter", pl: "Free Starter" },
   freeDesc: {
@@ -317,7 +342,7 @@ const C = {
   },
   freeBadgeForever: { en: "Free forever", fr: "Gratuit pour toujours", uk: "Безкоштовно назавжди", pl: "Za darmo na zawsze" },
   freeF1: { en: "Up to 5 active clients", fr: "Jusqu'à 5 clients actifs", uk: "До 5 активних клієнтів", pl: "Do 5 aktywnych klientów" },
-  freeF2: { en: "All SoloBizz features included", fr: "Toutes les fonctionnalités SoloBizz incluses", uk: "Усі функції SoloBizz включені", pl: "Wszystkie funkcje SoloBizz w komplecie" },
+  freeF2: { en: "All SoloBizz features included", fr: "Toutes les fonctionnalités SoloBizz incluses", uk: "Усі функції SoloBizz включено", pl: "Wszystkie funkcje SoloBizz w komplecie" },
   freeF3: { en: "Calendar, clients, payments, reminders", fr: "Calendrier, clients, paiements, rappels", uk: "Календар, клієнти, оплати, нагадування", pl: "Kalendarz, klienci, płatności, przypomnienia" },
   freeF4: { en: "Financial analytics & reports", fr: "Analytique financière et rapports", uk: "Фінансова аналітика та звіти", pl: "Analityka finansowa i raporty" },
   freeF5: { en: "Forever free, no card required", fr: "Gratuit pour toujours, sans carte", uk: "Назавжди безкоштовно, без картки", pl: "Za darmo na zawsze, bez karty" },
@@ -330,12 +355,6 @@ const C = {
   },
 
   soloName: { en: "Solo Practice", fr: "Solo Practice", uk: "Solo Practice", pl: "Solo Practice" },
-  soloDesc: {
-    en: "Affordable plan for a small solo practice — manage clients, sessions and payments without chaos.",
-    fr: "Forfait abordable pour une petite pratique solo — gérez clients, séances et paiements sans chaos.",
-    uk: "Доступний тариф для невеликої сольної практики — ведення клієнтів, сесій та оплат без хаосу.",
-    pl: "Przystępny plan dla małej, jednoosobowej praktyki — klienci, sesje i płatności bez chaosu.",
-  },
   // Privacy / trust messaging used near pricing and CTAs
   privacyTitle: {
     en: "Your clients' data, fully private",
@@ -355,14 +374,20 @@ const C = {
     uk: "Дані ваших клієнтів захищені. Ми не бачимо і не використовуємо клієнтську інформацію.",
     pl: "Dane Twoich klientów są chronione. Nie widzimy i nie wykorzystujemy informacji o klientach.",
   },
+  soloDesc: {
+    en: "For a small practice — manage clients, sessions and payments without chaos.",
+    fr: "Pour une petite pratique — gérez clients, séances et paiements sans chaos.",
+    uk: "Для невеликої практики — ведення клієнтів, сесій та оплат без хаосу.",
+    pl: "Dla małej praktyki — klienci, sesje i płatności bez chaosu.",
+  },
   soloIntro: {
     en: "All SoloBizz features included.",
     fr: "Toutes les fonctionnalités SoloBizz incluses.",
-    uk: "Усі функції SoloBizz включені.",
+    uk: "Усі функції SoloBizz включено.",
     pl: "Wszystkie funkcje SoloBizz w komplecie.",
   },
   soloF1: { en: "Up to 20 active clients", fr: "Jusqu'à 20 clients actifs", uk: "До 20 активних клієнтів", pl: "Do 20 aktywnych klientów" },
-  soloF2: { en: "Everything in Free Starter", fr: "Tout du Free Starter", uk: "Усе з Free Starter", pl: "Wszystko z Free Starter" },
+  soloF2: { en: "All SoloBizz features included", fr: "Toutes les fonctionnalités SoloBizz incluses", uk: "Усі функції SoloBizz включено", pl: "Wszystkie funkcje SoloBizz w komplecie" },
   soloF3: { en: "Calendar, clients, payments, reminders", fr: "Calendrier, clients, paiements, rappels", uk: "Календар, клієнти, оплати, нагадування", pl: "Kalendarz, klienci, płatności, przypomnienia" },
   soloF4: { en: "Financial analytics & reports", fr: "Analytique financière et rapports", uk: "Фінансова аналітика та звіти", pl: "Analityka finansowa i raporty" },
   soloF5: { en: "Cancel anytime", fr: "Annulation à tout moment", uk: "Скасування будь-коли", pl: "Anulowanie w dowolnej chwili" },
@@ -399,11 +424,10 @@ const C = {
     uk: "Усі функції SoloBizz включені.",
     pl: "Wszystkie funkcje SoloBizz w komplecie.",
   },
-  proF1: { en: "Everything in Solo Practice", fr: "Tout du Solo Practice", uk: "Усе з Solo Practice", pl: "Wszystko z Solo Practice" },
+  proF1: { en: "All SoloBizz features included", fr: "Toutes les fonctionnalités SoloBizz incluses", uk: "Усі функції SoloBizz включено", pl: "Wszystkie funkcje SoloBizz w komplecie" },
   proF2: { en: "Unlimited active clients", fr: "Clients actifs illimités", uk: "Необмежена кількість клієнтів", pl: "Nieograniczona liczba klientów" },
   proF3: { en: "Priority support", fr: "Support prioritaire", uk: "Пріоритетна підтримка", pl: "Wsparcie priorytetowe" },
   proF4: { en: "Personal onboarding consultation", fr: "Consultation d'onboarding personnelle", uk: "Персональна консультація з налаштування", pl: "Osobista konsultacja wdrożeniowa" },
-  proF5: { en: "All features included", fr: "Toutes les fonctionnalités incluses", uk: "Всі функції включені", pl: "Wszystkie funkcje w komplecie" },
   proCta: { en: "Choose Pro Practice", fr: "Choisir Pro Practice", uk: "Обрати Pro Practice", pl: "Wybierz Pro Practice" },
   proBadge: {
     en: "For a growing practice",
@@ -1023,46 +1047,64 @@ type PlanRow = {
   yearly: number;    // amount billed every 12 months
 };
 
-function fmtEuro(n: number): string {
-  if (n === 0) return "€0";
-  return Number.isInteger(n) ? `€${n}` : `€${n.toFixed(2)}`;
-}
-
-type SimplePlan = {
-  id: "free" | "solo" | "pro";
-  name: string;
-  desc: string;
-  price: string;
-  priceMicro: string;
-  priceMicroAccent?: boolean;
-  priceSubMicro?: string;
-  pill: string;
-  bullets: string[];
-  cta: string;
-  ctaHref: string;
-  ctaTracking: string;
-  badge?: string;
-  badgeColor?: "primary" | "emerald";
-  highlighted?: boolean;
-  variant: "filled" | "outline";
-};
 
 function PricingSection() {
   const { t, lang } = useLandingLang();
+  const [cycle, setCycle] = useState<Cycle>("monthly");
 
-  const plans: SimplePlan[] = [
+  const fmt = (n: number): string => {
+    if (n === 0) return "€0";
+    return Number.isInteger(n) ? `€${n}` : `€${n.toFixed(2)}`;
+  };
+
+  const PRICES: Record<"free" | "solo" | "pro", { monthly: number; quarterly: number; yearly: number }> = {
+    free: { monthly: 0, quarterly: 0, yearly: 0 },
+    solo: { monthly: 12, quarterly: 30.6, yearly: 108 },
+    pro: { monthly: 24, quarterly: 61.2, yearly: 216 },
+  };
+
+  const perLabel: Record<Cycle, string> = {
+    monthly: t("perMonth"),
+    quarterly: t("perQuarter"),
+    yearly: t("perYear"),
+  };
+
+  const billedLabel: Record<Cycle, string> = {
+    monthly: t("billedMo"),
+    quarterly: t("billedQ"),
+    yearly: t("billedY"),
+  };
+
+  const cycleOptions: { id: Cycle; label: string; save?: string }[] = [
+    { id: "monthly", label: t("cycleMonthly") },
+    { id: "quarterly", label: t("cycleQuarterly"), save: t("saveQ15") },
+    { id: "yearly", label: t("cycleYearly"), save: t("saveY25") },
+  ];
+
+  type LocalPlan = {
+    id: "free" | "solo" | "pro";
+    name: string;
+    desc: string;
+    pill: string;
+    bullets: string[];
+    cta: string;
+    ctaHrefBase: string;
+    ctaTracking: string;
+    badge?: string;
+    badgeColor?: "primary" | "emerald";
+    highlighted?: boolean;
+    variant: "filled" | "outline";
+  };
+
+  const plans: LocalPlan[] = [
     {
       id: "free",
       name: t("freeName"),
       desc: t("freeDesc"),
-      price: "€0",
-      priceMicro: t("freeBadgeForever"),
-      priceMicroAccent: true,
-      priceSubMicro: t("freeMicro"),
       pill: t("freeF1"),
-      bullets: [t("freeF2"), t("freeF3"), t("freeF4"), t("freeF5")],
+      bullets: [t("freeF2"), t("freeF3"), t("freeF4"), t("freeF5"), t("mfaSecurity")],
       cta: t("freeCta"),
-      ctaHref: "/auth?mode=signup",
+      ctaHrefBase: "/auth?mode=signup",
       ctaTracking: "free_starter_selected",
       variant: "outline",
     },
@@ -1070,12 +1112,10 @@ function PricingSection() {
       id: "solo",
       name: t("soloName"),
       desc: t("soloDesc"),
-      price: "€12",
-      priceMicro: t("soloMicro"),
       pill: t("soloPill"),
-      bullets: [t("soloF2"), t("soloF3"), t("soloF4"), t("soloF5")],
+      bullets: [t("soloF2"), t("soloF1"), t("soloF3"), t("soloF4"), t("mfaSecurity"), t("soloF5")],
       cta: t("soloCta"),
-      ctaHref: "/auth?plan=solo_monthly",
+      ctaHrefBase: "/auth?plan=solo",
       ctaTracking: "upgrade_plan_selected",
       badge: t("soloBadge"),
       badgeColor: "primary",
@@ -1086,12 +1126,10 @@ function PricingSection() {
       id: "pro",
       name: t("proName"),
       desc: t("proDesc"),
-      price: "€24",
-      priceMicro: t("soloMicro"),
       pill: t("proPill"),
-      bullets: [t("proF1"), t("proF2"), t("proF3"), t("proF4"), t("proF5")],
+      bullets: [t("proF1"), t("proF2"), t("proF3"), t("proF4"), t("mfaSecurity")],
       cta: t("proCta"),
-      ctaHref: "/auth?plan=pro_monthly",
+      ctaHrefBase: "/auth?plan=pro",
       ctaTracking: "upgrade_plan_selected",
       badge: t("proBadge"),
       badgeColor: "emerald",
@@ -1100,10 +1138,10 @@ function PricingSection() {
   ];
 
   return (
-    <BillingCycleContext.Provider value="monthly">
+    <BillingCycleContext.Provider value={cycle}>
     <section id="pricing" className="py-20 px-4 sm:px-6 bg-muted/40">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-4">{t("pricingEyebrow")}</p>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">{t("pricingTitle")}</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("pricingSub")}</p>
@@ -1113,10 +1151,63 @@ function PricingSection() {
           </div>
         </div>
 
+        {/* Billing cycle switcher */}
+        <div className="flex justify-center mb-10">
+          <div className="inline-flex rounded-full border border-border bg-card p-1 shadow-sm">
+            {cycleOptions.map((opt) => {
+              const active = cycle === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setCycle(opt.id)}
+                  className={`relative px-4 sm:px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                    active
+                      ? "bg-primary text-primary-foreground shadow"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {opt.label}
+                  {opt.save && (
+                    <span
+                      className={`ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold ${
+                        active ? "bg-primary-foreground/20 text-primary-foreground" : "bg-emerald-100 text-emerald-700"
+                      }`}
+                    >
+                      {opt.save}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-stretch pt-4">
           {plans.map((p) => {
             const isFilled = p.variant === "filled";
             const isPrimaryBadge = p.badgeColor === "primary";
+            const priceNum = PRICES[p.id][cycle];
+            const isFree = p.id === "free";
+            const equivPerMonth =
+              !isFree && cycle === "quarterly"
+                ? fmt(Number((priceNum / 3).toFixed(2)))
+                : !isFree && cycle === "yearly"
+                  ? fmt(Number((priceNum / 12).toFixed(2)))
+                  : null;
+            const subMicro =
+              !isFree && cycle === "quarterly"
+                ? t("equivQuarter").replace("{price}", equivPerMonth || "")
+                : !isFree && cycle === "yearly"
+                  ? t("equivYear").replace("{price}", equivPerMonth || "")
+                  : isFree
+                    ? t("freeMicro")
+                    : "";
+            const microMain = isFree ? t("freeBadgeForever") : billedLabel[cycle];
+            const ctaHref = isFree
+              ? p.ctaHrefBase
+              : `${p.ctaHrefBase}_${cycle === "monthly" ? "monthly" : cycle === "quarterly" ? "quarterly" : "yearly"}`;
+
             return (
               <div
                 key={p.id}
@@ -1140,19 +1231,19 @@ function PricingSection() {
                 <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed min-h-[3rem]">{p.desc}</p>
 
                 <div className="flex items-baseline gap-1 mb-2">
-                  <span className="text-5xl font-bold text-foreground">{p.price}</span>
-                  <span className="text-muted-foreground text-base">{t("perMonth")}</span>
+                  <span className="text-5xl font-bold text-foreground">{fmt(priceNum)}</span>
+                  <span className="text-muted-foreground text-base">{perLabel[cycle]}</span>
                 </div>
 
                 <p
                   className={`text-sm mb-1 ${
-                    p.priceMicroAccent ? "font-semibold text-primary" : "text-muted-foreground"
+                    isFree ? "font-semibold text-primary" : "text-muted-foreground"
                   }`}
                 >
-                  {p.priceMicro}
+                  {microMain}
                 </p>
                 <p className="text-xs text-muted-foreground mb-5 min-h-[1rem]">
-                  {p.priceSubMicro || "\u00A0"}
+                  {subMicro || "\u00A0"}
                 </p>
 
                 <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-muted/60 border border-border mb-6">
@@ -1163,20 +1254,28 @@ function PricingSection() {
                 <ul className="space-y-3 mb-8 flex-1">
                   {p.bullets.map((f) => (
                     <li key={f} className="flex items-start gap-3 text-foreground">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                      <CheckCircle2
+                        className={`h-4 w-4 shrink-0 mt-0.5 ${
+                          p.id === "solo"
+                            ? "text-primary"
+                            : p.id === "pro"
+                              ? "text-emerald-500"
+                              : "text-muted-foreground"
+                        }`}
+                      />
                       <span className="text-sm">{f}</span>
                     </li>
                   ))}
                 </ul>
 
                 <Link
-                  to={p.ctaHref}
+                  to={ctaHref}
                   onClick={() =>
                     track("cta_clicked", {
                       source_page: `/#pricing-${p.id}`,
                       cta: p.ctaTracking,
                       plan_type: p.id,
-                      billing_cycle: "monthly",
+                      billing_cycle: cycle,
                       lang,
                     })
                   }
