@@ -553,9 +553,9 @@ function StatCell({ label, value, tone }: { label: string; value: string; tone?:
     tone === "muted" ? "text-muted-foreground/60" :
     "text-foreground";
   return (
-    <div className="bg-muted/40 border border-border rounded-2xl p-4 flex flex-col items-center justify-center text-center min-h-[110px]">
-      <p className={cn("text-3xl sm:text-4xl font-bold leading-none tabular-nums", toneClass)}>{value}</p>
-      <p className="text-xs text-muted-foreground mt-2.5 leading-snug">{label}</p>
+    <div className="bg-muted/40 border border-border rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-center text-center min-h-[100px] sm:min-h-[110px] overflow-hidden min-w-0">
+      <p className={cn("text-2xl sm:text-4xl font-bold leading-none tabular-nums break-all", toneClass)}>{value}</p>
+      <p className="text-[10px] sm:text-xs text-muted-foreground mt-2 sm:mt-2.5 leading-snug break-words">{label}</p>
     </div>
   );
 }
