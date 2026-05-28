@@ -95,9 +95,9 @@ const C = {
     pl: "Przy 20+ klientach ręczna administracja może zajmować 4–8+ godzin tygodniowo. SoloBizz pomaga odzyskać ten czas.",
   },
   trustData: { en: "Client data is protected", fr: "Données clients protégées", uk: "Дані клієнтів захищені", pl: "Dane klientów chronione" },
-  trustStripe: { en: "Secure Stripe payments", fr: "Paiements sécurisés via Stripe", uk: "Безпечна оплата через Stripe", pl: "Bezpieczne płatności przez Stripe" },
+  trustStripe: { en: "Secure Stripe payments", fr: "Paiements sécurisés via Stripe", uk: "Без картки для Free Starter", pl: "Bezpieczne płatności przez Stripe" },
   trustGdpr: { en: "GDPR compliant", fr: "Conforme RGPD", uk: "Відповідає GDPR", pl: "Zgodne z RODO" },
-  trustSupport: { en: "Email support", fr: "Support email", uk: "Підтримка через email", pl: "Wsparcie przez email" },
+  trustSupport: { en: "Email support", fr: "Support email", uk: "Скасування будь-коли", pl: "Wsparcie przez email" },
 
   // Dashboard preview
   dpClients: { en: "Active clients", fr: "Clients actifs", uk: "Активні клієнти", pl: "Aktywni klienci" },
