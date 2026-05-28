@@ -85,7 +85,7 @@ const C = {
   dpPending: { en: "Pending", fr: "En attente", uk: "Очікує", pl: "Oczekujące" },
 
   // Pain
-  painTitle: { en: "This is probably happening to you:", fr: "Voilà ce qui vous arrive sûrement :", uk: "Ймовірно, це відбувається з вами:", pl: "Prawdopodobnie dotyczy Cię to:" },
+  painTitle: { en: "Does this sound familiar?", fr: "Ça vous parle ?", uk: "Звучить знайомо?", pl: "Brzmi znajomo?" },
   pain1: {
     en: "You don't know your real monthly income",
     fr: "Vous ignorez vos vrais revenus mensuels",
