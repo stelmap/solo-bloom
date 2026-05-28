@@ -155,16 +155,16 @@ export function MfaAndTimeoutSection() {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      toast({ title: "Copy failed", variant: "destructive" });
+      toast({ title: t("mfa.copyFailed"), variant: "destructive" });
     }
   }
 
   async function unenroll(factorId: string) {
     const { error } = await supabase.auth.mfa.unenroll({ factorId });
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: t("mfa.error"), description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Two-factor removed" });
+      toast({ title: t("mfa.toastRemoved") });
       await loadFactors();
     }
   }
@@ -173,7 +173,7 @@ export function MfaAndTimeoutSection() {
     const n = parseInt(v, 10);
     setIdleMinutes(n);
     writeIdleTimeoutMinutes(n);
-    toast({ title: "Saved" });
+    toast({ title: t("idle.saved") });
   }
 
   const verifiedFactor = factors.find(f => f.status === "verified");
