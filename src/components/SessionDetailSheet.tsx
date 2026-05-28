@@ -90,7 +90,9 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [editChoiceOpen, setEditChoiceOpen] = useState(false);
   const [paymentEditOpen, setPaymentEditOpen] = useState(false);
   const [noShowOpen, setNoShowOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
   const [sendingReminder, setSendingReminder] = useState(false);
+
 
   // Edit form
   const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "", notes: "", price: 0, days_of_week: [1] as number[], interval_weeks: 1, price_override_reason: "" });
