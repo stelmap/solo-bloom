@@ -278,8 +278,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-2 mb-4 sm:mb-5">
                 <DollarSign className="h-4 w-4 text-primary" />
                 <h3 className="text-sm font-semibold text-muted-foreground">
-                <MoneyTile label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} onClick={() => openWidget("expected_revenue_today", "/calendar")} />
-
+                  {t("ops.paymentSummary")}
                 </h3>
               </div>
               <div className="grid grid-cols-3 gap-2 sm:gap-3 flex-1">
