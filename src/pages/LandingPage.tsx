@@ -1288,7 +1288,7 @@ const FACEBOOK_URL = "[ADD_FACEBOOK_PAGE_URL]";
 const YOUTUBE_CHANNEL_URL = "[ADD_YOUTUBE_CHANNEL_URL]";
 const FAQ_EMAIL = "info@solobizz.com";
 
-type FaqItem = { q: Record<Language, string>; a: Record<Language, React.ReactNode> };
+type FaqItem = { q: Record<Language, string>; a: Record<Language, ReactNode> | ReactNode };
 
 function FaqSection() {
   const { t, lang } = useLandingLang();
