@@ -1922,7 +1922,7 @@ export default function CalendarPage() {
                               </div>
                             );
                           })}
-                          {events.map((evt) => {
+                          {events.map((evt, evtIdx) => {
                             const si = statusInfo(evt.status);
                             const heightPx = Math.max((evt.duration_minutes / 60) * 60 - 4, 20);
                             const isActiveEvt = evt.status === "scheduled" || evt.status === "confirmed" || evt.status === "reminder_sent";
@@ -1932,6 +1932,10 @@ export default function CalendarPage() {
                             const needsConfirmation = !isGroupEvt && client?.confirmation_required && evt.confirmation_status !== "confirmed";
                             const isConfirmed = !isGroupEvt && evt.confirmation_status === "confirmed";
                             const displayName = isGroupEvt && groupName ? groupName : (evt as any).clients?.name;
+                            // Split slot horizontally so concurrent events don't overlap (each is visible & clickable)
+                            const total = events.length;
+                            const widthPct = 100 / total;
+                            const leftPct = widthPct * evtIdx;
                             return (
                               <div key={evt.id}
                                 draggable={isActiveEvt}
@@ -1939,7 +1943,7 @@ export default function CalendarPage() {
                                 onDragEnd={handleDragEnd}
                                 onClick={(e) => { e.stopPropagation(); openSessionSheet(evt); }}
                                 className={cn(
-                                  "absolute inset-x-1 top-0 rounded-md border p-1.5 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10 overflow-hidden",
+                                  "absolute top-0 rounded-md border p-1.5 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10 overflow-hidden",
                                   si.color,
                                   isGroupEvt && "border-primary/40",
                                   needsConfirmation && "border-warning/50",
@@ -1947,7 +1951,8 @@ export default function CalendarPage() {
                                   isActiveEvt && "cursor-grab active:cursor-grabbing",
                                   dragAptId === evt.id && "opacity-40 ring-2 ring-primary",
                                 )}
-                                style={{ height: `${heightPx}px` }}>
+                                style={{ height: `${heightPx}px`, left: `calc(${leftPct}% + 4px)`, width: `calc(${widthPct}% - 8px)` }}>
+
                                 <div className="flex items-center gap-1">
                                   {isGroupEvt && <Users className="h-3 w-3 shrink-0 opacity-70" />}
                                   <p className="text-xs font-semibold truncate flex-1">{displayName}</p>
