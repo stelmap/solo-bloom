@@ -1106,6 +1106,8 @@ export function useExpenseAggregates(filters?: ExpenseFilters) {
       const rows = (data ?? []) as any[];
       let total = 0, tax = 0, recurring = 0, unpaid = 0;
       for (const e of rows) {
+        // Cancelled expenses are excluded from ALL financial aggregations.
+        if (e.instance_status === "cancelled") continue;
         const amt = Number(e.amount) || 0;
         total += amt;
         if (e.category === "Tax") tax += amt;
