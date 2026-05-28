@@ -340,7 +340,6 @@ export default function ExpensesPage() {
                               : `${monthlyDayText}${hasShortMonthClamp ? ` ${t("expenses.previewMonthlyDayClamp")}` : ""}`)
                           : t("expenses.previewYearly")}
                       </p>
-                      </p>
                       <p className="text-muted-foreground">{t("expenses.firstPlanned")} <span className="text-foreground">{fmt(dates[0])}</span></p>
                       <p className="text-muted-foreground">{t("expenses.nextPlanned")} <span className="text-foreground">{dates.slice(1).map(fmt).join(", ")}</span></p>
                       <p className="text-muted-foreground">{t("expenses.defaultStatus")} <span className="text-foreground capitalize">{form.instance_status === "planned" ? t("expenses.planned") : form.instance_status === "paid" ? t("payment.paid") : t("status.cancelled")}</span></p>
