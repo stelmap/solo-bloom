@@ -424,11 +424,10 @@ const C = {
     uk: "Усі функції SoloBizz включені.",
     pl: "Wszystkie funkcje SoloBizz w komplecie.",
   },
-  proF1: { en: "Everything in Solo Practice", fr: "Tout du Solo Practice", uk: "Усе з Solo Practice", pl: "Wszystko z Solo Practice" },
+  proF1: { en: "All SoloBizz features included", fr: "Toutes les fonctionnalités SoloBizz incluses", uk: "Усі функції SoloBizz включено", pl: "Wszystkie funkcje SoloBizz w komplecie" },
   proF2: { en: "Unlimited active clients", fr: "Clients actifs illimités", uk: "Необмежена кількість клієнтів", pl: "Nieograniczona liczba klientów" },
   proF3: { en: "Priority support", fr: "Support prioritaire", uk: "Пріоритетна підтримка", pl: "Wsparcie priorytetowe" },
   proF4: { en: "Personal onboarding consultation", fr: "Consultation d'onboarding personnelle", uk: "Персональна консультація з налаштування", pl: "Osobista konsultacja wdrożeniowa" },
-  proF5: { en: "All features included", fr: "Toutes les fonctionnalités incluses", uk: "Всі функції включені", pl: "Wszystkie funkcje w komplecie" },
   proCta: { en: "Choose Pro Practice", fr: "Choisir Pro Practice", uk: "Обрати Pro Practice", pl: "Wybierz Pro Practice" },
   proBadge: {
     en: "For a growing practice",
