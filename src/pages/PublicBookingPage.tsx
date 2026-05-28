@@ -439,7 +439,7 @@ export default function PublicBookingPage() {
             </span>
             <span className="inline-flex items-center gap-1.5">
               <Globe className="h-3.5 w-3.5" />
-              {tz}
+              {tzLabel}
             </span>
           </div>
         </header>
