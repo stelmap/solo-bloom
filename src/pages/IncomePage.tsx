@@ -68,24 +68,17 @@ export default function IncomePage() {
 
   const filtered = income; // server-side filtered
   const total = periodTotal;
-  const filteredExpected = useMemo(() => {
-    if (!dateFrom) return expectedPayments as any[];
-    return (expectedPayments as any[]).filter((ep: any) => {
-      const d = ep.appointments?.scheduled_at?.slice(0, 10);
-  const filtered = income; // server-side filtered
-  const total = periodTotal;
   const todayStr = format(new Date(), "yyyy-MM-dd");
   const filteredExpected = useMemo(() => {
     if (!dateFrom) return expectedPayments as any[];
     return (expectedPayments as any[]).filter((ep: any) => {
       const d = ep.appointments?.scheduled_at?.slice(0, 10);
       if (!d) return false;
-      // For "today" range, restrict to exactly today (not today + future).
-      // Other ranges (week/month) use >= dateFrom as before.
       if (dateRange === "today") return d === todayStr;
       return d >= dateFrom;
     });
   }, [expectedPayments, dateFrom, dateRange, todayStr]);
+
 
   const paymentLabel = (method: string) => PAYMENT_METHODS.find(m => m.value === method)?.label || method;
 
