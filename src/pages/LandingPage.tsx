@@ -482,6 +482,97 @@ const C = {
     pl: "Free Starter — za darmo na zawsze dla maks. 5 aktywnych klientów.",
   },
 
+  testEyebrow: {
+    en: "From therapists who switched",
+    fr: "Par des thérapeutes qui ont franchi le pas",
+    uk: "Від терапевтів, які перейшли на SoloBizz",
+    pl: "Od terapeutów, którzy przeszli na SoloBizz",
+  },
+  testHeadline: {
+    en: "Trusted by private practitioners",
+    fr: "La confiance des praticien·ne·s en cabinet privé",
+    uk: "Нам довіряють фахівці приватної практики",
+    pl: "Zaufali nam specjaliści prywatnej praktyki",
+  },
+  testHeadSub: {
+    en: "Psychologists, psychotherapists and supervisors use SoloBizz to manage their practice with less admin chaos.",
+    fr: "Psychologues, psychothérapeutes et superviseurs utilisent SoloBizz pour gérer leur cabinet avec moins de chaos administratif.",
+    uk: "Психологи, психотерапевти та супервізори користуються SoloBizz, щоб вести практику з меншим адміністративним хаосом.",
+    pl: "Psycholodzy, psychoterapeuci i superwizorzy używają SoloBizz, by prowadzić praktykę z mniejszym chaosem administracyjnym.",
+  },
+  metric1Value: { en: "300+", fr: "300+", uk: "300+", pl: "300+" },
+  metric1Label: {
+    en: "Therapists using SoloBizz",
+    fr: "Thérapeutes utilisant SoloBizz",
+    uk: "Терапевтів користуються SoloBizz",
+    pl: "Terapeutów korzysta z SoloBizz",
+  },
+  metric2Value: { en: "~4 hrs", fr: "~4 h", uk: "~4 год", pl: "~4 godz." },
+  metric2Label: {
+    en: "Admin time saved per week on average",
+    fr: "Temps administratif économisé par semaine en moyenne",
+    uk: "Економія часу на адміністрування щотижня в середньому",
+    pl: "Średnio zaoszczędzonego czasu administracyjnego tygodniowo",
+  },
+  metric3Value: { en: "5 min", fr: "5 min", uk: "5 хв", pl: "5 min" },
+  metric3Label: {
+    en: "To set up your full practice profile",
+    fr: "Pour configurer le profil complet de votre cabinet",
+    uk: "Щоб налаштувати повний профіль вашої практики",
+    pl: "Aby skonfigurować pełny profil praktyki",
+  },
+  ph1Quote: {
+    en: "I used to spend Sunday evenings catching up on invoices and checking who paid. Now I open SoloBizz on Monday morning and everything is already there. I didn't realise how much time I was losing until I stopped losing it.",
+    fr: "Avant, je passais mes dimanches soir à rattraper les factures et à vérifier qui avait payé. Maintenant, j'ouvre SoloBizz le lundi matin et tout est déjà là. Je n'avais pas réalisé combien de temps je perdais avant d'arrêter de le perdre.",
+    uk: "Раніше я витрачала недільні вечори на рахунки та перевірку, хто оплатив. Тепер я відкриваю SoloBizz у понеділок зранку — і все вже на місці. Я не усвідомлювала, скільки часу втрачаю, поки не перестала його втрачати.",
+    pl: "Kiedyś spędzałam niedzielne wieczory na nadrabianiu faktur i sprawdzaniu, kto zapłacił. Teraz w poniedziałek rano otwieram SoloBizz i wszystko już tam jest. Nie zdawałam sobie sprawy, ile czasu traciłam, dopóki nie przestałam go tracić.",
+  },
+  ph1Name: { en: "Olena L.", fr: "Olena L.", uk: "Олена Л.", pl: "Olena L." },
+  ph1Role: {
+    en: "Psychotherapist · Solo Practice",
+    fr: "Psychothérapeute · Solo Practice",
+    uk: "Психотерапевт · Solo Practice",
+    pl: "Psychoterapeutka · Solo Practice",
+  },
+  ph2Quote: {
+    en: "As a supervisor I work with many supervisees alongside my own clients. Keeping track of everything in Excel was a constant headache. SoloBizz gave me one place for all of it — sessions, payments, notes. It just works.",
+    fr: "En tant que superviseure, je travaille avec de nombreux supervisés en plus de mes propres clients. Tout suivre dans Excel était un casse-tête permanent. SoloBizz m'a donné un seul endroit pour tout — séances, paiements, notes. Ça fonctionne, tout simplement.",
+    uk: "Як супервізор я працюю з багатьма супервізованими разом із власними клієнтами. Вести все в Excel було постійним головним болем. SoloBizz дав мені єдине місце для всього — сесії, оплати, нотатки. Воно просто працює.",
+    pl: "Jako superwizorka pracuję z wieloma osobami superwizowanymi obok własnych klientów. Śledzenie wszystkiego w Excelu było ciągłym bólem głowy. SoloBizz dał mi jedno miejsce na wszystko — sesje, płatności, notatki. Po prostu działa.",
+  },
+  ph2Name: { en: "Mariana K.", fr: "Mariana K.", uk: "Мар'яна К.", pl: "Mariana K." },
+  ph2Role: {
+    en: "Psychologist & supervisor · Pro Practice",
+    fr: "Psychologue & superviseure · Pro Practice",
+    uk: "Психолог і супервізор · Pro Practice",
+    pl: "Psycholożka i superwizorka · Pro Practice",
+  },
+  ph3Quote: {
+    en: "I started on Free Starter just to try it. Within a week I knew I wanted to stay. The booking link alone saved me so many back-and-forth messages with clients.",
+    fr: "J'ai commencé avec Free Starter juste pour essayer. En une semaine, je savais que je voulais rester. Rien que le lien de réservation m'a évité tellement d'allers-retours avec les clients.",
+    uk: "Я почала з Free Starter, просто щоб спробувати. За тиждень зрозуміла, що хочу залишитись. Одне лише посилання для запису позбавило мене безлічі переписок із клієнтами.",
+    pl: "Zaczęłam od Free Starter, żeby tylko spróbować. W ciągu tygodnia wiedziałam, że chcę zostać. Samo linkowanie do zapisu oszczędziło mi mnóstwo wiadomości tam i z powrotem z klientami.",
+  },
+  ph3Name: { en: "Dmytro P.", fr: "Dmytro P.", uk: "Дмитро П.", pl: "Dmytro P." },
+  ph3Role: {
+    en: "Psychologist · started Free Starter",
+    fr: "Psychologue · a démarré avec Free Starter",
+    uk: "Психолог · почав із Free Starter",
+    pl: "Psycholog · zaczął od Free Starter",
+  },
+  highlightQuote: {
+    en: "I was skeptical that a €12 tool could replace everything I had scattered across three apps. It did.",
+    fr: "J'étais sceptique qu'un outil à 12 € puisse remplacer tout ce que j'avais éparpillé dans trois applis. Il l'a fait.",
+    uk: "Я сумнівалась, що інструмент за €12 може замінити все, що я мала розкиданим по трьох застосунках. Він зміг.",
+    pl: "Byłam sceptyczna, czy narzędzie za 12 € może zastąpić wszystko, co miałam porozrzucane w trzech aplikacjach. Zastąpiło.",
+  },
+  highlightName: { en: "Anna V.", fr: "Anna V.", uk: "Анна В.", pl: "Anna V." },
+  highlightRole: {
+    en: "Psychotherapist, 3 months on Solo Practice",
+    fr: "Psychothérapeute, 3 mois sur Solo Practice",
+    uk: "Психотерапевт, 3 місяці на Solo Practice",
+    pl: "Psychoterapeutka, 3 miesiące na Solo Practice",
+  },
   testTitle: {
     en: "Psychologists are already testing SoloBizz in their practice",
     fr: "Des psychologues testent déjà SoloBizz dans leur cabinet",
@@ -1355,40 +1446,8 @@ function TestimonialCard({
   );
 }
 
-// ⚠️ EDITABLE PLACEHOLDER CONTENT — replace with real metrics/quotes before launch.
-const SOCIAL_PROOF_METRICS = [
-  { value: "300+", label: "Therapists using SoloBizz" },
-  { value: "~4 hrs", label: "Admin time saved per week on average" },
-  { value: "5 min", label: "To set up your full practice profile" },
-];
 
-const PLACEHOLDER_TESTIMONIALS = [
-  {
-    quote:
-      "I used to spend Sunday evenings catching up on invoices and checking who paid. Now I open SoloBizz on Monday morning and everything is already there. I didn't realise how much time I was losing until I stopped losing it.",
-    name: "Olena L.",
-    role: "Psychotherapist · Solo Practice",
-  },
-  {
-    quote:
-      "As a supervisor I work with many supervisees alongside my own clients. Keeping track of everything in Excel was a constant headache. SoloBizz gave me one place for all of it — sessions, payments, notes. It just works.",
-    name: "Mariana K.",
-    role: "Psychologist & supervisor · Pro Practice",
-  },
-  {
-    quote:
-      "I started on Free Starter just to try it. Within a week I knew I wanted to stay. The booking link alone saved me so many back-and-forth messages with clients.",
-    name: "Dmytro P.",
-    role: "Psychologist · started Free Starter",
-  },
-];
 
-const HIGHLIGHT_QUOTE = {
-  quote:
-    "I was skeptical that a €12 tool could replace everything I had scattered across three apps. It did.",
-  name: "Anna V.",
-  role: "Psychotherapist, 3 months on Solo Practice",
-};
 
 function TestimonialsSection() {
   const { t, lang } = useLandingLang();
@@ -1397,19 +1456,23 @@ function TestimonialsSection() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center max-w-2xl mx-auto mb-10">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary mb-4">
-            From therapists who switched
+            {t("testEyebrow")}
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
-            Trusted by private practitioners
+            {t("testHeadline")}
           </h2>
           <p className="text-lg text-muted-foreground">
-            Psychologists, psychotherapists and supervisors use SoloBizz to manage their practice with less admin chaos.
+            {t("testHeadSub")}
           </p>
         </div>
 
         {/* Metrics row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-          {SOCIAL_PROOF_METRICS.map((m) => (
+          {([
+            { value: t("metric1Value"), label: t("metric1Label") },
+            { value: t("metric2Value"), label: t("metric2Label") },
+            { value: t("metric3Value"), label: t("metric3Label") },
+          ]).map((m) => (
             <div
               key={m.label}
               className="rounded-2xl bg-card border border-border p-6 text-center shadow-sm"
@@ -1422,14 +1485,18 @@ function TestimonialsSection() {
 
         {/* Placeholder testimonials (spec) */}
         <div className="grid md:grid-cols-3 gap-5 items-start mb-10">
-          {PLACEHOLDER_TESTIMONIALS.map((tt) => (
+          {([
+            { quote: t("ph1Quote"), name: t("ph1Name"), role: t("ph1Role") },
+            { quote: t("ph2Quote"), name: t("ph2Name"), role: t("ph2Role") },
+            { quote: t("ph3Quote"), name: t("ph3Name"), role: t("ph3Role") },
+          ]).map((tt) => (
             <figure
               key={tt.name}
               className="p-6 rounded-2xl bg-card border border-border flex flex-col shadow-sm h-full"
             >
               <Quote className="h-6 w-6 text-primary mb-3" />
               <blockquote className="text-base text-foreground leading-relaxed flex-1">
-                "{tt.quote}"
+                «{tt.quote}»
               </blockquote>
               <figcaption className="mt-5 pt-4 border-t border-border text-sm">
                 <div className="font-semibold text-foreground">— {tt.name}</div>
@@ -1443,12 +1510,13 @@ function TestimonialsSection() {
         <div className="rounded-2xl bg-secondary border border-border p-6 sm:p-8 text-center mb-14">
           <Quote className="h-7 w-7 text-primary mx-auto mb-3" />
           <p className="text-lg sm:text-xl font-semibold text-secondary-foreground leading-relaxed max-w-3xl mx-auto">
-            "{HIGHLIGHT_QUOTE.quote}"
+            «{t("highlightQuote")}»
           </p>
           <p className="mt-4 text-sm text-muted-foreground">
-            — {HIGHLIGHT_QUOTE.name}, {HIGHLIGHT_QUOTE.role}
+            — {t("highlightName")}, {t("highlightRole")}
           </p>
         </div>
+
 
         {/* Real early-user testimonials */}
         <div className="text-center max-w-2xl mx-auto mb-8">
