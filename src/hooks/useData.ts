@@ -830,6 +830,17 @@ export function useExpectedPayments() {
   return useQuery({
     queryKey: ["expected-payments", user?.id],
     queryFn: async () => {
+      // ── 1. Identify appointments that belong to a group session so we can
+      //       exclude them from the individual-debt query (group debts are
+      //       tracked per participant in group_session_payments).
+      const { data: groupAppts } = await supabase
+        .from("group_sessions")
+        .select("appointment_id");
+      const groupAppointmentIds = new Set(
+        ((groupAppts ?? []) as any[]).map((g) => g.appointment_id).filter(Boolean),
+      );
+
+      // ── 2. Individual unpaid / partially paid sessions.
       const { data: apts, error } = await supabase
         .from("appointments")
         .select("id, price, client_id, scheduled_at, status, payment_status, services(name), clients(name)")
@@ -838,26 +849,35 @@ export function useExpectedPayments() {
         .in("payment_status", ["unpaid", "waiting_for_payment", "partially_paid", "partially_paid_from_prepayment"])
         .order("scheduled_at", { ascending: false });
       if (error) throw error;
-      const list = (apts ?? []) as any[];
-      if (list.length === 0) return [];
+      const indivList = ((apts ?? []) as any[]).filter(
+        (a) => !groupAppointmentIds.has(a.id),
+      );
 
-      const ids = list.map((a) => a.id);
-      const { data: allocs } = await supabase
-        .from("income_session_allocations")
-        .select("appointment_id, allocated_amount")
-        .in("appointment_id", ids);
-      const paidByApt = new Map<string, number>();
-      for (const a of (allocs ?? []) as any[]) {
-        paidByApt.set(a.appointment_id, (paidByApt.get(a.appointment_id) ?? 0) + Number(a.allocated_amount || 0));
+      // Subtract any income allocations to get the true outstanding balance
+      // (handles partial payments correctly).
+      let paidByApt = new Map<string, number>();
+      if (indivList.length > 0) {
+        const ids = indivList.map((a) => a.id);
+        const { data: allocs } = await supabase
+          .from("income_session_allocations")
+          .select("appointment_id, allocated_amount")
+          .in("appointment_id", ids);
+        for (const a of (allocs ?? []) as any[]) {
+          paidByApt.set(
+            a.appointment_id,
+            (paidByApt.get(a.appointment_id) ?? 0) + Number(a.allocated_amount || 0),
+          );
+        }
       }
 
-      return list
+      const individualRows = indivList
         .map((a) => {
           const outstanding = Math.max(Number(a.price) - (paidByApt.get(a.id) ?? 0), 0);
           return {
-            // Keep field names compatible with previous expected_payments shape
             id: a.id,
+            kind: "individual" as const,
             appointment_id: a.id,
+            group_session_payment_id: null as string | null,
             client_id: a.client_id,
             amount: outstanding,
             status: "pending" as const,
@@ -870,6 +890,45 @@ export function useExpectedPayments() {
           };
         })
         .filter((r) => r.amount > 0);
+
+      // ── 3. Per-participant group session debts. One row per unpaid
+      //       participant so debt count matches Payment Audit.
+      const { data: gPays } = await supabase
+        .from("group_session_payments")
+        .select(
+          "id, amount, client_id, group_session_id, payment_state, clients(name), group_sessions(appointment_id, groups(name), appointments(scheduled_at, status))",
+        )
+        .eq("payment_state", "waiting_for_payment")
+        .gt("amount", 0);
+
+      const groupRows = ((gPays ?? []) as any[])
+        .filter((p) => Number(p.amount) > 0)
+        .map((p) => {
+          const apt = p.group_sessions?.appointments;
+          return {
+            id: `gsp:${p.id}`,
+            kind: "group" as const,
+            appointment_id: p.group_sessions?.appointment_id ?? null,
+            group_session_payment_id: p.id as string,
+            client_id: p.client_id,
+            amount: Number(p.amount),
+            status: "pending" as const,
+            clients: p.clients,
+            appointments: {
+              scheduled_at: apt?.scheduled_at ?? null,
+              status: apt?.status ?? "completed",
+              services: { name: p.group_sessions?.groups?.name ?? "Group session" },
+            },
+          };
+        });
+
+      const merged = [...individualRows, ...groupRows];
+      merged.sort((a, b) => {
+        const ad = a.appointments?.scheduled_at ?? "";
+        const bd = b.appointments?.scheduled_at ?? "";
+        return ad < bd ? 1 : ad > bd ? -1 : 0;
+      });
+      return merged;
     },
     enabled: !!user,
     staleTime: STALE_MEDIUM,
@@ -881,13 +940,70 @@ export function useMarkExpectedPaymentPaid() {
   const { user } = useAuth();
   const { isDemoMode } = useDemoMode();
   return useMutation({
-    mutationFn: async ({ id, appointmentId, amount, paymentMethod, paymentDate }: {
-      id: string; appointmentId: string; amount: number; paymentMethod: string; paymentDate?: string;
+    mutationFn: async ({ id, appointmentId, amount, paymentMethod, paymentDate, kind, groupSessionPaymentId }: {
+      id: string;
+      appointmentId: string | null;
+      amount: number;
+      paymentMethod: string;
+      paymentDate?: string;
+      kind?: "individual" | "group";
+      groupSessionPaymentId?: string | null;
     }) => {
       const today = new Date().toISOString().split("T")[0];
       const payDate = paymentDate || today;
 
-      // Get session date from appointment
+      // ── Group session participant debt ─────────────────────────────────
+      if (kind === "group" && groupSessionPaymentId) {
+        // Fetch the payment row so we know the linked appointment / amount.
+        const { data: gsp, error: gspErr } = await supabase
+          .from("group_session_payments")
+          .select("id, appointment_id:group_session_id, amount, client_id, expected_payment_id, group_sessions(appointment_id, appointments(scheduled_at))")
+          .eq("id", groupSessionPaymentId)
+          .single();
+        if (gspErr) throw gspErr;
+        const linkedAppointmentId = (gsp as any)?.group_sessions?.appointment_id ?? appointmentId;
+        const sessionDate = (gsp as any)?.group_sessions?.appointments?.scheduled_at
+          ? new Date((gsp as any).group_sessions.appointments.scheduled_at).toISOString().split("T")[0]
+          : payDate;
+
+        // Insert income for this participant.
+        const { data: inc, error: incErr } = await supabase.from("income").insert({
+          user_id: user!.id,
+          appointment_id: linkedAppointmentId,
+          client_id: (gsp as any)?.client_id ?? null,
+          amount,
+          date: payDate,
+          session_date: sessionDate,
+          source: "group_session",
+          payment_method: paymentMethod,
+          ...(isDemoMode ? { is_demo: true } : {}),
+        } as any).select("id").single();
+        if (incErr) throw incErr;
+
+        // Update the participant payment row.
+        const { error: updErr } = await supabase
+          .from("group_session_payments")
+          .update({
+            payment_state: "paid_now",
+            payment_method: paymentMethod,
+            income_id: inc?.id ?? null,
+          } as any)
+          .eq("id", groupSessionPaymentId);
+        if (updErr) throw updErr;
+
+        // Resolve any linked expected_payments row.
+        if ((gsp as any)?.expected_payment_id) {
+          await supabase
+            .from("expected_payments")
+            .update({ status: "paid", paid_at: new Date().toISOString(), payment_method: paymentMethod } as any)
+            .eq("id", (gsp as any).expected_payment_id);
+        }
+        return;
+      }
+
+      // ── Individual session debt (existing flow) ────────────────────────
+      if (!appointmentId) throw new Error("appointmentId is required for individual debts");
+
       const { data: aptData } = await supabase
         .from("appointments")
         .select("scheduled_at")
@@ -919,6 +1035,7 @@ export function useMarkExpectedPaymentPaid() {
     onSuccess: (_d, vars) => { track("payment_marked_paid", { payment_method: vars.paymentMethod }); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
+
 
 // Expenses
 const EXPENSES_PAGE_SIZE = 50;
