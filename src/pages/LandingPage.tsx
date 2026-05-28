@@ -860,7 +860,7 @@ function StatsSection() {
     { num: "15 хв", label: t("statsSetup") },
   ];
   return (
-    <section className="bg-secondary text-secondary-foreground px-4 sm:px-6 py-24">
+    <section className="bg-secondary text-secondary-foreground px-4 sm:px-6 py-12 md:py-20 -mt-6 md:-mt-10 rounded-t-[32px] relative z-10">
       <div className="max-w-6xl mx-auto w-full">
         <div className="grid grid-cols-1 sm:grid-cols-3 sm:divide-x sm:divide-white/10 gap-12 sm:gap-0">
           {stats.map((s) => (
