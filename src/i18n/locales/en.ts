@@ -119,6 +119,13 @@ export default {
   "prepayment.completeAndDeduct": "Complete & deduct from prepayment",
   "prepayment.balance": "Prepayment balance",
   "prepayment.sessionsShort": "{count} session(s)",
+  "prepayment.sessionAlreadyCovered": "This session is already covered by prepayment ({symbol}{amount})",
+  "prepayment.sessionPartiallyCovered": "This session is partially covered by prepayment ({symbol}{covered}). Remaining: {symbol}{remaining}",
+  "prepayment.willMarkAlreadyPaid": "Will be marked as paid from existing prepayment ({symbol}{amount})",
+  "payment.alreadyPaid": "Already paid (prepayment)",
+  "payment.alreadyPaidDesc": "This session has {symbol}{amount} already allocated from a prior prepayment",
+  "toast.sessionAlreadyPaid": "Session marked as completed — covered by prepayment ({symbol}{amount})",
+
   "toast.sessionCompletedFromPrepayment": "Paid from prepayment ({symbol}{amount})",
   "toast.sessionCompletedFromPrepaymentPartial": "{symbol}{covered} deducted from prepayment, {symbol}{remaining} still outstanding",
   "toast.sessionCompletedWithPrepayment": "Income {symbol}{paid} recorded. {symbol}{prepay} saved as prepayment",

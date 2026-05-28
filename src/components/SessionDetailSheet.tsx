@@ -27,7 +27,8 @@ import {
   useCancelAppointment, useClients, useServices,
   useDeleteRecurringAppointments, useEditRecurringAppointments,
   useProfile, useCreatePriceChange, useReopenAppointment,
-  useClientCreditBalance, useCompleteFromPrepayment, useClientDebt,
+  useClientCreditBalance, useCompleteFromPrepayment, useClientDebt, useAppointmentAllocations,
+
 } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,8 +63,10 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const editRecurring = useEditRecurringAppointments();
   const reopenAppointment = useReopenAppointment();
   const { data: clientCredit = 0 } = useClientCreditBalance(apt?.client_id);
+  const { data: existingAllocations = [] } = useAppointmentAllocations(apt?.id);
   const { data: clientDebtData } = useClientDebt(apt?.client_id);
   const clientDebt = Number(clientDebtData?.total ?? 0);
+
 
   // Group attendance hooks — must be before any early return
   const groupSessionId = apt?.group_session_id
@@ -161,7 +164,19 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const prepaymentCovers = Math.min(Number(clientCredit), sessionPrice);
   const prepaymentRemainingAfter = Math.max(0, Number(clientCredit) - sessionPrice);
 
+  // Income already allocated to THIS session (e.g. prepaid in advance for this slot).
+  const alreadyAllocated = (existingAllocations ?? []).reduce(
+    (s: number, r: any) => s + Number(r.allocated_amount || 0), 0
+  );
+  const fullyPreallocated = sessionPrice > 0 && alreadyAllocated + 0.001 >= sessionPrice;
+  const partiallyPreallocated = !fullyPreallocated && alreadyAllocated > 0.001;
+
   const PAYMENT_STATUSES = [
+    ...(fullyPreallocated && !isGroupSession ? [{
+      value: "already_paid",
+      label: t("payment.alreadyPaid"),
+      description: t("payment.alreadyPaidDesc", { symbol: cs, amount: alreadyAllocated.toFixed(2) }),
+    }] : []),
     ...(hasPrepayment && !isGroupSession ? [{
       value: "paid_from_prepayment",
       label: t("payment.paidFromPrepayment"),
@@ -173,6 +188,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     { value: "paid_in_advance", label: t("payment.paidInAdvance"), description: t("payment.paidInAdvanceDesc") },
     { value: "waiting_for_payment", label: t("payment.waitingForPayment"), description: t("payment.waitingForPaymentDesc") },
   ];
+
 
   const PAYMENT_STATUS_STYLES: Record<string, { label: string; color: string }> = {
     unpaid: { label: t("payment.unpaid"), color: "text-destructive" },
@@ -383,8 +399,15 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     setCompletePrice(p);
     setAmountPaid(p);
     setPaymentMethod("cash");
-    // Auto-select prepayment if client has any credit (covers full or partial).
-    setPaymentStatus(hasPrepayment && !isGroupSession ? "paid_from_prepayment" : "paid_now");
+    // Priority: session already pre-allocated (prepaid for this slot) > client has unused credit > pay now.
+    setPaymentStatus(
+      fullyPreallocated && !isGroupSession
+        ? "already_paid"
+        : hasPrepayment && !isGroupSession
+          ? "paid_from_prepayment"
+          : "paid_now"
+    );
+
     setGroupPaymentState("paid_now");
     setGroupPaymentMethod("cash");
     setMode("complete");
@@ -423,6 +446,15 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
             ? t("toast.sessionCompletedFromPrepayment", { symbol: cs, amount: completePrice.toFixed(2) })
             : t("toast.sessionCompletedFromPrepaymentPartial", { symbol: cs, covered: consumed.toFixed(2), remaining: (completePrice - consumed).toFixed(2) }),
         });
+      } else if (paymentStatus === "already_paid") {
+        await completeAppointment.mutateAsync({
+          appointmentId: apt.id, clientId: apt.client_id,
+          price: completePrice, paymentMethod, paymentStatus: "already_paid",
+        });
+        toast({
+          title: t("toast.appointmentCompleted"),
+          description: t("toast.sessionAlreadyPaid", { symbol: cs, amount: alreadyAllocated.toFixed(2) }),
+        });
       } else {
         await completeAppointment.mutateAsync({
           appointmentId: apt.id, clientId: apt.client_id,
@@ -440,6 +472,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
               : t("toast.sessionCompletedIncome", { symbol: cs, amount: completePrice.toString() });
         toast({ title: t("toast.appointmentCompleted"), description: msg });
       }
+
       onOpenChange(false);
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
@@ -912,7 +945,18 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
             <div className="space-y-5">
               <p className="text-sm text-muted-foreground">{t("calendar.confirmOutcome")}</p>
 
-              {/* Prepayment banner */}
+              {/* Pre-allocated prepayment banner (income already linked to this session) */}
+              {(fullyPreallocated || partiallyPreallocated) && (
+                <div className="rounded-lg border border-success/30 bg-success/5 p-3 text-sm">
+                  <p className="font-medium text-foreground">
+                    {fullyPreallocated
+                      ? t("prepayment.sessionAlreadyCovered", { symbol: cs, amount: alreadyAllocated.toFixed(2) })
+                      : t("prepayment.sessionPartiallyCovered", { symbol: cs, covered: alreadyAllocated.toFixed(2), remaining: (sessionPrice - alreadyAllocated).toFixed(2) })}
+                  </p>
+                </div>
+              )}
+
+              {/* Prepayment banner (unused client credit) */}
               {hasPrepayment && (
                 <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
                   <p className="font-medium text-foreground">
@@ -925,6 +969,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   </p>
                 </div>
               )}
+
 
               {/* Notes before completing */}
               <div className="space-y-2">
@@ -1013,7 +1058,9 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                     : "text-success")} />
                 <div>
                   <p className="text-sm font-semibold text-foreground">
-                    {paymentStatus === "waiting_for_payment"
+                    {paymentStatus === "already_paid"
+                      ? t("prepayment.willMarkAlreadyPaid", { symbol: cs, amount: alreadyAllocated.toFixed(2) })
+                      : paymentStatus === "waiting_for_payment"
                       ? t("calendar.willBeExpected", { symbol: cs, amount: completePrice.toFixed(2) })
                       : paymentStatus === "paid_from_prepayment"
                       ? (prepaymentCovers >= sessionPrice
@@ -1021,6 +1068,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                           : t("prepayment.willPartiallyDeduct", { symbol: cs, covered: prepaymentCovers.toFixed(2), remaining: (sessionPrice - prepaymentCovers).toFixed(2) }))
                       : t("calendar.willBeIncome", { symbol: cs, amount: amountPaid.toFixed(2) })}
                   </p>
+
                 </div>
               </div>
 

@@ -119,6 +119,13 @@ export default {
   "prepayment.completeAndDeduct": "Завершити та списати з передоплати",
   "prepayment.balance": "Баланс передоплати",
   "prepayment.sessionsShort": "{count} сесій",
+  "prepayment.sessionAlreadyCovered": "Ця сесія вже покрита передоплатою ({symbol}{amount})",
+  "prepayment.sessionPartiallyCovered": "Ця сесія частково покрита передоплатою ({symbol}{covered}). Залишок: {symbol}{remaining}",
+  "prepayment.willMarkAlreadyPaid": "Сесія буде позначена як оплачена з наявної передоплати ({symbol}{amount})",
+  "payment.alreadyPaid": "Вже оплачено (передоплата)",
+  "payment.alreadyPaidDesc": "Для цієї сесії вже зараховано {symbol}{amount} з попередньої передоплати",
+  "toast.sessionAlreadyPaid": "Сесія завершена — покрита передоплатою ({symbol}{amount})",
+
   "toast.sessionCompletedFromPrepayment": "Оплачено з передоплати ({symbol}{amount})",
   "toast.sessionCompletedFromPrepaymentPartial": "{symbol}{covered} списано з передоплати, {symbol}{remaining} залишається до оплати",
   "toast.sessionCompletedWithPrepayment": "Дохід {symbol}{paid} збережено. {symbol}{prepay} додано як передоплату",

@@ -119,6 +119,13 @@ export default {
   "prepayment.completeAndDeduct": "Terminer et déduire de l'acompte",
   "prepayment.balance": "Solde d'acompte",
   "prepayment.sessionsShort": "{count} séance(s)",
+  "prepayment.sessionAlreadyCovered": "Cette séance est déjà couverte par un acompte ({symbol}{amount})",
+  "prepayment.sessionPartiallyCovered": "Cette séance est partiellement couverte par un acompte ({symbol}{covered}). Restant : {symbol}{remaining}",
+  "prepayment.willMarkAlreadyPaid": "Sera marquée comme payée depuis l'acompte existant ({symbol}{amount})",
+  "payment.alreadyPaid": "Déjà payée (acompte)",
+  "payment.alreadyPaidDesc": "Cette séance a déjà {symbol}{amount} attribués depuis un acompte précédent",
+  "toast.sessionAlreadyPaid": "Séance terminée — couverte par l'acompte ({symbol}{amount})",
+
   "toast.sessionCompletedFromPrepayment": "Payée depuis l'acompte ({symbol}{amount})",
   "toast.sessionCompletedFromPrepaymentPartial": "{symbol}{covered} déduits de l'acompte, {symbol}{remaining} restent dus",
   "toast.sessionCompletedWithPrepayment": "Revenu {symbol}{paid} enregistré. {symbol}{prepay} gardés comme acompte",
