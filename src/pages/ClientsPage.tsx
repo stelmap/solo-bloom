@@ -161,13 +161,16 @@ export default function ClientsPage() {
   const COMPLETED_ARCHIVE_REASONS = new Set(["completed", "therapy_completed", "training_completed", "service_completed"]);
   const DROPPED_ARCHIVE_REASONS = new Set(["client_paused", "client_stopped"]);
 
-  // When arriving via month filters, force the Archived tab
+  // When arriving via month filters, force the appropriate tab
   const effectiveStatusFilter =
     monthFilter === "completedThisMonth" || monthFilter === "droppedThisMonth"
       ? "archived"
       : monthFilter === "withoutNextSession"
       ? "active"
+      : monthFilter === "newThisMonth"
+      ? "all"
       : statusFilter;
+
 
   const activeClientIdsThisMonth = useMemo(() => {
     const ids = new Set<string>();
