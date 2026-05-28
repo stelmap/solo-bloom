@@ -911,6 +911,7 @@ export default {
   "groups.attended": "Attended",
   "groups.absent": "Absent",
   "groups.skipped": "Skipped",
+  "groups.n_a": "N/A",
   "groups.analytics": "Analytics",
   "groups.totalSessions": "Total Sessions",
   "groups.completedSessions": "Completed",

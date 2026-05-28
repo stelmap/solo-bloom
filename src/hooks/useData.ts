@@ -714,10 +714,30 @@ export function useCancelAppointment() {
         ...(cancellationReason ? { cancellation_reason: cancellationReason } : {}),
       } as any).eq("id", id);
       if (error) throw error;
+
+      // If this appointment is a group session, mark all participant attendance
+      // as N/A so the cancelled session does not count toward attendance stats.
+      if (status === "cancelled") {
+        const { data: gs } = await supabase
+          .from("group_sessions" as any)
+          .select("id")
+          .eq("appointment_id", id)
+          .maybeSingle();
+        if ((gs as any)?.id) {
+          await supabase.from("group_attendance" as any)
+            .update({ status: "n_a" })
+            .eq("group_session_id", (gs as any).id);
+        }
+      }
       // Suppress unused-var warnings for now-unused params
       void clientId; void price; void user; void isDemoMode;
     },
-    onSuccess: (_d, vars) => { track("session_canceled", { status: vars.status }); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: (_d, vars) => {
+      track("session_canceled", { status: vars.status });
+      [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+      qc.invalidateQueries({ queryKey: ["group-attendance"] });
+      qc.invalidateQueries({ queryKey: ["group-all-attendance"] });
+    },
   });
 }
 
@@ -742,6 +762,19 @@ export function useBulkCancelForDayOff() {
           cancellation_reason: reason,
         } as any).eq("id", id);
         if (error) throw error;
+
+        // If this appointment is a group session, mark all participant
+        // attendance as N/A so the cancelled session is excluded from stats.
+        const { data: gs } = await supabase
+          .from("group_sessions" as any)
+          .select("id")
+          .eq("appointment_id", id)
+          .maybeSingle();
+        if ((gs as any)?.id) {
+          await supabase.from("group_attendance" as any)
+            .update({ status: "n_a" })
+            .eq("group_session_id", (gs as any).id);
+        }
 
         // Send cancellation email if client wants email notifications
         const client = (apt as any)?.clients;
@@ -776,7 +809,11 @@ export function useBulkCancelForDayOff() {
         }
       }
     },
-    onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => {
+      [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+      qc.invalidateQueries({ queryKey: ["group-attendance"] });
+      qc.invalidateQueries({ queryKey: ["group-all-attendance"] });
+    },
   });
 }
 
