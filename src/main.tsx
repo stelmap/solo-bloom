@@ -11,14 +11,29 @@ function isChunkLoadError(msg: string) {
     msg
   );
 }
+function hardReloadBustingCache() {
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.set("_r", Date.now().toString(36));
+    window.location.replace(url.toString());
+  } catch {
+    window.location.reload();
+  }
+}
 function maybeReloadOnce() {
   const KEY = "__chunk_reload_at";
   try {
     const last = Number(sessionStorage.getItem(KEY) || 0);
-    if (Date.now() - last > 10000) {
-      sessionStorage.setItem(KEY, String(Date.now()));
-      window.location.reload();
+    // Allow up to 2 recovery reloads within 60s before giving up,
+    // so a single stale cache layer can't strand the user on a blank screen.
+    const count = Number(sessionStorage.getItem(KEY + "_n") || 0);
+    if (Date.now() - last > 60000) {
+      sessionStorage.setItem(KEY + "_n", "0");
     }
+    if (count >= 2) return;
+    sessionStorage.setItem(KEY, String(Date.now()));
+    sessionStorage.setItem(KEY + "_n", String(count + 1));
+    hardReloadBustingCache();
   } catch {
     window.location.reload();
   }
@@ -30,6 +45,17 @@ window.addEventListener("unhandledrejection", (e) => {
   const msg = String((e as any)?.reason?.message || (e as any)?.reason || "");
   if (isChunkLoadError(msg)) maybeReloadOnce();
 });
+// After a successful boot, clear the recovery counter so future stale-chunk
+// errors get a fresh budget of reload attempts.
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    try {
+      sessionStorage.removeItem("__chunk_reload_at");
+      sessionStorage.removeItem("__chunk_reload_at_n");
+    } catch {}
+  }, 3000);
+});
+
 
 // Apply persisted theme before render to avoid flash
 initTheme();
