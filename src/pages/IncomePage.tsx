@@ -286,31 +286,49 @@ export default function IncomePage() {
 
           <TabsContent value="pending">
             {epLoading ? (
-              <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
+              <ListSkeleton variant="table" count={6} />
             ) : filteredExpected.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">{t("income.noPending")}</p>
             ) : (
-              <div className="space-y-3">
-                {filteredExpected.map((ep: any) => (
-                  <div key={ep.id} className="bg-card rounded-xl border border-warning/20 p-4 flex items-center gap-4 animate-fade-in">
-                    <div className="h-10 w-10 rounded-lg bg-warning/10 flex items-center justify-center">
-                      <DollarSign className="h-5 w-5 text-warning" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">{ep.clients?.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {ep.appointments?.services?.name} · {ep.appointments?.scheduled_at ? new Date(ep.appointments.scheduled_at).toLocaleDateString() : ""}
-                      </p>
-                    </div>
-                    <p className="text-lg font-bold text-warning">{cs}{Number(ep.amount).toFixed(2)}</p>
-                    <Button size="sm" onClick={() => { setPayDialog(ep); setPayMethod(PAYMENT_METHODS[0]?.value || "cash"); setPayDate(new Date().toISOString().split("T")[0]); }}>
-                      <CheckCircle className="h-4 w-4 mr-1" /> {t("income.markPaid")}
-                    </Button>
-                  </div>
-                ))}
+              <div className="bg-card rounded-xl border border-warning/30 overflow-hidden animate-fade-in">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border bg-warning/5">
+                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.date")}</th>
+                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("calendar.client")}</th>
+                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.description")}</th>
+                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.amount")}</th>
+                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.status")}</th>
+                        <th className="p-4 w-32"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredExpected.map((ep: any) => (
+                        <tr key={ep.id} className="border-b border-border last:border-0 hover:bg-warning/5 transition-colors">
+                          <td className="p-4 text-sm text-muted-foreground whitespace-nowrap">
+                            {ep.appointments?.scheduled_at ? new Date(ep.appointments.scheduled_at).toLocaleDateString() : "—"}
+                          </td>
+                          <td className="p-4 text-sm font-medium text-foreground">{ep.clients?.name || "—"}</td>
+                          <td className="p-4 text-sm text-muted-foreground">{ep.appointments?.services?.name || "—"}</td>
+                          <td className="p-4 text-sm font-semibold text-warning whitespace-nowrap">{cs}{Number(ep.amount).toFixed(2)}</td>
+                          <td className="p-4">
+                            <Badge className="bg-warning/15 text-warning border-warning/30 text-xs">{t("income.pending") || "Очікує"}</Badge>
+                          </td>
+                          <td className="p-4 text-right">
+                            <Button size="sm" onClick={() => { setPayDialog(ep); setPayMethod(PAYMENT_METHODS[0]?.value || "cash"); setPayDate(new Date().toISOString().split("T")[0]); }}>
+                              <CheckCircle className="h-4 w-4 mr-1" /> {t("income.markPaid")}
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </TabsContent>
+
         </Tabs>
       </div>
 
