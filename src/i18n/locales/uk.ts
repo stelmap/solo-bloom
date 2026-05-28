@@ -126,6 +126,7 @@ export default {
   "prepayment.sessionAlreadyCovered": "Ця сесія вже покрита передоплатою ({symbol}{amount})",
   "prepayment.sessionPartiallyCovered": "Ця сесія частково покрита передоплатою ({symbol}{covered}). Залишок: {symbol}{remaining}",
   "prepayment.willMarkAlreadyPaid": "Сесія буде позначена як оплачена з наявної передоплати ({symbol}{amount})",
+  "prepayment.lockedNote": "Оплата за цю сесію вже була отримана раніше як передплата. Сесія буде списана з передплаченого балансу — нова оплата не створюється.",
   "payment.alreadyPaid": "Вже оплачено (передоплата)",
   "payment.alreadyPaidDesc": "Для цієї сесії вже зараховано {symbol}{amount} з попередньої передоплати",
   "toast.sessionAlreadyPaid": "Сесія завершена — покрита передоплатою ({symbol}{amount})",
