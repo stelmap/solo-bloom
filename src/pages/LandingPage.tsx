@@ -1285,7 +1285,11 @@ function PricingSection() {
                   className="block mt-auto"
                 >
                   <Button
-                    className="w-full h-12 px-8 text-base font-semibold rounded-full gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow"
+                    className={`w-full h-12 px-8 text-base font-semibold rounded-full gap-2 transition-shadow ${
+                      isFilled
+                        ? "shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
+                        : ""
+                    }`}
                     variant={isFilled ? "default" : "outline"}
                   >
                     {p.cta}
