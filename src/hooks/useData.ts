@@ -2238,9 +2238,13 @@ export function useDashboardStats() {
       }
 
       // ===== Practice Health (all-time) =====
+      const nowIso = new Date().toISOString();
       const [allClientsHealthRes, completedAptsCountRes, allAptsCountRes, cancelledAptsCountRes, allExpensesRes, allClientSessionsRes] = await Promise.all([
         supabase.from("clients").select("id, status, archive_reason"),
-        supabase.from("appointments").select("id", { count: "exact", head: true }).eq("status", "completed"),
+        // Conducted sessions: only realized (past) sessions with status=completed.
+        // Future-dated "completed" rows are excluded so the count matches the
+        // green completed sessions visible in Calendar.
+        supabase.from("appointments").select("id", { count: "exact", head: true }).eq("status", "completed").lte("scheduled_at", nowIso),
         supabase.from("appointments").select("id", { count: "exact", head: true }),
         supabase.from("appointments").select("id", { count: "exact", head: true }).eq("status", "cancelled"),
         supabase.from("expenses").select("amount").eq("is_template", false).neq("instance_status", "cancelled"),
