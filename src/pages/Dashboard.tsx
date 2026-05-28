@@ -267,7 +267,8 @@ export default function Dashboard() {
               </div>
               <div className="grid grid-cols-3 gap-2 sm:gap-4">
                 <StatCell label={t("ops.clientsToday")} value={summary.clientCount.toString()} />
-                <StatCell label={t("ops.sessionsPlanned")} value={(summary.planned + summary.completed).toString()} />
+                <StatCell label={t("ops.sessionsPlanned")} value={summary.planned.toString()} />
+
                 <StatCell label={t("ops.cancelledSessions")} value={cancelledTotal.toString()} tone={cancelledTotal > 0 ? "warning" : "muted"} />
               </div>
             </div>
