@@ -412,6 +412,11 @@ export default function CalendarPage() {
         email: qaClient.email.trim() || undefined,
         phone: qaClient.phone.trim() || undefined,
       });
+      // Push into the clients cache immediately so the Select can render
+      // the new option on the same tick (invalidate refetch is async).
+      qcRef.setQueryData(["clients", user?.id], (prev: any[] | undefined) =>
+        prev ? [...prev, c] : [c],
+      );
       setForm(f => ({ ...f, client_id: c.id }));
       setQaClient({ name: "", email: "", phone: "" });
       setQaClientOpen(false);
@@ -429,6 +434,9 @@ export default function CalendarPage() {
         duration_minutes: Number(qaService.duration_minutes),
         price: Number(qaService.price || 0),
       });
+      qcRef.setQueryData(["services", user?.id], (prev: any[] | undefined) =>
+        prev ? [...prev, s] : [s],
+      );
       setForm(f => ({ ...f, service_id: s.id }));
       setServiceError(false);
       setQaService({ name: "", duration_minutes: 60, price: 0 });
