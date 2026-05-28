@@ -233,14 +233,14 @@ export default function Dashboard() {
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* LEFT: Today's Activity (3 metrics) */}
-            <div className="bg-card border border-border rounded-[20px] p-6 shadow-card">
-              <div className="flex items-center gap-2 mb-5">
+            <div className="bg-card border border-border rounded-[20px] p-4 sm:p-6 shadow-card min-w-0 overflow-hidden">
+              <div className="flex items-center gap-2 mb-4 sm:mb-5">
                 <PlayCircle className="h-4 w-4 text-primary" />
                 <h3 className="text-sm font-semibold text-muted-foreground">
                   {t("ops.todaysActivity")}
                 </h3>
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4">
                 <StatCell label={t("ops.clientsToday")} value={summary.clientCount.toString()} />
                 <StatCell label={t("ops.sessionsPlanned")} value={(summary.planned + summary.completed).toString()} />
                 <StatCell label={t("ops.cancelledSessions")} value={cancelledTotal.toString()} tone={cancelledTotal > 0 ? "warning" : "muted"} />
@@ -248,21 +248,21 @@ export default function Dashboard() {
             </div>
 
             {/* RIGHT: Today's Money (3 metrics) */}
-            <div className="bg-card border border-border rounded-[20px] p-6 shadow-card flex flex-col">
-              <div className="flex items-center gap-2 mb-5">
+            <div className="bg-card border border-border rounded-[20px] p-4 sm:p-6 shadow-card flex flex-col min-w-0 overflow-hidden">
+              <div className="flex items-center gap-2 mb-4 sm:mb-5">
                 <DollarSign className="h-4 w-4 text-primary" />
                 <h3 className="text-sm font-semibold text-muted-foreground">
                   {t("ops.todaysMoney")}
                 </h3>
               </div>
-              <div className="grid grid-cols-3 gap-3 flex-1">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 flex-1">
                 <MoneyTile label={t("ops.paidToday")} value={`${cs}${Number(stats?.todayIncome ?? 0).toLocaleString()}`} tone="success" onClick={() => openWidget("paid_today", "/finances/income?range=today&tab=income")} />
                 <MoneyTile label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} onClick={() => openWidget("expected_revenue_today", "/finances/income?range=today&tab=income")} />
                 <MoneyTile label={t("ops.todayDebt")} value={`${cs}${Number((stats as any)?.todayDebt ?? 0).toLocaleString()}`} tone={Number((stats as any)?.todayDebt ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("today_debt", "/finances/income?range=today&tab=pending")} />
               </div>
-              <div className="mt-4 bg-gradient-dark text-secondary-foreground rounded-2xl px-5 py-4 flex justify-between items-center">
-                <span className="text-xs font-semibold opacity-80">{t("ops.totalDebt")}</span>
-                <span className="text-2xl font-bold text-primary">{cs}{Number(stats?.outstandingBalance ?? 0).toLocaleString()}</span>
+              <div className="mt-4 bg-gradient-dark text-secondary-foreground rounded-2xl px-4 sm:px-5 py-3 sm:py-4 flex justify-between items-center gap-2 min-w-0">
+                <span className="text-xs font-semibold opacity-80 shrink-0">{t("ops.totalDebt")}</span>
+                <span className="text-xl sm:text-2xl font-bold text-primary tabular-nums break-all text-right">{cs}{Number(stats?.outstandingBalance ?? 0).toLocaleString()}</span>
               </div>
             </div>
           </div>
