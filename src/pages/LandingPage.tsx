@@ -43,27 +43,28 @@ const C = {
   navTry: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
 
   // Hero
-  heroBadge: { en: "For psychologists & solo professionals", fr: "Pour psychologues & indépendants", uk: "Для психологів, супервізорів та викладачів", pl: "Dla psychologów i solowych profesjonalistów" },
+  heroBadge: { en: "For psychologists, psychotherapists, supervisors and educators", fr: "Pour psychologues, psychothérapeutes, superviseurs et formateurs", uk: "Для психологів, психотерапевтів, супервізорів і викладачів", pl: "Dla psychologów, psychoterapeutów, superwizorów i edukatorów" },
   heroTitle: {
-    en: "Control your clients and income — without Excel and chaos",
-    fr: "Maîtrisez vos clients et vos revenus — sans Excel ni chaos",
-    uk: "Контроль клієнтів і доходу без Excel і хаосу",
-    pl: "Kontroluj klientów i dochód — bez Excela i chaosu",
+    en: "Your full private practice. Organised in one place.",
+    fr: "Toute votre pratique privée. Organisée au même endroit.",
+    uk: "Уся ваша приватна практика. В одному місці.",
+    pl: "Cała Twoja prywatna praktyka. W jednym miejscu.",
   },
   heroSub: {
-    en: "A CRM for psychologists, psychotherapists, supervisors and teachers that automatically tracks sessions, payments, income and profit.",
-    fr: "Un CRM pour psychologues, psychothérapeutes, superviseurs et enseignants qui suit automatiquement les séances, paiements, revenus et bénéfices.",
-    uk: "CRM для психологів, психотерапевтів, супервізорів і викладачів, яка автоматично рахує записи, оплати, дохід і прибуток.",
-    pl: "CRM dla psychologów, psychoterapeutów, superwizorów i nauczycieli, który automatycznie liczy sesje, płatności, dochód i zysk.",
+    en: "SoloBizz manages your clients, calendar, bookings, payments, invoices and financial reports — automatically. So you spend your time on clients, not spreadsheets.",
+    fr: "SoloBizz gère vos clients, agenda, réservations, paiements, factures et rapports financiers — automatiquement. Vous consacrez votre temps aux clients, pas aux tableurs.",
+    uk: "SoloBizz керує клієнтами, календарем, записами, оплатами, рахунками та фінансовими звітами — автоматично. Ви витрачаєте час на клієнтів, а не на таблиці.",
+    pl: "SoloBizz prowadzi klientów, kalendarz, zapisy, płatności, faktury i raporty finansowe — automatycznie. Czas poświęcasz klientom, a nie arkuszom.",
   },
-  heroCta: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
-  heroSecondary: { en: "See pricing", fr: "Voir les tarifs", uk: "Переглянути ціни", pl: "Zobacz cennik" },
+  heroCta: { en: "Start free — no card needed", fr: "Commencer gratuitement — sans carte", uk: "Почати безкоштовно — без картки", pl: "Zacznij za darmo — bez karty" },
+  heroSecondary: { en: "See how it works", fr: "Voir comment ça marche", uk: "Подивитись, як це працює", pl: "Zobacz, jak to działa" },
   heroSubCta: {
-    en: "Free Starter: no payment while you have up to 5 active clients.",
-    fr: "Free Starter : sans paiement tant que vous avez jusqu'à 5 clients actifs.",
-    uk: "Free Starter: без оплати, поки у вас до 5 активних клієнтів.",
-    pl: "Free Starter: bez opłat, dopóki masz do 5 aktywnych klientów.",
+    en: "Free Starter: free forever, up to 5 active clients. No credit card required.",
+    fr: "Free Starter : gratuit pour toujours, jusqu'à 5 clients actifs. Sans carte bancaire.",
+    uk: "Free Starter: безкоштовно назавжди, до 5 активних клієнтів. Без банківської картки.",
+    pl: "Free Starter: za darmo na zawsze, do 5 aktywnych klientów. Bez karty kredytowej.",
   },
+
   heroRoi: {
     en: "With 20+ clients, manual admin can take 4–8+ hours a week. SoloBizz helps you win that time back.",
     fr: "Avec 20+ clients, l'admin manuelle peut prendre 4 à 8+ heures par semaine. SoloBizz vous aide à récupérer ce temps.",
