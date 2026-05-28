@@ -1113,7 +1113,7 @@ export function useCreateExpense() {
     },
     onSuccess: (_d, vars) => {
       track("expense_created", { is_recurring: !!vars.is_recurring || vars.recurrence !== "one_time" });
-      ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+      [...INVALIDATE_FINANCIAL, "expenses-aggregates", "expense-categories"].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
     },
   });
 }
