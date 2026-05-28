@@ -35,7 +35,7 @@ const VACANCIES_URL = "/careers";
 type Copy = Record<Language, string>;
 const C = {
   // Nav
-  navAudience: { en: "Who it's for", fr: "Pour qui", uk: "Кому підходить", pl: "Dla kogo" },
+  navAudience: { en: "What's included", fr: "Ce qui est inclus", uk: "Що включено", pl: "Co jest w zestawie" },
   navHow: { en: "Comparison", fr: "Comparaison", uk: "Порівняння", pl: "Porównanie" },
   navPricing: { en: "Pricing", fr: "Tarifs", uk: "Ціни", pl: "Cennik" },
   navFaq: { en: "FAQ", fr: "FAQ", uk: "Питання", pl: "FAQ" },
