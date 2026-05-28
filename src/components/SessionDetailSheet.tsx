@@ -622,7 +622,10 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                         attended: "bg-success/10 border-success/30 text-success",
                         absent: "bg-destructive/10 border-destructive/30 text-destructive",
                         skipped: "bg-warning/10 border-warning/30 text-warning",
+                        n_a: "bg-muted border-border text-muted-foreground",
                       };
+                      const isCancelled = apt.status === "cancelled";
+                      const displayStatus = isCancelled ? "n_a" : att.status;
                       return (
                         <div key={att.id} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30">
                           <div className="flex items-center gap-2">
@@ -631,20 +634,25 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                             </div>
                             <span className="text-sm font-medium">{att.clients?.name}</span>
                           </div>
-                          <Select value={att.status} onValueChange={async (v) => {
-                            try {
-                              await updateAttendance.mutateAsync({ id: att.id, status: v, groupSessionId: groupSessionId! });
-                            } catch (e: any) {
-                              toast({ title: t("common.error"), description: e.message, variant: "destructive" });
-                            }
-                          }}>
-                            <SelectTrigger className={cn("w-28 h-7 text-xs border", attStatusColor[att.status] || "")}>
+                          <Select
+                            value={displayStatus}
+                            disabled={isCancelled}
+                            onValueChange={async (v) => {
+                              try {
+                                await updateAttendance.mutateAsync({ id: att.id, status: v, groupSessionId: groupSessionId! });
+                              } catch (e: any) {
+                                toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+                              }
+                            }}
+                          >
+                            <SelectTrigger className={cn("w-28 h-7 text-xs border", attStatusColor[displayStatus] || "")}>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="attended">{t("groups.attended")}</SelectItem>
                               <SelectItem value="absent">{t("groups.absent")}</SelectItem>
                               <SelectItem value="skipped">{t("groups.skipped")}</SelectItem>
+                              {isCancelled && <SelectItem value="n_a">{t("groups.n_a")}</SelectItem>}
                             </SelectContent>
                           </Select>
                         </div>
