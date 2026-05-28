@@ -814,11 +814,11 @@ function DashboardPreview() {
 function HeroSection() {
   const { t } = useLandingLang();
   return (
-    <section className="pt-32 pb-24 sm:pt-36 sm:pb-28 px-4 sm:px-6">
+    <section className="pt-40 pb-28 sm:pt-44 sm:pb-32 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-10">
-          <Sparkles className="h-3.5 w-3.5" />
-          {t("heroBadge")}
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-10 leading-normal">
+          <Sparkles className="h-3.5 w-3.5 shrink-0" />
+          <span className="leading-normal">{t("heroBadge")}</span>
         </div>
         <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground tracking-tight leading-[1.1] mb-8 max-w-5xl mx-auto">
           <span className="block">{t("heroTitlePrefix")}</span>
@@ -860,17 +860,17 @@ function StatsSection() {
     { num: "15 хв", label: t("statsSetup") },
   ];
   return (
-    <section className="bg-secondary text-secondary-foreground px-4 sm:px-6 pt-20 pb-12">
+    <section className="bg-secondary text-secondary-foreground px-4 sm:px-6 pt-14 pb-10 sm:pt-16 sm:pb-12">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-3 sm:divide-x sm:divide-white/10 gap-8 sm:gap-0">
           {stats.map((s) => (
             <div key={s.num} className="text-center px-4">
-              <div className="text-4xl sm:text-5xl font-bold text-primary mb-3 tracking-tight">{s.num}</div>
+              <div className="text-3xl sm:text-4xl font-bold text-primary mb-3 tracking-tight">{s.num}</div>
               <div className="text-sm sm:text-base text-secondary-foreground/80 leading-snug">{s.label}</div>
             </div>
           ))}
         </div>
-        <div className="mt-10 flex items-center justify-center gap-2 text-sm text-secondary-foreground/80 text-center">
+        <div className="mt-8 flex items-center justify-center gap-2 text-sm text-secondary-foreground/80 text-center px-4">
           <span>✦ {t("setupAssist")}</span>
         </div>
       </div>
