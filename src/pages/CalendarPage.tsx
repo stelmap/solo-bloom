@@ -1291,6 +1291,8 @@ export default function CalendarPage() {
                             onChange={v => setForm(f => ({ ...f, client_id: v }))}
                             placeholder={t("calendar.selectClient")}
                             triggerClassName={cn("flex-1", D.field)}
+                            onAddNew={() => setQaClientOpen(true)}
+                            addNewLabel={L.addNewClient}
                           />
                           <Button type="button" variant="outline" className={cn("px-2.5 gap-1 whitespace-nowrap shrink-0", D.field)} onClick={() => setQaClientOpen(true)}>
                             <Plus className="h-3.5 w-3.5" /> {L.addNewClient}
