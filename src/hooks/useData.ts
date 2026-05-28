@@ -1113,7 +1113,7 @@ export function useCreateExpense() {
     },
     onSuccess: (_d, vars) => {
       track("expense_created", { is_recurring: !!vars.is_recurring || vars.recurrence !== "one_time" });
-      ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+      [...INVALIDATE_FINANCIAL, "expenses-aggregates", "expense-categories"].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
     },
   });
 }
@@ -1166,7 +1166,7 @@ export function useUpdateExpense() {
         .neq("instance_status", "paid");
       if (instErr) throw instErr;
     },
-    onSuccess: () => { track("expense_updated"); ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("expense_updated"); [...INVALIDATE_FINANCIAL, "expenses-aggregates", "expense-categories"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -1181,7 +1181,7 @@ export function useUpdateExpenseSeries() {
         .neq("instance_status", "paid");
       if (error) throw error;
     },
-    onSuccess: () => { track("expense_updated", { scope: "series" }); ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("expense_updated", { scope: "series" }); [...INVALIDATE_FINANCIAL, "expenses-aggregates", "expense-categories"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -1221,7 +1221,7 @@ export function useDeleteExpense() {
       const { error: tplErr } = await supabase.from("expenses").delete().eq("id", templateId);
       if (tplErr) throw tplErr;
     },
-    onSuccess: () => { track("expense_deleted"); ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("expense_deleted"); [...INVALIDATE_FINANCIAL, "expenses-aggregates", "expense-categories"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -1753,7 +1753,9 @@ export function useUpdateExpensePaymentStatus() {
       const { error } = await supabase.from("expenses").update(patch).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { ["expenses", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => {
+      [...INVALIDATE_FINANCIAL, "expenses-aggregates", "expense-categories"].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+    },
   });
 }
 
