@@ -98,7 +98,6 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "", notes: "", price: 0, days_of_week: [1] as number[], interval_weeks: 1, price_override_reason: "" });
 
   // Complete form
-  const [completePrice, setCompletePrice] = useState(0);
   const [amountPaid, setAmountPaid] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [paymentStatus, setPaymentStatus] = useState("paid_now");
@@ -416,7 +415,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
   const openComplete = () => {
     const p = Number(apt.price);
-    setCompletePrice(p);
+    
     setAmountPaid(p);
     setPaymentMethod("cash");
     // Priority: session already pre-allocated (prepaid for this slot) > client has unused credit > pay now.
@@ -457,19 +456,19 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
         toast({ title: t("groups.sessionCompleted") });
       } else if (paymentStatus === "paid_from_prepayment") {
         const consumed = await completeFromPrepayment.mutateAsync({
-          appointmentId: apt.id, clientId: apt.client_id, price: completePrice,
+          appointmentId: apt.id, clientId: apt.client_id, price: sessionPrice,
         });
-        const fullyCovered = consumed + 0.001 >= completePrice;
+        const fullyCovered = consumed + 0.001 >= sessionPrice;
         toast({
           title: t("toast.appointmentCompleted"),
           description: fullyCovered
-            ? t("toast.sessionCompletedFromPrepayment", { symbol: cs, amount: completePrice.toFixed(2) })
-            : t("toast.sessionCompletedFromPrepaymentPartial", { symbol: cs, covered: consumed.toFixed(2), remaining: (completePrice - consumed).toFixed(2) }),
+            ? t("toast.sessionCompletedFromPrepayment", { symbol: cs, amount: sessionPrice.toFixed(2) })
+            : t("toast.sessionCompletedFromPrepaymentPartial", { symbol: cs, covered: consumed.toFixed(2), remaining: (sessionPrice - consumed).toFixed(2) }),
         });
       } else if (paymentStatus === "already_paid") {
         await completeAppointment.mutateAsync({
           appointmentId: apt.id, clientId: apt.client_id,
-          price: completePrice, paymentMethod, paymentStatus: "already_paid",
+          price: sessionPrice, paymentMethod, paymentStatus: "already_paid",
         });
         toast({
           title: t("toast.appointmentCompleted"),
@@ -478,18 +477,18 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       } else {
         await completeAppointment.mutateAsync({
           appointmentId: apt.id, clientId: apt.client_id,
-          price: completePrice, paymentMethod, paymentStatus, paymentDate,
+          price: sessionPrice, paymentMethod, paymentStatus, paymentDate,
           amountPaid: (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") ? amountPaid : undefined,
         });
-        const overpay = (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") && amountPaid > completePrice + 0.001;
-        const partial = (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") && amountPaid > 0 && amountPaid < completePrice - 0.001;
+        const overpay = (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") && amountPaid > sessionPrice + 0.001;
+        const partial = (paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") && amountPaid > 0 && amountPaid < sessionPrice - 0.001;
         const msg = paymentStatus === "waiting_for_payment"
           ? t("toast.sessionCompletedExpected")
           : overpay
-            ? t("toast.sessionCompletedWithPrepayment", { symbol: cs, paid: amountPaid.toFixed(2), prepay: (amountPaid - completePrice).toFixed(2) })
+            ? t("toast.sessionCompletedWithPrepayment", { symbol: cs, paid: amountPaid.toFixed(2), prepay: (amountPaid - sessionPrice).toFixed(2) })
             : partial
-              ? t("toast.partialPaymentRecorded", { symbol: cs, paid: amountPaid.toFixed(2), debt: (completePrice - amountPaid).toFixed(2) })
-              : t("toast.sessionCompletedIncome", { symbol: cs, amount: completePrice.toString() });
+              ? t("toast.partialPaymentRecorded", { symbol: cs, paid: amountPaid.toFixed(2), debt: (sessionPrice - amountPaid).toFixed(2) })
+              : t("toast.sessionCompletedIncome", { symbol: cs, amount: sessionPrice.toString() });
         toast({ title: t("toast.appointmentCompleted"), description: msg });
       }
 
@@ -1007,15 +1006,6 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 />
               </div>
 
-              {!fullyCoveredByPrepayment && (
-                <div className="space-y-2">
-                  <Label>{t("calendar.finalPrice")}</Label>
-                  <Input type="number" step="0.01" value={completePrice} onChange={e => {
-                    const v = parseFloat(e.target.value) || 0;
-                    setCompletePrice(v);
-                  }} />
-                </div>
-              )}
 
               <div className="space-y-2">
                 <Label>{t("calendar.paymentStatus")}</Label>
@@ -1046,14 +1036,14 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                     <Label>{t("prepayment.amountReceived")}</Label>
                     <Input type="number" step="0.01" min={0} value={amountPaid}
                       onChange={e => setAmountPaid(parseFloat(e.target.value) || 0)} />
-                    {amountPaid > completePrice + 0.001 && (
+                    {amountPaid > sessionPrice + 0.001 && (
                       <p className="text-xs text-success">
-                        {t("prepayment.willBeStored", { symbol: cs, amount: (amountPaid - completePrice).toFixed(2) })}
+                        {t("prepayment.willBeStored", { symbol: cs, amount: (amountPaid - sessionPrice).toFixed(2) })}
                       </p>
                     )}
-                    {amountPaid > 0 && amountPaid < completePrice - 0.001 && (
+                    {amountPaid > 0 && amountPaid < sessionPrice - 0.001 && (
                       <p className="text-xs text-warning">
-                        {t("partial.willCreateDebt", { symbol: cs, paid: amountPaid.toFixed(2), debt: (completePrice - amountPaid).toFixed(2) })}
+                        {t("partial.willCreateDebt", { symbol: cs, paid: amountPaid.toFixed(2), debt: (sessionPrice - amountPaid).toFixed(2) })}
                       </p>
                     )}
                     {clientDebt > 0.001 && amountPaid > 0 && (
@@ -1096,10 +1086,10 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                     {paymentStatus === "already_paid"
                       ? t("prepayment.willMarkAlreadyPaid", { symbol: cs, amount: alreadyAllocated.toFixed(2) })
                       : paymentStatus === "waiting_for_payment"
-                      ? t("calendar.willBeExpected", { symbol: cs, amount: completePrice.toFixed(2) })
+                      ? t("calendar.willBeExpected", { symbol: cs, amount: sessionPrice.toFixed(2) })
                       : paymentStatus === "paid_from_prepayment"
                       ? (prepaymentCovers >= sessionPrice
-                          ? t("prepayment.willDeduct", { symbol: cs, amount: completePrice.toFixed(2), remaining: prepaymentRemainingAfter.toFixed(2) })
+                          ? t("prepayment.willDeduct", { symbol: cs, amount: sessionPrice.toFixed(2), remaining: prepaymentRemainingAfter.toFixed(2) })
                           : t("prepayment.willPartiallyDeduct", { symbol: cs, covered: prepaymentCovers.toFixed(2), remaining: (sessionPrice - prepaymentCovers).toFixed(2) }))
                       : t("calendar.willBeIncome", { symbol: cs, amount: amountPaid.toFixed(2) })}
                   </p>
