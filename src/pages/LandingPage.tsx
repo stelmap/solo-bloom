@@ -844,7 +844,7 @@ function PainSection() {
           <p className="text-xl sm:text-2xl font-bold text-secondary-foreground">{t("painBottom")}</p>
         </div>
         <div className="flex justify-center">
-          <PrimaryCta label={t("painCta")} source="/#pain" cta="pain" className="text-base px-8 h-12" />
+          <PrimaryCta label={t("painCta")} source="/#pain" cta="pain" />
         </div>
       </div>
     </section>
