@@ -1446,40 +1446,8 @@ function TestimonialCard({
   );
 }
 
-// ⚠️ EDITABLE PLACEHOLDER CONTENT — replace with real metrics/quotes before launch.
-const SOCIAL_PROOF_METRICS = [
-  { value: "300+", label: "Therapists using SoloBizz" },
-  { value: "~4 hrs", label: "Admin time saved per week on average" },
-  { value: "5 min", label: "To set up your full practice profile" },
-];
 
-const PLACEHOLDER_TESTIMONIALS = [
-  {
-    quote:
-      "I used to spend Sunday evenings catching up on invoices and checking who paid. Now I open SoloBizz on Monday morning and everything is already there. I didn't realise how much time I was losing until I stopped losing it.",
-    name: "Olena L.",
-    role: "Psychotherapist · Solo Practice",
-  },
-  {
-    quote:
-      "As a supervisor I work with many supervisees alongside my own clients. Keeping track of everything in Excel was a constant headache. SoloBizz gave me one place for all of it — sessions, payments, notes. It just works.",
-    name: "Mariana K.",
-    role: "Psychologist & supervisor · Pro Practice",
-  },
-  {
-    quote:
-      "I started on Free Starter just to try it. Within a week I knew I wanted to stay. The booking link alone saved me so many back-and-forth messages with clients.",
-    name: "Dmytro P.",
-    role: "Psychologist · started Free Starter",
-  },
-];
 
-const HIGHLIGHT_QUOTE = {
-  quote:
-    "I was skeptical that a €12 tool could replace everything I had scattered across three apps. It did.",
-  name: "Anna V.",
-  role: "Psychotherapist, 3 months on Solo Practice",
-};
 
 function TestimonialsSection() {
   const { t, lang } = useLandingLang();
