@@ -221,7 +221,8 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <MoneyTile label={t("ops.lostIncomeCancellations")} value={`${cs}${Number((stats as any)?.lostIncomeThisMonth ?? 0).toLocaleString()}`} tone={Number((stats as any)?.lostIncomeThisMonth ?? 0) > 0 ? "warning" : "muted"} />
             <MoneyTile label={t("ops.monthlyExpensesTotal")} value={`${cs}${Number(stats?.monthlyExpenses ?? 0).toLocaleString()}`} onClick={() => openWidget("monthly_expenses", "/finances/expenses")} />
-            <MoneyTile label={t("ops.unpaidSessionsCount")} value={String((stats as any)?.unpaidSessionsCount ?? 0)} tone={((stats as any)?.unpaidSessionsCount ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("unpaid_sessions", "/finances/income?tab=pending")} />
+            <MoneyTile label={t("ops.unpaidSessionsCount")} value={String((stats as any)?.unpaidSessionsCount ?? 0)} tone={((stats as any)?.unpaidSessionsCount ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("unpaid_sessions", "/finances/income?tab=pending&range=all")} />
+
             <MoneyTile label={t("ops.clientsWithoutNextSession")} value={String((stats as any)?.clientsWithoutNextSession ?? 0)} tone={((stats as any)?.clientsWithoutNextSession ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("clients_without_next_session", "/clients?filter=withoutNextSession")} />
           </div>
         </section>
