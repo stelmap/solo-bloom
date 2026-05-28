@@ -43,38 +43,44 @@ const C = {
   navTry: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
 
   // Hero
-  heroBadge: { en: "For psychologists, psychotherapists, supervisors and educators", fr: "Pour psychologues, psychothérapeutes, superviseurs et formateurs", uk: "Для психологів, психотерапевтів, супервізорів і викладачів", pl: "Dla psychologów, psychoterapeutów, superwizorów i edukatorów" },
+  heroBadge: { en: "For psychologists, psychotherapists, supervisors and educators", fr: "Pour psychologues, psychothérapeutes, superviseurs et formateurs", uk: "ПОЧНІТЬ СЬОГОДНІ — БЕЗКОШТОВНО, БЕЗ КАРТКИ", pl: "Dla psychologów, psychoterapeutów, superwizorów i edukatorów" },
   heroTitle: {
     en: "Your full private practice. Organised in one place.",
     fr: "Toute votre pratique privée. Organisée au même endroit.",
-    uk: "Уся ваша приватна практика. В одному місці.",
+    uk: "Ваша практика заслуговує на систему.",
     pl: "Cała Twoja prywatna praktyka. W jednym miejscu.",
   },
   heroTitlePrefix: {
     en: "Your full private practice.",
     fr: "Toute votre pratique privée.",
-    uk: "Уся ваша приватна практика.",
+    uk: "Ваша практика заслуговує на систему.",
     pl: "Cała Twoja prywatna praktyka.",
   },
   heroTitleAccent: {
     en: "Organised in one place.",
     fr: "Organisée au même endroit.",
-    uk: "В одному місці.",
+    uk: "",
     pl: "W jednym miejscu.",
   },
   heroSub: {
     en: "SoloBizz manages your clients, calendar, bookings, payments, invoices and financial reports — automatically. So you spend your time on clients, not spreadsheets.",
     fr: "SoloBizz gère vos clients, agenda, réservations, paiements, factures et rapports financiers — automatiquement. Vous consacrez votre temps aux clients, pas aux tableurs.",
-    uk: "SoloBizz керує клієнтами, календарем, записами, оплатами, рахунками та фінансовими звітами — автоматично. Ви витрачаєте час на клієнтів, а не на таблиці.",
+    uk: "SoloBizz допомагає бачити клієнтів, записи, оплати, дохід і прибуток в одній зрозумілій системі.",
     pl: "SoloBizz prowadzi klientów, kalendarz, zapisy, płatności, faktury i raporty finansowe — automatycznie. Czas poświęcasz klientom, a nie arkuszom.",
   },
-  heroCta: { en: "Start free — no card needed", fr: "Commencer gratuitement — sans carte", uk: "Почати безкоштовно — без картки", pl: "Zacznij za darmo — bez karty" },
+  heroCta: { en: "Start free — no card needed", fr: "Commencer gratuitement — sans carte", uk: "Почати безкоштовно — займає 5 хвилин →", pl: "Zacznij za darmo — bez karty" },
   heroSecondary: { en: "See pricing", fr: "Voir les tarifs", uk: "Подивитись ціни", pl: "Zobacz cennik" },
   heroSubCta: {
     en: "Free Starter: free forever, up to 5 active clients. No credit card required.",
     fr: "Free Starter : gratuit pour toujours, jusqu'à 5 clients actifs. Sans carte bancaire.",
-    uk: "Free Starter: безкоштовно назавжди, до 5 активних клієнтів. Без банківської картки.",
+    uk: "Free Starter: €0 назавжди · до 5 активних клієнтів · всі функції включені · скасування будь-коли",
     pl: "Free Starter: za darmo na zawsze, do 5 aktywnych klientów. Bez karty kredytowej.",
+  },
+  heroSocialProof: {
+    en: "Join 100+ psychologists, psychotherapists and supervisors already working in our system.",
+    fr: "Rejoignez 100+ psychologues, psychothérapeutes et superviseurs qui travaillent déjà dans notre système.",
+    uk: "Приєднайтесь до 100+ психологів, психотерапевтів і супервізорів, які вже працюють у нашій системі.",
+    pl: "Dołącz do 100+ psychologów, psychoterapeutów i superwizorów, którzy już pracują w naszym systemie.",
   },
   // Stats
   statsTherapists: { en: "therapists already use SoloBizz", fr: "thérapeutes utilisent déjà SoloBizz", uk: "терапевтів вже користуються SoloBizz", pl: "terapeutów już korzysta z SoloBizz" },
