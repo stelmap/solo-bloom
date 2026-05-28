@@ -163,6 +163,7 @@ function fmtDate(d: Date) {
 
 export default function PublicBookingPage() {
   const { token } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [info, setInfo] = useState<PageInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -172,10 +173,29 @@ export default function PublicBookingPage() {
   const [activeDay, setActiveDay] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<{ requiresApproval: boolean } | null>(null);
+  const [langOverride, setLangOverride] = useState<Lang | null>(null);
 
-  const lang = normLang(info?.language);
+  // Resolve language: URL param > manual override > browser > therapist default > 'en'
+  const urlLang = searchParams.get("lang");
+  const browserLang = useMemo<Lang | null>(() => {
+    if (typeof navigator === "undefined") return null;
+    const candidate = String(navigator.language || "").toLowerCase().slice(0, 2);
+    return candidate === "uk" || candidate === "fr" || candidate === "pl" || candidate === "en"
+      ? (candidate as Lang)
+      : null;
+  }, []);
+  const lang: Lang = urlLang
+    ? normLang(urlLang)
+    : langOverride ?? browserLang ?? (info?.language ? normLang(info.language) : "en");
   const L = COPY[lang];
   const intlLocale = LOCALE_MAP[lang];
+
+  function changeLang(next: Lang) {
+    setLangOverride(next);
+    const params = new URLSearchParams(searchParams);
+    params.set("lang", next);
+    setSearchParams(params, { replace: true });
+  }
 
   // noindex
   useEffect(() => {
