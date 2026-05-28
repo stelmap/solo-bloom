@@ -841,7 +841,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                         <CheckCircle className="h-3.5 w-3.5 mr-1" /> {t("calendar.complete")}
                       </Button>
                     )}
-                    {apt.status !== "cancelled" && (
+                      <Button variant="outline" size="sm" onClick={() => setCancelOpen(true)} className="text-destructive hover:text-destructive">
+
                       <Button variant="outline" size="sm" onClick={() => handleStatusChange("cancelled")} className="text-destructive hover:text-destructive">
                         <XCircle className="h-3.5 w-3.5 mr-1" /> {t("calendar.cancel")}
                       </Button>
