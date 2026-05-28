@@ -814,7 +814,7 @@ function DashboardPreview() {
 function HeroSection() {
   const { t } = useLandingLang();
   return (
-    <section className="pt-20 pb-10 sm:pt-24 sm:pb-12 px-4 sm:px-6">
+    <section className="pt-16 pb-6 sm:pt-20 sm:pb-8 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
           <Sparkles className="h-3.5 w-3.5" />
