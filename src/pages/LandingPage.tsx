@@ -11,9 +11,9 @@ import { getStoredLang, setPreLoginLang } from "@/i18n/LanguageContext";
 import type { Language } from "@/i18n/translations";
 import { track } from "@/lib/analytics";
 import {
-  ArrowRight, CheckCircle2, AlertTriangle, Eye, TrendingUp,
+  ArrowRight, CheckCircle2, AlertTriangle, TrendingUp,
   Calendar as CalendarIcon, Users, Sparkles, ShieldCheck,
-  Play, X, Check, HeartHandshake, Presentation, BookOpen, Clock, Timer,
+  X, Check, HeartHandshake, Presentation, BookOpen, Clock, Timer,
   Quote, MessageCircle, Mail, Phone, MapPin, Send,
 } from "lucide-react";
 import manualTrackingImg from "@/assets/manual-tracking-spreadsheet.png";
