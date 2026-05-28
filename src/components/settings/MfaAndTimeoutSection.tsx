@@ -44,6 +44,7 @@ function buildOtpAuthUri(rawUri: string, email: string | null): string {
 
 export function MfaAndTimeoutSection() {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [factors, setFactors] = useState<MfaFactor[]>([]);
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
