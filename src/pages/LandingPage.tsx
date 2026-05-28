@@ -1416,7 +1416,7 @@ function FinalCTA() {
               trigger={
                 <Button
                   size="lg"
-                  className="gap-2"
+                  className="h-12 px-8 text-base font-semibold rounded-full gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow"
                   onClick={() => track("cta_clicked", { source_page: "/#final", cta: "book_call", lang })}
                 >
                   <MessageCircle className="h-4 w-4" />
@@ -1428,7 +1428,7 @@ function FinalCTA() {
               href={`mailto:${CONTACT_EMAIL}`}
               onClick={() => track("cta_clicked", { source_page: "/#final", cta: "email_us", lang })}
             >
-              <Button size="lg" variant="outline" className="gap-2">
+              <Button size="lg" variant="outline" className="h-12 px-8 text-base font-semibold rounded-full gap-2">
                 <Mail className="h-4 w-4" />
                 {lang === "uk" ? "Написати нам"
                   : lang === "fr" ? "Nous écrire"
