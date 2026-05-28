@@ -355,12 +355,6 @@ const C = {
   },
 
   soloName: { en: "Solo Practice", fr: "Solo Practice", uk: "Solo Practice", pl: "Solo Practice" },
-  soloDesc: {
-    en: "Affordable plan for a small solo practice — manage clients, sessions and payments without chaos.",
-    fr: "Forfait abordable pour une petite pratique solo — gérez clients, séances et paiements sans chaos.",
-    uk: "Доступний тариф для невеликої сольної практики — ведення клієнтів, сесій та оплат без хаосу.",
-    pl: "Przystępny plan dla małej, jednoosobowej praktyki — klienci, sesje i płatności bez chaosu.",
-  },
   // Privacy / trust messaging used near pricing and CTAs
   privacyTitle: {
     en: "Your clients' data, fully private",
