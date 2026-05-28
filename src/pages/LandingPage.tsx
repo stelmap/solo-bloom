@@ -860,17 +860,17 @@ function StatsSection() {
     { num: "15 хв", label: t("statsSetup") },
   ];
   return (
-    <section className="bg-secondary text-secondary-foreground px-4 sm:px-6 pt-20 pb-12">
+    <section className="bg-secondary text-secondary-foreground px-4 sm:px-6 pt-14 pb-10 sm:pt-16 sm:pb-12">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-3 sm:divide-x sm:divide-white/10 gap-8 sm:gap-0">
           {stats.map((s) => (
             <div key={s.num} className="text-center px-4">
-              <div className="text-4xl sm:text-5xl font-bold text-primary mb-3 tracking-tight">{s.num}</div>
+              <div className="text-3xl sm:text-4xl font-bold text-primary mb-3 tracking-tight">{s.num}</div>
               <div className="text-sm sm:text-base text-secondary-foreground/80 leading-snug">{s.label}</div>
             </div>
           ))}
         </div>
-        <div className="mt-10 flex items-center justify-center gap-2 text-sm text-secondary-foreground/80 text-center">
+        <div className="mt-8 flex items-center justify-center gap-2 text-sm text-secondary-foreground/80 text-center px-4">
           <span>✦ {t("setupAssist")}</span>
         </div>
       </div>
