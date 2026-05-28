@@ -882,13 +882,16 @@ export function useExpectedPayments() {
       );
 
       // ── 2. Individual unpaid / partially paid sessions.
+      //    Includes cancelled / no-show sessions that the therapist explicitly
+      //    chose to bill (payment_status = waiting_for_payment).
       const { data: apts, error } = await supabase
         .from("appointments")
         .select("id, price, client_id, scheduled_at, status, payment_status, services(name), clients(name)")
-        .eq("status", "completed")
+        .in("status", ["completed", "cancelled", "no-show"])
         .gt("price", 0)
         .in("payment_status", ["unpaid", "waiting_for_payment", "partially_paid", "partially_paid_from_prepayment"])
         .order("scheduled_at", { ascending: false });
+
       if (error) throw error;
       const indivList = ((apts ?? []) as any[]).filter(
         (a) => !groupAppointmentIds.has(a.id),
