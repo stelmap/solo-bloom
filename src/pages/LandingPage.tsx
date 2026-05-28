@@ -15,6 +15,8 @@ import {
   Calendar as CalendarIcon, Users, Sparkles, ShieldCheck,
   X, Check, HeartHandshake, Presentation, BookOpen, Clock, Timer,
   Quote, MessageCircle, Mail, Phone, MapPin, Send,
+  Contact, Link2, Bell, CreditCard, ReceiptText, BarChart3,
+  ClipboardCheck, Calculator, MessagesSquare, Route,
 } from "lucide-react";
 
 // ── Configurable external links (replace as needed) ───────────────────
