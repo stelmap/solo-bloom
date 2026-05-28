@@ -1275,10 +1275,6 @@ function PricingSection() {
           {t("privacyShort")}
         </p>
 
-        <div className="mt-12 max-w-3xl mx-auto">
-          <Accordion type="single" collapsible className="rounded-2xl border border-border bg-card divide-y divide-border">
-          </Accordion>
-        </div>
       </div>
     </section>
     </BillingCycleContext.Provider>
