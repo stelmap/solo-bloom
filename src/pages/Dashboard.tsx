@@ -59,8 +59,27 @@ function paymentBadgeClass(status: string) {
 export default function Dashboard() {
   const { data: stats, isLoading } = useDashboardStats();
   const { data: profile } = useProfile();
+  const { data: allClients = [] } = useClients();
+  const { data: allAppointments = [] } = useAppointments();
   const { t, lang } = useLanguage();
   const { symbol: cs } = useCurrency();
+
+  // Derive "clients without next session" from the SAME data ClientsPage uses,
+  // so the dashboard tile and the filtered list always match exactly.
+  const clientsWithoutNextSessionCount = useMemo(() => {
+    const nowIso = new Date().toISOString();
+    const withFuture = new Set<string>();
+    for (const a of allAppointments as any[]) {
+      if (a.status !== "cancelled" && a.scheduled_at > nowIso && a.client_id) {
+        withFuture.add(a.client_id);
+      }
+    }
+    let count = 0;
+    for (const c of allClients as any[]) {
+      if ((c.status ?? "active") === "active" && !withFuture.has(c.id)) count++;
+    }
+    return count;
+  }, [allClients, allAppointments]);
 
   // Fire once per mount. Dashboard is today-scoped, so range is fixed.
   useEffect(() => {
