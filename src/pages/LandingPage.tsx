@@ -683,7 +683,7 @@ function PrimaryCta({
 function LandingNav() {
   const { lang, t, toggle } = useLandingLang();
   const links = [
-    { label: t("navAudience"), href: "#audience" },
+    { label: t("navAudience"), href: "#features" },
     { label: t("navHow"), href: "#comparison" },
     { label: t("navPricing"), href: "#pricing" },
     { label: t("navFaq"), href: "#faq" },
