@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useToast } from "@/hooks/use-toast";
 import { ShieldCheck, Timer, KeyRound, Trash2, Eye, EyeOff, Copy, Check, Maximize2 } from "lucide-react";
 import { readIdleTimeoutMinutes, writeIdleTimeoutMinutes } from "@/hooks/useIdleTimeout";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface MfaFactor {
   id: string;
@@ -43,6 +44,7 @@ function buildOtpAuthUri(rawUri: string, email: string | null): string {
 
 export function MfaAndTimeoutSection() {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [factors, setFactors] = useState<MfaFactor[]>([]);
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
@@ -58,7 +60,7 @@ export function MfaAndTimeoutSection() {
     setLoading(true);
     const { data, error } = await supabase.auth.mfa.listFactors();
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: t("mfa.error"), description: error.message, variant: "destructive" });
     } else {
       setFactors([...(data?.totp ?? [])] as MfaFactor[]);
     }
@@ -79,7 +81,7 @@ export function MfaAndTimeoutSection() {
         friendlyName: `${ISSUER} (${email ?? "account"})`,
       });
       if (error || !data) {
-        toast({ title: "Error", description: error?.message ?? "Failed to start enrollment", variant: "destructive" });
+        toast({ title: t("mfa.error"), description: error?.message ?? t("mfa.startFail"), variant: "destructive" });
         return;
       }
 
@@ -114,7 +116,7 @@ export function MfaAndTimeoutSection() {
     try {
       const { data: challenge, error: cErr } = await supabase.auth.mfa.challenge({ factorId: enrollData.factorId });
       if (cErr || !challenge) {
-        toast({ title: "Invalid authentication code", description: "Please try again.", variant: "destructive" });
+        toast({ title: t("mfa.invalidCode"), description: t("mfa.invalidCodeDesc"), variant: "destructive" });
         return;
       }
       const { error } = await supabase.auth.mfa.verify({
@@ -123,10 +125,10 @@ export function MfaAndTimeoutSection() {
         code: verifyCode.trim(),
       });
       if (error) {
-        toast({ title: "Invalid authentication code", description: "Please try again.", variant: "destructive" });
+        toast({ title: t("mfa.invalidCode"), description: t("mfa.invalidCodeDesc"), variant: "destructive" });
         return;
       }
-      toast({ title: "Two-factor enabled" });
+      toast({ title: t("mfa.toastEnabled") });
       setEnrollData(null);
       setVerifyCode("");
       setShowSecret(false);
@@ -153,16 +155,16 @@ export function MfaAndTimeoutSection() {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      toast({ title: "Copy failed", variant: "destructive" });
+      toast({ title: t("mfa.copyFailed"), variant: "destructive" });
     }
   }
 
   async function unenroll(factorId: string) {
     const { error } = await supabase.auth.mfa.unenroll({ factorId });
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: t("mfa.error"), description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Two-factor removed" });
+      toast({ title: t("mfa.toastRemoved") });
       await loadFactors();
     }
   }
@@ -171,7 +173,7 @@ export function MfaAndTimeoutSection() {
     const n = parseInt(v, 10);
     setIdleMinutes(n);
     writeIdleTimeoutMinutes(n);
-    toast({ title: "Saved" });
+    toast({ title: t("idle.saved") });
   }
 
   const verifiedFactor = factors.find(f => f.status === "verified");
@@ -187,54 +189,50 @@ export function MfaAndTimeoutSection() {
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-muted-foreground" />
           <div>
-            <h2 className="font-semibold text-foreground">Two-factor authentication</h2>
-            <p className="text-sm text-muted-foreground">
-              Add a time-based one-time code from an authenticator app (e.g. Google Authenticator, 1Password).
-            </p>
+            <h2 className="font-semibold text-foreground">{t("mfa.title")}</h2>
+            <p className="text-sm text-muted-foreground">{t("mfa.desc")}</p>
           </div>
         </div>
 
         {loading ? (
-          <p className="text-sm text-muted-foreground">Loading…</p>
+          <p className="text-sm text-muted-foreground">{t("mfa.loading")}</p>
         ) : verifiedFactor ? (
           <div className="flex items-center justify-between gap-4 rounded-lg border border-border p-4">
             <div className="flex items-center gap-2">
               <KeyRound className="h-4 w-4 text-primary" />
               <div>
-                <p className="text-sm font-medium">Two-factor is enabled</p>
-                <p className="text-xs text-muted-foreground">Factor ID: {verifiedFactor.id.slice(0, 8)}…</p>
+                <p className="text-sm font-medium">{t("mfa.enabled")}</p>
+                <p className="text-xs text-muted-foreground">{t("mfa.factorId", { id: verifiedFactor.id.slice(0, 8) })}</p>
               </div>
             </div>
             <Button variant="outline" size="sm" onClick={() => unenroll(verifiedFactor.id)}>
-              <Trash2 className="h-4 w-4 mr-1" /> Remove
+              <Trash2 className="h-4 w-4 mr-1" /> {t("mfa.remove")}
             </Button>
           </div>
         ) : enrollData ? (
           <div className="space-y-4 rounded-lg border border-border p-4">
-            <p className="text-sm font-medium">
-              1. Scan the QR code in your authenticator app
-            </p>
+            <p className="text-sm font-medium">{t("mfa.scanInstruction")}</p>
 
             <div className="flex flex-col sm:flex-row items-start gap-5">
               <button
                 type="button"
                 onClick={() => setQrOpen(true)}
-                aria-label="Enlarge QR code"
+                aria-label={t("mfa.enlargeQR")}
                 className="group relative rounded-lg bg-white p-3 border border-border shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <img
                   src={enrollData.qrDataUrl}
-                  alt="SoloBizz two-factor QR code"
+                  alt={t("mfa.enlargeQR")}
                   className="h-56 w-56 block"
                 />
                 <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-md bg-black/70 text-white text-[11px] px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Maximize2 className="h-3 w-3" /> Enlarge
+                  <Maximize2 className="h-3 w-3" /> {t("mfa.enlargeLabel")}
                 </span>
               </button>
 
               <div className="flex-1 w-full space-y-3">
                 <div className="space-y-2">
-                  <Label className="text-xs">Setup key (manual entry)</Label>
+                  <Label className="text-xs">{t("mfa.setupKey")}</Label>
                   <div className="flex items-center gap-2">
                     <code className="flex-1 block break-all rounded bg-muted px-2 py-2 text-xs font-mono">
                       {showSecret ? enrollData.secret : maskedSecret}
@@ -244,7 +242,7 @@ export function MfaAndTimeoutSection() {
                       variant="outline"
                       size="icon"
                       onClick={() => setShowSecret(s => !s)}
-                      title={showSecret ? "Hide setup key" : "Show setup key"}
+                      title={showSecret ? t("mfa.hideKey") : t("mfa.showKey")}
                     >
                       {showSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
@@ -253,14 +251,12 @@ export function MfaAndTimeoutSection() {
                       variant="outline"
                       size="icon"
                       onClick={copySecret}
-                      title="Copy setup key"
+                      title={t("mfa.copyKey")}
                     >
                       {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
                     </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Use this key only if you cannot scan the QR code.
-                  </p>
+                  <p className="text-xs text-muted-foreground">{t("mfa.useKeyOnly")}</p>
                 </div>
               </div>
             </div>
@@ -268,7 +264,7 @@ export function MfaAndTimeoutSection() {
             <Separator />
 
             <div className="space-y-2">
-              <p className="text-sm font-medium">2. Enter the 6-digit code from your app</p>
+              <p className="text-sm font-medium">{t("mfa.step2")}</p>
               <div className="flex gap-2 max-w-sm">
                 <Input
                   value={verifyCode}
@@ -279,17 +275,17 @@ export function MfaAndTimeoutSection() {
                   maxLength={6}
                 />
                 <Button onClick={verifyEnroll} disabled={verifyCode.length < 6 || verifying}>
-                  {verifying ? "Verifying…" : "Verify & enable"}
+                  {verifying ? t("mfa.verifying") : t("mfa.verify")}
                 </Button>
                 <Button variant="ghost" onClick={cancelEnroll} disabled={verifying}>
-                  Cancel
+                  {t("mfa.cancel")}
                 </Button>
               </div>
             </div>
           </div>
         ) : (
           <Button onClick={startEnroll} disabled={enrolling} variant="outline">
-            {enrolling ? "Starting…" : "Enable two-factor"}
+            {enrolling ? t("mfa.starting") : t("mfa.enable")}
           </Button>
         )}
       </div>
@@ -298,19 +294,19 @@ export function MfaAndTimeoutSection() {
       <Dialog open={qrOpen} onOpenChange={setQrOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Scan with your authenticator app</DialogTitle>
+            <DialogTitle>{t("mfa.scanDialogTitle")}</DialogTitle>
           </DialogHeader>
           <div className="flex items-center justify-center bg-white rounded-lg p-4">
             {enrollData ? (
               <img
                 src={enrollData.qrDataUrl}
-                alt="SoloBizz two-factor QR code, enlarged"
+                alt={t("mfa.scanDialogTitle")}
                 className="block w-full max-w-[360px] h-auto"
               />
             ) : null}
           </div>
           <p className="text-xs text-muted-foreground text-center">
-            Issuer: <span className="font-medium text-foreground">{ISSUER}</span> · Algorithm SHA1 · 6 digits · 30s
+            {t("mfa.issuerLine", { issuer: ISSUER })}
           </p>
         </DialogContent>
       </Dialog>
@@ -320,23 +316,21 @@ export function MfaAndTimeoutSection() {
         <div className="flex items-center gap-2">
           <Timer className="h-5 w-5 text-muted-foreground" />
           <div>
-            <h2 className="font-semibold text-foreground">Auto sign-out on inactivity</h2>
-            <p className="text-sm text-muted-foreground">
-              Automatically sign you out after a period of no activity. Recommended for shared or public devices.
-            </p>
+            <h2 className="font-semibold text-foreground">{t("idle.title")}</h2>
+            <p className="text-sm text-muted-foreground">{t("idle.desc")}</p>
           </div>
         </div>
         <div className="max-w-xs space-y-2">
-          <Label>Sign me out after</Label>
+          <Label>{t("idle.label")}</Label>
           <Select value={String(idleMinutes)} onValueChange={updateIdle}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="0">Never</SelectItem>
-              <SelectItem value="5">5 minutes</SelectItem>
-              <SelectItem value="15">15 minutes</SelectItem>
-              <SelectItem value="30">30 minutes</SelectItem>
-              <SelectItem value="60">1 hour</SelectItem>
-              <SelectItem value="120">2 hours</SelectItem>
+              <SelectItem value="0">{t("idle.never")}</SelectItem>
+              <SelectItem value="5">{t("idle.min5")}</SelectItem>
+              <SelectItem value="15">{t("idle.min15")}</SelectItem>
+              <SelectItem value="30">{t("idle.min30")}</SelectItem>
+              <SelectItem value="60">{t("idle.h1")}</SelectItem>
+              <SelectItem value="120">{t("idle.h2")}</SelectItem>
             </SelectContent>
           </Select>
         </div>

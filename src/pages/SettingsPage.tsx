@@ -25,7 +25,7 @@ export default function SettingsPage() {
             <TabsTrigger value="notifications">{t("settings.notifications")}</TabsTrigger>
             <TabsTrigger value="connected">{t("settings.connectedAccounts")}</TabsTrigger>
             <TabsTrigger value="subscription">{t("settings.subscriptionTab")}</TabsTrigger>
-            <TabsTrigger value="privacy">Privacy & Data</TabsTrigger>
+            <TabsTrigger value="privacy">{t("settings.privacyAndData")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile"><ProfileSection /></TabsContent>
