@@ -233,14 +233,14 @@ export default function Dashboard() {
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* LEFT: Today's Activity (3 metrics) */}
-            <div className="bg-card border border-border rounded-[20px] p-6 shadow-card">
-              <div className="flex items-center gap-2 mb-5">
+            <div className="bg-card border border-border rounded-[20px] p-4 sm:p-6 shadow-card min-w-0 overflow-hidden">
+              <div className="flex items-center gap-2 mb-4 sm:mb-5">
                 <PlayCircle className="h-4 w-4 text-primary" />
                 <h3 className="text-sm font-semibold text-muted-foreground">
                   {t("ops.todaysActivity")}
                 </h3>
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4">
                 <StatCell label={t("ops.clientsToday")} value={summary.clientCount.toString()} />
                 <StatCell label={t("ops.sessionsPlanned")} value={(summary.planned + summary.completed).toString()} />
                 <StatCell label={t("ops.cancelledSessions")} value={cancelledTotal.toString()} tone={cancelledTotal > 0 ? "warning" : "muted"} />
@@ -248,21 +248,21 @@ export default function Dashboard() {
             </div>
 
             {/* RIGHT: Today's Money (3 metrics) */}
-            <div className="bg-card border border-border rounded-[20px] p-6 shadow-card flex flex-col">
-              <div className="flex items-center gap-2 mb-5">
+            <div className="bg-card border border-border rounded-[20px] p-4 sm:p-6 shadow-card flex flex-col min-w-0 overflow-hidden">
+              <div className="flex items-center gap-2 mb-4 sm:mb-5">
                 <DollarSign className="h-4 w-4 text-primary" />
                 <h3 className="text-sm font-semibold text-muted-foreground">
                   {t("ops.todaysMoney")}
                 </h3>
               </div>
-              <div className="grid grid-cols-3 gap-3 flex-1">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 flex-1">
                 <MoneyTile label={t("ops.paidToday")} value={`${cs}${Number(stats?.todayIncome ?? 0).toLocaleString()}`} tone="success" onClick={() => openWidget("paid_today", "/finances/income?range=today&tab=income")} />
                 <MoneyTile label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} onClick={() => openWidget("expected_revenue_today", "/finances/income?range=today&tab=income")} />
                 <MoneyTile label={t("ops.todayDebt")} value={`${cs}${Number((stats as any)?.todayDebt ?? 0).toLocaleString()}`} tone={Number((stats as any)?.todayDebt ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("today_debt", "/finances/income?range=today&tab=pending")} />
               </div>
-              <div className="mt-4 bg-gradient-dark text-secondary-foreground rounded-2xl px-5 py-4 flex justify-between items-center">
-                <span className="text-xs font-semibold opacity-80">{t("ops.totalDebt")}</span>
-                <span className="text-2xl font-bold text-primary">{cs}{Number(stats?.outstandingBalance ?? 0).toLocaleString()}</span>
+              <div className="mt-4 bg-gradient-dark text-secondary-foreground rounded-2xl px-4 sm:px-5 py-3 sm:py-4 flex justify-between items-center gap-2 min-w-0">
+                <span className="text-xs font-semibold opacity-80 shrink-0">{t("ops.totalDebt")}</span>
+                <span className="text-xl sm:text-2xl font-bold text-primary tabular-nums break-all text-right">{cs}{Number(stats?.outstandingBalance ?? 0).toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -532,13 +532,13 @@ function PracticeHealth({ stats, t, cs }: { stats: any; t: (k: any, p?: any) => 
 
 function HealthTile({ icon: Icon, label, value, sub }: { icon: any; label: string; value: string; sub?: string }) {
   return (
-    <div className="bg-card border border-border rounded-[18px] p-5 shadow-card flex flex-col items-center text-center min-h-[140px] justify-center">
-      <div className="p-2 rounded-lg bg-muted text-muted-foreground mb-3">
-        <Icon className="h-4 w-4" />
+    <div className="bg-card border border-border rounded-[18px] p-3 sm:p-5 shadow-card flex flex-col items-center text-center min-h-[120px] sm:min-h-[140px] justify-center overflow-hidden min-w-0">
+      <div className="p-1.5 sm:p-2 rounded-lg bg-muted text-muted-foreground mb-2 sm:mb-3">
+        <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
       </div>
-      <p className="text-3xl font-bold leading-none tabular-nums text-foreground">{value}</p>
-      <p className="text-xs text-muted-foreground mt-2 leading-snug">{label}</p>
-      {sub && <p className="text-[10px] text-muted-foreground/70 mt-1 leading-snug">{sub}</p>}
+      <p className="text-2xl sm:text-3xl font-bold leading-none tabular-nums text-foreground break-all">{value}</p>
+      <p className="text-[10px] sm:text-xs text-muted-foreground mt-2 leading-snug break-words">{label}</p>
+      {sub && <p className="text-[10px] text-muted-foreground/70 mt-1 leading-snug break-words">{sub}</p>}
     </div>
   );
 }
@@ -553,9 +553,9 @@ function StatCell({ label, value, tone }: { label: string; value: string; tone?:
     tone === "muted" ? "text-muted-foreground/60" :
     "text-foreground";
   return (
-    <div className="bg-muted/40 border border-border rounded-2xl p-4 flex flex-col items-center justify-center text-center min-h-[110px]">
-      <p className={cn("text-3xl sm:text-4xl font-bold leading-none tabular-nums", toneClass)}>{value}</p>
-      <p className="text-xs text-muted-foreground mt-2.5 leading-snug">{label}</p>
+    <div className="bg-muted/40 border border-border rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-center text-center min-h-[100px] sm:min-h-[110px] overflow-hidden min-w-0">
+      <p className={cn("text-2xl sm:text-4xl font-bold leading-none tabular-nums break-all", toneClass)}>{value}</p>
+      <p className="text-[10px] sm:text-xs text-muted-foreground mt-2 sm:mt-2.5 leading-snug break-words">{label}</p>
     </div>
   );
 }
@@ -569,9 +569,9 @@ function MoneyTile({
     tone === "muted" ? "text-muted-foreground/60" :
     "text-foreground";
   const inner = (
-    <div className="flex flex-col items-center justify-center text-center h-full">
-      <p className={cn("text-2xl sm:text-3xl font-bold tabular-nums", toneClass)}>{value}</p>
-      <p className="text-xs text-muted-foreground mt-2 leading-snug">{label}</p>
+    <div className="flex flex-col items-center justify-center text-center h-full min-w-0">
+      <p className={cn("text-lg sm:text-2xl md:text-3xl font-bold tabular-nums break-all w-full", toneClass)}>{value}</p>
+      <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 sm:mt-2 leading-snug break-words">{label}</p>
     </div>
   );
   if (onClick) {
@@ -579,14 +579,14 @@ function MoneyTile({
       <button
         type="button"
         onClick={onClick}
-        className="bg-muted/40 border border-border rounded-2xl p-4 min-h-[110px] hover:border-primary-border hover:bg-card transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="bg-muted/40 border border-border rounded-2xl p-3 sm:p-4 min-h-[100px] sm:min-h-[110px] overflow-hidden min-w-0 hover:border-primary-border hover:bg-card transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         aria-label={`${label}: ${value}`}
       >
         {inner}
       </button>
     );
   }
-  return <div className="bg-muted/40 border border-border rounded-2xl p-4 min-h-[110px]">{inner}</div>;
+  return <div className="bg-muted/40 border border-border rounded-2xl p-3 sm:p-4 min-h-[100px] sm:min-h-[110px] overflow-hidden min-w-0">{inner}</div>;
 }
 
 
@@ -594,7 +594,7 @@ function OverviewTile({
   icon: Icon, label, value, active, onClick, trend, trendLabel,
 }: { icon: any; label: string; value: string; active?: boolean; onClick?: () => void; trend?: { dir: "up" | "down" | "flat"; pct: number; positive: boolean }; trendLabel?: string }) {
   const base = cn(
-    "relative rounded-[18px] p-5 text-center w-full block transition-all border flex flex-col items-center justify-between min-h-[170px]",
+    "relative rounded-[18px] p-3 sm:p-5 text-center w-full block transition-all border flex flex-col items-center justify-between min-h-[140px] sm:min-h-[170px] overflow-hidden min-w-0",
     active
       ? "bg-primary-soft border-primary shadow-glow"
       : "bg-card border-border shadow-card",
@@ -606,17 +606,17 @@ function OverviewTile({
     <>
       <div className="w-full flex items-center justify-between">
         <div className={cn(
-          "p-2 rounded-lg",
+          "p-1.5 sm:p-2 rounded-lg",
           active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
         )}>
-          <Icon className="h-4 w-4" />
+          <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </div>
         {onClick && (
           <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
         )}
       </div>
-      <p className={cn("text-5xl font-extrabold leading-none tabular-nums my-2", active ? "text-primary" : "text-foreground")}>{value}</p>
-      <p className="text-xs text-muted-foreground leading-snug w-full">{label}</p>
+      <p className={cn("text-3xl sm:text-5xl font-extrabold leading-none tabular-nums my-2 break-all", active ? "text-primary" : "text-foreground")}>{value}</p>
+      <p className="text-[10px] sm:text-xs text-muted-foreground leading-snug w-full break-words">{label}</p>
       {trend && <TrendBadge trend={trend} label={trendLabel} />}
     </>
   );
