@@ -171,6 +171,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     (s: number, r: any) => s + Number(r.allocated_amount || 0), 0
   );
   const fullyPreallocated = sessionPrice > 0 && alreadyAllocated + 0.001 >= sessionPrice;
+  const partiallyPreallocated = !fullyPreallocated && alreadyAllocated > 0.001;
+
   // When the session is already covered by an existing prepayment or by the
   // client's prepaid balance, the only valid completion outcome is "paid in
   // advance". Hide all other payment options so the user cannot accidentally
