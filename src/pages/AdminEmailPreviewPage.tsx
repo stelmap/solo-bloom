@@ -56,17 +56,33 @@ export default function AdminEmailPreviewPage() {
     setBusy(true);
     setError(null);
     setPreview(null);
-    supabase.functions
-      .invoke("admin-preview-auth-email", { body: { type, lang } })
-      .then(({ data, error }) => {
+    (async () => {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+        if (!token) {
+          if (!cancelled) setError("Not authenticated");
+          return;
+        }
+        const { data, error } = await supabase.functions.invoke(
+          "admin-preview-auth-email",
+          {
+            body: { type, lang },
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         if (cancelled) return;
         if (error) {
           setError(error.message);
         } else {
           setPreview(data as Preview);
         }
-      })
-      .finally(() => !cancelled && setBusy(false));
+      } catch (e: any) {
+        if (!cancelled) setError(e?.message ?? "Failed to load preview");
+      } finally {
+        if (!cancelled) setBusy(false);
+      }
+    })();
     return () => {
       cancelled = true;
     };
