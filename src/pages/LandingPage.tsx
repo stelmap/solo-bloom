@@ -1562,6 +1562,127 @@ function FinalCTA() {
   );
 }
 
+// ── Testimonials ──────────────────────────────────────────────────────
+
+function TestimonialsSection() {
+  const { lang } = useLandingLang();
+
+  const copy = {
+    uk: {
+      eyebrow: "ВІД ТЕРАПЕВТІВ, ЯКІ ПЕРЕЙШЛИ",
+      title: "Довіряють 300+ практиків",
+      sub: "Психологи, психотерапевти та супервізори, що ведуть приватну практику з SoloBizz.",
+      quoteHighlight: "«Я скептично ставилась до того, що інструмент за €12 може замінити все, що у мене було розкидано по трьох застосунках. Замінив.»",
+      quoteAuthor: "— Анна В., психотерапевт, 3 місяці на Solo Practice",
+      cards: [
+        {
+          initials: "ОЛ",
+          name: "Олена Л.",
+          role: "Психотерапевт · Solo Practice",
+          color: "bg-emerald-100 text-emerald-700",
+          text: "«Я витрачала неділні вечори на рахунки та перевірку оплат. Тепер відкриваю SoloBizz у понеділок вранці — і все вже є. Я не розуміла, скільки часу втрачала, поки не перестала його втрачати.»",
+        },
+        {
+          initials: "МК",
+          name: "Мар'яна К.",
+          role: "Психолог і супервізор · Pro Practice",
+          color: "bg-violet-100 text-violet-700",
+          text: "«Як супервізор я працюю з багатьма підопічними паралельно зі своїми клієнтами. Тримати все в Excel було постійним головним болем. SoloBizz дав мені одне місце для всього — сесії, оплати, нотатки.»",
+        },
+        {
+          initials: "ДП",
+          name: "Дмитро П.",
+          role: "Психолог · почав з Free Starter",
+          color: "bg-orange-100 text-orange-700",
+          text: "«Почав з Free Starter просто спробувати. За тиждень зрозумів, що хочу залишитись. Лише посилання для запису заощадило мені стільки переписки з клієнтами. Перехід на Solo Practice був очевидним.»",
+        },
+      ],
+    },
+    en: {
+      eyebrow: "FROM THERAPISTS WHO SWITCHED",
+      title: "Trusted by 300+ practitioners",
+      sub: "Psychologists, psychotherapists and supervisors running their private practice with SoloBizz.",
+      quoteHighlight: "“I was skeptical that a €12 tool could replace everything I had scattered across three apps. It did.”",
+      quoteAuthor: "— Anna V., psychotherapist, 3 months on Solo Practice",
+      cards: [
+        { initials: "OL", name: "Olena L.", role: "Psychotherapist · Solo Practice", color: "bg-emerald-100 text-emerald-700",
+          text: "“I used to spend Sunday evenings on invoices and payment checks. Now I open SoloBizz on Monday morning — and it's all there. I didn't realize how much time I was losing until I stopped losing it.”" },
+        { initials: "MK", name: "Mariana K.", role: "Psychologist & supervisor · Pro Practice", color: "bg-violet-100 text-violet-700",
+          text: "“As a supervisor I work with many supervisees alongside my own clients. Keeping it all in Excel was a constant headache. SoloBizz gave me one place for everything — sessions, payments, notes.”" },
+        { initials: "DP", name: "Dmytro P.", role: "Psychologist · started on Free Starter", color: "bg-orange-100 text-orange-700",
+          text: "“I started with Free Starter just to try. Within a week I knew I'd stay. The booking link alone saved me so much back-and-forth with clients. Moving to Solo Practice was obvious.”" },
+      ],
+    },
+    fr: {
+      eyebrow: "DES THÉRAPEUTES QUI ONT BASCULÉ",
+      title: "300+ praticien·ne·s nous font confiance",
+      sub: "Psychologues, psychothérapeutes et superviseurs qui gèrent leur cabinet avec SoloBizz.",
+      quoteHighlight: "« J'étais sceptique qu'un outil à 12 € puisse remplacer tout ce que j'avais éparpillé dans trois applis. Il l'a fait. »",
+      quoteAuthor: "— Anna V., psychothérapeute, 3 mois sur Solo Practice",
+      cards: [
+        { initials: "OL", name: "Olena L.", role: "Psychothérapeute · Solo Practice", color: "bg-emerald-100 text-emerald-700",
+          text: "« Je passais mes dimanches soirs sur les factures. Maintenant j'ouvre SoloBizz le lundi matin — et tout est là. »" },
+        { initials: "MK", name: "Mariana K.", role: "Psychologue & superviseure · Pro Practice", color: "bg-violet-100 text-violet-700",
+          text: "« Comme superviseure je travaille avec beaucoup de supervisé·e·s en parallèle de mes clients. SoloBizz m'a donné un seul endroit pour tout. »" },
+        { initials: "DP", name: "Dmytro P.", role: "Psychologue · a démarré sur Free Starter", color: "bg-orange-100 text-orange-700",
+          text: "« J'ai commencé avec Free Starter juste pour essayer. En une semaine je savais que je restais. »" },
+      ],
+    },
+    pl: {
+      eyebrow: "OD TERAPEUTÓW, KTÓRZY PRZESZLI",
+      title: "Zaufało nam 300+ praktyków",
+      sub: "Psycholodzy, psychoterapeuci i superwizorzy prowadzący prywatną praktykę z SoloBizz.",
+      quoteHighlight: "„Byłam sceptyczna, że narzędzie za 12 € może zastąpić wszystko, co miałam rozrzucone w trzech aplikacjach. Zastąpiło.”",
+      quoteAuthor: "— Anna W., psychoterapeutka, 3 miesiące na Solo Practice",
+      cards: [
+        { initials: "OL", name: "Olena L.", role: "Psychoterapeutka · Solo Practice", color: "bg-emerald-100 text-emerald-700",
+          text: "„Spędzałam niedzielne wieczory na fakturach. Teraz otwieram SoloBizz w poniedziałek rano — i wszystko jest.”" },
+        { initials: "MK", name: "Mariana K.", role: "Psycholożka i superwizorka · Pro Practice", color: "bg-violet-100 text-violet-700",
+          text: "„Jako superwizorka pracuję z wieloma osobami równolegle ze swoimi klientami. SoloBizz dał mi jedno miejsce na wszystko.”" },
+        { initials: "DP", name: "Dmytro P.", role: "Psycholog · zaczynał od Free Starter", color: "bg-orange-100 text-orange-700",
+          text: "„Zacząłem od Free Starter, żeby tylko spróbować. W tydzień wiedziałem, że zostaję.”" },
+      ],
+    },
+  } as const;
+
+  const c = (copy as any)[lang] ?? copy.en;
+
+  return (
+    <section className="py-20 sm:py-24 px-4 sm:px-6 bg-muted/40">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-12">
+          <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-4">{c.eyebrow}</p>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">{c.title}</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{c.sub}</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {c.cards.map((card: any, i: number) => (
+            <div key={i} className="bg-card rounded-2xl border border-border p-6 sm:p-7 flex flex-col shadow-sm">
+              <div className="text-foreground mb-4 tracking-widest">★★★★★</div>
+              <p className="font-serif italic text-foreground/90 text-base leading-relaxed flex-1">{card.text}</p>
+              <div className="mt-6 pt-5 border-t border-border flex items-center gap-3">
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-semibold ${card.color}`}>
+                  {card.initials}
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-foreground">{card.name}</div>
+                  <div className="text-xs text-muted-foreground">{card.role}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-12 max-w-4xl mx-auto rounded-2xl bg-primary/10 border-l-4 border-primary p-6 sm:p-8">
+          <p className="font-serif italic text-foreground/90 text-lg sm:text-xl leading-relaxed">{c.quoteHighlight}</p>
+          <p className="mt-4 text-sm text-muted-foreground">{c.quoteAuthor}</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── About / Contacts / Footer ─────────────────────────────────────────
 
 function AboutContactsSection() {
@@ -1825,6 +1946,7 @@ export default function LandingPage() {
           <PainSection />
           <WhatChangesSection />
           <FeaturesSection />
+          <TestimonialsSection />
           <PricingSection />
 
           <FaqSection />
