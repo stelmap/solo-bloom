@@ -951,8 +951,8 @@ function WhatChangesSection() {
               label={t("whatChangesCta")}
               source="/"
               cta="what_changes_cta"
-              className="rounded-full px-8"
             />
+
             <p className="text-sm text-muted-foreground">{t("whatChangesCtaNote")}</p>
           </div>
         </div>
