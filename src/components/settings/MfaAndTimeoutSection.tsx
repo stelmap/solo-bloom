@@ -186,10 +186,6 @@ export function MfaAndTimeoutSection() {
     <div className="space-y-4">
       {/* Two-factor */}
       <div className="bg-card rounded-xl border border-border p-6 space-y-4">
-  return (
-    <div className="space-y-4">
-      {/* Two-factor */}
-      <div className="bg-card rounded-xl border border-border p-6 space-y-4">
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-muted-foreground" />
           <div>
