@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/AppLayout";
-import { useDashboardStats, useProfile } from "@/hooks/useData";
+import { useDashboardStats, useProfile, useClients, useAppointments } from "@/hooks/useData";
 import { useBookingRequests, useConfirmBookingRequest, useDeclineBookingRequest } from "@/hooks/useBookingInbox";
 import { useEffect, useMemo } from "react";
 import { track } from "@/lib/analytics";
@@ -59,8 +59,27 @@ function paymentBadgeClass(status: string) {
 export default function Dashboard() {
   const { data: stats, isLoading } = useDashboardStats();
   const { data: profile } = useProfile();
+  const { data: allClients = [] } = useClients();
+  const { data: allAppointments = [] } = useAppointments();
   const { t, lang } = useLanguage();
   const { symbol: cs } = useCurrency();
+
+  // Derive "clients without next session" from the SAME data ClientsPage uses,
+  // so the dashboard tile and the filtered list always match exactly.
+  const clientsWithoutNextSessionCount = useMemo(() => {
+    const nowIso = new Date().toISOString();
+    const withFuture = new Set<string>();
+    for (const a of allAppointments as any[]) {
+      if (a.status !== "cancelled" && a.scheduled_at > nowIso && a.client_id) {
+        withFuture.add(a.client_id);
+      }
+    }
+    let count = 0;
+    for (const c of allClients as any[]) {
+      if ((c.status ?? "active") === "active" && !withFuture.has(c.id)) count++;
+    }
+    return count;
+  }, [allClients, allAppointments]);
 
   // Fire once per mount. Dashboard is today-scoped, so range is fixed.
   useEffect(() => {
@@ -228,7 +247,7 @@ export default function Dashboard() {
             <MoneyTile label={t("ops.monthlyExpensesTotal")} value={`${cs}${Number(stats?.monthlyExpenses ?? 0).toLocaleString()}`} onClick={() => openWidget("monthly_expenses", "/finances/expenses")} />
             <MoneyTile label={t("ops.unpaidSessionsCount")} value={String((stats as any)?.unpaidSessionsCount ?? 0)} tone={((stats as any)?.unpaidSessionsCount ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("unpaid_sessions", "/finances/income?tab=pending&range=all")} />
 
-            <MoneyTile label={t("ops.clientsWithoutNextSession")} value={String((stats as any)?.clientsWithoutNextSession ?? 0)} tone={((stats as any)?.clientsWithoutNextSession ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("clients_without_next_session", "/clients?filter=withoutNextSession")} />
+            <MoneyTile label={t("ops.clientsWithoutNextSession")} value={String(clientsWithoutNextSessionCount)} tone={clientsWithoutNextSessionCount > 0 ? "warning" : "muted"} onClick={() => openWidget("clients_without_next_session", "/clients?filter=withoutNextSession")} />
           </div>
         </section>
 
