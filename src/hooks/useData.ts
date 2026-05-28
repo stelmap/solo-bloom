@@ -1854,10 +1854,12 @@ export function useTaxAccrualStatus() {
         monthIncome.set(mKey, (monthIncome.get(mKey) || 0) + Number(r.amount));
         quarterIncome.set(qKey, (quarterIncome.get(qKey) || 0) + Number(r.amount));
       }
-      const { data: expenseRows } = await supabase.from("expenses").select("amount, date, category, tax_setting_id");
+      const { data: expenseRows } = await supabase.from("expenses").select("amount, date, category, tax_setting_id, instance_status, is_template");
       const monthExpense = new Map<string, number>();
       const quarterExpense = new Map<string, number>();
       for (const r of (expenseRows ?? []) as any[]) {
+        if (r.is_template) continue;
+        if (r.instance_status === "cancelled") continue;
         if (r.category === "Tax" || r.tax_setting_id) continue;
         const d = new Date(r.date + "T12:00:00");
         const mKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
