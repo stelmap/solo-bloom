@@ -860,7 +860,7 @@ function StatsSection() {
     { num: "15 хв", label: t("statsSetup") },
   ];
   return (
-    <section className="bg-secondary text-secondary-foreground px-4 sm:px-6 py-12 md:py-16 rounded-t-[32px] relative z-10">
+    <section className="bg-secondary text-secondary-foreground px-4 sm:px-6 py-12 md:py-16 rounded-[32px] mx-3 sm:mx-6 relative z-10">
       <div className="max-w-6xl mx-auto w-full">
         <div className="grid grid-cols-1 sm:grid-cols-3 sm:divide-x sm:divide-white/10 gap-10 sm:gap-0">
           {stats.map((s) => (
@@ -884,19 +884,20 @@ function PainSection() {
   const { t } = useLandingLang();
   const items: CopyKey[] = ["pain1", "pain2", "pain3", "pain4", "pain5"];
   return (
-    <section className="pt-16 pb-20 px-4 sm:px-6 bg-secondary">
+    <section className="pt-20 md:pt-28 pb-20 px-4 sm:px-6 bg-background">
       <div className="max-w-3xl mx-auto">
-        <h2 className="text-3xl sm:text-4xl font-bold text-secondary-foreground text-center mb-10">
+        <h2 className="text-3xl sm:text-4xl font-bold text-foreground text-center mb-10">
           {t("painTitle")}
         </h2>
         <div className="space-y-3 mb-10">
           {items.map((key) => (
-            <div key={key} className="flex items-start gap-4 p-4 rounded-xl bg-accent/40 border border-sidebar-border">
+            <div key={key} className="flex items-start gap-4 p-4 rounded-xl bg-muted/50 border border-border">
               <AlertTriangle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-              <p className="text-base sm:text-lg text-secondary-foreground/90 font-medium">{t(key)}</p>
+              <p className="text-base sm:text-lg text-foreground/90 font-medium">{t(key)}</p>
             </div>
           ))}
         </div>
+
         <div className="text-center mb-8">
           <p className="text-xl sm:text-2xl font-bold text-secondary-foreground">{t("painBottom")}</p>
         </div>
