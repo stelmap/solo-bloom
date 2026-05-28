@@ -972,6 +972,62 @@ function WhatChangesSection() {
   );
 }
 
+// ── Features / What's included ────────────────────────────────────────
+
+function FeaturesSection() {
+  const { t } = useLandingLang();
+  const cards: { icon: React.ComponentType<{ className?: string }>; titleKey: CopyKey; descKey: CopyKey }[] = [
+    { icon: Contact, titleKey: "feat1Title", descKey: "feat1Desc" },
+    { icon: CalendarIcon, titleKey: "feat2Title", descKey: "feat2Desc" },
+    { icon: Link2, titleKey: "feat3Title", descKey: "feat3Desc" },
+    { icon: Bell, titleKey: "feat4Title", descKey: "feat4Desc" },
+    { icon: CreditCard, titleKey: "feat5Title", descKey: "feat5Desc" },
+    { icon: ReceiptText, titleKey: "feat6Title", descKey: "feat6Desc" },
+    { icon: BarChart3, titleKey: "feat7Title", descKey: "feat7Desc" },
+    { icon: ClipboardCheck, titleKey: "feat8Title", descKey: "feat8Desc" },
+    { icon: ShieldCheck, titleKey: "feat9Title", descKey: "feat9Desc" },
+    { icon: Calculator, titleKey: "feat10Title", descKey: "feat10Desc" },
+    { icon: MessagesSquare, titleKey: "feat11Title", descKey: "feat11Desc" },
+    { icon: Route, titleKey: "feat12Title", descKey: "feat12Desc" },
+  ];
+  return (
+    <section id="features" className="py-16 sm:py-24 px-4 sm:px-6 bg-background">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-14">
+          <div className="text-xs sm:text-sm font-semibold uppercase tracking-[0.18em] text-primary mb-4">
+            {t("featEyebrow")}
+          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-5 leading-tight">
+            {t("featHeadline")}
+          </h2>
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            {t("featSub")}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
+          {cards.map(({ icon: Icon, titleKey, descKey }) => (
+            <div
+              key={titleKey}
+              className="flex flex-col p-7 sm:p-8 rounded-2xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                <Icon className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2 leading-snug">
+                {t(titleKey)}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {t(descKey)}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── Audience ──────────────────────────────────────────────────────────
 
 type AudienceCard = {
