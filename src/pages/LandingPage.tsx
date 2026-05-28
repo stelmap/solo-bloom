@@ -1444,17 +1444,108 @@ function TestimonialCard({
   );
 }
 
+// ⚠️ EDITABLE PLACEHOLDER CONTENT — replace with real metrics/quotes before launch.
+const SOCIAL_PROOF_METRICS = [
+  { value: "300+", label: "Therapists using SoloBizz" },
+  { value: "~4 hrs", label: "Admin time saved per week on average" },
+  { value: "5 min", label: "To set up your full practice profile" },
+];
+
+const PLACEHOLDER_TESTIMONIALS = [
+  {
+    quote:
+      "I used to spend Sunday evenings catching up on invoices and checking who paid. Now I open SoloBizz on Monday morning and everything is already there. I didn't realise how much time I was losing until I stopped losing it.",
+    name: "Olena L.",
+    role: "Psychotherapist · Solo Practice",
+  },
+  {
+    quote:
+      "As a supervisor I work with many supervisees alongside my own clients. Keeping track of everything in Excel was a constant headache. SoloBizz gave me one place for all of it — sessions, payments, notes. It just works.",
+    name: "Mariana K.",
+    role: "Psychologist & supervisor · Pro Practice",
+  },
+  {
+    quote:
+      "I started on Free Starter just to try it. Within a week I knew I wanted to stay. The booking link alone saved me so many back-and-forth messages with clients.",
+    name: "Dmytro P.",
+    role: "Psychologist · started Free Starter",
+  },
+];
+
+const HIGHLIGHT_QUOTE = {
+  quote:
+    "I was skeptical that a €12 tool could replace everything I had scattered across three apps. It did.",
+  name: "Anna V.",
+  role: "Psychotherapist, 3 months on Solo Practice",
+};
+
 function TestimonialsSection() {
   const { t, lang } = useLandingLang();
   return (
     <section className="py-20 px-4 sm:px-6">
       <div className="max-w-5xl mx-auto">
-        <div className="text-center max-w-2xl mx-auto mb-12">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary mb-4">
+            From therapists who switched
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
+            Trusted by private practitioners
+          </h2>
+          <p className="text-lg text-muted-foreground">
+            Psychologists, psychotherapists and supervisors use SoloBizz to manage their practice with less admin chaos.
+          </p>
+        </div>
+
+        {/* Metrics row */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+          {SOCIAL_PROOF_METRICS.map((m) => (
+            <div
+              key={m.label}
+              className="rounded-2xl bg-card border border-border p-6 text-center shadow-sm"
+            >
+              <div className="text-3xl sm:text-4xl font-bold text-primary mb-1">{m.value}</div>
+              <div className="text-sm text-muted-foreground">{m.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Placeholder testimonials (spec) */}
+        <div className="grid md:grid-cols-3 gap-5 items-start mb-10">
+          {PLACEHOLDER_TESTIMONIALS.map((tt) => (
+            <figure
+              key={tt.name}
+              className="p-6 rounded-2xl bg-card border border-border flex flex-col shadow-sm h-full"
+            >
+              <Quote className="h-6 w-6 text-primary mb-3" />
+              <blockquote className="text-base text-foreground leading-relaxed flex-1">
+                "{tt.quote}"
+              </blockquote>
+              <figcaption className="mt-5 pt-4 border-t border-border text-sm">
+                <div className="font-semibold text-foreground">— {tt.name}</div>
+                <div className="text-muted-foreground">{tt.role}</div>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+
+        {/* Highlight quote banner */}
+        <div className="rounded-2xl bg-secondary border border-border p-6 sm:p-8 text-center mb-14">
+          <Quote className="h-7 w-7 text-primary mx-auto mb-3" />
+          <p className="text-lg sm:text-xl font-semibold text-secondary-foreground leading-relaxed max-w-3xl mx-auto">
+            "{HIGHLIGHT_QUOTE.quote}"
+          </p>
+          <p className="mt-4 text-sm text-muted-foreground">
+            — {HIGHLIGHT_QUOTE.name}, {HIGHLIGHT_QUOTE.role}
+          </p>
+        </div>
+
+        {/* Real early-user testimonials */}
+        <div className="text-center max-w-2xl mx-auto mb-8">
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-4">
             <ShieldCheck className="h-5 w-5" />
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">{t("testTitle")}</h2>
-          <p className="text-lg text-muted-foreground">{t("testSub")}</p>
+          <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">{t("testTitle")}</h3>
+          <p className="text-base text-muted-foreground">{t("testSub")}</p>
         </div>
         <div className="grid md:grid-cols-2 gap-5 items-start">
           <TestimonialCard
