@@ -1963,9 +1963,8 @@ export default function LandingPage() {
           <HeroSection />
           <StatsSection />
           <PainSection />
+          <WhatChangesSection />
           <AudienceSection />
-          <DemoSection />
-          <ComparisonSection />
           <PricingSection />
           <TestimonialsSection />
           <FaqSection />
