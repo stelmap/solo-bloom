@@ -399,8 +399,15 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     setCompletePrice(p);
     setAmountPaid(p);
     setPaymentMethod("cash");
-    // Auto-select prepayment if client has any credit (covers full or partial).
-    setPaymentStatus(hasPrepayment && !isGroupSession ? "paid_from_prepayment" : "paid_now");
+    // Priority: session already pre-allocated (prepaid for this slot) > client has unused credit > pay now.
+    setPaymentStatus(
+      fullyPreallocated && !isGroupSession
+        ? "already_paid"
+        : hasPrepayment && !isGroupSession
+          ? "paid_from_prepayment"
+          : "paid_now"
+    );
+
     setGroupPaymentState("paid_now");
     setGroupPaymentMethod("cash");
     setMode("complete");
