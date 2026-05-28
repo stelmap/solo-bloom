@@ -1,4 +1,4 @@
-import { useState, useCallback, createContext, useContext, useEffect } from "react";
+import { useState, useCallback, createContext, useContext, useEffect, type ReactNode } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { BookingDialog } from "@/components/BookingDialog";
@@ -1284,40 +1284,192 @@ function PricingSection() {
 
 // ── FAQ ───────────────────────────────────────────────────────────────
 
+const FACEBOOK_URL = "[ADD_FACEBOOK_PAGE_URL]";
+const YOUTUBE_CHANNEL_URL = "[ADD_YOUTUBE_CHANNEL_URL]";
+const FAQ_EMAIL = "info@solobizz.com";
+
+type FaqItem = { q: Record<Language, string>; a: Record<Language, ReactNode> | ReactNode };
+
 function FaqSection() {
-  const { t } = useLandingLang();
-  const items: { q: CopyKey; a: CopyKey }[] = [
-    { q: "faq1Q", a: "faq1A" },
-    { q: "faq2Q", a: "faq2A" },
-    { q: "faq3Q", a: "faq3A" },
-    { q: "faq4Q", a: "faq4A" },
-    { q: "faq5Q", a: "faq5A" },
-    { q: "faq6Q", a: "faq6A" },
-    { q: "faq7Q", a: "faq7A" },
-    { q: "faq8Q", a: "faq8A" },
+  const { t, lang } = useLandingLang();
+
+  const fb = (label: string) => (
+    <a href={FACEBOOK_URL} target="_blank" rel="noreferrer" className="text-primary underline-offset-4 hover:underline">{label}</a>
+  );
+  const yt = (label: string) => (
+    <a href={YOUTUBE_CHANNEL_URL} target="_blank" rel="noreferrer" className="text-primary underline-offset-4 hover:underline">{label}</a>
+  );
+  const mail = (
+    <a href={`mailto:${FAQ_EMAIL}`} className="text-primary underline-offset-4 hover:underline">{FAQ_EMAIL}</a>
+  );
+
+  const items: FaqItem[] = [
+    {
+      q: {
+        uk: "Чи всі плани включають календар і функцію запису клієнтів?",
+        en: "Do all plans include calendar and client booking?",
+        fr: "Tous les forfaits incluent-ils le calendrier et la réservation clients ?",
+        pl: "Czy wszystkie plany obejmują kalendarz i zapisy klientów?",
+      },
+      a: {
+        uk: "Так. Кожен план, включно з Free Starter, містить повний календар, планування сесій і ваше публічне посилання для запису. Клієнти можуть бронювати напряму на всіх планах. Єдина різниця між планами — кількість активних клієнтів, якими ви можете управляти одночасно, а не доступні функції.",
+        en: "Yes. Every plan, including Free Starter, includes a full calendar, session scheduling and your public booking link. Clients can book directly on all plans. The only difference between plans is the number of active clients you can manage at the same time — not the available features.",
+        fr: "Oui. Chaque forfait, y compris Free Starter, inclut un calendrier complet, la planification des séances et votre lien public de réservation. Les clients peuvent réserver directement sur tous les forfaits. La seule différence entre les forfaits est le nombre de clients actifs, pas les fonctionnalités.",
+        pl: "Tak. Każdy plan, w tym Free Starter, zawiera pełny kalendarz, planowanie sesji i publiczny link do zapisów. Klienci mogą rezerwować bezpośrednio we wszystkich planach. Jedyna różnica między planami to liczba aktywnych klientów, a nie dostępne funkcje.",
+      },
+    },
+    {
+      q: {
+        uk: "Що відбувається, коли я досягаю ліміту активних клієнтів?",
+        en: "What happens when I reach my active client limit?",
+        fr: "Que se passe-t-il quand j'atteins ma limite de clients actifs ?",
+        pl: "Co się dzieje, gdy osiągnę limit aktywnych klientów?",
+      },
+      a: {
+        uk: "Ви отримаєте сповіщення, коли наближаєтеся до ліміту. Ви можете будь-коли перейти на вищий план. Клієнти, з якими ви вже завершили роботу і позначили як архівних, не рахуються до активного ліміту — враховуються лише поточні активні клієнти.",
+        en: "You'll get a notification when you approach the limit. You can upgrade at any time. Clients you've finished working with and archived don't count toward the active limit — only current active clients do.",
+        fr: "Vous serez averti·e à l'approche de la limite. Vous pouvez passer à un forfait supérieur à tout moment. Les clients archivés ne comptent pas — seuls les clients actifs sont pris en compte.",
+        pl: "Otrzymasz powiadomienie, gdy zbliżasz się do limitu. Możesz przejść na wyższy plan w dowolnej chwili. Klienci zarchiwizowani nie liczą się do limitu — tylko aktywni.",
+      },
+    },
+    {
+      q: {
+        uk: "Чи є дані моїх клієнтів приватними і захищеними?",
+        en: "Is my client data private and secure?",
+        fr: "Les données de mes clients sont-elles privées et sécurisées ?",
+        pl: "Czy dane moich klientów są prywatne i bezpieczne?",
+      },
+      a: {
+        uk: "Так. Дані ваших клієнтів повністю приватні. SoloBizz не переглядає, не аналізує і не використовує інформацію про ваших клієнтів. Тільки ви маєте доступ до даних вашої практики. Система розроблена з урахуванням вимог GDPR та принципів конфіденційності.",
+        en: "Yes. Your client data is fully private. SoloBizz does not view, analyze or use information about your clients. Only you have access to your practice data. The system is designed with GDPR and privacy principles in mind.",
+        fr: "Oui. Les données de vos clients sont entièrement privées. SoloBizz ne consulte, n'analyse ni n'utilise ces informations. Vous seul·e avez accès. Le système est conçu selon le RGPD et les principes de confidentialité.",
+        pl: "Tak. Dane Twoich klientów są w pełni prywatne. SoloBizz ich nie przegląda, nie analizuje ani nie wykorzystuje. Tylko Ty masz dostęp. System jest zaprojektowany zgodnie z RODO i zasadami prywatności.",
+      },
+    },
+    {
+      q: {
+        uk: "Чи можу я скасувати або змінити план будь-коли?",
+        en: "Can I cancel or change my plan at any time?",
+        fr: "Puis-je annuler ou changer de forfait à tout moment ?",
+        pl: "Czy mogę anulować lub zmienić plan w dowolnej chwili?",
+      },
+      a: {
+        uk: "Так. Ви можете підвищити, знизити або скасувати підписку будь-коли — без довгострокових зобов'язань і плат за скасування. Якщо ви скасуєте підписку, ви зберігаєте доступ до кінця поточного платіжного періоду. Ваші дані не видаляються.",
+        en: "Yes. You can upgrade, downgrade or cancel anytime — no long-term commitment, no cancellation fees. If you cancel, you keep access until the end of the current billing period. Your data is not deleted.",
+        fr: "Oui. Vous pouvez changer ou annuler à tout moment — sans engagement ni frais. En cas d'annulation, l'accès reste actif jusqu'à la fin de la période en cours. Vos données ne sont pas supprimées.",
+        pl: "Tak. Możesz zmienić lub anulować plan w dowolnym momencie — bez zobowiązań i opłat. Po anulowaniu zachowujesz dostęp do końca bieżącego okresu rozliczeniowego. Dane nie są usuwane.",
+      },
+    },
+    {
+      q: {
+        uk: "Чи потрібна банківська картка для Free Starter?",
+        en: "Do I need a credit card for Free Starter?",
+        fr: "Faut-il une carte bancaire pour Free Starter ?",
+        pl: "Czy potrzebuję karty dla Free Starter?",
+      },
+      a: {
+        uk: "Ні. Free Starter безкоштовний назавжди — без пробного терміну і без автоматичного списання. Ви додаєте платіжні дані лише тоді, коли вирішите перейти на платний план.",
+        en: "No. Free Starter is free forever — no trial, no automatic charge. You only add payment details if you decide to upgrade to a paid plan.",
+        fr: "Non. Free Starter est gratuit pour toujours — sans essai ni prélèvement automatique. Vous n'ajoutez vos coordonnées de paiement que si vous passez à un forfait payant.",
+        pl: "Nie. Free Starter jest darmowy na zawsze — bez okresu próbnego i bez automatycznych opłat. Dane płatności podajesz dopiero przy przejściu na płatny plan.",
+      },
+    },
+    {
+      q: {
+        uk: "Скільки часу займає налаштування?",
+        en: "How long does setup take?",
+        fr: "Combien de temps prend la configuration ?",
+        pl: "Ile czasu zajmuje konfiguracja?",
+      },
+      a: {
+        uk: "Більшість терапевтів налаштовують профіль, послуги та публічне посилання для запису менш ніж за 10 хвилин. Не потрібно складного онбордингу: ви додаєте основні дані, встановлюєте типи сесій і ціни — і можете починати роботу. Користувачі Pro Practice можуть отримати персональну підтримку при налаштуванні, якщо вони цього бажають.",
+        en: "Most therapists set up their profile, services and public booking link in under 10 minutes. No complex onboarding required — add the basics, set session types and prices, and you're ready to go. Pro Practice users can request personal setup support if they wish.",
+        fr: "La plupart des thérapeutes configurent profil, services et lien public en moins de 10 minutes. Pas d'onboarding complexe. Les utilisateurs Pro Practice peuvent demander un accompagnement personnalisé.",
+        pl: "Większość terapeutów konfiguruje profil, usługi i publiczny link do zapisów w mniej niż 10 minut. Bez skomplikowanego onboardingu. Użytkownicy Pro Practice mogą poprosić o indywidualne wsparcie.",
+      },
+    },
+    {
+      q: {
+        uk: "Де я можу отримувати інформацію про SoloBizz, оновлення і плани розвитку?",
+        en: "Where can I get updates and roadmap info about SoloBizz?",
+        fr: "Où trouver les actualités et la feuille de route de SoloBizz ?",
+        pl: "Gdzie znajdę aktualizacje i plany rozwoju SoloBizz?",
+      },
+      a: {
+        uk: <>Ми публікуємо оновлення, новини та плани розвитку на нашій {fb("Facebook-сторінці")}. Там ви також можете залишати свої побажання, ідеї та пропозиції щодо покращення системи.</>,
+        en: <>We publish updates, news and roadmap on our {fb("Facebook page")}. You can also share ideas and suggestions there.</>,
+        fr: <>Nous publions actualités et feuille de route sur notre {fb("page Facebook")}. Vous pouvez aussi y partager vos idées.</>,
+        pl: <>Aktualizacje i plany rozwoju publikujemy na naszej {fb("stronie Facebook")}. Możesz tam też dzielić się pomysłami.</>,
+      },
+    },
+    {
+      q: {
+        uk: "Чи є відео-демо, які можна подивитися?",
+        en: "Are there video demos I can watch?",
+        fr: "Y a-t-il des démos vidéo à regarder ?",
+        pl: "Czy są dema wideo do obejrzenia?",
+      },
+      a: {
+        uk: <>Так. Ми розвиваємо {yt("YouTube-канал SoloBizz")}, де будуть відео-демо, пояснення функцій, короткі інструкції та корисна інформація про роботу з системою.</>,
+        en: <>Yes. We're growing the {yt("SoloBizz YouTube channel")} with demos, feature walkthroughs and short how-to guides.</>,
+        fr: <>Oui. Nous développons la {yt("chaîne YouTube SoloBizz")} avec démos et tutoriels.</>,
+        pl: <>Tak. Rozwijamy {yt("kanał YouTube SoloBizz")} z demami i krótkimi poradnikami.</>,
+      },
+    },
+    {
+      q: {
+        uk: "Що робити, якщо мені потрібна функція, якої ще немає в SoloBizz?",
+        en: "What if I need a feature that doesn't exist yet in SoloBizz?",
+        fr: "Et si j'ai besoin d'une fonctionnalité qui n'existe pas encore ?",
+        pl: "Co jeśli potrzebuję funkcji, której nie ma jeszcze w SoloBizz?",
+      },
+      a: <>{lang === "uk"
+        ? <>Ми уважно слухаємо потреби користувачів і формуємо список покращень на основі реальних запитів терапевтів. Якщо вам бракує певної функції, ви можете залишити побажання на {fb("Facebook-сторінці")} або надіслати запит через сайт.</>
+        : <>We listen to user needs and build our roadmap from real requests. If you're missing a feature, share it on our {fb("Facebook page")} or send a request through the site.</>
+      }</> as any,
+    },
+    {
+      q: {
+        uk: "Де я можу отримати консультацію щодо налаштування системи?",
+        en: "Where can I get help with setting up the system?",
+        fr: "Où obtenir de l'aide pour la configuration ?",
+        pl: "Gdzie mogę uzyskać pomoc przy konfiguracji?",
+      },
+      a: {
+        uk: <>Ви можете написати нам на email: {mail} або залишити повідомлення через {fb("Facebook-сторінку SoloBizz")}. Ми зв'яжемося з вами і допоможемо розібратися з налаштуванням системи.</>,
+        en: <>Write to us at {mail} or message us via the {fb("SoloBizz Facebook page")}. We'll get back to you and help with setup.</>,
+        fr: <>Écrivez-nous à {mail} ou via notre {fb("page Facebook SoloBizz")}. Nous vous aiderons avec la configuration.</>,
+        pl: <>Napisz do nas na {mail} lub przez {fb("stronę Facebook SoloBizz")}. Pomożemy z konfiguracją.</>,
+      },
+    },
   ];
+
   return (
-    <section id="faq" className="py-24 px-4 sm:px-6 bg-[hsl(40_28%_94%)]">
+    <section id="faq" className="py-24 px-4 sm:px-6 bg-secondary">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-14">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary mb-5">
             {t("faqEyebrow")}
           </p>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground tracking-tight">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-secondary-foreground tracking-tight">
             {t("faqTitle")}
           </h2>
         </div>
-        <Accordion type="single" collapsible className="divide-y divide-border/60">
-          {items.map((it, idx) => (
-            <AccordionItem key={it.q} value={`item-${idx}`} className="border-0">
-              <AccordionTrigger className="text-left text-base sm:text-lg font-semibold text-foreground py-6 hover:no-underline">
-                {t(it.q)}
-              </AccordionTrigger>
-              <AccordionContent className="text-base text-muted-foreground leading-relaxed pb-6">
-                {t(it.a)}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
+        <Accordion type="single" collapsible className="divide-y divide-secondary-foreground/10">
+          {items.map((it, idx) => {
+            const answer = (it.a as any)?.[lang] ?? (it.a as any)?.en ?? (it.a as any);
+            const question = it.q[lang] ?? it.q.en;
+            return (
+              <AccordionItem key={idx} value={`item-${idx}`} className="border-0">
+                <AccordionTrigger className="text-left text-base sm:text-lg font-semibold text-secondary-foreground py-6 hover:no-underline [&>svg]:text-secondary-foreground/70">
+                  {question}
+                </AccordionTrigger>
+                <AccordionContent className="text-base text-secondary-foreground/75 leading-relaxed pb-6 break-words">
+                  {answer}
+                </AccordionContent>
+              </AccordionItem>
+            );
+          })}
         </Accordion>
       </div>
     </section>
