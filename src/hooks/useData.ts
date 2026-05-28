@@ -2016,12 +2016,16 @@ export function useDashboardStats() {
           .select("date, is_non_working, custom_start_time, custom_end_time")
           .gte("date", monthStart)
           .lte("date", today.substring(0, 7) + "-31"),
-        // Outstanding balance: completed payable sessions not fully paid
+        // Outstanding balance: completed payable sessions not fully paid.
+        // Must include partially_paid_from_prepayment so dashboard "Total debt"
+        // matches Finance → Pending payments (useExpectedPayments uses the
+        // same status set).
         supabase.from("appointments")
           .select("id, price, client_id")
           .eq("status", "completed")
           .gt("price", 0)
-          .in("payment_status", ["unpaid", "waiting_for_payment", "partially_paid"]),
+          .in("payment_status", ["unpaid", "waiting_for_payment", "partially_paid", "partially_paid_from_prepayment"]),
+
         // For "new clients this month": first scheduled session per client
         supabase.from("appointments")
           .select("client_id, scheduled_at")

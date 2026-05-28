@@ -162,9 +162,14 @@ export default function Dashboard() {
   const completedUnpaidTotal = todayAppointments.filter(
     (apt) => apt.status === "completed" && UNPAID_STATUSES.has(apt.payment_status),
   ).length;
+  // Expected revenue today = sum of price of today's payable (non-cancelled)
+  // sessions. This represents what is expected to come in today regardless of
+  // current payment status. The detail view (today's schedule) lists exactly
+  // these sessions so totals reconcile.
   const expectedRevenueToday = todayAppointments
     .filter((apt) => apt.status !== "cancelled")
     .reduce((s, apt) => s + Number(apt.price ?? 0), 0);
+
 
 
   const todayLabel = useMemo(() => {
@@ -253,7 +258,8 @@ export default function Dashboard() {
               <div className="flex items-center gap-2 mb-4 sm:mb-5">
                 <DollarSign className="h-4 w-4 text-primary" />
                 <h3 className="text-sm font-semibold text-muted-foreground">
-                  {t("ops.todaysMoney")}
+                <MoneyTile label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} onClick={() => openWidget("expected_revenue_today", "/calendar")} />
+
                 </h3>
               </div>
               <div className="grid grid-cols-3 gap-2 sm:gap-3 flex-1">

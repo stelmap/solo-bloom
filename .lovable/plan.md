@@ -1,69 +1,69 @@
-# Calendar Visual Configuration & Booking Inbox Integration
+# Fix calculation inconsistencies between Dashboard and Finance
 
-This is a large feature touching the Calendar page heavily. I'll deliver it in one coordinated edit to `src/pages/CalendarPage.tsx` plus 2 small new files. No backend schema changes — the data already supports it (appointments, `session_booking_requests`, urgency, status).
+This is a large, cross-cutting refactor. To avoid introducing new mismatches, I'll do it in two phases: **(1) audit + create a single shared metrics layer**, then **(2) wire every page to it and add tooltips**.
 
-## What I'll build
+## Phase 1 — Single source of truth
 
-### 1. View switcher (Day / Week / Month)
-- Segmented control next to date navigation, default = Week.
-- New Month grid renderer (compact cells with per-day session count + dots by type).
-- Day view = current single-day mobile layout reused on desktop.
-- State persisted in `localStorage` (`calendar.view`).
+Create `src/lib/financeMetrics.ts` exporting pure functions that take raw rows (`appointments`, `income`, `income_session_allocations`, `expected_payments`, `clients`, `group_session_payments`) and return all 9 metrics with the **exact session/payment lists** that compose each total. Every page will read from this — no duplicated formulas.
 
-### 2. Session card visual system
-Unified `SessionCard` with:
-- Color by **primary type**: Individual = neutral gray, Group = green, Pair = purple.
-- **Status marker** strip: Rescheduled (amber), Cancelled (muted/strikethrough), Completed (check), No-show (gray-dashed), Confirmed (default).
-- **Urgent** = red left border + red dot (works on top of any type/status).
-- **New** = red "NEW" pill + red dot, auto-clears 24h after `created_at` or when the user opens the session (stored in `localStorage` as `calendar.seen:<id>`).
-- **Pending request** slots = dashed orange border, "Pending" label, blocks the slot visually.
-- Cards composable: e.g. Individual + Urgent + New all render together without conflict.
+Metric definitions (locked in):
 
-### 3. Filters bar
-Replace existing FILTER row with a richer toolbar:
-- Type chips: All / Individual / Group / Pair
-- Status dropdown: Confirmed / Pending / Rescheduled / Cancelled / Completed / No-show
-- Flag chips: Urgent only, New only
-- Client/group search input (debounced)
-- "Clear filters" button (appears when any filter active)
-- All client-side, no reload.
+| Metric | Definition |
+|---|---|
+| New clients this month | All clients with `created_at` in current month, regardless of status |
+| └ active new | Subset where `status='active'` |
+| └ ended/left new | Subset where `status` in (`archived`,`ended`,`paused`,`cancelled`) |
+| Clients without next session | `status='active'` clients with no future appointment whose status ∉ (`cancelled`,`no-show`) |
+| Unpaid sessions | All-time `completed` + payment_status ∈ (`unpaid`,`waiting_for_payment`,`partially_paid`,`partially_paid_from_prepayment`) |
+| Paid today | Sum of `income` rows with `date = today` |
+| Expected revenue today | Sum of price of today's `scheduled`/`confirmed`/`completed` sessions minus already-allocated payments (i.e. still owed for today's sessions) |
+| Today's debt | Unpaid payable sessions with `scheduled_at::date = today` (today only) |
+| Total debt | All-time unpaid payable sessions with `scheduled_at <= now` (past + today, never future) |
+| Pending payments (Finance) | Same as Total debt — single definition |
+| Expected income (future) | Sum of price of future `scheduled`/`confirmed` sessions not yet paid (strictly `scheduled_at > now`) |
 
-### 4. Calendar legend
-Collapsible legend strip below the calendar grid showing every color/marker with its label. Toggleable via settings.
+Rules applied uniformly:
+- Cancelled/no-show sessions → excluded from debt and expected income
+- Prepaid sessions (`paid_in_advance`, `paid_from_prepayment`) → counted as paid
+- Partially paid → debt = `price - sum(allocations)`, never negative
+- Group sessions → use `group_session_payments.amount` and `payment_state`
+- Never double-count a session across debt + expected income
 
-### 5. Pending request slots → Booking Inbox drawer (no separate page)
-- Clicking a pending slot opens a right-side **Sheet** (`BookingInboxPanel` reused inline) instead of navigating to `/booking-inbox`.
-- Existing top "Booking inbox: N new" banner becomes a button that opens the same drawer.
-- Drawer lists requests with Accept / Decline / Full request actions (already implemented in `BookingInboxPanel`, wired to the existing `useConfirmBookingRequest` / `useDeclineBookingRequest` hooks).
-- "Full request" expands the row inline inside the drawer (no extra modal page).
+## Phase 2 — Wire pages + add explanatory UI
 
-### 6. Weekly workload block
-Add 3 new counters next to existing Total / Booked / Free:
-- Pending requests
-- Urgent sessions (this week)
-- Rescheduled sessions (this week)
-Pending requests stay separate from Booked.
+**Dashboard.tsx**
+- Replace inline calcs in `useDashboardStats` (in `useData.ts`) with calls to `financeMetrics`
+- "New clients this month" card: show `5`, add `Tooltip` reading: `"5 клієнтів зареєстровано цього місяця. X активних, Y завершили/припинили терапію."`
+- "Clients without next session" card → link to ClientsPage with explicit filter `status=active&noFutureSession=1`
+- "Expected revenue today" card → link opens a detail modal listing today's contributing sessions with running total
+- "Today's debt" card → link opens detail listing today's unpaid sessions only (not historical)
 
-### 7. Calendar settings (gear icon)
-Existing gear already opens a settings sheet — I'll add a new "Display" section with toggles:
-- Show colors / labels / urgent / new / rescheduled markers
-- Default view (Day / Week / Month)
-- Card density (compact / comfortable / detailed)
-All stored in `localStorage` under `calendar.display.*` and applied live.
+**ClientsPage.tsx**
+- Add `noFutureSession=1` query-param filter so the dashboard link produces the matching list
+- "New clients this month" detail view: add a toggle `Active only / All` defaulting to `All`, with a label `"X активних, Y завершили"`
 
-### 8. New session highlight
-After `createAppointment` success, the new appointment id is stored in a `Set` (`localStorage` `calendar.newIds`) with timestamp; the card renders the NEW marker until opened or 24h elapsed.
+**IncomePage.tsx**
+- "Pending payments" tile = `Total debt` from shared layer (was filtering by `expected_payments` table only, which missed sessions where no expected_payment row was created)
+- "Expected income" tile = `confirmed total + future expected income` (separate from debt)
+- Add footnote under each tile explaining what's included
+
+**Dashboard detail modal / MonthlyDetailsModal.tsx**
+- For each metric, render the exact list returned by `financeMetrics` so totals always reconcile
+
+## Phase 3 — Verification
+
+- Add `src/lib/__tests__/financeMetrics.test.ts` covering: prepayment, partial payment, cancelled session, group session, today vs future boundary, archived new client
+- Manually verify on preview that every dashboard card number equals its detail list total
 
 ## Technical notes
-- New helper: `src/lib/calendarVisuals.ts` — pure functions: `typeColor(apt)`, `statusMarker(apt)`, `isUrgent(apt)`, `isNew(apt)`, `markSeen(id)`.
-- New hook: `src/hooks/useCalendarDisplay.ts` — reads/writes display prefs to localStorage, exposes `{ view, setView, density, flags, ... }`.
-- `CalendarPage.tsx`: refactored to consume the hook; new MonthView component inlined.
-- Reuses existing `BookingInboxPanel`, `useBookingRequests`, `useConfirmBookingRequest`, `useDeclineBookingRequest`.
-- No database migration needed.
 
-## Out of scope (per spec)
-- Separate Booking Inbox page (kept as redirect for now; nothing removed).
-- Telegram, payments, billing, public booking redesign.
+- No DB schema changes — pure client-side recompute
+- Existing hooks (`useAppointments`, `useIncome`, `useExpectedPayments`, `useClients`, `useGroupSessionPayments`) already fetch everything needed; `useDashboardStats` will compose them via the new shared layer instead of inline `.filter().reduce()` chains scattered across `useData.ts` (lines ~2000-2300) and `Dashboard.tsx`
+- Tooltips use existing `@/components/ui/tooltip`
+- No UI redesign — only added tooltips, footnotes, and a detail modal where missing
 
-## Acceptance checklist
-All AC1–AC10 covered by the above.
+## Scope / risk
+
+~1 new file (`financeMetrics.ts` ~300 LOC), ~1 new test file, edits to `useData.ts`, `Dashboard.tsx`, `IncomePage.tsx`, `ClientsPage.tsx`, `MonthlyDetailsModal.tsx`. Estimated 600-900 lines changed. I'll run `tsc --noEmit` and the existing vitest suite before handing back.
+
+**One question before I start:** for **"Today's debt"**, should completed sessions from **earlier today** that are unpaid count, or only sessions scheduled for today regardless of status? I'll assume **both** (any unpaid payable session whose date is today) unless you say otherwise.
