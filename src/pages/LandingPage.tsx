@@ -595,6 +595,13 @@ const C = {
     uk: "Ні. Для плану Free Starter картка не потрібна.",
     pl: "Nie. Plan Free Starter nie wymaga karty.",
   },
+  faq8Q: { en: "Do all plans include calendar and client booking?", fr: "Tous les forfaits incluent-ils le calendrier et la réservation clients ?", uk: "Чи всі плани включають календар і функцію запису клієнтів?", pl: "Czy wszystkie plany obejmują kalendarz i zapisy klientów?" },
+  faq8A: {
+    en: "Yes — every plan, including Free Starter, includes a full calendar, session scheduling and your public booking link. Clients can book directly on all plans. The only difference between plans is the number of active clients you can manage simultaneously, not the available features.",
+    fr: "Oui — chaque forfait, y compris Free Starter, inclut un calendrier complet, la planification des séances et votre lien public de réservation. Les clients peuvent réserver directement sur tous les forfaits. La seule différence entre les forfaits est le nombre de clients actifs que vous pouvez gérer simultanément, pas les fonctionnalités disponibles.",
+    uk: "Так — кожен план, включно з Free Starter, містить повний календар, планування сесій і ваше публічне посилання для запису. Клієнти можуть бронювати напряму на всіх планах. Єдина різниця між планами — кількість активних клієнтів, якими ви можете управляти одночасно, а не доступні функції.",
+    pl: "Tak — każdy plan, w tym Free Starter, zawiera pełny kalendarz, planowanie sesji i publiczny link do zapisów. Klienci mogą rezerwować bezpośrednio we wszystkich planach. Jedyna różnica między planami to liczba aktywnych klientów, którymi możesz zarządzać jednocześnie, a nie dostępne funkcje.",
+  },
 
   // Final
   finalTitle1: { en: "You can keep working in chaos.", fr: "Vous pouvez continuer dans le chaos.", uk: "Можна й далі працювати в хаосі.", pl: "Możesz dalej pracować w chaosie." },
