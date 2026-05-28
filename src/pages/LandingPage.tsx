@@ -1069,10 +1069,96 @@ function FeaturesSection() {
             </div>
           ))}
         </div>
+
+        <div className="mt-12 sm:mt-14 flex flex-col items-center gap-3 text-center">
+          <PrimaryCta
+            label={t("featCta")}
+            source="/"
+            cta="features_cta"
+            className="rounded-full px-8"
+          />
+          <p className="text-sm text-muted-foreground">{t("featCtaNote")}</p>
+        </div>
       </div>
     </section>
   );
 }
+
+// ── Switched therapists ──────────────────────────────────────────────
+
+function SwitchedSection() {
+  const { t } = useLandingLang();
+  const beforeRows = [
+    { label: t("switchedClients"), value: "?", tone: "muted" as const },
+    { label: t("switchedSessions"), value: "?", tone: "muted" as const },
+    { label: t("switchedPayments"), value: t("switchedPending"), tone: "warn" as const },
+    { label: t("switchedRevenue"), value: "—", tone: "muted" as const },
+  ];
+  const afterRows = [
+    { label: t("switchedClients"), value: "42", tone: "ok" as const },
+    { label: t("switchedSessions"), value: "18 / " + t("switchedCompleted"), tone: "ok" as const },
+    { label: t("switchedPayments"), value: t("switchedConfirmed"), tone: "ok" as const },
+    { label: t("switchedRevenue"), value: "€ 2 480", tone: "ok" as const },
+  ];
+  return (
+    <section className="py-20 px-4 sm:px-6 bg-muted/30">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <div className="text-xs sm:text-sm font-semibold uppercase tracking-[0.18em] text-primary mb-4">
+            {t("switchedEyebrow")}
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4 leading-tight">
+            {t("switchedHeadline")}
+          </h2>
+          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+            {t("switchedSub")}
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6 items-stretch">
+          {/* Before mockup */}
+          <div className="flex flex-col rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+            <div className="px-6 py-4 bg-rose-50 dark:bg-rose-950/30 border-b border-border flex items-center justify-between">
+              <span className="font-semibold text-foreground">{t("switchedBefore")}</span>
+              <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-400">
+                {t("cmpManualBadge")}
+              </span>
+            </div>
+            <div className="p-6 flex-1 space-y-3">
+              {beforeRows.map((r) => (
+                <div key={r.label} className="flex items-center justify-between py-2 border-b border-border/60 last:border-b-0">
+                  <span className="text-sm text-muted-foreground">{r.label}</span>
+                  <span className={`text-sm font-semibold ${r.tone === "warn" ? "text-rose-600 dark:text-rose-400" : "text-muted-foreground"}`}>{r.value}</span>
+                </div>
+              ))}
+              <p className="pt-3 text-sm text-muted-foreground italic">{t("switchedBeforeNote")}</p>
+            </div>
+          </div>
+
+          {/* After mockup */}
+          <div className="flex flex-col rounded-2xl border-2 border-emerald-500/40 bg-card shadow-lg shadow-emerald-500/10 overflow-hidden">
+            <div className="px-6 py-4 bg-emerald-50 dark:bg-emerald-950/30 border-b border-emerald-500/30 flex items-center justify-between">
+              <span className="font-semibold text-foreground">{t("switchedAfter")}</span>
+              <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+                {t("cmpSoloBadge")}
+              </span>
+            </div>
+            <div className="p-6 flex-1 space-y-3">
+              {afterRows.map((r) => (
+                <div key={r.label} className="flex items-center justify-between py-2 border-b border-border/60 last:border-b-0">
+                  <span className="text-sm text-muted-foreground">{r.label}</span>
+                  <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">{r.value}</span>
+                </div>
+              ))}
+              <p className="pt-3 text-sm text-foreground/80 italic">{t("switchedAfterNote")}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 
 // ── Audience ──────────────────────────────────────────────────────────
 
