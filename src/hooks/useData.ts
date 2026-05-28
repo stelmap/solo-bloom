@@ -2251,7 +2251,12 @@ export function useDashboardStats() {
 
       // ===== Clients without next scheduled session =====
       const activeClientIds = new Set((activeClientsRes.data ?? []).map((c: any) => c.id));
-      const clientsWithFutureApt = new Set((futureAptsRes.data ?? []).map((a: any) => a.client_id));
+      const clientsWithFutureApt = new Set(
+        (futureAptsRes.data ?? [])
+          .filter((a: any) => a.status !== "cancelled")
+          .map((a: any) => a.client_id)
+      );
+
       let clientsWithoutNextSession = 0;
       for (const cid of activeClientIds) {
         if (!clientsWithFutureApt.has(cid)) clientsWithoutNextSession++;
