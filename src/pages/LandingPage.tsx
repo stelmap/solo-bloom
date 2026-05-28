@@ -2005,6 +2005,7 @@ export default function LandingPage() {
           <PainSection />
           <WhatChangesSection />
           <FeaturesSection />
+          <TestimonialsSection />
           <AudienceSection />
           <PricingSection />
 
