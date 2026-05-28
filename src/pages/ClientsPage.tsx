@@ -433,30 +433,44 @@ export default function ClientsPage() {
         </div>
 
         {monthFilter && (
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-xs">
-              {monthFilter === "activeThisMonth"
-                ? t("ops.activeClientsThisMonth")
-                : monthFilter === "newThisMonth"
-                ? t("ops.newClientsThisMonth")
-                : monthFilter === "completedThisMonth"
-                ? t("ops.completedTherapyThisMonth")
-                : monthFilter === "withoutNextSession"
-                ? t("ops.clientsWithoutNextSession")
-                : t("ops.droppedTherapyThisMonth")}
-            </Badge>
-            <button
-              onClick={() => {
-                const next = new URLSearchParams(searchParams);
-                next.delete("filter");
-                setSearchParams(next);
-              }}
-              className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
-            >
-              <X className="h-3 w-3" /> {t("common.clear")}
-            </button>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs">
+                {monthFilter === "activeThisMonth"
+                  ? t("ops.activeClientsThisMonth")
+                  : monthFilter === "newThisMonth"
+                  ? t("ops.newClientsThisMonth")
+                  : monthFilter === "completedThisMonth"
+                  ? t("ops.completedTherapyThisMonth")
+                  : monthFilter === "withoutNextSession"
+                  ? t("ops.clientsWithoutNextSession")
+                  : t("ops.droppedTherapyThisMonth")}
+              </Badge>
+              <button
+                onClick={() => {
+                  const next = new URLSearchParams(searchParams);
+                  next.delete("filter");
+                  setSearchParams(next);
+                }}
+                className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
+              >
+                <X className="h-3 w-3" /> {t("common.clear")}
+              </button>
+            </div>
+            {monthFilter === "newThisMonth" && (() => {
+              const totalNew = filtered.length;
+              const activeNew = filtered.filter((c: any) => (c.status ?? "active") === "active").length;
+              const endedNew = totalNew - activeNew;
+              return (
+                <p className="text-xs text-muted-foreground">
+                  {totalNew} {t("ops.newClientsThisMonth").toLowerCase()} · {activeNew} {t("archive.tab.active").toLowerCase()}
+                  {endedNew > 0 ? ` · ${endedNew} ${t("archive.tab.archived").toLowerCase()}` : ""}
+                </p>
+              );
+            })()}
           </div>
         )}
+
 
         {isLoading ? (
           <ListSkeleton variant="cards" count={6} />
