@@ -772,10 +772,10 @@ function HeroSection() {
 
 function StatsSection() {
   const { t } = useLandingLang();
+  const stats = [
+    { num: "300+", label: t("statsTherapists") },
     { num: t("statsTimeNum"), label: t("statsTime") },
     { num: t("statsSetupNum"), label: t("statsSetup") },
-    { num: "4–8 год", label: t("statsTime") },
-    { num: "15 хв", label: t("statsSetup") },
   ];
   return (
     <section className="bg-secondary text-secondary-foreground px-4 sm:px-6 pt-14 pb-10 sm:pt-16 sm:pb-12">
