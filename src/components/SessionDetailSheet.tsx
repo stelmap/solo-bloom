@@ -164,7 +164,19 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const prepaymentCovers = Math.min(Number(clientCredit), sessionPrice);
   const prepaymentRemainingAfter = Math.max(0, Number(clientCredit) - sessionPrice);
 
+  // Income already allocated to THIS session (e.g. prepaid in advance for this slot).
+  const alreadyAllocated = (existingAllocations ?? []).reduce(
+    (s: number, r: any) => s + Number(r.allocated_amount || 0), 0
+  );
+  const fullyPreallocated = sessionPrice > 0 && alreadyAllocated + 0.001 >= sessionPrice;
+  const partiallyPreallocated = !fullyPreallocated && alreadyAllocated > 0.001;
+
   const PAYMENT_STATUSES = [
+    ...(fullyPreallocated && !isGroupSession ? [{
+      value: "already_paid",
+      label: t("payment.alreadyPaid"),
+      description: t("payment.alreadyPaidDesc", { symbol: cs, amount: alreadyAllocated.toFixed(2) }),
+    }] : []),
     ...(hasPrepayment && !isGroupSession ? [{
       value: "paid_from_prepayment",
       label: t("payment.paidFromPrepayment"),
@@ -176,6 +188,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     { value: "paid_in_advance", label: t("payment.paidInAdvance"), description: t("payment.paidInAdvanceDesc") },
     { value: "waiting_for_payment", label: t("payment.waitingForPayment"), description: t("payment.waitingForPaymentDesc") },
   ];
+
 
   const PAYMENT_STATUS_STYLES: Record<string, { label: string; color: string }> = {
     unpaid: { label: t("payment.unpaid"), color: "text-destructive" },
