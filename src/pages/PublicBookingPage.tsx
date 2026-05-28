@@ -381,6 +381,20 @@ export default function PublicBookingPage() {
   return (
     <div className="min-h-screen bg-muted/30 py-8 px-4">
       <div className="max-w-2xl mx-auto space-y-6">
+        <div className="flex justify-end">
+          <Select value={lang} onValueChange={(v) => changeLang(v as Lang)}>
+            <SelectTrigger className="h-8 w-auto gap-2 text-xs">
+              <Globe className="h-3.5 w-3.5" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectItem value="en">English</SelectItem>
+              <SelectItem value="uk">Українська</SelectItem>
+              <SelectItem value="fr">Français</SelectItem>
+              <SelectItem value="pl">Polski</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <header className="text-center space-y-3">
           {info.show_practice_profile !== false && (info.avatar_url || info.business_name || info.business_address || info.practice_email) && (
             <div className="flex flex-col items-center gap-3 pb-2">
