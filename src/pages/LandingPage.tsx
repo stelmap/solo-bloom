@@ -816,18 +816,18 @@ function HeroSection() {
   return (
     <section className="pt-16 pb-6 sm:pt-20 sm:pb-8 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
           <Sparkles className="h-3.5 w-3.5" />
           {t("heroBadge")}
         </div>
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground tracking-tight leading-[1.1] mb-6 max-w-5xl mx-auto">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight leading-[1.1] mb-4 max-w-5xl mx-auto">
           <span className="block">{t("heroTitlePrefix")}</span>
           <span className="block text-primary mt-1">{t("heroTitleAccent")}</span>
         </h1>
-        <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed">
+        <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto mb-6 leading-relaxed">
           {t("heroSub")}
         </p>
-        <div className="flex flex-col items-center gap-5">
+        <div className="flex flex-col items-center gap-3">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <PrimaryCta label={t("heroCta")} source="/" cta="hero" className="text-base px-8 h-12" />
             <a
