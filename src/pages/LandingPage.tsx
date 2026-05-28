@@ -1451,20 +1451,20 @@ function FaqSection() {
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary mb-5">
             {t("faqEyebrow")}
           </p>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-secondary-foreground tracking-tight">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground tracking-tight">
             {t("faqTitle")}
           </h2>
         </div>
-        <Accordion type="single" collapsible className="divide-y divide-secondary-foreground/10">
+        <Accordion type="single" collapsible className="divide-y divide-foreground/10">
           {items.map((it, idx) => {
             const answer = (it.a as any)?.[lang] ?? (it.a as any)?.en ?? (it.a as any);
             const question = it.q[lang] ?? it.q.en;
             return (
               <AccordionItem key={idx} value={`item-${idx}`} className="border-0">
-                <AccordionTrigger className="text-left text-base sm:text-lg font-semibold text-secondary-foreground py-6 hover:no-underline [&>svg]:text-secondary-foreground/70">
+                <AccordionTrigger className="text-left text-base sm:text-lg font-semibold text-foreground py-6 hover:no-underline [&>svg]:text-foreground/70">
                   {question}
                 </AccordionTrigger>
-                <AccordionContent className="text-base text-secondary-foreground/75 leading-relaxed pb-6 break-words">
+                <AccordionContent className="text-base text-foreground/75 leading-relaxed pb-6 break-words">
                   {answer}
                 </AccordionContent>
               </AccordionItem>
