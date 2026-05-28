@@ -505,19 +505,22 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       if (status === "cancelled" || status === "no-show") {
         await cancelAppointment.mutateAsync({
           id: apt.id, status,
-          clientId: waiveFee ? undefined : apt.client_id,
-          price: waiveFee ? 0 : Number(apt.price),
+          clientId: apt.client_id,
+          price: Number(apt.price),
+          chargeFee: !waiveFee,
         });
       } else {
         await updateAppointment.mutateAsync({ id: apt.id, status });
       }
       toast({ title: t("toast.statusUpdated", { status: STATUSES[status]?.label || status }) });
       setNoShowOpen(false);
+      setCancelOpen(false);
       onOpenChange(false);
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
   };
+
 
   const handleDelete = async () => {
     try {
