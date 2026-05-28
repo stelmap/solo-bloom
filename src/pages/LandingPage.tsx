@@ -704,21 +704,6 @@ function PrimaryCta({
   );
 }
 
-function VideoCta({ label, source, className = "" }: { label: string; source: string; className?: string }) {
-  const { lang } = useLandingLang();
-  return (
-    <a
-      href={YOUTUBE_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={() => track("cta_clicked", { source_page: source, cta: "watch_video", lang })}
-    >
-      <Button size="lg" variant="outline" className={`gap-2 ${className}`}>
-        <Play className="h-4 w-4" /> {label}
-      </Button>
-    </a>
-  );
-}
 
 // ── Nav ───────────────────────────────────────────────────────────────
 
