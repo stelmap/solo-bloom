@@ -127,6 +127,9 @@ export default {
   "prepayment.sessionPartiallyCovered": "Ta sesja jest częściowo pokryta przedpłatą ({symbol}{covered}). Pozostaje: {symbol}{remaining}",
   "prepayment.willMarkAlreadyPaid": "Zostanie oznaczona jako opłacona z istniejącej przedpłaty ({symbol}{amount})",
   "prepayment.lockedNote": "Płatność za tę sesję została już wcześniej otrzymana jako przedpłata. Zostanie odliczona z salda przedpłaty — nowa płatność nie jest tworzona.",
+  "prepayment.insufficientWarning": "Saldo przedpłaty nie wystarcza, aby pokryć tę sesję.",
+  "prepayment.insufficientDetails": "Dostępne saldo: {symbol}{balance} · Cena sesji: {symbol}{price}. Wybierz inny status płatności.",
+
   "payment.alreadyPaid": "Już opłacona (przedpłata)",
   "payment.alreadyPaidDesc": "Ta sesja ma już przypisane {symbol}{amount} z wcześniejszej przedpłaty",
   "toast.sessionAlreadyPaid": "Sesja zakończona — pokryta przedpłatą ({symbol}{amount})",

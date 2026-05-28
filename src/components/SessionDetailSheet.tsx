@@ -194,17 +194,19 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
             },
       ]
     : [
-        ...(hasPrepayment && !isGroupSession ? [{
+        ...(hasPrepayment && !isGroupSession && prepaymentCovers >= sessionPrice - 0.001 ? [{
           value: "paid_from_prepayment",
           label: t("payment.paidFromPrepayment"),
-          description: prepaymentCovers >= sessionPrice
-            ? t("payment.paidFromPrepaymentDesc", { symbol: cs, amount: prepaymentRemainingAfter.toFixed(2) })
-            : t("payment.paidFromPrepaymentPartialDesc", { symbol: cs, covered: prepaymentCovers.toFixed(2), remaining: (sessionPrice - prepaymentCovers).toFixed(2) }),
+          description: t("payment.paidFromPrepaymentDesc", { symbol: cs, amount: prepaymentRemainingAfter.toFixed(2) }),
         }] : []),
         { value: "paid_now", label: t("payment.paidNow"), description: t("payment.paidNowDesc") },
         { value: "paid_in_advance", label: t("payment.paidInAdvance"), description: t("payment.paidInAdvanceDesc") },
         { value: "waiting_for_payment", label: t("payment.waitingForPayment"), description: t("payment.waitingForPaymentDesc") },
       ];
+
+  const prepaymentInsufficient =
+    hasPrepayment && !isGroupSession && !fullyCoveredByPrepayment && prepaymentCovers < sessionPrice - 0.001;
+
 
 
   const PAYMENT_STATUS_STYLES: Record<string, { label: string; color: string }> = {
@@ -422,10 +424,11 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     setPaymentStatus(
       fullyPreallocated && !isGroupSession
         ? "already_paid"
-        : hasPrepayment && !isGroupSession
+        : hasPrepayment && !isGroupSession && Number(clientCredit) >= p - 0.001
           ? "paid_from_prepayment"
           : "paid_now"
     );
+
 
     setGroupPaymentState("paid_now");
     setGroupPaymentMethod("cash");
@@ -981,7 +984,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
               )}
 
               {/* Prepayment banner (unused client credit) */}
-              {hasPrepayment && (
+              {hasPrepayment && !prepaymentInsufficient && (
                 <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
                   <p className="font-medium text-foreground">
                     {t("prepayment.clientHasCredit", { symbol: cs, amount: Number(clientCredit).toFixed(2) })}
@@ -993,6 +996,23 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   </p>
                 </div>
               )}
+
+              {/* Insufficient prepayment warning */}
+              {prepaymentInsufficient && (
+                <div className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
+                  <p className="font-medium text-foreground">
+                    {t("prepayment.insufficientWarning")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("prepayment.insufficientDetails", {
+                      symbol: cs,
+                      balance: Number(clientCredit).toFixed(2),
+                      price: sessionPrice.toFixed(2),
+                    })}
+                  </p>
+                </div>
+              )}
+
 
 
               {/* Notes before completing */}
@@ -1088,10 +1108,9 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                       : paymentStatus === "waiting_for_payment"
                       ? t("calendar.willBeExpected", { symbol: cs, amount: sessionPrice.toFixed(2) })
                       : paymentStatus === "paid_from_prepayment"
-                      ? (prepaymentCovers >= sessionPrice
-                          ? t("prepayment.willDeduct", { symbol: cs, amount: sessionPrice.toFixed(2), remaining: prepaymentRemainingAfter.toFixed(2) })
-                          : t("prepayment.willPartiallyDeduct", { symbol: cs, covered: prepaymentCovers.toFixed(2), remaining: (sessionPrice - prepaymentCovers).toFixed(2) }))
+                      ? t("prepayment.willDeduct", { symbol: cs, amount: sessionPrice.toFixed(2), remaining: prepaymentRemainingAfter.toFixed(2) })
                       : t("calendar.willBeIncome", { symbol: cs, amount: amountPaid.toFixed(2) })}
+
                   </p>
 
                 </div>
