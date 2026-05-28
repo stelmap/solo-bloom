@@ -532,13 +532,13 @@ function PracticeHealth({ stats, t, cs }: { stats: any; t: (k: any, p?: any) => 
 
 function HealthTile({ icon: Icon, label, value, sub }: { icon: any; label: string; value: string; sub?: string }) {
   return (
-    <div className="bg-card border border-border rounded-[18px] p-5 shadow-card flex flex-col items-center text-center min-h-[140px] justify-center">
-      <div className="p-2 rounded-lg bg-muted text-muted-foreground mb-3">
-        <Icon className="h-4 w-4" />
+    <div className="bg-card border border-border rounded-[18px] p-3 sm:p-5 shadow-card flex flex-col items-center text-center min-h-[120px] sm:min-h-[140px] justify-center overflow-hidden min-w-0">
+      <div className="p-1.5 sm:p-2 rounded-lg bg-muted text-muted-foreground mb-2 sm:mb-3">
+        <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
       </div>
-      <p className="text-3xl font-bold leading-none tabular-nums text-foreground">{value}</p>
-      <p className="text-xs text-muted-foreground mt-2 leading-snug">{label}</p>
-      {sub && <p className="text-[10px] text-muted-foreground/70 mt-1 leading-snug">{sub}</p>}
+      <p className="text-2xl sm:text-3xl font-bold leading-none tabular-nums text-foreground break-all">{value}</p>
+      <p className="text-[10px] sm:text-xs text-muted-foreground mt-2 leading-snug break-words">{label}</p>
+      {sub && <p className="text-[10px] text-muted-foreground/70 mt-1 leading-snug break-words">{sub}</p>}
     </div>
   );
 }
