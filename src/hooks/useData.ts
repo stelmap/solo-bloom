@@ -957,7 +957,8 @@ export function useMarkExpectedPaymentPaid() {
         // Fetch the payment row so we know the linked appointment / amount.
         const { data: gsp, error: gspErr } = await supabase
           .from("group_session_payments")
-          .select("id, appointment_id:group_session_id, amount, client_id, expected_payment_id, group_sessions(appointment_id, appointments(scheduled_at))")
+          .select("id, amount, client_id, expected_payment_id, group_sessions(appointment_id, appointments(scheduled_at))")
+
           .eq("id", groupSessionPaymentId)
           .single();
         if (gspErr) throw gspErr;
