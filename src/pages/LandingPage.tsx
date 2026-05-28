@@ -368,18 +368,30 @@ const C = {
   soloF5: { en: "Cancel anytime", fr: "Annulation à tout moment", uk: "Скасування будь-коли", pl: "Anulowanie w dowolnej chwili" },
   soloCta: { en: "Choose Solo Practice", fr: "Choisir Solo Practice", uk: "Обрати Solo Practice", pl: "Wybierz Solo Practice" },
   soloBadge: {
-    en: "Best for private practice",
-    fr: "Idéal pour la pratique privée",
-    uk: "Найкраще для приватної практики",
-    pl: "Najlepsze dla prywatnej praktyki",
+    en: "Best for practice",
+    fr: "Idéal pour la pratique",
+    uk: "Найкраще для практики",
+    pl: "Najlepsze dla praktyki",
+  },
+  soloPill: {
+    en: "Larger active client limit",
+    fr: "Limite de clients actifs plus élevée",
+    uk: "Більший ліміт активних клієнтів",
+    pl: "Większy limit aktywnych klientów",
+  },
+  soloMicro: {
+    en: "Billed monthly. Cancel anytime.",
+    fr: "Facturé mensuellement. Annulez à tout moment.",
+    uk: "Оплата щомісяця. Скасування будь-коли.",
+    pl: "Rozliczane miesięcznie. Anulujesz w każdej chwili.",
   },
 
   proName: { en: "Pro Practice", fr: "Pro Practice", uk: "Pro Practice", pl: "Pro Practice" },
   proDesc: {
-    en: "Advanced practice management — more active clients, group sessions, supervision and full financial control.",
-    fr: "Gestion avancée — plus de clients actifs, séances de groupe, supervision et contrôle financier complet.",
-    uk: "Розширене керування практикою — більше активних клієнтів, групові сесії, супервізія і повний фінансовий контроль.",
-    pl: "Zaawansowane zarządzanie praktyką — więcej aktywnych klientów, sesje grupowe, superwizja i pełna kontrola finansów.",
+    en: "For a large client base and priority support.",
+    fr: "Pour une grande base de clients et un support prioritaire.",
+    uk: "Для великої бази клієнтів і пріоритетної підтримки.",
+    pl: "Dla dużej bazy klientów i wsparcia priorytetowego.",
   },
   proIntro: {
     en: "All SoloBizz features included.",
@@ -387,17 +399,35 @@ const C = {
     uk: "Усі функції SoloBizz включені.",
     pl: "Wszystkie funkcje SoloBizz w komplecie.",
   },
-  proF1: { en: "Unlimited active clients", fr: "Clients actifs illimités", uk: "Без ліміту активних клієнтів", pl: "Bez limitu aktywnych klientów" },
-  proF2: { en: "Everything in Solo Practice", fr: "Tout du Solo Practice", uk: "Усе з Solo Practice", pl: "Wszystko z Solo Practice" },
+  proF1: { en: "Everything in Solo Practice", fr: "Tout du Solo Practice", uk: "Усе з Solo Practice", pl: "Wszystko z Solo Practice" },
+  proF2: { en: "Unlimited active clients", fr: "Clients actifs illimités", uk: "Необмежена кількість клієнтів", pl: "Nieograniczona liczba klientów" },
   proF3: { en: "Priority support", fr: "Support prioritaire", uk: "Пріоритетна підтримка", pl: "Wsparcie priorytetowe" },
-  proF4: { en: "Custom onboarding consultations", fr: "Consultations d'onboarding personnalisées", uk: "Індивідуальні консультації з налаштування", pl: "Indywidualne konsultacje wdrożeniowe" },
-  proF5: { en: "For scaling practices & teams", fr: "Pour les pratiques et équipes en croissance", uk: "Для практик і команд, що масштабуються", pl: "Dla skalujących się praktyk i zespołów" },
+  proF4: { en: "Personal onboarding consultation", fr: "Consultation d'onboarding personnelle", uk: "Персональна консультація з налаштування", pl: "Osobista konsultacja wdrożeniowa" },
+  proF5: { en: "All features included", fr: "Toutes les fonctionnalités incluses", uk: "Всі функції включені", pl: "Wszystkie funkcje w komplecie" },
   proCta: { en: "Choose Pro Practice", fr: "Choisir Pro Practice", uk: "Обрати Pro Practice", pl: "Wybierz Pro Practice" },
   proBadge: {
-    en: "For a scaling practice",
+    en: "For a growing practice",
     fr: "Pour une pratique en croissance",
-    uk: "Для практики, що масштабується",
-    pl: "Dla skalującej się praktyki",
+    uk: "Для практики, що росте",
+    pl: "Dla rosnącej praktyki",
+  },
+  proPill: {
+    en: "Unlimited clients",
+    fr: "Clients illimités",
+    uk: "Необмежена кількість клієнтів",
+    pl: "Nieograniczona liczba klientów",
+  },
+  pricingFooter1: {
+    en: "Choose a plan based on the number of active clients — not on missing features.",
+    fr: "Choisissez un forfait en fonction du nombre de clients actifs — pas des fonctionnalités manquantes.",
+    uk: "Оберіть план за кількістю активних клієнтів — а не за відсутніми функціями.",
+    pl: "Wybierz plan na podstawie liczby aktywnych klientów — a nie brakujących funkcji.",
+  },
+  pricingFooter2: {
+    en: "SoloBizz gives every therapist a complete practice management system from the very first session.",
+    fr: "SoloBizz offre à chaque thérapeute un système complet de gestion de pratique dès la première séance.",
+    uk: "SoloBizz дає кожному терапевту повну систему управління практикою з першої сесії.",
+    pl: "SoloBizz daje każdemu terapeucie kompletny system zarządzania praktyką już od pierwszej sesji.",
   },
 
   // Inline pricing FAQ
@@ -998,52 +1028,82 @@ function fmtEuro(n: number): string {
   return Number.isInteger(n) ? `€${n}` : `€${n.toFixed(2)}`;
 }
 
+type SimplePlan = {
+  id: "free" | "solo" | "pro";
+  name: string;
+  desc: string;
+  price: string;
+  priceMicro: string;
+  priceMicroAccent?: boolean;
+  priceSubMicro?: string;
+  pill: string;
+  bullets: string[];
+  cta: string;
+  ctaHref: string;
+  ctaTracking: string;
+  badge?: string;
+  badgeColor?: "primary" | "emerald";
+  highlighted?: boolean;
+  variant: "filled" | "outline";
+};
+
 function PricingSection() {
   const { t, lang } = useLandingLang();
-  const [cycle, setCycle] = useState<Cycle>("monthly");
 
-  const plans: PlanRow[] = [
+  const plans: SimplePlan[] = [
+    {
+      id: "free",
+      name: t("freeName"),
+      desc: t("freeDesc"),
+      price: "€0",
+      priceMicro: t("freeBadgeForever"),
+      priceMicroAccent: true,
+      priceSubMicro: t("freeMicro"),
+      pill: t("freeF1"),
+      bullets: [t("freeF2"), t("freeF3"), t("freeF4"), t("freeF5")],
+      cta: t("freeCta"),
+      ctaHref: "/auth?mode=signup",
+      ctaTracking: "free_starter_selected",
+      variant: "outline",
+    },
     {
       id: "solo",
       name: t("soloName"),
       desc: t("soloDesc"),
-      intro: t("soloIntro"),
-      bullets: [t("soloF1"), t("soloF2"), t("soloF3"), t("soloF4"), t("soloF5")],
+      price: "€12",
+      priceMicro: t("soloMicro"),
+      pill: t("soloPill"),
+      bullets: [t("soloF2"), t("soloF3"), t("soloF4"), t("soloF5")],
       cta: t("soloCta"),
+      ctaHref: "/auth?plan=solo_monthly",
+      ctaTracking: "upgrade_plan_selected",
       badge: t("soloBadge"),
+      badgeColor: "primary",
       highlighted: true,
-      monthly: 5,
-      quarterly: 12,
-      yearly: 36,
+      variant: "filled",
     },
     {
       id: "pro",
       name: t("proName"),
       desc: t("proDesc"),
-      intro: t("proIntro"),
+      price: "€24",
+      priceMicro: t("soloMicro"),
+      pill: t("proPill"),
       bullets: [t("proF1"), t("proF2"), t("proF3"), t("proF4"), t("proF5")],
       cta: t("proCta"),
+      ctaHref: "/auth?plan=pro_monthly",
+      ctaTracking: "upgrade_plan_selected",
       badge: t("proBadge"),
-      monthly: 19,
-      quarterly: 45.6,
-      yearly: 136.8,
+      badgeColor: "emerald",
+      variant: "outline",
     },
   ];
 
-  const tabs: { id: Cycle; label: string; badge?: string }[] = [
-    { id: "monthly", label: t("monthly") },
-    { id: "quarterly", label: t("quarterly"), badge: t("save20") },
-    { id: "yearly", label: t("yearly"), badge: t("save40") },
-  ];
-
-  const billedLabel = cycle === "monthly" ? t("billedMo") : cycle === "quarterly" ? t("billedQ") : t("billedY");
-  const periodSuffix = cycle === "monthly" ? t("perMonth") : cycle === "quarterly" ? t("perQuarter") : t("perYear");
-
   return (
-    <BillingCycleContext.Provider value={cycle}>
+    <BillingCycleContext.Provider value="monthly">
     <section id="pricing" className="py-20 px-4 sm:px-6 bg-muted/40">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-8">
+        <div className="text-center mb-12">
           <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-4">{t("pricingEyebrow")}</p>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">{t("pricingTitle")}</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("pricingSub")}</p>
@@ -1053,97 +1113,97 @@ function PricingSection() {
           </div>
         </div>
 
-        <div className="max-w-4xl mx-auto mb-10 rounded-2xl border border-amber-200 bg-amber-50/60 p-5 sm:p-6 flex items-start gap-3">
-          <div className="h-6 w-6 rounded-full bg-amber-500/15 flex items-center justify-center shrink-0 mt-0.5">
-            <AlertCircle className="h-4 w-4 text-amber-600" />
-          </div>
-          <p className="text-base text-foreground/90 leading-relaxed text-left">
-            <span className="font-semibold">{({ en: "Compared to alternatives:", fr: "Par rapport aux alternatives :", uk: "Порівняно з аналогами:", pl: "W porównaniu z alternatywami:" } as Record<string, string>)[lang] || "Compared to alternatives:"}</span>{" "}
-            {t("pricingCompare").replace(/^[^:]+:\s*/, "")}
-          </p>
-        </div>
+        <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-stretch pt-4">
+          {plans.map((p) => {
+            const isFilled = p.variant === "filled";
+            const isPrimaryBadge = p.badgeColor === "primary";
+            return (
+              <div
+                key={p.id}
+                className={`relative p-8 rounded-2xl bg-card flex flex-col ${
+                  p.highlighted ? "border-2 border-primary shadow-xl" : "border border-border"
+                }`}
+              >
+                {p.badge && (
+                  <span
+                    className={`absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap ${
+                      isPrimaryBadge
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-emerald-500 text-white"
+                    }`}
+                  >
+                    {p.badge}
+                  </span>
+                )}
 
+                <h3 className="text-2xl font-semibold text-foreground">{p.name}</h3>
+                <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed min-h-[3rem]">{p.desc}</p>
 
-        <div className="flex justify-center mb-10">
-          <div className="inline-flex items-center gap-1 p-1 rounded-full bg-card border border-border">
-            {tabs.map((tab) => {
-              const active = cycle === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setCycle(tab.id);
-                    track("pricing_cycle_changed", { billing_cycle: tab.id });
-                  }}
-                  className={`relative px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                <div className="flex items-baseline gap-1 mb-2">
+                  <span className="text-5xl font-bold text-foreground">{p.price}</span>
+                  <span className="text-muted-foreground text-base">{t("perMonth")}</span>
+                </div>
+
+                <p
+                  className={`text-sm mb-1 ${
+                    p.priceMicroAccent ? "font-semibold text-primary" : "text-muted-foreground"
                   }`}
                 >
-                  {tab.label}
-                  {tab.badge && (
-                    <span className={`ml-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-                      active ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary"
-                    }`}>
-                      {tab.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                  {p.priceMicro}
+                </p>
+                <p className="text-xs text-muted-foreground mb-5 min-h-[1rem]">
+                  {p.priceSubMicro || "\u00A0"}
+                </p>
+
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-muted/60 border border-border mb-6">
+                  <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="text-sm font-medium text-foreground">{p.pill}</span>
+                </div>
+
+                <ul className="space-y-3 mb-8 flex-1">
+                  {p.bullets.map((f) => (
+                    <li key={f} className="flex items-start gap-3 text-foreground">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                      <span className="text-sm">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Link
+                  to={p.ctaHref}
+                  onClick={() =>
+                    track("cta_clicked", {
+                      source_page: `/#pricing-${p.id}`,
+                      cta: p.ctaTracking,
+                      plan_type: p.id,
+                      billing_cycle: "monthly",
+                      lang,
+                    })
+                  }
+                  className="block mt-auto"
+                >
+                  <Button
+                    className="w-full h-12 text-base"
+                    variant={isFilled ? "default" : "outline"}
+                  >
+                    {p.cta}
+                  </Button>
+                </Link>
+              </div>
+            );
+          })}
         </div>
 
-
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
-          {/* Free Starter card */}
-          <div className="relative p-7 rounded-2xl bg-card border-2 border-border flex flex-col">
-            <h3 className="text-xl font-semibold text-foreground">{t("freeName")}</h3>
-            <p className="text-sm text-muted-foreground mt-1 mb-5">{t("freeDesc")}</p>
-            <div className="flex items-baseline gap-1 mb-1">
-              <span className="text-4xl font-bold text-foreground">€0</span>
-              <span className="text-muted-foreground text-base">{t("perMonth")}</span>
-            </div>
-            <p className="text-xs font-semibold text-primary mb-1">{t("freeBadgeForever")}</p>
-            <p className="text-xs text-muted-foreground mb-6">{t("freeMicro")}</p>
-            <ul className="space-y-2.5 mb-7 flex-1">
-              {[t("freeF1"), t("freeF2"), t("freeF3"), t("freeF4"), t("freeF5")].map((f) => (
-                <li key={f} className="flex items-start gap-3 text-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                  <span className="text-sm">{f}</span>
-                </li>
-              ))}
-            </ul>
-            <Link
-              to="/auth?mode=signup"
-              onClick={() =>
-                track("cta_clicked", { source_page: `/#pricing-${cycle}-free`, cta: "free_starter_selected", plan_type: "free_starter", billing_cycle: cycle })
-              }
-              className="block mt-auto"
-            >
-              <Button className="w-full h-11 gap-2 bg-foreground text-background hover:bg-foreground/90 focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2">
-                {t("freeCta")} <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-
-          {plans.map((p) => (
-            <PlanCard
-              key={p.id}
-              plan={p}
-              cycle={cycle}
-              billedLabel={billedLabel}
-              periodSuffix={periodSuffix}
-            />
-          ))}
+        <div className="mt-12 text-center max-w-3xl mx-auto space-y-2">
+          <p className="text-base text-muted-foreground">{t("pricingFooter1")}</p>
+          <p className="text-base font-semibold text-foreground">{t("pricingFooter2")}</p>
         </div>
 
-        {/* Short privacy reassurance close to plan CTAs */}
-        <p className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+        <p className="mt-8 flex items-center justify-center gap-2 text-xs text-muted-foreground">
           <ShieldCheck className="h-3.5 w-3.5 text-primary" />
           {t("privacyShort")}
         </p>
 
-        {/* Inline pricing FAQ */}
         <div className="mt-12 max-w-3xl mx-auto">
           <Accordion type="single" collapsible className="rounded-2xl border border-border bg-card divide-y divide-border">
             {[
@@ -1170,73 +1230,6 @@ function PricingSection() {
       </div>
     </section>
     </BillingCycleContext.Provider>
-  );
-}
-
-function PlanCard({
-  plan, cycle, billedLabel, periodSuffix,
-}: {
-  plan: PlanRow;
-  cycle: Cycle;
-  billedLabel: string;
-  periodSuffix: string;
-}) {
-  const { lang, t } = useLandingLang();
-  const amount = cycle === "monthly" ? plan.monthly : cycle === "quarterly" ? plan.quarterly : plan.yearly;
-  const equiv = cycle === "monthly"
-    ? null
-    : cycle === "quarterly"
-      ? plan.quarterly / 3
-      : plan.yearly / 12;
-  const equivStr = equiv ? t("equivalentTo").replace("{price}", fmtEuro(Number(equiv.toFixed(2)))) : null;
-  const popular = plan.highlighted;
-  return (
-    <div className={`relative p-7 rounded-2xl bg-card border-2 flex flex-col ${
-      popular ? "border-primary shadow-lg" : "border-border"
-    }`}>
-      {plan.badge && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold whitespace-nowrap">
-          {plan.badge}
-        </span>
-      )}
-      <h3 className="text-xl font-semibold text-foreground">{plan.name}</h3>
-      <p className="text-sm text-muted-foreground mt-1 mb-5">{plan.desc}</p>
-      <div className="flex items-baseline gap-1 mb-1">
-        <span className="text-4xl font-bold text-foreground">{fmtEuro(amount)}</span>
-        <span className="text-muted-foreground text-base">{periodSuffix}</span>
-      </div>
-      <p className="text-xs text-muted-foreground mb-1">{billedLabel}</p>
-      {equivStr && <p className="text-xs text-primary font-medium mb-5">{equivStr}</p>}
-      {!equivStr && <div className="mb-5" />}
-      {plan.intro && (
-        <p className="text-sm font-semibold text-foreground mb-3">{plan.intro}</p>
-      )}
-      <ul className="space-y-2.5 mb-7 flex-1">
-        {plan.bullets.map((f) => (
-          <li key={f} className="flex items-start gap-3 text-foreground">
-            <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-            <span className="text-sm">{f}</span>
-          </li>
-        ))}
-      </ul>
-      <Link
-        to={`/auth?plan=${plan.id}_${cycle}`}
-        onClick={() =>
-          track("cta_clicked", {
-            source_page: `/#pricing-${cycle}-${plan.id}`,
-            cta: "upgrade_plan_selected",
-            plan_type: plan.id,
-            billing_cycle: cycle,
-            lang,
-          })
-        }
-        className="block mt-auto"
-      >
-        <Button className="w-full h-11 gap-2" variant={popular ? "default" : "outline"}>
-          {plan.cta} <ArrowRight className="h-4 w-4" />
-        </Button>
-      </Link>
-    </div>
   );
 }
 
