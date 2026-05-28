@@ -730,7 +730,7 @@ function HeroSection() {
   const { t } = useLandingLang();
   const accent = t("heroTitleAccent");
   return (
-    <section className="pt-40 pb-28 sm:pt-44 sm:pb-32 px-4 sm:px-6">
+    <section className="pt-28 pb-10 sm:pt-32 sm:pb-16 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-10 leading-normal">
           <Sparkles className="h-3.5 w-3.5 shrink-0" />
