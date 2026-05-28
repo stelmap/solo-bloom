@@ -515,10 +515,24 @@ export function useCompleteAppointment() {
         ? new Date(aptData.scheduled_at).toISOString().split("T")[0]
         : undefined;
 
+      // "already_paid" — the session was pre-allocated to existing income
+      // (prepayment for this specific session). Just mark it completed and
+      // recalc payment_status from the existing allocations. Do NOT wipe.
+      if (paymentStatus === "already_paid") {
+        const { error: aptErr } = await supabase
+          .from("appointments")
+          .update({ status: "completed", price: Number(price) } as any)
+          .eq("id", appointmentId);
+        if (aptErr) throw aptErr;
+        await (supabase as any).rpc("recalc_appointment_payment_status", { p_appointment_id: appointmentId });
+        return;
+      }
+
       // Clean up any prior records for THIS appointment.
       await supabase.from("income_session_allocations").delete().eq("appointment_id", appointmentId);
       await supabase.from("income").delete().eq("appointment_id", appointmentId);
       await supabase.from("expected_payments").delete().eq("appointment_id", appointmentId);
+
 
       const today = new Date().toISOString().split("T")[0];
       const payDate = paymentDate || today;
