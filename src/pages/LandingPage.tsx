@@ -884,7 +884,7 @@ function PainSection() {
   const { t } = useLandingLang();
   const items: CopyKey[] = ["pain1", "pain2", "pain3", "pain4", "pain5"];
   return (
-    <section className="pt-8 pb-20 px-4 sm:px-6 bg-secondary">
+    <section className="pt-16 pb-20 px-4 sm:px-6 bg-secondary">
       <div className="max-w-3xl mx-auto">
         <h2 className="text-3xl sm:text-4xl font-bold text-secondary-foreground text-center mb-10">
           {t("painTitle")}
