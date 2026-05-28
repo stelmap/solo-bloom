@@ -1007,28 +1007,38 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>{t("calendar.finalPrice")}</Label>
-                <Input type="number" step="0.01" value={completePrice} onChange={e => {
-                  const v = parseFloat(e.target.value) || 0;
-                  setCompletePrice(v);
-                }} />
-              </div>
+              {!fullyCoveredByPrepayment && (
+                <div className="space-y-2">
+                  <Label>{t("calendar.finalPrice")}</Label>
+                  <Input type="number" step="0.01" value={completePrice} onChange={e => {
+                    const v = parseFloat(e.target.value) || 0;
+                    setCompletePrice(v);
+                  }} />
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label>{t("calendar.paymentStatus")}</Label>
                 <div className="space-y-2">
                   {PAYMENT_STATUSES.map(ps => (
                     <button key={ps.value} onClick={() => setPaymentStatus(ps.value)}
+                      disabled={fullyCoveredByPrepayment}
                       className={cn("w-full text-left p-3 rounded-lg border transition-colors",
-                        paymentStatus === ps.value ? "bg-primary/10 border-primary" : "bg-card border-border hover:bg-muted"
+                        paymentStatus === ps.value ? "bg-primary/10 border-primary" : "bg-card border-border hover:bg-muted",
+                        fullyCoveredByPrepayment && "cursor-default opacity-100"
                       )}>
                       <p className="text-sm font-medium text-foreground">{ps.label}</p>
                       <p className="text-xs text-muted-foreground">{ps.description}</p>
                     </button>
                   ))}
                 </div>
+                {fullyCoveredByPrepayment && (
+                  <p className="text-xs text-muted-foreground">
+                    {t("prepayment.lockedNote")}
+                  </p>
+                )}
               </div>
+
 
               {(paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") && (
                 <>
