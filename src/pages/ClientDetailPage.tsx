@@ -184,6 +184,10 @@ export default function ClientDetailPage() {
   const cancelledSessions = (appointments as any[]).filter(isCancelled).length;
   const awaitingSessions = (appointments as any[]).filter(isAwaiting).length;
   const prepaidSessions = (appointments as any[]).filter(isPrepaid).length;
+  const prepaidAmount = (appointments as any[])
+    .filter(isPrepaid)
+    .reduce((s: number, a: any) => s + Number(a.price || 0), 0);
+
 
   // Total Paid = sum of REAL payments received from this client (confirmed income only).
   // Never derived from appointment.price.
