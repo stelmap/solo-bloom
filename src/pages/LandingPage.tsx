@@ -262,13 +262,14 @@ const C = {
   },
 
   // Pricing
-  pricingTitle: { en: "One system. Choose by active clients.", fr: "Un seul système. Choisissez par clients actifs.", uk: "Одна система. Обирайте за кількістю активних клієнтів.", pl: "Jeden system. Wybierz wg aktywnych klientów." },
+  pricingTitle: { en: "Your full practice, organised from day one. Free until you grow.", fr: "Toute votre pratique, organisée dès le premier jour. Gratuite jusqu'à ce que vous grandissiez.", uk: "Уся ваша практика впорядкована з першого дня. Безкоштовно, поки ви ростете.", pl: "Cała Twoja praktyka uporządkowana od pierwszego dnia. Darmowa, dopóki rośniesz." },
   pricingSub: {
-    en: "SoloBizz is one complete system — all features are available from day one. Plans differ only in the number of active clients you can manage.",
-    fr: "SoloBizz est un système complet — toutes les fonctionnalités sont disponibles dès le premier jour. Les forfaits ne diffèrent que par le nombre de clients actifs que vous pouvez gérer.",
-    uk: "SoloBizz — це одна повна система. Усі функції доступні з першого дня. Плани відрізняються лише кількістю активних клієнтів, з якими ви працюєте.",
-    pl: "SoloBizz to jeden kompletny system — wszystkie funkcje są dostępne od pierwszego dnia. Plany różnią się tylko liczbą aktywnych klientów, którymi możesz zarządzać.",
+    en: "All core features are included in every plan. The only difference is the number of active clients you can manage. No hidden feature locks. No calendar limits.",
+    fr: "Toutes les fonctionnalités principales sont incluses dans chaque forfait. La seule différence est le nombre de clients actifs que vous pouvez gérer. Aucune fonctionnalité bloquée. Aucune limite de calendrier.",
+    uk: "Усі основні функції доступні в кожному плані. Єдина різниця — кількість активних клієнтів, з якими ви працюєте. Жодних прихованих обмежень. Жодних лімітів календаря.",
+    pl: "Wszystkie kluczowe funkcje są zawarte w każdym planie. Jedyna różnica to liczba aktywnych klientów, którymi możesz zarządzać. Żadnych ukrytych blokad. Żadnych limitów kalendarza.",
   },
+
   monthly: { en: "Monthly", fr: "Mensuel", uk: "Щомісяця", pl: "Miesięcznie" },
   quarterly: { en: "Quarterly", fr: "Trimestriel", uk: "Щокварталу", pl: "Kwartalnie" },
   yearly: { en: "Yearly", fr: "Annuel", uk: "Щороку", pl: "Rocznie" },
