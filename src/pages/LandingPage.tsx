@@ -1606,7 +1606,6 @@ export default function LandingPage() {
           <WhatChangesSection />
           <FeaturesSection />
           <PricingSection />
-          <PricingSection />
 
           <FaqSection />
           <FinalCTA />
