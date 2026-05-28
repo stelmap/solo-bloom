@@ -50,6 +50,18 @@ const C = {
     uk: "Уся ваша приватна практика. В одному місці.",
     pl: "Cała Twoja prywatna praktyka. W jednym miejscu.",
   },
+  heroTitlePrefix: {
+    en: "Your full private practice.",
+    fr: "Toute votre pratique privée.",
+    uk: "Уся ваша приватна практика.",
+    pl: "Cała Twoja prywatna praktyka.",
+  },
+  heroTitleAccent: {
+    en: "Organised in one place.",
+    fr: "Organisée au même endroit.",
+    uk: "В одному місці.",
+    pl: "W jednym miejscu.",
+  },
   heroSub: {
     en: "SoloBizz manages your clients, calendar, bookings, payments, invoices and financial reports — automatically. So you spend your time on clients, not spreadsheets.",
     fr: "SoloBizz gère vos clients, agenda, réservations, paiements, factures et rapports financiers — automatiquement. Vous consacrez votre temps aux clients, pas aux tableurs.",
@@ -57,13 +69,18 @@ const C = {
     pl: "SoloBizz prowadzi klientów, kalendarz, zapisy, płatności, faktury i raporty finansowe — automatycznie. Czas poświęcasz klientom, a nie arkuszom.",
   },
   heroCta: { en: "Start free — no card needed", fr: "Commencer gratuitement — sans carte", uk: "Почати безкоштовно — без картки", pl: "Zacznij za darmo — bez karty" },
-  heroSecondary: { en: "See how it works", fr: "Voir comment ça marche", uk: "Подивитись, як це працює", pl: "Zobacz, jak to działa" },
+  heroSecondary: { en: "See pricing", fr: "Voir les tarifs", uk: "Подивитись ціни", pl: "Zobacz cennik" },
   heroSubCta: {
     en: "Free Starter: free forever, up to 5 active clients. No credit card required.",
     fr: "Free Starter : gratuit pour toujours, jusqu'à 5 clients actifs. Sans carte bancaire.",
     uk: "Free Starter: безкоштовно назавжди, до 5 активних клієнтів. Без банківської картки.",
     pl: "Free Starter: za darmo na zawsze, do 5 aktywnych klientów. Bez karty kredytowej.",
   },
+  // Stats
+  statsTherapists: { en: "therapists already use SoloBizz", fr: "thérapeutes utilisent déjà SoloBizz", uk: "терапевтів вже користуються SoloBizz", pl: "terapeutów już korzysta z SoloBizz" },
+  statsTime: { en: "of admin time saved every week", fr: "de temps admin économisé chaque semaine", uk: "адмін-часу заощаджується щотижня", pl: "czasu administracyjnego oszczędzane co tydzień" },
+  statsSetup: { en: "average practice setup time", fr: "temps moyen d'installation de la pratique", uk: "середній час налаштування практики", pl: "średni czas konfiguracji praktyki" },
+  setupAssist: { en: "Want a fast start? Leave a request — and we'll help set up your practice.", fr: "Vous voulez démarrer vite ? Laissez une demande — nous vous aidons à configurer votre pratique.", uk: "Хочете швидкий старт? Залиште заявку — і ми допоможемо налаштувати практику.", pl: "Chcesz szybki start? Zostaw zgłoszenie — pomożemy skonfigurować praktykę." },
 
   heroRoi: {
     en: "With 20+ clients, manual admin can take 4–8+ hours a week. SoloBizz helps you win that time back.",
