@@ -692,7 +692,10 @@ function PrimaryCta({
         track("cta_clicked", { source_page: source, cta, lang, billing_cycle, ...extra })
       }
     >
-      <Button size={size} className={`gap-2 ${className}`}>
+      <Button
+        size={size}
+        className={`h-12 px-8 text-base font-semibold rounded-full gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow ${className}`}
+      >
         {label} <ArrowRight className="h-4 w-4" />
       </Button>
     </Link>
@@ -766,7 +769,7 @@ function HeroSection() {
         </p>
         <div className="flex flex-col items-center gap-8">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <PrimaryCta label={t("heroCta")} source="/" cta="hero" className="text-base px-8 h-12" />
+            <PrimaryCta label={t("heroCta")} source="/" cta="hero" />
             <a
               href="#pricing"
               className="inline-flex items-center justify-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-4 h-12"
@@ -841,7 +844,7 @@ function PainSection() {
           <p className="text-xl sm:text-2xl font-bold text-secondary-foreground">{t("painBottom")}</p>
         </div>
         <div className="flex justify-center">
-          <PrimaryCta label={t("painCta")} source="/#pain" cta="pain" className="text-base px-8 h-12" />
+          <PrimaryCta label={t("painCta")} source="/#pain" cta="pain" />
         </div>
       </div>
     </section>
@@ -948,8 +951,8 @@ function WhatChangesSection() {
               label={t("whatChangesCta")}
               source="/"
               cta="what_changes_cta"
-              className="rounded-full px-8"
             />
+
             <p className="text-sm text-muted-foreground">{t("whatChangesCtaNote")}</p>
           </div>
         </div>
@@ -1016,8 +1019,8 @@ function FeaturesSection() {
             label={t("featCta")}
             source="/"
             cta="features_cta"
-            className="rounded-full px-8"
           />
+
           <p className="text-sm text-white/60">{t("featCtaNote")}</p>
         </div>
       </div>
@@ -1282,7 +1285,11 @@ function PricingSection() {
                   className="block mt-auto"
                 >
                   <Button
-                    className="w-full h-12 text-base"
+                    className={`w-full h-12 px-8 text-base font-semibold rounded-full gap-2 transition-shadow ${
+                      isFilled
+                        ? "shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
+                        : ""
+                    }`}
                     variant={isFilled ? "default" : "outline"}
                   >
                     {p.cta}
@@ -1385,7 +1392,7 @@ function FinalCTA() {
           {t("finalDesc")}
         </p>
         <div className="flex items-center justify-center">
-          <PrimaryCta label={t("finalCta")} source="/" cta="final" className="text-base px-8 h-12" />
+          <PrimaryCta label={t("finalCta")} source="/" cta="final" />
         </div>
 
         <div id="contact" className="mt-14 max-w-2xl mx-auto rounded-2xl border border-sidebar-border bg-accent/30 p-6 sm:p-10 text-center">
@@ -1409,7 +1416,7 @@ function FinalCTA() {
               trigger={
                 <Button
                   size="lg"
-                  className="gap-2"
+                  className="h-12 px-8 text-base font-semibold rounded-full gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow"
                   onClick={() => track("cta_clicked", { source_page: "/#final", cta: "book_call", lang })}
                 >
                   <MessageCircle className="h-4 w-4" />
@@ -1421,7 +1428,7 @@ function FinalCTA() {
               href={`mailto:${CONTACT_EMAIL}`}
               onClick={() => track("cta_clicked", { source_page: "/#final", cta: "email_us", lang })}
             >
-              <Button size="lg" variant="outline" className="gap-2">
+              <Button size="lg" variant="outline" className="h-12 px-8 text-base font-semibold rounded-full gap-2">
                 <Mail className="h-4 w-4" />
                 {lang === "uk" ? "Написати нам"
                   : lang === "fr" ? "Nous écrire"
