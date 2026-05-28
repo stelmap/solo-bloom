@@ -814,7 +814,7 @@ function DashboardPreview() {
 function HeroSection() {
   const { t } = useLandingLang();
   return (
-    <section className="pt-16 pb-6 sm:pt-20 sm:pb-8 px-4 sm:px-6">
+    <section className="min-h-screen flex items-center px-4 sm:px-6 pt-24 pb-12">
       <div className="max-w-6xl mx-auto text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
           <Sparkles className="h-3.5 w-3.5" />
@@ -860,17 +860,17 @@ function StatsSection() {
     { num: "15 хв", label: t("statsSetup") },
   ];
   return (
-    <section className="bg-secondary text-secondary-foreground px-4 sm:px-6 pt-8 pb-20 sm:pb-24">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-3 sm:divide-x sm:divide-white/10 gap-8 sm:gap-0">
+    <section className="min-h-screen flex items-center bg-secondary text-secondary-foreground px-4 sm:px-6 py-16">
+      <div className="max-w-6xl mx-auto w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-3 sm:divide-x sm:divide-white/10 gap-12 sm:gap-0">
           {stats.map((s) => (
             <div key={s.num} className="text-center px-4">
-              <div className="text-4xl sm:text-5xl font-bold text-primary mb-3 tracking-tight">{s.num}</div>
-              <div className="text-sm sm:text-base text-secondary-foreground/80 leading-snug">{s.label}</div>
+              <div className="text-5xl sm:text-6xl lg:text-7xl font-bold text-primary mb-4 tracking-tight">{s.num}</div>
+              <div className="text-base sm:text-lg text-secondary-foreground/80 leading-snug">{s.label}</div>
             </div>
           ))}
         </div>
-        <div className="mt-10 flex items-center justify-center gap-2 text-sm text-secondary-foreground/80 text-center">
+        <div className="mt-16 flex items-center justify-center gap-2 text-base text-secondary-foreground/80 text-center">
           <span>✦ {t("setupAssist")}</span>
         </div>
       </div>
