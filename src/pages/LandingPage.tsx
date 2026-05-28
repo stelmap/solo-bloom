@@ -551,7 +551,8 @@ const C = {
 
 
   // FAQ
-  faqTitle: { en: "Frequently asked questions", fr: "Questions fréquentes", uk: "Питання, які часто виникають", pl: "Często zadawane pytania" },
+  faqEyebrow: { en: "Questions before you start", fr: "Questions avant de commencer", uk: "Питання перед початком", pl: "Pytania przed startem" },
+  faqTitle: { en: "Answers to the main questions", fr: "Réponses aux questions principales", uk: "Відповіді на головні питання", pl: "Odpowiedzi na główne pytania" },
   faq1Q: { en: "Is it hard to start using SoloBizz?", fr: "Est-ce compliqué de démarrer avec SoloBizz ?", uk: "Чи складно почати користуватись SoloBizz?", pl: "Czy trudno zacząć korzystać z SoloBizz?" },
   faq1A: {
     en: "No. Sign up with the Free Starter plan and start using SoloBizz right away — no setup required.",
@@ -1350,18 +1351,23 @@ function FaqSection() {
     { q: "faq7Q", a: "faq7A" },
   ];
   return (
-    <section id="faq" className="py-20 px-4 sm:px-6 bg-muted/40">
-      <div className="max-w-3xl mx-auto">
-        <h2 className="text-3xl sm:text-4xl font-bold text-foreground text-center mb-10">
-          {t("faqTitle")}
-        </h2>
-        <Accordion type="single" collapsible className="bg-card rounded-2xl border border-border px-2 sm:px-4">
+    <section id="faq" className="py-24 px-4 sm:px-6 bg-[hsl(40_28%_94%)]">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-14">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary mb-5">
+            {t("faqEyebrow")}
+          </p>
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground tracking-tight">
+            {t("faqTitle")}
+          </h2>
+        </div>
+        <Accordion type="single" collapsible className="divide-y divide-border/60">
           {items.map((it, idx) => (
-            <AccordionItem key={it.q} value={`item-${idx}`} className="border-b last:border-b-0">
-              <AccordionTrigger className="text-left text-base sm:text-lg font-semibold text-foreground py-5">
+            <AccordionItem key={it.q} value={`item-${idx}`} className="border-0">
+              <AccordionTrigger className="text-left text-base sm:text-lg font-semibold text-foreground py-6 hover:no-underline">
                 {t(it.q)}
               </AccordionTrigger>
-              <AccordionContent className="text-base text-muted-foreground leading-relaxed">
+              <AccordionContent className="text-base text-muted-foreground leading-relaxed pb-6">
                 {t(it.a)}
               </AccordionContent>
             </AccordionItem>
