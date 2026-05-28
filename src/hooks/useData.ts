@@ -1551,7 +1551,9 @@ export function useGenerateTaxExpenses() {
   const qc = useQueryClient();
   const { user } = useAuth();
   const assertCanWrite = useDemoWriteGuard();
+  return useMutation({
     mutationFn: async ({ taxSettingId, entries }: {
+
       taxSettingId: string;
       entries: Array<{ date: string; amount: number; description: string }>;
     }) => {
