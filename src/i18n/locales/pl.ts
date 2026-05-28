@@ -119,6 +119,13 @@ export default {
   "prepayment.completeAndDeduct": "Zakończ i odejmij z przedpłaty",
   "prepayment.balance": "Saldo przedpłaty",
   "prepayment.sessionsShort": "{count} sesji",
+  "prepayment.sessionAlreadyCovered": "Ta sesja jest już pokryta przedpłatą ({symbol}{amount})",
+  "prepayment.sessionPartiallyCovered": "Ta sesja jest częściowo pokryta przedpłatą ({symbol}{covered}). Pozostaje: {symbol}{remaining}",
+  "prepayment.willMarkAlreadyPaid": "Zostanie oznaczona jako opłacona z istniejącej przedpłaty ({symbol}{amount})",
+  "payment.alreadyPaid": "Już opłacona (przedpłata)",
+  "payment.alreadyPaidDesc": "Ta sesja ma już przypisane {symbol}{amount} z wcześniejszej przedpłaty",
+  "toast.sessionAlreadyPaid": "Sesja zakończona — pokryta przedpłatą ({symbol}{amount})",
+
   "toast.sessionCompletedFromPrepayment": "Opłacone z przedpłaty ({symbol}{amount})",
   "toast.sessionCompletedFromPrepaymentPartial": "{symbol}{covered} odjęte z przedpłaty, {symbol}{remaining} pozostaje do zapłaty",
   "toast.sessionCompletedWithPrepayment": "Przychód {symbol}{paid} zapisany. {symbol}{prepay} zachowane jako przedpłata",
