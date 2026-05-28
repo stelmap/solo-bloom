@@ -2244,7 +2244,7 @@ export function useDashboardStats() {
         supabase.from("appointments").select("id", { count: "exact", head: true }),
         supabase.from("appointments").select("id", { count: "exact", head: true }).eq("status", "cancelled"),
         supabase.from("expenses").select("amount").eq("is_template", false).neq("instance_status", "cancelled"),
-        supabase.from("appointments").select("client_id, scheduled_at").neq("status", "cancelled"),
+        supabase.from("appointments").select("client_id, scheduled_at, status").neq("status", "cancelled"),
       ]);
       const allClientsData = (allClientsHealthRes.data ?? []) as Array<{ id: string; status: string; archive_reason: string | null }>;
       const totalClients = allClientsData.length;
@@ -2257,9 +2257,13 @@ export function useDashboardStats() {
       const cancellationRate = totalSessionsAll > 0 ? Math.round((cancelledSessionsAll / totalSessionsAll) * 100) : 0;
       const allExpensesSum = (allExpensesRes.data ?? []).reduce((s: number, e: any) => s + Number(e.amount ?? 0), 0);
       const sessionCost = conductedSessions > 0 ? allExpensesSum / conductedSessions : 0;
+      // Avg therapy duration: only count realized (past, non-cancelled) sessions.
+      // Future scheduled sessions must not inflate the duration.
+      const nowTs = Date.now();
       const perClientDates = new Map<string, { min: number; max: number }>();
-      for (const a of (allClientSessionsRes.data ?? []) as Array<{ client_id: string; scheduled_at: string }>) {
+      for (const a of (allClientSessionsRes.data ?? []) as Array<{ client_id: string; scheduled_at: string; status: string }>) {
         const t = new Date(a.scheduled_at).getTime();
+        if (!Number.isFinite(t) || t > nowTs) continue; // skip future sessions
         const cur = perClientDates.get(a.client_id);
         if (!cur) perClientDates.set(a.client_id, { min: t, max: t });
         else { if (t < cur.min) cur.min = t; if (t > cur.max) cur.max = t; }
@@ -2268,9 +2272,10 @@ export function useDashboardStats() {
       const MS_MONTH = 1000 * 60 * 60 * 24 * 30.4375;
       for (const v of perClientDates.values()) {
         const months = (v.max - v.min) / MS_MONTH;
-        if (months > 0) { durSum += months; durCount++; }
+        if (months >= 0) { durSum += months; durCount++; }
       }
       const avgTherapyMonths = durCount > 0 ? durSum / durCount : 0;
+
 
       // ===== Today debt =====
       const todayAptsTyped = (todayAptRes.data ?? []) as Array<{ id: string; price: number; payment_status: string; status: string }>;
