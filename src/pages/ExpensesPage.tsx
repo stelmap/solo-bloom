@@ -36,7 +36,8 @@ export default function ExpensesPage() {
   const deleteExpense = useDeleteExpense();
   const updatePaymentStatus = useUpdateExpensePaymentStatus();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const dateLocale = lang === "uk" ? "uk-UA" : lang === "fr" ? "fr-FR" : lang === "pl" ? "pl-PL" : "en-US";
   const { symbol: cs } = useCurrency();
   const [searchParams] = useSearchParams();
   const [open, setOpen] = useState(false);
