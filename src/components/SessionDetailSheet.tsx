@@ -217,7 +217,6 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     not_applicable: { label: t("payment.na"), color: "text-muted-foreground" },
   };
 
-  };
 
   const statusInfo = STATUSES[apt.status] || STATUSES.scheduled;
   const payInfo = PAYMENT_STATUS_STYLES[apt.payment_status] || PAYMENT_STATUS_STYLES.unpaid;
