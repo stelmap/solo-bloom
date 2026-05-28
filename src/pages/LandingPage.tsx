@@ -28,6 +28,7 @@ const TELEGRAM_URL = "https://t.me/solobizzcontact";
 const TELEGRAM_HANDLE = "@solobizzcontact";
 const PHONE_NUMBER = "+48 572 600 256";
 const OFFICE_ADDRESS = "Poland, Wrocław, Gwiaździsta 16";
+const OFFICE_ADDRESS_LVIV = "Львів, вулиця Червоної калини, 46";
 const VACANCIES_URL = "/careers";
 
 // ── Local landing-page copy (EN / FR / UK / PL) ───────────────────────
