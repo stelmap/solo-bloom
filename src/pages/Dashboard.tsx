@@ -569,9 +569,9 @@ function MoneyTile({
     tone === "muted" ? "text-muted-foreground/60" :
     "text-foreground";
   const inner = (
-    <div className="flex flex-col items-center justify-center text-center h-full">
-      <p className={cn("text-2xl sm:text-3xl font-bold tabular-nums", toneClass)}>{value}</p>
-      <p className="text-xs text-muted-foreground mt-2 leading-snug">{label}</p>
+    <div className="flex flex-col items-center justify-center text-center h-full min-w-0">
+      <p className={cn("text-lg sm:text-2xl md:text-3xl font-bold tabular-nums break-all w-full", toneClass)}>{value}</p>
+      <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 sm:mt-2 leading-snug break-words">{label}</p>
     </div>
   );
   if (onClick) {
@@ -579,14 +579,14 @@ function MoneyTile({
       <button
         type="button"
         onClick={onClick}
-        className="bg-muted/40 border border-border rounded-2xl p-4 min-h-[110px] hover:border-primary-border hover:bg-card transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="bg-muted/40 border border-border rounded-2xl p-3 sm:p-4 min-h-[100px] sm:min-h-[110px] overflow-hidden min-w-0 hover:border-primary-border hover:bg-card transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         aria-label={`${label}: ${value}`}
       >
         {inner}
       </button>
     );
   }
-  return <div className="bg-muted/40 border border-border rounded-2xl p-4 min-h-[110px]">{inner}</div>;
+  return <div className="bg-muted/40 border border-border rounded-2xl p-3 sm:p-4 min-h-[100px] sm:min-h-[110px] overflow-hidden min-w-0">{inner}</div>;
 }
 
 
