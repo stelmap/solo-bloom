@@ -1047,29 +1047,6 @@ type PlanRow = {
   yearly: number;    // amount billed every 12 months
 };
 
-function fmtEuro(n: number): string {
-  if (n === 0) return "€0";
-  return Number.isInteger(n) ? `€${n}` : `€${n.toFixed(2)}`;
-}
-
-type SimplePlan = {
-  id: "free" | "solo" | "pro";
-  name: string;
-  desc: string;
-  price: string;
-  priceMicro: string;
-  priceMicroAccent?: boolean;
-  priceSubMicro?: string;
-  pill: string;
-  bullets: string[];
-  cta: string;
-  ctaHref: string;
-  ctaTracking: string;
-  badge?: string;
-  badgeColor?: "primary" | "emerald";
-  highlighted?: boolean;
-  variant: "filled" | "outline";
-};
 
 function PricingSection() {
   const { t, lang } = useLandingLang();
