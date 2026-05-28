@@ -117,12 +117,13 @@ const C = {
     pl: "Rutyna zjada czas, który mógłbyś poświęcić klientom i rozwojowi",
   },
   painBottom: {
-    en: "This is not a productivity issue. This is lack of system.",
-    fr: "Ce n'est pas un problème de productivité. C'est un manque de système.",
-    uk: "Це не проблема продуктивності. Це відсутність системи.",
-    pl: "To nie problem produktywności. To brak systemu.",
+    en: "This isn't a productivity problem. It's the absence of a system built for private practice. SoloBizz is that system.",
+    fr: "Ce n'est pas un problème de productivité. C'est l'absence d'un système conçu pour la pratique privée. SoloBizz est ce système.",
+    uk: "Це не проблема продуктивності. Це відсутність системи, створеної для приватної практики. SoloBizz — це та система.",
+    pl: "To nie jest problem produktywności. To brak systemu stworzonego dla prywatnej praktyki. SoloBizz to ten system.",
   },
-  painCta: { en: "Fix this in 5 minutes", fr: "Réglez ça en 5 minutes", uk: "Виправити за 5 хвилин", pl: "Napraw to w 5 minut" },
+  painCta: { en: "See how SoloBizz works", fr: "Voir comment SoloBizz fonctionne", uk: "Подивитись, як працює SoloBizz", pl: "Zobacz, jak działa SoloBizz" },
+
 
   // Audience
   audTitle: { en: "Who SoloBizz is for", fr: "À qui s'adresse SoloBizz", uk: "Кому підходить SoloBizz", pl: "Dla kogo jest SoloBizz" },
