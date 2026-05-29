@@ -315,7 +315,7 @@ export default function SupervisionPage() {
             <div className="space-y-2">
               <Label>{t("supervision.selectClient")} *</Label>
               <ClientPicker
-                clients={clients}
+                clients={(clients as any[]).filter((c: any) => c.status !== "archived")}
                 value={createForm.client_id}
                 onChange={v => setCreateForm(f => ({ ...f, client_id: v }))}
               />
