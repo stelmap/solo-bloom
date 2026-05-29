@@ -37,6 +37,9 @@ export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditReque
   const [dirty, setDirty] = useState(false);
   const lastSaved = useRef(client.notes ?? "");
   const debounceRef = useRef<number | null>(null);
+  const [inlineOpen, setInlineOpen] = useState(false);
+  const [draft, setDraft] = useState("");
+
 
   // sync if external value changes (e.g. another tab)
   useEffect(() => {
