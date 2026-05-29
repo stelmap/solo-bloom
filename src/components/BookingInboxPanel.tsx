@@ -39,6 +39,12 @@ export function BookingInboxPanel({ className }: { className?: string }) {
     () => rows.filter((r) => r.status === "pending" || r.status === "needs_linking"),
     [rows],
   );
+  // Surface the most recently confirmed requests so therapists can see
+  // delivery status of the confirmation email and resend if needed.
+  const recentlyConfirmed = useMemo(
+    () => rows.filter((r) => r.status === "confirmed").slice(0, 5),
+    [rows],
+  );
 
   const confirm = useConfirmBookingRequest();
   const decline = useDeclineBookingRequest();
