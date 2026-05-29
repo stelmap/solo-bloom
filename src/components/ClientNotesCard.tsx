@@ -14,14 +14,20 @@ type Props = {
   client: { id: string; name: string; notes?: string | null; updated_at?: string | null };
   /**
    * "edit"     — full editor with autosave + expand action (Client Profile)
-   * "preview"  — read-only block with "Edit in Client Profile" link (Supervision)
+   * "preview"  — read-only block with "Edit" action (Supervision)
    */
   mode?: "edit" | "preview";
+  /**
+   * In preview mode: when true, Edit/Add Note opens an inline dialog editor
+   * instead of calling onEditRequested. Keeps the user on the current screen.
+   */
+  inlineEdit?: boolean;
   onEditRequested?: () => void;
   disabled?: boolean;
 };
 
-export function ClientNotesCard({ client, mode = "edit", onEditRequested, disabled }: Props) {
+export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditRequested, disabled }: Props) {
+
   const update = useUpdateClient();
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -31,6 +37,9 @@ export function ClientNotesCard({ client, mode = "edit", onEditRequested, disabl
   const [dirty, setDirty] = useState(false);
   const lastSaved = useRef(client.notes ?? "");
   const debounceRef = useRef<number | null>(null);
+  const [inlineOpen, setInlineOpen] = useState(false);
+  const [draft, setDraft] = useState("");
+
 
   // sync if external value changes (e.g. another tab)
   useEffect(() => {
@@ -79,23 +88,33 @@ export function ClientNotesCard({ client, mode = "edit", onEditRequested, disabl
         : null;
 
   if (mode === "preview") {
+    const handleEditClick = () => {
+      if (inlineEdit) {
+        setDraft(value);
+        setInlineOpen(true);
+      } else {
+        onEditRequested?.();
+      }
+    };
+    const showEditAction = inlineEdit || onEditRequested;
     return (
+      <>
       <div className="bg-card rounded-xl border border-border p-5 space-y-3">
         <div className="flex items-center justify-between gap-2">
           <h3 className="font-semibold text-foreground flex items-center gap-2">
             <FileText className="h-4 w-4 text-primary" /> {t("clientNotes.shortTitle")}
           </h3>
-          {!isEmpty && onEditRequested && (
-            <Button variant="ghost" size="sm" onClick={onEditRequested}>
-              <Pencil className="h-3.5 w-3.5 mr-1" /> {t("clientNotes.editInProfile")}
+          {!isEmpty && showEditAction && (
+            <Button variant="ghost" size="sm" onClick={handleEditClick}>
+              <Pencil className="h-3.5 w-3.5 mr-1" /> {inlineEdit ? t("clientNotes.save") : t("clientNotes.editInProfile")}
             </Button>
           )}
         </div>
         {isEmpty ? (
           <div className="rounded-lg border border-dashed border-border bg-muted/30 p-4 text-center space-y-2">
             <p className="text-sm text-muted-foreground">{t("clientNotes.noneShort")}</p>
-            {onEditRequested && (
-              <Button variant="outline" size="sm" onClick={onEditRequested}>{t("clientNotes.addNote")}</Button>
+            {showEditAction && (
+              <Button variant="outline" size="sm" onClick={handleEditClick}>{t("clientNotes.addNote")}</Button>
             )}
           </div>
         ) : (
@@ -109,8 +128,47 @@ export function ClientNotesCard({ client, mode = "edit", onEditRequested, disabl
           </div>
         )}
       </div>
+      {inlineEdit && (
+        <Dialog open={inlineOpen} onOpenChange={(o) => { if (!o) setInlineOpen(false); }}>
+          <DialogContent className="max-w-2xl w-[95vw] sm:w-full">
+            <DialogHeader>
+              <DialogTitle>{t("clientNotes.shortTitle")} — {client.name}</DialogTitle>
+            </DialogHeader>
+            <Textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder={t("clientNotes.placeholder")}
+              className="min-h-[260px] resize-none text-sm leading-relaxed"
+              autoFocus
+            />
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setInlineOpen(false)}>
+                <X className="h-4 w-4 mr-1" /> {t("clientNotes.close")}
+              </Button>
+              <Button
+                onClick={async () => {
+                  try {
+                    await update.mutateAsync({ id: client.id, notes: draft });
+                    lastSaved.current = draft;
+                    setValue(draft);
+                    setSavedAt(new Date());
+                    setInlineOpen(false);
+                  } catch (e: any) {
+                    toast({ title: t("clientNotes.saveFailed"), description: e.message, variant: "destructive" });
+                  }
+                }}
+                disabled={saving}
+              >
+                {t("clientNotes.save")}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+      </>
     );
   }
+
 
   const editor = (full: boolean) => (
     <Textarea

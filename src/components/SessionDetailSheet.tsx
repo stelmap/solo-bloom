@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { InvoiceButton } from "@/components/InvoiceButton";
 import { ClientPicker } from "@/components/ClientPicker";
 import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
@@ -45,6 +47,9 @@ interface SessionDetailSheetProps {
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"];
 
 export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12h = false }: SessionDetailSheetProps) {
+  const navigate = useNavigate();
+  const goTo = (path: string) => { onOpenChange(false); setTimeout(() => navigate(path), 50); };
+
   const { t, lang } = useLanguage();
   const emailLocaleMap: Record<string, string> = { en: "en-US", fr: "fr-FR", pl: "pl-PL", uk: "uk-UA" };
   const emailLocale = emailLocaleMap[lang] || "en-US";
@@ -571,18 +576,49 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 {isGroupSession ? (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t("groups.group")}</span>
-                    <span className="font-medium text-foreground">{groupName || "—"}</span>
+                    {groupId ? (
+                      <button
+                        type="button"
+                        onClick={() => goTo(`/groups/${groupId}`)}
+                        className="font-medium text-primary hover:underline text-right"
+                      >
+                        {groupName || "—"}
+                      </button>
+                    ) : (
+                      <span className="font-medium text-foreground">{groupName || "—"}</span>
+                    )}
                   </div>
                 ) : (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t("calendar.client")}</span>
-                    <span className="font-medium text-foreground">{apt.clients?.name}</span>
+                    {apt.client_id ? (
+                      <button
+                        type="button"
+                        onClick={() => goTo(`/clients/${apt.client_id}`)}
+                        className="font-medium text-primary hover:underline text-right"
+                      >
+                        {apt.clients?.name}
+                      </button>
+                    ) : (
+                      <span className="font-medium text-foreground">{apt.clients?.name}</span>
+                    )}
                   </div>
                 )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("calendar.service")}</span>
-                  <span className="font-medium text-foreground">{apt.services?.name}</span>
+                  {apt.services?.name ? (
+                    <button
+                      type="button"
+                      onClick={() => goTo(`/services`)}
+                      className="font-medium text-primary hover:underline text-right"
+                    >
+                      {apt.services.name}
+                    </button>
+                  ) : (
+                    <span className="font-medium text-foreground">—</span>
+                  )}
                 </div>
+
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("calendar.dateTime")}</span>
                   <span className="font-medium text-foreground">
