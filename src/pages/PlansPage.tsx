@@ -505,51 +505,54 @@ export default function PlansPage() {
                   );
                 })}
               </div>
-            )}
-
-
-        {/* Privacy / trust block — placed near decision point */}
-        <div className="max-w-3xl mx-auto rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-4 sm:p-5 flex items-start gap-3.5">
-          <div className="h-9 w-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-            <ShieldCheck className="h-4 w-4 text-primary" />
           </div>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {t("privacy.longClients" as any)}
-          </p>
-        </div>
+        </section>
 
-        {/* Footer CTA */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
-          <p className="text-xs text-muted-foreground">
-            {t("plans.footerSecure")}
-          </p>
-          <div className="flex items-center gap-3">
-            {canClearDemo && (
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={requestClearDemo}
-                disabled={clearing}
-              >
-                <Trash2 className="h-4 w-4" />
-                {clearing ? t("plans.clearing") : t("plans.clearDemo")}
-              </Button>
-            )}
-            <Button
-              size="lg"
-              disabled={!selectedPlanId || continuing}
-              onClick={handleContinue}
-              className="min-w-[180px]"
-            >
-              {continuing ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>{selectedPlanId ? t("plans.continue") : t("plans.continueSelect")}</>
+        <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+          {/* Privacy / trust block — placed near decision point */}
+          <div className="max-w-3xl mx-auto rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-4 sm:p-5 flex items-start gap-3.5">
+            <div className="h-9 w-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {t("privacy.longClients" as any)}
+            </p>
+          </div>
+
+          {/* Footer CTA */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
+            <p className="text-xs text-muted-foreground">
+              {t("plans.footerSecure")}
+            </p>
+            <div className="flex items-center gap-3">
+              {canClearDemo && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={requestClearDemo}
+                  disabled={clearing}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {clearing ? t("plans.clearing") : t("plans.clearDemo")}
+                </Button>
               )}
-            </Button>
+              <Button
+                size="lg"
+                disabled={!selectedPlanId || continuing}
+                onClick={handleContinue}
+                className="min-w-[180px] h-12 rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
+              >
+                {continuing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>{selectedPlanId ? t("plans.continue") : t("plans.continueSelect")}</>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
+
 
       <ConfirmDeleteDialog
         open={confirmClearOpen}
