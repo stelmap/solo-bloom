@@ -204,13 +204,13 @@ export default function ClientDetailPage() {
         Number(a.price || 0) > 0 &&
         a.payment_status !== "not_applicable",
     );
-    const totalPayableCompleted = payableCompleted.reduce(
-      (s: number, a: any) => s + Number(a.price || 0),
+    // Prepaid = confirmed payments NOT yet allocated to any session.
+    const totalAllocated = Object.values(allocByApt).reduce(
+      (s: number, v: any) => s + Number(v?.paid || 0),
       0,
     );
-    const balance = Number(paidAmount || 0) - totalPayableCompleted;
+    const balance = Number(paidAmount || 0) - totalAllocated;
     if (balance <= 0) return { prepaidSessions: 0, prepaidAmount: 0 };
-    // Representative session price: most recent payable completed, else client base price
     const sorted = [...payableCompleted].sort(
       (a: any, b: any) =>
         new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime(),
@@ -221,7 +221,7 @@ export default function ClientDetailPage() {
       0;
     const count = refPrice > 0 ? Math.floor(balance / refPrice) : 0;
     return { prepaidSessions: count, prepaidAmount: balance };
-  }, [appointments, paidAmount, client]);
+  }, [appointments, paidAmount, allocByApt, client]);
 
 
   // Apply selected statistic filter to the full appointment list
@@ -792,11 +792,16 @@ export default function ClientDetailPage() {
             const remaining = Number(a.price || 0) - paid;
             return s + (remaining > 0 ? remaining : 0);
           }, 0);
-          // Prepaid balance = money received beyond what's owed for ALL completed
-          // payable sessions (paid or unpaid). Outstanding debt is treated as still
-          // owed, so prepaid never overlaps with money tied to completed sessions.
-          // Mirrors the rule used for the prepaid sessions stat (see line ~211).
-          const prepaid = Math.max(0, Number(paidAmount || 0) - totalPayableCompleted);
+          // Prepaid balance = confirmed client payments that remain UNALLOCATED to
+          // any session. Allocations are the single source of truth for what
+          // payment money is tied to a session (completed or otherwise), so any
+          // amount already allocated must not be counted as prepaid — even if the
+          // appointment status/payment_status hasn't caught up yet.
+          const totalAllocated = Object.values(allocByApt).reduce(
+            (s: number, v: any) => s + Number(v?.paid || 0),
+            0,
+          );
+          const prepaid = Math.max(0, Number(paidAmount || 0) - totalAllocated);
           const totalUnpaid = outstanding;
 
           return (
