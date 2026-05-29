@@ -2341,11 +2341,20 @@ export function useDashboardStats() {
       const freeSlots = Math.max(capacity.weeklyCapacity - bookedSlots, 0);
 
       // ===== Outstanding balance calculation =====
-      // Count only sessions that still owe money after applying confirmed
-      // allocations. This keeps Dashboard's "Unpaid sessions" count in sync
-      // with the Pending payments list (useExpectedPayments) and with the
-      // calendar's payment-status badges, all derived from the same source.
-      const outstandingApts = (outstandingAptRes.data ?? []) as Array<{ id: string; price: number; client_id: string }>;
+      // Source-of-truth alignment with useExpectedPayments:
+      //   • individual sessions: appointment.price − confirmed allocations
+      //   • group sessions: per-participant rows in group_session_payments
+      // Group-session appointments are excluded from the individual pass so
+      // they aren't double-counted.
+      const { data: groupApptRows } = await supabase
+        .from("group_sessions")
+        .select("appointment_id");
+      const groupAppointmentIds = new Set(
+        ((groupApptRows ?? []) as any[]).map((g) => g.appointment_id).filter(Boolean),
+      );
+
+      const outstandingApts = ((outstandingAptRes.data ?? []) as Array<{ id: string; price: number; client_id: string }>)
+        .filter((a) => !groupAppointmentIds.has(a.id));
       let outstandingBalance = 0;
       let unpaidSessionsCount = 0;
       if (outstandingApts.length > 0) {
@@ -2365,6 +2374,20 @@ export function useDashboardStats() {
             outstandingBalance += remaining;
             unpaidSessionsCount += 1;
           }
+        }
+      }
+
+      // Per-participant group session debts.
+      const { data: gPays } = await supabase
+        .from("group_session_payments")
+        .select("amount, payment_state")
+        .eq("payment_state", "waiting_for_payment")
+        .gt("amount", 0);
+      for (const p of (gPays ?? []) as Array<{ amount: number }>) {
+        const amt = Number(p.amount);
+        if (amt > 0) {
+          outstandingBalance += amt;
+          unpaidSessionsCount += 1;
         }
       }
 
