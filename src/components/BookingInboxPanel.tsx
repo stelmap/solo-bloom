@@ -379,7 +379,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
             {confirmingFor && !confirmingFor.client_id && (
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground">Client</label>
-                <ClientPicker clients={clients as any} value={confirmClientId} onChange={setConfirmClientId} />
+                <ClientPicker clients={(clients as any[]).filter((c: any) => c.status !== "archived")} value={confirmClientId} onChange={setConfirmClientId} />
               </div>
             )}
             <div className="space-y-1">
