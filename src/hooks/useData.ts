@@ -936,26 +936,48 @@ export function useExpectedPayments() {
         .filter((r) => r.amount > 0);
 
       // ── 3. Per-participant group session debts. One row per unpaid
-      //       participant so debt count matches Payment Audit.
+      //       participant so debt count matches Payment Audit. Includes
+      //       partially_paid_from_prepayment so participants whose prepaid
+      //       balance only covered part of the price still appear here for
+      //       the remaining gap.
       const { data: gPays } = await supabase
         .from("group_session_payments")
         .select(
-          "id, amount, client_id, group_session_id, payment_state, clients(name), group_sessions(appointment_id, groups(name), appointments(scheduled_at, status))",
+          "id, amount, client_id, group_session_id, payment_state, expected_payment_id, clients(name), group_sessions(appointment_id, groups(name), appointments(scheduled_at, status))",
         )
-        .eq("payment_state", "waiting_for_payment")
+        .in("payment_state", ["waiting_for_payment", "partially_paid_from_prepayment"])
         .gt("amount", 0);
 
+      // For partial-from-prepayment rows the true outstanding amount is the
+      // linked expected_payments row (price − prepaid). Fetch those once and
+      // use them when present.
+      const epIds = ((gPays ?? []) as any[])
+        .map((p) => p.expected_payment_id)
+        .filter(Boolean);
+      const epAmountById = new Map<string, number>();
+      if (epIds.length > 0) {
+        const { data: epRows } = await supabase
+          .from("expected_payments")
+          .select("id, amount, status")
+          .in("id", epIds);
+        for (const r of (epRows ?? []) as any[]) {
+          if (r.status === "pending") epAmountById.set(r.id, Number(r.amount));
+        }
+      }
+
       const groupRows = ((gPays ?? []) as any[])
-        .filter((p) => Number(p.amount) > 0)
         .map((p) => {
           const apt = p.group_sessions?.appointments;
+          const outstanding = p.expected_payment_id && epAmountById.has(p.expected_payment_id)
+            ? epAmountById.get(p.expected_payment_id)!
+            : Number(p.amount);
           return {
             id: `gsp:${p.id}`,
             kind: "group" as const,
             appointment_id: p.group_sessions?.appointment_id ?? null,
             group_session_payment_id: p.id as string,
             client_id: p.client_id,
-            amount: Number(p.amount),
+            amount: outstanding,
             status: "pending" as const,
             clients: p.clients,
             appointments: {
@@ -964,7 +986,8 @@ export function useExpectedPayments() {
               services: { name: p.group_sessions?.groups?.name ?? "Group session" },
             },
           };
-        });
+        })
+        .filter((r) => r.amount > 0);
 
       const merged = [...individualRows, ...groupRows];
       merged.sort((a, b) => {
@@ -2377,14 +2400,30 @@ export function useDashboardStats() {
         }
       }
 
-      // Per-participant group session debts.
+      // Per-participant group session debts. Mirror useExpectedPayments:
+      // include partial-from-prepayment rows and use the linked
+      // expected_payments amount when available so the dashboard total
+      // reflects the true outstanding gap.
       const { data: gPays } = await supabase
         .from("group_session_payments")
-        .select("amount, payment_state")
-        .eq("payment_state", "waiting_for_payment")
+        .select("amount, payment_state, expected_payment_id")
+        .in("payment_state", ["waiting_for_payment", "partially_paid_from_prepayment"])
         .gt("amount", 0);
-      for (const p of (gPays ?? []) as Array<{ amount: number }>) {
-        const amt = Number(p.amount);
+      const gEpIds = ((gPays ?? []) as any[]).map((p) => p.expected_payment_id).filter(Boolean);
+      const gEpAmount = new Map<string, number>();
+      if (gEpIds.length > 0) {
+        const { data: epRows } = await supabase
+          .from("expected_payments")
+          .select("id, amount, status")
+          .in("id", gEpIds);
+        for (const r of (epRows ?? []) as any[]) {
+          if (r.status === "pending") gEpAmount.set(r.id, Number(r.amount));
+        }
+      }
+      for (const p of (gPays ?? []) as Array<{ amount: number; expected_payment_id: string | null }>) {
+        const amt = p.expected_payment_id && gEpAmount.has(p.expected_payment_id)
+          ? gEpAmount.get(p.expected_payment_id)!
+          : Number(p.amount);
         if (amt > 0) {
           outstandingBalance += amt;
           unpaidSessionsCount += 1;
