@@ -450,9 +450,9 @@ export default function PlansPage() {
               <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-stretch pt-4">
                 {/* Free Starter card */}
                 <div className="relative p-8 rounded-2xl bg-card border border-border flex flex-col">
-                  <h3 className="text-2xl font-semibold text-foreground">{t("plans.freeName" as any)}</h3>
+                  <h3 className="text-2xl font-semibold text-foreground">{tr(COPY.free.name)}</h3>
                   <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed min-h-[3rem]">
-                    {t("plans.freeDesc" as any)}
+                    {tr(COPY.free.desc)}
                   </p>
 
                   <div className="flex items-baseline gap-1 mb-2">
@@ -460,18 +460,18 @@ export default function PlansPage() {
                     <span className="text-muted-foreground text-base">/ {periodSuffix["monthly"]}</span>
                   </div>
 
-                  <p className="text-sm mb-1 font-semibold text-primary">{t("plans.freeForever" as any)}</p>
+                  <p className="text-sm mb-1 font-semibold text-primary">{tr(COPY.free.foreverBadge)}</p>
                   <p className="text-xs text-muted-foreground mb-5 min-h-[1rem]">
-                    {t("plans.noCardRequired" as any)}
+                    {tr(COPY.free.noCard)}
                   </p>
 
                   <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-muted/60 border border-border mb-6">
                     <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span className="text-sm font-medium text-foreground">{freeFeatures[0]}</span>
+                    <span className="text-sm font-medium text-foreground">{freePill}</span>
                   </div>
 
                   <ul className="space-y-3 mb-8 flex-1">
-                    {freeFeatures.slice(1).map((f) => (
+                    {freeFeatures.map((f) => (
                       <li key={f} className="flex items-start gap-3 text-foreground">
                         <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
                         <span className="text-sm">{f}</span>
@@ -480,9 +480,10 @@ export default function PlansPage() {
                   </ul>
 
                   <p className="mt-auto text-xs text-muted-foreground text-center">
-                    {t("plans.freeAvailableByDefault" as any)}
+                    {tr(COPY.free.availableByDefault)}
                   </p>
                 </div>
+
 
                 {orderedPlans.map((plan) => {
                   const price = priceFor(plan.id, period);
