@@ -137,10 +137,12 @@ describe("autoCoveredApptIds", () => {
   it("does not flag a session when prepaid pool is insufficient", () => {
     const r = computeClientBalance({
       appointments: [
+        { id: "f1", status: "completed", price: 100, payment_status: "paid_now", scheduled_at: "2026-05-01" },
         { id: "s1", status: "completed", price: 180, payment_status: "partially_paid", scheduled_at: "2026-05-29" },
       ],
-      allocByApt: { s1: { paid: 120 } },
-      totalPaid: 150, // 30 in pool, gap is 60 — cannot cover
+      allocByApt: { f1: { paid: 100 }, s1: { paid: 120 } },
+      // 100 covers f1, plus 30 prepaid pool — gap is 60, cannot cover.
+      totalPaid: 130,
     });
     expect(r.autoCoveredApptIds.has("s1")).toBe(false);
     expect(r.outstanding).toBe(30);
