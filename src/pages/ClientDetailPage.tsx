@@ -183,11 +183,6 @@ export default function ClientDetailPage() {
   const paidSessions = (appointments as any[]).filter(isPaid).length;
   const cancelledSessions = (appointments as any[]).filter(isCancelled).length;
   const awaitingSessions = (appointments as any[]).filter(isAwaiting).length;
-  const prepaidSessions = (appointments as any[]).filter(isPrepaid).length;
-  const prepaidAmount = (appointments as any[])
-    .filter(isPrepaid)
-    .reduce((s: number, a: any) => s + Number(a.price || 0), 0);
-
 
   // Total Paid = sum of REAL payments received from this client (confirmed income only).
   // Never derived from appointment.price.
@@ -196,6 +191,38 @@ export default function ClientDetailPage() {
       .filter((i: any) => (i.status ?? "confirmed") === "confirmed")
       .reduce((s: number, i: any) => s + Number(i.amount || 0), 0);
   }, [clientIncome]);
+
+  // Prepaid sessions must be derived from REAL prepaid balance, not from session labels.
+  // Rules:
+  //   prepaid balance = max(0, total received payments − total payable completed sessions)
+  //   if debt > 0 → prepaid sessions = 0 (mutually exclusive states)
+  //   available prepaid sessions = floor(prepaid balance / representative session price)
+  const { prepaidSessions, prepaidAmount } = useMemo(() => {
+    const payableCompleted = (appointments as any[]).filter(
+      (a: any) =>
+        a.status === "completed" &&
+        Number(a.price || 0) > 0 &&
+        a.payment_status !== "not_applicable",
+    );
+    const totalPayableCompleted = payableCompleted.reduce(
+      (s: number, a: any) => s + Number(a.price || 0),
+      0,
+    );
+    const balance = Number(paidAmount || 0) - totalPayableCompleted;
+    if (balance <= 0) return { prepaidSessions: 0, prepaidAmount: 0 };
+    // Representative session price: most recent payable completed, else client base price
+    const sorted = [...payableCompleted].sort(
+      (a: any, b: any) =>
+        new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime(),
+    );
+    const refPrice =
+      Number(sorted[0]?.price) ||
+      Number((client as any)?.base_price) ||
+      0;
+    const count = refPrice > 0 ? Math.floor(balance / refPrice) : 0;
+    return { prepaidSessions: count, prepaidAmount: balance };
+  }, [appointments, paidAmount, client]);
+
 
   // Apply selected statistic filter to the full appointment list
   const filteredAppointments = useMemo(() => {
@@ -425,7 +452,6 @@ export default function ClientDetailPage() {
             { key: "paid", value: paidSessions, label: t("clientDetail.paidSessions"), color: "text-primary", border: "border-primary/30", icon: <CreditCard className="h-4 w-4 text-primary" />, sub: `${cs}${paidAmount.toFixed(0)}` },
             { key: "awaiting", value: awaitingSessions, label: t("clientDetail.pendingPayments"), color: "text-warning", border: "border-border" },
             { key: "cancelled", value: cancelledSessions, label: t("clientDetail.cancelled"), color: "text-destructive", border: "border-border" },
-            { key: "prepaid", value: prepaidSessions, label: t("clientDetail.prepaidSessions"), color: prepaidSessions > 0 ? "text-success" : "text-muted-foreground", border: "border-success/30" },
             { key: "supervision", value: supervisionCount, label: t("clientDetail.supervisionSessions"), color: "text-primary", border: "border-primary/20", icon: <ClipboardList className="h-4 w-4 text-primary" /> },
           ] as Array<{ key: StatFilter; value: number; label: string; color: string; border: string; icon?: any; sub?: string }>).map((card) => {
             const active = statFilter === card.key;
