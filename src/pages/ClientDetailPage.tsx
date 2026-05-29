@@ -204,13 +204,13 @@ export default function ClientDetailPage() {
         Number(a.price || 0) > 0 &&
         a.payment_status !== "not_applicable",
     );
-    const totalPayableCompleted = payableCompleted.reduce(
-      (s: number, a: any) => s + Number(a.price || 0),
+    // Prepaid = confirmed payments NOT yet allocated to any session.
+    const totalAllocated = Object.values(allocByApt).reduce(
+      (s: number, v: any) => s + Number(v?.paid || 0),
       0,
     );
-    const balance = Number(paidAmount || 0) - totalPayableCompleted;
+    const balance = Number(paidAmount || 0) - totalAllocated;
     if (balance <= 0) return { prepaidSessions: 0, prepaidAmount: 0 };
-    // Representative session price: most recent payable completed, else client base price
     const sorted = [...payableCompleted].sort(
       (a: any, b: any) =>
         new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime(),
@@ -221,7 +221,7 @@ export default function ClientDetailPage() {
       0;
     const count = refPrice > 0 ? Math.floor(balance / refPrice) : 0;
     return { prepaidSessions: count, prepaidAmount: balance };
-  }, [appointments, paidAmount, client]);
+  }, [appointments, paidAmount, allocByApt, client]);
 
 
   // Apply selected statistic filter to the full appointment list
