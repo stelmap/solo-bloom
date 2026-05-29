@@ -85,23 +85,33 @@ export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditReque
         : null;
 
   if (mode === "preview") {
+    const handleEditClick = () => {
+      if (inlineEdit) {
+        setDraft(value);
+        setInlineOpen(true);
+      } else {
+        onEditRequested?.();
+      }
+    };
+    const showEditAction = inlineEdit || onEditRequested;
     return (
+      <>
       <div className="bg-card rounded-xl border border-border p-5 space-y-3">
         <div className="flex items-center justify-between gap-2">
           <h3 className="font-semibold text-foreground flex items-center gap-2">
             <FileText className="h-4 w-4 text-primary" /> {t("clientNotes.shortTitle")}
           </h3>
-          {!isEmpty && onEditRequested && (
-            <Button variant="ghost" size="sm" onClick={onEditRequested}>
-              <Pencil className="h-3.5 w-3.5 mr-1" /> {t("clientNotes.editInProfile")}
+          {!isEmpty && showEditAction && (
+            <Button variant="ghost" size="sm" onClick={handleEditClick}>
+              <Pencil className="h-3.5 w-3.5 mr-1" /> {inlineEdit ? t("clientNotes.save") : t("clientNotes.editInProfile")}
             </Button>
           )}
         </div>
         {isEmpty ? (
           <div className="rounded-lg border border-dashed border-border bg-muted/30 p-4 text-center space-y-2">
             <p className="text-sm text-muted-foreground">{t("clientNotes.noneShort")}</p>
-            {onEditRequested && (
-              <Button variant="outline" size="sm" onClick={onEditRequested}>{t("clientNotes.addNote")}</Button>
+            {showEditAction && (
+              <Button variant="outline" size="sm" onClick={handleEditClick}>{t("clientNotes.addNote")}</Button>
             )}
           </div>
         ) : (
@@ -113,8 +123,7 @@ export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditReque
               </p>
             )}
           </div>
-        )}
-      </div>
+
     );
   }
 
