@@ -795,34 +795,11 @@ export default function ClientDetailPage() {
 
         {/* Balance — payments are managed in Finance → Payment Audit */}
         {(() => {
-          // Per-session unpaid breakdown — single source of truth shared with
-          // Session History and Finance pending receivables.
-          // outstanding = SUM over completed payable sessions of max(0, price - allocated)
-          const payableCompleted = (appointments as any[]).filter(
-            (a: any) =>
-              a.status === "completed" &&
-              Number(a.price || 0) > 0 &&
-              a.payment_status !== "not_applicable",
-          );
-          const totalPayableCompleted = payableCompleted.reduce(
-            (s: number, a: any) => s + Number(a.price || 0),
-            0,
-          );
-          const outstanding = payableCompleted.reduce((s: number, a: any) => {
-            const paid = Number(allocByApt[a.id]?.paid || 0);
-            const remaining = Number(a.price || 0) - paid;
-            return s + (remaining > 0 ? remaining : 0);
-          }, 0);
-          // Prepaid balance = confirmed client payments that remain UNALLOCATED to
-          // any session. Allocations are the single source of truth for what
-          // payment money is tied to a session (completed or otherwise), so any
-          // amount already allocated must not be counted as prepaid — even if the
-          // appointment status/payment_status hasn't caught up yet.
-          const totalAllocated = Object.values(allocByApt).reduce(
-            (s: number, v: any) => s + Number(v?.paid || 0),
-            0,
-          );
-          const prepaid = Math.max(0, Number(paidAmount || 0) - totalAllocated);
+          // Single source of truth: balanceComputation handles auto-coverage of
+          // partially-paid completed sessions from the prepaid pool, so the
+          // displayed Outstanding/Prepaid/Total Unpaid reflect the effective
+          // financial state after that virtual allocation.
+          const { prepaid, outstanding } = balanceComputation;
           const totalUnpaid = outstanding;
 
           return (
