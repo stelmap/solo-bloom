@@ -483,7 +483,7 @@ export default function BookingInboxPage() {
           </DialogHeader>
           <div className="space-y-2">
             <ClientPicker
-              clients={clients as any}
+              clients={activeClients as any}
               value={linkClientId}
               onChange={setLinkClientId}
             />
