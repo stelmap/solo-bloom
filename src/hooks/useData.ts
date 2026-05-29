@@ -2267,13 +2267,15 @@ export function useDashboardStats() {
           .select("date, is_non_working, custom_start_time, custom_end_time")
           .gte("date", monthStart)
           .lte("date", today.substring(0, 7) + "-31"),
-        // Outstanding balance: completed payable sessions not fully paid.
-        // Must include partially_paid_from_prepayment so dashboard "Total debt"
-        // matches Finance → Pending payments (useExpectedPayments uses the
-        // same status set).
+        // Outstanding balance: any payable session not fully paid. Mirrors
+        // `useExpectedPayments` exactly so dashboard "Total debt" matches
+        // Finance → Pending payments. Includes cancelled/no-show sessions
+        // the therapist explicitly chose to bill (waiting_for_payment).
+        // Group-session appointments are filtered out below and replaced by
+        // per-participant rows from group_session_payments.
         supabase.from("appointments")
-          .select("id, price, client_id")
-          .eq("status", "completed")
+          .select("id, price, client_id, status, payment_status")
+          .in("status", ["completed", "cancelled", "no-show"])
           .gt("price", 0)
           .in("payment_status", ["unpaid", "waiting_for_payment", "partially_paid", "partially_paid_from_prepayment"]),
 
