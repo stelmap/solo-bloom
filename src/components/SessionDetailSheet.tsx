@@ -47,6 +47,9 @@ interface SessionDetailSheetProps {
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"];
 
 export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12h = false }: SessionDetailSheetProps) {
+  const navigate = useNavigate();
+  const goTo = (path: string) => { onOpenChange(false); setTimeout(() => navigate(path), 50); };
+
   const { t, lang } = useLanguage();
   const emailLocaleMap: Record<string, string> = { en: "en-US", fr: "fr-FR", pl: "pl-PL", uk: "uk-UA" };
   const emailLocale = emailLocaleMap[lang] || "en-US";
