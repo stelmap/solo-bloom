@@ -24,6 +24,9 @@ export type BookingRequestRow = {
     | "expired";
   matched_client_name: string | null;
   created_at: string;
+  confirmation_email_status: "sent" | "failed" | null;
+  confirmation_email_sent_at: string | null;
+  confirmation_email_error: string | null;
 };
 
 const ACTIONABLE = ["pending", "needs_linking"] as const;

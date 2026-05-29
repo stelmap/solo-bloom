@@ -1928,6 +1928,9 @@ export type Database = {
           appointment_id: string | null
           client_id: string | null
           comment: string | null
+          confirmation_email_error: string | null
+          confirmation_email_sent_at: string | null
+          confirmation_email_status: string | null
           consent_at: string
           created_at: string
           duration_minutes: number
@@ -1948,6 +1951,9 @@ export type Database = {
           appointment_id?: string | null
           client_id?: string | null
           comment?: string | null
+          confirmation_email_error?: string | null
+          confirmation_email_sent_at?: string | null
+          confirmation_email_status?: string | null
           consent_at: string
           created_at?: string
           duration_minutes?: number
@@ -1968,6 +1974,9 @@ export type Database = {
           appointment_id?: string | null
           client_id?: string | null
           comment?: string | null
+          confirmation_email_error?: string | null
+          confirmation_email_sent_at?: string | null
+          confirmation_email_status?: string | null
           consent_at?: string
           created_at?: string
           duration_minutes?: number
@@ -2642,6 +2651,9 @@ export type Database = {
           appointment_id: string
           client_id: string
           comment: string
+          confirmation_email_error: string
+          confirmation_email_sent_at: string
+          confirmation_email_status: string
           created_at: string
           duration_minutes: number
           email: string
