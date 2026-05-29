@@ -186,7 +186,20 @@ export function useUpdateGroupMemberPrice() {
   });
 }
 
-// Complete group session with attendance-based billing
+// Complete group session with attendance-based billing.
+//
+// Per-participant flow (mirrors useCompleteAppointment so financial records,
+// prepaid balances and dashboards stay consistent across solo + group sessions):
+//   1. Wipe any prior income / allocations / expected_payments / payment-tracking
+//      rows for this group session so re-completion never duplicates records.
+//   2. For each billable participant (amount > 0):
+//        a. Consume their prepaid balance against this session via the same RPC
+//           individual sessions use (creates from_prepayment allocations).
+//        b. For the remaining gap, depending on `paymentState`:
+//             - paid_now / paid_in_advance: insert an income row with client_id
+//               + an income_session_allocations row covering the gap.
+//             - waiting_for_payment: insert an expected_payments row for the gap.
+//        c. Persist a group_session_payments tracking row.
 export function useCompleteGroupSession() {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -200,48 +213,100 @@ export function useCompleteGroupSession() {
       paymentState: string;
       paymentMethod: string;
     }) => {
-      // Mark appointment as completed
-      const { error: aptErr } = await supabase
+      // 1) Mark appointment as completed.
+      const { data: aptRow, error: aptErr } = await supabase
         .from("appointments")
         .update({ status: "completed", payment_status: paymentState } as any)
-        .eq("id", appointmentId);
+        .eq("id", appointmentId)
+        .select("scheduled_at")
+        .single();
       if (aptErr) throw aptErr;
 
-      // Clean up old records
+      const sessionDate = (aptRow as any)?.scheduled_at
+        ? new Date((aptRow as any).scheduled_at).toISOString().split("T")[0]
+        : new Date().toISOString().split("T")[0];
+      const today = new Date().toISOString().split("T")[0];
+      const payDate = paymentState === "paid_in_advance" ? today : sessionDate;
+
+      // 2) Wipe prior records for this appointment so re-completion is idempotent.
+      await supabase.from("income_session_allocations").delete().eq("appointment_id", appointmentId);
       await supabase.from("income").delete().eq("appointment_id", appointmentId);
       await supabase.from("expected_payments").delete().eq("appointment_id", appointmentId);
-
-      // Delete old group_session_payments for this session
       await supabase.from("group_session_payments" as any).delete().eq("group_session_id", groupSessionId);
 
-      const today = new Date().toISOString().split("T")[0];
-
+      // 3) Process each participant individually.
       for (const p of participants) {
         let incomeId: string | null = null;
         let expectedPaymentId: string | null = null;
+        let resolvedState = p.billable ? paymentState : "not_applicable";
 
-        if (p.billable && p.amount > 0) {
-          if (paymentState === "paid_now" || paymentState === "paid_in_advance") {
+        if (p.billable && p.amount > 0 && p.clientId) {
+          const amount = Number(p.amount);
+
+          // a) Consume client's prepaid balance against THIS appointment first.
+          //    The RPC inserts income_session_allocations rows with
+          //    from_prepayment = true and returns the consumed amount.
+          let consumed = 0;
+          try {
+            const { data: consumedRpc, error: consumeErr } = await (supabase as any).rpc(
+              "consume_client_credit_for_appointment",
+              { p_appointment_id: appointmentId, p_client_id: p.clientId, p_max_amount: amount },
+            );
+            if (consumeErr) throw consumeErr;
+            consumed = Number(consumedRpc ?? 0);
+          } catch {
+            consumed = 0;
+          }
+
+          const stillOwed = Math.max(amount - consumed, 0);
+          const fullyCoveredByPrepayment = stillOwed <= 0.001;
+
+          if (fullyCoveredByPrepayment) {
+            resolvedState = "paid_from_prepayment";
+          } else if (paymentState === "paid_now" || paymentState === "paid_in_advance") {
+            // b1) Cash/card received now for the remaining gap → income + allocation.
             const { data: inc, error: incErr } = await supabase.from("income").insert({
-              user_id: user!.id, appointment_id: appointmentId,
-              amount: p.amount, date: today, source: "group_session",
-              payment_method: paymentMethod, description: `Group session`,
+              user_id: user!.id,
+              appointment_id: appointmentId,
+              client_id: p.clientId,
+              amount: stillOwed,
+              date: payDate,
+              session_date: sessionDate,
+              source: "group_session",
+              payment_method: paymentMethod,
+              description: "Group session",
               ...(isDemoMode ? { is_demo: true } : {}),
             } as any).select("id").single();
             if (incErr) throw incErr;
-            incomeId = inc?.id || null;
-          } else if (paymentState === "waiting_for_payment") {
+            incomeId = (inc as any)?.id || null;
+
+            if (incomeId) {
+              await (supabase as any).from("income_session_allocations").insert({
+                user_id: user!.id,
+                income_id: incomeId,
+                appointment_id: appointmentId,
+                allocated_amount: stillOwed,
+                from_prepayment: false,
+              } as any);
+            }
+            resolvedState = consumed > 0.001 ? "partially_paid_from_prepayment" : paymentState;
+          } else {
+            // b2) Waiting for payment → pending expected payment for the gap.
             const { data: ep, error: epErr } = await supabase.from("expected_payments").insert({
-              user_id: user!.id, appointment_id: appointmentId,
-              client_id: p.clientId, amount: p.amount, status: "pending",
+              user_id: user!.id,
+              appointment_id: appointmentId,
+              client_id: p.clientId,
+              amount: stillOwed,
+              status: "pending",
               ...(isDemoMode ? { is_demo: true } : {}),
             } as any).select("id").single();
             if (epErr) throw epErr;
-            expectedPaymentId = ep?.id || null;
+            expectedPaymentId = (ep as any)?.id || null;
+            resolvedState = consumed > 0.001 ? "partially_paid_from_prepayment" : "waiting_for_payment";
           }
         }
 
-        // Create payment tracking record
+        // c) Persist tracking row for the group session UI.
         await supabase.from("group_session_payments" as any).insert({
           user_id: user!.id,
           group_id: groupId,
@@ -250,8 +315,11 @@ export function useCompleteGroupSession() {
           attendance_status: p.attendanceStatus,
           billing_rule_applied: p.billable,
           amount: p.billable ? p.amount : 0,
-          payment_state: p.billable ? paymentState : "not_applicable",
-          payment_method: p.billable && (paymentState === "paid_now" || paymentState === "paid_in_advance") ? paymentMethod : null,
+          payment_state: resolvedState,
+          payment_method:
+            p.billable && (resolvedState === "paid_now" || resolvedState === "paid_in_advance" || resolvedState === "partially_paid_from_prepayment")
+              ? paymentMethod
+              : null,
           income_id: incomeId,
           expected_payment_id: expectedPaymentId,
         });
@@ -262,6 +330,10 @@ export function useCompleteGroupSession() {
       qc.invalidateQueries({ queryKey: ["appointments"] });
       qc.invalidateQueries({ queryKey: ["income"] });
       qc.invalidateQueries({ queryKey: ["expected-payments"] });
+      qc.invalidateQueries({ queryKey: ["client-credit-balance"] });
+      qc.invalidateQueries({ queryKey: ["client-debt"] });
+      qc.invalidateQueries({ queryKey: ["client-allocations"] });
+      qc.invalidateQueries({ queryKey: ["appointment-allocations"] });
       qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
     },
   });
