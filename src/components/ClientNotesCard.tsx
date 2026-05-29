@@ -14,12 +14,18 @@ type Props = {
   client: { id: string; name: string; notes?: string | null; updated_at?: string | null };
   /**
    * "edit"     — full editor with autosave + expand action (Client Profile)
-   * "preview"  — read-only block with "Edit in Client Profile" link (Supervision)
+   * "preview"  — read-only block with "Edit" action (Supervision)
    */
   mode?: "edit" | "preview";
+  /**
+   * In preview mode: when true, Edit/Add Note opens an inline dialog editor
+   * instead of calling onEditRequested. Keeps the user on the current screen.
+   */
+  inlineEdit?: boolean;
   onEditRequested?: () => void;
   disabled?: boolean;
 };
+
 
 export function ClientNotesCard({ client, mode = "edit", onEditRequested, disabled }: Props) {
   const update = useUpdateClient();
