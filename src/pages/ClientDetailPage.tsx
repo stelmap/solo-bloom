@@ -792,13 +792,11 @@ export default function ClientDetailPage() {
             const remaining = Number(a.price || 0) - paid;
             return s + (remaining > 0 ? remaining : 0);
           }, 0);
-          // Prepaid balance = unallocated received income (income not yet tied
-          // to a payable session). Capped to non-negative.
-          const allocatedToPayable = payableCompleted.reduce(
-            (s: number, a: any) => s + Math.min(Number(a.price || 0), Number(allocByApt[a.id]?.paid || 0)),
-            0,
-          );
-          const prepaid = Math.max(0, Number(paidAmount || 0) - allocatedToPayable);
+          // Prepaid balance = money received beyond what's owed for ALL completed
+          // payable sessions (paid or unpaid). Outstanding debt is treated as still
+          // owed, so prepaid never overlaps with money tied to completed sessions.
+          // Mirrors the rule used for the prepaid sessions stat (see line ~211).
+          const prepaid = Math.max(0, Number(paidAmount || 0) - totalPayableCompleted);
           const totalUnpaid = outstanding;
 
           return (
