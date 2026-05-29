@@ -381,9 +381,10 @@ export default function PlansPage() {
               </p>
               <div className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700">
                 <Check className="h-4 w-4 shrink-0" />
-                <span className="text-sm font-medium">{t("plans.bulletAllFeatures" as any)}</span>
+                <span className="text-sm font-medium">{tr(COPY.allFeaturesBadge)}</span>
               </div>
             </header>
+
 
             {subscriptionError && (
               <div className="mx-auto max-w-4xl mb-8 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive">
