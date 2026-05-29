@@ -82,13 +82,11 @@ export function computeClientBalance({
   }
 
   const rawPrepaid = Math.max(0, Number(totalPaid || 0) - fullyPaidTotal);
-  // Free (unallocated) pool available to auto-cover outstanding gaps.
-  const freePool = Math.max(0, rawPrepaid - partialAllocated);
 
-  // Allocate the free pool to outstanding sessions oldest-first.
+  // Allocate the prepaid pool to outstanding sessions oldest-first.
   outstandingItems.sort((a, b) => a.ts - b.ts);
   const autoCoveredApptIds = new Set<string>();
-  let pool = freePool;
+  let pool = rawPrepaid;
   const EPSILON = 0.001;
   for (const item of outstandingItems) {
     if (pool + EPSILON >= item.gap) {
