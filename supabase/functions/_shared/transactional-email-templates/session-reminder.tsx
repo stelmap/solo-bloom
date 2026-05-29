@@ -362,7 +362,7 @@ const h1 = { fontSize: '30px', fontWeight: 'bold' as const, color: '#0f172a', ma
 const lead = { fontSize: '15px', color: '#5b6076', lineHeight: 1.6, margin: '0 0 24px', fontFamily: FONT_STACK }
 
 const detailsCard = { backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #f0eee9', borderLeft: '3px solid #FF9900', padding: '20px 22px', margin: '0 0 20px', fontFamily: FONT_STACK }
-const iconBox = { width: 36, height: 36, borderRadius: 10, backgroundColor: '#11122b', color: '#FF9900', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: '36px', textAlign: 'center' as const, fontSize: 16 }
+const iconBox = { width: 36, height: 36, borderRadius: 10, backgroundColor: '#11122b', color: '#FF9900', lineHeight: '36px', textAlign: 'center' as const, fontSize: 16, fontFamily: FONT_STACK }
 const rowLabel = { fontSize: '11px', color: '#8a8ca6', fontWeight: 'bold' as const, letterSpacing: '0.12em', margin: '0 0 4px' }
 const rowValue = { fontSize: '16px', color: '#0f172a', fontWeight: 'bold' as const, margin: 0 }
 const rowSub = { fontSize: '13px', color: '#8a8ca6', margin: '4px 0 0' }
