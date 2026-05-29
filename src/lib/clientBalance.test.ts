@@ -119,3 +119,45 @@ describe("computeClientBalance", () => {
     expect(r.outstanding).toBe(0);
   });
 });
+
+describe("autoCoveredApptIds", () => {
+  it("flags a partially-paid session whose gap is fully covered by prepaid pool", () => {
+    const r = computeClientBalance({
+      appointments: [
+        { id: "s1", status: "completed", price: 165, payment_status: "paid_now", scheduled_at: "2026-05-01" },
+        { id: "s5", status: "completed", price: 180, payment_status: "partially_paid", scheduled_at: "2026-05-29" },
+      ],
+      allocByApt: { s1: { paid: 165 }, s5: { paid: 120 } },
+      totalPaid: 1165, // 165 covers s1 fully, 1000 prepayment pool
+    });
+    expect(r.autoCoveredApptIds.has("s5")).toBe(true);
+    expect(r.prepaid).toBe(940);
+  });
+
+  it("does not flag a session when prepaid pool is insufficient", () => {
+    const r = computeClientBalance({
+      appointments: [
+        { id: "f1", status: "completed", price: 100, payment_status: "paid_now", scheduled_at: "2026-05-01" },
+        { id: "s1", status: "completed", price: 180, payment_status: "partially_paid", scheduled_at: "2026-05-29" },
+      ],
+      allocByApt: { f1: { paid: 100 }, s1: { paid: 120 } },
+      // 100 covers f1, plus 30 prepaid pool — gap is 60, cannot cover.
+      totalPaid: 130,
+    });
+    expect(r.autoCoveredApptIds.has("s1")).toBe(false);
+    expect(r.outstanding).toBe(30);
+  });
+
+  it("covers oldest outstanding sessions first", () => {
+    const r = computeClientBalance({
+      appointments: [
+        { id: "newer", status: "completed", price: 100, payment_status: "unpaid", scheduled_at: "2026-05-29" },
+        { id: "older", status: "completed", price: 100, payment_status: "partially_paid", scheduled_at: "2026-05-01" },
+      ],
+      allocByApt: { older: { paid: 40 } }, // gap 60
+      totalPaid: 60, // only enough to cover the older one's gap
+    });
+    expect(r.autoCoveredApptIds.has("older")).toBe(true);
+    expect(r.autoCoveredApptIds.has("newer")).toBe(false);
+  });
+});
