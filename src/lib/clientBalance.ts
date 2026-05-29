@@ -59,6 +59,7 @@ export function computeClientBalance({
   );
 
   let fullyPaidTotal = 0;
+  let partialAllocated = 0;
   let rawOutstanding = 0;
   const outstandingItems: { id: string; gap: number; ts: number }[] = [];
   for (const a of payableCompleted) {
@@ -69,6 +70,7 @@ export function computeClientBalance({
     } else {
       const gap = Math.max(0, price - paid);
       rawOutstanding += gap;
+      partialAllocated += Math.min(paid, price);
       if (gap > 0) {
         outstandingItems.push({
           id: a.id,
@@ -80,18 +82,19 @@ export function computeClientBalance({
   }
 
   const rawPrepaid = Math.max(0, Number(totalPaid || 0) - fullyPaidTotal);
+  // Free (unallocated) pool available to auto-cover outstanding gaps.
+  const freePool = Math.max(0, rawPrepaid - partialAllocated);
 
-  // Allocate prepaid pool to outstanding sessions oldest-first.
+  // Allocate the free pool to outstanding sessions oldest-first.
   outstandingItems.sort((a, b) => a.ts - b.ts);
   const autoCoveredApptIds = new Set<string>();
-  let pool = rawPrepaid;
+  let pool = freePool;
   const EPSILON = 0.001;
   for (const item of outstandingItems) {
     if (pool + EPSILON >= item.gap) {
       autoCoveredApptIds.add(item.id);
       pool -= item.gap;
     } else {
-      // Pool can't fully cover this gap — leave as partially paid and stop.
       break;
     }
   }
