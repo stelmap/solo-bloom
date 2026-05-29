@@ -58,7 +58,10 @@ export function BookingInboxPanel({ className }: { className?: string }) {
   const [newClientPhone, setNewClientPhone] = useState("");
   const [newClientNotes, setNewClientNotes] = useState("");
 
-  async function sendConfirmationEmail(req: BookingRequestRow, serviceId?: string) {
+  async function sendConfirmationEmail(
+    req: BookingRequestRow,
+    serviceId?: string,
+  ): Promise<{ ok: boolean; error?: string }> {
     try {
       const slot = new Date(req.requested_slot_at);
       const lang = (profile as any)?.language || "en";
@@ -74,7 +77,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       const clientName =
         `${req.first_name}${req.last_name ? " " + req.last_name : ""}`.trim() || "Client";
 
-      await supabase.functions.invoke("send-transactional-email", {
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
         body: {
           templateName: "booking-confirmation",
           recipientEmail: req.email,
@@ -91,9 +94,27 @@ export function BookingInboxPanel({ className }: { className?: string }) {
           },
         },
       });
-    } catch (e) {
-      // Email failure should not block the confirm flow itself
+      if (error) {
+        console.warn("booking-confirmation email failed", error);
+        return { ok: false, error: error.message || "Email send failed" };
+      }
+      return { ok: true };
+    } catch (e: any) {
       console.warn("booking-confirmation email failed", e);
+      return { ok: false, error: e?.message || "Email send failed" };
+    }
+  }
+
+  async function resendConfirmationEmail(req: BookingRequestRow) {
+    const res = await sendConfirmationEmail(req);
+    if (res.ok) {
+      toast({ title: "Confirmation email sent", description: `Sent to ${req.email}` });
+    } else {
+      toast({
+        title: "Confirmation email failed",
+        description: res.error,
+        variant: "destructive",
+      });
     }
   }
 
@@ -105,9 +126,21 @@ export function BookingInboxPanel({ className }: { className?: string }) {
     }
     try {
       await confirm.mutateAsync({ id: req.id, client_id: cid, service_id: confirmServiceId || undefined });
-      // Notify the client at the exact email from the request
-      await sendConfirmationEmail(req, confirmServiceId || undefined);
-      toast({ title: "Booking confirmed", description: `Confirmation sent to ${req.email}` });
+      // Notify the client at the exact email from the request, and surface
+      // delivery status so the therapist knows whether the email went out.
+      const emailRes = await sendConfirmationEmail(req, confirmServiceId || undefined);
+      if (emailRes.ok) {
+        toast({
+          title: "Booking confirmed",
+          description: `Confirmation email sent to ${req.email}`,
+        });
+      } else {
+        toast({
+          title: "Booking confirmed — but email failed",
+          description: `Could not send confirmation to ${req.email}. ${emailRes.error ?? ""}`.trim(),
+          variant: "destructive",
+        });
+      }
       setConfirmingFor(null); setConfirmClientId(""); setConfirmServiceId("");
     } catch (e: any) {
       toast({ title: "Could not confirm", description: e.message, variant: "destructive" });
