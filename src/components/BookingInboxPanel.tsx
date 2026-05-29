@@ -21,6 +21,7 @@ import {
   RefreshCw, Inbox, ChevronDown, ChevronUp, MailCheck, MailX, Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { sendBookingConfirmationEmail } from "@/lib/sendBookingConfirmationEmail";
 
 
 function fmt(s: string) {
@@ -68,64 +69,12 @@ export function BookingInboxPanel({ className }: { className?: string }) {
     req: BookingRequestRow,
     serviceId?: string,
   ): Promise<{ ok: boolean; error?: string }> {
-    let result: { ok: boolean; error?: string };
-    try {
-      const slot = new Date(req.requested_slot_at);
-      const lang = (profile as any)?.language || "en";
-      const dateFmt = slot.toLocaleDateString(lang, { year: "numeric", month: "long", day: "numeric" });
-      const timeFmt = slot.toLocaleTimeString(lang, { hour: "2-digit", minute: "2-digit" });
-      const therapistName =
-        (profile as any)?.business_name ||
-        (profile as any)?.full_name ||
-        "your specialist";
-      const serviceName =
-        (services as any[]).find((s) => s.id === serviceId)?.name ||
-        undefined;
-      const clientName =
-        `${req.first_name}${req.last_name ? " " + req.last_name : ""}`.trim() || "Client";
-
-      const { error } = await supabase.functions.invoke("send-transactional-email", {
-        body: {
-          templateName: "booking-confirmation",
-          recipientEmail: req.email,
-          // Stable per-request key — system de-duplicates so multiple confirms
-          // (e.g. after refresh) won't trigger a second email.
-          idempotencyKey: `booking-confirm-${req.id}`,
-          templateData: {
-            clientName,
-            specialistName: therapistName,
-            sessionDate: dateFmt,
-            sessionTime: timeFmt,
-            serviceName,
-            language: lang,
-          },
-        },
-      });
-      if (error) {
-        console.warn("booking-confirmation email failed", error);
-        result = { ok: false, error: error.message || "Email send failed" };
-      } else {
-        result = { ok: true };
-      }
-    } catch (e: any) {
-      console.warn("booking-confirmation email failed", e);
-      result = { ok: false, error: e?.message || "Email send failed" };
-    }
-
-    // Persist delivery status on the request row so the inbox can show
-    // it later (and the therapist can resend if it failed).
-    try {
-      await (supabase as any)
-        .from("session_booking_requests")
-        .update({
-          confirmation_email_status: result.ok ? "sent" : "failed",
-          confirmation_email_sent_at: result.ok ? new Date().toISOString() : null,
-          confirmation_email_error: result.ok ? null : (result.error ?? "Unknown error"),
-        })
-        .eq("id", req.id);
-    } catch (e) {
-      console.warn("Could not persist email status", e);
-    }
+    const result = await sendBookingConfirmationEmail({
+      req,
+      profile,
+      services: services as any[],
+      serviceId,
+    });
     refetch();
     return result;
   }

@@ -13,7 +13,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ClientPicker } from "@/components/ClientPicker";
-import { useClients, useCreateClient, useServices } from "@/hooks/useData";
+import { useClients, useCreateClient, useServices, useProfile } from "@/hooks/useData";
+import { sendBookingConfirmationEmail } from "@/lib/sendBookingConfirmationEmail";
 import {
   useBookingRequests, useConfirmBookingRequest,
   useDeclineBookingRequest, useLinkBookingRequestClient,
@@ -167,6 +168,7 @@ export default function BookingInboxPage() {
   const { data: rows = [], isLoading, refetch, isFetching } = useBookingRequests(status);
   const { data: services = [] } = useServices();
   const { data: clients = [] } = useClients();
+  const { data: profile } = useProfile();
 
   const confirm = useConfirmBookingRequest();
   const decline = useDeclineBookingRequest();
@@ -210,7 +212,22 @@ export default function BookingInboxPage() {
     }
     try {
       await confirm.mutateAsync({ id: req.id, client_id: cid, service_id: confirmServiceId || undefined });
-      toast({ title: L.toastConfirmed });
+      const emailRes = await sendBookingConfirmationEmail({
+        req,
+        profile,
+        services: services as any[],
+        serviceId: confirmServiceId || undefined,
+      });
+      refetch();
+      if (emailRes.ok) {
+        toast({ title: L.toastConfirmed, description: `Confirmation email sent to ${req.email}` });
+      } else {
+        toast({
+          title: L.toastConfirmed,
+          description: `Email failed: ${emailRes.error ?? ""} — you can resend from the inbox.`,
+          variant: "destructive",
+        });
+      }
       setConfirmingFor(null);
       setConfirmClientId("");
       setConfirmServiceId("");
