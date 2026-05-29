@@ -205,6 +205,7 @@ const SessionReminderEmail = ({
   const badgeText = isConfirmed ? T.badgeConfirmed : isAwaiting ? T.badgeAwaiting : T.badgeReminder
   const badgeStyle = isConfirmed ? badgeConfirmed : isAwaiting ? badgeAwaiting : badgeNeutral
 
+  const displaySpecialistName = titleCaseName(specialistName) || specialistName
   const subtitle = [specialistTitle, businessName].filter(Boolean).join(' · ')
 
   return (
@@ -215,7 +216,7 @@ const SessionReminderEmail = ({
         <Container style={container}>
           {/* Header */}
           <Section style={header}>
-            <Text style={logo}>Solo<span style={logoDot}>.Biz</span></Text>
+            <Text style={logo}>Solo<span style={logoDot}>.Bizz</span></Text>
             <Text style={headerLabel}>{T.label}</Text>
             <table cellPadding={0} cellSpacing={0} role="presentation" style={{ marginTop: 18 }}>
               <tr>
@@ -224,11 +225,11 @@ const SessionReminderEmail = ({
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={avatarUrl} alt="" width={48} height={48} style={avatarImg} />
                   ) : (
-                    <div style={avatarFallback}>{initials(specialistName)}</div>
+                    <div style={avatarFallback}>{initials(displaySpecialistName)}</div>
                   )}
                 </td>
                 <td style={{ verticalAlign: 'middle' }}>
-                  <Text style={specName}>{specialistName}</Text>
+                  <Text style={specName}>{displaySpecialistName}</Text>
                   {subtitle && <Text style={specSub}>{subtitle}</Text>}
                 </td>
               </tr>
@@ -239,7 +240,8 @@ const SessionReminderEmail = ({
           <Section style={bodySection}>
             <div style={badgeStyle}>{isConfirmed ? '✓ ' : ''}{badgeText}</div>
             <Heading style={h1}>{T.greeting(clientName)}</Heading>
-            <Text style={lead}>{T.intro(specialistName)}</Text>
+            <Text style={lead}>{T.intro(displaySpecialistName)}</Text>
+
 
             {/* Details card */}
             <Section style={detailsCard}>
