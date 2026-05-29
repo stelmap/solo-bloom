@@ -59,7 +59,7 @@ export function computeClientBalance({
   );
 
   let fullyPaidTotal = 0;
-  let partialAllocated = 0;
+
   let rawOutstanding = 0;
   const outstandingItems: { id: string; gap: number; ts: number }[] = [];
   for (const a of payableCompleted) {
@@ -70,7 +70,7 @@ export function computeClientBalance({
     } else {
       const gap = Math.max(0, price - paid);
       rawOutstanding += gap;
-      partialAllocated += Math.min(paid, price);
+
       if (gap > 0) {
         outstandingItems.push({
           id: a.id,
