@@ -5,7 +5,27 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = "Solo.Biz"
+const SITE_NAME = "Solo.Bizz"
+
+// Normalize ALL-CAPS or lower-case names into Title Case so the header
+// doesn't shout (e.g. "OLGA STELMAKH" -> "Olga Stelmakh").
+function titleCaseName(name?: string) {
+  if (!name) return name
+  const trimmed = name.trim()
+  if (!trimmed) return trimmed
+  // Only re-case if the name has no lowercase letter (i.e. it's all caps).
+  const hasLower = /\p{Ll}/u.test(trimmed)
+  if (hasLower) return trimmed
+  return trimmed
+    .toLocaleLowerCase()
+    .split(/(\s+|[-'’])/)
+    .map((part) =>
+      /^\s+$/.test(part) || part === '-' || part === "'" || part === '’'
+        ? part
+        : part.charAt(0).toLocaleUpperCase() + part.slice(1),
+    )
+    .join('')
+}
 
 type Lang = 'en' | 'fr' | 'pl' | 'uk'
 function normalizeLang(value: unknown): Lang {
@@ -185,6 +205,7 @@ const SessionReminderEmail = ({
   const badgeText = isConfirmed ? T.badgeConfirmed : isAwaiting ? T.badgeAwaiting : T.badgeReminder
   const badgeStyle = isConfirmed ? badgeConfirmed : isAwaiting ? badgeAwaiting : badgeNeutral
 
+  const displaySpecialistName = titleCaseName(specialistName) || specialistName
   const subtitle = [specialistTitle, businessName].filter(Boolean).join(' · ')
 
   return (
@@ -195,7 +216,7 @@ const SessionReminderEmail = ({
         <Container style={container}>
           {/* Header */}
           <Section style={header}>
-            <Text style={logo}>Solo<span style={logoDot}>.Biz</span></Text>
+            <Text style={logo}>Solo<span style={logoDot}>.Bizz</span></Text>
             <Text style={headerLabel}>{T.label}</Text>
             <table cellPadding={0} cellSpacing={0} role="presentation" style={{ marginTop: 18 }}>
               <tr>
@@ -204,11 +225,11 @@ const SessionReminderEmail = ({
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={avatarUrl} alt="" width={48} height={48} style={avatarImg} />
                   ) : (
-                    <div style={avatarFallback}>{initials(specialistName)}</div>
+                    <div style={avatarFallback}>{initials(displaySpecialistName)}</div>
                   )}
                 </td>
                 <td style={{ verticalAlign: 'middle' }}>
-                  <Text style={specName}>{specialistName}</Text>
+                  <Text style={specName}>{displaySpecialistName}</Text>
                   {subtitle && <Text style={specSub}>{subtitle}</Text>}
                 </td>
               </tr>
@@ -219,7 +240,8 @@ const SessionReminderEmail = ({
           <Section style={bodySection}>
             <div style={badgeStyle}>{isConfirmed ? '✓ ' : ''}{badgeText}</div>
             <Heading style={h1}>{T.greeting(clientName)}</Heading>
-            <Text style={lead}>{T.intro(specialistName)}</Text>
+            <Text style={lead}>{T.intro(displaySpecialistName)}</Text>
+
 
             {/* Details card */}
             <Section style={detailsCard}>
@@ -231,28 +253,12 @@ const SessionReminderEmail = ({
                 sub={timezoneLabel}
                 icon="🕐"
               />
-              <div style={divider} />
-              <Row
-                label={T.formatLabel}
-                value={
-                  format === 'in_person' ? T.formatInPerson :
-                  format === 'phone' ? T.formatPhone :
-                  T.formatOnline
-                }
-                sub={
-                  format === 'in_person' ? (locationText || undefined) :
-                  format === 'phone' ? T.formatPhoneHint :
-                  (meetingUrl ? undefined : T.formatOnlineHint)
-                }
-                link={format === 'online' ? meetingUrl : undefined}
-                icon={format === 'phone' ? '📞' : format === 'in_person' ? '📍' : '🎥'}
-              />
             </Section>
 
             {therapistMessage && (
               <Section style={noteCard}>
                 <Text style={noteText}>“{therapistMessage}”</Text>
-                <Text style={noteSig}>— {specialistName}</Text>
+                <Text style={noteSig}>— {displaySpecialistName}</Text>
               </Section>
             )}
 
@@ -274,7 +280,7 @@ const SessionReminderEmail = ({
 
           {/* Footer */}
           <Section style={footerSection}>
-            <Text style={footerBrand}>Solo<span style={logoDot}>.Biz</span></Text>
+            <Text style={footerBrand}>Solo<span style={logoDot}>.Bizz</span></Text>
             <Text style={footerText}>{T.footer}</Text>
           </Section>
         </Container>
@@ -328,29 +334,35 @@ export const template = {
 } satisfies TemplateEntry
 
 // ----- styles -----
-const main = { backgroundColor: '#ffffff', fontFamily: "'DM Sans', -apple-system, Arial, sans-serif", margin: 0, padding: '24px 12px' }
-const container = { maxWidth: '560px', margin: '0 auto', backgroundColor: '#ffffff', borderRadius: '20px', overflow: 'hidden', border: '1px solid #f0eee9' }
+// Cyrillic-safe font stack — matches the Solo.Bizz product UI and falls back to
+// system fonts that fully cover Cyrillic glyphs so the reminder doesn't render
+// in a mismatched fallback typeface in Gmail / Outlook.
+const FONT_STACK = "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+const SERIF_STACK = "'Instrument Serif', 'DM Serif Display', 'Times New Roman', Georgia, serif"
 
-const header = { backgroundColor: '#11122b', padding: '28px 28px 26px', color: '#ffffff' }
-const logo = { fontSize: '22px', fontWeight: 'bold' as const, color: '#ffffff', margin: 0 }
+const main = { backgroundColor: '#ffffff', fontFamily: FONT_STACK, margin: 0, padding: '24px 12px' }
+const container = { maxWidth: '560px', margin: '0 auto', backgroundColor: '#ffffff', borderRadius: '20px', overflow: 'hidden', border: '1px solid #f0eee9', fontFamily: FONT_STACK }
+
+const header = { backgroundColor: '#11122b', padding: '28px 28px 26px', color: '#ffffff', fontFamily: FONT_STACK }
+const logo = { fontSize: '22px', fontWeight: 'bold' as const, color: '#ffffff', margin: 0, fontFamily: FONT_STACK }
 const logoDot = { color: '#FF9900' }
-const headerLabel = { fontSize: '11px', color: '#8a8ca6', fontWeight: 'bold' as const, letterSpacing: '0.18em', margin: '22px 0 0' }
+const headerLabel = { fontSize: '11px', color: '#8a8ca6', fontWeight: 'bold' as const, letterSpacing: '0.18em', margin: '22px 0 0', fontFamily: FONT_STACK }
 const avatarImg = { borderRadius: '999px', display: 'block' as const, objectFit: 'cover' as const }
-const avatarFallback = { width: 48, height: 48, borderRadius: 999, backgroundColor: '#FF9900', color: '#11122b', fontWeight: 'bold' as const, fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: '48px', textAlign: 'center' as const }
-const specName = { fontSize: '17px', fontWeight: 'bold' as const, color: '#ffffff', margin: 0, lineHeight: 1.2 }
-const specSub = { fontSize: '13px', color: '#b4b6cf', margin: '4px 0 0' }
+const avatarFallback = { width: 48, height: 48, borderRadius: 999, backgroundColor: '#FF9900', color: '#11122b', fontWeight: 'bold' as const, fontSize: 16, lineHeight: '48px', textAlign: 'center' as const, fontFamily: FONT_STACK }
+const specName = { fontSize: '17px', fontWeight: 'bold' as const, color: '#ffffff', margin: 0, lineHeight: 1.2, fontFamily: FONT_STACK }
+const specSub = { fontSize: '13px', color: '#b4b6cf', margin: '4px 0 0', fontFamily: FONT_STACK }
 
-const bodySection = { padding: '28px 28px 8px' }
-const badgeBase = { display: 'inline-block', fontSize: '12px', fontWeight: 'bold' as const, padding: '6px 12px', borderRadius: '999px', margin: '0 0 16px' }
+const bodySection = { padding: '28px 28px 8px', fontFamily: FONT_STACK }
+const badgeBase = { display: 'inline-block', fontSize: '12px', fontWeight: 'bold' as const, padding: '6px 12px', borderRadius: '999px', margin: '0 0 16px', fontFamily: FONT_STACK }
 const badgeConfirmed = { ...badgeBase, backgroundColor: '#e6f7ed', color: '#1f9d55' }
 const badgeAwaiting = { ...badgeBase, backgroundColor: '#fff4e0', color: '#b8731a' }
 const badgeNeutral = { ...badgeBase, backgroundColor: '#eef0f7', color: '#4a4d6a' }
 
-const h1 = { fontSize: '30px', fontWeight: 'bold' as const, color: '#0f172a', margin: '0 0 12px', lineHeight: 1.15, fontFamily: "'Instrument Serif', 'DM Serif Display', Georgia, serif" }
-const lead = { fontSize: '15px', color: '#5b6076', lineHeight: 1.6, margin: '0 0 24px' }
+const h1 = { fontSize: '30px', fontWeight: 'bold' as const, color: '#0f172a', margin: '0 0 12px', lineHeight: 1.15, fontFamily: SERIF_STACK }
+const lead = { fontSize: '15px', color: '#5b6076', lineHeight: 1.6, margin: '0 0 24px', fontFamily: FONT_STACK }
 
-const detailsCard = { backgroundColor: '#f7f5f0', borderRadius: '16px', borderLeft: '3px solid #FF9900', padding: '20px 22px', margin: '0 0 20px' }
-const iconBox = { width: 36, height: 36, borderRadius: 10, backgroundColor: '#11122b', color: '#FF9900', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: '36px', textAlign: 'center' as const, fontSize: 16 }
+const detailsCard = { backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #f0eee9', borderLeft: '3px solid #FF9900', padding: '20px 22px', margin: '0 0 20px', fontFamily: FONT_STACK }
+const iconBox = { width: 36, height: 36, borderRadius: 10, backgroundColor: '#11122b', color: '#FF9900', lineHeight: '36px', textAlign: 'center' as const, fontSize: 16, fontFamily: FONT_STACK }
 const rowLabel = { fontSize: '11px', color: '#8a8ca6', fontWeight: 'bold' as const, letterSpacing: '0.12em', margin: '0 0 4px' }
 const rowValue = { fontSize: '16px', color: '#0f172a', fontWeight: 'bold' as const, margin: 0 }
 const rowSub = { fontSize: '13px', color: '#8a8ca6', margin: '4px 0 0' }
@@ -360,11 +372,11 @@ const noteCard = { backgroundColor: '#fdf6e7', borderRadius: '14px', padding: '1
 const noteText = { fontSize: '14px', color: '#5b4a23', fontStyle: 'italic' as const, lineHeight: 1.6, margin: 0 }
 const noteSig = { fontSize: '13px', color: '#5b4a23', margin: '12px 0 0' }
 
-const btnPrimary = { backgroundColor: '#FF9900', color: '#11122b', fontSize: '15px', fontWeight: 'bold' as const, borderRadius: '999px', padding: '14px 36px', textDecoration: 'none', display: 'inline-block' }
-const btnDisabled = { backgroundColor: '#e6f7ed', color: '#1f9d55', fontSize: '15px', fontWeight: 'bold' as const, borderRadius: '999px', padding: '14px 36px', display: 'inline-block' }
-const rescheduleRow = { fontSize: '13px', color: '#8a8ca6', margin: '14px 0 0', textAlign: 'center' as const }
+const btnPrimary = { backgroundColor: '#FF9900', color: '#11122b', fontSize: '15px', fontWeight: 'bold' as const, borderRadius: '999px', padding: '14px 36px', textDecoration: 'none', display: 'inline-block', fontFamily: FONT_STACK }
+const btnDisabled = { backgroundColor: '#e6f7ed', color: '#1f9d55', fontSize: '15px', fontWeight: 'bold' as const, borderRadius: '999px', padding: '14px 36px', display: 'inline-block', fontFamily: FONT_STACK }
+const rescheduleRow = { fontSize: '13px', color: '#8a8ca6', margin: '14px 0 0', textAlign: 'center' as const, fontFamily: FONT_STACK }
 const rescheduleLinkStyle = { color: '#FF9900', fontWeight: 'bold' as const, textDecoration: 'none' }
 
-const footerSection = { padding: '24px 28px 28px', borderTop: '1px solid #f0eee9', textAlign: 'center' as const }
-const footerBrand = { fontSize: '14px', color: '#0f172a', fontWeight: 'bold' as const, margin: '0 0 8px' }
-const footerText = { fontSize: '12px', color: '#8a8ca6', margin: 0, lineHeight: 1.6 }
+const footerSection = { padding: '24px 28px 28px', borderTop: '1px solid #f0eee9', textAlign: 'center' as const, fontFamily: FONT_STACK }
+const footerBrand = { fontSize: '14px', color: '#0f172a', fontWeight: 'bold' as const, margin: '0 0 8px', fontFamily: FONT_STACK }
+const footerText = { fontSize: '12px', color: '#8a8ca6', margin: 0, lineHeight: 1.6, fontFamily: FONT_STACK }
