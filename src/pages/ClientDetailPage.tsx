@@ -33,6 +33,7 @@ import { getDateLocale } from "@/lib/dateLocale";
 import { useMemo } from "react";
 import { formatScheduledTime } from "@/lib/timeFormat";
 import { cn } from "@/lib/utils";
+import { computeClientBalance } from "@/lib/clientBalance";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useDemoMode } from "@/hooks/useDemoWorkspace";
