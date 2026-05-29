@@ -449,6 +449,8 @@ function BookingAttention({ navigate, t, use12h }: { navigate: (p: string) => vo
   const pending = useMemo(() => rows.filter(r => r.status === "pending" || r.status === "needs_linking"), [rows]);
   const confirm = useConfirmBookingRequest();
   const decline = useDeclineBookingRequest();
+  const { data: profile } = useProfile();
+  const { data: services = [] } = useServices();
 
   if (!pending.length) {
     return (
