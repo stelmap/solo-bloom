@@ -21,6 +21,7 @@ import {
   RefreshCw, Inbox, ChevronDown, ChevronUp, MailCheck, MailX, Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { sendBookingConfirmationEmail } from "@/lib/sendBookingConfirmationEmail";
 
 
 function fmt(s: string) {
