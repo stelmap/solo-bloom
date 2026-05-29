@@ -67,8 +67,16 @@ export default function GroupDetailPage() {
   const analytics = useMemo(() => {
     const totalSessions = sessions.length;
     const completedSessions = sessions.filter((s: any) => s.appointments?.status === "completed").length;
+
+    // Map group_session_id -> appointment status, so attendance respects calendar status.
+    // Cancelled / no-show / scheduled sessions never count as "attended" — participants fall into "skipped".
+    const sessionStatusById = new Map<string, string>();
+    for (const s of sessions as any[]) {
+      sessionStatusById.set(s.id, s.appointments?.status || "scheduled");
+    }
+
     const clientStats = new Map<string, { name: string; attended: number; absent: number; skipped: number }>();
-    
+
     for (const att of allAttendance) {
       const clientId = att.client_id;
       const name = att.clients?.name || "Unknown";
@@ -76,6 +84,13 @@ export default function GroupDetailPage() {
         clientStats.set(clientId, { name, attended: 0, absent: 0, skipped: 0 });
       }
       const stat = clientStats.get(clientId)!;
+      const sessionStatus = sessionStatusById.get(att.group_session_id) || "scheduled";
+
+      // Only count real attendance when the underlying session actually took place.
+      if (sessionStatus !== "completed") {
+        stat.skipped++;
+        continue;
+      }
       if (att.status === "attended") stat.attended++;
       else if (att.status === "absent") stat.absent++;
       else if (att.status === "skipped") stat.skipped++;
@@ -83,6 +98,7 @@ export default function GroupDetailPage() {
 
     return { totalSessions, completedSessions, clientStats: Array.from(clientStats.entries()) };
   }, [sessions, allAttendance]);
+
 
   const openEdit = () => {
     if (!group) return;
