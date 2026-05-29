@@ -5,7 +5,27 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = "Solo.Biz"
+const SITE_NAME = "Solo.Bizz"
+
+// Normalize ALL-CAPS or lower-case names into Title Case so the header
+// doesn't shout (e.g. "OLGA STELMAKH" -> "Olga Stelmakh").
+function titleCaseName(name?: string) {
+  if (!name) return name
+  const trimmed = name.trim()
+  if (!trimmed) return trimmed
+  // Only re-case if the name has no lowercase letter (i.e. it's all caps).
+  const hasLower = /\p{Ll}/u.test(trimmed)
+  if (hasLower) return trimmed
+  return trimmed
+    .toLocaleLowerCase()
+    .split(/(\s+|[-'’])/)
+    .map((part) =>
+      /^\s+$/.test(part) || part === '-' || part === "'" || part === '’'
+        ? part
+        : part.charAt(0).toLocaleUpperCase() + part.slice(1),
+    )
+    .join('')
+}
 
 type Lang = 'en' | 'fr' | 'pl' | 'uk'
 function normalizeLang(value: unknown): Lang {
