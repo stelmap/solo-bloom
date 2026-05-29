@@ -13,7 +13,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ClientPicker } from "@/components/ClientPicker";
-import { useClients, useCreateClient, useServices } from "@/hooks/useData";
+import { useClients, useCreateClient, useServices, useProfile } from "@/hooks/useData";
+import { sendBookingConfirmationEmail } from "@/lib/sendBookingConfirmationEmail";
 import {
   useBookingRequests, useConfirmBookingRequest,
   useDeclineBookingRequest, useLinkBookingRequestClient,
