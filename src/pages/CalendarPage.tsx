@@ -243,6 +243,7 @@ export default function CalendarPage() {
     [bookingRequests],
   );
   const { data: clients = [] } = useClients();
+  const activeClients = useMemo(() => (clients as any[]).filter((c: any) => c.status !== "archived"), [clients]);
   const { data: services = [] } = useServices();
   const { data: profile } = useProfile();
   const { data: workingSchedule = [] } = useWorkingSchedule();
