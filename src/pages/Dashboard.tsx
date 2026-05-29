@@ -500,7 +500,17 @@ function BookingAttention({ navigate, t, use12h }: { navigate: (p: string) => vo
                 <button
                   onClick={async () => {
                     if (!r.client_id) { navigate("/booking-inbox"); return; }
-                    try { await confirm.mutateAsync({ id: r.id, client_id: r.client_id }); toast({ title: "OK" }); }
+                    try {
+                      await confirm.mutateAsync({ id: r.id, client_id: r.client_id });
+                      const emailRes = await sendBookingConfirmationEmail({ req: r, profile, services: services as any[] });
+                      toast({
+                        title: "Confirmed",
+                        description: emailRes.ok
+                          ? `Confirmation email sent to ${r.email}`
+                          : `Email failed: ${emailRes.error ?? ""}`,
+                        variant: emailRes.ok ? undefined : "destructive",
+                      });
+                    }
                     catch (e: any) { toast({ title: e.message, variant: "destructive" }); }
                   }}
                   className="text-xs font-semibold px-3 py-1.5 rounded-full bg-success/10 text-success hover:bg-success/20 inline-flex items-center gap-1"
