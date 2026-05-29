@@ -372,11 +372,11 @@ const noteCard = { backgroundColor: '#fdf6e7', borderRadius: '14px', padding: '1
 const noteText = { fontSize: '14px', color: '#5b4a23', fontStyle: 'italic' as const, lineHeight: 1.6, margin: 0 }
 const noteSig = { fontSize: '13px', color: '#5b4a23', margin: '12px 0 0' }
 
-const btnPrimary = { backgroundColor: '#FF9900', color: '#11122b', fontSize: '15px', fontWeight: 'bold' as const, borderRadius: '999px', padding: '14px 36px', textDecoration: 'none', display: 'inline-block' }
-const btnDisabled = { backgroundColor: '#e6f7ed', color: '#1f9d55', fontSize: '15px', fontWeight: 'bold' as const, borderRadius: '999px', padding: '14px 36px', display: 'inline-block' }
-const rescheduleRow = { fontSize: '13px', color: '#8a8ca6', margin: '14px 0 0', textAlign: 'center' as const }
+const btnPrimary = { backgroundColor: '#FF9900', color: '#11122b', fontSize: '15px', fontWeight: 'bold' as const, borderRadius: '999px', padding: '14px 36px', textDecoration: 'none', display: 'inline-block', fontFamily: FONT_STACK }
+const btnDisabled = { backgroundColor: '#e6f7ed', color: '#1f9d55', fontSize: '15px', fontWeight: 'bold' as const, borderRadius: '999px', padding: '14px 36px', display: 'inline-block', fontFamily: FONT_STACK }
+const rescheduleRow = { fontSize: '13px', color: '#8a8ca6', margin: '14px 0 0', textAlign: 'center' as const, fontFamily: FONT_STACK }
 const rescheduleLinkStyle = { color: '#FF9900', fontWeight: 'bold' as const, textDecoration: 'none' }
 
-const footerSection = { padding: '24px 28px 28px', borderTop: '1px solid #f0eee9', textAlign: 'center' as const }
-const footerBrand = { fontSize: '14px', color: '#0f172a', fontWeight: 'bold' as const, margin: '0 0 8px' }
-const footerText = { fontSize: '12px', color: '#8a8ca6', margin: 0, lineHeight: 1.6 }
+const footerSection = { padding: '24px 28px 28px', borderTop: '1px solid #f0eee9', textAlign: 'center' as const, fontFamily: FONT_STACK }
+const footerBrand = { fontSize: '14px', color: '#0f172a', fontWeight: 'bold' as const, margin: '0 0 8px', fontFamily: FONT_STACK }
+const footerText = { fontSize: '12px', color: '#8a8ca6', margin: 0, lineHeight: 1.6, fontFamily: FONT_STACK }
