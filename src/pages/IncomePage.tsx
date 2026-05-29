@@ -174,7 +174,7 @@ export default function IncomePage() {
                     <SelectTrigger><SelectValue placeholder={t("income.selectClient")} /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="__none__">{t("income.noClient")}</SelectItem>
-                      {(clients as any[]).map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                      {(clients as any[]).filter((c: any) => c.status !== "archived").map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
