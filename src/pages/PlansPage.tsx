@@ -600,20 +600,23 @@ export default function PlansPage() {
 
               </div>
             )}
+
+            {/* Landing-aligned footer copy */}
+            <div className="mt-12 text-center max-w-3xl mx-auto space-y-2">
+              <p className="text-base text-muted-foreground">{tr(COPY.footer1)}</p>
+              <p className="text-base font-semibold text-foreground">{tr(COPY.footer2)}</p>
+            </div>
+
+            <p className="mt-8 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+              {tr(COPY.privacyShort)}
+            </p>
           </div>
         </section>
 
 
         <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-          {/* Privacy / trust block — placed near decision point */}
-          <div className="max-w-3xl mx-auto rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-4 sm:p-5 flex items-start gap-3.5">
-            <div className="h-9 w-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-              <ShieldCheck className="h-4 w-4 text-primary" />
-            </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {t("privacy.longClients" as any)}
-            </p>
-          </div>
+
 
           {/* Footer CTA */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
