@@ -258,7 +258,7 @@ const SessionReminderEmail = ({
             {therapistMessage && (
               <Section style={noteCard}>
                 <Text style={noteText}>“{therapistMessage}”</Text>
-                <Text style={noteSig}>— {specialistName}</Text>
+                <Text style={noteSig}>— {displaySpecialistName}</Text>
               </Section>
             )}
 
