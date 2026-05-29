@@ -6,7 +6,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, Check, Loader2, Sparkles, ArrowLeft, Trash2, ShieldCheck } from "lucide-react";
+import { AlertCircle, Check, CheckCircle2, Loader2, Sparkles, ArrowLeft, Trash2, ShieldCheck, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHasDemoData } from "@/hooks/useDemoWorkspace";
@@ -267,244 +267,294 @@ export default function PlansPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in">
-        <button
-          onClick={() => navigate("/settings")}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {t("plans.backToSettings")}
-        </button>
+      <div className="animate-fade-in">
+        <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
+          <button
+            onClick={() => navigate("/settings")}
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {t("plans.backToSettings")}
+          </button>
+        </div>
 
-        <header className="space-y-3 text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">{t("plans.title")}</h1>
-          <p className="text-muted-foreground max-w-xl mx-auto">
-            {t("plans.subtitle")}
-          </p>
-        </header>
-
-        {subscriptionError && (
-          <div className="mx-auto max-w-4xl rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
-              <div className="space-y-1">
-                <p className="text-sm font-semibold">{t("plans.billingError")}</p>
-                <p className="text-sm text-destructive/90">{subscriptionError}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Billing period toggle */}
-        {availablePeriods.length > 1 && (
-          <div className="flex justify-center">
-            <div className="inline-flex rounded-xl border border-border bg-muted/40 p-1">
-              {availablePeriods.map((p) => {
-                const isActive = period === p;
-                const saveLabel = p === "quarterly" ? "−20%" : p === "yearly" ? "−40%" : null;
-                return (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setPeriod(p)}
-                    className={cn(
-                      "relative px-4 py-2 text-sm font-medium rounded-lg transition-all",
-                      isActive
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {periodLabels[p]}
-                    {saveLabel && (
-                      <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-primary/15 text-primary">
-                        {saveLabel}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Plan grid */}
-        {loading ? (
-          <div className="flex items-center justify-center py-24">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        ) : orderedPlans.length === 0 ? (
-          <div className="text-center py-16 bg-card border border-border rounded-2xl">
-            <p className="text-muted-foreground">{t("plans.loadingNone")}</p>
-          </div>
-        ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto items-stretch">
-            {/* Free Starter card (informational — granted by default) */}
-            <div className="relative text-left p-6 rounded-2xl border-2 border-border bg-card flex flex-col">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {t("plans.freeName" as any)}
-                </p>
-                <div className="mt-1 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold text-foreground">€0</span>
-                  <span className="text-sm text-muted-foreground">/ {periodSuffix["monthly"]}</span>
-                </div>
-                <p className="mt-1 text-xs font-semibold text-primary">{t("plans.freeForever" as any)}</p>
-                <p className="text-xs text-muted-foreground">{t("plans.noCardRequired" as any)}</p>
-              </div>
-              <p className="mt-3 text-sm text-muted-foreground">
-                {t("plans.freeDesc" as any)}
+        <section className="px-4 sm:px-6 py-10 sm:py-16 bg-orange-50/60">
+          <div className="max-w-6xl mx-auto">
+            <header className="text-center mb-10 space-y-4">
+              <p className="text-sm font-semibold uppercase tracking-widest text-primary">{t("plans.title")}</p>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">{t("plans.title")}</h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                {t("plans.subtitle")}
               </p>
-              <ul className="mt-5 space-y-2.5 flex-1">
-                {freeFeatures.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm text-foreground">
-                    <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-5 text-xs text-muted-foreground">
-                {t("plans.freeAvailableByDefault" as any)}
-              </p>
-            </div>
+              <div className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700">
+                <Check className="h-4 w-4 shrink-0" />
+                <span className="text-sm font-medium">{t("plans.bulletAllFeatures" as any)}</span>
+              </div>
+            </header>
 
-            {orderedPlans.map((plan) => {
-              const price = priceFor(plan.id, period);
-              const isHighlighted = plan.code === HIGHLIGHTED_CODE;
-              const isSelected = selectedPlanId === plan.id;
-              const features = planFeatures[plan.code] ?? [];
-              const savings = price ? savingsVsMonthly(prices, plan.id, period) : null;
-              const equivPerMonth =
-                price && period !== "monthly"
-                  ? Number(price.price) / (period === "quarterly" ? 3 : 12)
-                  : null;
-              const billedLabel =
-                period === "monthly"
-                  ? "Billed monthly"
-                  : period === "quarterly"
-                    ? "Billed every 3 months"
-                    : "Billed yearly";
-
-              return (
-                <button
-                  key={plan.id}
-                  type="button"
-                  onClick={() => setSelectedPlanId(plan.id)}
-                  className={cn(
-                    "group relative text-left p-6 rounded-2xl border-2 transition-all duration-200 flex flex-col",
-                    isSelected
-                      ? "border-primary ring-2 ring-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 shadow-lg shadow-primary/10"
-                      : isHighlighted
-                        ? "border-primary/40 bg-gradient-to-br from-primary/5 to-transparent hover:border-primary hover:-translate-y-0.5 hover:shadow-md"
-                        : "border-border bg-card hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-md"
-                  )}
-                >
-                  {isHighlighted && (
-                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-primary text-primary-foreground">
-                        <Sparkles className="h-3 w-3" />
-                        {t("plans.mostPopular")}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        {plan.name}
-                      </p>
-                      <div className="mt-1 flex items-baseline gap-1">
-                        <span className="text-3xl font-bold text-foreground">
-                          {price ? formatPrice(price.price, price.currency) : "—"}
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          / {periodSuffix[period]}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-xs text-muted-foreground">{billedLabel}</p>
-                      {equivPerMonth !== null && price && (
-                        <p className="text-xs font-medium text-primary">
-                          ≈ {formatPrice(Number(equivPerMonth.toFixed(2)), price.currency)}/{periodSuffix["monthly"]}
-                        </p>
-                      )}
-                      {savings !== null && (
-                        <Badge variant="secondary" className="mt-2 text-[10px]">
-                          {t("plans.savePctVsMonthly", { pct: savings })}
-                        </Badge>
-                      )}
-                    </div>
-                    {isSelected && (
-                      <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0">
-                        <Check className="h-3.5 w-3.5" />
-                      </div>
-                    )}
+            {subscriptionError && (
+              <div className="mx-auto max-w-4xl mb-8 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold">{t("plans.billingError")}</p>
+                    <p className="text-sm text-destructive/90">{subscriptionError}</p>
                   </div>
+                </div>
+              </div>
+            )}
 
-                  {(planDescriptions[plan.code] || plan.description) && (
-                    <p className="mt-3 text-sm text-muted-foreground">
-                      {planDescriptions[plan.code] || plan.description}
-                    </p>
-                  )}
+            {/* Billing period toggle (landing style) */}
+            {availablePeriods.length > 1 && (
+              <div className="flex justify-center mb-10">
+                <div className="inline-flex rounded-full border border-border bg-card p-1 shadow-sm">
+                  {availablePeriods.map((p) => {
+                    const isActive = period === p;
+                    const saveLabel = p === "quarterly" ? "−20%" : p === "yearly" ? "−40%" : null;
+                    return (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setPeriod(p)}
+                        className={cn(
+                          "relative px-4 sm:px-5 py-2 rounded-full text-sm font-medium transition-all",
+                          isActive
+                            ? "bg-primary text-primary-foreground shadow"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        {periodLabels[p]}
+                        {saveLabel && (
+                          <span
+                            className={cn(
+                              "ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold",
+                              isActive
+                                ? "bg-primary-foreground/20 text-primary-foreground"
+                                : "bg-emerald-100 text-emerald-700"
+                            )}
+                          >
+                            {saveLabel}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-                  <p className="mt-4 text-sm font-semibold text-foreground">
-                    {t("plans.allIncludedIntro" as any)}
+            {/* Plan grid (landing style) */}
+            {loading ? (
+              <div className="flex items-center justify-center py-24">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : orderedPlans.length === 0 ? (
+              <div className="text-center py-16 bg-card border border-border rounded-2xl">
+                <p className="text-muted-foreground">{t("plans.loadingNone")}</p>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-stretch pt-4">
+                {/* Free Starter card */}
+                <div className="relative p-8 rounded-2xl bg-card border border-border flex flex-col">
+                  <h3 className="text-2xl font-semibold text-foreground">{t("plans.freeName" as any)}</h3>
+                  <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed min-h-[3rem]">
+                    {t("plans.freeDesc" as any)}
                   </p>
 
-                  <ul className="mt-3 space-y-2.5 flex-1">
-                    {features.map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-sm text-foreground">
-                        <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                        <span>{f}</span>
+                  <div className="flex items-baseline gap-1 mb-2">
+                    <span className="text-5xl font-bold text-foreground">€0</span>
+                    <span className="text-muted-foreground text-base">/ {periodSuffix["monthly"]}</span>
+                  </div>
+
+                  <p className="text-sm mb-1 font-semibold text-primary">{t("plans.freeForever" as any)}</p>
+                  <p className="text-xs text-muted-foreground mb-5 min-h-[1rem]">
+                    {t("plans.noCardRequired" as any)}
+                  </p>
+
+                  <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-muted/60 border border-border mb-6">
+                    <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span className="text-sm font-medium text-foreground">{freeFeatures[0]}</span>
+                  </div>
+
+                  <ul className="space-y-3 mb-8 flex-1">
+                    {freeFeatures.slice(1).map((f) => (
+                      <li key={f} className="flex items-start gap-3 text-foreground">
+                        <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
+                        <span className="text-sm">{f}</span>
                       </li>
                     ))}
                   </ul>
-                </button>
-              );
-            })}
-          </div>
-        )}
 
-        {/* Privacy / trust block — placed near decision point */}
-        <div className="max-w-3xl mx-auto rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-4 sm:p-5 flex items-start gap-3.5">
-          <div className="h-9 w-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-            <ShieldCheck className="h-4 w-4 text-primary" />
-          </div>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {t("privacy.longClients" as any)}
-          </p>
-        </div>
+                  <p className="mt-auto text-xs text-muted-foreground text-center">
+                    {t("plans.freeAvailableByDefault" as any)}
+                  </p>
+                </div>
 
-        {/* Footer CTA */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
-          <p className="text-xs text-muted-foreground">
-            {t("plans.footerSecure")}
-          </p>
-          <div className="flex items-center gap-3">
-            {canClearDemo && (
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={requestClearDemo}
-                disabled={clearing}
-              >
-                <Trash2 className="h-4 w-4" />
-                {clearing ? t("plans.clearing") : t("plans.clearDemo")}
-              </Button>
+                {orderedPlans.map((plan) => {
+                  const price = priceFor(plan.id, period);
+                  const isHighlighted = plan.code === HIGHLIGHTED_CODE;
+                  const isSelected = selectedPlanId === plan.id;
+                  const features = planFeatures[plan.code] ?? [];
+                  const pill = features[0];
+                  const restFeatures = features.slice(1);
+                  const equivPerMonth =
+                    price && period !== "monthly"
+                      ? Number(price.price) / (period === "quarterly" ? 3 : 12)
+                      : null;
+                  const billedLabel =
+                    period === "monthly"
+                      ? t("plans.billedMonthly" as any) || "Billed monthly"
+                      : period === "quarterly"
+                        ? t("plans.billedQuarterly" as any) || "Billed every 3 months"
+                        : t("plans.billedYearly" as any) || "Billed yearly";
+                  const isSolo = plan.code === "solo";
+                  const isPro = plan.code === "pro";
+                  const bulletColor = isSolo
+                    ? "text-primary"
+                    : isPro
+                      ? "text-emerald-500"
+                      : "text-muted-foreground";
+
+                  return (
+                    <button
+                      key={plan.id}
+                      type="button"
+                      onClick={() => setSelectedPlanId(plan.id)}
+                      className={cn(
+                        "relative p-8 rounded-2xl bg-card flex flex-col text-left transition-all",
+                        isHighlighted
+                          ? "border-2 border-primary shadow-xl"
+                          : "border border-border",
+                        isSelected
+                          ? "ring-2 ring-primary/40 -translate-y-0.5"
+                          : "hover:-translate-y-0.5 hover:shadow-md"
+                      )}
+                    >
+                      {isHighlighted && (
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-primary text-primary-foreground inline-flex items-center gap-1">
+                          <Sparkles className="h-3 w-3" />
+                          {t("plans.mostPopular")}
+                        </span>
+                      )}
+                      {!isHighlighted && isPro && (
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-emerald-500 text-white">
+                          {t("plans.bulletScalingTeams" as any) ? "Pro" : "Pro"}
+                        </span>
+                      )}
+
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="text-2xl font-semibold text-foreground">{plan.name}</h3>
+                        {isSelected && (
+                          <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+                            <Check className="h-3.5 w-3.5" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed min-h-[3rem]">
+                        {planDescriptions[plan.code] || plan.description}
+                      </p>
+
+                      <div className="flex items-baseline gap-1 mb-2">
+                        <span className="text-5xl font-bold text-foreground">
+                          {price ? formatPrice(price.price, price.currency) : "—"}
+                        </span>
+                        <span className="text-muted-foreground text-base">/ {periodSuffix[period]}</span>
+                      </div>
+
+                      <p className="text-sm mb-1 text-muted-foreground">{billedLabel}</p>
+                      <p className="text-xs text-muted-foreground mb-5 min-h-[1rem]">
+                        {equivPerMonth !== null && price
+                          ? `≈ ${formatPrice(Number(equivPerMonth.toFixed(2)), price.currency)} / ${periodSuffix["monthly"]}`
+                          : "\u00A0"}
+                      </p>
+
+                      {pill && (
+                        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-muted/60 border border-border mb-6">
+                          <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span className="text-sm font-medium text-foreground">{pill}</span>
+                        </div>
+                      )}
+
+                      <ul className="space-y-3 mb-8 flex-1">
+                        {restFeatures.map((f) => (
+                          <li key={f} className="flex items-start gap-3 text-foreground">
+                            <CheckCircle2 className={cn("h-4 w-4 shrink-0 mt-0.5", bulletColor)} />
+                            <span className="text-sm">{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <div
+                        className={cn(
+                          "mt-auto w-full h-12 px-8 inline-flex items-center justify-center rounded-xl text-base font-semibold gap-2 transition-all",
+                          isSelected
+                            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                            : "border border-border text-foreground bg-background hover:border-primary/40"
+                        )}
+                      >
+                        {isSelected ? (
+                          <>
+                            <Check className="h-4 w-4" />
+                            {t("plans.continueSelect") ? t("plans.selected" as any) || "Selected" : "Selected"}
+                          </>
+                        ) : (
+                          t("plans.selectPlan" as any) || t("plans.continueSelect")
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             )}
-            <Button
-              size="lg"
-              disabled={!selectedPlanId || continuing}
-              onClick={handleContinue}
-              className="min-w-[180px]"
-            >
-              {continuing ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>{selectedPlanId ? t("plans.continue") : t("plans.continueSelect")}</>
+          </div>
+        </section>
+
+
+        <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+          {/* Privacy / trust block — placed near decision point */}
+          <div className="max-w-3xl mx-auto rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-4 sm:p-5 flex items-start gap-3.5">
+            <div className="h-9 w-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {t("privacy.longClients" as any)}
+            </p>
+          </div>
+
+          {/* Footer CTA */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
+            <p className="text-xs text-muted-foreground">
+              {t("plans.footerSecure")}
+            </p>
+            <div className="flex items-center gap-3">
+              {canClearDemo && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={requestClearDemo}
+                  disabled={clearing}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {clearing ? t("plans.clearing") : t("plans.clearDemo")}
+                </Button>
               )}
-            </Button>
+              <Button
+                size="lg"
+                disabled={!selectedPlanId || continuing}
+                onClick={handleContinue}
+                className="min-w-[180px] h-12 rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
+              >
+                {continuing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>{selectedPlanId ? t("plans.continue") : t("plans.continueSelect")}</>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
+
 
       <ConfirmDeleteDialog
         open={confirmClearOpen}
