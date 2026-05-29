@@ -68,6 +68,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
     req: BookingRequestRow,
     serviceId?: string,
   ): Promise<{ ok: boolean; error?: string }> {
+    let result: { ok: boolean; error?: string };
     try {
       const slot = new Date(req.requested_slot_at);
       const lang = (profile as any)?.language || "en";
@@ -102,13 +103,31 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       });
       if (error) {
         console.warn("booking-confirmation email failed", error);
-        return { ok: false, error: error.message || "Email send failed" };
+        result = { ok: false, error: error.message || "Email send failed" };
+      } else {
+        result = { ok: true };
       }
-      return { ok: true };
     } catch (e: any) {
       console.warn("booking-confirmation email failed", e);
-      return { ok: false, error: e?.message || "Email send failed" };
+      result = { ok: false, error: e?.message || "Email send failed" };
     }
+
+    // Persist delivery status on the request row so the inbox can show
+    // it later (and the therapist can resend if it failed).
+    try {
+      await (supabase as any)
+        .from("session_booking_requests")
+        .update({
+          confirmation_email_status: result.ok ? "sent" : "failed",
+          confirmation_email_sent_at: result.ok ? new Date().toISOString() : null,
+          confirmation_email_error: result.ok ? null : (result.error ?? "Unknown error"),
+        })
+        .eq("id", req.id);
+    } catch (e) {
+      console.warn("Could not persist email status", e);
+    }
+    refetch();
+    return result;
   }
 
   async function resendConfirmationEmail(req: BookingRequestRow) {
