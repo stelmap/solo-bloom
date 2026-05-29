@@ -334,28 +334,34 @@ export const template = {
 } satisfies TemplateEntry
 
 // ----- styles -----
-const main = { backgroundColor: '#ffffff', fontFamily: "'DM Sans', -apple-system, Arial, sans-serif", margin: 0, padding: '24px 12px' }
-const container = { maxWidth: '560px', margin: '0 auto', backgroundColor: '#ffffff', borderRadius: '20px', overflow: 'hidden', border: '1px solid #f0eee9' }
+// Cyrillic-safe font stack — matches the Solo.Bizz product UI and falls back to
+// system fonts that fully cover Cyrillic glyphs so the reminder doesn't render
+// in a mismatched fallback typeface in Gmail / Outlook.
+const FONT_STACK = "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+const SERIF_STACK = "'Instrument Serif', 'DM Serif Display', 'Times New Roman', Georgia, serif"
 
-const header = { backgroundColor: '#11122b', padding: '28px 28px 26px', color: '#ffffff' }
-const logo = { fontSize: '22px', fontWeight: 'bold' as const, color: '#ffffff', margin: 0 }
+const main = { backgroundColor: '#ffffff', fontFamily: FONT_STACK, margin: 0, padding: '24px 12px' }
+const container = { maxWidth: '560px', margin: '0 auto', backgroundColor: '#ffffff', borderRadius: '20px', overflow: 'hidden', border: '1px solid #f0eee9', fontFamily: FONT_STACK }
+
+const header = { backgroundColor: '#11122b', padding: '28px 28px 26px', color: '#ffffff', fontFamily: FONT_STACK }
+const logo = { fontSize: '22px', fontWeight: 'bold' as const, color: '#ffffff', margin: 0, fontFamily: FONT_STACK }
 const logoDot = { color: '#FF9900' }
-const headerLabel = { fontSize: '11px', color: '#8a8ca6', fontWeight: 'bold' as const, letterSpacing: '0.18em', margin: '22px 0 0' }
+const headerLabel = { fontSize: '11px', color: '#8a8ca6', fontWeight: 'bold' as const, letterSpacing: '0.18em', margin: '22px 0 0', fontFamily: FONT_STACK }
 const avatarImg = { borderRadius: '999px', display: 'block' as const, objectFit: 'cover' as const }
-const avatarFallback = { width: 48, height: 48, borderRadius: 999, backgroundColor: '#FF9900', color: '#11122b', fontWeight: 'bold' as const, fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: '48px', textAlign: 'center' as const }
-const specName = { fontSize: '17px', fontWeight: 'bold' as const, color: '#ffffff', margin: 0, lineHeight: 1.2 }
-const specSub = { fontSize: '13px', color: '#b4b6cf', margin: '4px 0 0' }
+const avatarFallback = { width: 48, height: 48, borderRadius: 999, backgroundColor: '#FF9900', color: '#11122b', fontWeight: 'bold' as const, fontSize: 16, lineHeight: '48px', textAlign: 'center' as const, fontFamily: FONT_STACK }
+const specName = { fontSize: '17px', fontWeight: 'bold' as const, color: '#ffffff', margin: 0, lineHeight: 1.2, fontFamily: FONT_STACK }
+const specSub = { fontSize: '13px', color: '#b4b6cf', margin: '4px 0 0', fontFamily: FONT_STACK }
 
-const bodySection = { padding: '28px 28px 8px' }
-const badgeBase = { display: 'inline-block', fontSize: '12px', fontWeight: 'bold' as const, padding: '6px 12px', borderRadius: '999px', margin: '0 0 16px' }
+const bodySection = { padding: '28px 28px 8px', fontFamily: FONT_STACK }
+const badgeBase = { display: 'inline-block', fontSize: '12px', fontWeight: 'bold' as const, padding: '6px 12px', borderRadius: '999px', margin: '0 0 16px', fontFamily: FONT_STACK }
 const badgeConfirmed = { ...badgeBase, backgroundColor: '#e6f7ed', color: '#1f9d55' }
 const badgeAwaiting = { ...badgeBase, backgroundColor: '#fff4e0', color: '#b8731a' }
 const badgeNeutral = { ...badgeBase, backgroundColor: '#eef0f7', color: '#4a4d6a' }
 
-const h1 = { fontSize: '30px', fontWeight: 'bold' as const, color: '#0f172a', margin: '0 0 12px', lineHeight: 1.15, fontFamily: "'Instrument Serif', 'DM Serif Display', Georgia, serif" }
-const lead = { fontSize: '15px', color: '#5b6076', lineHeight: 1.6, margin: '0 0 24px' }
+const h1 = { fontSize: '30px', fontWeight: 'bold' as const, color: '#0f172a', margin: '0 0 12px', lineHeight: 1.15, fontFamily: SERIF_STACK }
+const lead = { fontSize: '15px', color: '#5b6076', lineHeight: 1.6, margin: '0 0 24px', fontFamily: FONT_STACK }
 
-const detailsCard = { backgroundColor: '#f7f5f0', borderRadius: '16px', borderLeft: '3px solid #FF9900', padding: '20px 22px', margin: '0 0 20px' }
+const detailsCard = { backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #f0eee9', borderLeft: '3px solid #FF9900', padding: '20px 22px', margin: '0 0 20px', fontFamily: FONT_STACK }
 const iconBox = { width: 36, height: 36, borderRadius: 10, backgroundColor: '#11122b', color: '#FF9900', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: '36px', textAlign: 'center' as const, fontSize: 16 }
 const rowLabel = { fontSize: '11px', color: '#8a8ca6', fontWeight: 'bold' as const, letterSpacing: '0.12em', margin: '0 0 4px' }
 const rowValue = { fontSize: '16px', color: '#0f172a', fontWeight: 'bold' as const, margin: 0 }
