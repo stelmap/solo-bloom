@@ -61,7 +61,7 @@ export default function PlansPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, subscription, subscriptionError } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const qc = useQueryClient();
   const { data: hasDemoData } = useHasDemoData();
   const [loading, setLoading] = useState(true);
@@ -75,35 +75,128 @@ export default function PlansPage() {
 
   const isPaid = subscription.subscribed || subscription.on_trial;
   const canClearDemo = !isPaid && Boolean(hasDemoData);
+
+  // ── Landing-page-aligned copy (mirrors src/pages/LandingPage.tsx pricing section) ──
+  type L = "en" | "fr" | "uk" | "pl";
+  const L = (lang as L) in { en: 1, fr: 1, uk: 1, pl: 1 } ? (lang as L) : "en";
+  const tr = (m: Record<L, string>) => m[L];
+
+  const COPY = {
+    mfaSecurity: { en: "MFA & data protection", fr: "MFA et protection des données", uk: "MFA та захист даних", pl: "MFA i ochrona danych" },
+    allFeaturesBadge: {
+      en: "All features included on every plan",
+      fr: "Toutes les fonctionnalités incluses sur chaque forfait",
+      uk: "Усі функції включені в кожному плані",
+      pl: "Wszystkie funkcje w każdym planie",
+    },
+    billedMonthly: { en: "Billed monthly", fr: "Facturé mensuellement", uk: "Оплата щомісяця", pl: "Rozliczane miesięcznie" },
+    billedQuarterly: { en: "Billed every 3 months", fr: "Facturé tous les 3 mois", uk: "Оплата кожні 3 місяці", pl: "Rozliczane co 3 miesiące" },
+    billedYearly: { en: "Billed yearly", fr: "Facturé annuellement", uk: "Оплата щорічно", pl: "Rozliczane rocznie" },
+    free: {
+      name: { en: "Free Starter", fr: "Free Starter", uk: "Free Starter", pl: "Free Starter" },
+      desc: {
+        en: "For those just starting or running a small private practice.",
+        fr: "Pour ceux qui démarrent ou gèrent une petite pratique privée.",
+        uk: "Для тих, хто тільки починає або веде невелику приватну практику.",
+        pl: "Dla tych, którzy zaczynają lub prowadzą małą prywatną praktykę.",
+      },
+      foreverBadge: { en: "Free forever", fr: "Gratuit pour toujours", uk: "Безкоштовно назавжди", pl: "Za darmo na zawsze" },
+      noCard: { en: "No card required.", fr: "Sans carte bancaire.", uk: "Без картки.", pl: "Bez karty." },
+      pill: { en: "Up to 5 active clients", fr: "Jusqu'à 5 clients actifs", uk: "До 5 активних клієнтів", pl: "Do 5 aktywnych klientów" },
+      f2: { en: "All SoloBizz features included", fr: "Toutes les fonctionnalités SoloBizz incluses", uk: "Усі функції SoloBizz включено", pl: "Wszystkie funkcje SoloBizz w komplecie" },
+      f3: { en: "Calendar, clients, payments, reminders", fr: "Calendrier, clients, paiements, rappels", uk: "Календар, клієнти, оплати, нагадування", pl: "Kalendarz, klienci, płatności, przypomnienia" },
+      f4: { en: "Financial analytics & reports", fr: "Analytique financière et rapports", uk: "Фінансова аналітика та звіти", pl: "Analityka finansowa i raporty" },
+      f5: { en: "Forever free, no card required", fr: "Gratuit pour toujours, sans carte", uk: "Назавжди безкоштовно, без картки", pl: "Za darmo na zawsze, bez karty" },
+      availableByDefault: {
+        en: "Included by default — no action needed.",
+        fr: "Inclus par défaut — aucune action requise.",
+        uk: "Доступно за замовчуванням — без додаткових дій.",
+        pl: "Dostępne domyślnie — bez dodatkowych działań.",
+      },
+    },
+    solo: {
+      name: { en: "Solo Practice", fr: "Solo Practice", uk: "Solo Practice", pl: "Solo Practice" },
+      desc: {
+        en: "For a small practice — manage clients, sessions and payments without chaos.",
+        fr: "Pour une petite pratique — gérez clients, séances et paiements sans chaos.",
+        uk: "Для невеликої практики — ведення клієнтів, сесій та оплат без хаосу.",
+        pl: "Dla małej praktyki — klienci, sesje i płatności bez chaosu.",
+      },
+      badge: { en: "Best for practice", fr: "Idéal pour la pratique", uk: "Найкраще для практики", pl: "Najlepsze dla praktyki" },
+      pill: { en: "Larger active client limit", fr: "Limite de clients actifs plus élevée", uk: "Більший ліміт активних клієнтів", pl: "Większy limit aktywnych klientów" },
+      f1: { en: "All SoloBizz features included", fr: "Toutes les fonctionnalités SoloBizz incluses", uk: "Усі функції SoloBizz включено", pl: "Wszystkie funkcje SoloBizz w komplecie" },
+      f2: { en: "Up to 20 active clients", fr: "Jusqu'à 20 clients actifs", uk: "До 20 активних клієнтів", pl: "Do 20 aktywnych klientów" },
+      f3: { en: "Calendar, clients, payments, reminders", fr: "Calendrier, clients, paiements, rappels", uk: "Календар, клієнти, оплати, нагадування", pl: "Kalendarz, klienci, płatności, przypomnienia" },
+      f4: { en: "Financial analytics & reports", fr: "Analytique financière et rapports", uk: "Фінансова аналітика та звіти", pl: "Analityka finansowa i raporty" },
+      f5: { en: "Cancel anytime", fr: "Annulation à tout moment", uk: "Скасування будь-коли", pl: "Anulowanie w dowolnej chwili" },
+      cta: { en: "Choose Solo Practice", fr: "Choisir Solo Practice", uk: "Обрати Solo Practice", pl: "Wybierz Solo Practice" },
+    },
+    pro: {
+      name: { en: "Pro Practice", fr: "Pro Practice", uk: "Pro Practice", pl: "Pro Practice" },
+      desc: {
+        en: "For a large client base and priority support.",
+        fr: "Pour une grande base de clients et un support prioritaire.",
+        uk: "Для великої бази клієнтів і пріоритетної підтримки.",
+        pl: "Dla dużej bazy klientów i wsparcia priorytetowego.",
+      },
+      badge: { en: "For a growing practice", fr: "Pour une pratique en croissance", uk: "Для практики, що росте", pl: "Dla rosnącej praktyki" },
+      pill: { en: "Unlimited clients", fr: "Clients illimités", uk: "Необмежена кількість клієнтів", pl: "Nieograniczona liczba klientów" },
+      f1: { en: "All SoloBizz features included", fr: "Toutes les fonctionnalités SoloBizz incluses", uk: "Усі функції SoloBizz включено", pl: "Wszystkie funkcje SoloBizz w komplecie" },
+      f2: { en: "Unlimited active clients", fr: "Clients actifs illimités", uk: "Необмежена кількість клієнтів", pl: "Nieograniczona liczba klientów" },
+      f3: { en: "Priority support", fr: "Support prioritaire", uk: "Пріоритетна підтримка", pl: "Wsparcie priorytetowe" },
+      f4: { en: "Personal onboarding consultation", fr: "Consultation d'onboarding personnelle", uk: "Персональна консультація з налаштування", pl: "Osobista konsultacja wdrożeniowa" },
+      cta: { en: "Choose Pro Practice", fr: "Choisir Pro Practice", uk: "Обрати Pro Practice", pl: "Wybierz Pro Practice" },
+    },
+    footer1: {
+      en: "Choose a plan based on the number of active clients — not on missing features.",
+      fr: "Choisissez un forfait en fonction du nombre de clients actifs — pas des fonctionnalités manquantes.",
+      uk: "Оберіть план за кількістю активних клієнтів — а не за відсутніми функціями.",
+      pl: "Wybierz plan na podstawie liczby aktywnych klientów — nie brakujących funkcji.",
+    },
+    footer2: {
+      en: "SoloBizz gives every therapist the full practice management system from the very first session.",
+      fr: "SoloBizz offre à chaque thérapeute le système complet de gestion de pratique dès la première séance.",
+      uk: "SoloBizz дає кожному терапевту повну систему управління практикою з першої сесії.",
+      pl: "SoloBizz daje każdemu terapeucie pełen system zarządzania praktyką od pierwszej sesji.",
+    },
+    privacyShort: {
+      en: "Your clients' data is protected. We don't see or use client information.",
+      fr: "Les données de vos clients sont protégées. Nous ne voyons ni n'utilisons les informations clients.",
+      uk: "Дані ваших клієнтів захищені. Ми не бачимо і не використовуємо клієнтську інформацію.",
+      pl: "Dane Twoich klientów są chronione. Nie widzimy i nie wykorzystujemy informacji o klientach.",
+    },
+  };
+
   const periodLabels: Record<BillingPeriod, string> = { monthly: t("plans.monthly"), quarterly: t("plans.quarterly"), yearly: t("plans.yearly") };
   const periodSuffix: Record<BillingPeriod, string> = { monthly: t("plans.month" as any), quarterly: t("plans.threeMonths" as any), yearly: t("plans.year" as any) };
   const planFeatures: Record<string, string[]> = {
-    solo: [
-      t("plans.bulletClientsSolo" as any),
-      t("plans.bulletEverythingFree" as any),
-      t("plans.bulletCoreModules" as any),
-      t("plans.bulletAnalytics" as any),
-      t("plans.bulletCancelAnytime" as any),
-    ],
-    pro: [
-      t("plans.bulletClientsPro" as any),
-      t("plans.bulletEverythingSolo" as any),
-      t("plans.bulletPrioritySupport" as any),
-      t("plans.bulletCustomOnboarding" as any),
-      t("plans.bulletScalingTeams" as any),
-    ],
+    solo: [tr(COPY.solo.f1), tr(COPY.solo.f2), tr(COPY.solo.f3), tr(COPY.solo.f4), tr(COPY.mfaSecurity), tr(COPY.solo.f5)],
+    pro: [tr(COPY.pro.f1), tr(COPY.pro.f2), tr(COPY.pro.f3), tr(COPY.pro.f4), tr(COPY.mfaSecurity)],
+  };
+  const planNames: Record<string, string> = {
+    solo: tr(COPY.solo.name),
+    pro: tr(COPY.pro.name),
   };
   const planDescriptions: Record<string, string> = {
-    solo: t("plans.soloDesc" as any),
-    pro: t("plans.proDesc" as any),
+    solo: tr(COPY.solo.desc),
+    pro: tr(COPY.pro.desc),
   };
-  const freeFeatures = [
-    t("plans.bulletClientsFree" as any),
-    t("plans.bulletAllFeatures" as any),
-    t("plans.bulletCoreModules" as any),
-    t("plans.bulletAnalytics" as any),
-    t("plans.bulletForeverFree" as any),
-  ];
+  const planPills: Record<string, string> = {
+    solo: tr(COPY.solo.pill),
+    pro: tr(COPY.pro.pill),
+  };
+  const planBadges: Record<string, string> = {
+    solo: tr(COPY.solo.badge),
+    pro: tr(COPY.pro.badge),
+  };
+  const planCtas: Record<string, string> = {
+    solo: tr(COPY.solo.cta),
+    pro: tr(COPY.pro.cta),
+  };
+  const freeFeatures = [tr(COPY.free.f2), tr(COPY.free.f3), tr(COPY.free.f4), tr(COPY.free.f5), tr(COPY.mfaSecurity)];
+  const freePill = tr(COPY.free.pill);
+
+
 
   const checkHasRealData = async (): Promise<boolean> => {
     const tables = ["clients", "appointments", "income", "expenses"] as const;
