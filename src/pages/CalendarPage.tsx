@@ -1277,7 +1277,7 @@ export default function CalendarPage() {
                       <Label className="text-xs font-bold uppercase text-muted-foreground">
                         {t("calendar.client")} <span className="text-primary">*</span>
                       </Label>
-                      {clients.length === 0 ? (
+                      {activeClients.length === 0 ? (
                         <div className="rounded-lg border border-dashed border-border p-3 space-y-1 bg-muted/20 text-center">
                           <p className="text-sm text-muted-foreground">{L.noClientsYet}</p>
                           <Button type="button" variant="outline" size="sm" className="gap-1 h-9 sm:h-8" onClick={() => setQaClientOpen(true)}>
