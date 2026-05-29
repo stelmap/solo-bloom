@@ -168,6 +168,7 @@ export default function BookingInboxPage() {
   const { data: rows = [], isLoading, refetch, isFetching } = useBookingRequests(status);
   const { data: services = [] } = useServices();
   const { data: clients = [] } = useClients();
+  const activeClients = (clients as any[]).filter((c: any) => c.status !== "archived");
   const { data: profile } = useProfile();
 
   const confirm = useConfirmBookingRequest();
@@ -482,7 +483,7 @@ export default function BookingInboxPage() {
           </DialogHeader>
           <div className="space-y-2">
             <ClientPicker
-              clients={clients as any}
+              clients={activeClients as any}
               value={linkClientId}
               onChange={setLinkClientId}
             />
@@ -511,7 +512,7 @@ export default function BookingInboxPage() {
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground">{L.clientLbl}</label>
                 <ClientPicker
-                  clients={clients as any}
+                  clients={activeClients as any}
                   value={confirmClientId}
                   onChange={setConfirmClientId}
                 />

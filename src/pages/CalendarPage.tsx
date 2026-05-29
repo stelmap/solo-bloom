@@ -243,6 +243,7 @@ export default function CalendarPage() {
     [bookingRequests],
   );
   const { data: clients = [] } = useClients();
+  const activeClients = useMemo(() => (clients as any[]).filter((c: any) => c.status !== "archived"), [clients]);
   const { data: services = [] } = useServices();
   const { data: profile } = useProfile();
   const { data: workingSchedule = [] } = useWorkingSchedule();
@@ -1276,7 +1277,7 @@ export default function CalendarPage() {
                       <Label className="text-xs font-bold uppercase text-muted-foreground">
                         {t("calendar.client")} <span className="text-primary">*</span>
                       </Label>
-                      {clients.length === 0 ? (
+                      {activeClients.length === 0 ? (
                         <div className="rounded-lg border border-dashed border-border p-3 space-y-1 bg-muted/20 text-center">
                           <p className="text-sm text-muted-foreground">{L.noClientsYet}</p>
                           <Button type="button" variant="outline" size="sm" className="gap-1 h-9 sm:h-8" onClick={() => setQaClientOpen(true)}>
@@ -1286,7 +1287,7 @@ export default function CalendarPage() {
                       ) : (
                         <div className="flex flex-col sm:flex-row gap-2">
                           <ClientPicker
-                            clients={clients}
+                            clients={activeClients}
                             value={form.client_id}
                             onChange={v => setForm(f => ({ ...f, client_id: v }))}
                             placeholder={t("calendar.selectClient")}

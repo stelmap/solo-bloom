@@ -35,6 +35,16 @@ export function useClients() {
   });
 }
 
+// Active (non-archived) clients — used in dropdowns/pickers where archived
+// clients must not be selectable.
+export function useActiveClients() {
+  const q = useClients();
+  return {
+    ...q,
+    data: ((q.data ?? []) as any[]).filter((c) => c?.status !== "archived"),
+  } as typeof q;
+}
+
 export function useClient(id: string | undefined) {
   const { user } = useAuth();
   return useQuery({

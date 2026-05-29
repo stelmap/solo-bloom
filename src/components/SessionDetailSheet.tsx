@@ -914,7 +914,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
               <div className="space-y-2">
                 <Label>{t("calendar.client")} *</Label>
                 <ClientPicker
-                  clients={clients}
+                  clients={(clients as any[]).filter((c: any) => c.status !== "archived" || c.id === editForm.client_id)}
                   value={editForm.client_id}
                   onChange={v => setEditForm(f => ({ ...f, client_id: v }))}
                 />
