@@ -253,22 +253,6 @@ const SessionReminderEmail = ({
                 sub={timezoneLabel}
                 icon="🕐"
               />
-              <div style={divider} />
-              <Row
-                label={T.formatLabel}
-                value={
-                  format === 'in_person' ? T.formatInPerson :
-                  format === 'phone' ? T.formatPhone :
-                  T.formatOnline
-                }
-                sub={
-                  format === 'in_person' ? (locationText || undefined) :
-                  format === 'phone' ? T.formatPhoneHint :
-                  (meetingUrl ? undefined : T.formatOnlineHint)
-                }
-                link={format === 'online' ? meetingUrl : undefined}
-                icon={format === 'phone' ? '📞' : format === 'in_person' ? '📍' : '🎥'}
-              />
             </Section>
 
             {therapistMessage && (
