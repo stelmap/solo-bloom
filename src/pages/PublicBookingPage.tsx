@@ -344,6 +344,42 @@ export default function PublicBookingPage() {
     }
     const row = Array.isArray(data) ? data[0] : (data as any);
     setDone({ requiresApproval: !!row?.requires_approval });
+
+    // If the booking was auto-confirmed (link mode = auto and the client matched
+    // an existing profile), trigger the confirmation email immediately. Manual
+    // mode emails are sent by the therapist from the Booking Inbox on approval.
+    if (row?.status === "confirmed" && row?.request_id) {
+      try {
+        const slot = new Date(selectedSlot);
+        const lang = normLang(info?.language);
+        const dateFmt = slot.toLocaleDateString(lang, {
+          year: "numeric", month: "long", day: "numeric", timeZone: "UTC",
+        });
+        const timeFmt = slot.toLocaleTimeString(lang, {
+          hour: "2-digit", minute: "2-digit", timeZone: "UTC",
+        });
+        const specialistName =
+          info?.business_name || info?.display_name || "your specialist";
+        const clientName =
+          `${parsed.data.first_name}${parsed.data.last_name ? " " + parsed.data.last_name : ""}`.trim() || "Client";
+        await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "booking-confirmation",
+            recipientEmail: parsed.data.email,
+            idempotencyKey: `booking-confirm-${row.request_id}`,
+            templateData: {
+              clientName,
+              specialistName,
+              sessionDate: dateFmt,
+              sessionTime: timeFmt,
+              language: lang,
+            },
+          },
+        });
+      } catch (e) {
+        console.warn("auto-confirm email send failed", e);
+      }
+    }
   }
 
   if (loading) {
