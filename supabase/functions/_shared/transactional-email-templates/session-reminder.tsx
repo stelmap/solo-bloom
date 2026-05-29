@@ -280,7 +280,7 @@ const SessionReminderEmail = ({
 
           {/* Footer */}
           <Section style={footerSection}>
-            <Text style={footerBrand}>Solo<span style={logoDot}>.Biz</span></Text>
+            <Text style={footerBrand}>Solo<span style={logoDot}>.Bizz</span></Text>
             <Text style={footerText}>{T.footer}</Text>
           </Section>
         </Container>
