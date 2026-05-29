@@ -18,7 +18,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Loader2, Mail, Phone, CheckCircle2, XCircle, UserPlus,
-  RefreshCw, Inbox, ChevronDown, ChevronUp,
+  RefreshCw, Inbox, ChevronDown, ChevronUp, MailCheck, MailX, Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
