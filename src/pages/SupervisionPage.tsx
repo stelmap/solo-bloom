@@ -331,7 +331,7 @@ export default function SupervisionPage() {
               ) : null;
             })()}
 
-            })()}
+
             <div className="space-y-2">
               <Label>{t("supervision.date")} *</Label>
               <DatePicker date={createForm.supervision_date} onDateChange={(d) => setCreateForm(f => ({ ...f, supervision_date: d }))} />
