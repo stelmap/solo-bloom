@@ -112,13 +112,28 @@ Deno.serve(async (req) => {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('full_name, business_name, language')
+      .select('full_name, business_name, language, timezone, avatar_url')
       .eq('user_id', apt.user_id)
       .single()
 
     const specialistName = profile?.full_name || profile?.business_name || 'your specialist'
+    const businessName = profile?.business_name || undefined
+    const avatarUrl = (profile as any)?.avatar_url || undefined
     const lang = normalizeLang(profile?.language)
-    const { date: sessionDate, time: sessionTime } = formatSessionDateTime(apt.scheduled_at, lang)
+    const { date: sessionDate, time: startTime } = formatSessionDateTime(apt.scheduled_at, lang)
+    const endIso = new Date(new Date(apt.scheduled_at).getTime() + (apt.duration_minutes || 60) * 60000).toISOString()
+    const { time: endTime } = formatSessionDateTime(endIso, lang)
+    const sessionTime = `${startTime} – ${endTime}`
+
+    let timezoneLabel: string | undefined
+    try {
+      const tz = (profile as any)?.timezone || 'UTC'
+      const parts = new Intl.DateTimeFormat(lang === 'uk' ? 'uk-UA' : lang, {
+        timeZone: tz, timeZoneName: 'long',
+      }).formatToParts(new Date(apt.scheduled_at))
+      const tzName = parts.find(p => p.type === 'timeZoneName')?.value
+      timezoneLabel = tzName ? `${tzName}` : tz
+    } catch { /* ignore */ }
 
     let confirmationUrl: string | undefined
     const needsConfirmation = client.confirmation_required && apt.confirmation_status !== 'confirmed'
@@ -142,6 +157,11 @@ Deno.serve(async (req) => {
         .eq('id', apt.id)
     }
 
+    const confirmationStatus: 'confirmed' | 'pending' | 'not_required' =
+      apt.confirmation_status === 'confirmed' ? 'confirmed'
+        : needsConfirmation ? 'pending'
+        : 'not_required'
+
     // ---------- Email ----------
     if (wantsEmail && client.email) {
       const { error: sendError } = await supabase.functions.invoke('send-transactional-email', {
@@ -152,9 +172,14 @@ Deno.serve(async (req) => {
           templateData: {
             clientName: client.name,
             specialistName,
+            businessName,
+            avatarUrl,
             sessionDate,
             sessionTime,
+            timezoneLabel,
+            format: 'online',
             confirmationUrl,
+            confirmationStatus,
             language: lang,
           },
         },
@@ -165,6 +190,7 @@ Deno.serve(async (req) => {
         sentCount++
       }
     }
+
 
     // ---------- Telegram ----------
     if (wantsTelegram && client.telegram_chat_id && client.telegram_link_status === 'connected') {
