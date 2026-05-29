@@ -490,18 +490,17 @@ export default function PlansPage() {
                   const isHighlighted = plan.code === HIGHLIGHTED_CODE;
                   const isSelected = selectedPlanId === plan.id;
                   const features = planFeatures[plan.code] ?? [];
-                  const pill = features[0];
-                  const restFeatures = features.slice(1);
+                  const pill = planPills[plan.code];
                   const equivPerMonth =
                     price && period !== "monthly"
                       ? Number(price.price) / (period === "quarterly" ? 3 : 12)
                       : null;
                   const billedLabel =
                     period === "monthly"
-                      ? t("plans.billedMonthly" as any) || "Billed monthly"
+                      ? tr(COPY.billedMonthly)
                       : period === "quarterly"
-                        ? t("plans.billedQuarterly" as any) || "Billed every 3 months"
-                        : t("plans.billedYearly" as any) || "Billed yearly";
+                        ? tr(COPY.billedQuarterly)
+                        : tr(COPY.billedYearly);
                   const isSolo = plan.code === "solo";
                   const isPro = plan.code === "pro";
                   const bulletColor = isSolo
@@ -509,6 +508,10 @@ export default function PlansPage() {
                     : isPro
                       ? "text-emerald-500"
                       : "text-muted-foreground";
+                  const displayName = planNames[plan.code] || plan.name;
+                  const displayDesc = planDescriptions[plan.code] || plan.description;
+                  const badgeText = planBadges[plan.code];
+                  const ctaText = planCtas[plan.code] || t("plans.continueSelect");
 
                   return (
                     <button
@@ -525,20 +528,21 @@ export default function PlansPage() {
                           : "hover:-translate-y-0.5 hover:shadow-md"
                       )}
                     >
-                      {isHighlighted && (
-                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-primary text-primary-foreground inline-flex items-center gap-1">
-                          <Sparkles className="h-3 w-3" />
-                          {t("plans.mostPopular")}
-                        </span>
-                      )}
-                      {!isHighlighted && isPro && (
-                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-emerald-500 text-white">
-                          {t("plans.bulletScalingTeams" as any) ? "Pro" : "Pro"}
+                      {badgeText && (
+                        <span
+                          className={cn(
+                            "absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap",
+                            isHighlighted
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-emerald-500 text-white"
+                          )}
+                        >
+                          {badgeText}
                         </span>
                       )}
 
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="text-2xl font-semibold text-foreground">{plan.name}</h3>
+                        <h3 className="text-2xl font-semibold text-foreground">{displayName}</h3>
                         {isSelected && (
                           <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0">
                             <Check className="h-3.5 w-3.5" />
@@ -546,7 +550,7 @@ export default function PlansPage() {
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed min-h-[3rem]">
-                        {planDescriptions[plan.code] || plan.description}
+                        {displayDesc}
                       </p>
 
                       <div className="flex items-baseline gap-1 mb-2">
@@ -571,7 +575,7 @@ export default function PlansPage() {
                       )}
 
                       <ul className="space-y-3 mb-8 flex-1">
-                        {restFeatures.map((f) => (
+                        {features.map((f) => (
                           <li key={f} className="flex items-start gap-3 text-foreground">
                             <CheckCircle2 className={cn("h-4 w-4 shrink-0 mt-0.5", bulletColor)} />
                             <span className="text-sm">{f}</span>
@@ -587,18 +591,13 @@ export default function PlansPage() {
                             : "border border-border text-foreground bg-background hover:border-primary/40"
                         )}
                       >
-                        {isSelected ? (
-                          <>
-                            <Check className="h-4 w-4" />
-                            {t("plans.continueSelect") ? t("plans.selected" as any) || "Selected" : "Selected"}
-                          </>
-                        ) : (
-                          t("plans.selectPlan" as any) || t("plans.continueSelect")
-                        )}
+                        {isSelected && <Check className="h-4 w-4" />}
+                        {ctaText}
                       </div>
                     </button>
                   );
                 })}
+
               </div>
             )}
           </div>
