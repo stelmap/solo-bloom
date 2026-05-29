@@ -2400,14 +2400,30 @@ export function useDashboardStats() {
         }
       }
 
-      // Per-participant group session debts.
+      // Per-participant group session debts. Mirror useExpectedPayments:
+      // include partial-from-prepayment rows and use the linked
+      // expected_payments amount when available so the dashboard total
+      // reflects the true outstanding gap.
       const { data: gPays } = await supabase
         .from("group_session_payments")
-        .select("amount, payment_state")
-        .eq("payment_state", "waiting_for_payment")
+        .select("amount, payment_state, expected_payment_id")
+        .in("payment_state", ["waiting_for_payment", "partially_paid_from_prepayment"])
         .gt("amount", 0);
-      for (const p of (gPays ?? []) as Array<{ amount: number }>) {
-        const amt = Number(p.amount);
+      const gEpIds = ((gPays ?? []) as any[]).map((p) => p.expected_payment_id).filter(Boolean);
+      const gEpAmount = new Map<string, number>();
+      if (gEpIds.length > 0) {
+        const { data: epRows } = await supabase
+          .from("expected_payments")
+          .select("id, amount, status")
+          .in("id", gEpIds);
+        for (const r of (epRows ?? []) as any[]) {
+          if (r.status === "pending") gEpAmount.set(r.id, Number(r.amount));
+        }
+      }
+      for (const p of (gPays ?? []) as Array<{ amount: number; expected_payment_id: string | null }>) {
+        const amt = p.expected_payment_id && gEpAmount.has(p.expected_payment_id)
+          ? gEpAmount.get(p.expected_payment_id)!
+          : Number(p.amount);
         if (amt > 0) {
           outstandingBalance += amt;
           unpaidSessionsCount += 1;
