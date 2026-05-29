@@ -60,7 +60,7 @@ export default function GroupDetailPage() {
   // Clients not yet in this group
   const availableClients = useMemo(() => {
     const memberClientIds = new Set(members.map((m: any) => m.client_id));
-    return allClients.filter(c => !memberClientIds.has(c.id));
+    return allClients.filter((c: any) => !memberClientIds.has(c.id) && c.status !== "archived");
   }, [allClients, members]);
 
   // Analytics
