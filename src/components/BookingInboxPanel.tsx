@@ -338,6 +338,63 @@ export function BookingInboxPanel({ className }: { className?: string }) {
 
           </div>
         ))}
+
+        {recentlyConfirmed.length > 0 && (
+          <div className="pt-3 mt-2 border-t border-border space-y-2">
+            <p className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground px-1">
+              Recently confirmed
+            </p>
+            {recentlyConfirmed.map((r) => {
+              const sent = r.confirmation_email_status === "sent";
+              const failed = r.confirmation_email_status === "failed";
+              return (
+                <div
+                  key={r.id}
+                  className="rounded-lg border border-border bg-background p-3 space-y-2"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {r.first_name} {r.last_name ?? ""}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {fmt(r.requested_slot_at)} · {r.duration_minutes}m
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    {sent ? (
+                      <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+                        <MailCheck className="h-3.5 w-3.5" />
+                        Confirmation email: sent
+                      </span>
+                    ) : failed ? (
+                      <span
+                        className="inline-flex items-center gap-1 text-xs text-destructive"
+                        title={r.confirmation_email_error ?? undefined}
+                      >
+                        <MailX className="h-3.5 w-3.5" />
+                        Confirmation email: failed
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                        <Mail className="h-3.5 w-3.5" />
+                        Email status unknown
+                      </span>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 gap-1"
+                      onClick={() => resendConfirmationEmail(r)}
+                    >
+                      <Send className="h-3 w-3" />
+                      {failed ? "Retry email" : "Resend"}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Link client */}
