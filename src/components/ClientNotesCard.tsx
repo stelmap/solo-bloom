@@ -123,9 +123,49 @@ export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditReque
               </p>
             )}
           </div>
-
+        )}
+      </div>
+      {inlineEdit && (
+        <Dialog open={inlineOpen} onOpenChange={(o) => { if (!o) setInlineOpen(false); }}>
+          <DialogContent className="max-w-2xl w-[95vw] sm:w-full">
+            <DialogHeader>
+              <DialogTitle>{t("clientNotes.shortTitle")} — {client.name}</DialogTitle>
+            </DialogHeader>
+            <Textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder={t("clientNotes.placeholder")}
+              className="min-h-[260px] resize-none text-sm leading-relaxed"
+              autoFocus
+            />
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setInlineOpen(false)}>
+                <X className="h-4 w-4 mr-1" /> {t("clientNotes.close")}
+              </Button>
+              <Button
+                onClick={async () => {
+                  try {
+                    await update.mutateAsync({ id: client.id, notes: draft });
+                    lastSaved.current = draft;
+                    setValue(draft);
+                    setSavedAt(new Date());
+                    setInlineOpen(false);
+                  } catch (e: any) {
+                    toast({ title: t("clientNotes.saveFailed"), description: e.message, variant: "destructive" });
+                  }
+                }}
+                disabled={saving}
+              >
+                {t("clientNotes.save")}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+      </>
     );
   }
+
 
   const editor = (full: boolean) => (
     <Textarea
