@@ -61,7 +61,7 @@ export default function PlansPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, subscription, subscriptionError } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const qc = useQueryClient();
   const { data: hasDemoData } = useHasDemoData();
   const [loading, setLoading] = useState(true);
@@ -75,35 +75,128 @@ export default function PlansPage() {
 
   const isPaid = subscription.subscribed || subscription.on_trial;
   const canClearDemo = !isPaid && Boolean(hasDemoData);
+
+  // ── Landing-page-aligned copy (mirrors src/pages/LandingPage.tsx pricing section) ──
+  type L = "en" | "fr" | "uk" | "pl";
+  const L = (lang as L) in { en: 1, fr: 1, uk: 1, pl: 1 } ? (lang as L) : "en";
+  const tr = (m: Record<L, string>) => m[L];
+
+  const COPY = {
+    mfaSecurity: { en: "MFA & data protection", fr: "MFA et protection des données", uk: "MFA та захист даних", pl: "MFA i ochrona danych" },
+    allFeaturesBadge: {
+      en: "All features included on every plan",
+      fr: "Toutes les fonctionnalités incluses sur chaque forfait",
+      uk: "Усі функції включені в кожному плані",
+      pl: "Wszystkie funkcje w każdym planie",
+    },
+    billedMonthly: { en: "Billed monthly", fr: "Facturé mensuellement", uk: "Оплата щомісяця", pl: "Rozliczane miesięcznie" },
+    billedQuarterly: { en: "Billed every 3 months", fr: "Facturé tous les 3 mois", uk: "Оплата кожні 3 місяці", pl: "Rozliczane co 3 miesiące" },
+    billedYearly: { en: "Billed yearly", fr: "Facturé annuellement", uk: "Оплата щорічно", pl: "Rozliczane rocznie" },
+    free: {
+      name: { en: "Free Starter", fr: "Free Starter", uk: "Free Starter", pl: "Free Starter" },
+      desc: {
+        en: "For those just starting or running a small private practice.",
+        fr: "Pour ceux qui démarrent ou gèrent une petite pratique privée.",
+        uk: "Для тих, хто тільки починає або веде невелику приватну практику.",
+        pl: "Dla tych, którzy zaczynają lub prowadzą małą prywatną praktykę.",
+      },
+      foreverBadge: { en: "Free forever", fr: "Gratuit pour toujours", uk: "Безкоштовно назавжди", pl: "Za darmo na zawsze" },
+      noCard: { en: "No card required.", fr: "Sans carte bancaire.", uk: "Без картки.", pl: "Bez karty." },
+      pill: { en: "Up to 5 active clients", fr: "Jusqu'à 5 clients actifs", uk: "До 5 активних клієнтів", pl: "Do 5 aktywnych klientów" },
+      f2: { en: "All SoloBizz features included", fr: "Toutes les fonctionnalités SoloBizz incluses", uk: "Усі функції SoloBizz включено", pl: "Wszystkie funkcje SoloBizz w komplecie" },
+      f3: { en: "Calendar, clients, payments, reminders", fr: "Calendrier, clients, paiements, rappels", uk: "Календар, клієнти, оплати, нагадування", pl: "Kalendarz, klienci, płatności, przypomnienia" },
+      f4: { en: "Financial analytics & reports", fr: "Analytique financière et rapports", uk: "Фінансова аналітика та звіти", pl: "Analityka finansowa i raporty" },
+      f5: { en: "Forever free, no card required", fr: "Gratuit pour toujours, sans carte", uk: "Назавжди безкоштовно, без картки", pl: "Za darmo na zawsze, bez karty" },
+      availableByDefault: {
+        en: "Included by default — no action needed.",
+        fr: "Inclus par défaut — aucune action requise.",
+        uk: "Доступно за замовчуванням — без додаткових дій.",
+        pl: "Dostępne domyślnie — bez dodatkowych działań.",
+      },
+    },
+    solo: {
+      name: { en: "Solo Practice", fr: "Solo Practice", uk: "Solo Practice", pl: "Solo Practice" },
+      desc: {
+        en: "For a small practice — manage clients, sessions and payments without chaos.",
+        fr: "Pour une petite pratique — gérez clients, séances et paiements sans chaos.",
+        uk: "Для невеликої практики — ведення клієнтів, сесій та оплат без хаосу.",
+        pl: "Dla małej praktyki — klienci, sesje i płatności bez chaosu.",
+      },
+      badge: { en: "Best for practice", fr: "Idéal pour la pratique", uk: "Найкраще для практики", pl: "Najlepsze dla praktyki" },
+      pill: { en: "Larger active client limit", fr: "Limite de clients actifs plus élevée", uk: "Більший ліміт активних клієнтів", pl: "Większy limit aktywnych klientów" },
+      f1: { en: "All SoloBizz features included", fr: "Toutes les fonctionnalités SoloBizz incluses", uk: "Усі функції SoloBizz включено", pl: "Wszystkie funkcje SoloBizz w komplecie" },
+      f2: { en: "Up to 20 active clients", fr: "Jusqu'à 20 clients actifs", uk: "До 20 активних клієнтів", pl: "Do 20 aktywnych klientów" },
+      f3: { en: "Calendar, clients, payments, reminders", fr: "Calendrier, clients, paiements, rappels", uk: "Календар, клієнти, оплати, нагадування", pl: "Kalendarz, klienci, płatności, przypomnienia" },
+      f4: { en: "Financial analytics & reports", fr: "Analytique financière et rapports", uk: "Фінансова аналітика та звіти", pl: "Analityka finansowa i raporty" },
+      f5: { en: "Cancel anytime", fr: "Annulation à tout moment", uk: "Скасування будь-коли", pl: "Anulowanie w dowolnej chwili" },
+      cta: { en: "Choose Solo Practice", fr: "Choisir Solo Practice", uk: "Обрати Solo Practice", pl: "Wybierz Solo Practice" },
+    },
+    pro: {
+      name: { en: "Pro Practice", fr: "Pro Practice", uk: "Pro Practice", pl: "Pro Practice" },
+      desc: {
+        en: "For a large client base and priority support.",
+        fr: "Pour une grande base de clients et un support prioritaire.",
+        uk: "Для великої бази клієнтів і пріоритетної підтримки.",
+        pl: "Dla dużej bazy klientów i wsparcia priorytetowego.",
+      },
+      badge: { en: "For a growing practice", fr: "Pour une pratique en croissance", uk: "Для практики, що росте", pl: "Dla rosnącej praktyki" },
+      pill: { en: "Unlimited clients", fr: "Clients illimités", uk: "Необмежена кількість клієнтів", pl: "Nieograniczona liczba klientów" },
+      f1: { en: "All SoloBizz features included", fr: "Toutes les fonctionnalités SoloBizz incluses", uk: "Усі функції SoloBizz включено", pl: "Wszystkie funkcje SoloBizz w komplecie" },
+      f2: { en: "Unlimited active clients", fr: "Clients actifs illimités", uk: "Необмежена кількість клієнтів", pl: "Nieograniczona liczba klientów" },
+      f3: { en: "Priority support", fr: "Support prioritaire", uk: "Пріоритетна підтримка", pl: "Wsparcie priorytetowe" },
+      f4: { en: "Personal onboarding consultation", fr: "Consultation d'onboarding personnelle", uk: "Персональна консультація з налаштування", pl: "Osobista konsultacja wdrożeniowa" },
+      cta: { en: "Choose Pro Practice", fr: "Choisir Pro Practice", uk: "Обрати Pro Practice", pl: "Wybierz Pro Practice" },
+    },
+    footer1: {
+      en: "Choose a plan based on the number of active clients — not on missing features.",
+      fr: "Choisissez un forfait en fonction du nombre de clients actifs — pas des fonctionnalités manquantes.",
+      uk: "Оберіть план за кількістю активних клієнтів — а не за відсутніми функціями.",
+      pl: "Wybierz plan na podstawie liczby aktywnych klientów — nie brakujących funkcji.",
+    },
+    footer2: {
+      en: "SoloBizz gives every therapist the full practice management system from the very first session.",
+      fr: "SoloBizz offre à chaque thérapeute le système complet de gestion de pratique dès la première séance.",
+      uk: "SoloBizz дає кожному терапевту повну систему управління практикою з першої сесії.",
+      pl: "SoloBizz daje każdemu terapeucie pełen system zarządzania praktyką od pierwszej sesji.",
+    },
+    privacyShort: {
+      en: "Your clients' data is protected. We don't see or use client information.",
+      fr: "Les données de vos clients sont protégées. Nous ne voyons ni n'utilisons les informations clients.",
+      uk: "Дані ваших клієнтів захищені. Ми не бачимо і не використовуємо клієнтську інформацію.",
+      pl: "Dane Twoich klientów są chronione. Nie widzimy i nie wykorzystujemy informacji o klientach.",
+    },
+  };
+
   const periodLabels: Record<BillingPeriod, string> = { monthly: t("plans.monthly"), quarterly: t("plans.quarterly"), yearly: t("plans.yearly") };
   const periodSuffix: Record<BillingPeriod, string> = { monthly: t("plans.month" as any), quarterly: t("plans.threeMonths" as any), yearly: t("plans.year" as any) };
   const planFeatures: Record<string, string[]> = {
-    solo: [
-      t("plans.bulletClientsSolo" as any),
-      t("plans.bulletEverythingFree" as any),
-      t("plans.bulletCoreModules" as any),
-      t("plans.bulletAnalytics" as any),
-      t("plans.bulletCancelAnytime" as any),
-    ],
-    pro: [
-      t("plans.bulletClientsPro" as any),
-      t("plans.bulletEverythingSolo" as any),
-      t("plans.bulletPrioritySupport" as any),
-      t("plans.bulletCustomOnboarding" as any),
-      t("plans.bulletScalingTeams" as any),
-    ],
+    solo: [tr(COPY.solo.f1), tr(COPY.solo.f2), tr(COPY.solo.f3), tr(COPY.solo.f4), tr(COPY.mfaSecurity), tr(COPY.solo.f5)],
+    pro: [tr(COPY.pro.f1), tr(COPY.pro.f2), tr(COPY.pro.f3), tr(COPY.pro.f4), tr(COPY.mfaSecurity)],
+  };
+  const planNames: Record<string, string> = {
+    solo: tr(COPY.solo.name),
+    pro: tr(COPY.pro.name),
   };
   const planDescriptions: Record<string, string> = {
-    solo: t("plans.soloDesc" as any),
-    pro: t("plans.proDesc" as any),
+    solo: tr(COPY.solo.desc),
+    pro: tr(COPY.pro.desc),
   };
-  const freeFeatures = [
-    t("plans.bulletClientsFree" as any),
-    t("plans.bulletAllFeatures" as any),
-    t("plans.bulletCoreModules" as any),
-    t("plans.bulletAnalytics" as any),
-    t("plans.bulletForeverFree" as any),
-  ];
+  const planPills: Record<string, string> = {
+    solo: tr(COPY.solo.pill),
+    pro: tr(COPY.pro.pill),
+  };
+  const planBadges: Record<string, string> = {
+    solo: tr(COPY.solo.badge),
+    pro: tr(COPY.pro.badge),
+  };
+  const planCtas: Record<string, string> = {
+    solo: tr(COPY.solo.cta),
+    pro: tr(COPY.pro.cta),
+  };
+  const freeFeatures = [tr(COPY.free.f2), tr(COPY.free.f3), tr(COPY.free.f4), tr(COPY.free.f5), tr(COPY.mfaSecurity)];
+  const freePill = tr(COPY.free.pill);
+
+
 
   const checkHasRealData = async (): Promise<boolean> => {
     const tables = ["clients", "appointments", "income", "expenses"] as const;
@@ -288,9 +381,10 @@ export default function PlansPage() {
               </p>
               <div className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700">
                 <Check className="h-4 w-4 shrink-0" />
-                <span className="text-sm font-medium">{t("plans.bulletAllFeatures" as any)}</span>
+                <span className="text-sm font-medium">{tr(COPY.allFeaturesBadge)}</span>
               </div>
             </header>
+
 
             {subscriptionError && (
               <div className="mx-auto max-w-4xl mb-8 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive">
@@ -356,9 +450,9 @@ export default function PlansPage() {
               <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-stretch pt-4">
                 {/* Free Starter card */}
                 <div className="relative p-8 rounded-2xl bg-card border border-border flex flex-col">
-                  <h3 className="text-2xl font-semibold text-foreground">{t("plans.freeName" as any)}</h3>
+                  <h3 className="text-2xl font-semibold text-foreground">{tr(COPY.free.name)}</h3>
                   <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed min-h-[3rem]">
-                    {t("plans.freeDesc" as any)}
+                    {tr(COPY.free.desc)}
                   </p>
 
                   <div className="flex items-baseline gap-1 mb-2">
@@ -366,18 +460,18 @@ export default function PlansPage() {
                     <span className="text-muted-foreground text-base">/ {periodSuffix["monthly"]}</span>
                   </div>
 
-                  <p className="text-sm mb-1 font-semibold text-primary">{t("plans.freeForever" as any)}</p>
+                  <p className="text-sm mb-1 font-semibold text-primary">{tr(COPY.free.foreverBadge)}</p>
                   <p className="text-xs text-muted-foreground mb-5 min-h-[1rem]">
-                    {t("plans.noCardRequired" as any)}
+                    {tr(COPY.free.noCard)}
                   </p>
 
                   <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-muted/60 border border-border mb-6">
                     <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span className="text-sm font-medium text-foreground">{freeFeatures[0]}</span>
+                    <span className="text-sm font-medium text-foreground">{freePill}</span>
                   </div>
 
                   <ul className="space-y-3 mb-8 flex-1">
-                    {freeFeatures.slice(1).map((f) => (
+                    {freeFeatures.map((f) => (
                       <li key={f} className="flex items-start gap-3 text-foreground">
                         <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
                         <span className="text-sm">{f}</span>
@@ -386,27 +480,27 @@ export default function PlansPage() {
                   </ul>
 
                   <p className="mt-auto text-xs text-muted-foreground text-center">
-                    {t("plans.freeAvailableByDefault" as any)}
+                    {tr(COPY.free.availableByDefault)}
                   </p>
                 </div>
+
 
                 {orderedPlans.map((plan) => {
                   const price = priceFor(plan.id, period);
                   const isHighlighted = plan.code === HIGHLIGHTED_CODE;
                   const isSelected = selectedPlanId === plan.id;
                   const features = planFeatures[plan.code] ?? [];
-                  const pill = features[0];
-                  const restFeatures = features.slice(1);
+                  const pill = planPills[plan.code];
                   const equivPerMonth =
                     price && period !== "monthly"
                       ? Number(price.price) / (period === "quarterly" ? 3 : 12)
                       : null;
                   const billedLabel =
                     period === "monthly"
-                      ? t("plans.billedMonthly" as any) || "Billed monthly"
+                      ? tr(COPY.billedMonthly)
                       : period === "quarterly"
-                        ? t("plans.billedQuarterly" as any) || "Billed every 3 months"
-                        : t("plans.billedYearly" as any) || "Billed yearly";
+                        ? tr(COPY.billedQuarterly)
+                        : tr(COPY.billedYearly);
                   const isSolo = plan.code === "solo";
                   const isPro = plan.code === "pro";
                   const bulletColor = isSolo
@@ -414,6 +508,10 @@ export default function PlansPage() {
                     : isPro
                       ? "text-emerald-500"
                       : "text-muted-foreground";
+                  const displayName = planNames[plan.code] || plan.name;
+                  const displayDesc = planDescriptions[plan.code] || plan.description;
+                  const badgeText = planBadges[plan.code];
+                  const ctaText = planCtas[plan.code] || t("plans.continueSelect");
 
                   return (
                     <button
@@ -430,20 +528,21 @@ export default function PlansPage() {
                           : "hover:-translate-y-0.5 hover:shadow-md"
                       )}
                     >
-                      {isHighlighted && (
-                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-primary text-primary-foreground inline-flex items-center gap-1">
-                          <Sparkles className="h-3 w-3" />
-                          {t("plans.mostPopular")}
-                        </span>
-                      )}
-                      {!isHighlighted && isPro && (
-                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-emerald-500 text-white">
-                          {t("plans.bulletScalingTeams" as any) ? "Pro" : "Pro"}
+                      {badgeText && (
+                        <span
+                          className={cn(
+                            "absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap",
+                            isHighlighted
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-emerald-500 text-white"
+                          )}
+                        >
+                          {badgeText}
                         </span>
                       )}
 
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="text-2xl font-semibold text-foreground">{plan.name}</h3>
+                        <h3 className="text-2xl font-semibold text-foreground">{displayName}</h3>
                         {isSelected && (
                           <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0">
                             <Check className="h-3.5 w-3.5" />
@@ -451,7 +550,7 @@ export default function PlansPage() {
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed min-h-[3rem]">
-                        {planDescriptions[plan.code] || plan.description}
+                        {displayDesc}
                       </p>
 
                       <div className="flex items-baseline gap-1 mb-2">
@@ -476,7 +575,7 @@ export default function PlansPage() {
                       )}
 
                       <ul className="space-y-3 mb-8 flex-1">
-                        {restFeatures.map((f) => (
+                        {features.map((f) => (
                           <li key={f} className="flex items-start gap-3 text-foreground">
                             <CheckCircle2 className={cn("h-4 w-4 shrink-0 mt-0.5", bulletColor)} />
                             <span className="text-sm">{f}</span>
@@ -492,34 +591,32 @@ export default function PlansPage() {
                             : "border border-border text-foreground bg-background hover:border-primary/40"
                         )}
                       >
-                        {isSelected ? (
-                          <>
-                            <Check className="h-4 w-4" />
-                            {t("plans.continueSelect") ? t("plans.selected" as any) || "Selected" : "Selected"}
-                          </>
-                        ) : (
-                          t("plans.selectPlan" as any) || t("plans.continueSelect")
-                        )}
+                        {isSelected && <Check className="h-4 w-4" />}
+                        {ctaText}
                       </div>
                     </button>
                   );
                 })}
+
               </div>
             )}
+
+            {/* Landing-aligned footer copy */}
+            <div className="mt-12 text-center max-w-3xl mx-auto space-y-2">
+              <p className="text-base text-muted-foreground">{tr(COPY.footer1)}</p>
+              <p className="text-base font-semibold text-foreground">{tr(COPY.footer2)}</p>
+            </div>
+
+            <p className="mt-8 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+              {tr(COPY.privacyShort)}
+            </p>
           </div>
         </section>
 
 
         <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-          {/* Privacy / trust block — placed near decision point */}
-          <div className="max-w-3xl mx-auto rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-4 sm:p-5 flex items-start gap-3.5">
-            <div className="h-9 w-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-              <ShieldCheck className="h-4 w-4 text-primary" />
-            </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {t("privacy.longClients" as any)}
-            </p>
-          </div>
+
 
           {/* Footer CTA */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
