@@ -512,7 +512,7 @@ export default function BookingInboxPage() {
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground">{L.clientLbl}</label>
                 <ClientPicker
-                  clients={clients as any}
+                  clients={activeClients as any}
                   value={confirmClientId}
                   onChange={setConfirmClientId}
                 />
