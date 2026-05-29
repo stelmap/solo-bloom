@@ -192,42 +192,16 @@ export default function ClientDetailPage() {
       .reduce((s: number, i: any) => s + Number(i.amount || 0), 0);
   }, [clientIncome]);
 
-  // Client balance is computed in 3 stages:
-  //  1. raw prepaid pool = Total Paid − price of fully-paid completed sessions
-  //  2. raw outstanding = sum(price − allocated) for completed sessions NOT marked fully paid
-  //  3. auto-cover: any prepaid pool first absorbs raw outstanding, so a partially-paid
-  //     completed session is treated as covered while prepaid balance is available.
-  // Final: prepaid = max(0, raw_prepaid − raw_outstanding);
-  //        outstanding = max(0, raw_outstanding − raw_prepaid).
-  const balanceComputation = useMemo(() => {
-    const payableCompleted = (appointments as any[]).filter(
-      (a: any) =>
-        a.status === "completed" &&
-        Number(a.price || 0) > 0 &&
-        a.payment_status !== "not_applicable",
-    );
-    const FULLY_PAID = new Set([
-      "paid_now",
-      "paid_in_advance",
-      "paid_from_prepayment",
-    ]);
-    let fullyPaidTotal = 0;
-    let outstandingRaw = 0;
-    for (const a of payableCompleted) {
-      const price = Number(a.price || 0);
-      const paid = Number(allocByApt[a.id]?.paid || 0);
-      if (FULLY_PAID.has(a.payment_status)) {
-        fullyPaidTotal += price;
-      } else {
-        outstandingRaw += Math.max(0, price - paid);
-      }
-    }
-    const rawPrepaid = Math.max(0, Number(paidAmount || 0) - fullyPaidTotal);
-    const covered = Math.min(rawPrepaid, outstandingRaw);
-    const prepaid = rawPrepaid - covered;
-    const outstanding = outstandingRaw - covered;
-    return { prepaid, outstanding, payableCompleted };
-  }, [appointments, paidAmount, allocByApt]);
+  // See src/lib/clientBalance.ts for the auto-coverage logic (unit-tested).
+  const balanceComputation = useMemo(
+    () =>
+      computeClientBalance({
+        appointments: appointments as any[],
+        allocByApt,
+        totalPaid: paidAmount,
+      }),
+    [appointments, paidAmount, allocByApt],
+  );
 
   const { prepaidSessions, prepaidAmount } = useMemo(() => {
     const balance = balanceComputation.prepaid;
