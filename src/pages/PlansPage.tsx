@@ -505,8 +505,10 @@ export default function PlansPage() {
                   );
                 })}
               </div>
+            )}
           </div>
         </section>
+
 
         <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
           {/* Privacy / trust block — placed near decision point */}
