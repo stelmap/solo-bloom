@@ -1436,7 +1436,22 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "income_session_allocations_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "income_session_allocations_income_id_fkey"
+            columns: ["income_id"]
+            isOneToOne: false
+            referencedRelation: "income"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoices: {
         Row: {
