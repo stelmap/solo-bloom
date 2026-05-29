@@ -774,33 +774,19 @@ export default function ClientDetailPage() {
 
         {/* Balance — payments are managed in Finance → Payment Audit */}
         {(() => {
-          // Per-session unpaid breakdown — single source of truth shared with
-          // Session History and Finance pending receivables.
-          // outstanding = SUM over completed payable sessions of max(0, price - allocated)
-          const payableCompleted = (appointments as any[]).filter(
-            (a: any) =>
+          // Total payable from completed sessions only (price > 0, payable)
+          const totalPayableCompleted = (appointments as any[])
+            .filter((a: any) =>
               a.status === "completed" &&
               Number(a.price || 0) > 0 &&
-              a.payment_status !== "not_applicable",
-          );
-          const totalPayableCompleted = payableCompleted.reduce(
-            (s: number, a: any) => s + Number(a.price || 0),
-            0,
-          );
-          const outstanding = payableCompleted.reduce((s: number, a: any) => {
-            const paid = Number(allocByApt[a.id]?.paid || 0);
-            const remaining = Number(a.price || 0) - paid;
-            return s + (remaining > 0 ? remaining : 0);
-          }, 0);
-          // Prepaid balance = unallocated received income (income not yet tied
-          // to a payable session). Capped to non-negative.
-          const allocatedToPayable = payableCompleted.reduce(
-            (s: number, a: any) => s + Math.min(Number(a.price || 0), Number(allocByApt[a.id]?.paid || 0)),
-            0,
-          );
-          const prepaid = Math.max(0, Number(paidAmount || 0) - allocatedToPayable);
-          const totalUnpaid = outstanding;
+              a.payment_status !== "not_applicable"
+            )
+            .reduce((s: number, a: any) => s + Number(a.price || 0), 0);
 
+          // Aggregate balance based on real received payments vs payable completed amount.
+          const outstanding = Math.max(0, totalPayableCompleted - Number(paidAmount || 0));
+          const prepaid = Math.max(0, Number(paidAmount || 0) - totalPayableCompleted);
+          const totalUnpaid = outstanding;
           return (
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
               <div className="flex items-center justify-between gap-3 flex-wrap">
