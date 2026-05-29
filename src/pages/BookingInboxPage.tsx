@@ -168,6 +168,7 @@ export default function BookingInboxPage() {
   const { data: rows = [], isLoading, refetch, isFetching } = useBookingRequests(status);
   const { data: services = [] } = useServices();
   const { data: clients = [] } = useClients();
+  const { data: profile } = useProfile();
 
   const confirm = useConfirmBookingRequest();
   const decline = useDeclineBookingRequest();
