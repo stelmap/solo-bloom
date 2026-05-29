@@ -1287,7 +1287,7 @@ export default function CalendarPage() {
                       ) : (
                         <div className="flex flex-col sm:flex-row gap-2">
                           <ClientPicker
-                            clients={clients}
+                            clients={activeClients}
                             value={form.client_id}
                             onChange={v => setForm(f => ({ ...f, client_id: v }))}
                             placeholder={t("calendar.selectClient")}
