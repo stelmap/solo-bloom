@@ -385,12 +385,18 @@ export default function ClientDetailPage() {
     const price = Number(apt.price || 0);
     const info = allocByApt[apt.id];
     const paid = info?.paid || 0;
-    if (paid <= 0 || price <= 0) return apt.payment_status === "not_applicable" ? "waiting_for_payment" : (apt.payment_status || "waiting_for_payment");
+    if (paid <= 0 || price <= 0) {
+      // Prepaid pool may auto-cover a fully-unpaid completed session.
+      if (balanceComputation.autoCoveredApptIds.has(apt.id)) return "paid_from_prepayment";
+      return apt.payment_status === "not_applicable" ? "waiting_for_payment" : (apt.payment_status || "waiting_for_payment");
+    }
     if (paid + 0.001 >= price) {
       const aptDate = (apt.scheduled_at || "").slice(0, 10);
       if (info?.minDate && aptDate && info.minDate < aptDate) return "paid_in_advance";
       return "paid_now";
     }
+    // Partially paid — but if the remaining gap is auto-covered from prepaid pool, treat as paid.
+    if (balanceComputation.autoCoveredApptIds.has(apt.id)) return "paid_from_prepayment";
     return "partially_paid";
   };
 
