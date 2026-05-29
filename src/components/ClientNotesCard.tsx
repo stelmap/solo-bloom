@@ -21,14 +21,13 @@ type Props = {
    * In preview mode: when true, Edit/Add Note opens an inline dialog editor
    * instead of calling onEditRequested. Keeps the user on the current screen.
    */
-export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditRequested, disabled }: Props) {
-
+  inlineEdit?: boolean;
   onEditRequested?: () => void;
   disabled?: boolean;
 };
 
+export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditRequested, disabled }: Props) {
 
-export function ClientNotesCard({ client, mode = "edit", onEditRequested, disabled }: Props) {
   const update = useUpdateClient();
   const { toast } = useToast();
   const { t } = useLanguage();
