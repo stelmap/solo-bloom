@@ -192,26 +192,47 @@ export default function ClientDetailPage() {
       .reduce((s: number, i: any) => s + Number(i.amount || 0), 0);
   }, [clientIncome]);
 
-  // Prepaid sessions must be derived from REAL prepaid balance, not from session labels.
-  // Rules:
-  //   prepaid balance = max(0, total received payments − total payable completed sessions)
-  //   if debt > 0 → prepaid sessions = 0 (mutually exclusive states)
-  //   available prepaid sessions = floor(prepaid balance / representative session price)
-  const { prepaidSessions, prepaidAmount } = useMemo(() => {
+  // Client balance is computed in 3 stages:
+  //  1. raw prepaid pool = Total Paid − price of fully-paid completed sessions
+  //  2. raw outstanding = sum(price − allocated) for completed sessions NOT marked fully paid
+  //  3. auto-cover: any prepaid pool first absorbs raw outstanding, so a partially-paid
+  //     completed session is treated as covered while prepaid balance is available.
+  // Final: prepaid = max(0, raw_prepaid − raw_outstanding);
+  //        outstanding = max(0, raw_outstanding − raw_prepaid).
+  const balanceComputation = useMemo(() => {
     const payableCompleted = (appointments as any[]).filter(
       (a: any) =>
         a.status === "completed" &&
         Number(a.price || 0) > 0 &&
         a.payment_status !== "not_applicable",
     );
-    // Prepaid = confirmed payments NOT yet allocated to any session.
-    const totalAllocated = Object.values(allocByApt).reduce(
-      (s: number, v: any) => s + Number(v?.paid || 0),
-      0,
-    );
-    const balance = Number(paidAmount || 0) - totalAllocated;
+    const FULLY_PAID = new Set([
+      "paid_now",
+      "paid_in_advance",
+      "paid_from_prepayment",
+    ]);
+    let fullyPaidTotal = 0;
+    let outstandingRaw = 0;
+    for (const a of payableCompleted) {
+      const price = Number(a.price || 0);
+      const paid = Number(allocByApt[a.id]?.paid || 0);
+      if (FULLY_PAID.has(a.payment_status)) {
+        fullyPaidTotal += price;
+      } else {
+        outstandingRaw += Math.max(0, price - paid);
+      }
+    }
+    const rawPrepaid = Math.max(0, Number(paidAmount || 0) - fullyPaidTotal);
+    const covered = Math.min(rawPrepaid, outstandingRaw);
+    const prepaid = rawPrepaid - covered;
+    const outstanding = outstandingRaw - covered;
+    return { prepaid, outstanding, payableCompleted };
+  }, [appointments, paidAmount, allocByApt]);
+
+  const { prepaidSessions, prepaidAmount } = useMemo(() => {
+    const balance = balanceComputation.prepaid;
     if (balance <= 0) return { prepaidSessions: 0, prepaidAmount: 0 };
-    const sorted = [...payableCompleted].sort(
+    const sorted = [...balanceComputation.payableCompleted].sort(
       (a: any, b: any) =>
         new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime(),
     );
@@ -221,7 +242,7 @@ export default function ClientDetailPage() {
       0;
     const count = refPrice > 0 ? Math.floor(balance / refPrice) : 0;
     return { prepaidSessions: count, prepaidAmount: balance };
-  }, [appointments, paidAmount, allocByApt, client]);
+  }, [balanceComputation, client]);
 
 
   // Apply selected statistic filter to the full appointment list
@@ -774,34 +795,11 @@ export default function ClientDetailPage() {
 
         {/* Balance — payments are managed in Finance → Payment Audit */}
         {(() => {
-          // Per-session unpaid breakdown — single source of truth shared with
-          // Session History and Finance pending receivables.
-          // outstanding = SUM over completed payable sessions of max(0, price - allocated)
-          const payableCompleted = (appointments as any[]).filter(
-            (a: any) =>
-              a.status === "completed" &&
-              Number(a.price || 0) > 0 &&
-              a.payment_status !== "not_applicable",
-          );
-          const totalPayableCompleted = payableCompleted.reduce(
-            (s: number, a: any) => s + Number(a.price || 0),
-            0,
-          );
-          const outstanding = payableCompleted.reduce((s: number, a: any) => {
-            const paid = Number(allocByApt[a.id]?.paid || 0);
-            const remaining = Number(a.price || 0) - paid;
-            return s + (remaining > 0 ? remaining : 0);
-          }, 0);
-          // Prepaid balance = confirmed client payments that remain UNALLOCATED to
-          // any session. Allocations are the single source of truth for what
-          // payment money is tied to a session (completed or otherwise), so any
-          // amount already allocated must not be counted as prepaid — even if the
-          // appointment status/payment_status hasn't caught up yet.
-          const totalAllocated = Object.values(allocByApt).reduce(
-            (s: number, v: any) => s + Number(v?.paid || 0),
-            0,
-          );
-          const prepaid = Math.max(0, Number(paidAmount || 0) - totalAllocated);
+          // Single source of truth: balanceComputation handles auto-coverage of
+          // partially-paid completed sessions from the prepaid pool, so the
+          // displayed Outstanding/Prepaid/Total Unpaid reflect the effective
+          // financial state after that virtual allocation.
+          const { prepaid, outstanding } = balanceComputation;
           const totalUnpaid = outstanding;
 
           return (
