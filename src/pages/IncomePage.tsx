@@ -68,16 +68,10 @@ export default function IncomePage() {
 
   const filtered = income; // server-side filtered
   const total = periodTotal;
-  const todayStr = format(new Date(), "yyyy-MM-dd");
-  const filteredExpected = useMemo(() => {
-    if (!dateFrom) return expectedPayments as any[];
-    return (expectedPayments as any[]).filter((ep: any) => {
-      const d = ep.appointments?.scheduled_at?.slice(0, 10);
-      if (!d) return false;
-      if (dateRange === "today") return d === todayStr;
-      return d >= dateFrom;
-    });
-  }, [expectedPayments, dateFrom, dateRange, todayStr]);
+  // Pending/awaiting payments represent outstanding debt as of now. They should
+  // always be visible regardless of the date-range filter so historical unpaid
+  // sessions don't disappear when the user is viewing "This month" / "Today".
+  const filteredExpected = expectedPayments as any[];
   const pendingTotal = filteredExpected.reduce((s: number, ep: any) => s + Number(ep.amount), 0);
 
   const { data: activeMethods = [] } = useActivePaymentMethods();
