@@ -1199,7 +1199,43 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "group_session_payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_session_payments_expected_payment_id_fkey"
+            columns: ["expected_payment_id"]
+            isOneToOne: false
+            referencedRelation: "expected_payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_session_payments_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_session_payments_group_session_id_fkey"
+            columns: ["group_session_id"]
+            isOneToOne: false
+            referencedRelation: "group_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_session_payments_income_id_fkey"
+            columns: ["income_id"]
+            isOneToOne: false
+            referencedRelation: "income"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       group_sessions: {
         Row: {
