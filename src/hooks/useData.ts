@@ -385,7 +385,7 @@ export function useClientAppointments(clientId: string | undefined) {
       if (soloErr) throw soloErr;
       if (gaErr) throw gaErr;
 
-      const soloRows = (solo ?? []) as any[];
+      const soloRows = ((solo ?? []) as any[]).filter((r) => !r.group_session_id);
       const soloAptIds = new Set(soloRows.map((r) => r.id));
 
       // Fetch this client's per-session payment rows in one shot.
@@ -2913,7 +2913,7 @@ export function useClientCreditBalance(clientId: string | undefined) {
       // completed work, i.e. money available to consume against upcoming
       // (or just-finished) sessions. Legacy `client_credits` rows are
       // additive for backwards compatibility with old data.
-      const [{ data: incomes, error: incErr }, { data: appts, error: aptErr }, { data: legacy, error: legacyErr }] = await Promise.all([
+      const [{ data: incomes, error: incErr }, { data: appts, error: aptErr }, { data: legacy, error: legacyErr }, { data: groupPays, error: groupErr }] = await Promise.all([
         (supabase as any)
           .from("income")
           .select("amount, status")
@@ -2926,10 +2926,16 @@ export function useClientCreditBalance(clientId: string | undefined) {
           .from("client_credits")
           .select("amount")
           .eq("client_id", clientId!),
+        (supabase as any)
+          .from("group_session_payments")
+          .select("amount, payment_state")
+          .eq("client_id", clientId!)
+          .eq("billing_rule_applied", true),
       ]);
       if (incErr) throw incErr;
       if (aptErr) throw aptErr;
       if (legacyErr) throw legacyErr;
+      if (groupErr) throw groupErr;
 
       const totalIncome = (incomes ?? [])
         .filter((i: any) => (i.status ?? "confirmed") === "confirmed")
@@ -2941,9 +2947,15 @@ export function useClientCreditBalance(clientId: string | undefined) {
           a.payment_status !== "not_applicable"
         )
         .reduce((s: number, a: any) => s + Number(a.price || 0), 0);
+      const totalPayableGroup = (groupPays ?? [])
+        .filter((p: any) =>
+          Number(p.amount || 0) > 0 &&
+          p.payment_state !== "not_applicable"
+        )
+        .reduce((s: number, p: any) => s + Number(p.amount || 0), 0);
       const legacyCredit = (legacy ?? []).reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
 
-      const balance = Math.max(0, totalIncome - totalPayableCompleted) + legacyCredit;
+      const balance = Math.max(0, totalIncome - totalPayableCompleted - totalPayableGroup) + legacyCredit;
       return balance as number;
     },
     enabled: !!user && !!clientId,

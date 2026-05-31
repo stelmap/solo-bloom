@@ -229,12 +229,17 @@ export function useCompleteGroupSession() {
       const payDate = paymentState === "paid_in_advance" ? today : sessionDate;
 
       // 2) Wipe prior records for this appointment so re-completion is idempotent.
-      await supabase.from("income_session_allocations").delete().eq("appointment_id", appointmentId);
-      await supabase.from("income").delete().eq("appointment_id", appointmentId);
-      await supabase.from("expected_payments").delete().eq("appointment_id", appointmentId);
-      await supabase.from("group_session_payments" as any).delete().eq("group_session_id", groupSessionId);
+      const cleanupResults = await Promise.all([
+        supabase.from("income_session_allocations").delete().eq("appointment_id", appointmentId),
+        supabase.from("income").delete().eq("appointment_id", appointmentId),
+        supabase.from("expected_payments").delete().eq("appointment_id", appointmentId),
+        supabase.from("group_session_payments" as any).delete().eq("group_session_id", groupSessionId),
+      ]);
+      const cleanupError = cleanupResults.find((r: any) => r.error)?.error;
+      if (cleanupError) throw cleanupError;
 
       // 3) Process each participant individually.
+      const resolvedStates: string[] = [];
       for (const p of participants) {
         let incomeId: string | null = null;
         let expectedPaymentId: string | null = null;
@@ -281,13 +286,14 @@ export function useCompleteGroupSession() {
             incomeId = (inc as any)?.id || null;
 
             if (incomeId) {
-              await (supabase as any).from("income_session_allocations").insert({
+              const { error: allocErr } = await (supabase as any).from("income_session_allocations").insert({
                 user_id: user!.id,
                 income_id: incomeId,
                 appointment_id: appointmentId,
                 allocated_amount: stillOwed,
                 from_prepayment: false,
               } as any);
+              if (allocErr) throw allocErr;
             }
             resolvedState = consumed > 0.001 ? "partially_paid_from_prepayment" : paymentState;
           } else {
@@ -307,7 +313,7 @@ export function useCompleteGroupSession() {
         }
 
         // c) Persist tracking row for the group session UI.
-        await supabase.from("group_session_payments" as any).insert({
+        const { error: gspErr } = await supabase.from("group_session_payments" as any).insert({
           user_id: user!.id,
           group_id: groupId,
           group_session_id: groupSessionId,
@@ -323,7 +329,26 @@ export function useCompleteGroupSession() {
           income_id: incomeId,
           expected_payment_id: expectedPaymentId,
         });
+        if (gspErr) throw gspErr;
+        resolvedStates.push(resolvedState);
       }
+
+      // Keep the appointment-level badge conservative for group sessions: one
+      // prepaid participant must never make the whole group look paid.
+      const billableStates = resolvedStates.filter((s) => s !== "not_applicable");
+      const aggregatePaymentStatus = billableStates.length === 0
+        ? "not_applicable"
+        : billableStates.some((s) => s === "waiting_for_payment" || s === "partially_paid_from_prepayment")
+          ? "waiting_for_payment"
+          : billableStates.every((s) => s === "paid_from_prepayment")
+            ? "paid_from_prepayment"
+            : paymentState;
+
+      const { error: aggregateErr } = await supabase
+        .from("appointments")
+        .update({ payment_status: aggregatePaymentStatus } as any)
+        .eq("id", appointmentId);
+      if (aggregateErr) throw aggregateErr;
     },
     onSuccess: () => {
       INVALIDATE_GROUPS.forEach(k => qc.invalidateQueries({ queryKey: [k] }));
