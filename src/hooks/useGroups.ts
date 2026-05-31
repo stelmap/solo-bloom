@@ -239,6 +239,7 @@ export function useCompleteGroupSession() {
       if (cleanupError) throw cleanupError;
 
       // 3) Process each participant individually.
+      const resolvedStates: string[] = [];
       for (const p of participants) {
         let incomeId: string | null = null;
         let expectedPaymentId: string | null = null;
@@ -329,7 +330,25 @@ export function useCompleteGroupSession() {
           expected_payment_id: expectedPaymentId,
         });
         if (gspErr) throw gspErr;
+        resolvedStates.push(resolvedState);
       }
+
+      // Keep the appointment-level badge conservative for group sessions: one
+      // prepaid participant must never make the whole group look paid.
+      const billableStates = resolvedStates.filter((s) => s !== "not_applicable");
+      const aggregatePaymentStatus = billableStates.length === 0
+        ? "not_applicable"
+        : billableStates.some((s) => s === "waiting_for_payment" || s === "partially_paid_from_prepayment")
+          ? "waiting_for_payment"
+          : billableStates.every((s) => s === "paid_from_prepayment")
+            ? "paid_from_prepayment"
+            : paymentState;
+
+      const { error: aggregateErr } = await supabase
+        .from("appointments")
+        .update({ payment_status: aggregatePaymentStatus } as any)
+        .eq("id", appointmentId);
+      if (aggregateErr) throw aggregateErr;
     },
     onSuccess: () => {
       INVALIDATE_GROUPS.forEach(k => qc.invalidateQueries({ queryKey: [k] }));
