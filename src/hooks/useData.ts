@@ -3104,7 +3104,7 @@ export function useSaveIncomeConfirmation() {
       return incomeId;
     },
     onSuccess: () => {
-      ["income", "client-income", "client-allocations", "appointment-allocations",
+      ["income", "income-all", "income-sum", "client-income", "client-allocations", "appointment-allocations",
        "client-credit-balance", "appointments", "client-appointments",
        "dashboard-stats", "expected-payments", "payment-audit"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
     },
@@ -3137,7 +3137,7 @@ export function useDeleteIncomeConfirmation() {
       await recalcAppointments(aptIds);
     },
     onSuccess: () => {
-      ["income", "client-income", "client-allocations", "appointment-allocations",
+      ["income", "income-all", "income-sum", "client-income", "client-allocations", "appointment-allocations",
        "client-credit-balance", "appointments", "client-appointments",
        "dashboard-stats", "expected-payments", "payment-audit"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
     },
