@@ -40,10 +40,14 @@ export default function PurchaseSuccessPage() {
         // Refresh all cached lists
         qc.invalidateQueries();
         setPhase("ready");
-      } catch (e) {
+      } catch (e: any) {
         if (cancelled) return;
         console.error("Post-purchase cleanup failed:", e);
-        setErrorMsg(e instanceof Error ? e.message : "Unknown error");
+        const msg =
+          (e && (e.message || e.error_description || e.hint || e.details)) ||
+          (typeof e === "string" ? e : null) ||
+          "Unknown error";
+        setErrorMsg(String(msg));
         setPhase("error");
       }
     })();
