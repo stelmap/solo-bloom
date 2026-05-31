@@ -71,6 +71,7 @@ export default function PlansPage() {
   const [period, setPeriod] = useState<BillingPeriod>("yearly");
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [continuing, setContinuing] = useState(false);
+  const [slowCheckout, setSlowCheckout] = useState(false);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [clearing, setClearing] = useState(false);
 
