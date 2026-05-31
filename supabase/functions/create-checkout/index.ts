@@ -63,7 +63,7 @@ serve(async (req) => {
       return json({ error: "Server is not configured for payments. Please contact support." }, 500);
     }
 
-    let body: { planCode?: string; billingPeriod?: string; priceId?: string; withTrial?: boolean } = {};
+    let body: { planCode?: string; billingPeriod?: string; priceId?: string; withTrial?: boolean; locale?: string } = {};
     try {
       body = await req.json();
     } catch {
@@ -71,6 +71,9 @@ serve(async (req) => {
     }
     // Trial removed: ignore any `withTrial` flag sent by older clients.
     const withTrial = false;
+    const SUPPORTED_LOCALES = new Set(["uk", "en", "fr", "pl"]);
+    const stripeLocale = (body.locale && SUPPORTED_LOCALES.has(body.locale) ? body.locale : "auto") as
+      | "auto" | "uk" | "en" | "fr" | "pl";
     const legacySelection = body.priceId ? LEGACY_PRICE_TO_SELECTION[body.priceId] : undefined;
     const planCode = body.planCode ?? legacySelection?.planCode;
     const billingPeriod = body.billingPeriod ?? legacySelection?.billingPeriod;
