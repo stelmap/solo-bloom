@@ -34,23 +34,36 @@ export default function IncomePage() {
   const [dateRange, setDateRange] = useState(initialRange);
   const [activeTab, setActiveTab] = useState(initialTab);
 
-  const dateFrom = useMemo(() => {
+  const { dateFrom, dateTo } = useMemo(() => {
     const now = new Date();
-    if (dateRange === "today") return format(now, "yyyy-MM-dd");
-    if (dateRange === "week") return format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
-    if (dateRange === "month") return format(startOfMonth(now), "yyyy-MM-dd");
-    return undefined; // all
+    if (dateRange === "today") {
+      const d = format(now, "yyyy-MM-dd");
+      return { dateFrom: d, dateTo: d };
+    }
+    if (dateRange === "week") {
+      return {
+        dateFrom: format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
+        dateTo: format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
+      };
+    }
+    if (dateRange === "month") {
+      return {
+        dateFrom: format(startOfMonth(now), "yyyy-MM-dd"),
+        dateTo: format(endOfMonth(now), "yyyy-MM-dd"),
+      };
+    }
+    return { dateFrom: undefined, dateTo: undefined };
   }, [dateRange]);
 
   // Reset to first page when filter changes
-  useEffect(() => { setPage(0); }, [dateFrom]);
+  useEffect(() => { setPage(0); }, [dateFrom, dateTo]);
 
-  const { data: incomeResult, isLoading } = useIncome(page, dateFrom);
+  const { data: incomeResult, isLoading } = useIncome(page, dateFrom, dateTo);
   const income = incomeResult?.data ?? [];
   const totalCount = incomeResult?.totalCount ?? 0;
   const pageSize = incomeResult?.pageSize ?? 50;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const { data: periodTotal = 0 } = useIncomeSum(dateFrom);
+  const { data: periodTotal = 0 } = useIncomeSum(dateFrom, dateTo);
   const { data: expectedPayments = [], isLoading: epLoading } = useExpectedPayments();
   const { data: clients = [] } = useClients();
   const createIncome = useCreateIncome();
