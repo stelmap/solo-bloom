@@ -516,9 +516,10 @@ export default function PlansPage() {
                     <button
                       key={plan.id}
                       type="button"
-                      onClick={() => setSelectedPlanId(plan.id)}
+                      onClick={() => startCheckout(plan.id)}
+                      disabled={continuing}
                       className={cn(
-                        "relative p-8 rounded-2xl bg-card flex flex-col text-left transition-all",
+                        "relative p-8 rounded-2xl bg-card flex flex-col text-left transition-all disabled:cursor-not-allowed",
                         isHighlighted
                           ? "border-2 border-primary shadow-xl"
                           : "border border-border",
