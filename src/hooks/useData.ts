@@ -1626,7 +1626,7 @@ export function useUpdateProfile() {
       qc.invalidateQueries({ queryKey: ["profile"] });
       // If recognition method changed, recompute analytics that group income by date
       if (vars.income_recognition_method !== undefined) {
-        ["dashboard-stats", "income", "client-income", "tax-accrual-status"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
+        ["dashboard-stats", "income", "income-all", "income-sum", "client-income", "tax-accrual-status"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
       }
     },
   });
