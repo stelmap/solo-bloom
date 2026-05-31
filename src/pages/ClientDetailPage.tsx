@@ -208,12 +208,23 @@ export default function ClientDetailPage() {
   // (badge: "Paid from prepayment") yet still counted as awaiting because its raw
   // payment_status column is still "waiting_for_payment" / "partially_paid".
   const FULLY_PAID_PSTATUSES = new Set(["paid_now", "paid_in_advance", "paid_from_prepayment"]);
+  // A session is fully covered by direct allocations when allocated amount >= price.
+  // This catches cases (e.g. group participants) where payment_status column is stale
+  // ("waiting_for_payment") but an income allocation row already covers the price.
+  const isAllocationCovered = (a: any) => {
+    const price = Number(a.price || 0);
+    if (price <= 0) return false;
+    const paid = Number(allocByApt[a.id]?.paid || 0);
+    return paid + 0.001 >= price;
+  };
   const isEffectivelyPaid = (a: any) =>
     isPaid(a) ||
-    (a.status === "completed" && balanceComputation.autoCoveredApptIds.has(a.id));
+    (a.status === "completed" &&
+      (balanceComputation.autoCoveredApptIds.has(a.id) || isAllocationCovered(a)));
   const isEffectivelyAwaiting = (a: any) =>
     isAwaiting(a) &&
     !balanceComputation.autoCoveredApptIds.has(a.id) &&
+    !isAllocationCovered(a) &&
     !FULLY_PAID_PSTATUSES.has(String(a.payment_status));
 
   const paidSessions = (appointments as any[]).filter(isEffectivelyPaid).length;
