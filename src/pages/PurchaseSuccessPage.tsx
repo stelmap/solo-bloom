@@ -26,11 +26,25 @@ export default function PurchaseSuccessPage() {
     (async () => {
       if (!user?.id) return;
       try {
-        // Force subscription refresh so the cache reflects the new plan
+        // Poll subscription until the Stripe webhook has marked the user as
+        // subscribed (or trialing). Webhooks can lag a few seconds.
+        let subscribed = false;
+        for (let attempt = 0; attempt < 10 && !cancelled; attempt += 1) {
+          const { data } = await supabase.functions.invoke("check-subscription", {
+            body: { force: true },
+          });
+          if (data?.subscribed || data?.on_trial) {
+            subscribed = true;
+            break;
+          }
+          await new Promise((r) => setTimeout(r, 1500));
+        }
+        if (cancelled) return;
+
+        // Refresh local auth context with whatever Stripe now reports
         await refreshSubscription({ force: true });
 
-        // Cleanup demo data — server is authoritative; webhook may have done
-        // this already, but the RPC is idempotent.
+        // Cleanup demo data — server is authoritative and the RPC is idempotent.
         const { error } = await supabase.rpc("cleanup_demo_workspace", {
           p_user_id: user.id,
         });
@@ -39,6 +53,12 @@ export default function PurchaseSuccessPage() {
 
         // Refresh all cached lists
         qc.invalidateQueries();
+
+        if (!subscribed) {
+          // Cleanup worked, but Stripe hasn't confirmed yet. Surface a soft
+          // warning instead of a blocking error.
+          setErrorMsg("Your plan is taking a moment to activate. Refresh in a few seconds if it doesn't appear.");
+        }
         setPhase("ready");
       } catch (e: any) {
         if (cancelled) return;
