@@ -180,7 +180,7 @@ describe("entitlement hierarchy", () => {
     expect(relogin.result.current.hasOperational).toBe(true);
   });
 
-  it("expired Pro trial relocks Pro features after login", async () => {
+  it("expired Pro trial relocks Pro-only access but Finance/Supervision baseline stays", async () => {
     mockAuthState.current.subscription = {
       ...defaultSubscription,
       subscribed: false,
@@ -200,9 +200,79 @@ describe("entitlement hierarchy", () => {
     const { result } = renderHook(() => useEntitlements(), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.loading).toBe(false));
+    // Premium lapses with the trial
     expect(result.current.hasPremium).toBe(false);
-    expect(result.current.hasFinancial).toBe(false);
-    expect(result.current.hasOperational).toBe(false);
     expect(result.current.has("premium_access")).toBe(false);
+    // …but Finance + Supervision remain baseline for every authenticated user
+    expect(result.current.hasFinancial).toBe(true);
+    expect(result.current.hasOperational).toBe(true);
+  });
+});
+
+describe("baseline access (Finance, Supervision, Reports)", () => {
+  it("Free Starter user (no subscription, no rows) still gets operational + financial", async () => {
+    mockAuthState.current = {
+      user: { id: "free-user" },
+      subscription: { ...defaultSubscription },
+    };
+    mockDbState.entitlements = [];
+    mockDbState.subscriptionRow = null;
+
+    const { result } = renderHook(() => useEntitlements(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.hasOperational).toBe(true);
+    expect(result.current.hasFinancial).toBe(true);
+    expect(result.current.hasPremium).toBe(false);
+  });
+
+  it("Solo Practice user gets baseline + operational, but NOT premium", async () => {
+    mockAuthState.current = {
+      user: { id: "solo-user" },
+      subscription: {
+        ...defaultSubscription,
+        subscribed: true,
+        price_id: "price_1TPQ3DRxXuU3N5IFMcxZCvva", // solo
+      },
+    };
+
+    const { result } = renderHook(() => useEntitlements(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.hasOperational).toBe(true);
+    expect(result.current.hasFinancial).toBe(true);
+    expect(result.current.hasPremium).toBe(false);
+  });
+
+  it("Pro Practice user unlocks premium AND keeps Finance/Supervision baseline", async () => {
+    mockAuthState.current = {
+      user: { id: "pro-user" },
+      subscription: {
+        ...defaultSubscription,
+        subscribed: true,
+        price_id: "price_1TPQahRxXuU3N5IF3umwA0Bd", // pro
+      },
+    };
+
+    const { result } = renderHook(() => useEntitlements(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.hasOperational).toBe(true);
+    expect(result.current.hasFinancial).toBe(true);
+    expect(result.current.hasPremium).toBe(true);
+  });
+
+  it("Logged-out user gets no entitlements at all", async () => {
+    mockAuthState.current = {
+      user: null as unknown as { id: string },
+      subscription: { ...defaultSubscription },
+    };
+
+    const { result } = renderHook(() => useEntitlements(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.hasOperational).toBe(false);
+    expect(result.current.hasFinancial).toBe(false);
+    expect(result.current.hasPremium).toBe(false);
   });
 });
