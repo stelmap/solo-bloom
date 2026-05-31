@@ -591,8 +591,17 @@ export default function PlansPage() {
                             : "border border-border text-foreground bg-background hover:border-primary/40"
                         )}
                       >
-                        {isSelected && <Check className="h-4 w-4" />}
-                        {ctaText}
+                        {isSelected && continuing ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            {t("plans.redirectingToCheckout") || "Redirecting to checkout…"}
+                          </>
+                        ) : (
+                          <>
+                            {isSelected && <Check className="h-4 w-4" />}
+                            {ctaText}
+                          </>
+                        )}
                       </div>
                     </button>
                   );
