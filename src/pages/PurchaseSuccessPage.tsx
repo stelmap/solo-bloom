@@ -93,7 +93,7 @@ export default function PurchaseSuccessPage() {
               </div>
               <h1 className="text-3xl font-semibold mb-2">Your workspace is ready</h1>
               <p className="text-muted-foreground">
-                Demo data has been removed. Let's configure your real practice.
+                Your plan is active. Let's get your practice set up.
               </p>
             </div>
 
