@@ -42,7 +42,6 @@ const navItems: NavItem[] = [
     icon: Wallet,
     labelKey: "nav.finances",
     basePath: "/finances",
-    requires: "financial_access",
     children: [
       { icon: BarChart3, labelKey: "nav.financesDashboard", path: "/finances" },
       { icon: DollarSign, labelKey: "nav.income", path: "/finances/income" },
@@ -52,8 +51,9 @@ const navItems: NavItem[] = [
       { icon: Settings, labelKey: "nav.financeSettings", path: "/finances/settings" },
     ],
   },
-  { kind: "leaf", icon: ClipboardList, labelKey: "nav.supervision", path: "/supervision", requires: "premium_access" },
+  { kind: "leaf", icon: ClipboardList, labelKey: "nav.supervision", path: "/supervision" },
   { kind: "leaf", icon: Settings, labelKey: "nav.settings", path: "/settings" },
+
 ];
 
 export function AppSidebar() {
