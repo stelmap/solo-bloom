@@ -18,24 +18,28 @@ export function PaywallDialog({ open, onOpenChange, reason = "client_limit" }: P
   const { t } = useLanguage();
   const { planCode, limit } = useFreeStarterMode();
 
-  const tx = (key: string, fallback: string) => {
-    const v = t(key as any);
+  const tx = (key: string, fallback: string, params?: Record<string, string | number>) => {
+    const v = t(key as any, params);
     return !v || v === key ? fallback : v;
   };
 
   let title: string;
   let message: string;
   if (planCode === "solo") {
+    const lim = limit ?? 20;
     title = tx("paywall.solo.title", "Solo Practice limit reached");
     message = tx(
       "paywall.solo.message",
-      `Solo Practice allows up to ${limit ?? 20} active clients. To add more clients, please upgrade to Pro Practice.`,
+      `Solo Practice allows up to ${lim} active clients. To add more clients, please upgrade to Pro Practice.`,
+      { limit: lim },
     );
   } else {
+    const lim = limit ?? 5;
     title = tx("paywall.freeStarter.title", "Free Starter limit reached");
     message = tx(
       "paywall.freeStarter.message",
-      `Free Starter allows up to ${limit ?? 5} active clients. To add more clients, please upgrade to Solo Practice or Pro Practice.`,
+      `Free Starter allows up to ${lim} active clients. To add more clients, please upgrade to Solo Practice or Pro Practice.`,
+      { limit: lim },
     );
   }
   const viewPlans = tx("paywall.freeStarter.viewPlans", "View Plans");
