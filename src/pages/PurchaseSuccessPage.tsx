@@ -80,7 +80,7 @@ export default function PurchaseSuccessPage() {
             <Loader2 className="h-10 w-10 mx-auto mb-4 animate-spin text-primary" />
             <h1 className="text-2xl font-semibold mb-2">Setting up your workspace…</h1>
             <p className="text-muted-foreground">
-              Activating your plan and removing demo data.
+              Activating your plan…
             </p>
           </Card>
         )}
