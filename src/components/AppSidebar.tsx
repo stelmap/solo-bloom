@@ -42,7 +42,6 @@ const navItems: NavItem[] = [
     icon: Wallet,
     labelKey: "nav.finances",
     basePath: "/finances",
-    requires: "financial_access",
     children: [
       { icon: BarChart3, labelKey: "nav.financesDashboard", path: "/finances" },
       { icon: DollarSign, labelKey: "nav.income", path: "/finances/income" },
@@ -52,8 +51,9 @@ const navItems: NavItem[] = [
       { icon: Settings, labelKey: "nav.financeSettings", path: "/finances/settings" },
     ],
   },
-  { kind: "leaf", icon: ClipboardList, labelKey: "nav.supervision", path: "/supervision", requires: "premium_access" },
+  { kind: "leaf", icon: ClipboardList, labelKey: "nav.supervision", path: "/supervision" },
   { kind: "leaf", icon: Settings, labelKey: "nav.settings", path: "/settings" },
+
 ];
 
 export function AppSidebar() {
@@ -62,9 +62,10 @@ export function AppSidebar() {
   const { user, signOut, subscription } = useAuth();
   const { t } = useLanguage();
   const isTrial = !subscription.loading && subscription.on_trial && !subscription.subscribed;
-  const { isFreeStarter } = useFreeStarterMode();
+  const { isFreeStarter, planCode } = useFreeStarterMode();
   const { has, loading: entLoading } = useEntitlements();
   const [isAdmin, setIsAdmin] = useState(false);
+
   
 
 
@@ -122,17 +123,24 @@ export function AppSidebar() {
             </h1>
           </div>
           <p className="text-xs text-sidebar-foreground/50 mt-0.5">Business Manager</p>
-          {isFreeStarter ? (
-            <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-sidebar-primary/25 bg-sidebar-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sidebar-primary">
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>Free Starter</span>
-            </div>
-          ) : (subscription.subscribed || isTrial) ? (
-            <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-sidebar-primary/25 bg-sidebar-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sidebar-primary">
-              <BadgeCheck className="h-3.5 w-3.5" />
-              <span>Active plan</span>
-            </div>
-          ) : null}
+          {(() => {
+            const planLabel =
+              planCode === "pro"
+                ? "Pro Practice"
+                : planCode === "solo"
+                  ? "Solo Practice"
+                  : isTrial
+                    ? "Trial"
+                    : "Free Starter";
+            const Icon = planCode === "pro" || planCode === "solo" || isTrial ? BadgeCheck : Sparkles;
+            return (
+              <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-sidebar-primary/25 bg-sidebar-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sidebar-primary">
+                <Icon className="h-3.5 w-3.5" />
+                <span>{planLabel}</span>
+              </div>
+            );
+          })()}
+
         </div>
 
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
