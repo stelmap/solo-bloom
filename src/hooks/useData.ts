@@ -385,7 +385,7 @@ export function useClientAppointments(clientId: string | undefined) {
       if (soloErr) throw soloErr;
       if (gaErr) throw gaErr;
 
-      const soloRows = (solo ?? []) as any[];
+      const soloRows = ((solo ?? []) as any[]).filter((r) => !r.group_session_id);
       const soloAptIds = new Set(soloRows.map((r) => r.id));
 
       // Fetch this client's per-session payment rows in one shot.
