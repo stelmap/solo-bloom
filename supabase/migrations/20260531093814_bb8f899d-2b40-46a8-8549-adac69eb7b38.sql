@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.cleanup_demo_workspace(uuid) TO authenticated;
