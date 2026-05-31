@@ -304,9 +304,9 @@ export default function PlansPage() {
     if (!availablePeriods.includes(period)) setPeriod(availablePeriods[0]);
   }, [availablePeriods, period]);
 
-  const handleContinue = async () => {
-    if (!selectedPlanId || continuing) return; // guard against double-click
-    const selectedPlan = plans.find((plan) => plan.id === selectedPlanId);
+  const startCheckout = async (planId: string) => {
+    if (continuing) return; // guard against double-click
+    const selectedPlan = plans.find((plan) => plan.id === planId);
     if (!selectedPlan) {
       toast({
         title: t("plans.checkoutUnavailable"),
@@ -315,12 +315,12 @@ export default function PlansPage() {
       });
       return;
     }
+    setSelectedPlanId(planId);
     setContinuing(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { planCode: selectedPlan.code, billingPeriod: period, withTrial: false },
       });
-      // Edge-function returns non-2xx as `error` with a `context` containing the JSON body.
       if (error) {
         let serverMsg: string | undefined;
         let serverCode: string | undefined;
@@ -343,7 +343,6 @@ export default function PlansPage() {
       }
 
       if (data?.url) {
-        // Single, same-tab redirect to Stripe.
         window.location.href = data.url;
         return;
       }
@@ -517,9 +516,10 @@ export default function PlansPage() {
                     <button
                       key={plan.id}
                       type="button"
-                      onClick={() => setSelectedPlanId(plan.id)}
+                      onClick={() => startCheckout(plan.id)}
+                      disabled={continuing}
                       className={cn(
-                        "relative p-8 rounded-2xl bg-card flex flex-col text-left transition-all",
+                        "relative p-8 rounded-2xl bg-card flex flex-col text-left transition-all disabled:cursor-not-allowed",
                         isHighlighted
                           ? "border-2 border-primary shadow-xl"
                           : "border border-border",
@@ -591,8 +591,17 @@ export default function PlansPage() {
                             : "border border-border text-foreground bg-background hover:border-primary/40"
                         )}
                       >
-                        {isSelected && <Check className="h-4 w-4" />}
-                        {ctaText}
+                        {isSelected && continuing ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            {t("plans.redirectingToCheckout") || "Redirecting to checkout…"}
+                          </>
+                        ) : (
+                          <>
+                            {isSelected && <Check className="h-4 w-4" />}
+                            {ctaText}
+                          </>
+                        )}
                       </div>
                     </button>
                   );
@@ -618,36 +627,22 @@ export default function PlansPage() {
         <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
 
 
-          {/* Footer CTA */}
+          {/* Footer */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
             <p className="text-xs text-muted-foreground">
               {t("plans.footerSecure")}
             </p>
-            <div className="flex items-center gap-3">
-              {canClearDemo && (
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={requestClearDemo}
-                  disabled={clearing}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  {clearing ? t("plans.clearing") : t("plans.clearDemo")}
-                </Button>
-              )}
+            {canClearDemo && (
               <Button
+                variant="outline"
                 size="lg"
-                disabled={!selectedPlanId || continuing}
-                onClick={handleContinue}
-                className="min-w-[180px] h-12 rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
+                onClick={requestClearDemo}
+                disabled={clearing}
               >
-                {continuing ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>{selectedPlanId ? t("plans.continue") : t("plans.continueSelect")}</>
-                )}
+                <Trash2 className="h-4 w-4" />
+                {clearing ? t("plans.clearing") : t("plans.clearDemo")}
               </Button>
-            </div>
+            )}
           </div>
         </div>
       </div>
