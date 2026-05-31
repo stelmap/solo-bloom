@@ -92,7 +92,10 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    const { data: priceRow, error: priceError } = await supabaseAdmin
+    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+
+    // Run DB price lookup and Stripe customer lookup in parallel to minimise latency.
+    const priceLookupPromise = supabaseAdmin
       .from("plan_prices")
       .select("stripe_price_id, plans!inner(code, is_active)")
       .eq("billing_period", billingPeriod)
@@ -101,6 +104,18 @@ serve(async (req) => {
       .eq("plans.is_active", true)
       .maybeSingle();
 
+    const customerLookupPromise = stripe.customers
+      .list({ email: user.email, limit: 1 })
+      .then((res) => ({ data: res.data }))
+      .catch((err) => {
+        const msg = err instanceof Error ? err.message : String(err);
+        log("Stripe customer lookup failed", { message: msg });
+        return { data: [] as Array<{ id: string }> };
+      });
+
+    const [priceResult, customers] = await Promise.all([priceLookupPromise, customerLookupPromise]);
+    const { data: priceRow, error: priceError } = priceResult;
+
     const priceId = (priceRow as any)?.stripe_price_id as string | undefined;
     if (priceError || !priceId) {
       log("Active Stripe price lookup failed", { planCode, billingPeriod, message: priceError?.message });
@@ -108,55 +123,16 @@ serve(async (req) => {
     }
     log("Active price resolved", { planCode, billingPeriod, priceId, withTrial });
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    // NOTE: skipping `stripe.prices.retrieve` validation and the active-subscription pre-check
+    // on purpose — each adds ~200–500ms and is not required to create a Checkout Session.
+    // Duplicate subscriptions are surfaced by the webhook + customer portal flow.
 
-    try {
-      const stripePrice = await stripe.prices.retrieve(priceId);
-      if (!stripePrice.active || stripePrice.type !== "recurring") {
-        log("Stripe price is not active recurring", { priceId, active: stripePrice.active, type: stripePrice.type });
-        return json({ error: "This plan is currently unavailable. Please refresh and choose a plan again." }, 400);
-      }
-    } catch (stripeErr) {
-      const msg = stripeErr instanceof Error ? stripeErr.message : String(stripeErr);
-      log("Stripe price validation failed", { priceId, message: msg });
-      return json({ error: "This plan is currently unavailable. Please refresh and choose a plan again." }, 400);
-    }
-
-    // Look up existing customer (idempotent: matching on email is fine for most accounts).
-    let customerId: string | undefined;
-    try {
-      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-      if (customers.data.length > 0) {
-        customerId = customers.data[0].id;
-        log("Found existing customer", { customerId });
-
-        // Block double-subscribe.
-        const subs = await stripe.subscriptions.list({
-          customer: customerId,
-          status: "active",
-          limit: 1,
-        });
-        if (subs.data.length > 0) {
-          log("Customer already has active subscription", { customerId });
-          return json(
-            {
-              error:
-                "You already have an active subscription. Manage it from Settings → Subscription.",
-              code: "already_subscribed",
-            },
-            409
-          );
-        }
-      }
-    } catch (stripeErr) {
-      const msg = stripeErr instanceof Error ? stripeErr.message : String(stripeErr);
-      log("Stripe customer lookup failed", { message: msg });
-      // Don't block checkout on a transient lookup error — fall through with no customerId.
-    }
-
-    // Create the customer up-front so we can attach Solo.Bizz user metadata
-    // (used by webhook to link the Stripe customer to the internal user_id).
-    if (!customerId) {
+    let customerId: string | undefined = customers.data[0]?.id;
+    if (customerId) {
+      log("Found existing customer", { customerId });
+    } else {
+      // Create the customer up-front so we can attach Solo.Bizz user metadata
+      // (used by webhook to link the Stripe customer to the internal user_id).
       try {
         const created = await stripe.customers.create({
           email: user.email,
