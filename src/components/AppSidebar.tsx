@@ -62,9 +62,10 @@ export function AppSidebar() {
   const { user, signOut, subscription } = useAuth();
   const { t } = useLanguage();
   const isTrial = !subscription.loading && subscription.on_trial && !subscription.subscribed;
-  const { isFreeStarter } = useFreeStarterMode();
+  const { isFreeStarter, planCode } = useFreeStarterMode();
   const { has, loading: entLoading } = useEntitlements();
   const [isAdmin, setIsAdmin] = useState(false);
+
   
 
 
