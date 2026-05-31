@@ -1152,6 +1152,8 @@ export default {
   "plans.checkoutUnavailable": "Checkout unavailable",
   "plans.checkoutChooseAgain": "Please choose a plan again.",
   "plans.checkoutFailed": "Couldn't start checkout",
+  "plans.openingCheckout": "Opening secure checkout...",
+  "plans.checkoutSlowWarning": "Checkout is taking longer than expected...",
   "demo.badge": "Demo data",
   "demo.bannerHeadline": "You're exploring with sample data.",
   "demo.bannerSub": "Pick a plan to start using your own clients, sessions, and finances.",

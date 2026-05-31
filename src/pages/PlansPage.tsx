@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useHasDemoData } from "@/hooks/useDemoWorkspace";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { track } from "@/lib/analytics";
 
 type Plan = {
   id: string;
@@ -70,6 +71,7 @@ export default function PlansPage() {
   const [period, setPeriod] = useState<BillingPeriod>("yearly");
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [continuing, setContinuing] = useState(false);
+  const [slowCheckout, setSlowCheckout] = useState(false);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [clearing, setClearing] = useState(false);
 
@@ -317,10 +319,28 @@ export default function PlansPage() {
     }
     setSelectedPlanId(planId);
     setContinuing(true);
+    setSlowCheckout(false);
+
+    const startedAt = Date.now();
+    const baseProps = {
+      plan_id: selectedPlan.id,
+      plan_name: selectedPlan.code,
+      plan_type: selectedPlan.code,
+      billing_period: period,
+      language: lang,
+    } as const;
+
+    track("cta_clicked", { ...baseProps, action: "plan_selected" });
+    track("checkout_started", baseProps);
+
+    // After 5s without a redirect, surface a soft warning to reassure the user.
+    const slowTimer = window.setTimeout(() => setSlowCheckout(true), 5000);
+
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { planCode: selectedPlan.code, billingPeriod: period, withTrial: false, locale: lang },
       });
+      const durationMs = Date.now() - startedAt;
       if (error) {
         let serverMsg: string | undefined;
         let serverCode: string | undefined;
@@ -335,19 +355,35 @@ export default function PlansPage() {
           // ignore — fall back to error.message
         }
         if (serverCode === "already_subscribed") {
+          window.clearTimeout(slowTimer);
           toast({ title: t("plans.alreadySubscribed") || "You're already subscribed", description: serverMsg });
           navigate("/settings");
           return;
         }
+        track("cta_clicked", {
+          ...baseProps,
+          action: "checkout_session_create_failed",
+          duration_ms: durationMs,
+          error_message: serverMsg || error.message,
+        });
         throw new Error(serverMsg || error.message || "Checkout failed");
       }
 
       if (data?.url) {
+        track("cta_clicked", {
+          ...baseProps,
+          action: "checkout_session_create_success",
+          duration_ms: durationMs,
+        });
+        track("cta_clicked", { ...baseProps, action: "checkout_redirect_started" });
+        window.clearTimeout(slowTimer);
         window.location.href = data.url;
         return;
       }
       throw new Error("No checkout URL returned");
     } catch (e: any) {
+      window.clearTimeout(slowTimer);
+      setSlowCheckout(false);
       toast({
         title: t("plans.checkoutFailed"),
         description: e?.message ?? String(e),
@@ -356,6 +392,7 @@ export default function PlansPage() {
       setContinuing(false);
     }
   };
+
 
   return (
     <AppLayout>
@@ -594,7 +631,9 @@ export default function PlansPage() {
                         {isSelected && continuing ? (
                           <>
                             <Loader2 className="h-4 w-4 animate-spin" />
-                            {t("plans.redirectingToCheckout") || "Redirecting to checkout…"}
+                            {slowCheckout
+                              ? t("plans.checkoutSlowWarning")
+                              : t("plans.openingCheckout")}
                           </>
                         ) : (
                           <>

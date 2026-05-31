@@ -1169,6 +1169,8 @@ export default {
   "plans.checkoutUnavailable": "Płatność niedostępna",
   "plans.checkoutChooseAgain": "Wybierz plan ponownie.",
   "plans.checkoutFailed": "Nie udało się rozpocząć płatności",
+  "plans.openingCheckout": "Otwieranie bezpiecznej płatności...",
+  "plans.checkoutSlowWarning": "Otwieranie płatności trwa dłużej niż oczekiwano...",
   "plans.confirmClearTitle": "Wyczyścić obszar demo?",
   "plans.confirmClearDesc": "Spowoduje to trwałe usunięcie wszystkich demo klientów, sesji, przychodów, wydatków i innych rekordów demo. Twoje konto, ustawienia oraz wszystkie utworzone rzeczywiste rekordy zostaną zachowane.",
   "auth.checkEmailToContinue": "Sprawdź e-mail, aby kontynuować",

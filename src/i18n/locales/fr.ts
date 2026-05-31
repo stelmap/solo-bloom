@@ -1169,6 +1169,8 @@ export default {
   "plans.checkoutUnavailable": "Paiement indisponible",
   "plans.checkoutChooseAgain": "Veuillez choisir à nouveau un forfait.",
   "plans.checkoutFailed": "Impossible de démarrer le paiement",
+  "plans.openingCheckout": "Ouverture du paiement sécurisé...",
+  "plans.checkoutSlowWarning": "Le paiement prend plus de temps que prévu...",
   "plans.confirmClearTitle": "Effacer l’espace de démo ?",
   "plans.confirmClearDesc": "Cela supprimera définitivement tous les clients, séances, revenus, dépenses et autres enregistrements de démo. Votre compte, vos paramètres et tous les enregistrements réels que vous avez créés seront conservés.",
   "auth.checkEmailToContinue": "Vérifiez votre email pour continuer",
