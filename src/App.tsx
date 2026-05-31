@@ -6,7 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { EntitlementGate } from "@/components/EntitlementGate";
+
 import { lazy, Suspense, ComponentType, useEffect } from "react";
 import { CookieConsent } from "@/components/CookieConsent";
 import { bootConsent } from "@/lib/consent";
