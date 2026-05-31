@@ -59,29 +59,31 @@ serve(async (req) => {
       case "customer.subscription.created":
       case "customer.subscription.updated":
       case "invoice.paid": {
-        const email = await extractCustomerEmail(stripe, event);
-        if (!email) {
-          log("No email found on event; skipping");
-          break;
+        // Prefer linking by Solo.Bizz user_id (set on session/subscription)
+        // over email matching, which is unreliable when the buyer pays with
+        // a different address than their account email.
+        let userId = await extractUserIdFromEvent(stripe, event);
+        let email: string | null = null;
+
+        if (!userId) {
+          email = await extractCustomerEmail(stripe, event);
+          if (email) userId = await findUserIdByEmail(supabaseAdmin, email);
         }
 
-        const userId = await findUserIdByEmail(supabaseAdmin, email);
         if (!userId) {
-          log("No matching user for email", { email });
+          log("No matching user for event", { type: event.type, email });
           break;
         }
 
         // Check the subscription is actually active/trialing before cleanup
-        const isPaid = await isUserPaid(stripe, email);
+        if (!email) email = await extractCustomerEmail(stripe, event);
+        const isPaid = email ? await isUserPaid(stripe, email) : false;
         if (!isPaid) {
-          log("Subscription not active; skipping cleanup", { userId });
+          log("Subscription not active; skipping cache invalidation", { userId });
           break;
         }
 
-        // Demo-workspace cleanup has been retired (Free Starter Mode
-        // replaced the seeded demo workspace). We no longer run
-        // cleanup_demo_workspace here.
-        log("Subscription active; skipping demo cleanup (retired)", { userId });
+        log("Subscription active; invalidating cache", { userId });
 
         // Invalidate subscription cache so the next /check-subscription is fresh
         await supabaseAdmin
