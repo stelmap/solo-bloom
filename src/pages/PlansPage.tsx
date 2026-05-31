@@ -631,7 +631,9 @@ export default function PlansPage() {
                         {isSelected && continuing ? (
                           <>
                             <Loader2 className="h-4 w-4 animate-spin" />
-                            {t("plans.redirectingToCheckout") || "Redirecting to checkout…"}
+                            {slowCheckout
+                              ? t("plans.checkoutSlowWarning")
+                              : t("plans.openingCheckout")}
                           </>
                         ) : (
                           <>
