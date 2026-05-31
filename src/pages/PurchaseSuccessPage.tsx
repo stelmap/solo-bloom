@@ -44,19 +44,15 @@ export default function PurchaseSuccessPage() {
         // Refresh local auth context with whatever Stripe now reports
         await refreshSubscription({ force: true });
 
-        // Cleanup demo data — server is authoritative and the RPC is idempotent.
-        const { error } = await supabase.rpc("cleanup_demo_workspace", {
-          p_user_id: user.id,
-        });
-        if (cancelled) return;
-        if (error) throw error;
-
-        // Refresh all cached lists
+        // Refresh all cached lists so the new plan/limits show up immediately.
+        // Note: demo-workspace cleanup has been retired (Free Starter Mode
+        // replaced the seeded demo workspace), so we no longer call the
+        // cleanup_demo_workspace RPC here.
         qc.invalidateQueries();
 
         if (!subscribed) {
-          // Cleanup worked, but Stripe hasn't confirmed yet. Surface a soft
-          // warning instead of a blocking error.
+          // Stripe hasn't confirmed yet. Surface a soft warning instead of
+          // a blocking error.
           setErrorMsg("Your plan is taking a moment to activate. Refresh in a few seconds if it doesn't appear.");
         }
         setPhase("ready");
@@ -97,7 +93,7 @@ export default function PurchaseSuccessPage() {
               </div>
               <h1 className="text-3xl font-semibold mb-2">Your workspace is ready</h1>
               <p className="text-muted-foreground">
-                Demo data has been removed. Let's configure your real practice.
+                Your plan is active. Let's get your practice set up.
               </p>
             </div>
 
