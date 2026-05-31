@@ -130,7 +130,7 @@ export default function PurchaseSuccessPage() {
           <Card className="p-10 text-center">
             <h1 className="text-2xl font-semibold mb-2">Something went wrong</h1>
             <p className="text-muted-foreground mb-6">
-              Your payment was successful, but we couldn't finish cleanup automatically.
+              Your payment was successful, but we couldn't finish activating your plan automatically.
               {errorMsg ? ` (${errorMsg})` : ""}
             </p>
             <div className="flex justify-center gap-3">
