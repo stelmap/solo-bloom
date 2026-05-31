@@ -1009,7 +1009,7 @@ export function useExpectedPayments() {
       const { data: gPays } = await supabase
         .from("group_session_payments")
         .select(
-          "id, amount, client_id, group_session_id, payment_state, expected_payment_id, clients(name), group_sessions(appointment_id, groups(name), appointments(scheduled_at, status))",
+          "id, amount, client_id, group_session_id, payment_state, expected_payment_id, clients(name), group_sessions(appointment_id, groups(name), appointments!group_sessions_appointment_id_fkey(scheduled_at, status))",
         )
         .in("payment_state", ["waiting_for_payment", "partially_paid_from_prepayment"])
         .gt("amount", 0);
@@ -1090,7 +1090,7 @@ export function useMarkExpectedPaymentPaid() {
         // Fetch the payment row so we know the linked appointment / amount.
         const { data: gsp, error: gspErr } = await supabase
           .from("group_session_payments")
-          .select("id, amount, client_id, expected_payment_id, group_sessions(appointment_id, appointments(scheduled_at))")
+          .select("id, amount, client_id, expected_payment_id, group_sessions(appointment_id, appointments!group_sessions_appointment_id_fkey(scheduled_at))")
 
           .eq("id", groupSessionPaymentId)
           .single();
