@@ -80,16 +80,22 @@ export function useEntitlements(): EntitlementsState {
 
   const codes = new Set<FeatureCode>(data?.codes ?? []);
 
-  // Paying user fallback (subscription_cache via AuthContext) — preserve tier
-  // based on the Stripe price while DB entitlements are syncing.
+  // BASELINE ACCESS — Finance, Supervision, and Reports are accessible to
+  // every authenticated user on every plan (Free Starter, Solo, Pro). This
+  // mirrors the server-side baseline entitlements seeded for all users.
+  if (user) {
+    codes.add("operational_access");
+    codes.add("financial_access");
+  }
+
+  // Paying user fallback (subscription_cache via AuthContext) — preserve the
+  // premium tier while DB entitlements are syncing.
   const hasActivePaidAccess =
     !subscription.loading && (subscription.subscribed || subscription.on_trial);
   if (hasActivePaidAccess) {
     const planCode = subscription.price_id ? PRICE_TO_PLAN_CODE[subscription.price_id] : undefined;
     if (planCode === "pro") {
       codes.add("premium_access");
-    } else {
-      codes.add("operational_access");
     }
   }
 
