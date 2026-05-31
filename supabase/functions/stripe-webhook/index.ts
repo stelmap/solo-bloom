@@ -107,6 +107,45 @@ serve(async (req) => {
   });
 });
 
+async function extractUserIdFromEvent(stripe: Stripe, event: Stripe.Event): Promise<string | null> {
+  const obj = event.data.object as Record<string, unknown>;
+
+  // 1. client_reference_id on checkout.session
+  const clientRef = (obj["client_reference_id"] as string | undefined) ?? null;
+  if (clientRef) return clientRef;
+
+  // 2. metadata.user_id on session / subscription / invoice
+  const metadata = (obj["metadata"] as Record<string, string> | undefined) ?? undefined;
+  if (metadata?.user_id) return metadata.user_id;
+
+  // 3. metadata on the parent subscription (for invoice events)
+  const subscriptionId = (obj["subscription"] as string | undefined) ?? null;
+  if (subscriptionId) {
+    try {
+      const sub = await stripe.subscriptions.retrieve(subscriptionId);
+      if (sub.metadata?.user_id) return sub.metadata.user_id;
+    } catch (e) {
+      console.error("Failed to retrieve subscription:", e);
+    }
+  }
+
+  // 4. metadata on the Stripe customer
+  const customerId = (obj["customer"] as string | undefined) ?? null;
+  if (customerId) {
+    try {
+      const customer = await stripe.customers.retrieve(customerId);
+      if (customer && !customer.deleted && "metadata" in customer && customer.metadata?.user_id) {
+        return customer.metadata.user_id;
+      }
+    } catch (e) {
+      console.error("Failed to retrieve customer for metadata:", e);
+    }
+  }
+
+  return null;
+}
+
+
 async function extractCustomerEmail(stripe: Stripe, event: Stripe.Event): Promise<string | null> {
   const obj = event.data.object as Record<string, unknown>;
 
