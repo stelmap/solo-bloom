@@ -1509,6 +1509,29 @@ export function useIncome(page = 0, dateFrom?: string, dateTo?: string) {
   });
 }
 
+// Fetch all income rows (no pagination) — used by aggregate views like the
+// Financial Overview where totals must include every record, not just page 0.
+export function useAllIncome(dateFrom?: string, dateTo?: string) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["income-all", user?.id, dateFrom ?? null, dateTo ?? null],
+    queryFn: async () => {
+      let q = supabase
+        .from("income")
+        .select("*, appointments(scheduled_at, clients(name), services(name))")
+        .order("date", { ascending: false })
+        .range(0, 9999);
+      if (dateFrom) q = q.gte("date", dateFrom);
+      if (dateTo) q = q.lte("date", dateTo);
+      const { data, error } = await q;
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!user,
+    staleTime: STALE_MEDIUM,
+  });
+}
+
 export function useIncomeSum(dateFrom?: string, dateTo?: string) {
   const { user } = useAuth();
   return useQuery({

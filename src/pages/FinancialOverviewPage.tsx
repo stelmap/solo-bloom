@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
-import { useIncome, useExpenses, useAppointments, useTaxSettings, useExpectedPayments, useProfile } from "@/hooks/useData";
+import { useAllIncome, useExpenses, useAppointments, useTaxSettings, useExpectedPayments, useProfile } from "@/hooks/useData";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { format, startOfMonth, endOfMonth, eachMonthOfInterval, isBefore, isAfter, isSameMonth } from "date-fns";
@@ -40,8 +40,7 @@ export default function FinancialOverviewPage() {
   const [drillMonth, setDrillMonth] = useState<MonthData | null>(null);
   const [viewMode, setViewMode] = useState<"table" | "chart">("chart");
 
-  const { data: incomeResult } = useIncome();
-  const allIncome = (incomeResult as any)?.data ?? incomeResult ?? [];
+  const { data: allIncome = [] } = useAllIncome();
   const { data: expenseResult } = useExpenses();
   const allExpenses = (expenseResult as any)?.data ?? expenseResult ?? [];
   const { data: allAppointments = [] } = useAppointments();
