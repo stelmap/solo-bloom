@@ -133,19 +133,19 @@ const App = () => {
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
                 <Route path="/calendar/settings" element={<ProtectedRoute><CalendarSettingsPage /></ProtectedRoute>} />
-                <Route path="/finances/settings" element={<ProtectedRoute><EntitlementGate feature="financial_access"><FinanceSettingsPage /></EntitlementGate></ProtectedRoute>} />
+                <Route path="/finances/settings" element={<ProtectedRoute><FinanceSettingsPage /></ProtectedRoute>} />
                 <Route path="/clients" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
                 <Route path="/clients/:id" element={<ProtectedRoute><ClientDetailPage /></ProtectedRoute>} />
                 <Route path="/groups" element={<ProtectedRoute><GroupsPage /></ProtectedRoute>} />
                 <Route path="/groups/:id" element={<ProtectedRoute><GroupDetailPage /></ProtectedRoute>} />
                 <Route path="/services" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
 
-                {/* Finances module (gated by entitlement) */}
-                <Route path="/finances" element={<ProtectedRoute><EntitlementGate feature="financial_access"><FinancialOverviewPage /></EntitlementGate></ProtectedRoute>} />
-                <Route path="/finances/income" element={<ProtectedRoute><EntitlementGate feature="financial_access"><IncomePage /></EntitlementGate></ProtectedRoute>} />
-                <Route path="/finances/expenses" element={<ProtectedRoute><EntitlementGate feature="financial_access"><ExpensesPage /></EntitlementGate></ProtectedRoute>} />
-                <Route path="/finances/breakeven" element={<ProtectedRoute><EntitlementGate feature="financial_access"><BreakevenPage /></EntitlementGate></ProtectedRoute>} />
-                <Route path="/finances/payment-audit" element={<ProtectedRoute><EntitlementGate feature="financial_access"><PaymentAuditPage /></EntitlementGate></ProtectedRoute>} />
+                {/* Finances module — available to all plans */}
+                <Route path="/finances" element={<ProtectedRoute><FinancialOverviewPage /></ProtectedRoute>} />
+                <Route path="/finances/income" element={<ProtectedRoute><IncomePage /></ProtectedRoute>} />
+                <Route path="/finances/expenses" element={<ProtectedRoute><ExpensesPage /></ProtectedRoute>} />
+                <Route path="/finances/breakeven" element={<ProtectedRoute><BreakevenPage /></ProtectedRoute>} />
+                <Route path="/finances/payment-audit" element={<ProtectedRoute><PaymentAuditPage /></ProtectedRoute>} />
 
                 {/* Backwards-compatible redirects from old top-level routes */}
                 <Route path="/income" element={<Navigate to="/finances/income" replace />} />
@@ -155,7 +155,8 @@ const App = () => {
 
                 <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
                 <Route path="/booking-inbox" element={<ProtectedRoute><BookingInboxPage /></ProtectedRoute>} />
-                <Route path="/supervision" element={<ProtectedRoute><EntitlementGate feature="premium_access"><SupervisionPage /></EntitlementGate></ProtectedRoute>} />
+                <Route path="/supervision" element={<ProtectedRoute><SupervisionPage /></ProtectedRoute>} />
+
                 <Route path="/diagnostics" element={<ProtectedRoute><DiagnosticsPage /></ProtectedRoute>} />
                 <Route path="/plans" element={<ProtectedRoute><PlansPage /></ProtectedRoute>} />
                 <Route path="/purchase-success" element={<ProtectedRoute><PurchaseSuccessPage /></ProtectedRoute>} />
