@@ -264,8 +264,7 @@ describe("baseline access (Finance, Supervision, Reports)", () => {
 
   it("Logged-out user gets no entitlements at all", async () => {
     mockAuthState.current = {
-      // @ts-expect-error simulating no user
-      user: null,
+      user: null as unknown as { id: string },
       subscription: { ...defaultSubscription },
     };
 
