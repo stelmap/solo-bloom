@@ -59,29 +59,31 @@ serve(async (req) => {
       case "customer.subscription.created":
       case "customer.subscription.updated":
       case "invoice.paid": {
-        const email = await extractCustomerEmail(stripe, event);
-        if (!email) {
-          log("No email found on event; skipping");
-          break;
+        // Prefer linking by Solo.Bizz user_id (set on session/subscription)
+        // over email matching, which is unreliable when the buyer pays with
+        // a different address than their account email.
+        let userId = await extractUserIdFromEvent(stripe, event);
+        let email: string | null = null;
+
+        if (!userId) {
+          email = await extractCustomerEmail(stripe, event);
+          if (email) userId = await findUserIdByEmail(supabaseAdmin, email);
         }
 
-        const userId = await findUserIdByEmail(supabaseAdmin, email);
         if (!userId) {
-          log("No matching user for email", { email });
+          log("No matching user for event", { type: event.type, email });
           break;
         }
 
         // Check the subscription is actually active/trialing before cleanup
-        const isPaid = await isUserPaid(stripe, email);
+        if (!email) email = await extractCustomerEmail(stripe, event);
+        const isPaid = email ? await isUserPaid(stripe, email) : false;
         if (!isPaid) {
-          log("Subscription not active; skipping cleanup", { userId });
+          log("Subscription not active; skipping cache invalidation", { userId });
           break;
         }
 
-        // Demo-workspace cleanup has been retired (Free Starter Mode
-        // replaced the seeded demo workspace). We no longer run
-        // cleanup_demo_workspace here.
-        log("Subscription active; skipping demo cleanup (retired)", { userId });
+        log("Subscription active; invalidating cache", { userId });
 
         // Invalidate subscription cache so the next /check-subscription is fresh
         await supabaseAdmin
@@ -104,6 +106,45 @@ serve(async (req) => {
     status: 200,
   });
 });
+
+async function extractUserIdFromEvent(stripe: Stripe, event: Stripe.Event): Promise<string | null> {
+  const obj = event.data.object as Record<string, unknown>;
+
+  // 1. client_reference_id on checkout.session
+  const clientRef = (obj["client_reference_id"] as string | undefined) ?? null;
+  if (clientRef) return clientRef;
+
+  // 2. metadata.user_id on session / subscription / invoice
+  const metadata = (obj["metadata"] as Record<string, string> | undefined) ?? undefined;
+  if (metadata?.user_id) return metadata.user_id;
+
+  // 3. metadata on the parent subscription (for invoice events)
+  const subscriptionId = (obj["subscription"] as string | undefined) ?? null;
+  if (subscriptionId) {
+    try {
+      const sub = await stripe.subscriptions.retrieve(subscriptionId);
+      if (sub.metadata?.user_id) return sub.metadata.user_id;
+    } catch (e) {
+      console.error("Failed to retrieve subscription:", e);
+    }
+  }
+
+  // 4. metadata on the Stripe customer
+  const customerId = (obj["customer"] as string | undefined) ?? null;
+  if (customerId) {
+    try {
+      const customer = await stripe.customers.retrieve(customerId);
+      if (customer && !customer.deleted && "metadata" in customer && customer.metadata?.user_id) {
+        return customer.metadata.user_id;
+      }
+    } catch (e) {
+      console.error("Failed to retrieve customer for metadata:", e);
+    }
+  }
+
+  return null;
+}
+
 
 async function extractCustomerEmail(stripe: Stripe, event: Stripe.Event): Promise<string | null> {
   const obj = event.data.object as Record<string, unknown>;

@@ -63,7 +63,7 @@ serve(async (req) => {
       return json({ error: "Server is not configured for payments. Please contact support." }, 500);
     }
 
-    let body: { planCode?: string; billingPeriod?: string; priceId?: string; withTrial?: boolean } = {};
+    let body: { planCode?: string; billingPeriod?: string; priceId?: string; withTrial?: boolean; locale?: string } = {};
     try {
       body = await req.json();
     } catch {
@@ -71,6 +71,9 @@ serve(async (req) => {
     }
     // Trial removed: ignore any `withTrial` flag sent by older clients.
     const withTrial = false;
+    const SUPPORTED_LOCALES = new Set(["uk", "en", "fr", "pl"]);
+    const stripeLocale = (body.locale && SUPPORTED_LOCALES.has(body.locale) ? body.locale : "auto") as
+      | "auto" | "uk" | "en" | "fr" | "pl";
     const legacySelection = body.priceId ? LEGACY_PRICE_TO_SELECTION[body.priceId] : undefined;
     const planCode = body.planCode ?? legacySelection?.planCode;
     const billingPeriod = body.billingPeriod ?? legacySelection?.billingPeriod;
@@ -147,14 +150,45 @@ serve(async (req) => {
       // Don't block checkout on a transient lookup error — fall through with no customerId.
     }
 
+    // Create the customer up-front so we can attach Solo.Bizz user metadata
+    // (used by webhook to link the Stripe customer to the internal user_id).
+    if (!customerId) {
+      try {
+        const created = await stripe.customers.create({
+          email: user.email,
+          metadata: { user_id: user.id, plan_code: planCode },
+        });
+        customerId = created.id;
+        log("Created new Stripe customer", { customerId });
+      } catch (stripeErr) {
+        const msg = stripeErr instanceof Error ? stripeErr.message : String(stripeErr);
+        log("Stripe customer create failed", { message: msg });
+        // Fall through and let Checkout create one on its own via customer_email.
+      }
+    }
+
     const origin = req.headers.get("origin") || "https://solo-bizz-app.lovable.app";
 
+    const sessionMetadata = {
+      user_id: user.id,
+      plan_code: planCode,
+      billing_period: billingPeriod,
+    };
+
     const session = await stripe.checkout.sessions.create({
-      customer: customerId,
+      ...(customerId ? { customer: customerId } : { customer_email: user.email }),
+      client_reference_id: user.id,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
+      locale: stripeLocale,
       payment_method_collection: "always",
-      ...(withTrial ? { subscription_data: { trial_period_days: 7 } } : {}),
+      billing_address_collection: "auto",
+      phone_number_collection: { enabled: true },
+      metadata: sessionMetadata,
+      subscription_data: {
+        metadata: sessionMetadata,
+        ...(withTrial ? { trial_period_days: 7 } : {}),
+      },
       allow_promotion_codes: true,
       success_url: `${origin}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/plans?checkout=cancel`,
