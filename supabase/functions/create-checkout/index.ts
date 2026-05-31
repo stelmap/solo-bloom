@@ -184,7 +184,7 @@ serve(async (req) => {
       client_reference_id: user.id,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
-      locale: stripeLocale,
+      locale: stripeLocale as any,
       payment_method_collection: "always",
       billing_address_collection: "auto",
       phone_number_collection: { enabled: true },
