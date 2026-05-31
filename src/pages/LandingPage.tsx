@@ -157,7 +157,7 @@ const C = {
   painBottom: {
     en: "This isn't a productivity problem. It's the absence of a system built for private practice. SoloBizz is that system.",
     fr: "Ce n'est pas un problème de productivité. C'est l'absence d'un système conçu pour la pratique privée. SoloBizz est ce système.",
-    uk: "Це не проблема продуктивності. Це відсутність системи, створеної для приватної практики. SoloBizz — це та система.",
+    uk: "Це не проблема продуктивності. Це відсутність системи, створеної для приватної практики. Solo Bizz — це та система.",
     pl: "To nie jest problem produktywności. To brak systemu stworzonego dla prywatnej praktyki. SoloBizz to ten system.",
   },
   painCta: { en: "See how SoloBizz works", fr: "Voir comment SoloBizz fonctionne", uk: "Дивись, як це працює в SoloBizz", pl: "Zobacz, jak działa SoloBizz" },
@@ -1714,7 +1714,7 @@ function AboutContactsSection() {
           </h2>
           <p className="text-base text-muted-foreground leading-relaxed mb-4">
             {isUk
-              ? "SoloBizz — це система для психологів, психотерапевтів, супервізорів, викладачів і приватних спеціалістів, які хочуть вести клієнтів, записи, оплати та бачити фінансовий результат без хаосу, Excel і ручного обліку."
+              ? "Solo Bizz — це система для психологів, психотерапевтів, супервізорів, викладачів і приватних спеціалістів, які хочуть вести клієнтів, записи, оплати та бачити фінансовий результат без хаосу, Excel і ручного обліку."
               : "SoloBizz is a system for psychologists, psychotherapists, supervisors, teachers and solo professionals who want to manage clients, sessions, payments and see real financial results — without chaos, Excel or manual tracking."}
           </p>
           <p className="text-base text-muted-foreground leading-relaxed">
@@ -1887,33 +1887,33 @@ function LandingFooter() {
 
 const SEO_META: Record<Language, { title: string; description: string; ogTitle: string; ogDesc: string; ogLocale: string; htmlLang: string }> = {
   en: {
-    title: "SoloBizz — CRM for psychologists, coaches & solo practices",
+    title: "Solo Bizz — CRM for psychologists, coaches & solo practices",
     description: "SoloBizz helps psychologists, therapists, coaches and tutors manage clients, sessions, payments and income — all in one calm, simple workspace.",
-    ogTitle: "SoloBizz — Run your solo practice without the chaos",
+    ogTitle: "Solo Bizz — Run your solo practice without the chaos",
     ogDesc: "Clients, sessions, payments and income in one place. Built for psychologists, therapists, coaches and tutors.",
     ogLocale: "en_US",
     htmlLang: "en",
   },
   uk: {
-    title: "SoloBizz — CRM для психологів, коучів і приватної практики",
+    title: "Solo Bizz — CRM для психологів, коучів і приватної практики",
     description: "SoloBizz допомагає психологам, терапевтам, коучам і репетиторам вести клієнтів, сесії, оплати та дохід — в одному простому робочому просторі.",
-    ogTitle: "SoloBizz — Керуйте приватною практикою без хаосу",
+    ogTitle: "Solo Bizz — Керуйте приватною практикою без хаосу",
     ogDesc: "Клієнти, сесії, оплати та дохід в одному місці. Створено для психологів, терапевтів, коучів і репетиторів.",
     ogLocale: "uk_UA",
     htmlLang: "uk",
   },
   fr: {
-    title: "SoloBizz — CRM pour psychologues, coachs et pratiques solo",
+    title: "Solo Bizz — CRM pour psychologues, coachs et pratiques solo",
     description: "SoloBizz aide les psychologues, thérapeutes, coachs et tuteurs à gérer clients, séances, paiements et revenus — dans un espace simple et apaisé.",
-    ogTitle: "SoloBizz — Gérez votre pratique solo sans le chaos",
+    ogTitle: "Solo Bizz — Gérez votre pratique solo sans le chaos",
     ogDesc: "Clients, séances, paiements et revenus en un seul endroit. Conçu pour psychologues, thérapeutes, coachs et tuteurs.",
     ogLocale: "fr_FR",
     htmlLang: "fr",
   },
   pl: {
-    title: "SoloBizz — CRM dla psychologów, coachów i praktyki solo",
+    title: "Solo Bizz — CRM dla psychologów, coachów i praktyki solo",
     description: "SoloBizz pomaga psychologom, terapeutom, coachom i korepetytorom zarządzać klientami, sesjami, płatnościami i dochodem — w jednym prostym miejscu.",
-    ogTitle: "SoloBizz — Prowadź praktykę solo bez chaosu",
+    ogTitle: "Solo Bizz — Prowadź praktykę solo bez chaosu",
     ogDesc: "Klienci, sesje, płatności i dochód w jednym miejscu. Stworzone dla psychologów, terapeutów, coachów i korepetytorów.",
     ogLocale: "pl_PL",
     htmlLang: "pl",
