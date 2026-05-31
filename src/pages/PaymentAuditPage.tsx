@@ -269,7 +269,9 @@ export default function PaymentAuditPage() {
   );
 
   const summary = useMemo(() => {
-    const scope = clientId === "all" ? rows : rows.filter(r => r.client_id === clientId);
+    let scope = clientId === "all" ? rows : rows.filter(r => r.client_id === clientId);
+    if (dateFrom) scope = scope.filter(r => (r.date || "") >= dateFrom);
+    if (dateTo) scope = scope.filter(r => (r.date || "") <= dateTo);
     const confirmed = scope.filter(r => r.paymentStatus === "confirmed").reduce((s, r) => s + r.amount, 0);
     const expected = scope.filter(r => r.paymentStatus === "expected").reduce((s, r) => s + r.amount, 0);
     const prepaid = scope.filter(r => r.allocStatus === "prepayment").reduce((s, r) => s + r.remaining, 0)
@@ -278,7 +280,7 @@ export default function PaymentAuditPage() {
     const partial = scope.filter(r => r.allocStatus === "partial").length;
     const cancelled = scope.filter(r => r.paymentStatus === "cancelled").length;
     return { confirmed, expected, prepaid, unlinked, partial, cancelled };
-  }, [rows, clientId]);
+  }, [rows, clientId, dateFrom, dateTo]);
 
   const buildCsv = (records: any[], filename: string) => {
     const headers = [
