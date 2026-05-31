@@ -1887,7 +1887,7 @@ function LandingFooter() {
 
 const SEO_META: Record<Language, { title: string; description: string; ogTitle: string; ogDesc: string; ogLocale: string; htmlLang: string }> = {
   en: {
-    title: "SoloBizz — CRM for psychologists, coaches & solo practices",
+    title: "Solo Bizz — CRM for psychologists, coaches & solo practices",
     description: "SoloBizz helps psychologists, therapists, coaches and tutors manage clients, sessions, payments and income — all in one calm, simple workspace.",
     ogTitle: "SoloBizz — Run your solo practice without the chaos",
     ogDesc: "Clients, sessions, payments and income in one place. Built for psychologists, therapists, coaches and tutors.",
@@ -1895,7 +1895,7 @@ const SEO_META: Record<Language, { title: string; description: string; ogTitle: 
     htmlLang: "en",
   },
   uk: {
-    title: "SoloBizz — CRM для психологів, коучів і приватної практики",
+    title: "Solo Bizz — CRM для психологів, коучів і приватної практики",
     description: "SoloBizz допомагає психологам, терапевтам, коучам і репетиторам вести клієнтів, сесії, оплати та дохід — в одному простому робочому просторі.",
     ogTitle: "SoloBizz — Керуйте приватною практикою без хаосу",
     ogDesc: "Клієнти, сесії, оплати та дохід в одному місці. Створено для психологів, терапевтів, коучів і репетиторів.",
@@ -1903,7 +1903,7 @@ const SEO_META: Record<Language, { title: string; description: string; ogTitle: 
     htmlLang: "uk",
   },
   fr: {
-    title: "SoloBizz — CRM pour psychologues, coachs et pratiques solo",
+    title: "Solo Bizz — CRM pour psychologues, coachs et pratiques solo",
     description: "SoloBizz aide les psychologues, thérapeutes, coachs et tuteurs à gérer clients, séances, paiements et revenus — dans un espace simple et apaisé.",
     ogTitle: "SoloBizz — Gérez votre pratique solo sans le chaos",
     ogDesc: "Clients, séances, paiements et revenus en un seul endroit. Conçu pour psychologues, thérapeutes, coachs et tuteurs.",
@@ -1911,7 +1911,7 @@ const SEO_META: Record<Language, { title: string; description: string; ogTitle: 
     htmlLang: "fr",
   },
   pl: {
-    title: "SoloBizz — CRM dla psychologów, coachów i praktyki solo",
+    title: "Solo Bizz — CRM dla psychologów, coachów i praktyki solo",
     description: "SoloBizz pomaga psychologom, terapeutom, coachom i korepetytorom zarządzać klientami, sesjami, płatnościami i dochodem — w jednym prostym miejscu.",
     ogTitle: "SoloBizz — Prowadź praktykę solo bez chaosu",
     ogDesc: "Klienci, sesje, płatności i dochód w jednym miejscu. Stworzone dla psychologów, terapeutów, coachów i korepetytorów.",
