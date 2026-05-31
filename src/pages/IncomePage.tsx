@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { startOfWeek, startOfMonth, format } from "date-fns";
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from "date-fns";
 
 export default function IncomePage() {
   const [page, setPage] = useState(0);
