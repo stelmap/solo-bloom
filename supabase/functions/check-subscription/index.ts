@@ -88,9 +88,12 @@ async function syncPlanRecords(
     return;
   }
 
+  // Finance, Supervision, and Reports (operational + financial) are now
+  // baseline features available to every authenticated user — regardless of
+  // plan. Only premium-only features remain gated to Pro Practice.
   const features = planCode === "pro"
     ? ["premium_access", "financial_access", "operational_access"]
-    : ["operational_access"];
+    : ["financial_access", "operational_access"];
 
   await supabaseAdmin
     .from("entitlements")
