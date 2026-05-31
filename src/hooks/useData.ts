@@ -360,18 +360,74 @@ export function useDeleteAttachment() {
 }
 
 // Client Appointments (session history)
+// Returns both:
+//   1. Solo appointments where the client is the appointment.client_id.
+//   2. Group sessions where the client attended as a participant — joined via
+//      group_attendance. The participant's own amount + payment_state from
+//      group_session_payments override the group-level price/status so the
+//      client card shows correct per-participant debt / credit.
 export function useClientAppointments(clientId: string | undefined) {
   const { user } = useAuth();
   return useQuery({
     queryKey: ["client-appointments", clientId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("appointments")
-        .select("*, services(name, price)")
-        .eq("client_id", clientId!)
-        .order("scheduled_at", { ascending: false });
-      if (error) throw error;
-      return data;
+      const [{ data: solo, error: soloErr }, { data: groupAtt, error: gaErr }] = await Promise.all([
+        supabase
+          .from("appointments")
+          .select("*, services(name, price)")
+          .eq("client_id", clientId!)
+          .order("scheduled_at", { ascending: false }),
+        (supabase as any)
+          .from("group_attendance")
+          .select("id, status, group_session_id, group_sessions:group_session_id(id, group_id, appointment_id, groups:group_id(name), appointments:appointment_id(id, scheduled_at, duration_minutes, status, price, payment_status, service_id, services(name, price)))")
+          .eq("client_id", clientId!),
+      ]);
+      if (soloErr) throw soloErr;
+      if (gaErr) throw gaErr;
+
+      const soloRows = (solo ?? []) as any[];
+      const soloAptIds = new Set(soloRows.map((r) => r.id));
+
+      // Fetch this client's per-session payment rows in one shot.
+      const gsIds = ((groupAtt ?? []) as any[])
+        .map((a) => a.group_session_id)
+        .filter(Boolean);
+      let paymentByGs: Record<string, any> = {};
+      if (gsIds.length > 0) {
+        const { data: payRows } = await (supabase as any)
+          .from("group_session_payments")
+          .select("group_session_id, amount, payment_state, payment_method")
+          .eq("client_id", clientId!)
+          .in("group_session_id", gsIds);
+        for (const p of (payRows ?? []) as any[]) {
+          paymentByGs[p.group_session_id] = p;
+        }
+      }
+
+      const groupRows: any[] = [];
+      for (const att of (groupAtt ?? []) as any[]) {
+        const gs = att.group_sessions;
+        const apt = gs?.appointments;
+        if (!apt || soloAptIds.has(apt.id)) continue;
+        const myPayment = paymentByGs[gs.id] ?? null;
+        groupRows.push({
+          ...apt,
+          services: apt.services,
+          price: myPayment ? Number(myPayment.amount || 0) : apt.price,
+          payment_status: myPayment?.payment_state ?? apt.payment_status,
+          is_group_participant: true,
+          group_name: gs?.groups?.name ?? null,
+          group_session_id: gs?.id ?? null,
+          attendance_status: att.status,
+        });
+      }
+
+      const merged = [...soloRows, ...groupRows].sort((a, b) => {
+        const ta = a.scheduled_at ? new Date(a.scheduled_at).getTime() : 0;
+        const tb = b.scheduled_at ? new Date(b.scheduled_at).getTime() : 0;
+        return tb - ta;
+      });
+      return merged;
     },
     enabled: !!user && !!clientId,
   });
