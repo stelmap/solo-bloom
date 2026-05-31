@@ -304,9 +304,9 @@ export default function PlansPage() {
     if (!availablePeriods.includes(period)) setPeriod(availablePeriods[0]);
   }, [availablePeriods, period]);
 
-  const handleContinue = async () => {
-    if (!selectedPlanId || continuing) return; // guard against double-click
-    const selectedPlan = plans.find((plan) => plan.id === selectedPlanId);
+  const startCheckout = async (planId: string) => {
+    if (continuing) return; // guard against double-click
+    const selectedPlan = plans.find((plan) => plan.id === planId);
     if (!selectedPlan) {
       toast({
         title: t("plans.checkoutUnavailable"),
@@ -315,12 +315,12 @@ export default function PlansPage() {
       });
       return;
     }
+    setSelectedPlanId(planId);
     setContinuing(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { planCode: selectedPlan.code, billingPeriod: period, withTrial: false },
       });
-      // Edge-function returns non-2xx as `error` with a `context` containing the JSON body.
       if (error) {
         let serverMsg: string | undefined;
         let serverCode: string | undefined;
@@ -343,7 +343,6 @@ export default function PlansPage() {
       }
 
       if (data?.url) {
-        // Single, same-tab redirect to Stripe.
         window.location.href = data.url;
         return;
       }
