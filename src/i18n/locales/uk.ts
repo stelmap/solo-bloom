@@ -1156,6 +1156,8 @@ export default {
   "plans.checkoutUnavailable": "Оплата недоступна",
   "plans.checkoutChooseAgain": "Оберіть план ще раз.",
   "plans.checkoutFailed": "Не вдалося розпочати оплату",
+  "plans.openingCheckout": "Перехід до оплати...",
+  "plans.checkoutSlowWarning": "Оплата відкривається довше, ніж очікувалось...",
   "plans.confirmClearTitle": "Очистити демо-простір?",
   "plans.confirmClearDesc": "Це назавжди видалить усіх демо-клієнтів, сесії, доходи, витрати та інші демо-записи. Ваш обліковий запис, налаштування та будь-які реальні створені записи буде збережено.",
   "auth.checkEmailToContinue": "Перевір свою пошту, щоб продовжити",
