@@ -181,9 +181,7 @@ export default function ClientDetailPage() {
 
   const totalSessions = appointments.length;
   const completedSessions = (appointments as any[]).filter(isCompleted).length;
-  const paidSessions = (appointments as any[]).filter(isPaid).length;
   const cancelledSessions = (appointments as any[]).filter(isCancelled).length;
-  const awaitingSessions = (appointments as any[]).filter(isAwaiting).length;
 
   // Total Paid = sum of REAL payments received from this client (confirmed income only).
   // Never derived from appointment.price.
@@ -203,6 +201,23 @@ export default function ClientDetailPage() {
       }),
     [appointments, paidAmount, allocByApt],
   );
+
+  // Effective predicates — treat auto-covered (paid from prepaid pool) sessions as paid,
+  // so the count cards and the "Awaiting Payment" filter agree with the badges shown
+  // by derivePaymentStatus(). Without this, a session can be auto-covered by prepayment
+  // (badge: "Paid from prepayment") yet still counted as awaiting because its raw
+  // payment_status column is still "waiting_for_payment" / "partially_paid".
+  const FULLY_PAID_PSTATUSES = new Set(["paid_now", "paid_in_advance", "paid_from_prepayment"]);
+  const isEffectivelyPaid = (a: any) =>
+    isPaid(a) ||
+    (a.status === "completed" && balanceComputation.autoCoveredApptIds.has(a.id));
+  const isEffectivelyAwaiting = (a: any) =>
+    isAwaiting(a) &&
+    !balanceComputation.autoCoveredApptIds.has(a.id) &&
+    !FULLY_PAID_PSTATUSES.has(String(a.payment_status));
+
+  const paidSessions = (appointments as any[]).filter(isEffectivelyPaid).length;
+  const awaitingSessions = (appointments as any[]).filter(isEffectivelyAwaiting).length;
 
   const { prepaidSessions, prepaidAmount } = useMemo(() => {
     const balance = balanceComputation.prepaid;
@@ -227,14 +242,14 @@ export default function ClientDetailPage() {
     const all = (sortedAppointments as any[]).filter((a) => !PLANNED.has(a.status));
     switch (statFilter) {
       case "completed": return all.filter(isCompleted);
-      case "paid": return all.filter(isPaid);
-      case "awaiting": return all.filter(isAwaiting);
+      case "paid": return all.filter(isEffectivelyPaid);
+      case "awaiting": return all.filter(isEffectivelyAwaiting);
       case "cancelled": return all.filter(isCancelled);
       case "prepaid": return all.filter(isPrepaid);
       case "supervision": return [];
       default: return all;
     }
-  }, [sortedAppointments, statFilter]);
+  }, [sortedAppointments, statFilter, balanceComputation]);
 
   const filterLabelMap: Record<StatFilter, string> = {
     all: t("clientDetail.totalSessions"),
