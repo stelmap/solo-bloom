@@ -1561,7 +1561,7 @@ export function useCreateIncome() {
       return data;
     },
     // Analytics: a new income entry was created
-    onSuccess: (_d, vars) => { track("income_created", { source: vars.source }); ["income", "dashboard-stats", "client-income", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: (_d, vars) => { track("income_created", { source: vars.source }); ["income", "income-all", "income-sum", "dashboard-stats", "client-income", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
