@@ -78,15 +78,10 @@ serve(async (req) => {
           break;
         }
 
-        // Run cleanup (idempotent)
-        const { data, error } = await supabaseAdmin.rpc("cleanup_demo_workspace", {
-          p_user_id: userId,
-        });
-        if (error) {
-          log("cleanup_demo_workspace failed", { userId, error: error.message });
-        } else {
-          log("Demo cleanup completed", { userId, result: data });
-        }
+        // Demo-workspace cleanup has been retired (Free Starter Mode
+        // replaced the seeded demo workspace). We no longer run
+        // cleanup_demo_workspace here.
+        log("Subscription active; skipping demo cleanup (retired)", { userId });
 
         // Invalidate subscription cache so the next /check-subscription is fresh
         await supabaseAdmin
