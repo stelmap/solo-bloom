@@ -283,7 +283,7 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
               </div>
             </div>
 
-            <div className="rounded-lg border border-border divide-y divide-border max-h-[320px] overflow-y-auto">
+            <div className="rounded-lg border border-border divide-y divide-border">
               {filteredAppointments.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-6">—</p>
               ) : filteredAppointments.map((a: any) => {
