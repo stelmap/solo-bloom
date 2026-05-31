@@ -10,7 +10,7 @@ export const FREE_STARTER_LIMIT_ERROR = "FREE_STARTER_CLIENT_LIMIT_REACHED";
 export const PLAN_CLIENT_LIMIT_ERROR = "PLAN_CLIENT_LIMIT_REACHED";
 
 const INVALIDATE_APPOINTMENTS = ["appointments", "dashboard-stats", "client-appointments"];
-const INVALIDATE_FINANCIAL = ["income", "expenses", "expected-payments", "dashboard-stats", "tax-accrual-status"];
+const INVALIDATE_FINANCIAL = ["income", "income-all", "income-sum", "expenses", "expected-payments", "dashboard-stats", "tax-accrual-status"];
 const attachDemoFlag = <T extends Record<string, any>>(payload: T, isDemoMode: boolean): T => (
   isDemoMode ? { ...payload, is_demo: true } : payload
 );
@@ -1561,7 +1561,7 @@ export function useCreateIncome() {
       return data;
     },
     // Analytics: a new income entry was created
-    onSuccess: (_d, vars) => { track("income_created", { source: vars.source }); ["income", "dashboard-stats", "client-income", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: (_d, vars) => { track("income_created", { source: vars.source }); ["income", "income-all", "income-sum", "dashboard-stats", "client-income", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -1592,7 +1592,7 @@ export function useDeleteIncome() {
       const { error } = await supabase.from("income").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { track("income_deleted"); ["income", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("income_deleted"); ["income", "income-all", "income-sum", "dashboard-stats", "tax-accrual-status"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -1626,7 +1626,7 @@ export function useUpdateProfile() {
       qc.invalidateQueries({ queryKey: ["profile"] });
       // If recognition method changed, recompute analytics that group income by date
       if (vars.income_recognition_method !== undefined) {
-        ["dashboard-stats", "income", "client-income", "tax-accrual-status"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
+        ["dashboard-stats", "income", "income-all", "income-sum", "client-income", "tax-accrual-status"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
       }
     },
   });
@@ -3104,7 +3104,7 @@ export function useSaveIncomeConfirmation() {
       return incomeId;
     },
     onSuccess: () => {
-      ["income", "client-income", "client-allocations", "appointment-allocations",
+      ["income", "income-all", "income-sum", "client-income", "client-allocations", "appointment-allocations",
        "client-credit-balance", "appointments", "client-appointments",
        "dashboard-stats", "expected-payments", "payment-audit"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
     },
@@ -3137,7 +3137,7 @@ export function useDeleteIncomeConfirmation() {
       await recalcAppointments(aptIds);
     },
     onSuccess: () => {
-      ["income", "client-income", "client-allocations", "appointment-allocations",
+      ["income", "income-all", "income-sum", "client-income", "client-allocations", "appointment-allocations",
        "client-credit-balance", "appointments", "client-appointments",
        "dashboard-stats", "expected-payments", "payment-audit"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
     },
