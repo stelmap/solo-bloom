@@ -71,9 +71,13 @@ serve(async (req) => {
     }
     // Trial removed: ignore any `withTrial` flag sent by older clients.
     const withTrial = false;
-    const SUPPORTED_LOCALES = new Set(["uk", "en", "fr", "pl"]);
-    const stripeLocale = (body.locale && SUPPORTED_LOCALES.has(body.locale) ? body.locale : "auto") as
-      | "auto" | "uk" | "en" | "fr" | "pl";
+    // Stripe Checkout does not support Ukrainian — fall back to `auto` for `uk`.
+    const STRIPE_SUPPORTED_LOCALES = new Set([
+      "auto","bg","cs","da","de","el","en","en-GB","es","es-419","et","fi","fil","fr","fr-CA",
+      "hr","hu","id","it","ja","ko","lt","lv","ms","mt","nb","nl","pl","pt","pt-BR","ro","ru",
+      "sk","sl","sv","th","tr","vi","zh","zh-HK","zh-TW",
+    ]);
+    const stripeLocale = (body.locale && STRIPE_SUPPORTED_LOCALES.has(body.locale) ? body.locale : "auto") as string;
     const legacySelection = body.priceId ? LEGACY_PRICE_TO_SELECTION[body.priceId] : undefined;
     const planCode = body.planCode ?? legacySelection?.planCode;
     const billingPeriod = body.billingPeriod ?? legacySelection?.billingPeriod;
@@ -180,7 +184,7 @@ serve(async (req) => {
       client_reference_id: user.id,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
-      locale: stripeLocale,
+      locale: stripeLocale as any,
       payment_method_collection: "always",
       billing_address_collection: "auto",
       phone_number_collection: { enabled: true },
