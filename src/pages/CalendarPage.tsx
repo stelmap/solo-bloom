@@ -692,6 +692,9 @@ export default function CalendarPage() {
         toast({ title: t("toast.appointmentCreated") });
       } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
     }
+    } finally {
+      submittingRef.current = false;
+    }
   };
 
   const openSessionSheet = (apt: any) => {
