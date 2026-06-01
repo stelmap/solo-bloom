@@ -297,6 +297,7 @@ export default function CalendarPage() {
   const [dragOverSlot, setDragOverSlot] = useState<string | null>(null);
   const [recurMoveOpen, setRecurMoveOpen] = useState(false);
   const pendingMove = useRef<{ aptId: string; newDate: string; newTime: string } | null>(null);
+  const submittingRef = useRef(false);
 
   // Calendar settings from profile
   const startHour = parseInt((profile as any)?.work_hours_start || "09") || 9;
