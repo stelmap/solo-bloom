@@ -498,11 +498,20 @@ export default function CalendarPage() {
   }, [form.date, form.time, form.service_id, services, appointments, scheduleMap, daysOffSet]);
 
   const handleCreate = async () => {
+    // Guard against rapid double-submits (Enter+click, double-click)
+    // since `isPending` flips asynchronously and won't block a second call
+    // fired in the same tick.
+    if (createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending || submittingRef.current) {
+      return;
+    }
+    submittingRef.current = true;
+    try {
     // Validate service selection
     if (!form.service_id) {
       setServiceError(true);
       return;
     }
+
 
     if (isGroupSession) {
       if (!groupId || !form.date) return;
