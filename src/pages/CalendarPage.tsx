@@ -360,12 +360,26 @@ export default function CalendarPage() {
 
   const hasConflict = (date: string, time: string, durationMinutes: number, excludeId?: string) => {
     const newStart = new Date(`${date}T${time}:00Z`).getTime();
-    const newEnd = newStart + durationMinutes * 60 * 1000;
-    return appointments.some(apt => {
+    const dur = Number(durationMinutes);
+    if (!Number.isFinite(newStart) || !Number.isFinite(dur) || dur <= 0) return false;
+    const newEnd = newStart + dur * 60 * 1000;
+    // Only actively-scheduled future-blocking sessions count as conflicts.
+    // Completed / cancelled / no-show sessions are historical records and
+    // must not block new slots, otherwise dense seeded data makes every
+    // slot appear "occupied" even when the calendar cell is visually empty.
+    const BLOCKING = new Set(["scheduled", "confirmed", "reminder_sent"]);
+    // Dedupe by id to neutralize duplicate rows from realtime cache races.
+    const seen = new Set<string>();
+    return (appointments as any[]).some((apt: any) => {
+      if (!apt?.id || !apt?.scheduled_at) return false;
+      if (seen.has(apt.id)) return false;
+      seen.add(apt.id);
       if (excludeId && apt.id === excludeId) return false;
-      if (apt.status === "cancelled") return false;
+      if (!BLOCKING.has(apt.status)) return false;
       const aptStart = new Date(apt.scheduled_at).getTime();
-      const aptEnd = aptStart + apt.duration_minutes * 60 * 1000;
+      const aptDur = Number(apt.duration_minutes);
+      if (!Number.isFinite(aptStart) || !Number.isFinite(aptDur) || aptDur <= 0) return false;
+      const aptEnd = aptStart + aptDur * 60 * 1000;
       return newStart < aptEnd && newEnd > aptStart;
     });
   };
