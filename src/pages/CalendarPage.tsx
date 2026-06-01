@@ -735,38 +735,68 @@ export default function CalendarPage() {
   // Apply user filters before the calendar reads events
   const visibleAppointments = useMemo(() => {
     const q = filters.search.trim().toLowerCase();
-    return appointments.filter(apt => {
+    const seen = new Set<string>();
+    const result: any[] = [];
+    for (const apt of appointments as any[]) {
+      // Dedupe by id — guards against duplicate rows from realtime races
+      // or overlapping cache updates after creation.
+      if (!apt?.id || seen.has(apt.id)) continue;
       const kind = getSessionKind(apt);
-      if (!filters.types[kind]) return false;
-      if (filters.status !== "all" && apt.status !== filters.status) return false;
-      if (filters.urgentOnly && !isUrgent(apt.id)) return false;
-      if (filters.newOnly && !isNew(apt.id, (apt as any).created_at)) return false;
+      if (!filters.types[kind]) continue;
+      if (filters.status !== "all" && apt.status !== filters.status) continue;
+      if (filters.urgentOnly && !isUrgent(apt.id)) continue;
+      if (filters.newOnly && !isNew(apt.id, apt.created_at)) continue;
       if (q) {
-        const name = (apt as any).clients?.name || (apt as any).group_sessions?.groups?.name || "";
-        const svc = (apt as any).services?.name || "";
-        if (!name.toLowerCase().includes(q) && !svc.toLowerCase().includes(q)) return false;
+        const name = apt.clients?.name || apt.group_sessions?.groups?.name || "";
+        const svc = apt.services?.name || "";
+        if (!name.toLowerCase().includes(q) && !svc.toLowerCase().includes(q)) continue;
       }
-      return true;
-    });
+      seen.add(apt.id);
+      result.push(apt);
+    }
+    return result;
   }, [appointments, filters]);
+
+  // Slots already covered by a real appointment — used to hide pending
+  // booking requests that have already been converted into a session.
+  const appointmentSlotKeys = useMemo(() => {
+    const set = new Set<string>();
+    for (const apt of appointments as any[]) {
+      if (!apt?.scheduled_at) continue;
+      const ts = new Date(apt.scheduled_at).getTime();
+      if (apt.client_id) set.add(`${apt.client_id}|${ts}`);
+    }
+    return set;
+  }, [appointments]);
 
   const visiblePendingRequests = useMemo(() => {
     const q = filters.search.trim().toLowerCase();
     // Pending requests show only when status is "all" or "scheduled" (pending shows when no specific session-status filter)
     if (filters.status !== "all") return [];
-    if (filters.newOnly || filters.urgentOnly) return pendingRequests; // still surface them
-    return pendingRequests.filter(req => {
+    const notYetAppointment = (req: any) => {
+      if (req.appointment_id) return false;
+      const ts = new Date(req.requested_slot_at).getTime();
+      if (req.client_id && appointmentSlotKeys.has(`${req.client_id}|${ts}`)) return false;
+      return true;
+    };
+    const base = (pendingRequests as any[]).filter(notYetAppointment);
+    if (filters.newOnly || filters.urgentOnly) return base; // still surface them
+    return base.filter(req => {
       if (!q) return true;
       const name = `${req.first_name} ${req.last_name || ""} ${req.matched_client_name || ""}`.toLowerCase();
       return name.includes(q);
     });
-  }, [pendingRequests, filters]);
+  }, [pendingRequests, filters, appointmentSlotKeys]);
 
   const getEventsForDayHour = (day: Date, hour: number) => {
     const dayStr = format(day, "yyyy-MM-dd"); // local calendar day string
+    const seen = new Set<string>();
     return visibleAppointments.filter(apt => {
       const d = new Date(apt.scheduled_at);
-      return toUTCDateStr(d) === dayStr && d.getUTCHours() === hour;
+      if (toUTCDateStr(d) !== dayStr || d.getUTCHours() !== hour) return false;
+      if (seen.has(apt.id)) return false;
+      seen.add(apt.id);
+      return true;
     });
   };
 
