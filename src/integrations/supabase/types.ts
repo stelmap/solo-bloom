@@ -1508,8 +1508,10 @@ export type Database = {
           language: string
           net_amount: number
           payment_note: string | null
+          payment_status: string | null
           provider_address: string | null
           provider_business_id: string | null
+          provider_business_name: string | null
           provider_email: string | null
           provider_name: string | null
           provider_phone: string | null
@@ -1540,8 +1542,10 @@ export type Database = {
           language?: string
           net_amount?: number
           payment_note?: string | null
+          payment_status?: string | null
           provider_address?: string | null
           provider_business_id?: string | null
+          provider_business_name?: string | null
           provider_email?: string | null
           provider_name?: string | null
           provider_phone?: string | null
@@ -1572,8 +1576,10 @@ export type Database = {
           language?: string
           net_amount?: number
           payment_note?: string | null
+          payment_status?: string | null
           provider_address?: string | null
           provider_business_id?: string | null
+          provider_business_name?: string | null
           provider_email?: string | null
           provider_name?: string | null
           provider_phone?: string | null
@@ -2673,7 +2679,12 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: undefined
       }
-      generate_invoice_number: { Args: { p_user_id: string }; Returns: string }
+      generate_invoice_number:
+        | { Args: { p_user_id: string }; Returns: string }
+        | {
+            Args: { p_session_date: string; p_user_id: string }
+            Returns: string
+          }
       get_session_confirmation: {
         Args: { p_token: string }
         Returns: {

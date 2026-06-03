@@ -15,6 +15,7 @@ interface InvoiceData {
   client_billing_tax_id?: string;
   client_billing_company?: string;
   provider_name?: string;
+  provider_business_name?: string;
   provider_email?: string;
   provider_phone?: string;
   provider_business_id?: string;
@@ -27,6 +28,7 @@ interface InvoiceData {
   currency: string;
   language: Language;
   payment_note?: string;
+  payment_status?: string;
 }
 
 const labels: Record<string, Record<Language, string>> = {
@@ -43,9 +45,17 @@ const labels: Record<string, Record<Language, string>> = {
   vatIncluded: { en: "VAT included", uk: "ПДВ включено", fr: "TVA incluse", pl: "VAT wliczony" },
   total: { en: "Total", uk: "Разом", fr: "Total", pl: "Razem" },
   paymentNote: { en: "Payment Note", uk: "Примітка до оплати", fr: "Note de paiement", pl: "Informacje o płatności" },
+  paymentType: { en: "Payment type", uk: "Тип оплати", fr: "Type de paiement", pl: "Typ płatności" },
   taxId: { en: "Tax ID", uk: "ЄДРПОУ/ІПН", fr: "N° TVA", pl: "NIP" },
   phone: { en: "Phone", uk: "Телефон", fr: "Téléphone", pl: "Telefon" },
   email: { en: "Email", uk: "Email", fr: "Email", pl: "E-mail" },
+  ps_paid_now: { en: "Paid now", uk: "Оплачено зараз", fr: "Payé maintenant", pl: "Zapłacone teraz" },
+  ps_paid_in_advance: { en: "Paid in advance", uk: "Оплачено заздалегідь", fr: "Payé d'avance", pl: "Zapłacone z góry" },
+  ps_paid_from_prepayment: { en: "Paid from prepayment", uk: "Оплачено з передоплати", fr: "Payé via acompte", pl: "Zapłacone z przedpłaty" },
+  ps_partially_paid: { en: "Partially paid", uk: "Частково оплачено", fr: "Partiellement payé", pl: "Częściowo zapłacone" },
+  ps_partially_paid_from_prepayment: { en: "Partially paid from prepayment", uk: "Частково оплачено з передоплати", fr: "Partiellement payé via acompte", pl: "Częściowo zapłacone z przedpłaty" },
+  ps_waiting_for_payment: { en: "Waiting for payment", uk: "Очікує оплати", fr: "En attente de paiement", pl: "Oczekuje na płatność" },
+  ps_unpaid: { en: "Unpaid", uk: "Не оплачено", fr: "Non payé", pl: "Nieopłacone" },
 };
 
 function t(key: string, lang: Language): string {
@@ -131,7 +141,21 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
   doc.setTextColor(...dark);
   doc.setFontSize(10);
   let fromY = y;
-  if (data.provider_name) { doc.text(data.provider_name, margin, fromY); fromY += 5; }
+  if (data.provider_business_name) {
+    doc.text(data.provider_business_name, margin, fromY);
+    fromY += 5;
+    if (data.provider_name) {
+      doc.setFontSize(8);
+      doc.setTextColor(...gray);
+      doc.text(data.provider_name, margin, fromY);
+      fromY += 4;
+      doc.setFontSize(10);
+      doc.setTextColor(...dark);
+    }
+  } else if (data.provider_name) {
+    doc.text(data.provider_name, margin, fromY);
+    fromY += 5;
+  }
   doc.setFontSize(8);
   doc.setTextColor(...gray);
   if (data.provider_email) { doc.text(data.provider_email, margin, fromY); fromY += 4; }
@@ -216,6 +240,19 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
     doc.setTextColor(...gray);
     doc.text(`(${t("vatIncluded", lang)} ${data.vat_rate}%)`, totalsX, y + 4, { align: "right" });
     y += 8;
+  }
+
+  // Payment type
+  if (data.payment_status) {
+    y += 12;
+    doc.setDrawColor(220, 220, 220);
+    doc.line(margin, y, pageW - margin, y);
+    y += 8;
+    doc.setFontSize(10);
+    doc.setTextColor(...dark);
+    const psKey = `ps_${data.payment_status}`;
+    const psLabel = labels[psKey]?.[lang] || labels[psKey]?.en || data.payment_status;
+    doc.text(`${t("paymentType", lang)}: ${psLabel}`, margin, y);
   }
 
   // Payment note
