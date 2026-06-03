@@ -43,9 +43,22 @@ export function useCreateInvoice() {
   return useMutation({
     mutationFn: async (invoice: Record<string, any>) => {
       assertCanWrite();
-      // Generate invoice number
+
+      // Stable per appointment: reuse existing invoice if one already exists.
+      if (invoice.appointment_id) {
+        const { data: existing } = await supabase
+          .from("invoices" as any)
+          .select("*")
+          .eq("appointment_id", invoice.appointment_id)
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        if (existing) return existing as any;
+      }
+
+      const sessionDate = invoice.session_date || new Date().toISOString().split("T")[0];
       const { data: numData, error: numError } = await supabase
-        .rpc("generate_invoice_number", { p_user_id: user!.id });
+        .rpc("generate_invoice_number" as any, { p_user_id: user!.id, p_session_date: sessionDate });
       if (numError) throw numError;
 
       const { data, error } = await supabase
