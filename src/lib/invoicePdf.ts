@@ -28,6 +28,7 @@ interface InvoiceData {
   currency: string;
   language: Language;
   payment_note?: string;
+  payment_status?: string;
 }
 
 const labels: Record<string, Record<Language, string>> = {
