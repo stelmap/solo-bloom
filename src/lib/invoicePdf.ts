@@ -141,7 +141,21 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
   doc.setTextColor(...dark);
   doc.setFontSize(10);
   let fromY = y;
-  if (data.provider_name) { doc.text(data.provider_name, margin, fromY); fromY += 5; }
+  if (data.provider_business_name) {
+    doc.text(data.provider_business_name, margin, fromY);
+    fromY += 5;
+    if (data.provider_name) {
+      doc.setFontSize(8);
+      doc.setTextColor(...gray);
+      doc.text(data.provider_name, margin, fromY);
+      fromY += 4;
+      doc.setFontSize(10);
+      doc.setTextColor(...dark);
+    }
+  } else if (data.provider_name) {
+    doc.text(data.provider_name, margin, fromY);
+    fromY += 5;
+  }
   doc.setFontSize(8);
   doc.setTextColor(...gray);
   if (data.provider_email) { doc.text(data.provider_email, margin, fromY); fromY += 4; }
