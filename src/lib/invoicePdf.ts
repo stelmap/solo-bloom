@@ -45,9 +45,17 @@ const labels: Record<string, Record<Language, string>> = {
   vatIncluded: { en: "VAT included", uk: "ПДВ включено", fr: "TVA incluse", pl: "VAT wliczony" },
   total: { en: "Total", uk: "Разом", fr: "Total", pl: "Razem" },
   paymentNote: { en: "Payment Note", uk: "Примітка до оплати", fr: "Note de paiement", pl: "Informacje o płatności" },
+  paymentType: { en: "Payment type", uk: "Тип оплати", fr: "Type de paiement", pl: "Typ płatności" },
   taxId: { en: "Tax ID", uk: "ЄДРПОУ/ІПН", fr: "N° TVA", pl: "NIP" },
   phone: { en: "Phone", uk: "Телефон", fr: "Téléphone", pl: "Telefon" },
   email: { en: "Email", uk: "Email", fr: "Email", pl: "E-mail" },
+  ps_paid_now: { en: "Paid now", uk: "Оплачено зараз", fr: "Payé maintenant", pl: "Zapłacone teraz" },
+  ps_paid_in_advance: { en: "Paid in advance", uk: "Оплачено заздалегідь", fr: "Payé d'avance", pl: "Zapłacone z góry" },
+  ps_paid_from_prepayment: { en: "Paid from prepayment", uk: "Оплачено з передоплати", fr: "Payé via acompte", pl: "Zapłacone z przedpłaty" },
+  ps_partially_paid: { en: "Partially paid", uk: "Частково оплачено", fr: "Partiellement payé", pl: "Częściowo zapłacone" },
+  ps_partially_paid_from_prepayment: { en: "Partially paid from prepayment", uk: "Частково оплачено з передоплати", fr: "Partiellement payé via acompte", pl: "Częściowo zapłacone z przedpłaty" },
+  ps_waiting_for_payment: { en: "Waiting for payment", uk: "Очікує оплати", fr: "En attente de paiement", pl: "Oczekuje na płatność" },
+  ps_unpaid: { en: "Unpaid", uk: "Не оплачено", fr: "Non payé", pl: "Nieopłacone" },
 };
 
 function t(key: string, lang: Language): string {
