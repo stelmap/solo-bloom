@@ -15,6 +15,7 @@ interface InvoiceData {
   client_billing_tax_id?: string;
   client_billing_company?: string;
   provider_name?: string;
+  provider_business_name?: string;
   provider_email?: string;
   provider_phone?: string;
   provider_business_id?: string;
