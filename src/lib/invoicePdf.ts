@@ -242,6 +242,19 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
     y += 8;
   }
 
+  // Payment type
+  if (data.payment_status) {
+    y += 12;
+    doc.setDrawColor(220, 220, 220);
+    doc.line(margin, y, pageW - margin, y);
+    y += 8;
+    doc.setFontSize(10);
+    doc.setTextColor(...dark);
+    const psKey = `ps_${data.payment_status}`;
+    const psLabel = labels[psKey]?.[lang] || labels[psKey]?.en || data.payment_status;
+    doc.text(`${t("paymentType", lang)}: ${psLabel}`, margin, y);
+  }
+
   // Payment note
   if (data.payment_note) {
     y += 10;
