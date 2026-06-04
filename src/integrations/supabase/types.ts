@@ -1512,6 +1512,7 @@ export type Database = {
           payment_status: string | null
           provider_address: string | null
           provider_business_id: string | null
+          provider_business_id_type: string | null
           provider_business_name: string | null
           provider_email: string | null
           provider_name: string | null
@@ -1547,6 +1548,7 @@ export type Database = {
           payment_status?: string | null
           provider_address?: string | null
           provider_business_id?: string | null
+          provider_business_id_type?: string | null
           provider_business_name?: string | null
           provider_email?: string | null
           provider_name?: string | null
@@ -1582,6 +1584,7 @@ export type Database = {
           payment_status?: string | null
           provider_address?: string | null
           provider_business_id?: string | null
+          provider_business_id_type?: string | null
           provider_business_name?: string | null
           provider_email?: string | null
           provider_name?: string | null
@@ -1784,6 +1787,7 @@ export type Database = {
           reminder_minutes: number
           sessions_per_day: number
           show_practice_profile_on_booking: boolean
+          tax_id_type: string | null
           time_format: string
           timezone: string | null
           updated_at: string
@@ -1813,6 +1817,7 @@ export type Database = {
           reminder_minutes?: number
           sessions_per_day?: number
           show_practice_profile_on_booking?: boolean
+          tax_id_type?: string | null
           time_format?: string
           timezone?: string | null
           updated_at?: string
@@ -1842,6 +1847,7 @@ export type Database = {
           reminder_minutes?: number
           sessions_per_day?: number
           show_practice_profile_on_booking?: boolean
+          tax_id_type?: string | null
           time_format?: string
           timezone?: string | null
           updated_at?: string

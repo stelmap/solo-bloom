@@ -19,6 +19,7 @@ interface InvoiceData {
   provider_email?: string;
   provider_phone?: string;
   provider_business_id?: string;
+  provider_business_id_type?: string;
   provider_address?: string;
   net_amount: number;
   vat_rate: number;
@@ -58,7 +59,9 @@ const labels: Record<string, Record<Language, string>> = {
   pm_prepayment: { en: "Prepaid balance", uk: "Передплата", fr: "Acompte", pl: "Przedpłata" },
   pm_other: { en: "Other", uk: "Інше", fr: "Autre", pl: "Inne" },
   pm_not_specified: { en: "Not specified", uk: "Не вказано", fr: "Non spécifié", pl: "Nie określono" },
-  taxId: { en: "Tax ID", uk: "ЄДРПОУ/ІПН", fr: "N° TVA", pl: "NIP" },
+  taxId: { en: "Tax ID", uk: "Податковий номер", fr: "N° TVA", pl: "NIP" },
+  taxId_ipn: { en: "Tax ID", uk: "ІПН", fr: "N° TVA", pl: "NIP" },
+  taxId_edrpou: { en: "Business ID", uk: "ЄДРПОУ", fr: "N° SIRET", pl: "REGON" },
   phone: { en: "Phone", uk: "Телефон", fr: "Téléphone", pl: "Telefon" },
   email: { en: "Email", uk: "Email", fr: "Email", pl: "E-mail" },
   ps_paid_now: { en: "Paid now", uk: "Оплачено зараз", fr: "Payé maintenant", pl: "Zapłacone teraz" },
@@ -154,8 +157,9 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
   doc.setFontSize(10);
   let fromY = y;
   if (data.provider_business_name) {
-    doc.text(data.provider_business_name, margin, fromY);
-    fromY += 5;
+    const bnLines = doc.splitTextToSize(data.provider_business_name, colW);
+    doc.text(bnLines, margin, fromY);
+    fromY += bnLines.length * 5;
     if (data.provider_name) {
       doc.setFontSize(8);
       doc.setTextColor(...gray);
@@ -172,7 +176,15 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
   doc.setTextColor(...gray);
   if (data.provider_email) { doc.text(data.provider_email, margin, fromY); fromY += 4; }
   if (data.provider_phone) { doc.text(`${t("phone", lang)}: ${data.provider_phone}`, margin, fromY); fromY += 4; }
-  if (data.provider_business_id) { doc.text(`${t("taxId", lang)}: ${data.provider_business_id}`, margin, fromY); fromY += 4; }
+  if (data.provider_business_id && data.provider_business_id.trim()) {
+    const typeKey = data.provider_business_id_type === "edrpou"
+      ? "taxId_edrpou"
+      : data.provider_business_id_type === "ipn"
+        ? "taxId_ipn"
+        : "taxId";
+    doc.text(`${t(typeKey, lang)}: ${data.provider_business_id}`, margin, fromY);
+    fromY += 4;
+  }
   if (data.provider_address) {
     const lines = doc.splitTextToSize(data.provider_address, colW);
     doc.text(lines, margin, fromY);

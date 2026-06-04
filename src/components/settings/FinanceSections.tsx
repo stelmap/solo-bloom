@@ -27,13 +27,14 @@ export function CurrencyInvoicingSection() {
   const updateProfile = useUpdateProfile();
 
   const [form, setForm] = useState({
-    currency: "EUR", business_id: "", business_address: "", vat_mode: "none", vat_rate: 0,
+    currency: "EUR", business_id: "", tax_id_type: "ipn", business_address: "", vat_mode: "none", vat_rate: 0,
   });
   useEffect(() => {
     if (profile) {
       setForm({
         currency: (profile as any).currency || "EUR",
         business_id: (profile as any).business_id || "",
+        tax_id_type: (profile as any).tax_id_type || "ipn",
         business_address: (profile as any).business_address || "",
         vat_mode: (profile as any).vat_mode || "none",
         vat_rate: Number((profile as any).vat_rate) || 0,
@@ -77,7 +78,24 @@ export function CurrencyInvoicingSection() {
           <h2 className="font-semibold text-foreground">{t("settings.billing")}</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2"><Label>{t("settings.businessId")}</Label><Input value={form.business_id} onChange={e => setForm(f => ({ ...f, business_id: e.target.value }))} placeholder="e.g. UA1234567890" /></div>
+          <div className="space-y-2 sm:col-span-2">
+            <Label>{t("settings.taxIdType")}</Label>
+            <RadioGroup
+              value={form.tax_id_type}
+              onValueChange={v => setForm(f => ({ ...f, tax_id_type: v }))}
+              className="flex gap-4"
+            >
+              <Label htmlFor="tit-ipn" className="flex items-center gap-2 cursor-pointer">
+                <RadioGroupItem id="tit-ipn" value="ipn" />
+                <span className="text-sm">{t("settings.taxIdIpn")}</span>
+              </Label>
+              <Label htmlFor="tit-edrpou" className="flex items-center gap-2 cursor-pointer">
+                <RadioGroupItem id="tit-edrpou" value="edrpou" />
+                <span className="text-sm">{t("settings.taxIdEdrpou")}</span>
+              </Label>
+            </RadioGroup>
+          </div>
+          <div className="space-y-2"><Label>{t("settings.taxIdNumber")}</Label><Input value={form.business_id} onChange={e => setForm(f => ({ ...f, business_id: e.target.value }))} placeholder={form.tax_id_type === "edrpou" ? "12345678" : "1234567890"} /></div>
           <div className="space-y-2"><Label>{t("settings.businessAddress")}</Label><Input value={form.business_address} onChange={e => setForm(f => ({ ...f, business_address: e.target.value }))} /></div>
           <div className="space-y-2">
             <Label>{t("settings.vatMode")}</Label>
