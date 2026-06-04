@@ -291,6 +291,15 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
     doc.text(`${t("paymentMethod", lang)}: ${pmLabel}`, margin, y);
   }
 
+  // Payment date — actual confirmed payment date, NOT the invoice generation date.
+  const paidStatuses = ["paid_now", "paid_in_advance", "paid_from_prepayment", "partially_paid", "partially_paid_from_prepayment"];
+  if (data.payment_date && (!data.payment_status || paidStatuses.includes(data.payment_status))) {
+    y += 6;
+    doc.setFontSize(10);
+    doc.setTextColor(...dark);
+    doc.text(`${t("paymentDate", lang)}: ${formatDate(data.payment_date, lang)}`, margin, y);
+  }
+
   // Payment note
   if (data.payment_note) {
     y += 10;
