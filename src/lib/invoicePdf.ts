@@ -157,8 +157,9 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
   doc.setFontSize(10);
   let fromY = y;
   if (data.provider_business_name) {
-    doc.text(data.provider_business_name, margin, fromY);
-    fromY += 5;
+    const bnLines = doc.splitTextToSize(data.provider_business_name, colW);
+    doc.text(bnLines, margin, fromY);
+    fromY += bnLines.length * 5;
     if (data.provider_name) {
       doc.setFontSize(8);
       doc.setTextColor(...gray);
@@ -175,7 +176,15 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
   doc.setTextColor(...gray);
   if (data.provider_email) { doc.text(data.provider_email, margin, fromY); fromY += 4; }
   if (data.provider_phone) { doc.text(`${t("phone", lang)}: ${data.provider_phone}`, margin, fromY); fromY += 4; }
-  if (data.provider_business_id) { doc.text(`${t("taxId", lang)}: ${data.provider_business_id}`, margin, fromY); fromY += 4; }
+  if (data.provider_business_id && data.provider_business_id.trim()) {
+    const typeKey = data.provider_business_id_type === "edrpou"
+      ? "taxId_edrpou"
+      : data.provider_business_id_type === "ipn"
+        ? "taxId_ipn"
+        : "taxId";
+    doc.text(`${t(typeKey, lang)}: ${data.provider_business_id}`, margin, fromY);
+    fromY += 4;
+  }
   if (data.provider_address) {
     const lines = doc.splitTextToSize(data.provider_address, colW);
     doc.text(lines, margin, fromY);
