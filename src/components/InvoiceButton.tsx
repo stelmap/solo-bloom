@@ -147,9 +147,14 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
   };
 
   const handleDownloadExisting = (invoice: any) => {
-    const doc = generateInvoicePdf({ ...invoice, language: invoice.language as Language });
-    downloadPdf(doc, `invoice_${invoice.invoice_number.replace(/\//g, "-")}.pdf`);
-    track("invoice_downloaded", { kind: "existing" });
+    try {
+      const doc = generateInvoicePdf({ ...invoice, language: (invoice.language || lang) as Language });
+      downloadPdf(doc, `invoice_${String(invoice.invoice_number || "").replace(/[\/\\]/g, "-")}.pdf`);
+      track("invoice_downloaded", { kind: "existing" });
+    } catch (e: any) {
+      console.error("[invoice] handleDownloadExisting failed", e);
+      toast({ title: t("common.error"), description: e?.message || "PDF error", variant: "destructive" });
+    }
   };
 
   return (
