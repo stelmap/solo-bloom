@@ -92,3 +92,25 @@ export function useCreateInvoice() {
     },
   });
 }
+
+export function useDeleteInvoice() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  const assertCanWrite = useDemoWriteGuard();
+  return useMutation({
+    mutationFn: async (invoiceId: string) => {
+      assertCanWrite();
+      if (!user?.id) throw new Error("not_authenticated");
+      const { error } = await supabase
+        .from("invoices" as any)
+        .delete()
+        .eq("id", invoiceId)
+        .eq("user_id", user.id);
+      if (error) throw error;
+      return invoiceId;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["invoices"] });
+    },
+  });
+}

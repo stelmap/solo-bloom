@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { FileText, Download, Loader2 } from "lucide-react";
+import { FileText, Download, Loader2, Trash2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useProfile } from "@/hooks/useData";
-import { useInvoicesByAppointment, useCreateInvoice } from "@/hooks/useInvoices";
+import { useInvoicesByAppointment, useCreateInvoice, useDeleteInvoice } from "@/hooks/useInvoices";
 import { useAuth } from "@/contexts/AuthContext";
 import { generateInvoicePdf } from "@/lib/invoicePdf";
 import { useToast } from "@/hooks/use-toast";
+import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { track } from "@/lib/analytics";
 import type { Language } from "@/i18n/translations";
 
@@ -24,8 +25,10 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
   const { user } = useAuth();
   const { data: invoices = [] } = useInvoicesByAppointment(appointment?.id);
   const createInvoice = useCreateInvoice();
+  const deleteInvoice = useDeleteInvoice();
   const { toast } = useToast();
   const [generating, setGenerating] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
 
   if (!appointment || !client || !service) return null;
 
@@ -85,8 +88,6 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
   };
 
   const downloadPdf = (doc: any, filename: string) => {
-    // Try multiple strategies — preview iframes and some browsers block one or
-    // another. Try jsPDF's built-in save first (most reliable cross-env).
     let lastError: unknown = null;
     try {
       doc.save(filename, { returnPromise: false });
@@ -159,6 +160,18 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
     }
   };
 
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteInvoice.mutateAsync(deleteTarget.id);
+      toast({ title: t("invoice.deleted") });
+      setDeleteTarget(null);
+    } catch (e: any) {
+      console.error("[invoice] delete failed", e);
+      toast({ title: t("common.error"), description: e?.message || "Delete failed", variant: "destructive" });
+    }
+  };
+
   return (
     <div className="space-y-2">
       <Button
@@ -178,19 +191,38 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
       {invoices.length > 0 && (
         <div className="space-y-1">
           {invoices.map((inv: any) => (
-            <Button
-              key={inv.id}
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDownloadExisting(inv)}
-              className="w-full justify-start text-xs"
-            >
-              <Download className="h-3 w-3 mr-2" />
-              {inv.invoice_number} — {inv.invoice_date}
-            </Button>
+            <div key={inv.id} className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDownloadExisting(inv)}
+                className="flex-1 justify-start text-xs"
+              >
+                <Download className="h-3 w-3 mr-2" />
+                {inv.invoice_number} — {inv.invoice_date}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-destructive hover:text-destructive"
+                onClick={() => setDeleteTarget(inv)}
+                aria-label={t("invoice.delete")}
+                title={t("invoice.delete")}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           ))}
         </div>
       )}
+      <ConfirmDeleteDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}
+        onConfirm={handleConfirmDelete}
+        title={t("invoice.deleteTitle")}
+        description={t("invoice.deleteConfirm")}
+        loading={deleteInvoice.isPending}
+      />
     </div>
   );
 }
