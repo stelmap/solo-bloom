@@ -267,6 +267,16 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
     doc.text(`${t("paymentType", lang)}: ${psLabel}`, margin, y);
   }
 
+  // Payment method
+  if (data.payment_method) {
+    y += 6;
+    doc.setFontSize(10);
+    doc.setTextColor(...dark);
+    const pmKey = `pm_${data.payment_method}`;
+    const pmLabel = labels[pmKey]?.[lang] || labels[pmKey]?.en || data.payment_method;
+    doc.text(`${t("paymentMethod", lang)}: ${pmLabel}`, margin, y);
+  }
+
   // Payment note
   if (data.payment_note) {
     y += 10;
