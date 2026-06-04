@@ -72,6 +72,7 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
       provider_business_id: (profile as any)?.business_id || undefined,
       provider_address: (profile as any)?.business_address || undefined,
       payment_status: appointment.payment_status || undefined,
+      payment_method: appointment.payment_method || undefined,
       net_amount: Math.round(netAmount * 100) / 100,
       vat_rate: vatRate,
       vat_amount: Math.round(vatAmount * 100) / 100,

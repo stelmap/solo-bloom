@@ -29,6 +29,7 @@ interface InvoiceData {
   language: Language;
   payment_note?: string;
   payment_status?: string;
+  payment_method?: string;
 }
 
 const labels: Record<string, Record<Language, string>> = {
@@ -46,6 +47,17 @@ const labels: Record<string, Record<Language, string>> = {
   total: { en: "Total", uk: "Разом", fr: "Total", pl: "Razem" },
   paymentNote: { en: "Payment Note", uk: "Примітка до оплати", fr: "Note de paiement", pl: "Informacje o płatności" },
   paymentType: { en: "Payment type", uk: "Тип оплати", fr: "Type de paiement", pl: "Typ płatności" },
+  paymentMethod: { en: "Payment method", uk: "Спосіб оплати", fr: "Mode de paiement", pl: "Sposób płatności" },
+  pm_cash: { en: "Cash", uk: "Готівка", fr: "Espèces", pl: "Gotówka" },
+  pm_card: { en: "Card", uk: "Картка", fr: "Carte", pl: "Karta" },
+  pm_bank_transfer: { en: "Bank transfer", uk: "Банківський переказ", fr: "Virement bancaire", pl: "Przelew bankowy" },
+  pm_transfer: { en: "Bank transfer", uk: "Банківський переказ", fr: "Virement bancaire", pl: "Przelew bankowy" },
+  pm_stripe: { en: "Stripe", uk: "Stripe", fr: "Stripe", pl: "Stripe" },
+  pm_revolut: { en: "Revolut", uk: "Revolut", fr: "Revolut", pl: "Revolut" },
+  pm_paypal: { en: "PayPal", uk: "PayPal", fr: "PayPal", pl: "PayPal" },
+  pm_prepayment: { en: "Prepaid balance", uk: "Передплата", fr: "Acompte", pl: "Przedpłata" },
+  pm_other: { en: "Other", uk: "Інше", fr: "Autre", pl: "Inne" },
+  pm_not_specified: { en: "Not specified", uk: "Не вказано", fr: "Non spécifié", pl: "Nie określono" },
   taxId: { en: "Tax ID", uk: "ЄДРПОУ/ІПН", fr: "N° TVA", pl: "NIP" },
   phone: { en: "Phone", uk: "Телефон", fr: "Téléphone", pl: "Telefon" },
   email: { en: "Email", uk: "Email", fr: "Email", pl: "E-mail" },
@@ -253,6 +265,16 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
     const psKey = `ps_${data.payment_status}`;
     const psLabel = labels[psKey]?.[lang] || labels[psKey]?.en || data.payment_status;
     doc.text(`${t("paymentType", lang)}: ${psLabel}`, margin, y);
+  }
+
+  // Payment method
+  if (data.payment_method) {
+    y += 6;
+    doc.setFontSize(10);
+    doc.setTextColor(...dark);
+    const pmKey = `pm_${data.payment_method}`;
+    const pmLabel = labels[pmKey]?.[lang] || labels[pmKey]?.en || data.payment_method;
+    doc.text(`${t("paymentMethod", lang)}: ${pmLabel}`, margin, y);
   }
 
   // Payment note

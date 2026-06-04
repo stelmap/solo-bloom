@@ -61,10 +61,24 @@ export function useCreateInvoice() {
         .rpc("generate_invoice_number" as any, { p_user_id: user!.id, p_session_date: sessionDate });
       if (numError) throw numError;
 
+      // Try to resolve payment_method from a linked income row if not provided.
+      let paymentMethod: string | undefined = invoice.payment_method;
+      if (!paymentMethod && invoice.appointment_id) {
+        const { data: inc } = await supabase
+          .from("income")
+          .select("payment_method")
+          .eq("appointment_id", invoice.appointment_id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        paymentMethod = (inc as any)?.payment_method || undefined;
+      }
+
       const { data, error } = await supabase
         .from("invoices" as any)
         .insert({
           ...invoice,
+          payment_method: paymentMethod,
           user_id: user!.id,
           invoice_number: numData,
         })
