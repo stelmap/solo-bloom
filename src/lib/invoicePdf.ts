@@ -31,6 +31,7 @@ interface InvoiceData {
   payment_note?: string;
   payment_status?: string;
   payment_method?: string;
+  payment_date?: string | null;
 }
 
 const labels: Record<string, Record<Language, string>> = {
@@ -49,6 +50,7 @@ const labels: Record<string, Record<Language, string>> = {
   paymentNote: { en: "Payment Note", uk: "Примітка до оплати", fr: "Note de paiement", pl: "Informacje o płatności" },
   paymentType: { en: "Payment type", uk: "Тип оплати", fr: "Type de paiement", pl: "Typ płatności" },
   paymentMethod: { en: "Payment method", uk: "Спосіб оплати", fr: "Mode de paiement", pl: "Sposób płatności" },
+  paymentDate: { en: "Payment date", uk: "Дата оплати", fr: "Date de paiement", pl: "Data płatności" },
   pm_cash: { en: "Cash", uk: "Готівка", fr: "Espèces", pl: "Gotówka" },
   pm_card: { en: "Card", uk: "Картка", fr: "Carte", pl: "Karta" },
   pm_bank_transfer: { en: "Bank transfer", uk: "Банківський переказ", fr: "Virement bancaire", pl: "Przelew bankowy" },
@@ -287,6 +289,15 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
     const pmKey = `pm_${data.payment_method}`;
     const pmLabel = labels[pmKey]?.[lang] || labels[pmKey]?.en || data.payment_method;
     doc.text(`${t("paymentMethod", lang)}: ${pmLabel}`, margin, y);
+  }
+
+  // Payment date — actual confirmed payment date, NOT the invoice generation date.
+  const paidStatuses = ["paid_now", "paid_in_advance", "paid_from_prepayment", "partially_paid", "partially_paid_from_prepayment"];
+  if (data.payment_date && (!data.payment_status || paidStatuses.includes(data.payment_status))) {
+    y += 6;
+    doc.setFontSize(10);
+    doc.setTextColor(...dark);
+    doc.text(`${t("paymentDate", lang)}: ${formatDate(data.payment_date, lang)}`, margin, y);
   }
 
   // Payment note

@@ -61,17 +61,25 @@ export function useCreateInvoice() {
         .rpc("generate_invoice_number" as any, { p_user_id: user!.id, p_session_date: sessionDate });
       if (numError) throw numError;
 
-      // Try to resolve payment_method from a linked income row if not provided.
+      // Resolve actual payment_method and payment_date from the latest confirmed
+      // income row linked to this appointment. The invoice generation date must
+      // never be used as the payment date.
       let paymentMethod: string | undefined = invoice.payment_method;
-      if (!paymentMethod && invoice.appointment_id) {
+      let paymentDate: string | undefined = invoice.payment_date;
+      if (invoice.appointment_id) {
         const { data: inc } = await supabase
           .from("income")
-          .select("payment_method")
+          .select("payment_method, date, status")
           .eq("appointment_id", invoice.appointment_id)
+          .eq("status", "confirmed")
+          .order("date", { ascending: false })
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
-        paymentMethod = (inc as any)?.payment_method || undefined;
+        if (inc) {
+          if (!paymentMethod) paymentMethod = (inc as any).payment_method || undefined;
+          if (!paymentDate) paymentDate = (inc as any).date || undefined;
+        }
       }
 
       const { data, error } = await supabase
@@ -79,6 +87,7 @@ export function useCreateInvoice() {
         .insert({
           ...invoice,
           payment_method: paymentMethod,
+          payment_date: paymentDate ?? null,
           user_id: user!.id,
           invoice_number: numData,
         })
