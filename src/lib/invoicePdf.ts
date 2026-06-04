@@ -19,6 +19,7 @@ interface InvoiceData {
   provider_email?: string;
   provider_phone?: string;
   provider_business_id?: string;
+  provider_business_id_type?: string;
   provider_address?: string;
   net_amount: number;
   vat_rate: number;
