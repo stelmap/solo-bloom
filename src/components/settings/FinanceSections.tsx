@@ -27,13 +27,14 @@ export function CurrencyInvoicingSection() {
   const updateProfile = useUpdateProfile();
 
   const [form, setForm] = useState({
-    currency: "EUR", business_id: "", business_address: "", vat_mode: "none", vat_rate: 0,
+    currency: "EUR", business_id: "", tax_id_type: "ipn", business_address: "", vat_mode: "none", vat_rate: 0,
   });
   useEffect(() => {
     if (profile) {
       setForm({
         currency: (profile as any).currency || "EUR",
         business_id: (profile as any).business_id || "",
+        tax_id_type: (profile as any).tax_id_type || "ipn",
         business_address: (profile as any).business_address || "",
         vat_mode: (profile as any).vat_mode || "none",
         vat_rate: Number((profile as any).vat_rate) || 0,
