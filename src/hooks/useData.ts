@@ -2238,32 +2238,77 @@ export function useEditRecurringAppointments() {
 export function useDeleteRecurringAppointments() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ ruleId, scope, appointmentId }: { ruleId: string; scope: "this" | "following" | "all"; appointmentId?: string }) => {
-      if (scope === "all") {
-        const { data: apts } = await supabase.from("appointments").select("id").eq("recurring_rule_id", ruleId);
-        for (const apt of apts || []) {
-          await supabase.from("income").delete().eq("appointment_id", apt.id);
-          await supabase.from("expected_payments").delete().eq("appointment_id", apt.id);
-        }
-        await supabase.from("appointments").delete().eq("recurring_rule_id", ruleId);
-        await supabase.from("recurring_rules").delete().eq("id", ruleId);
-      } else if (scope === "this" && appointmentId) {
-        await supabase.from("income").delete().eq("appointment_id", appointmentId);
-        await supabase.from("expected_payments").delete().eq("appointment_id", appointmentId);
-        await supabase.from("appointments").delete().eq("id", appointmentId);
-      } else if (scope === "following" && appointmentId) {
-        const { data: apt } = await supabase.from("appointments").select("scheduled_at").eq("id", appointmentId).single();
-        if (apt) {
-          const { data: futureApts } = await supabase.from("appointments").select("id")
-            .eq("recurring_rule_id", ruleId).gte("scheduled_at", apt.scheduled_at);
-          for (const a of futureApts || []) {
-            await supabase.from("income").delete().eq("appointment_id", a.id);
-            await supabase.from("expected_payments").delete().eq("appointment_id", a.id);
-          }
-          await supabase.from("appointments").delete()
-            .eq("recurring_rule_id", ruleId).gte("scheduled_at", apt.scheduled_at);
-        }
+    mutationFn: async ({ ruleId, scope, appointmentId }: { ruleId: string; scope: "this" | "following" | "all"; appointmentId?: string }): Promise<{ deleted: number; protected: number }> => {
+      if (!ruleId) { const e: any = new Error("missing_rule_id"); e.code = "missing_rule_id"; throw e; }
+      const { data: userRes } = await supabase.auth.getUser();
+      const userId = userRes?.user?.id;
+      if (!userId) { const e: any = new Error("not_authenticated"); e.code = "not_authenticated"; throw e; }
+
+      // Build candidate query, always scoped by user + rule.
+      let q = supabase.from("appointments")
+        .select("id, scheduled_at, status, payment_status")
+        .eq("user_id", userId)
+        .eq("recurring_rule_id", ruleId);
+
+      if (scope === "this") {
+        if (!appointmentId) { const e: any = new Error("missing_appointment_id"); e.code = "missing_appointment_id"; throw e; }
+        q = q.eq("id", appointmentId);
+      } else if (scope === "following") {
+        if (!appointmentId) { const e: any = new Error("missing_appointment_id"); e.code = "missing_appointment_id"; throw e; }
+        const { data: cur, error: curErr } = await supabase
+          .from("appointments").select("scheduled_at").eq("id", appointmentId).maybeSingle();
+        if (curErr) throw curErr;
+        if (!cur) { const e: any = new Error("appointment_not_found"); e.code = "appointment_not_found"; throw e; }
+        q = q.gte("scheduled_at", cur.scheduled_at);
       }
+
+      const { data: targets, error: tErr } = await q;
+      if (tErr) throw tErr;
+      const list = (targets || []) as any[];
+      if (list.length === 0) { const e: any = new Error("no_appointments"); e.code = "no_appointments"; throw e; }
+
+      const PROTECTED_PAYMENT = new Set([
+        "paid_now", "paid_in_advance", "paid_from_prepayment",
+        "partially_paid", "partially_paid_from_prepayment",
+      ]);
+      const isProtectedRow = (a: any) =>
+        a.status === "completed" || PROTECTED_PAYMENT.has(a.payment_status);
+
+      // Treat appointments with linked invoices as protected (historical record).
+      const ids = list.map((a) => a.id);
+      const { data: invs } = await supabase.from("invoices").select("appointment_id").in("appointment_id", ids);
+      const invoicedIds = new Set((invs || []).map((i: any) => i.appointment_id));
+
+      const safeIds: string[] = [];
+      let protectedCount = 0;
+      for (const a of list) {
+        if (isProtectedRow(a) || invoicedIds.has(a.id)) protectedCount += 1;
+        else safeIds.push(a.id);
+      }
+
+      if (scope === "this" && safeIds.length === 0) {
+        const e: any = new Error("appointment_protected"); e.code = "appointment_protected"; throw e;
+      }
+      if (scope === "all" && protectedCount > 0) {
+        const e: any = new Error("series_has_protected"); e.code = "series_has_protected"; throw e;
+      }
+      if (scope === "following" && safeIds.length === 0) {
+        const e: any = new Error("all_following_protected"); e.code = "all_following_protected"; throw e;
+      }
+
+      if (safeIds.length > 0) {
+        await supabase.from("income_session_allocations").delete().eq("user_id", userId).in("appointment_id", safeIds);
+        await supabase.from("income").delete().eq("user_id", userId).in("appointment_id", safeIds);
+        await supabase.from("expected_payments").delete().eq("user_id", userId).in("appointment_id", safeIds);
+        const { error: dErr } = await supabase.from("appointments").delete().eq("user_id", userId).in("id", safeIds);
+        if (dErr) throw dErr;
+      }
+
+      if (scope === "all" && protectedCount === 0) {
+        await supabase.from("recurring_rules").delete().eq("id", ruleId).eq("user_id", userId);
+      }
+
+      return { deleted: safeIds.length, protected: protectedCount };
     },
     onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL, "recurring-rules"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });

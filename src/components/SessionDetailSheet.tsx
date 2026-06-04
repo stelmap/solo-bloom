@@ -542,14 +542,33 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
   const handleRecurringDelete = async (scope: "this" | "following" | "all") => {
     try {
-      await deleteRecurring.mutateAsync({ ruleId: apt.recurring_rule_id, scope, appointmentId: apt.id });
-      toast({ title: t("toast.appointmentDeleted") });
+      if (!apt.recurring_rule_id) {
+        toast({ title: t("common.error"), description: t("recurring.err.missingRule"), variant: "destructive" });
+        return;
+      }
+      const result = await deleteRecurring.mutateAsync({ ruleId: apt.recurring_rule_id, scope, appointmentId: apt.id });
+      if (result.protected > 0 && scope === "following") {
+        toast({
+          title: t("recurring.partialDeleted.title"),
+          description: t("recurring.partialDeleted.desc", { deleted: String(result.deleted), protected: String(result.protected) }),
+        });
+      } else {
+        toast({ title: t("toast.appointmentDeleted") });
+      }
       setRecurDeleteOpen(false);
       onOpenChange(false);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      const code = e?.code as string | undefined;
+      let description = e?.message || String(e);
+      if (code === "appointment_protected") description = t("recurring.err.appointmentProtected");
+      else if (code === "series_has_protected") description = t("recurring.err.seriesProtected");
+      else if (code === "all_following_protected") description = t("recurring.err.allFollowingProtected");
+      else if (code === "no_appointments") description = t("recurring.err.noAppointments");
+      else if (code === "missing_rule_id") description = t("recurring.err.missingRule");
+      toast({ title: t("common.error"), description, variant: "destructive" });
     }
   };
+
 
   return (
     <>
