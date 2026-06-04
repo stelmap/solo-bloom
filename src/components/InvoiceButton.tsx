@@ -136,11 +136,12 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
         language: lang as Language,
       };
       const doc = generateInvoicePdf(invoiceData);
-      downloadPdf(doc, `invoice_${result.invoice_number.replace(/\//g, "-")}.pdf`);
+      downloadPdf(doc, `invoice_${String(result.invoice_number || "").replace(/[\/\\]/g, "-")}.pdf`);
       track("invoice_downloaded", { kind: "new" });
       toast({ title: t("invoice.generated") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      console.error("[invoice] handleGenerate failed", e);
+      toast({ title: t("common.error"), description: e?.message || "PDF error", variant: "destructive" });
     } finally {
       setGenerating(false);
     }
