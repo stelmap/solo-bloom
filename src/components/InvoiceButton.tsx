@@ -84,6 +84,14 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
   };
 
   const downloadPdf = (doc: any, filename: string) => {
+    // Try multiple strategies — preview iframes and some browsers block one or
+    // another. Try jsPDF's built-in save first (most reliable cross-env).
+    let lastError: unknown = null;
+    try {
+      doc.save(filename, { returnPromise: false });
+      return;
+    } catch (e) { lastError = e; }
+
     try {
       const blob: Blob = doc.output("blob");
       const url = URL.createObjectURL(blob);
@@ -91,19 +99,32 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
       a.href = url;
       a.download = filename;
       a.rel = "noopener";
+      a.target = "_blank";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch {
-      // Fallback: open in a new tab so the user can save manually
-      try {
-        const dataUri = doc.output("datauristring");
-        window.open(dataUri, "_blank", "noopener");
-      } catch {
-        doc.save(filename);
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      return;
+    } catch (e) { lastError = e; }
+
+    try {
+      const blob: Blob = doc.output("blob");
+      const url = URL.createObjectURL(blob);
+      const w = window.open(url, "_blank", "noopener");
+      if (w) return;
+    } catch (e) { lastError = e; }
+
+    try {
+      const dataUri = doc.output("datauristring", { filename });
+      const w = window.open();
+      if (w) {
+        w.location.href = dataUri;
+        return;
       }
-    }
+    } catch (e) { lastError = e; }
+
+    console.error("[invoice] download failed", lastError);
+    throw lastError instanceof Error ? lastError : new Error("Unable to download PDF");
   };
 
   const handleGenerate = async () => {
@@ -115,20 +136,26 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
         language: lang as Language,
       };
       const doc = generateInvoicePdf(invoiceData);
-      downloadPdf(doc, `invoice_${result.invoice_number.replace(/\//g, "-")}.pdf`);
+      downloadPdf(doc, `invoice_${String(result.invoice_number || "").replace(/[\/\\]/g, "-")}.pdf`);
       track("invoice_downloaded", { kind: "new" });
       toast({ title: t("invoice.generated") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      console.error("[invoice] handleGenerate failed", e);
+      toast({ title: t("common.error"), description: e?.message || "PDF error", variant: "destructive" });
     } finally {
       setGenerating(false);
     }
   };
 
   const handleDownloadExisting = (invoice: any) => {
-    const doc = generateInvoicePdf({ ...invoice, language: invoice.language as Language });
-    downloadPdf(doc, `invoice_${invoice.invoice_number.replace(/\//g, "-")}.pdf`);
-    track("invoice_downloaded", { kind: "existing" });
+    try {
+      const doc = generateInvoicePdf({ ...invoice, language: (invoice.language || lang) as Language });
+      downloadPdf(doc, `invoice_${String(invoice.invoice_number || "").replace(/[\/\\]/g, "-")}.pdf`);
+      track("invoice_downloaded", { kind: "existing" });
+    } catch (e: any) {
+      console.error("[invoice] handleDownloadExisting failed", e);
+      toast({ title: t("common.error"), description: e?.message || "PDF error", variant: "destructive" });
+    }
   };
 
   return (
