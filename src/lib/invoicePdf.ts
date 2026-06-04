@@ -31,6 +31,7 @@ interface InvoiceData {
   payment_note?: string;
   payment_status?: string;
   payment_method?: string;
+  payment_date?: string | null;
 }
 
 const labels: Record<string, Record<Language, string>> = {
