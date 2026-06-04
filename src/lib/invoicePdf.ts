@@ -50,6 +50,7 @@ const labels: Record<string, Record<Language, string>> = {
   paymentNote: { en: "Payment Note", uk: "Примітка до оплати", fr: "Note de paiement", pl: "Informacje o płatności" },
   paymentType: { en: "Payment type", uk: "Тип оплати", fr: "Type de paiement", pl: "Typ płatności" },
   paymentMethod: { en: "Payment method", uk: "Спосіб оплати", fr: "Mode de paiement", pl: "Sposób płatności" },
+  paymentDate: { en: "Payment date", uk: "Дата оплати", fr: "Date de paiement", pl: "Data płatności" },
   pm_cash: { en: "Cash", uk: "Готівка", fr: "Espèces", pl: "Gotówka" },
   pm_card: { en: "Card", uk: "Картка", fr: "Carte", pl: "Karta" },
   pm_bank_transfer: { en: "Bank transfer", uk: "Банківський переказ", fr: "Virement bancaire", pl: "Przelew bankowy" },
