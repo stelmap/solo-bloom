@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import type { Language } from "@/i18n/translations";
 import { notoSansRegularBase64, notoSansBoldBase64 } from "./notoSansFont";
+import { getTaxIdLabel } from "./taxIdentifiers";
 
 interface InvoiceData {
   invoice_number: string;
@@ -179,12 +180,10 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
   if (data.provider_email) { doc.text(data.provider_email, margin, fromY); fromY += 4; }
   if (data.provider_phone) { doc.text(`${t("phone", lang)}: ${data.provider_phone}`, margin, fromY); fromY += 4; }
   if (data.provider_business_id && data.provider_business_id.trim()) {
-    const typeKey = data.provider_business_id_type === "edrpou"
-      ? "taxId_edrpou"
-      : data.provider_business_id_type === "ipn"
-        ? "taxId_ipn"
-        : "taxId";
-    doc.text(`${t(typeKey, lang)}: ${data.provider_business_id}`, margin, fromY);
+    // The tax identifier label (NIP, SIRET, ЄДРПОУ, …) is country-/code-driven,
+    // not language-driven. UI language only translates surrounding labels.
+    const label = getTaxIdLabel(data.provider_business_id_type) || t("taxId", lang);
+    doc.text(`${label}: ${data.provider_business_id}`, margin, fromY);
     fromY += 4;
   }
   if (data.provider_address) {
@@ -268,22 +267,21 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
     y += 8;
   }
 
-  // Payment type
-  if (data.payment_status) {
+  // NOTE: The internal session "payment status / type" line (e.g. "Type de
+  // paiement: Payé maintenant") is intentionally NOT rendered on the invoice.
+  // That state belongs to the calendar/session workflow, not to the invoice.
+
+  // Payment method — only included if explicitly set on the session.
+  const paidStatusesAll = ["paid_now", "paid_in_advance", "paid_from_prepayment", "partially_paid", "partially_paid_from_prepayment"];
+  const hasPaymentBlock = !!data.payment_method
+    || !!(data.payment_date && (!data.payment_status || paidStatusesAll.includes(data.payment_status)));
+  if (hasPaymentBlock) {
     y += 12;
     doc.setDrawColor(220, 220, 220);
     doc.line(margin, y, pageW - margin, y);
     y += 8;
-    doc.setFontSize(10);
-    doc.setTextColor(...dark);
-    const psKey = `ps_${data.payment_status}`;
-    const psLabel = labels[psKey]?.[lang] || labels[psKey]?.en || data.payment_status;
-    doc.text(`${t("paymentType", lang)}: ${psLabel}`, margin, y);
   }
-
-  // Payment method
   if (data.payment_method) {
-    y += 6;
     doc.setFontSize(10);
     doc.setTextColor(...dark);
     const pmKey = `pm_${data.payment_method}`;
@@ -292,9 +290,8 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
   }
 
   // Payment date — actual confirmed payment date, NOT the invoice generation date.
-  const paidStatuses = ["paid_now", "paid_in_advance", "paid_from_prepayment", "partially_paid", "partially_paid_from_prepayment"];
-  if (data.payment_date && (!data.payment_status || paidStatuses.includes(data.payment_status))) {
-    y += 6;
+  if (data.payment_date && (!data.payment_status || paidStatusesAll.includes(data.payment_status))) {
+    if (data.payment_method) y += 6;
     doc.setFontSize(10);
     doc.setTextColor(...dark);
     doc.text(`${t("paymentDate", lang)}: ${formatDate(data.payment_date, lang)}`, margin, y);

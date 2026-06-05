@@ -18,6 +18,13 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
 import { Receipt, Plus, Trash2, Pencil, RefreshCw, AlertCircle } from "lucide-react";
 import { nextAccrualDate } from "@/lib/taxExpenseGenerator";
+import {
+  BUSINESS_COUNTRIES,
+  TAX_ID_OPTIONS,
+  getDefaultTaxIdForCountry,
+  isValidTaxIdForCountry,
+  type BusinessCountry,
+} from "@/lib/taxIdentifiers";
 import { Link } from "react-router-dom";
 
 export function CurrencyInvoicingSection() {
@@ -27,14 +34,26 @@ export function CurrencyInvoicingSection() {
   const updateProfile = useUpdateProfile();
 
   const [form, setForm] = useState({
-    currency: "EUR", business_id: "", tax_id_type: "ipn", business_address: "", vat_mode: "none", vat_rate: 0,
+    currency: "EUR",
+    business_country: "UA" as BusinessCountry,
+    business_id: "",
+    tax_id_type: "ipn",
+    business_address: "",
+    vat_mode: "none",
+    vat_rate: 0,
   });
   useEffect(() => {
     if (profile) {
+      const country = (((profile as any).business_country as BusinessCountry) || "UA");
+      const storedType = (profile as any).tax_id_type || "";
+      const tax_id_type = isValidTaxIdForCountry(country, storedType)
+        ? storedType
+        : getDefaultTaxIdForCountry(country);
       setForm({
         currency: (profile as any).currency || "EUR",
+        business_country: country,
         business_id: (profile as any).business_id || "",
-        tax_id_type: (profile as any).tax_id_type || "ipn",
+        tax_id_type,
         business_address: (profile as any).business_address || "",
         vat_mode: (profile as any).vat_mode || "none",
         vat_rate: Number((profile as any).vat_rate) || 0,
@@ -79,23 +98,68 @@ export function CurrencyInvoicingSection() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2 sm:col-span-2">
+            <Label>{t("settings.businessCountry")}</Label>
+            <Select
+              value={form.business_country}
+              onValueChange={(v) => {
+                const country = v as BusinessCountry;
+                setForm((f) => ({
+                  ...f,
+                  business_country: country,
+                  tax_id_type: isValidTaxIdForCountry(country, f.tax_id_type)
+                    ? f.tax_id_type
+                    : getDefaultTaxIdForCountry(country),
+                }));
+              }}
+            >
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {BUSINESS_COUNTRIES.map((c) => (
+                  <SelectItem key={c} value={c}>{t(`country.${c}` as any)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2 sm:col-span-2">
             <Label>{t("settings.taxIdType")}</Label>
             <RadioGroup
               value={form.tax_id_type}
-              onValueChange={v => setForm(f => ({ ...f, tax_id_type: v }))}
-              className="flex gap-4"
+              onValueChange={(v) => setForm((f) => ({ ...f, tax_id_type: v }))}
+              className="flex gap-4 flex-wrap"
             >
-              <Label htmlFor="tit-ipn" className="flex items-center gap-2 cursor-pointer">
-                <RadioGroupItem id="tit-ipn" value="ipn" />
-                <span className="text-sm">{t("settings.taxIdIpn")}</span>
-              </Label>
-              <Label htmlFor="tit-edrpou" className="flex items-center gap-2 cursor-pointer">
-                <RadioGroupItem id="tit-edrpou" value="edrpou" />
-                <span className="text-sm">{t("settings.taxIdEdrpou")}</span>
-              </Label>
+              {TAX_ID_OPTIONS[form.business_country].map((opt) => (
+                <Label
+                  key={opt.code}
+                  htmlFor={`tit-${opt.code}`}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <RadioGroupItem id={`tit-${opt.code}`} value={opt.code} />
+                  <span className="text-sm">{opt.label}</span>
+                </Label>
+              ))}
             </RadioGroup>
           </div>
-          <div className="space-y-2"><Label>{t("settings.taxIdNumber")}</Label><Input value={form.business_id} onChange={e => setForm(f => ({ ...f, business_id: e.target.value }))} placeholder={form.tax_id_type === "edrpou" ? "12345678" : "1234567890"} /></div>
+          <div className="space-y-2">
+            <Label>{t("settings.taxIdNumber")}</Label>
+            <Input
+              value={form.business_id}
+              onChange={(e) => setForm((f) => ({ ...f, business_id: e.target.value }))}
+              placeholder={
+                TAX_ID_OPTIONS[form.business_country].find((o) => o.code === form.tax_id_type)
+                  ?.placeholder || ""
+              }
+            />
+            {(() => {
+              const hint = TAX_ID_OPTIONS[form.business_country].find(
+                (o) => o.code === form.tax_id_type,
+              )?.hint;
+              return hint ? (
+                <p className="text-xs text-muted-foreground">
+                  {t("settings.taxIdHint")}: {hint}
+                </p>
+              ) : null;
+            })()}
+          </div>
           <div className="space-y-2"><Label>{t("settings.businessAddress")}</Label><Input value={form.business_address} onChange={e => setForm(f => ({ ...f, business_address: e.target.value }))} /></div>
           <div className="space-y-2">
             <Label>{t("settings.vatMode")}</Label>
