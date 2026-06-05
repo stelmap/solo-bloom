@@ -219,32 +219,13 @@ export default function PaymentAuditPage() {
   }, [data]);
 
   const filtered = useMemo(() => {
-    let r = rows;
-    if (clientId !== "all") r = r.filter(x => x.client_id === clientId);
-    if (dateFrom) r = r.filter(x => (x.date || "") >= dateFrom);
-    if (dateTo) r = r.filter(x => (x.date || "") <= dateTo);
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      r = r.filter(x =>
-        x.client_name.toLowerCase().includes(q) ||
-        (x.invoice?.invoice_number || "").toLowerCase().includes(q) ||
-        (x.method || "").toLowerCase().includes(q) ||
-        String(x.amount).includes(q) ||
-        (x.raw?.description || "").toLowerCase().includes(q) ||
-        (x.raw?.comment || "").toLowerCase().includes(q) ||
-        (x.date || "").includes(q)
-      );
-    }
-    switch (quickFilter) {
-      case "linked": r = r.filter(x => x.allocStatus === "linked"); break;
-      case "not_linked": r = r.filter(x => x.allocStatus === "not_linked" || (x.kind === "income" && x.allocs.length === 0 && x.allocStatus !== "prepayment")); break;
-      case "partial": r = r.filter(x => x.allocStatus === "partial"); break;
-      case "prepayment": r = r.filter(x => x.allocStatus === "prepayment" || x.allocStatus === "overpayment"); break;
-      case "confirmed": r = r.filter(x => x.paymentStatus === "confirmed"); break;
-      case "expected": r = r.filter(x => x.paymentStatus === "expected"); break;
-      case "draft": r = r.filter(x => x.paymentStatus === "draft"); break;
-      case "cancelled": r = r.filter(x => x.paymentStatus === "cancelled"); break;
-    }
+    const r = filterAuditRows(rows as any, {
+      clientId,
+      quickFilter,
+      search,
+      dateFrom,
+      dateTo,
+    }) as typeof rows;
     const sorted = [...r];
     sorted.sort((a, b) => {
       switch (sortBy) {
