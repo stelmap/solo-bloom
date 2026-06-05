@@ -180,12 +180,10 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
   if (data.provider_email) { doc.text(data.provider_email, margin, fromY); fromY += 4; }
   if (data.provider_phone) { doc.text(`${t("phone", lang)}: ${data.provider_phone}`, margin, fromY); fromY += 4; }
   if (data.provider_business_id && data.provider_business_id.trim()) {
-    const typeKey = data.provider_business_id_type === "edrpou"
-      ? "taxId_edrpou"
-      : data.provider_business_id_type === "ipn"
-        ? "taxId_ipn"
-        : "taxId";
-    doc.text(`${t(typeKey, lang)}: ${data.provider_business_id}`, margin, fromY);
+    // The tax identifier label (NIP, SIRET, ЄДРПОУ, …) is country-/code-driven,
+    // not language-driven. UI language only translates surrounding labels.
+    const label = getTaxIdLabel(data.provider_business_id_type) || t("taxId", lang);
+    doc.text(`${label}: ${data.provider_business_id}`, margin, fromY);
     fromY += 4;
   }
   if (data.provider_address) {
