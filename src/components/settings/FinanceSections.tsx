@@ -34,14 +34,26 @@ export function CurrencyInvoicingSection() {
   const updateProfile = useUpdateProfile();
 
   const [form, setForm] = useState({
-    currency: "EUR", business_id: "", tax_id_type: "ipn", business_address: "", vat_mode: "none", vat_rate: 0,
+    currency: "EUR",
+    business_country: "UA" as BusinessCountry,
+    business_id: "",
+    tax_id_type: "ipn",
+    business_address: "",
+    vat_mode: "none",
+    vat_rate: 0,
   });
   useEffect(() => {
     if (profile) {
+      const country = (((profile as any).business_country as BusinessCountry) || "UA");
+      const storedType = (profile as any).tax_id_type || "";
+      const tax_id_type = isValidTaxIdForCountry(country, storedType)
+        ? storedType
+        : getDefaultTaxIdForCountry(country);
       setForm({
         currency: (profile as any).currency || "EUR",
+        business_country: country,
         business_id: (profile as any).business_id || "",
-        tax_id_type: (profile as any).tax_id_type || "ipn",
+        tax_id_type,
         business_address: (profile as any).business_address || "",
         vat_mode: (profile as any).vat_mode || "none",
         vat_rate: Number((profile as any).vat_rate) || 0,
