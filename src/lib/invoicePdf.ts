@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import type { Language } from "@/i18n/translations";
 import { notoSansRegularBase64, notoSansBoldBase64 } from "./notoSansFont";
+import { getTaxIdLabel } from "./taxIdentifiers";
 
 interface InvoiceData {
   invoice_number: string;
