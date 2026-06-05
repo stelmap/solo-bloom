@@ -1512,6 +1512,7 @@ export type Database = {
           payment_note: string | null
           payment_status: string | null
           provider_address: string | null
+          provider_business_country: string | null
           provider_business_id: string | null
           provider_business_id_type: string | null
           provider_business_name: string | null
@@ -1549,6 +1550,7 @@ export type Database = {
           payment_note?: string | null
           payment_status?: string | null
           provider_address?: string | null
+          provider_business_country?: string | null
           provider_business_id?: string | null
           provider_business_id_type?: string | null
           provider_business_name?: string | null
@@ -1586,6 +1588,7 @@ export type Database = {
           payment_note?: string | null
           payment_status?: string | null
           provider_address?: string | null
+          provider_business_country?: string | null
           provider_business_id?: string | null
           provider_business_id_type?: string | null
           provider_business_name?: string | null
@@ -1774,6 +1777,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           business_address: string | null
+          business_country: string | null
           business_id: string | null
           business_name: string | null
           created_at: string
@@ -1804,6 +1808,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           business_address?: string | null
+          business_country?: string | null
           business_id?: string | null
           business_name?: string | null
           created_at?: string
@@ -1834,6 +1839,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           business_address?: string | null
+          business_country?: string | null
           business_id?: string | null
           business_name?: string | null
           created_at?: string
