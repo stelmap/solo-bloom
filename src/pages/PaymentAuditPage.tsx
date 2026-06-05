@@ -632,9 +632,17 @@ export default function PaymentAuditPage() {
   );
 }
 
-function SumCard({ label, value }: { label: string; value: string }) {
+function SumCard({ label, value, active, onClick }: { label: string; value: string; active?: boolean; onClick?: () => void }) {
   return (
-    <Card className="p-3 h-full flex flex-col justify-between min-h-[76px]">
+    <Card
+      onClick={onClick}
+      data-active={active ? "true" : "false"}
+      className={cn(
+        "p-3 h-full flex flex-col justify-between min-h-[76px] transition-colors",
+        onClick && "cursor-pointer hover:bg-muted/40",
+        active && "border-primary ring-1 ring-primary bg-primary/5"
+      )}
+    >
       <div className="text-xs text-muted-foreground line-clamp-2">{label}</div>
       <div className="text-lg font-semibold mt-1 tabular-nums">{value}</div>
     </Card>
