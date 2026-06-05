@@ -28,6 +28,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { downloadCSV } from "@/lib/csvExport";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { filterAuditRows } from "@/lib/paymentAuditFilters";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type AllocStatus = "linked" | "not_linked" | "partial" | "prepayment" | "overpayment";
