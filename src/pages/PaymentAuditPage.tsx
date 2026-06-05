@@ -347,24 +347,35 @@ export default function PaymentAuditPage() {
           </div>
         </div>
 
-        {/* Summary */}
+        {/* Summary cards — clickable filters */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <SumCard label={t("audit.sum.confirmed")} value={`${cs}${summary.confirmed.toFixed(2)}`} />
-          <SumCard label={t("audit.sum.expected")} value={`${cs}${summary.expected.toFixed(2)}`} />
-          <SumCard label={t("audit.sum.prepaid")} value={`${cs}${summary.prepaid.toFixed(2)}`} />
-          <SumCard label={t("audit.sum.unlinked")} value={String(summary.unlinked)} />
-          <SumCard label={t("audit.sum.partial")} value={String(summary.partial)} />
-          <SumCard label={t("audit.sum.cancelled")} value={String(summary.cancelled)} />
+          {([
+            { key: "confirmed", label: t("audit.sum.confirmed"), value: `${cs}${summary.confirmed.toFixed(2)}` },
+            { key: "expected", label: t("audit.sum.expected"), value: `${cs}${summary.expected.toFixed(2)}` },
+            { key: "prepayment", label: t("audit.sum.prepaid"), value: `${cs}${summary.prepaid.toFixed(2)}` },
+            { key: "not_linked", label: t("audit.sum.unlinked"), value: String(summary.unlinked) },
+            { key: "partial", label: t("audit.sum.partial"), value: String(summary.partial) },
+            { key: "cancelled", label: t("audit.sum.cancelled"), value: String(summary.cancelled) },
+          ] as { key: QuickFilter; label: string; value: string }[]).map(c => (
+            <SumCard
+              key={c.key}
+              label={c.label}
+              value={c.value}
+              active={quickFilter === c.key}
+              onClick={() => setQuickFilter(quickFilter === c.key ? "all" : c.key)}
+            />
+          ))}
         </div>
 
-        {/* Quick filter chips */}
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Additional filter chips (not duplicated by cards) */}
+        <div className="flex items-center gap-2 overflow-x-auto sm:flex-wrap pb-1 -mx-1 px-1">
           {quickFilters.map(f => (
             <button key={f.key}
               type="button"
               onClick={() => setQuickFilter(f.key)}
+              data-testid={`audit-chip-${f.key}`}
               className={cn(
-                "inline-flex items-center h-8 px-3 rounded-full text-xs font-medium border transition-colors whitespace-nowrap",
+                "inline-flex items-center h-8 px-3 rounded-full text-xs font-medium border transition-colors whitespace-nowrap shrink-0",
                 quickFilter === f.key ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:bg-muted"
               )}>
               {f.label}
