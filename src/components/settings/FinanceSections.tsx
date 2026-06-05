@@ -18,6 +18,13 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
 import { Receipt, Plus, Trash2, Pencil, RefreshCw, AlertCircle } from "lucide-react";
 import { nextAccrualDate } from "@/lib/taxExpenseGenerator";
+import {
+  BUSINESS_COUNTRIES,
+  TAX_ID_OPTIONS,
+  getDefaultTaxIdForCountry,
+  isValidTaxIdForCountry,
+  type BusinessCountry,
+} from "@/lib/taxIdentifiers";
 import { Link } from "react-router-dom";
 
 export function CurrencyInvoicingSection() {
