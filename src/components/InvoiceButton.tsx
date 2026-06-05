@@ -74,6 +74,7 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
       provider_phone: profile?.phone || undefined,
       provider_business_id: (profile as any)?.business_id || undefined,
       provider_business_id_type: (profile as any)?.tax_id_type || undefined,
+      provider_business_country: (profile as any)?.business_country || undefined,
       provider_address: (profile as any)?.business_address || undefined,
       payment_status: appointment.payment_status || undefined,
       payment_method: appointment.payment_method || undefined,
