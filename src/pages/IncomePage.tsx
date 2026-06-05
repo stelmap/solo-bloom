@@ -34,25 +34,28 @@ export default function IncomePage() {
   const [dateRange, setDateRange] = useState(initialRange);
   const [activeTab, setActiveTab] = useState(initialTab);
 
-  const { dateFrom, dateTo } = useMemo(() => {
+  const { dateFrom, dateTo, intervalStart, intervalEnd } = useMemo(() => {
     const now = new Date();
     if (dateRange === "today") {
       const d = format(now, "yyyy-MM-dd");
-      return { dateFrom: d, dateTo: d };
+      return { dateFrom: d, dateTo: d, intervalStart: startOfDay(now), intervalEnd: endOfDay(now) };
     }
     if (dateRange === "week") {
-      return {
-        dateFrom: format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
-        dateTo: format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
-      };
+      const s = startOfWeek(now, { weekStartsOn: 1 });
+      const e = endOfWeek(now, { weekStartsOn: 1 });
+      return { dateFrom: format(s, "yyyy-MM-dd"), dateTo: format(e, "yyyy-MM-dd"), intervalStart: startOfDay(s), intervalEnd: endOfDay(e) };
     }
     if (dateRange === "month") {
-      return {
-        dateFrom: format(startOfMonth(now), "yyyy-MM-dd"),
-        dateTo: format(endOfMonth(now), "yyyy-MM-dd"),
-      };
+      const s = startOfMonth(now);
+      const e = endOfMonth(now);
+      return { dateFrom: format(s, "yyyy-MM-dd"), dateTo: format(e, "yyyy-MM-dd"), intervalStart: startOfDay(s), intervalEnd: endOfDay(e) };
     }
-    return { dateFrom: undefined, dateTo: undefined };
+    if (dateRange === "quarter") {
+      const s = startOfQuarter(now);
+      const e = endOfQuarter(now);
+      return { dateFrom: format(s, "yyyy-MM-dd"), dateTo: format(e, "yyyy-MM-dd"), intervalStart: startOfDay(s), intervalEnd: endOfDay(e) };
+    }
+    return { dateFrom: undefined as string | undefined, dateTo: undefined as string | undefined, intervalStart: undefined as Date | undefined, intervalEnd: undefined as Date | undefined };
   }, [dateRange]);
 
   // Reset to first page when filter changes
@@ -81,10 +84,19 @@ export default function IncomePage() {
 
   const filtered = income; // server-side filtered
   const total = periodTotal;
-  // Pending/awaiting payments represent outstanding debt as of now. They should
-  // always be visible regardless of the date-range filter so historical unpaid
-  // sessions don't disappear when the user is viewing "This month" / "Today".
-  const filteredExpected = expectedPayments as any[];
+  // Expected payments are filtered by the related session's scheduled_at so the
+  // selected period applies consistently to both Confirmed Income and Expected
+  // Payments. "All time" shows everything.
+  const filteredExpected = useMemo(() => {
+    const list = expectedPayments as any[];
+    if (!intervalStart || !intervalEnd) return list;
+    return list.filter((ep) => {
+      const raw = ep.appointments?.scheduled_at;
+      if (!raw) return false;
+      const d = typeof raw === "string" ? parseISO(raw) : new Date(raw);
+      return isWithinInterval(d, { start: intervalStart, end: intervalEnd });
+    });
+  }, [expectedPayments, intervalStart, intervalEnd]);
   const pendingTotal = filteredExpected.reduce((s: number, ep: any) => s + Number(ep.amount), 0);
 
   const { data: activeMethods = [] } = useActivePaymentMethods();
