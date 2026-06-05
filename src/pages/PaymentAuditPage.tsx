@@ -28,6 +28,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { downloadCSV } from "@/lib/csvExport";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { filterAuditRows } from "@/lib/paymentAuditFilters";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type AllocStatus = "linked" | "not_linked" | "partial" | "prepayment" | "overpayment";
@@ -219,32 +220,13 @@ export default function PaymentAuditPage() {
   }, [data]);
 
   const filtered = useMemo(() => {
-    let r = rows;
-    if (clientId !== "all") r = r.filter(x => x.client_id === clientId);
-    if (dateFrom) r = r.filter(x => (x.date || "") >= dateFrom);
-    if (dateTo) r = r.filter(x => (x.date || "") <= dateTo);
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      r = r.filter(x =>
-        x.client_name.toLowerCase().includes(q) ||
-        (x.invoice?.invoice_number || "").toLowerCase().includes(q) ||
-        (x.method || "").toLowerCase().includes(q) ||
-        String(x.amount).includes(q) ||
-        (x.raw?.description || "").toLowerCase().includes(q) ||
-        (x.raw?.comment || "").toLowerCase().includes(q) ||
-        (x.date || "").includes(q)
-      );
-    }
-    switch (quickFilter) {
-      case "linked": r = r.filter(x => x.allocStatus === "linked"); break;
-      case "not_linked": r = r.filter(x => x.allocStatus === "not_linked" || (x.kind === "income" && x.allocs.length === 0 && x.allocStatus !== "prepayment")); break;
-      case "partial": r = r.filter(x => x.allocStatus === "partial"); break;
-      case "prepayment": r = r.filter(x => x.allocStatus === "prepayment" || x.allocStatus === "overpayment"); break;
-      case "confirmed": r = r.filter(x => x.paymentStatus === "confirmed"); break;
-      case "expected": r = r.filter(x => x.paymentStatus === "expected"); break;
-      case "draft": r = r.filter(x => x.paymentStatus === "draft"); break;
-      case "cancelled": r = r.filter(x => x.paymentStatus === "cancelled"); break;
-    }
+    const r = filterAuditRows(rows as any, {
+      clientId,
+      quickFilter,
+      search,
+      dateFrom,
+      dateTo,
+    }) as typeof rows;
     const sorted = [...r];
     sorted.sort((a, b) => {
       switch (sortBy) {
@@ -316,17 +298,11 @@ export default function PaymentAuditPage() {
     buildCsv(recs, `payment-register-${cName}-${format(new Date(), "yyyy-MM-dd")}.csv`);
   };
 
-  const quickFilters: { key: QuickFilter; label: string }[] = [
-    { key: "all", label: t("audit.f.all") },
-    { key: "linked", label: t("audit.f.linked") },
-    { key: "not_linked", label: t("audit.f.notLinked") },
-    { key: "partial", label: t("audit.f.partial") },
-    { key: "prepayment", label: t("audit.f.prepayment") },
-    { key: "confirmed", label: t("audit.f.confirmed") },
-    { key: "expected", label: t("audit.f.expected") },
-    { key: "draft", label: t("audit.f.draft") },
-    { key: "cancelled", label: t("audit.f.cancelled") },
-  ];
+    const quickFilters: { key: QuickFilter; label: string }[] = [
+      { key: "all", label: t("audit.f.all") },
+      { key: "linked", label: t("audit.f.linked") },
+      { key: "draft", label: t("audit.f.draft") },
+    ];
 
   return (
     <AppLayout>
@@ -347,24 +323,35 @@ export default function PaymentAuditPage() {
           </div>
         </div>
 
-        {/* Summary */}
+        {/* Summary cards — clickable filters */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <SumCard label={t("audit.sum.confirmed")} value={`${cs}${summary.confirmed.toFixed(2)}`} />
-          <SumCard label={t("audit.sum.expected")} value={`${cs}${summary.expected.toFixed(2)}`} />
-          <SumCard label={t("audit.sum.prepaid")} value={`${cs}${summary.prepaid.toFixed(2)}`} />
-          <SumCard label={t("audit.sum.unlinked")} value={String(summary.unlinked)} />
-          <SumCard label={t("audit.sum.partial")} value={String(summary.partial)} />
-          <SumCard label={t("audit.sum.cancelled")} value={String(summary.cancelled)} />
+          {([
+            { key: "confirmed", label: t("audit.sum.confirmed"), value: `${cs}${summary.confirmed.toFixed(2)}` },
+            { key: "expected", label: t("audit.sum.expected"), value: `${cs}${summary.expected.toFixed(2)}` },
+            { key: "prepayment", label: t("audit.sum.prepaid"), value: `${cs}${summary.prepaid.toFixed(2)}` },
+            { key: "not_linked", label: t("audit.sum.unlinked"), value: String(summary.unlinked) },
+            { key: "partial", label: t("audit.sum.partial"), value: String(summary.partial) },
+            { key: "cancelled", label: t("audit.sum.cancelled"), value: String(summary.cancelled) },
+          ] as { key: QuickFilter; label: string; value: string }[]).map(c => (
+            <SumCard
+              key={c.key}
+              label={c.label}
+              value={c.value}
+              active={quickFilter === c.key}
+              onClick={() => setQuickFilter(quickFilter === c.key ? "all" : c.key)}
+            />
+          ))}
         </div>
 
-        {/* Quick filter chips */}
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Additional filter chips (not duplicated by cards) */}
+        <div className="flex items-center gap-2 overflow-x-auto sm:flex-wrap pb-1 -mx-1 px-1">
           {quickFilters.map(f => (
             <button key={f.key}
               type="button"
               onClick={() => setQuickFilter(f.key)}
+              data-testid={`audit-chip-${f.key}`}
               className={cn(
-                "inline-flex items-center h-8 px-3 rounded-full text-xs font-medium border transition-colors whitespace-nowrap",
+                "inline-flex items-center h-8 px-3 rounded-full text-xs font-medium border transition-colors whitespace-nowrap shrink-0",
                 quickFilter === f.key ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:bg-muted"
               )}>
               {f.label}
@@ -627,9 +614,17 @@ export default function PaymentAuditPage() {
   );
 }
 
-function SumCard({ label, value }: { label: string; value: string }) {
+function SumCard({ label, value, active, onClick }: { label: string; value: string; active?: boolean; onClick?: () => void }) {
   return (
-    <Card className="p-3 h-full flex flex-col justify-between min-h-[76px]">
+    <Card
+      onClick={onClick}
+      data-active={active ? "true" : "false"}
+      className={cn(
+        "p-3 h-full flex flex-col justify-between min-h-[76px] transition-colors",
+        onClick && "cursor-pointer hover:bg-muted/40",
+        active && "border-primary ring-1 ring-primary bg-primary/5"
+      )}
+    >
       <div className="text-xs text-muted-foreground line-clamp-2">{label}</div>
       <div className="text-lg font-semibold mt-1 tabular-nums">{value}</div>
     </Card>
