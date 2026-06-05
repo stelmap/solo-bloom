@@ -211,14 +211,18 @@ export default function IncomePage() {
           </div>
         </div>
 
-        {/* Date range filter */}
-        <div className="flex gap-2 flex-wrap">
-          {(["today", "week", "month", "all"] as const).map(range => (
-            <Button key={range} variant={dateRange === range ? "default" : "outline"} size="sm"
-              onClick={() => setDateRange(range)}>
-              {t(`filter.${range === "all" ? "allTime" : range === "month" ? "thisMonth" : range === "week" ? "thisWeek" : "today"}` as any)}
-            </Button>
-          ))}
+        {/* Date range filter — horizontally scrollable on mobile, wraps on larger screens */}
+        <div className="flex gap-2 overflow-x-auto sm:flex-wrap -mx-1 px-1 pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          {(["today", "week", "month", "quarter", "all"] as const).map(range => {
+            const key = range === "all" ? "allTime" : range === "month" ? "thisMonth" : range === "week" ? "thisWeek" : range === "quarter" ? "thisQuarter" : "today";
+            return (
+              <Button key={range} variant={dateRange === range ? "default" : "outline"} size="sm"
+                className="shrink-0"
+                onClick={() => setDateRange(range)}>
+                {t(`filter.${key}` as any)}
+              </Button>
+            );
+          })}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
