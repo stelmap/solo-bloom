@@ -267,22 +267,21 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
     y += 8;
   }
 
-  // Payment type
-  if (data.payment_status) {
+  // NOTE: The internal session "payment status / type" line (e.g. "Type de
+  // paiement: Payé maintenant") is intentionally NOT rendered on the invoice.
+  // That state belongs to the calendar/session workflow, not to the invoice.
+
+  // Payment method — only included if explicitly set on the session.
+  const paidStatusesAll = ["paid_now", "paid_in_advance", "paid_from_prepayment", "partially_paid", "partially_paid_from_prepayment"];
+  const hasPaymentBlock = !!data.payment_method
+    || !!(data.payment_date && (!data.payment_status || paidStatusesAll.includes(data.payment_status)));
+  if (hasPaymentBlock) {
     y += 12;
     doc.setDrawColor(220, 220, 220);
     doc.line(margin, y, pageW - margin, y);
     y += 8;
-    doc.setFontSize(10);
-    doc.setTextColor(...dark);
-    const psKey = `ps_${data.payment_status}`;
-    const psLabel = labels[psKey]?.[lang] || labels[psKey]?.en || data.payment_status;
-    doc.text(`${t("paymentType", lang)}: ${psLabel}`, margin, y);
   }
-
-  // Payment method
   if (data.payment_method) {
-    y += 6;
     doc.setFontSize(10);
     doc.setTextColor(...dark);
     const pmKey = `pm_${data.payment_method}`;
