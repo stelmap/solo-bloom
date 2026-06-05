@@ -316,17 +316,11 @@ export default function PaymentAuditPage() {
     buildCsv(recs, `payment-register-${cName}-${format(new Date(), "yyyy-MM-dd")}.csv`);
   };
 
-  const quickFilters: { key: QuickFilter; label: string }[] = [
-    { key: "all", label: t("audit.f.all") },
-    { key: "linked", label: t("audit.f.linked") },
-    { key: "not_linked", label: t("audit.f.notLinked") },
-    { key: "partial", label: t("audit.f.partial") },
-    { key: "prepayment", label: t("audit.f.prepayment") },
-    { key: "confirmed", label: t("audit.f.confirmed") },
-    { key: "expected", label: t("audit.f.expected") },
-    { key: "draft", label: t("audit.f.draft") },
-    { key: "cancelled", label: t("audit.f.cancelled") },
-  ];
+    const quickFilters: { key: QuickFilter; label: string }[] = [
+      { key: "all", label: t("audit.f.all") },
+      { key: "linked", label: t("audit.f.linked") },
+      { key: "draft", label: t("audit.f.draft") },
+    ];
 
   return (
     <AppLayout>
