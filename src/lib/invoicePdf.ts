@@ -267,6 +267,20 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
     y += 8;
   }
 
+  // French VAT exemption legal note (art. 293 B CGI) — shown only on
+  // French-language invoices when no VAT is applied.
+  const vatNotApplicable =
+    data.vat_mode === "none" || !data.vat_rate || Number(data.vat_rate) === 0;
+  if (lang === "fr" && vatNotApplicable) {
+    y += 8;
+    doc.setFontSize(8);
+    doc.setTextColor(...gray);
+    const note = "TVA non applicable, article 293 B du Code général des impôts";
+    const noteLines = doc.splitTextToSize(note, contentW);
+    doc.text(noteLines, margin, y);
+    y += noteLines.length * 4;
+  }
+
   // NOTE: The internal session "payment status / type" line (e.g. "Type de
   // paiement: Payé maintenant") is intentionally NOT rendered on the invoice.
   // That state belongs to the calendar/session workflow, not to the invoice.
