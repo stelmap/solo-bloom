@@ -595,6 +595,7 @@ export default function CalendarPage() {
                 days_of_week: savedRecurDays.length > 0 ? savedRecurDays : [new Date(savedForm.date).getDay() || 7],
                 start_date: savedForm.date,
                 end_date: savedRecurEndDate || undefined,
+                firstAppointmentId: (firstApt as any).id,
               });
               const ruleId = (result as any).rule?.id;
               if (ruleId) {
