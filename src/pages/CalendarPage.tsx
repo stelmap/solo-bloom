@@ -595,15 +595,18 @@ export default function CalendarPage() {
                 days_of_week: savedRecurDays.length > 0 ? savedRecurDays : [new Date(savedForm.date).getDay() || 7],
                 start_date: savedForm.date,
                 end_date: savedRecurEndDate || undefined,
+                firstAppointmentId: (firstApt as any).id,
               });
               const ruleId = (result as any).rule?.id;
               if (ruleId) {
+                const firstAptId = (firstApt as any).id;
                 const { data: ruleApts } = await supabase.from("appointments")
-                  .select("id").eq("recurring_rule_id", ruleId).order("scheduled_at");
+                  .select("id").eq("recurring_rule_id", ruleId).neq("id", firstAptId).order("scheduled_at");
                 if (ruleApts && ruleApts.length > 0) {
                   await supabase.from("appointments")
                     .update({ notes: `[Group: ${groupName}] ${savedNotes || ""}`.trim() } as any)
-                    .eq("recurring_rule_id", ruleId);
+                    .eq("recurring_rule_id", ruleId)
+                    .neq("id", firstAptId);
                   for (const apt of ruleApts) {
                     await createGroupSession.mutateAsync({
                       groupId,
@@ -691,6 +694,7 @@ export default function CalendarPage() {
               recurrence_type: "weekly", interval_weeks: savedRecurInterval,
               days_of_week: savedRecurDays.length > 0 ? savedRecurDays : [new Date(savedForm.date).getDay() || 7],
               start_date: savedForm.date, end_date: savedRecurEndDate || undefined,
+              firstAppointmentId: (firstRecApt as any).id,
             });
             qc.invalidateQueries({ queryKey: ["appointments"] });
             toast({ title: t("recurring.seriesCreated"), description: t("recurring.seriesCreatedDesc", { count: (result as any).count }) });

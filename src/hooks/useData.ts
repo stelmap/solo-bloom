@@ -2107,18 +2107,39 @@ export function useCreateRecurringRule() {
       client_id: string; service_id: string; time: string; duration_minutes: number;
       price: number; notes?: string; recurrence_type: string; interval_weeks: number;
       days_of_week: number[]; start_date: string; end_date?: string;
+      // When the caller already created the first occurrence (for instant UI
+      // feedback), pass its id here. We link it to the new rule and skip that
+      // slot from the generated batch to avoid duplicate appointments.
+      firstAppointmentId?: string;
     }) => {
+      const { firstAppointmentId, ...ruleInput } = rule;
       const { data: ruleData, error: ruleErr } = await supabase.from("recurring_rules")
-        .insert({ ...rule, user_id: user!.id } as any).select().single();
+        .insert({ ...ruleInput, user_id: user!.id } as any).select().single();
       if (ruleErr) throw ruleErr;
 
+      let skipMs: number | null = null;
+      if (firstAppointmentId) {
+        const { data: firstApt } = await supabase
+          .from("appointments")
+          .select("scheduled_at")
+          .eq("id", firstAppointmentId)
+          .maybeSingle();
+        const at = (firstApt as any)?.scheduled_at as string | undefined;
+        skipMs = at ? new Date(at).getTime() : null;
+        await supabase
+          .from("appointments")
+          .update({ recurring_rule_id: (ruleData as any).id } as any)
+          .eq("id", firstAppointmentId);
+      }
+
       const appointments = generateRecurringAppointments(ruleData as any, user!.id)
+        .filter((apt) => skipMs === null || new Date(apt.scheduled_at).getTime() !== skipMs)
         .map((apt) => attachDemoFlag(apt, isDemoMode));
       if (appointments.length > 0) {
         const { error: aptErr } = await supabase.from("appointments").insert(appointments as any);
         if (aptErr) throw aptErr;
       }
-      return { rule: ruleData, count: appointments.length };
+      return { rule: ruleData, count: appointments.length + (firstAppointmentId ? 1 : 0) };
     },
     onSuccess: () => { [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL, "recurring-rules"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
