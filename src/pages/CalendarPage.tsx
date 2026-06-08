@@ -692,6 +692,7 @@ export default function CalendarPage() {
               recurrence_type: "weekly", interval_weeks: savedRecurInterval,
               days_of_week: savedRecurDays.length > 0 ? savedRecurDays : [new Date(savedForm.date).getDay() || 7],
               start_date: savedForm.date, end_date: savedRecurEndDate || undefined,
+              firstAppointmentId: (firstRecApt as any).id,
             });
             qc.invalidateQueries({ queryKey: ["appointments"] });
             toast({ title: t("recurring.seriesCreated"), description: t("recurring.seriesCreatedDesc", { count: (result as any).count }) });
