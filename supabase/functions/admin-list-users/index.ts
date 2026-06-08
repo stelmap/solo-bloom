@@ -5,6 +5,74 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Tables whose rows count as "meaningful product activity" for a user.
+// Each must have a `user_id` and a `created_at` column.
+const ACTIVITY_TABLES = [
+  "clients",
+  "appointments",
+  "expenses",
+  "services",
+  "groups",
+  "booking_links",
+  "income",
+  "supervisions",
+  "client_notes_raw",
+  "session_booking_requests",
+] as const;
+
+type ActivityMap = Map<string, string>; // user_id -> ISO timestamp (max)
+
+async function collectActivity(admin: ReturnType<typeof createClient>): Promise<ActivityMap> {
+  const map: ActivityMap = new Map();
+  await Promise.all(
+    ACTIVITY_TABLES.map(async (table) => {
+      // Pull only user_id + created_at, paginated to keep memory low.
+      let from = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data, error } = await admin
+          .from(table)
+          .select("user_id, created_at")
+          .order("created_at", { ascending: false })
+          .range(from, from + pageSize - 1);
+        if (error || !data) break;
+        for (const row of data as Array<{ user_id: string | null; created_at: string | null }>) {
+          if (!row.user_id || !row.created_at) continue;
+          const prev = map.get(row.user_id);
+          if (!prev || row.created_at > prev) map.set(row.user_id, row.created_at);
+        }
+        if (data.length < pageSize) break;
+        from += pageSize;
+        if (from > 100000) break; // hard safety cap
+      }
+    }),
+  );
+  return map;
+}
+
+async function collectStripeVisits(admin: ReturnType<typeof createClient>): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  let from = 0;
+  const pageSize = 1000;
+  while (true) {
+    const { data, error } = await admin
+      .from("user_activity_events")
+      .select("user_id, created_at")
+      .eq("event_name", "stripe_checkout_started")
+      .order("created_at", { ascending: false })
+      .range(from, from + pageSize - 1);
+    if (error || !data) break;
+    for (const row of data as Array<{ user_id: string; created_at: string }>) {
+      const prev = map.get(row.user_id);
+      if (!prev || row.created_at > prev) map.set(row.user_id, row.created_at);
+    }
+    if (data.length < pageSize) break;
+    from += pageSize;
+    if (from > 100000) break;
+  }
+  return map;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -46,21 +114,34 @@ Deno.serve(async (req) => {
       if (page > 20) break;
     }
 
-    const result = users.map((u) => ({
-      id: u.id,
-      email: u.email,
-      full_name: (u.user_metadata?.full_name as string) || null,
-      provider: u.app_metadata?.provider || null,
-      created_at: u.created_at,
-      last_sign_in_at: u.last_sign_in_at,
-      email_confirmed_at: u.email_confirmed_at,
-    }));
+    const [activityMap, stripeMap] = await Promise.all([
+      collectActivity(admin),
+      collectStripeVisits(admin),
+    ]);
+
+    const result = users.map((u) => {
+      const lastProductActivityAt = activityMap.get(u.id) ?? null;
+      const visitedStripeAt = stripeMap.get(u.id) ?? null;
+      return {
+        id: u.id,
+        email: u.email,
+        full_name: (u.user_metadata?.full_name as string) || null,
+        provider: u.app_metadata?.provider || null,
+        created_at: u.created_at,
+        last_sign_in_at: u.last_sign_in_at,
+        email_confirmed_at: u.email_confirmed_at,
+        has_records: Boolean(lastProductActivityAt),
+        last_product_activity_at: lastProductActivityAt,
+        visited_stripe: Boolean(visitedStripeAt),
+        visited_stripe_at: visitedStripeAt,
+      };
+    });
 
     return new Response(JSON.stringify({ users: result }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e?.message ?? e) }), {
+    return new Response(JSON.stringify({ error: String((e as any)?.message ?? e) }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

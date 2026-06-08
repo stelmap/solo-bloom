@@ -333,6 +333,27 @@ export default function PlansPage() {
     track("cta_clicked", { ...baseProps, action: "plan_selected" });
     track("checkout_started", baseProps);
 
+    // Persist a durable funnel event so admin analytics can show "Visited Stripe".
+    // Fire-and-forget — never block the checkout flow on this insert.
+    void (async () => {
+      try {
+        const { data: auth } = await supabase.auth.getUser();
+        const uid = auth?.user?.id;
+        if (!uid) return;
+        await supabase.from("user_activity_events").insert({
+          user_id: uid,
+          event_name: "stripe_checkout_started",
+          event_metadata: {
+            plan_code: selectedPlan.code,
+            billing_period: period,
+            locale: lang,
+          },
+        });
+      } catch {
+        /* analytics-only; ignore */
+      }
+    })();
+
     // After 5s without a redirect, surface a soft warning to reassure the user.
     const slowTimer = window.setTimeout(() => setSlowCheckout(true), 5000);
 
