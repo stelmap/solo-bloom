@@ -60,7 +60,7 @@ const labels: Record<string, Record<Language, string>> = {
   pm_revolut: { en: "Revolut", uk: "Revolut", fr: "Revolut", pl: "Revolut" },
   pm_paypal: { en: "PayPal", uk: "PayPal", fr: "PayPal", pl: "PayPal" },
   pm_prepayment: { en: "Prepaid balance", uk: "Передплата", fr: "Acompte", pl: "Przedpłata" },
-  pm_check: { fr: "Chèque" },
+  pm_check: { en: "Check", uk: "Check", fr: "Chèque", pl: "Check" },
   pm_other: { en: "Other", uk: "Інше", fr: "Autre", pl: "Inne" },
   pm_not_specified: { en: "Not specified", uk: "Не вказано", fr: "Non spécifié", pl: "Nie określono" },
   taxId: { en: "Tax ID", uk: "Податковий номер", fr: "N° TVA", pl: "NIP" },
