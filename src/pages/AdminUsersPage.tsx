@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Loader2, RefreshCw, Users, UserPlus, Clock, X, Activity, CreditCard, FileCheck } from "lucide-react";
+import { Loader2, RefreshCw, Users, UserPlus, Clock, X, CreditCard, FileCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
