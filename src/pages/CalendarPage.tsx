@@ -40,6 +40,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -274,21 +275,28 @@ export default function CalendarPage() {
   const dateLocale = getDateLocale(lang);
   const { symbol: cs } = useCurrency();
 
-  // Realtime: invalidate appointments + booking-requests when DB changes
+  // Realtime: invalidate appointments + booking-requests when DB changes.
+  // Topic MUST end with ":<user_id>" so realtime.messages RLS allows the
+  // subscription. Row-level RLS on appointments/session_booking_requests
+  // already filters payloads to the owner, but topic scoping prevents another
+  // user from even subscribing to this user's channel.
+  const { user } = useAuth();
   useEffect(() => {
+    if (!user?.id) return;
     const channel = supabase
-      .channel("calendar-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "session_booking_requests" }, () => {
+      .channel(`calendar-live:${user.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "session_booking_requests", filter: `user_id=eq.${user.id}` }, () => {
         qc.invalidateQueries({ queryKey: ["booking-requests"] });
         qc.invalidateQueries({ queryKey: ["booking-requests-count"] });
         qc.invalidateQueries({ queryKey: ["appointments"] });
       })
-      .on("postgres_changes", { event: "*", schema: "public", table: "appointments" }, () => {
+      .on("postgres_changes", { event: "*", schema: "public", table: "appointments", filter: `user_id=eq.${user.id}` }, () => {
         qc.invalidateQueries({ queryKey: ["appointments"] });
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [qc]);
+  }, [qc, user?.id]);
+
 
 
 

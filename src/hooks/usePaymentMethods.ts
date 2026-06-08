@@ -53,7 +53,9 @@ export function usePaymentMethods() {
   // Realtime invalidation when changed elsewhere
   useEffect(() => {
     if (!user) return;
-    const ch = supabase.channel(`pm-${user.id}-${Math.random().toString(36).slice(2)}`);
+    // Topic MUST end with ":<user_id>" so realtime.messages RLS allows the
+    // subscription (see migration: users can only listen on their own topics).
+    const ch = supabase.channel(`pm-${Math.random().toString(36).slice(2)}:${user.id}`);
     ch.on("postgres_changes" as any, { event: "*", schema: "public", table: "payment_methods", filter: `user_id=eq.${user.id}` }, () => {
       qc.invalidateQueries({ queryKey: ["payment_methods", user.id] });
     }).subscribe();
