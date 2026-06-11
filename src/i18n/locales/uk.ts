@@ -1583,4 +1583,5 @@ export default {
   "invoiceSig.errFormat": "Непідтримуваний формат файлу. Завантажте PNG, JPG, JPEG або WEBP.",
   "invoiceSig.errSize": "Файл завеликий. Максимальний розмір — 2 МБ.",
   "invoiceSig.errMissingSig": "Спочатку завантажте підпис, щоб увімкнути сканований підпис на рахунках.",
+  "invoiceSig.inlineRequired": "Завантажте сканований підпис, щоб увімкнути цю функцію.",
 } as const;

@@ -1554,4 +1554,5 @@ export default {
   "invoiceSig.errFormat": "Nieobsługiwany format pliku. Wgraj PNG, JPG, JPEG lub WEBP.",
   "invoiceSig.errSize": "Plik jest za duży. Maksymalny rozmiar to 2 MB.",
   "invoiceSig.errMissingSig": "Najpierw wgraj podpis, aby włączyć zeskanowany podpis na fakturach.",
+  "invoiceSig.inlineRequired": "Wgraj zeskanowany podpis, aby włączyć tę funkcję.",
 } as const;

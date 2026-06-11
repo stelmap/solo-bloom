@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { SIGNATURE_BUCKET } from "@/lib/invoiceSignature";
+import { cn } from "@/lib/utils";
 import { PenLine, Upload, Trash2, Loader2 } from "lucide-react";
 
 const ACCEPT = "image/png,image/jpeg,image/jpg,image/webp";
@@ -33,6 +34,8 @@ export function InvoiceSignatureSection() {
 
   const sigInput = useRef<HTMLInputElement>(null);
   const stampInput = useRef<HTMLInputElement>(null);
+
+  const missingSig = enabled && !sigPath;
 
   useEffect(() => {
     if (!profile) return;
@@ -137,8 +140,11 @@ export function InvoiceSignatureSection() {
       {enabled && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Signature */}
-          <div className="space-y-2 rounded-lg border border-border p-3">
+          <div className={cn("space-y-2 rounded-lg border p-3", missingSig ? "border-destructive" : "border-border")}>
             <Label>{t("invoiceSig.signature")} *</Label>
+            {missingSig && (
+              <p className="text-sm font-medium text-destructive">{t("invoiceSig.inlineRequired")}</p>
+            )}
             <div className="h-28 rounded-md bg-muted/40 border border-dashed border-border flex items-center justify-center overflow-hidden">
               {sigUrl ? (
                 <img src={sigUrl} alt="signature" className="max-h-full max-w-full object-contain" />
@@ -200,10 +206,13 @@ export function InvoiceSignatureSection() {
 
       <p className="text-xs text-muted-foreground">{t("invoiceSig.uploadHints")}</p>
 
-      <div className="pt-2">
-        <Button onClick={handleSave} disabled={saving || updateProfile.isPending}>
+      <div className="pt-2 flex flex-col items-start gap-2">
+        <Button onClick={handleSave} disabled={saving || updateProfile.isPending || missingSig}>
           {saving ? t("common.saving") : t("invoiceSig.saveChanges")}
         </Button>
+        {missingSig && (
+          <p className="text-xs text-destructive">{t("invoiceSig.inlineRequired")}</p>
+        )}
       </div>
     </div>
   );
