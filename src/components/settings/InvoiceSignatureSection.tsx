@@ -206,10 +206,13 @@ export function InvoiceSignatureSection() {
 
       <p className="text-xs text-muted-foreground">{t("invoiceSig.uploadHints")}</p>
 
-      <div className="pt-2">
-        <Button onClick={handleSave} disabled={saving || updateProfile.isPending}>
+      <div className="pt-2 flex flex-col items-start gap-2">
+        <Button onClick={handleSave} disabled={saving || updateProfile.isPending || missingSig}>
           {saving ? t("common.saving") : t("invoiceSig.saveChanges")}
         </Button>
+        {missingSig && (
+          <p className="text-xs text-destructive">{t("invoiceSig.inlineRequired")}</p>
+        )}
       </div>
     </div>
   );
