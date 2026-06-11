@@ -336,6 +336,12 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
   // note (art. 293 B CGI) or payment information. If the block doesn't fit
   // on the current page we push it to a fresh page.
   if (data.signature || data.stamp) {
+    console.log("[invoicePdf] rendering signature block", {
+      hasSig: !!data.signature,
+      hasStamp: !!data.stamp,
+      sigFormat: data.signature?.format,
+      sigDims: data.signature ? `${data.signature.width}x${data.signature.height}` : null,
+    });
     const pageH = 297; // A4
     const sigMaxW = 60; // mm (~ 220 px)
     const sigMaxH = 25;
@@ -370,8 +376,12 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
       const x = colRightX - w;
       doc.text(sigLabel, colRightX, y, { align: "right" });
       try {
-        doc.addImage(data.signature.dataUrl, data.signature.format, x, y + 2, w, h);
-      } catch { /* ignore broken image */ }
+        // jsPDF doesn't natively support WEBP — fall back to PNG which it handles via canvas decoding of the data URL.
+        const fmt = data.signature.format === "WEBP" ? "PNG" : data.signature.format;
+        doc.addImage(data.signature.dataUrl, fmt, x, y + 2, w, h);
+      } catch (e) {
+        console.error("[invoicePdf] addImage(signature) failed", e);
+      }
     }
 
     if (data.stamp) {
@@ -379,8 +389,11 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
       const x = margin;
       doc.text(stampLabel, margin, y);
       try {
-        doc.addImage(data.stamp.dataUrl, data.stamp.format, x, y + 2, w, h);
-      } catch { /* ignore broken image */ }
+        const fmt = data.stamp.format === "WEBP" ? "PNG" : data.stamp.format;
+        doc.addImage(data.stamp.dataUrl, fmt, x, y + 2, w, h);
+      } catch (e) {
+        console.error("[invoicePdf] addImage(stamp) failed", e);
+      }
     }
   }
 
