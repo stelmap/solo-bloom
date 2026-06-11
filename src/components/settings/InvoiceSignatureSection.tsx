@@ -35,6 +35,8 @@ export function InvoiceSignatureSection() {
   const sigInput = useRef<HTMLInputElement>(null);
   const stampInput = useRef<HTMLInputElement>(null);
 
+  const missingSig = enabled && !sigPath;
+
   useEffect(() => {
     if (!profile) return;
     const p: any = profile;
