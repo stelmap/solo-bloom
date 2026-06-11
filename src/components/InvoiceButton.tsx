@@ -134,11 +134,17 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
 
   const loadSignatureAssets = async () => {
     const p: any = profile || {};
+    console.log("[invoice] signature settings", {
+      enabled: p.use_scanned_invoice_signature,
+      sigPath: p.invoice_signature_path,
+      stampPath: p.invoice_stamp_path,
+    });
     if (!p.use_scanned_invoice_signature) return { signature: null, stamp: null };
     const [signature, stamp] = await Promise.all([
       p.invoice_signature_path ? loadSignatureAssetFromPath(p.invoice_signature_path) : Promise.resolve(null),
       p.invoice_stamp_path ? loadSignatureAssetFromPath(p.invoice_stamp_path) : Promise.resolve(null),
     ]);
+    console.log("[invoice] loaded signature assets", { hasSig: !!signature, hasStamp: !!stamp });
     return { signature, stamp };
   };
 
