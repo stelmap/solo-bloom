@@ -33,6 +33,8 @@ interface InvoiceData {
   payment_status?: string;
   payment_method?: string;
   payment_date?: string | null;
+  signature?: { dataUrl: string; width: number; height: number; format: "PNG" | "JPEG" | "WEBP" } | null;
+  stamp?: { dataUrl: string; width: number; height: number; format: "PNG" | "JPEG" | "WEBP" } | null;
 }
 
 const labels: Record<string, Record<Language, string>> = {
