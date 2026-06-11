@@ -1583,4 +1583,5 @@ export default {
   "invoiceSig.errFormat": "Unsupported file format. Please upload PNG, JPG, JPEG, or WEBP.",
   "invoiceSig.errSize": "File is too large. Maximum allowed size is 2 MB.",
   "invoiceSig.errMissingSig": "Please upload a signature before enabling scanned signature on invoices.",
+  "invoiceSig.inlineRequired": "Upload a scanned signature to enable this feature.",
 } as const;

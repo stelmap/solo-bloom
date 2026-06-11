@@ -1582,4 +1582,5 @@ export default {
   "invoiceSig.errFormat": "Format de fichier non pris en charge. Veuillez téléverser PNG, JPG, JPEG ou WEBP.",
   "invoiceSig.errSize": "Fichier trop volumineux. Taille maximale autorisée : 2 Mo.",
   "invoiceSig.errMissingSig": "Veuillez téléverser une signature avant d'activer la signature scannée sur les factures.",
+  "invoiceSig.inlineRequired": "Téléversez une signature scannée pour activer cette fonctionnalité.",
 } as const;
