@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { SIGNATURE_BUCKET } from "@/lib/invoiceSignature";
+import { cn } from "@/lib/utils";
 import { PenLine, Upload, Trash2, Loader2 } from "lucide-react";
 
 const ACCEPT = "image/png,image/jpeg,image/jpg,image/webp";
