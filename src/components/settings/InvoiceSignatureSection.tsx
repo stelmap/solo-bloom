@@ -140,8 +140,11 @@ export function InvoiceSignatureSection() {
       {enabled && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Signature */}
-          <div className="space-y-2 rounded-lg border border-border p-3">
+          <div className={cn("space-y-2 rounded-lg border p-3", missingSig ? "border-destructive" : "border-border")}>
             <Label>{t("invoiceSig.signature")} *</Label>
+            {missingSig && (
+              <p className="text-sm font-medium text-destructive">{t("invoiceSig.inlineRequired")}</p>
+            )}
             <div className="h-28 rounded-md bg-muted/40 border border-dashed border-border flex items-center justify-center overflow-hidden">
               {sigUrl ? (
                 <img src={sigUrl} alt="signature" className="max-h-full max-w-full object-contain" />
