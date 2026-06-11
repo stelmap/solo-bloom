@@ -328,6 +328,60 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
     doc.setFontSize(8);
     const noteLines = doc.splitTextToSize(data.payment_note, contentW);
     doc.text(noteLines, margin, y);
+    y += noteLines.length * 4;
+  }
+
+  // Scanned signature & optional stamp.
+  // Placed at the end so they never overlap totals, the French TVA legal
+  // note (art. 293 B CGI) or payment information. If the block doesn't fit
+  // on the current page we push it to a fresh page.
+  if (data.signature || data.stamp) {
+    const pageH = 297; // A4
+    const sigMaxW = 60; // mm (~ 220 px)
+    const sigMaxH = 25;
+    const stampMaxW = 35; // mm (~ 130 px)
+    const stampMaxH = 35;
+    const blockH = Math.max(sigMaxH, stampMaxH) + 14;
+
+    if (y + blockH > pageH - margin) {
+      doc.addPage();
+      y = margin;
+    } else {
+      y += 14;
+    }
+
+    // Right-aligned signature column
+    const colRightX = pageW - margin;
+    const sigLabel = lang === "fr" ? "Signature" : lang === "uk" ? "Підпис" : lang === "pl" ? "Podpis" : "Signature";
+    const stampLabel = lang === "fr" ? "Cachet" : lang === "uk" ? "Печатка" : lang === "pl" ? "Pieczęć" : "Stamp";
+
+    doc.setFontSize(9);
+    doc.setTextColor(...gray);
+
+    const fit = (img: { width: number; height: number }, maxW: number, maxH: number) => {
+      const ratio = img.width / img.height;
+      let w = maxW, h = w / ratio;
+      if (h > maxH) { h = maxH; w = h * ratio; }
+      return { w, h };
+    };
+
+    if (data.signature) {
+      const { w, h } = fit(data.signature, sigMaxW, sigMaxH);
+      const x = colRightX - w;
+      doc.text(sigLabel, colRightX, y, { align: "right" });
+      try {
+        doc.addImage(data.signature.dataUrl, data.signature.format, x, y + 2, w, h);
+      } catch { /* ignore broken image */ }
+    }
+
+    if (data.stamp) {
+      const { w, h } = fit(data.stamp, stampMaxW, stampMaxH);
+      const x = margin;
+      doc.text(stampLabel, margin, y);
+      try {
+        doc.addImage(data.stamp.dataUrl, data.stamp.format, x, y + 2, w, h);
+      } catch { /* ignore broken image */ }
+    }
   }
 
   return doc;
