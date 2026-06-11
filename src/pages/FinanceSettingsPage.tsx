@@ -2,6 +2,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { CurrencyInvoicingSection, RevenueRecognitionSection, TaxesSection } from "@/components/settings/FinanceSections";
+import { InvoiceSignatureSection } from "@/components/settings/InvoiceSignatureSection";
 import { PaymentMethodsSection } from "@/components/PaymentMethodsSection";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -26,7 +27,12 @@ export default function FinanceSettingsPage() {
             <TabsTrigger value="taxes">{t("settings.taxesTab")}</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="currency"><CurrencyInvoicingSection /></TabsContent>
+          <TabsContent value="currency">
+            <div className="space-y-6">
+              <CurrencyInvoicingSection />
+              <InvoiceSignatureSection />
+            </div>
+          </TabsContent>
           <TabsContent value="revenue"><RevenueRecognitionSection /></TabsContent>
           <TabsContent value="methods"><PaymentMethodsSection /></TabsContent>
           <TabsContent value="taxes"><TaxesSection /></TabsContent>

@@ -1786,6 +1786,8 @@ export type Database = {
           full_name: string | null
           id: string
           income_recognition_method: string
+          invoice_signature_path: string | null
+          invoice_stamp_path: string | null
           language: string
           mfa_required: boolean
           onboarding_completed: boolean
@@ -1798,6 +1800,7 @@ export type Database = {
           time_format: string
           timezone: string | null
           updated_at: string
+          use_scanned_invoice_signature: boolean
           user_id: string
           vat_mode: string
           vat_rate: number
@@ -1817,6 +1820,8 @@ export type Database = {
           full_name?: string | null
           id?: string
           income_recognition_method?: string
+          invoice_signature_path?: string | null
+          invoice_stamp_path?: string | null
           language?: string
           mfa_required?: boolean
           onboarding_completed?: boolean
@@ -1829,6 +1834,7 @@ export type Database = {
           time_format?: string
           timezone?: string | null
           updated_at?: string
+          use_scanned_invoice_signature?: boolean
           user_id: string
           vat_mode?: string
           vat_rate?: number
@@ -1848,6 +1854,8 @@ export type Database = {
           full_name?: string | null
           id?: string
           income_recognition_method?: string
+          invoice_signature_path?: string | null
+          invoice_stamp_path?: string | null
           language?: string
           mfa_required?: boolean
           onboarding_completed?: boolean
@@ -1860,6 +1868,7 @@ export type Database = {
           time_format?: string
           timezone?: string | null
           updated_at?: string
+          use_scanned_invoice_signature?: boolean
           user_id?: string
           vat_mode?: string
           vat_rate?: number
