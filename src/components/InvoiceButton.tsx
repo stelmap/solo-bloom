@@ -7,6 +7,7 @@ import { useProfile } from "@/hooks/useData";
 import { useInvoicesByAppointment, useCreateInvoice, useDeleteInvoice } from "@/hooks/useInvoices";
 import { useAuth } from "@/contexts/AuthContext";
 import { generateInvoicePdf } from "@/lib/invoicePdf";
+import { loadSignatureAssetFromPath } from "@/lib/invoiceSignature";
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { track } from "@/lib/analytics";
@@ -131,13 +132,25 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
     throw lastError instanceof Error ? lastError : new Error("Unable to download PDF");
   };
 
+  const loadSignatureAssets = async () => {
+    const p: any = profile || {};
+    if (!p.use_scanned_invoice_signature) return { signature: null, stamp: null };
+    const [signature, stamp] = await Promise.all([
+      p.invoice_signature_path ? loadSignatureAssetFromPath(p.invoice_signature_path) : Promise.resolve(null),
+      p.invoice_stamp_path ? loadSignatureAssetFromPath(p.invoice_stamp_path) : Promise.resolve(null),
+    ]);
+    return { signature, stamp };
+  };
+
   const handleGenerate = async () => {
     setGenerating(true);
     try {
       const result = await createInvoice.mutateAsync(buildInvoiceData(""));
+      const assets = await loadSignatureAssets();
       const invoiceData = {
         ...result,
         language: lang as Language,
+        ...assets,
       };
       const doc = generateInvoicePdf(invoiceData);
       downloadPdf(doc, `invoice_${String(result.invoice_number || "").replace(/[\/\\]/g, "-")}.pdf`);
@@ -151,9 +164,10 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
     }
   };
 
-  const handleDownloadExisting = (invoice: any) => {
+  const handleDownloadExisting = async (invoice: any) => {
     try {
-      const doc = generateInvoicePdf({ ...invoice, language: (invoice.language || lang) as Language });
+      const assets = await loadSignatureAssets();
+      const doc = generateInvoicePdf({ ...invoice, language: (invoice.language || lang) as Language, ...assets });
       downloadPdf(doc, `invoice_${String(invoice.invoice_number || "").replace(/[\/\\]/g, "-")}.pdf`);
       track("invoice_downloaded", { kind: "existing" });
     } catch (e: any) {
