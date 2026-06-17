@@ -758,7 +758,7 @@ function LandingNav() {
             aria-label="Switch language"
             title={`Language: ${lang.toUpperCase()}`}
           >
-            {lang === "en" ? "🇬🇧 EN" : lang === "fr" ? "🇫🇷 FR" : lang === "pl" ? "🇵🇱 PL" : "🇺🇦 UA"}
+            {lang === "en" ? "🇬🇧 EN" : lang === "fr" ? "🇫🇷 FR" : lang === "pl" ? "🇵🇱 PL" : lang === "ru" ? "🇷🇺 RU" : "🇺🇦 UA"}
           </button>
           <Link to="/auth" className="hidden sm:block">
             <Button variant="ghost" size="sm">{t("navLogin")}</Button>
