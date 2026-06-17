@@ -18,22 +18,23 @@ export type TranslationKey = string;
 export const englishDict: Readonly<Record<string, string>> = en;
 
 /** Map of loaded language dictionaries. EN is always loaded; others arrive async. */
-const loaded: Partial<Record<Language, Readonly<Record<string, string>>>> = { en };
+const loaded: Partial<Record<AppLanguage, Readonly<Record<string, string>>>> = { en };
 
-const loaders: Record<Language, () => Promise<{ default: Record<string, string> }>> = {
+const loaders: Record<AppLanguage, () => Promise<{ default: Record<string, string> }>> = {
   en: () => Promise.resolve({ default: en }),
   uk: () => import("./locales/uk"),
   fr: () => import("./locales/fr"),
   pl: () => import("./locales/pl"),
+  ru: () => import("./locales/ru"),
 };
 
 /** Synchronously read a loaded dict, or fall back to English if not yet loaded. */
-export function getDict(lang: Language): Readonly<Record<string, string>> {
+export function getDict(lang: AppLanguage): Readonly<Record<string, string>> {
   return loaded[lang] ?? en;
 }
 
 /** Lazy-load a locale. Resolves once the dict is available. */
-export async function loadLocale(lang: Language): Promise<Readonly<Record<string, string>>> {
+export async function loadLocale(lang: AppLanguage): Promise<Readonly<Record<string, string>>> {
   const cached = loaded[lang];
   if (cached) return cached;
   const mod = await loaders[lang]();
