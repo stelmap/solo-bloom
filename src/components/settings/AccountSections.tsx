@@ -41,8 +41,8 @@ export function ProfileSection() {
   }, [profile]);
 
   const handleSave = async () => {
-    const newLang = (form.language as Language) || "en";
-    const langChanged = newLang !== (profile?.language as Language);
+    const newLang = (form.language as AppLanguage) || "en";
+    const langChanged = newLang !== (profile?.language as AppLanguage);
     try {
       await updateProfile.mutateAsync(form);
       setLang(newLang);
