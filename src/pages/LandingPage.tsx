@@ -1583,7 +1583,7 @@ function FinalCTA() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <BookingDialog
-              lang={lang}
+              lang={(lang === "ru" ? "en" : lang) as Language}
               source="/#final"
               trigger={
                 <Button
