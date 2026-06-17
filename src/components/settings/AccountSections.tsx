@@ -11,7 +11,7 @@ import { useProfile, useUpdateProfile } from "@/hooks/useData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage, translateFor } from "@/i18n/LanguageContext";
-import { Language } from "@/i18n/translations";
+import { Language, AppLanguage } from "@/i18n/translations";
 import { supabase } from "@/integrations/supabase/client";
 import { Eye, EyeOff, Lock, Sun, Moon, Monitor, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -41,8 +41,8 @@ export function ProfileSection() {
   }, [profile]);
 
   const handleSave = async () => {
-    const newLang = (form.language as Language) || "en";
-    const langChanged = newLang !== (profile?.language as Language);
+    const newLang = (form.language as AppLanguage) || "en";
+    const langChanged = newLang !== (profile?.language as AppLanguage);
     try {
       await updateProfile.mutateAsync(form);
       setLang(newLang);
@@ -73,10 +73,10 @@ export function ProfileSection() {
           onValueChange={(v) => setForm((f) => ({ ...f, language: v }))}
           className="grid gap-2 sm:grid-cols-2"
         >
-          {(["en", "uk", "fr", "pl"] as const).map((code) => {
+          {(["en", "uk", "ru", "fr", "pl"] as const).map((code) => {
             const isCurrent = form.language === code;
-            const native: Record<string, string> = { en: "English", uk: "Українська", fr: "Français", pl: "Polski" };
-            const flag: Record<string, string> = { en: "🇬🇧", uk: "🇺🇦", fr: "🇫🇷", pl: "🇵🇱" };
+            const native: Record<string, string> = { en: "English", uk: "Українська", ru: "Русский", fr: "Français", pl: "Polski" };
+            const flag: Record<string, string> = { en: "🇬🇧", uk: "🇺🇦", ru: "🇷🇺", fr: "🇫🇷", pl: "🇵🇱" };
             return (
               <Label key={code} htmlFor={`lang-${code}`} className={cn(
                 "flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors",

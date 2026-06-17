@@ -1,5 +1,5 @@
 import { createContext, useContext, ReactNode, useCallback, useEffect, useState } from "react";
-import { Language, TranslationKey, getDict, loadLocale, englishDict } from "./translations";
+import { Language, AppLanguage, TranslationKey, getDict, loadLocale, englishDict } from "./translations";
 import { useProfile, useUpdateProfile } from "@/hooks/useData";
 import { track } from "@/lib/analytics";
 
@@ -7,15 +7,16 @@ const LANG_STORAGE_KEY = "app_lang";
 const PRE_LOGIN_LANG_KEY = "pre_login_lang";
 const LANG_CHANGE_EVENT = "app_lang_change";
 
-function normalizeLang(value: string | null | undefined): Language | null {
-  if (value === "uk" || value === "fr" || value === "en" || value === "pl") return value;
+function normalizeLang(value: string | null | undefined): AppLanguage | null {
+  if (value === "uk" || value === "fr" || value === "en" || value === "pl" || value === "ru") return value;
   return null;
 }
 
-function getBrowserLang(): Language {
+function getBrowserLang(): AppLanguage {
   try {
     const browserLang = navigator.language.toLowerCase();
     if (browserLang.startsWith("uk")) return "uk";
+    if (browserLang.startsWith("ru")) return "ru";
     if (browserLang.startsWith("fr")) return "fr";
     if (browserLang.startsWith("pl")) return "pl";
   } catch {}
@@ -23,14 +24,14 @@ function getBrowserLang(): Language {
 }
 
 interface LanguageContextType {
-  lang: Language;
+  lang: AppLanguage;
   t: (key: TranslationKey, params?: Record<string, string | number>) => string;
-  setLang: (lang: Language) => void;
+  setLang: (lang: AppLanguage) => void;
 }
 
 /** Translate a key for a specific language (standalone, no hook needed) */
 export function translateFor(
-  lang: Language,
+  lang: AppLanguage,
   key: TranslationKey,
   params?: Record<string, string | number>,
 ): string {
@@ -53,7 +54,7 @@ export function translateFor(
 }
 
 /** Read the language stored in localStorage (used before profile loads) */
-export function getStoredLang(): Language {
+export function getStoredLang(): AppLanguage {
   try {
     const stored = normalizeLang(localStorage.getItem(LANG_STORAGE_KEY) || localStorage.getItem("landing_lang"));
     if (stored) return stored;
@@ -61,7 +62,7 @@ export function getStoredLang(): Language {
   return getBrowserLang();
 }
 
-export function getPreLoginLang(): Language | null {
+export function getPreLoginLang(): AppLanguage | null {
   try {
     return normalizeLang(localStorage.getItem(PRE_LOGIN_LANG_KEY));
   } catch {}
@@ -69,7 +70,7 @@ export function getPreLoginLang(): Language | null {
 }
 
 /** Persist language choice to localStorage */
-export function setStoredLang(lang: Language) {
+export function setStoredLang(lang: AppLanguage) {
   try {
     localStorage.setItem(LANG_STORAGE_KEY, lang);
     localStorage.setItem("landing_lang", lang); // keep landing page in sync
@@ -78,7 +79,7 @@ export function setStoredLang(lang: Language) {
 }
 
 /** Persist the explicit language chosen before authentication. */
-export function setPreLoginLang(lang: Language) {
+export function setPreLoginLang(lang: AppLanguage) {
   try {
     localStorage.setItem(PRE_LOGIN_LANG_KEY, lang);
   } catch {}
@@ -97,18 +98,19 @@ const LanguageContext = createContext<LanguageContextType>({
   setLang: () => {},
 });
 
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const { data: profile } = useProfile();
   const updateProfile = useUpdateProfile();
-  const [storedLang, setStoredLangState] = useState<Language>(() => getStoredLang());
-  const [preLoginLang, setPreLoginLangState] = useState<Language | null>(() => getPreLoginLang());
+  const [storedLang, setStoredLangState] = useState<AppLanguage>(() => getStoredLang());
+  const [preLoginLang, setPreLoginLangState] = useState<AppLanguage | null>(() => getPreLoginLang());
   // Bumped each time a non-EN locale finishes loading so consumers re-render.
   const [localeVersion, setLocaleVersion] = useState(0);
 
   // Listen for in-app language changes (e.g. from landing page toggle)
   useEffect(() => {
     const handler = (e: Event) => {
-      const detail = (e as CustomEvent<Language>).detail;
+      const detail = (e as CustomEvent<AppLanguage>).detail;
       if (detail) {
         setStoredLangState(detail);
         setPreLoginLangState(getPreLoginLang());
@@ -127,8 +129,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Priority after login: explicit pre-login choice > saved profile > active/browser fallback.
-  const profileLang = profile?.language as Language | undefined;
-  const lang: Language = preLoginLang || profileLang || storedLang;
+  const profileLang = profile?.language as AppLanguage | undefined;
+  const lang: AppLanguage = preLoginLang || profileLang || storedLang;
 
   // Lazily fetch non-English locales on first use, then trigger a re-render.
   useEffect(() => {
@@ -169,7 +171,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     [lang, localeVersion]
   );
 
-  const setLang = useCallback((newLang: Language) => {
+  const setLang = useCallback((newLang: AppLanguage) => {
     clearPreLoginLang();
     setStoredLang(newLang);
     setStoredLangState(newLang);

@@ -609,11 +609,16 @@ function useLandingLang() {
 
 const LANG_CYCLE: Language[] = ["en", "fr", "uk", "pl"];
 
+// LandingPage's local Copy maps only support en/uk/fr/pl. Coerce extended
+// app languages (e.g. "ru") down to "en" so the landing copy still renders.
+const coerceLandingLang = (l: string): Language =>
+  (l === "en" || l === "uk" || l === "fr" || l === "pl" ? l : "en") as Language;
+
 export function LandingLangProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLang] = useState<Language>(() => getStoredLang());
+  const [lang, setLang] = useState<Language>(() => coerceLandingLang(getStoredLang()));
   // Stay in sync with the global LanguageProvider so toggles anywhere update copy here.
   useEffect(() => {
-    const sync = () => setLang(getStoredLang());
+    const sync = () => setLang(coerceLandingLang(getStoredLang()));
     window.addEventListener("app_lang_change", sync);
     window.addEventListener("storage", sync);
     return () => {

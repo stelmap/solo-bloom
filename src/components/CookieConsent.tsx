@@ -56,12 +56,13 @@ export function CookieConsent() {
   const [expanded, setExpanded] = useState(false);
   const [analytics, setAnalytics] = useState(false);
   const [marketing, setMarketing] = useState(false);
-  const [lang, setLang] = useState<Language>(getStoredLang());
+  const coerce = (l: string): Language => (l === "en" || l === "uk" || l === "fr" || l === "pl" ? l : "en") as Language;
+  const [lang, setLang] = useState<Language>(coerce(getStoredLang()));
 
   useEffect(() => {
     setOpen(getConsent() === null);
     const off = onConsentChange((c) => setOpen(c === null));
-    const handleLang = () => setLang(getStoredLang());
+    const handleLang = () => setLang(coerce(getStoredLang()));
     window.addEventListener("app_lang_change", handleLang);
     // Manual open via global event (footer "Manage cookies" link)
     const openHandler = () => {

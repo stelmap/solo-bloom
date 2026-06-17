@@ -4,6 +4,11 @@
 import en from "./locales/en";
 
 export type Language = "en" | "uk" | "fr" | "pl";
+/** Extended runtime language set that also includes Russian. Local per-page
+ *  Copy maps are still typed against `Language` (en/uk/fr/pl); when the user
+ *  picks "ru" those pages render the English fallback while the main app
+ *  dictionary serves Russian via translateFor(). */
+export type AppLanguage = Language | "ru";
 export type TranslationDict = Record<string, string>;
 // Kept as `string` (not `keyof typeof en`) to preserve historical behaviour:
 // callers may reference keys that don't yet have a translation entry, and
@@ -13,22 +18,23 @@ export type TranslationKey = string;
 export const englishDict: Readonly<Record<string, string>> = en;
 
 /** Map of loaded language dictionaries. EN is always loaded; others arrive async. */
-const loaded: Partial<Record<Language, Readonly<Record<string, string>>>> = { en };
+const loaded: Partial<Record<AppLanguage, Readonly<Record<string, string>>>> = { en };
 
-const loaders: Record<Language, () => Promise<{ default: Record<string, string> }>> = {
+const loaders: Record<AppLanguage, () => Promise<{ default: Record<string, string> }>> = {
   en: () => Promise.resolve({ default: en }),
   uk: () => import("./locales/uk"),
   fr: () => import("./locales/fr"),
   pl: () => import("./locales/pl"),
+  ru: () => import("./locales/ru"),
 };
 
 /** Synchronously read a loaded dict, or fall back to English if not yet loaded. */
-export function getDict(lang: Language): Readonly<Record<string, string>> {
+export function getDict(lang: AppLanguage): Readonly<Record<string, string>> {
   return loaded[lang] ?? en;
 }
 
 /** Lazy-load a locale. Resolves once the dict is available. */
-export async function loadLocale(lang: Language): Promise<Readonly<Record<string, string>>> {
+export async function loadLocale(lang: AppLanguage): Promise<Readonly<Record<string, string>>> {
   const cached = loaded[lang];
   if (cached) return cached;
   const mod = await loaders[lang]();
