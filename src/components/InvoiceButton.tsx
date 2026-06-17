@@ -11,7 +11,7 @@ import { loadSignatureAssetFromPath } from "@/lib/invoiceSignature";
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { track } from "@/lib/analytics";
-import type { Language } from "@/i18n/translations";
+import type { AppLanguage } from "@/i18n/translations";
 
 interface InvoiceButtonProps {
   appointment: any;
