@@ -73,10 +73,10 @@ export function ProfileSection() {
           onValueChange={(v) => setForm((f) => ({ ...f, language: v }))}
           className="grid gap-2 sm:grid-cols-2"
         >
-          {(["en", "uk", "fr", "pl"] as const).map((code) => {
+          {(["en", "uk", "ru", "fr", "pl"] as const).map((code) => {
             const isCurrent = form.language === code;
-            const native: Record<string, string> = { en: "English", uk: "Українська", fr: "Français", pl: "Polski" };
-            const flag: Record<string, string> = { en: "🇬🇧", uk: "🇺🇦", fr: "🇫🇷", pl: "🇵🇱" };
+            const native: Record<string, string> = { en: "English", uk: "Українська", ru: "Русский", fr: "Français", pl: "Polski" };
+            const flag: Record<string, string> = { en: "🇬🇧", uk: "🇺🇦", ru: "🇷🇺", fr: "🇫🇷", pl: "🇵🇱" };
             return (
               <Label key={code} htmlFor={`lang-${code}`} className={cn(
                 "flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors",
