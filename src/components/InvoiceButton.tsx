@@ -11,7 +11,7 @@ import { loadSignatureAssetFromPath } from "@/lib/invoiceSignature";
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { track } from "@/lib/analytics";
-import type { Language } from "@/i18n/translations";
+import type { AppLanguage } from "@/i18n/translations";
 
 interface InvoiceButtonProps {
   appointment: any;
@@ -155,7 +155,7 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
       const assets = await loadSignatureAssets();
       const invoiceData = {
         ...result,
-        language: lang as Language,
+        language: lang as AppLanguage,
         ...assets,
       };
       const doc = generateInvoicePdf(invoiceData);
@@ -173,7 +173,7 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
   const handleDownloadExisting = async (invoice: any) => {
     try {
       const assets = await loadSignatureAssets();
-      const doc = generateInvoicePdf({ ...invoice, language: (invoice.language || lang) as Language, ...assets });
+      const doc = generateInvoicePdf({ ...invoice, language: (invoice.language || lang) as AppLanguage, ...assets });
       downloadPdf(doc, `invoice_${String(invoice.invoice_number || "").replace(/[\/\\]/g, "-")}.pdf`);
       track("invoice_downloaded", { kind: "existing" });
     } catch (e: any) {

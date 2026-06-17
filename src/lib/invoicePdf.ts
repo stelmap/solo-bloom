@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import type { Language } from "@/i18n/translations";
+import type { Language, AppLanguage } from "@/i18n/translations";
 import { notoSansRegularBase64, notoSansBoldBase64 } from "./notoSansFont";
 import { getTaxIdLabel } from "./taxIdentifiers";
 
@@ -28,7 +28,7 @@ interface InvoiceData {
   total_amount: number;
   vat_mode: string;
   currency: string;
-  language: Language;
+  language: AppLanguage;
   payment_note?: string;
   payment_status?: string;
   payment_method?: string;
@@ -37,64 +37,64 @@ interface InvoiceData {
   stamp?: { dataUrl: string; width: number; height: number; format: "PNG" | "JPEG" | "WEBP" } | null;
 }
 
-const labels: Record<string, Record<Language, string>> = {
-  invoice: { en: "INVOICE", uk: "РАХУНОК", fr: "FACTURE", pl: "FAKTURA" },
-  invoiceNumber: { en: "Invoice #", uk: "Рахунок №", fr: "Facture n°", pl: "Faktura nr" },
-  date: { en: "Date", uk: "Дата", fr: "Date", pl: "Data" },
-  sessionDate: { en: "Session Date", uk: "Дата сеансу", fr: "Date de séance", pl: "Data sesji" },
-  billTo: { en: "Bill To", uk: "Платник", fr: "Facturer à", pl: "Nabywca" },
-  from: { en: "From", uk: "Від", fr: "De", pl: "Sprzedawca" },
-  description: { en: "Description", uk: "Опис", fr: "Description", pl: "Opis" },
-  amount: { en: "Amount", uk: "Сума", fr: "Montant", pl: "Kwota" },
-  subtotal: { en: "Subtotal", uk: "Проміжний підсумок", fr: "Sous-total", pl: "Suma częściowa" },
-  vat: { en: "VAT", uk: "ПДВ", fr: "TVA", pl: "VAT" },
-  vatIncluded: { en: "VAT included", uk: "ПДВ включено", fr: "TVA incluse", pl: "VAT wliczony" },
-  total: { en: "Total", uk: "Разом", fr: "Total", pl: "Razem" },
-  paymentNote: { en: "Payment Note", uk: "Примітка до оплати", fr: "Note de paiement", pl: "Informacje o płatności" },
-  paymentType: { en: "Payment type", uk: "Тип оплати", fr: "Type de paiement", pl: "Typ płatności" },
-  paymentMethod: { en: "Payment method", uk: "Спосіб оплати", fr: "Mode de paiement", pl: "Sposób płatności" },
-  paymentDate: { en: "Payment date", uk: "Дата оплати", fr: "Date de paiement", pl: "Data płatności" },
-  pm_cash: { en: "Cash", uk: "Готівка", fr: "Espèces", pl: "Gotówka" },
-  pm_card: { en: "Card", uk: "Картка", fr: "Carte", pl: "Karta" },
-  pm_bank_transfer: { en: "Bank transfer", uk: "Банківський переказ", fr: "Virement bancaire", pl: "Przelew bankowy" },
-  pm_transfer: { en: "Bank transfer", uk: "Банківський переказ", fr: "Virement bancaire", pl: "Przelew bankowy" },
-  pm_stripe: { en: "Stripe", uk: "Stripe", fr: "Stripe", pl: "Stripe" },
-  pm_revolut: { en: "Revolut", uk: "Revolut", fr: "Revolut", pl: "Revolut" },
-  pm_paypal: { en: "PayPal", uk: "PayPal", fr: "PayPal", pl: "PayPal" },
-  pm_prepayment: { en: "Prepaid balance", uk: "Передплата", fr: "Acompte", pl: "Przedpłata" },
-  pm_check: { en: "Check", uk: "Check", fr: "Chèque", pl: "Check" },
-  pm_other: { en: "Other", uk: "Інше", fr: "Autre", pl: "Inne" },
-  pm_not_specified: { en: "Not specified", uk: "Не вказано", fr: "Non spécifié", pl: "Nie określono" },
-  taxId: { en: "Tax ID", uk: "Податковий номер", fr: "N° TVA", pl: "NIP" },
-  taxId_ipn: { en: "Tax ID", uk: "ІПН", fr: "N° TVA", pl: "NIP" },
-  taxId_edrpou: { en: "Business ID", uk: "ЄДРПОУ", fr: "N° SIRET", pl: "REGON" },
-  phone: { en: "Phone", uk: "Телефон", fr: "Téléphone", pl: "Telefon" },
-  email: { en: "Email", uk: "Email", fr: "Email", pl: "E-mail" },
-  ps_paid_now: { en: "Paid now", uk: "Оплачено зараз", fr: "Payé maintenant", pl: "Zapłacone teraz" },
-  ps_paid_in_advance: { en: "Paid in advance", uk: "Оплачено заздалегідь", fr: "Payé d'avance", pl: "Zapłacone z góry" },
-  ps_paid_from_prepayment: { en: "Paid from prepayment", uk: "Оплачено з передоплати", fr: "Payé via acompte", pl: "Zapłacone z przedpłaty" },
-  ps_partially_paid: { en: "Partially paid", uk: "Частково оплачено", fr: "Partiellement payé", pl: "Częściowo zapłacone" },
-  ps_partially_paid_from_prepayment: { en: "Partially paid from prepayment", uk: "Частково оплачено з передоплати", fr: "Partiellement payé via acompte", pl: "Częściowo zapłacone z przedpłaty" },
-  ps_waiting_for_payment: { en: "Waiting for payment", uk: "Очікує оплати", fr: "En attente de paiement", pl: "Oczekuje na płatność" },
-  ps_unpaid: { en: "Unpaid", uk: "Не оплачено", fr: "Non payé", pl: "Nieopłacone" },
+const labels: Record<string, Record<AppLanguage, string>> = {
+  invoice: { en: "INVOICE", uk: "РАХУНОК", ru: "СЧЁТ", fr: "FACTURE", pl: "FAKTURA" },
+  invoiceNumber: { en: "Invoice #", uk: "Рахунок №", ru: "Счёт №", fr: "Facture n°", pl: "Faktura nr" },
+  date: { en: "Date", uk: "Дата", ru: "Дата", fr: "Date", pl: "Data" },
+  sessionDate: { en: "Session Date", uk: "Дата сеансу", ru: "Дата сеанса", fr: "Date de séance", pl: "Data sesji" },
+  billTo: { en: "Bill To", uk: "Платник", ru: "Плательщик", fr: "Facturer à", pl: "Nabywca" },
+  from: { en: "From", uk: "Від", ru: "От", fr: "De", pl: "Sprzedawca" },
+  description: { en: "Description", uk: "Опис", ru: "Описание", fr: "Description", pl: "Opis" },
+  amount: { en: "Amount", uk: "Сума", ru: "Сумма", fr: "Montant", pl: "Kwota" },
+  subtotal: { en: "Subtotal", uk: "Проміжний підсумок", ru: "Промежуточный итог", fr: "Sous-total", pl: "Suma częściowa" },
+  vat: { en: "VAT", uk: "ПДВ", ru: "НДС", fr: "TVA", pl: "VAT" },
+  vatIncluded: { en: "VAT included", uk: "ПДВ включено", ru: "НДС включён", fr: "TVA incluse", pl: "VAT wliczony" },
+  total: { en: "Total", uk: "Разом", ru: "Итого", fr: "Total", pl: "Razem" },
+  paymentNote: { en: "Payment Note", uk: "Примітка до оплати", ru: "Примечание к оплате", fr: "Note de paiement", pl: "Informacje o płatności" },
+  paymentType: { en: "Payment type", uk: "Тип оплати", ru: "Тип оплаты", fr: "Type de paiement", pl: "Typ płatności" },
+  paymentMethod: { en: "Payment method", uk: "Спосіб оплати", ru: "Способ оплаты", fr: "Mode de paiement", pl: "Sposób płatności" },
+  paymentDate: { en: "Payment date", uk: "Дата оплати", ru: "Дата оплаты", fr: "Date de paiement", pl: "Data płatności" },
+  pm_cash: { en: "Cash", uk: "Готівка", ru: "Наличные", fr: "Espèces", pl: "Gotówka" },
+  pm_card: { en: "Card", uk: "Картка", ru: "Карта", fr: "Carte", pl: "Karta" },
+  pm_bank_transfer: { en: "Bank transfer", uk: "Банківський переказ", ru: "Банковский перевод", fr: "Virement bancaire", pl: "Przelew bankowy" },
+  pm_transfer: { en: "Bank transfer", uk: "Банківський переказ", ru: "Банковский перевод", fr: "Virement bancaire", pl: "Przelew bankowy" },
+  pm_stripe: { en: "Stripe", uk: "Stripe", ru: "Stripe", fr: "Stripe", pl: "Stripe" },
+  pm_revolut: { en: "Revolut", uk: "Revolut", ru: "Revolut", fr: "Revolut", pl: "Revolut" },
+  pm_paypal: { en: "PayPal", uk: "PayPal", ru: "PayPal", fr: "PayPal", pl: "PayPal" },
+  pm_prepayment: { en: "Prepaid balance", uk: "Передплата", ru: "Предоплата", fr: "Acompte", pl: "Przedpłata" },
+  pm_check: { en: "Check", uk: "Check", ru: "Чек", fr: "Chèque", pl: "Check" },
+  pm_other: { en: "Other", uk: "Інше", ru: "Другое", fr: "Autre", pl: "Inne" },
+  pm_not_specified: { en: "Not specified", uk: "Не вказано", ru: "Не указано", fr: "Non spécifié", pl: "Nie określono" },
+  taxId: { en: "Tax ID", uk: "Податковий номер", ru: "ИНН", fr: "N° TVA", pl: "NIP" },
+  taxId_ipn: { en: "Tax ID", uk: "ІПН", ru: "ИНН", fr: "N° TVA", pl: "NIP" },
+  taxId_edrpou: { en: "Business ID", uk: "ЄДРПОУ", ru: "ОГРН", fr: "N° SIRET", pl: "REGON" },
+  phone: { en: "Phone", uk: "Телефон", ru: "Телефон", fr: "Téléphone", pl: "Telefon" },
+  email: { en: "Email", uk: "Email", ru: "Email", fr: "Email", pl: "E-mail" },
+  ps_paid_now: { en: "Paid now", uk: "Оплачено зараз", ru: "Оплачено сейчас", fr: "Payé maintenant", pl: "Zapłacone teraz" },
+  ps_paid_in_advance: { en: "Paid in advance", uk: "Оплачено заздалегідь", ru: "Оплачено заранее", fr: "Payé d'avance", pl: "Zapłacone z góry" },
+  ps_paid_from_prepayment: { en: "Paid from prepayment", uk: "Оплачено з передоплати", ru: "Оплачено из предоплаты", fr: "Payé via acompte", pl: "Zapłacone z przedpłaty" },
+  ps_partially_paid: { en: "Partially paid", uk: "Частково оплачено", ru: "Частично оплачено", fr: "Partiellement payé", pl: "Częściowo zapłacone" },
+  ps_partially_paid_from_prepayment: { en: "Partially paid from prepayment", uk: "Частково оплачено з передоплати", ru: "Частично оплачено из предоплаты", fr: "Partiellement payé via acompte", pl: "Częściowo zapłacone z przedpłaty" },
+  ps_waiting_for_payment: { en: "Waiting for payment", uk: "Очікує оплати", ru: "Ожидает оплаты", fr: "En attente de paiement", pl: "Oczekuje na płatność" },
+  ps_unpaid: { en: "Unpaid", uk: "Не оплачено", ru: "Не оплачено", fr: "Non payé", pl: "Nieopłacone" },
 };
 
-function t(key: string, lang: Language): string {
+function t(key: string, lang: AppLanguage): string {
   return labels[key]?.[lang] || labels[key]?.en || key;
 }
 
-function formatCurrency(amount: number, currency: string, lang: Language): string {
+function formatCurrency(amount: number, currency: string, lang: AppLanguage): string {
   const symbol = currency === "UAH" ? "₴" : currency === "PLN" ? "zł" : currency === "USD" ? "$" : "€";
   if (currency === "USD") {
     return `$${amount.toFixed(2)}`;
   }
-  if (lang === "uk" || lang === "pl" || currency === "PLN" || currency === "UAH") {
+  if (lang === "uk" || lang === "ru" || lang === "pl" || currency === "PLN" || currency === "UAH") {
     return `${amount.toFixed(2).replace(".", ",")} ${symbol}`;
   }
   return `${symbol}${amount.toFixed(2)}`;
 }
 
-function formatDate(dateStr: string, lang: Language): string {
+function formatDate(dateStr: string, lang: AppLanguage): string {
   const d = new Date(dateStr + "T00:00:00");
   if (lang === "uk") {
     const months = [
@@ -103,8 +103,18 @@ function formatDate(dateStr: string, lang: Language): string {
     ];
     return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
   }
+  if (lang === "ru") {
+    const months = [
+      "января", "февраля", "марта", "апреля", "мая", "июня",
+      "июля", "августа", "сентября", "октября", "ноября", "декабря",
+    ];
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  }
   if (lang === "fr") {
     return d.toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" });
+  }
+  if (lang === "pl") {
+    return d.toLocaleDateString("pl-PL", { year: "numeric", month: "long", day: "numeric" });
   }
   return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 }
@@ -358,8 +368,8 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
 
     // Right-aligned signature column
     const colRightX = pageW - margin;
-    const sigLabel = lang === "fr" ? "Signature" : lang === "uk" ? "Підпис" : lang === "pl" ? "Podpis" : "Signature";
-    const stampLabel = lang === "fr" ? "Cachet" : lang === "uk" ? "Печатка" : lang === "pl" ? "Pieczęć" : "Stamp";
+    const sigLabel = lang === "fr" ? "Signature" : lang === "uk" ? "Підпис" : lang === "ru" ? "Подпись" : lang === "pl" ? "Podpis" : "Signature";
+    const stampLabel = lang === "fr" ? "Cachet" : lang === "uk" ? "Печатка" : lang === "ru" ? "Печать" : lang === "pl" ? "Pieczęć" : "Stamp";
 
     doc.setFontSize(9);
     doc.setTextColor(...gray);
