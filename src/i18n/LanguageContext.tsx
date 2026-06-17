@@ -1,5 +1,5 @@
 import { createContext, useContext, ReactNode, useCallback, useEffect, useState } from "react";
-import { Language, TranslationKey, getDict, loadLocale, englishDict } from "./translations";
+import { Language, AppLanguage, TranslationKey, getDict, loadLocale, englishDict } from "./translations";
 import { useProfile, useUpdateProfile } from "@/hooks/useData";
 import { track } from "@/lib/analytics";
 
@@ -7,15 +7,16 @@ const LANG_STORAGE_KEY = "app_lang";
 const PRE_LOGIN_LANG_KEY = "pre_login_lang";
 const LANG_CHANGE_EVENT = "app_lang_change";
 
-function normalizeLang(value: string | null | undefined): Language | null {
-  if (value === "uk" || value === "fr" || value === "en" || value === "pl") return value;
+function normalizeLang(value: string | null | undefined): AppLanguage | null {
+  if (value === "uk" || value === "fr" || value === "en" || value === "pl" || value === "ru") return value;
   return null;
 }
 
-function getBrowserLang(): Language {
+function getBrowserLang(): AppLanguage {
   try {
     const browserLang = navigator.language.toLowerCase();
     if (browserLang.startsWith("uk")) return "uk";
+    if (browserLang.startsWith("ru")) return "ru";
     if (browserLang.startsWith("fr")) return "fr";
     if (browserLang.startsWith("pl")) return "pl";
   } catch {}
