@@ -11,7 +11,7 @@ import { useProfile, useUpdateProfile } from "@/hooks/useData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage, translateFor } from "@/i18n/LanguageContext";
-import { Language } from "@/i18n/translations";
+import { Language, AppLanguage } from "@/i18n/translations";
 import { supabase } from "@/integrations/supabase/client";
 import { Eye, EyeOff, Lock, Sun, Moon, Monitor, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
