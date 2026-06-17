@@ -102,15 +102,15 @@ const LanguageContext = createContext<LanguageContextType>({
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const { data: profile } = useProfile();
   const updateProfile = useUpdateProfile();
-  const [storedLang, setStoredLangState] = useState<Language>(() => getStoredLang());
-  const [preLoginLang, setPreLoginLangState] = useState<Language | null>(() => getPreLoginLang());
+  const [storedLang, setStoredLangState] = useState<AppLanguage>(() => getStoredLang());
+  const [preLoginLang, setPreLoginLangState] = useState<AppLanguage | null>(() => getPreLoginLang());
   // Bumped each time a non-EN locale finishes loading so consumers re-render.
   const [localeVersion, setLocaleVersion] = useState(0);
 
   // Listen for in-app language changes (e.g. from landing page toggle)
   useEffect(() => {
     const handler = (e: Event) => {
-      const detail = (e as CustomEvent<Language>).detail;
+      const detail = (e as CustomEvent<AppLanguage>).detail;
       if (detail) {
         setStoredLangState(detail);
         setPreLoginLangState(getPreLoginLang());
@@ -129,8 +129,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Priority after login: explicit pre-login choice > saved profile > active/browser fallback.
-  const profileLang = profile?.language as Language | undefined;
-  const lang: Language = preLoginLang || profileLang || storedLang;
+  const profileLang = profile?.language as AppLanguage | undefined;
+  const lang: AppLanguage = preLoginLang || profileLang || storedLang;
 
   // Lazily fetch non-English locales on first use, then trigger a re-render.
   useEffect(() => {
@@ -171,7 +171,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     [lang, localeVersion]
   );
 
-  const setLang = useCallback((newLang: Language) => {
+  const setLang = useCallback((newLang: AppLanguage) => {
     clearPreLoginLang();
     setStoredLang(newLang);
     setStoredLangState(newLang);
