@@ -28,7 +28,7 @@ interface InvoiceData {
   total_amount: number;
   vat_mode: string;
   currency: string;
-  language: Language;
+  language: AppLanguage;
   payment_note?: string;
   payment_status?: string;
   payment_method?: string;
