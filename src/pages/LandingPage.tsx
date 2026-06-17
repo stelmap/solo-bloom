@@ -8,7 +8,7 @@ import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
 import { getStoredLang, setPreLoginLang } from "@/i18n/LanguageContext";
-import type { Language } from "@/i18n/translations";
+import type { Language, AppLanguage } from "@/i18n/translations";
 import { track } from "@/lib/analytics";
 import {
   ArrowRight, CheckCircle2, AlertTriangle, AlertCircle, TrendingUp,
