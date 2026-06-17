@@ -24,14 +24,14 @@ function getBrowserLang(): AppLanguage {
 }
 
 interface LanguageContextType {
-  lang: Language;
+  lang: AppLanguage;
   t: (key: TranslationKey, params?: Record<string, string | number>) => string;
-  setLang: (lang: Language) => void;
+  setLang: (lang: AppLanguage) => void;
 }
 
 /** Translate a key for a specific language (standalone, no hook needed) */
 export function translateFor(
-  lang: Language,
+  lang: AppLanguage,
   key: TranslationKey,
   params?: Record<string, string | number>,
 ): string {
@@ -54,7 +54,7 @@ export function translateFor(
 }
 
 /** Read the language stored in localStorage (used before profile loads) */
-export function getStoredLang(): Language {
+export function getStoredLang(): AppLanguage {
   try {
     const stored = normalizeLang(localStorage.getItem(LANG_STORAGE_KEY) || localStorage.getItem("landing_lang"));
     if (stored) return stored;
@@ -62,7 +62,7 @@ export function getStoredLang(): Language {
   return getBrowserLang();
 }
 
-export function getPreLoginLang(): Language | null {
+export function getPreLoginLang(): AppLanguage | null {
   try {
     return normalizeLang(localStorage.getItem(PRE_LOGIN_LANG_KEY));
   } catch {}
@@ -70,7 +70,7 @@ export function getPreLoginLang(): Language | null {
 }
 
 /** Persist language choice to localStorage */
-export function setStoredLang(lang: Language) {
+export function setStoredLang(lang: AppLanguage) {
   try {
     localStorage.setItem(LANG_STORAGE_KEY, lang);
     localStorage.setItem("landing_lang", lang); // keep landing page in sync
@@ -79,7 +79,7 @@ export function setStoredLang(lang: Language) {
 }
 
 /** Persist the explicit language chosen before authentication. */
-export function setPreLoginLang(lang: Language) {
+export function setPreLoginLang(lang: AppLanguage) {
   try {
     localStorage.setItem(PRE_LOGIN_LANG_KEY, lang);
   } catch {}
@@ -97,6 +97,7 @@ const LanguageContext = createContext<LanguageContextType>({
   t: (key) => translateFor("en", key),
   setLang: () => {},
 });
+
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const { data: profile } = useProfile();
