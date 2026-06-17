@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import type { Language } from "@/i18n/translations";
+import type { Language, AppLanguage } from "@/i18n/translations";
 import { notoSansRegularBase64, notoSansBoldBase64 } from "./notoSansFont";
 import { getTaxIdLabel } from "./taxIdentifiers";
 
