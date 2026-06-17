@@ -3,7 +3,12 @@
 // Only English is imported synchronously to keep types and provide a fallback.
 import en from "./locales/en";
 
-export type Language = "en" | "uk" | "fr" | "pl" | "ru";
+export type Language = "en" | "uk" | "fr" | "pl";
+/** Extended runtime language set that also includes Russian. Local per-page
+ *  Copy maps are still typed against `Language` (en/uk/fr/pl); when the user
+ *  picks "ru" those pages render the English fallback while the main app
+ *  dictionary serves Russian via translateFor(). */
+export type AppLanguage = Language | "ru";
 export type TranslationDict = Record<string, string>;
 // Kept as `string` (not `keyof typeof en`) to preserve historical behaviour:
 // callers may reference keys that don't yet have a translation entry, and
