@@ -368,8 +368,8 @@ export function generateInvoicePdf(data: InvoiceData): jsPDF {
 
     // Right-aligned signature column
     const colRightX = pageW - margin;
-    const sigLabel = lang === "fr" ? "Signature" : lang === "uk" ? "Підпис" : lang === "pl" ? "Podpis" : "Signature";
-    const stampLabel = lang === "fr" ? "Cachet" : lang === "uk" ? "Печатка" : lang === "pl" ? "Pieczęć" : "Stamp";
+    const sigLabel = lang === "fr" ? "Signature" : lang === "uk" ? "Підпис" : lang === "ru" ? "Подпись" : lang === "pl" ? "Podpis" : "Signature";
+    const stampLabel = lang === "fr" ? "Cachet" : lang === "uk" ? "Печатка" : lang === "ru" ? "Печать" : lang === "pl" ? "Pieczęć" : "Stamp";
 
     doc.setFontSize(9);
     doc.setTextColor(...gray);
