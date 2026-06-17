@@ -1511,7 +1511,6 @@ export default {
   "archive.includeArchived": "Показывать архивных клиентов",
 
   // Privacy
-  "settings.publicBooking": "Публичная запись",
   "privacy.export.title": "Экспорт моих данных",
   "privacy.export.desc": "Скачайте JSON-архив всех ваших записей (GDPR ст. 15 и 20).",
   "privacy.export.button": "Скачать мои данные",
