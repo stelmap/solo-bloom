@@ -3,7 +3,7 @@
 // Only English is imported synchronously to keep types and provide a fallback.
 import en from "./locales/en";
 
-export type Language = "en" | "uk" | "fr" | "pl";
+export type Language = "en" | "uk" | "fr" | "pl" | "ru";
 export type TranslationDict = Record<string, string>;
 // Kept as `string` (not `keyof typeof en`) to preserve historical behaviour:
 // callers may reference keys that don't yet have a translation entry, and
