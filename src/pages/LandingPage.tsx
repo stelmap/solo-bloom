@@ -8,7 +8,7 @@ import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
 import { getStoredLang, setPreLoginLang } from "@/i18n/LanguageContext";
-import type { Language } from "@/i18n/translations";
+import type { Language, AppLanguage } from "@/i18n/translations";
 import { track } from "@/lib/analytics";
 import {
   ArrowRight, CheckCircle2, AlertTriangle, AlertCircle, TrendingUp,
@@ -598,7 +598,7 @@ type CopyKey = keyof typeof C;
 // ── Local i18n provider ───────────────────────────────────────────────
 
 const LandingLangContext = createContext<{
-  lang: Language;
+  lang: AppLanguage;
   t: (key: CopyKey) => string;
   toggle: () => void;
 }>({ lang: "en", t: (k) => k as string, toggle: () => {} });
@@ -607,18 +607,54 @@ function useLandingLang() {
   return useContext(LandingLangContext);
 }
 
-const LANG_CYCLE: Language[] = ["en", "fr", "uk", "pl"];
+const LANG_CYCLE: AppLanguage[] = ["en", "fr", "uk", "ru", "pl"];
 
-// LandingPage's local Copy maps only support en/uk/fr/pl. Coerce extended
-// app languages (e.g. "ru") down to "en" so the landing copy still renders.
-const coerceLandingLang = (l: string): Language =>
-  (l === "en" || l === "uk" || l === "fr" || l === "pl" ? l : "en") as Language;
+// Russian overrides for the most-visible landing copy. Any key missing here
+// falls back to English so the page never shows a broken string.
+const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
+  navAudience: "Что включено",
+  navHow: "Сравнение",
+  navPricing: "Цены",
+  navFaq: "Вопросы",
+  navLogin: "Войти",
+  navTry: "Начать бесплатно",
+
+  heroBadge: "Для психологов, психотерапевтов, супервизоров и преподавателей",
+  heroTitle: "Вся ваша частная практика. В одном месте.",
+  heroTitlePrefix: "Вся ваша частная практика.",
+  heroTitleAccent: "В одном месте.",
+  heroSub: "SoloBizz ведёт клиентов, календарь, записи, оплаты, счета и финансовые отчёты — автоматически. Вы тратите время на клиентов, а не на таблицы.",
+  heroCta: "Начать бесплатно — карта не нужна",
+  heroSecondary: "Посмотреть цены",
+  heroSubCta: "Free Starter: бесплатно навсегда, до 5 активных клиентов. Без банковской карты.",
+  heroSocialProof: "Присоединяйтесь к 100+ психологам, психотерапевтам и супервизорам, которые уже работают в нашей системе.",
+  heroRoi: "При 20+ клиентах ручная админка может занимать 4–8+ часов в неделю. SoloBizz помогает вернуть это время.",
+
+  statsTherapists: "терапевтов уже используют SoloBizz",
+  statsTime: "админ-времени экономится каждую неделю",
+  statsSetup: "среднее время настройки практики",
+  statsTimeNum: "4–8 ч",
+  statsSetupNum: "15 мин",
+  setupAssist: "Хотите быстрый старт? Оставьте заявку — и мы поможем настроить практику.",
+
+  trustData: "Данные клиентов защищены",
+  trustStripe: "Оплата через Stripe",
+  trustGdpr: "Соответствие GDPR",
+  trustSupport: "Поддержка на русском",
+
+  dpClients: "Клиенты",
+  dpSessions: "Сеансы",
+  dpIncome: "Доход",
+  dpUpcoming: "Предстоящие",
+  dpPaid: "Оплачено",
+  dpPending: "Ожидает",
+};
 
 export function LandingLangProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLang] = useState<Language>(() => coerceLandingLang(getStoredLang()));
+  const [lang, setLang] = useState<AppLanguage>(() => getStoredLang());
   // Stay in sync with the global LanguageProvider so toggles anywhere update copy here.
   useEffect(() => {
-    const sync = () => setLang(coerceLandingLang(getStoredLang()));
+    const sync = () => setLang(getStoredLang());
     window.addEventListener("app_lang_change", sync);
     window.addEventListener("storage", sync);
     return () => {
@@ -636,8 +672,13 @@ export function LandingLangProvider({ children }: { children: React.ReactNode })
   }, []);
   const t = useCallback(
     (key: CopyKey): string => {
+      if (lang === "ru") {
+        const ru = RU_OVERRIDES[key];
+        if (ru) return ru;
+        return C[key].en;
+      }
       const entry = C[key];
-      return entry[lang] || entry.en;
+      return entry[lang as Language] || entry.en;
     },
     [lang]
   );
@@ -717,7 +758,7 @@ function LandingNav() {
             aria-label="Switch language"
             title={`Language: ${lang.toUpperCase()}`}
           >
-            {lang === "en" ? "🇬🇧 EN" : lang === "fr" ? "🇫🇷 FR" : lang === "pl" ? "🇵🇱 PL" : "🇺🇦 UA"}
+            {lang === "en" ? "🇬🇧 EN" : lang === "fr" ? "🇫🇷 FR" : lang === "pl" ? "🇵🇱 PL" : lang === "ru" ? "🇷🇺 RU" : "🇺🇦 UA"}
           </button>
           <Link to="/auth" className="hidden sm:block">
             <Button variant="ghost" size="sm">{t("navLogin")}</Button>
@@ -1542,7 +1583,7 @@ function FinalCTA() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <BookingDialog
-              lang={lang}
+              lang={(lang === "ru" ? "en" : lang) as Language}
               source="/#final"
               trigger={
                 <Button
