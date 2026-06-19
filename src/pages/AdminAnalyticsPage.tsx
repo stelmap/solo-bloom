@@ -75,7 +75,7 @@ export default function AdminAnalyticsPage() {
       const { data, error } = await query;
       if (error) throw error;
       setRows((data as EventRow[]) ?? []);
-    } finally Ie { /* handled by UI state */ } finally {
+    } finally {
       setBusy(false);
     }
   }
