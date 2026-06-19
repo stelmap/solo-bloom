@@ -317,21 +317,8 @@ export function getSubscriptionStatus(): SubscriptionStatusValue {
   return subscriptionStatus;
 }
 
-export function track(event: AnalyticsEvent, props: BaseEventProps = {}): void {
-  if (!initialized) initAnalytics();
-  const enriched: BaseEventProps = {
-    device_type: deviceType(),
-    source_page: typeof window !== "undefined" ? window.location.pathname : undefined,
-    locale: typeof navigator !== "undefined" ? navigator.language : undefined,
-    subscription_status: subscriptionStatus,
-    environment,
-    ...props,
-  };
-  // Always record the attempt locally so diagnostics work in dev/preview too.
-  recordDiagnostic(event, enriched);
-  if (!enabled) return;
-  posthog.capture(event, enriched);
-}
+
+
 
 // Read a PostHog feature flag synchronously (no React). Returns the variant
 // string, true/false for booleans, or undefined while loading / when disabled.
