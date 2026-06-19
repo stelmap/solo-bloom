@@ -1626,12 +1626,14 @@ function FaqSection() {
         en: "Can I cancel or change my plan at any time?",
         fr: "Puis-je annuler ou changer de forfait à tout moment ?",
         pl: "Czy mogę anulować lub zmienić plan w dowolnej chwili?",
+        ru: "Могу ли я отменить или сменить план в любое время?",
       },
       a: {
         uk: "Так. Ви можете підвищити, знизити або скасувати підписку будь-коли — без довгострокових зобов'язань і плат за скасування. Якщо ви скасуєте підписку, ви зберігаєте доступ до кінця поточного платіжного періоду. Ваші дані не видаляються.",
         en: "Yes. You can upgrade, downgrade or cancel anytime — no long-term commitment, no cancellation fees. If you cancel, you keep access until the end of the current billing period. Your data is not deleted.",
         fr: "Oui. Vous pouvez changer ou annuler à tout moment — sans engagement ni frais. En cas d'annulation, l'accès reste actif jusqu'à la fin de la période en cours. Vos données ne sont pas supprimées.",
         pl: "Tak. Możesz zmienić lub anulować plan w dowolnym momencie — bez zobowiązań i opłat. Po anulowaniu zachowujesz dostęp do końca bieżącego okresu rozliczeniowego. Dane nie są usuwane.",
+        ru: "Да. Вы можете повысить, понизить или отменить подписку в любой момент — без долгосрочных обязательств и платы за отмену. При отмене доступ сохраняется до конца текущего платёжного периода. Ваши данные не удаляются.",
       },
     },
     {
