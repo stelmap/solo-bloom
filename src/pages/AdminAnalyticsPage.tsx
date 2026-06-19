@@ -218,6 +218,7 @@ export default function AdminAnalyticsPage() {
         </Card>
 
         <div className="grid md:grid-cols-2 gap-4">
+          <BreakdownCard title="By domain" data={stats.byDomain} />
           <BreakdownCard title="By source" data={stats.bySource} />
           <BreakdownCard title="By device" data={stats.byDevice} />
           <BreakdownCard title="By country" data={stats.byCountry} />
