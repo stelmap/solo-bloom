@@ -167,6 +167,80 @@ export default function AdminAnalyticsPage() {
     });
   }, [stats]);
 
+  // Web-traffic style metrics computed from raw event rows.
+  // A "visit" = a unique session_id (falls back to anonymous_id, then user_id).
+  // A "page view" = any event with a path (we don't have $pageview-only data,
+  // so every persisted event counts as one interaction with a page).
+  const webTraffic = useMemo(() => {
+    const visitorKey = (r: EventRow) => r.session_id || r.anonymous_id || r.user_id || r.id;
+    const sessions = new Map<string, { ts: number[]; paths: Set<string>; source: string; device: string | null; country: string | null; domain: string | null }>();
+    const pageViewRows = rows.filter((r) => !!r.path);
+    for (const r of rows) {
+      const k = visitorKey(r);
+      let s = sessions.get(k);
+      if (!s) {
+        s = { ts: [], paths: new Set(), source: r.utm_source || r.source || "direct", device: r.device_type, country: r.country, domain: r.domain };
+        sessions.set(k, s);
+      }
+      s.ts.push(new Date(r.created_at).getTime());
+      if (r.path) s.paths.add(r.path);
+    }
+    const visitors = sessions.size;
+    const pageViews = pageViewRows.length;
+    const viewsPerVisit = visitors > 0 ? pageViews / visitors : 0;
+    let durSum = 0;
+    let durCount = 0;
+    let bounces = 0;
+    for (const s of sessions.values()) {
+      if (s.ts.length > 1) {
+        const min = Math.min(...s.ts);
+        const max = Math.max(...s.ts);
+        durSum += (max - min) / 1000;
+        durCount += 1;
+      }
+      if (s.paths.size <= 1) bounces += 1;
+    }
+    const avgDuration = durCount > 0 ? durSum / durCount : 0;
+    const bounceRate = visitors > 0 ? (bounces / visitors) * 100 : 0;
+
+    // Daily trend by visitor
+    const byDay = new Map<string, Set<string>>();
+    for (const r of rows) {
+      const day = r.created_at.slice(0, 10);
+      if (!byDay.has(day)) byDay.set(day, new Set());
+      byDay.get(day)!.add(visitorKey(r));
+    }
+    const trend = Array.from(byDay.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([day, set]) => ({ day, visitors: set.size }));
+
+    // Source / Page / Device / Country counted by unique visitors
+    const accum = (pick: (r: EventRow) => string | null | undefined) => {
+      const m = new Map<string, Set<string>>();
+      for (const r of rows) {
+        const key = pick(r);
+        if (!key) continue;
+        if (!m.has(key)) m.set(key, new Set());
+        m.get(key)!.add(visitorKey(r));
+      }
+      const out: Record<string, number> = {};
+      for (const [k, set] of m) out[k] = set.size;
+      return out;
+    };
+    return {
+      visitors,
+      pageViews,
+      viewsPerVisit,
+      avgDuration,
+      bounceRate,
+      trend,
+      bySource: accum((r) => r.utm_source || r.source || "direct"),
+      byPage: accum((r) => r.path),
+      byDevice: accum((r) => r.device_type),
+      byCountry: accum((r) => r.country),
+    };
+  }, [rows]);
+
   if (loading) {
     return (
       <AppLayout>
