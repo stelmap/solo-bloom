@@ -1658,12 +1658,14 @@ function FaqSection() {
         en: "How long does setup take?",
         fr: "Combien de temps prend la configuration ?",
         pl: "Ile czasu zajmuje konfiguracja?",
+        ru: "Сколько времени занимает настройка?",
       },
       a: {
         uk: "Більшість терапевтів налаштовують профіль, послуги та публічне посилання для запису менш ніж за 10 хвилин. Не потрібно складного онбордингу: ви додаєте основні дані, встановлюєте типи сесій і ціни — і можете починати роботу. Користувачі Pro Practice можуть отримати персональну підтримку при налаштуванні, якщо вони цього бажають.",
         en: "Most therapists set up their profile, services and public booking link in under 10 minutes. No complex onboarding required — add the basics, set session types and prices, and you're ready to go. Pro Practice users can request personal setup support if they wish.",
         fr: "La plupart des thérapeutes configurent profil, services et lien public en moins de 10 minutes. Pas d'onboarding complexe. Les utilisateurs Pro Practice peuvent demander un accompagnement personnalisé.",
         pl: "Większość terapeutów konfiguruje profil, usługi i publiczny link do zapisów w mniej niż 10 minut. Bez skomplikowanego onboardingu. Użytkownicy Pro Practice mogą poprosić o indywidualne wsparcie.",
+        ru: "Большинство терапевтов настраивают профиль, услуги и публичную ссылку для записи менее чем за 10 минут. Сложный онбординг не требуется: добавьте основные данные, задайте типы сеансов и цены — и можно начинать. Пользователи Pro Practice могут запросить персональную поддержку по настройке.",
       },
     },
     {
