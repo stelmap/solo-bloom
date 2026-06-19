@@ -71,6 +71,21 @@ export function initAnalytics(): void {
     loaded: (ph) => {
       // Tag every event/person with the environment it came from.
       ph.register({ environment });
+      // Capture UTM + referrer + landing domain as super-properties on every event.
+      try {
+        const url = new URL(window.location.href);
+        const sp = url.searchParams;
+        const utmProps: Record<string, string> = {};
+        for (const k of ["utm_source","utm_medium","utm_campaign","utm_content","utm_term"]) {
+          const v = sp.get(k);
+          if (v) utmProps[k] = v;
+        }
+        ph.register({
+          ...utmProps,
+          landing_domain: url.hostname,
+          initial_referrer: document.referrer || "direct",
+        });
+      } catch { /* noop */ }
       if (import.meta.env.DEV) ph.debug(false);
     },
   });
