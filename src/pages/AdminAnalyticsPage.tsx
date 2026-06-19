@@ -172,6 +172,15 @@ export default function AdminAnalyticsPage() {
             <h1 className="text-2xl font-bold">Analytics</h1>
           </div>
           <div className="flex items-center gap-2">
+            <Select value={domainFilter} onValueChange={setDomainFilter}>
+              <SelectTrigger className="w-48"><SelectValue placeholder="All domains" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All domains</SelectItem>
+                {allDomains.map((d) => (
+                  <SelectItem key={d} value={d}>{d}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={rangeKey} onValueChange={setRangeKey}>
               <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
               <SelectContent>
