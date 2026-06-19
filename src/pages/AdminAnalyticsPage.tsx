@@ -26,16 +26,19 @@ type EventRow = {
   created_at: string;
 };
 
-const FUNNEL_STEPS: { key: string; label: string }[] = [
-  { key: "website_page_view", label: "Landing visit" },
-  { key: "auth_page_opened", label: "Opened auth" },
-  { key: "registration_completed", label: "Registered" },
-  { key: "product_entered", label: "Entered product" },
-  { key: "first_client_created", label: "Created first client" },
-  { key: "first_appointment_created", label: "First appointment" },
-  { key: "pricing_page_viewed", label: "Viewed pricing" },
-  { key: "stripe_checkout_opened", label: "Opened checkout" },
-  { key: "subscription_completed", label: "Subscribed" },
+// Each funnel step maps to one or more event names — events evolve over time,
+// so we count all known aliases together to keep the funnel meaningful.
+const FUNNEL_STEPS: { keys: string[]; label: string }[] = [
+  { keys: ["website_page_view", "landing_view", "$pageview"], label: "Landing visit" },
+  { keys: ["auth_page_opened"], label: "Opened auth" },
+  { keys: ["registration_completed", "sign_up_completed"], label: "Registered" },
+  { keys: ["login_completed"], label: "Logged in" },
+  { keys: ["product_entered"], label: "Entered product" },
+  { keys: ["first_client_created", "client_created"], label: "Created a client" },
+  { keys: ["first_appointment_created", "session_created"], label: "Created a session" },
+  { keys: ["pricing_page_viewed", "pricing_view"], label: "Viewed pricing" },
+  { keys: ["stripe_checkout_opened", "stripe_checkout_started", "checkout_started"], label: "Opened checkout" },
+  { keys: ["subscription_completed", "subscription_active", "checkout_completed"], label: "Subscribed" },
 ];
 
 const RANGES = [
