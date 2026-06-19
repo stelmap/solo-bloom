@@ -359,6 +359,59 @@ export function onFeatureFlagsLoaded(cb: () => void): () => void {
   }
 }
 
+export function track(event: AnalyticsEvent, props: BaseEventProps = {}): void {
+  if (!initialized) initAnalytics();
+  const enriched: BaseEventProps = {
+    device_type: deviceType(),
+    source_page: typeof window !== "undefined" ? window.location.pathname : undefined,
+    locale: typeof navigator !== "undefined" ? navigator.language : undefined,
+    subscription_status: subscriptionStatus,
+    environment,
+    ...props,
+  };
+  recordDiagnostic(event, enriched);
+  if (enabled) posthog.capture(event, enriched);
+  // Persist key funnel events to Supabase so the admin dashboard can join with auth.users.
+  if (PERSISTED_EVENTS.has(event) && currentUserId) {
+    persistEventToSupabase(event, enriched).catch(() => { /* swallow */ });
+  }
+}
+
+let currentUserId: string | null = null;
+
+async function persistEventToSupabase(event: string, props: BaseEventProps): Promise<void> {
+  if (!currentUserId || typeof window === "undefined") return;
+  try {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const url = new URL(window.location.href);
+    const sp = url.searchParams;
+    let anonymousId: string | null = null;
+    let sessionId: string | null = null;
+    try {
+      anonymousId = posthog.get_distinct_id?.() ?? null;
+      sessionId = posthog.get_session_id?.() ?? null;
+    } catch { /* noop */ }
+    await supabase.from("user_activity_events").insert({
+      user_id: currentUserId,
+      event_name: event,
+      event_metadata: props as Record<string, unknown>,
+      domain: url.hostname,
+      path: url.pathname,
+      device_type: deviceType(),
+      browser: navigator.userAgent.split(") ").pop() ?? null,
+      source: document.referrer ? new URL(document.referrer).hostname : "direct",
+      referrer: document.referrer || null,
+      utm_source: sp.get("utm_source"),
+      utm_medium: sp.get("utm_medium"),
+      utm_campaign: sp.get("utm_campaign"),
+      utm_content: sp.get("utm_content"),
+      utm_term: sp.get("utm_term"),
+      anonymous_id: anonymousId,
+      session_id: sessionId,
+    });
+  } catch { /* noop */ }
+}
+
 // Fire an arbitrary diagnostic event (not part of the typed AnalyticsEvent union).
 // Used by the in-app diagnostics page to verify delivery without polluting product events.
 export function trackDiagnosticPing(): { name: string; at: string } {
