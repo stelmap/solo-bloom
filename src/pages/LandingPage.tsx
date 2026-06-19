@@ -1594,12 +1594,14 @@ function FaqSection() {
         en: "What happens when I reach my active client limit?",
         fr: "Que se passe-t-il quand j'atteins ma limite de clients actifs ?",
         pl: "Co się dzieje, gdy osiągnę limit aktywnych klientów?",
+        ru: "Что происходит, когда я достигаю лимита активных клиентов?",
       },
       a: {
         uk: "Ви отримаєте сповіщення, коли наближаєтеся до ліміту. Ви можете будь-коли перейти на вищий план. Клієнти, з якими ви вже завершили роботу і позначили як архівних, не рахуються до активного ліміту — враховуються лише поточні активні клієнти.",
         en: "You'll get a notification when you approach the limit. You can upgrade at any time. Clients you've finished working with and archived don't count toward the active limit — only current active clients do.",
         fr: "Vous serez averti·e à l'approche de la limite. Vous pouvez passer à un forfait supérieur à tout moment. Les clients archivés ne comptent pas — seuls les clients actifs sont pris en compte.",
         pl: "Otrzymasz powiadomienie, gdy zbliżasz się do limitu. Możesz przejść na wyższy plan w dowolnej chwili. Klienci zarchiwizowani nie liczą się do limitu — tylko aktywni.",
+        ru: "Вы получите уведомление при приближении к лимиту. Можно перейти на старший план в любой момент. Клиенты, с которыми вы завершили работу и которых отметили как архивных, не учитываются — учитываются только текущие активные клиенты.",
       },
     },
     {
