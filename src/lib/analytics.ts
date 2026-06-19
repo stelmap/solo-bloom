@@ -374,15 +374,17 @@ export function track(event: AnalyticsEvent, props: BaseEventProps = {}): void {
   recordDiagnostic(event, enriched);
   if (enabled) posthog.capture(event, enriched);
   // Persist key funnel events to Supabase so the admin dashboard can join with auth.users.
-  if (PERSISTED_EVENTS.has(event) && currentUserId) {
-    persistEventToSupabase(event, enriched).catch(() => { /* swallow */ });
+  if (PERSISTED_EVENTS.has(event)) {
+    if (currentUserId || ANON_PERSISTED_EVENTS.has(event)) {
+      persistEventToSupabase(event, enriched).catch(() => { /* swallow */ });
+    }
   }
 }
 
 let currentUserId: string | null = null;
 
 async function persistEventToSupabase(event: string, props: BaseEventProps): Promise<void> {
-  if (!currentUserId || typeof window === "undefined") return;
+  if (typeof window === "undefined") return;
   try {
     const { supabase } = await import("@/integrations/supabase/client");
     const url = new URL(window.location.href);
@@ -394,7 +396,7 @@ async function persistEventToSupabase(event: string, props: BaseEventProps): Pro
       sessionId = posthog.get_session_id?.() ?? null;
     } catch { /* noop */ }
     await (supabase.from("user_activity_events") as any).insert({
-      user_id: currentUserId,
+      user_id: currentUserId, // may be NULL for anonymous visits
       event_name: event,
       event_metadata: props as Record<string, unknown>,
       domain: url.hostname,
