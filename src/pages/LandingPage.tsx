@@ -1642,12 +1642,14 @@ function FaqSection() {
         en: "Do I need a credit card for Free Starter?",
         fr: "Faut-il une carte bancaire pour Free Starter ?",
         pl: "Czy potrzebuję karty dla Free Starter?",
+        ru: "Нужна ли банковская карта для Free Starter?",
       },
       a: {
         uk: "Ні. Free Starter безкоштовний назавжди — без пробного терміну і без автоматичного списання. Ви додаєте платіжні дані лише тоді, коли вирішите перейти на платний план.",
         en: "No. Free Starter is free forever — no trial, no automatic charge. You only add payment details if you decide to upgrade to a paid plan.",
         fr: "Non. Free Starter est gratuit pour toujours — sans essai ni prélèvement automatique. Vous n'ajoutez vos coordonnées de paiement que si vous passez à un forfait payant.",
         pl: "Nie. Free Starter jest darmowy na zawsze — bez okresu próbnego i bez automatycznych opłat. Dane płatności podajesz dopiero przy przejściu na płatny plan.",
+        ru: "Нет. Free Starter бесплатен навсегда — без пробного периода и без автоматических списаний. Платёжные данные добавляются только при переходе на платный план.",
       },
     },
     {
