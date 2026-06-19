@@ -1721,12 +1721,14 @@ function FaqSection() {
         en: "Where can I get help with setting up the system?",
         fr: "Où obtenir de l'aide pour la configuration ?",
         pl: "Gdzie mogę uzyskać pomoc przy konfiguracji?",
+        ru: "Где я могу получить консультацию по настройке системы?",
       },
       a: {
         uk: <>Ви можете написати нам на email: {mail} або залишити повідомлення через {fb("Facebook-сторінку SoloBizz")}. Ми зв'яжемося з вами і допоможемо розібратися з налаштуванням системи.</>,
         en: <>Write to us at {mail} or message us via the {fb("SoloBizz Facebook page")}. We'll get back to you and help with setup.</>,
         fr: <>Écrivez-nous à {mail} ou via notre {fb("page Facebook SoloBizz")}. Nous vous aiderons avec la configuration.</>,
         pl: <>Napisz do nas na {mail} lub przez {fb("stronę Facebook SoloBizz")}. Pomożemy z konfiguracją.</>,
+        ru: <>Напишите нам на email: {mail} или оставьте сообщение через {fb("страницу Facebook SoloBizz")}. Мы свяжемся с вами и поможем с настройкой системы.</>,
       },
     },
   ];
