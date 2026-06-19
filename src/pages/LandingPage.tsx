@@ -1556,7 +1556,7 @@ const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61589480870290";
 const YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@olga.stelmakh";
 const FAQ_EMAIL = "info@solobizz.com";
 
-type FaqItem = { q: Record<Language, string>; a: Record<Language, ReactNode> | ReactNode };
+type FaqItem = { q: Record<Language, string> & { ru?: string }; a: (Record<Language, ReactNode> & { ru?: ReactNode }) | ReactNode };
 
 function FaqSection() {
   const { t, lang } = useLandingLang();
