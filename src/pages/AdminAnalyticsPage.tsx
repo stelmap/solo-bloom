@@ -245,6 +245,7 @@ export default function AdminAnalyticsPage() {
                   <TableRow key={r.id}>
                     <TableCell className="whitespace-nowrap text-xs">{new Date(r.created_at).toLocaleString()}</TableCell>
                     <TableCell className="font-medium text-xs">{r.event_name}</TableCell>
+                    <TableCell className="text-xs">{r.domain ?? "—"}</TableCell>
                     <TableCell className="text-xs">{r.path ?? "—"}</TableCell>
                     <TableCell className="text-xs">{r.utm_source || r.source || "direct"}</TableCell>
                     <TableCell className="text-xs">{r.device_type ?? "—"}</TableCell>
