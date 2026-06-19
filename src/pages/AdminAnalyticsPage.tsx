@@ -233,6 +233,7 @@ export default function AdminAnalyticsPage() {
                 <TableRow>
                   <TableHead>When</TableHead>
                   <TableHead>Event</TableHead>
+                  <TableHead>Domain</TableHead>
                   <TableHead>Path</TableHead>
                   <TableHead>Source</TableHead>
                   <TableHead>Device</TableHead>
