@@ -151,7 +151,58 @@ export type AnalyticsEvent =
   | "payment_method_added"
   | "payment_method_deleted"
   | "booking_request_submitted"
-  | "booking_confirmed";
+  | "booking_confirmed"
+  // Funnel + product analytics
+  | "website_page_view"
+  | "auth_page_opened"
+  | "registration_started"
+  | "registration_completed"
+  | "registration_failed"
+  | "product_entered"
+  | "dashboard_opened"
+  | "calendar_opened"
+  | "clients_opened"
+  | "finances_opened"
+  | "income_page_opened"
+  | "settings_opened"
+  | "first_appointment_created"
+  | "first_client_created"
+  | "pricing_page_viewed"
+  | "tariff_selected"
+  | "stripe_checkout_opened"
+  | "subscription_completed"
+  | "payment_succeeded"
+  | "payment_failed"
+  | "subscription_cancelled"
+  | "scroll_depth";
+
+// Events we persist to Supabase user_activity_events for the admin dashboard.
+// Anonymous events stay PostHog-only (no user_id to attach to).
+const PERSISTED_EVENTS = new Set<AnalyticsEvent>([
+  "auth_page_opened",
+  "registration_completed",
+  "login_completed",
+  "product_entered",
+  "dashboard_opened",
+  "calendar_opened",
+  "clients_opened",
+  "finances_opened",
+  "income_page_opened",
+  "settings_opened",
+  "first_appointment_created",
+  "first_client_created",
+  "client_created",
+  "session_created",
+  "pricing_page_viewed",
+  "tariff_selected",
+  "stripe_checkout_opened",
+  "checkout_started",
+  "subscription_completed",
+  "subscription_active",
+  "payment_succeeded",
+  "payment_failed",
+  "subscription_cancelled",
+]);
 
 // In-memory diagnostics for the current browser session.
 // Survives only until page reload — purely a debugging aid.
