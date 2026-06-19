@@ -52,7 +52,9 @@ export default function AdminAnalyticsPage() {
   const { user, loading } = useAuth();
   const [busy, setBusy] = useState(false);
   const [rows, setRows] = useState<EventRow[]>([]);
+  const [allDomains, setAllDomains] = useState<string[]>([]);
   const [rangeKey, setRangeKey] = useState("7d");
+  const [domainFilter, setDomainFilter] = useState<string>("all");
 
   const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL;
 
@@ -61,12 +63,16 @@ export default function AdminAnalyticsPage() {
     try {
       const days = RANGES.find((r) => r.key === rangeKey)?.days ?? 7;
       const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-      const { data, error } = await (supabase
+      let query = (supabase
         .from("user_activity_events") as any)
         .select("id,user_id,event_name,domain,path,device_type,source,utm_source,utm_medium,utm_campaign,country,created_at")
         .gte("created_at", since)
         .order("created_at", { ascending: false })
         .limit(5000);
+      if (domainFilter !== "all") {
+        query = query.eq("domain", domainFilter);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       setRows((data as EventRow[]) ?? []);
     } finally {
@@ -74,10 +80,33 @@ export default function AdminAnalyticsPage() {
     }
   }
 
+  async function loadDomains() {
+    try {
+      const days = RANGES.find((r) => r.key === rangeKey)?.days ?? 7;
+      const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+      const { data, error } = await (supabase.rpc as any)("get_distinct_domains", { since_date: since });
+      if (error) {
+        const { data: fallback } = await (supabase
+          .from("user_activity_events") as any)
+          .select("domain")
+          .gte("created_at", since)
+          .order("domain", { ascending: true })
+          .limit(5000);
+        const domains = [...new Set<string>((fallback ?? []).map((r: any) => r.domain).filter(Boolean))];
+        setAllDomains(domains);
+        return;
+      }
+      setAllDomains((data ?? []).filter(Boolean));
+    } catch { /* noop */ }
+  }
+
   useEffect(() => {
-    if (isAdmin) load();
+    if (isAdmin) {
+      load();
+      loadDomains();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAdmin, rangeKey]);
+  }, [isAdmin, rangeKey, domainFilter]);
 
   const stats = useMemo(() => {
     const totals: Record<string, number> = {};
@@ -86,6 +115,7 @@ export default function AdminAnalyticsPage() {
     const bySource: Record<string, number> = {};
     const byCountry: Record<string, number> = {};
     const byPath: Record<string, number> = {};
+    const byDomain: Record<string, number> = {};
     for (const r of rows) {
       totals[r.event_name] = (totals[r.event_name] ?? 0) + 1;
       if (r.user_id) {
@@ -96,9 +126,10 @@ export default function AdminAnalyticsPage() {
       bySource[src] = (bySource[src] ?? 0) + 1;
       if (r.country) byCountry[r.country] = (byCountry[r.country] ?? 0) + 1;
       if (r.path) byPath[r.path] = (byPath[r.path] ?? 0) + 1;
+      if (r.domain) byDomain[r.domain] = (byDomain[r.domain] ?? 0) + 1;
     }
     const uniqueUsers = new Set(rows.map((r) => r.user_id).filter(Boolean) as string[]).size;
-    return { totals, usersPerEvent, byDevice, bySource, byCountry, byPath, uniqueUsers };
+    return { totals, usersPerEvent, byDevice, bySource, byCountry, byPath, byDomain, uniqueUsers };
   }, [rows]);
 
   const funnel = useMemo(() => {
@@ -141,6 +172,15 @@ export default function AdminAnalyticsPage() {
             <h1 className="text-2xl font-bold">Analytics</h1>
           </div>
           <div className="flex items-center gap-2">
+            <Select value={domainFilter} onValueChange={setDomainFilter}>
+              <SelectTrigger className="w-48"><SelectValue placeholder="All domains" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All domains</SelectItem>
+                {allDomains.map((d) => (
+                  <SelectItem key={d} value={d}>{d}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={rangeKey} onValueChange={setRangeKey}>
               <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -178,6 +218,7 @@ export default function AdminAnalyticsPage() {
         </Card>
 
         <div className="grid md:grid-cols-2 gap-4">
+          <BreakdownCard title="By domain" data={stats.byDomain} />
           <BreakdownCard title="By source" data={stats.bySource} />
           <BreakdownCard title="By device" data={stats.byDevice} />
           <BreakdownCard title="By country" data={stats.byCountry} />
@@ -192,6 +233,7 @@ export default function AdminAnalyticsPage() {
                 <TableRow>
                   <TableHead>When</TableHead>
                   <TableHead>Event</TableHead>
+                  <TableHead>Domain</TableHead>
                   <TableHead>Path</TableHead>
                   <TableHead>Source</TableHead>
                   <TableHead>Device</TableHead>
@@ -203,6 +245,7 @@ export default function AdminAnalyticsPage() {
                   <TableRow key={r.id}>
                     <TableCell className="whitespace-nowrap text-xs">{new Date(r.created_at).toLocaleString()}</TableCell>
                     <TableCell className="font-medium text-xs">{r.event_name}</TableCell>
+                    <TableCell className="text-xs">{r.domain ?? "—"}</TableCell>
                     <TableCell className="text-xs">{r.path ?? "—"}</TableCell>
                     <TableCell className="text-xs">{r.utm_source || r.source || "direct"}</TableCell>
                     <TableCell className="text-xs">{r.device_type ?? "—"}</TableCell>
