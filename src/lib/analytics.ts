@@ -71,6 +71,21 @@ export function initAnalytics(): void {
     loaded: (ph) => {
       // Tag every event/person with the environment it came from.
       ph.register({ environment });
+      // Capture UTM + referrer + landing domain as super-properties on every event.
+      try {
+        const url = new URL(window.location.href);
+        const sp = url.searchParams;
+        const utmProps: Record<string, string> = {};
+        for (const k of ["utm_source","utm_medium","utm_campaign","utm_content","utm_term"]) {
+          const v = sp.get(k);
+          if (v) utmProps[k] = v;
+        }
+        ph.register({
+          ...utmProps,
+          landing_domain: url.hostname,
+          initial_referrer: document.referrer || "direct",
+        });
+      } catch { /* noop */ }
       if (import.meta.env.DEV) ph.debug(false);
     },
   });
@@ -151,7 +166,58 @@ export type AnalyticsEvent =
   | "payment_method_added"
   | "payment_method_deleted"
   | "booking_request_submitted"
-  | "booking_confirmed";
+  | "booking_confirmed"
+  // Funnel + product analytics
+  | "website_page_view"
+  | "auth_page_opened"
+  | "registration_started"
+  | "registration_completed"
+  | "registration_failed"
+  | "product_entered"
+  | "dashboard_opened"
+  | "calendar_opened"
+  | "clients_opened"
+  | "finances_opened"
+  | "income_page_opened"
+  | "settings_opened"
+  | "first_appointment_created"
+  | "first_client_created"
+  | "pricing_page_viewed"
+  | "tariff_selected"
+  | "stripe_checkout_opened"
+  | "subscription_completed"
+  | "payment_succeeded"
+  | "payment_failed"
+  | "subscription_cancelled"
+  | "scroll_depth";
+
+// Events we persist to Supabase user_activity_events for the admin dashboard.
+// Anonymous events stay PostHog-only (no user_id to attach to).
+const PERSISTED_EVENTS = new Set<AnalyticsEvent>([
+  "auth_page_opened",
+  "registration_completed",
+  "login_completed",
+  "product_entered",
+  "dashboard_opened",
+  "calendar_opened",
+  "clients_opened",
+  "finances_opened",
+  "income_page_opened",
+  "settings_opened",
+  "first_appointment_created",
+  "first_client_created",
+  "client_created",
+  "session_created",
+  "pricing_page_viewed",
+  "tariff_selected",
+  "stripe_checkout_opened",
+  "checkout_started",
+  "subscription_completed",
+  "subscription_active",
+  "payment_succeeded",
+  "payment_failed",
+  "subscription_cancelled",
+]);
 
 // In-memory diagnostics for the current browser session.
 // Survives only until page reload — purely a debugging aid.
@@ -251,21 +317,8 @@ export function getSubscriptionStatus(): SubscriptionStatusValue {
   return subscriptionStatus;
 }
 
-export function track(event: AnalyticsEvent, props: BaseEventProps = {}): void {
-  if (!initialized) initAnalytics();
-  const enriched: BaseEventProps = {
-    device_type: deviceType(),
-    source_page: typeof window !== "undefined" ? window.location.pathname : undefined,
-    locale: typeof navigator !== "undefined" ? navigator.language : undefined,
-    subscription_status: subscriptionStatus,
-    environment,
-    ...props,
-  };
-  // Always record the attempt locally so diagnostics work in dev/preview too.
-  recordDiagnostic(event, enriched);
-  if (!enabled) return;
-  posthog.capture(event, enriched);
-}
+
+
 
 // Read a PostHog feature flag synchronously (no React). Returns the variant
 // string, true/false for booleans, or undefined while loading / when disabled.
@@ -293,6 +346,59 @@ export function onFeatureFlagsLoaded(cb: () => void): () => void {
   }
 }
 
+export function track(event: AnalyticsEvent, props: BaseEventProps = {}): void {
+  if (!initialized) initAnalytics();
+  const enriched: BaseEventProps = {
+    device_type: deviceType(),
+    source_page: typeof window !== "undefined" ? window.location.pathname : undefined,
+    locale: typeof navigator !== "undefined" ? navigator.language : undefined,
+    subscription_status: subscriptionStatus,
+    environment,
+    ...props,
+  };
+  recordDiagnostic(event, enriched);
+  if (enabled) posthog.capture(event, enriched);
+  // Persist key funnel events to Supabase so the admin dashboard can join with auth.users.
+  if (PERSISTED_EVENTS.has(event) && currentUserId) {
+    persistEventToSupabase(event, enriched).catch(() => { /* swallow */ });
+  }
+}
+
+let currentUserId: string | null = null;
+
+async function persistEventToSupabase(event: string, props: BaseEventProps): Promise<void> {
+  if (!currentUserId || typeof window === "undefined") return;
+  try {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const url = new URL(window.location.href);
+    const sp = url.searchParams;
+    let anonymousId: string | null = null;
+    let sessionId: string | null = null;
+    try {
+      anonymousId = posthog.get_distinct_id?.() ?? null;
+      sessionId = posthog.get_session_id?.() ?? null;
+    } catch { /* noop */ }
+    await (supabase.from("user_activity_events") as any).insert({
+      user_id: currentUserId,
+      event_name: event,
+      event_metadata: props as Record<string, unknown>,
+      domain: url.hostname,
+      path: url.pathname,
+      device_type: deviceType(),
+      browser: navigator.userAgent.split(") ").pop() ?? null,
+      source: document.referrer ? new URL(document.referrer).hostname : "direct",
+      referrer: document.referrer || null,
+      utm_source: sp.get("utm_source"),
+      utm_medium: sp.get("utm_medium"),
+      utm_campaign: sp.get("utm_campaign"),
+      utm_content: sp.get("utm_content"),
+      utm_term: sp.get("utm_term"),
+      anonymous_id: anonymousId,
+      session_id: sessionId,
+    });
+  } catch { /* noop */ }
+}
+
 // Fire an arbitrary diagnostic event (not part of the typed AnalyticsEvent union).
 // Used by the in-app diagnostics page to verify delivery without polluting product events.
 export function trackDiagnosticPing(): { name: string; at: string } {
@@ -318,15 +424,22 @@ export function trackDiagnosticPing(): { name: string; at: string } {
 // Do NOT pass email, name, phone, etc.
 export function identifyUser(userId: string, traits: { locale?: string; currency?: string } = {}): void {
   if (!initialized) initAnalytics();
+  currentUserId = userId || null;
   if (!enabled || !userId) return;
+  // Alias the previously-anonymous distinct_id to this user so pre-signup
+  // pageviews + funnel steps are stitched into the same person.
+  try {
+    const anonId = posthog.get_distinct_id?.();
+    if (anonId && anonId !== userId) posthog.alias(userId, anonId);
+  } catch { /* noop */ }
   posthog.identify(userId, {
-    // Only non-PII traits.
     locale: traits.locale,
     currency: traits.currency,
   });
 }
 
 export function resetAnalytics(): void {
+  currentUserId = null;
   if (!enabled) return;
   posthog.reset();
 }

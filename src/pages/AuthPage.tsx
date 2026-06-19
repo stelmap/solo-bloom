@@ -35,6 +35,11 @@ export default function AuthPage() {
   const isCheckoutPlan = Boolean(planParam && PLAN_SELECTION_MAP[planParam]);
   const isFreeStarterPlan = planParam === "free_starter";
   const [mode, setMode] = useState<"login" | "signup" | "forgot">(searchParams.get("mode") === "signup" || isFreeStarterPlan ? "signup" : "login");
+
+  useEffect(() => {
+    track("auth_page_opened", { plan_type: planParam ?? undefined, mode });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -240,6 +245,10 @@ export default function AuthPage() {
         });
         if (error) throw error;
         track("sign_up_started", { plan_type: planParam ?? undefined, lang });
+        track("registration_started", { plan_type: planParam ?? undefined, lang });
+        if (data.user?.id) {
+          track("registration_completed", { plan_type: planParam ?? undefined, lang, user_id: data.user.id });
+        }
 
         if (data.session) {
           // Auto-confirm enabled (rare) — straight to app
@@ -267,6 +276,9 @@ export default function AuthPage() {
     } catch (error: any) {
       const rawMsg: string = error?.message || "";
       const code: string = (error as any)?.code || "";
+      if (mode === "signup") {
+        track("registration_failed", { reason: rawMsg.slice(0, 200), code });
+      }
       const notConfirmed =
         code === "email_not_confirmed" ||
         /email\s*not\s*confirmed/i.test(rawMsg) ||

@@ -75,6 +75,10 @@ export default function PlansPage() {
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [clearing, setClearing] = useState(false);
 
+  useEffect(() => {
+    track("pricing_page_viewed", { surface: "in_app_plans" });
+  }, []);
+
   const isPaid = subscription.subscribed || subscription.on_trial;
   const canClearDemo = !isPaid && Boolean(hasDemoData);
 
@@ -331,7 +335,9 @@ export default function PlansPage() {
     } as const;
 
     track("cta_clicked", { ...baseProps, action: "plan_selected" });
+    track("tariff_selected", baseProps);
     track("checkout_started", baseProps);
+    track("stripe_checkout_opened", baseProps);
 
     // Persist a durable funnel event so admin analytics can show "Visited Stripe".
     // Fire-and-forget — never block the checkout flow on this insert.

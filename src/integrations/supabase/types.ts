@@ -2412,25 +2412,67 @@ export type Database = {
       }
       user_activity_events: {
         Row: {
+          anonymous_id: string | null
+          browser: string | null
+          country: string | null
           created_at: string
+          device_type: string | null
+          domain: string | null
           event_metadata: Json | null
           event_name: string
           id: string
+          path: string | null
+          referrer: string | null
+          session_id: string | null
+          source: string | null
           user_id: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
         }
         Insert: {
+          anonymous_id?: string | null
+          browser?: string | null
+          country?: string | null
           created_at?: string
+          device_type?: string | null
+          domain?: string | null
           event_metadata?: Json | null
           event_name: string
           id?: string
+          path?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          source?: string | null
           user_id: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
         }
         Update: {
+          anonymous_id?: string | null
+          browser?: string | null
+          country?: string | null
           created_at?: string
+          device_type?: string | null
+          domain?: string | null
           event_metadata?: Json | null
           event_name?: string
           id?: string
+          path?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          source?: string | null
           user_id?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
         }
         Relationships: []
       }
