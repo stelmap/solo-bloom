@@ -284,37 +284,50 @@ export default function AdminAnalyticsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard label="Total events" value={rows.length} />
-          <StatCard label="Unique users" value={stats.uniqueUsers} />
-          <StatCard label="Registrations" value={stats.totals["registration_completed"] ?? 0} />
-          <StatCard label="Subscriptions" value={stats.totals["subscription_completed"] ?? 0} />
-        </div>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="web">Web traffic</TabsTrigger>
+          </TabsList>
 
-        <Card>
-          <CardHeader><CardTitle>Conversion funnel</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
-            {funnel.map((s) => (
-              <div key={s.label} className="space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span className="font-medium">{s.label}</span>
-                  <span className="text-muted-foreground">{s.count} events · {s.users} users · {s.pct}%</span>
-                </div>
-                <div className="h-2 rounded bg-muted overflow-hidden">
-                  <div className="h-full bg-primary" style={{ width: `${s.pct}%` }} />
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <StatCard label="Total events" value={rows.length} />
+              <StatCard label="Unique users" value={stats.uniqueUsers} />
+              <StatCard label="Registrations" value={stats.totals["registration_completed"] ?? 0} />
+              <StatCard label="Subscriptions" value={stats.totals["subscription_completed"] ?? 0} />
+            </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          <BreakdownCard title="By domain" data={stats.byDomain} />
-          <BreakdownCard title="By source" data={stats.bySource} />
-          <BreakdownCard title="By device" data={stats.byDevice} />
-          <BreakdownCard title="By country" data={stats.byCountry} />
-          <BreakdownCard title="Top pages" data={stats.byPath} />
-        </div>
+            <Card>
+              <CardHeader><CardTitle>Conversion funnel</CardTitle></CardHeader>
+              <CardContent className="space-y-2">
+                {funnel.map((s) => (
+                  <div key={s.label} className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium">{s.label}</span>
+                      <span className="text-muted-foreground">{s.count} events · {s.users} users · {s.pct}%</span>
+                    </div>
+                    <div className="h-2 rounded bg-muted overflow-hidden">
+                      <div className="h-full bg-primary" style={{ width: `${s.pct}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <BreakdownCard title="By domain" data={stats.byDomain} />
+              <BreakdownCard title="By source" data={stats.bySource} />
+              <BreakdownCard title="By device" data={stats.byDevice} />
+              <BreakdownCard title="By country" data={stats.byCountry} />
+              <BreakdownCard title="Top pages" data={stats.byPath} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="web" className="space-y-6">
+            <WebTrafficPanel data={webTraffic} />
+          </TabsContent>
+        </Tabs>
 
         <Card>
           <CardHeader><CardTitle>Recent events</CardTitle></CardHeader>
