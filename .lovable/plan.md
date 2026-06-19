@@ -1,69 +1,85 @@
-# Fix calculation inconsistencies between Dashboard and Finance
+# Solo.Bizz Analytics Dashboard — Implementation Plan
 
-This is a large, cross-cutting refactor. To avoid introducing new mismatches, I'll do it in two phases: **(1) audit + create a single shared metrics layer**, then **(2) wire every page to it and add tooltips**.
+Scope from your spec, with these decisions locked in: in-app custom dashboard, all funnel events instrumented first, access restricted to `o.gilevich@gmail.com`.
 
-## Phase 1 — Single source of truth
+## 1. Event instrumentation (foundation)
 
-Create `src/lib/financeMetrics.ts` exporting pure functions that take raw rows (`appointments`, `income`, `income_session_allocations`, `expected_payments`, `clients`, `group_session_payments`) and return all 9 metrics with the **exact session/payment lists** that compose each total. Every page will read from this — no duplicated formulas.
+Extend `src/lib/analytics.ts` `AnalyticsEvent` union and fire events at the right places. Each event is captured both in PostHog (for heatmap/segmentation) and persisted to `user_activity_events` in Supabase (so the dashboard queries are fast and email-joinable).
 
-Metric definitions (locked in):
+Events to add / wire up:
 
-| Metric | Definition |
-|---|---|
-| New clients this month | All clients with `created_at` in current month, regardless of status |
-| └ active new | Subset where `status='active'` |
-| └ ended/left new | Subset where `status` in (`archived`,`ended`,`paused`,`cancelled`) |
-| Clients without next session | `status='active'` clients with no future appointment whose status ∉ (`cancelled`,`no-show`) |
-| Unpaid sessions | All-time `completed` + payment_status ∈ (`unpaid`,`waiting_for_payment`,`partially_paid`,`partially_paid_from_prepayment`) |
-| Paid today | Sum of `income` rows with `date = today` |
-| Expected revenue today | Sum of price of today's `scheduled`/`confirmed`/`completed` sessions minus already-allocated payments (i.e. still owed for today's sessions) |
-| Today's debt | Unpaid payable sessions with `scheduled_at::date = today` (today only) |
-| Total debt | All-time unpaid payable sessions with `scheduled_at <= now` (past + today, never future) |
-| Pending payments (Finance) | Same as Total debt — single definition |
-| Expected income (future) | Sum of price of future `scheduled`/`confirmed` sessions not yet paid (strictly `scheduled_at > now`) |
+- `website_page_view` — already covered by PostHog `$pageview` + SPA wrapper.
+- `auth_page_opened` — fire on `/auth` mount (`AuthPage.tsx`).
+- `registration_started`, `registration_completed`, `registration_failed` — `AuthPage.tsx` signup branch + `AuthContext`.
+- `login_completed` — already exists.
+- `product_entered` — fire once per session on first authenticated route inside `AppLayout.tsx`.
+- `dashboard_opened`, `calendar_opened`, `clients_opened`, `finances_opened`, `income_page_opened`, `settings_opened` — page mounts.
+- `first_appointment_created`, `first_client_created` — wrap existing `client_created` / `session_created` with a one-time check against PostHog person property `has_created_first_client` / `..._appointment` via `persons-property-set`.
+- `pricing_page_viewed` — fire on `/plans` mount + landing pricing block intersection observer.
+- `tariff_selected` — already partly covered by `cta_clicked`; add explicit event with `plan_id`.
+- `stripe_checkout_opened` — already covered by `checkout_started` / `stripe_checkout_started`.
+- `subscription_completed` — already covered by `subscription_active` from `PurchaseSuccessPage`.
+- `payment_succeeded`, `payment_failed`, `subscription_cancelled` — Stripe webhook → log to `user_activity_events`.
+- `scroll_depth` — landing-only, 25/50/75/100% buckets via IntersectionObserver.
 
-Rules applied uniformly:
-- Cancelled/no-show sessions → excluded from debt and expected income
-- Prepaid sessions (`paid_in_advance`, `paid_from_prepayment`) → counted as paid
-- Partially paid → debt = `price - sum(allocations)`, never negative
-- Group sessions → use `group_session_payments.amount` and `payment_state`
-- Never double-count a session across debt + expected income
+UTM + referrer capture: in `initAnalytics()`, parse `window.location.search` for `utm_*` + `referrer` + `landing_domain` and `posthog.register()` as super-properties so every event carries them.
 
-## Phase 2 — Wire pages + add explanatory UI
+Anonymous → user alias: on successful login/signup, call `posthog.alias(anonId, userId)` then `identifyUser()`. Already partially done in `identifyUser`; add `alias` step in `AuthContext` post-auth effect.
 
-**Dashboard.tsx**
-- Replace inline calcs in `useDashboardStats` (in `useData.ts`) with calls to `financeMetrics`
-- "New clients this month" card: show `5`, add `Tooltip` reading: `"5 клієнтів зареєстровано цього місяця. X активних, Y завершили/припинили терапію."`
-- "Clients without next session" card → link to ClientsPage with explicit filter `status=active&noFutureSession=1`
-- "Expected revenue today" card → link opens a detail modal listing today's contributing sessions with running total
-- "Today's debt" card → link opens detail listing today's unpaid sessions only (not historical)
+## 2. Server-side event log
 
-**ClientsPage.tsx**
-- Add `noFutureSession=1` query-param filter so the dashboard link produces the matching list
-- "New clients this month" detail view: add a toggle `Active only / All` defaulting to `All`, with a label `"X активних, Y завершили"`
+New table `analytics_events` (Supabase) — we already have `user_activity_events` but it's user-scoped. Extend its usage: keep current table, add columns `domain text`, `path text`, `country text`, `device text`, `source text`, `utm_source text`, `utm_medium text`, `utm_campaign text`, `anonymous_id text`, `metadata jsonb`. RLS: admin-only read (via `has_role` or hardcoded email check in edge function). Insert from authenticated client for logged-in events; anonymous events stay PostHog-only (we'll query PostHog for landing/anon funnel steps).
 
-**IncomePage.tsx**
-- "Pending payments" tile = `Total debt` from shared layer (was filtering by `expected_payments` table only, which missed sessions where no expected_payment row was created)
-- "Expected income" tile = `confirmed total + future expected income` (separate from debt)
-- Add footnote under each tile explaining what's included
+Funnel data strategy: a single edge function `admin-analytics` is the source of truth. It:
+1. Queries PostHog HogQL API for anonymous-stage counts (website_page_view, auth_page_opened, registration_completed) with filters.
+2. Queries Supabase for authenticated-stage counts (product_entered, first action, pricing, subscription) joined to `auth.users` for email.
+3. Returns one JSON blob the frontend renders.
 
-**Dashboard detail modal / MonthlyDetailsModal.tsx**
-- For each metric, render the exact list returned by `financeMetrics` so totals always reconcile
+## 3. Admin route + UI
 
-## Phase 3 — Verification
+- `src/pages/AdminAnalyticsPage.tsx` — main dashboard at `/admin/analytics`.
+- Guard: reuse `ProtectedRoute` + extra check `user.email === 'o.gilevich@gmail.com'`, redirect otherwise.
+- Add nav link in `AppSidebar` (admin-only).
+- Components (all new under `src/components/admin/analytics/`):
+  - `FiltersBar` — domain, country, device, source, date range (today / 7d / 30d / month / custom).
+  - `WebMetricsRow` — visitors, page views, avg duration, bounce, current visitors (PostHog embed widgets or numeric tiles from HogQL).
+  - `FunnelCard` — 7-step funnel with count + step% + total% + drop-off.
+  - `BreakdownTabs` — source / page / device / country tables.
+  - `ActiveUsersTable` — email, user_id, registered, last activity, sessions, clients, appointments, plan, status, country, device, first source, last source. Row click → `UserJourneyDrawer`.
+  - `UserJourneyDrawer` — chronological event list for a single user (Supabase + PostHog person events).
+  - `HeatmapPanel` — embedded PostHog heatmap iframe for the landing URL with the same domain/country/device/source filters passed as query params (PostHog supports this).
 
-- Add `src/lib/__tests__/financeMetrics.test.ts` covering: prepayment, partial payment, cancelled session, group session, today vs future boundary, archived new client
-- Manually verify on preview that every dashboard card number equals its detail list total
+## 4. Edge functions
 
-## Technical notes
+- `admin-analytics` (new): accepts `{filters, view}`, validates caller email == admin, runs HogQL via PostHog Query API using `POSTHOG_PERSONAL_API_KEY`, joins with Supabase, returns dashboard payload.
+- `admin-user-journey` (new): `{user_id}` → returns merged event timeline.
+- Extend `stripe-webhook` to write `payment_succeeded` / `payment_failed` / `subscription_cancelled` rows into `user_activity_events`.
 
-- No DB schema changes — pure client-side recompute
-- Existing hooks (`useAppointments`, `useIncome`, `useExpectedPayments`, `useClients`, `useGroupSessionPayments`) already fetch everything needed; `useDashboardStats` will compose them via the new shared layer instead of inline `.filter().reduce()` chains scattered across `useData.ts` (lines ~2000-2300) and `Dashboard.tsx`
-- Tooltips use existing `@/components/ui/tooltip`
-- No UI redesign — only added tooltips, footnotes, and a detail modal where missing
+Required secret: `POSTHOG_PERSONAL_API_KEY` (I will request via `add_secret` when we get there — get it from PostHog → Settings → Personal API keys, scopes: `query:read`, `person:read`, `insight:read`).
 
-## Scope / risk
+## 5. Heatmap
 
-~1 new file (`financeMetrics.ts` ~300 LOC), ~1 new test file, edits to `useData.ts`, `Dashboard.tsx`, `IncomePage.tsx`, `ClientsPage.tsx`, `MonthlyDetailsModal.tsx`. Estimated 600-900 lines changed. I'll run `tsc --noEmit` and the existing vitest suite before handing back.
+PostHog already records sessions and supports heatmaps natively. `HeatmapPanel` embeds the PostHog heatmap toolbar URL for the configured landing domain. No new instrumentation needed beyond `scroll_depth` and existing autocapture clicks.
 
-**One question before I start:** for **"Today's debt"**, should completed sessions from **earlier today** that are unpaid count, or only sessions scheduled for today regardless of status? I'll assume **both** (any unpaid payable session whose date is today) unless you say otherwise.
+## 6. Access control
+
+- Frontend: route guard checks `user.email === 'o.gilevich@gmail.com'`.
+- Backend: every analytics edge function re-validates `auth.uid()` → `auth.users.email === 'o.gilevich@gmail.com'`. No reliance on roles for this surface.
+
+## 7. Out of scope (per your spec section 17)
+
+Multi-touch attribution, CAC/LTV/ROAS, session replay UI inside the app, ad-platform integrations, AI recommendations.
+
+---
+
+## Suggested build order
+
+1. Migration: extend `user_activity_events` columns + admin-only RLS additions.
+2. Instrument all missing events + UTM capture + anon→user alias.
+3. Request `POSTHOG_PERSONAL_API_KEY` secret.
+4. Build `admin-analytics` + `admin-user-journey` edge functions.
+5. Build `/admin/analytics` page + components.
+6. Wire Stripe webhook additions.
+7. Test end-to-end with your account; verify funnel populates and your email appears in active users.
+
+This will take several iterations. Confirm and I'll start with steps 1–2 in the next turn.
