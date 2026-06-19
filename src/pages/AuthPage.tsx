@@ -35,6 +35,11 @@ export default function AuthPage() {
   const isCheckoutPlan = Boolean(planParam && PLAN_SELECTION_MAP[planParam]);
   const isFreeStarterPlan = planParam === "free_starter";
   const [mode, setMode] = useState<"login" | "signup" | "forgot">(searchParams.get("mode") === "signup" || isFreeStarterPlan ? "signup" : "login");
+
+  useEffect(() => {
+    track("auth_page_opened", { plan_type: planParam ?? undefined, mode });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
