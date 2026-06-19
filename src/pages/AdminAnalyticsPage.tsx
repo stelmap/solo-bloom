@@ -25,6 +25,8 @@ type EventRow = {
   utm_medium: string | null;
   utm_campaign: string | null;
   country: string | null;
+  session_id: string | null;
+  anonymous_id: string | null;
   created_at: string;
 };
 
