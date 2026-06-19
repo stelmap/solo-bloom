@@ -2047,30 +2047,52 @@ function AboutContactsSection() {
 
 function LandingFooter() {
   const { lang } = useLandingLang();
-  const isUk = lang === "uk";
+  const pick = (m: Partial<Record<AppLanguage, string>>) => m[lang] ?? m.en ?? "";
+  const T = {
+    product: pick({ en: "Product", uk: "Продукт", fr: "Produit", pl: "Produkt", ru: "Продукт" }),
+    howItWorks: pick({ en: "How it works", uk: "Як це працює", fr: "Comment ça marche", pl: "Jak to działa", ru: "Как это работает" }),
+    pricing: pick({ en: "Pricing", uk: "Ціни", fr: "Tarifs", pl: "Cennik", ru: "Цены" }),
+    company: pick({ en: "Company", uk: "Компанія", fr: "Société", pl: "Firma", ru: "Компания" }),
+    about: pick({ en: "About us", uk: "Про нас", fr: "À propos", pl: "O nas", ru: "О нас" }),
+    contacts: pick({ en: "Contacts", uk: "Контакти", fr: "Contacts", pl: "Kontakt", ru: "Контакты" }),
+    careers: pick({ en: "Careers", uk: "Вакансії", fr: "Carrières", pl: "Kariera", ru: "Вакансии" }),
+    getInTouch: pick({ en: "Get in touch", uk: "Зв'язок", fr: "Nous contacter", pl: "Kontakt", ru: "Связь" }),
+    phone: pick({ en: "Phone", uk: "Телефон", fr: "Téléphone", pl: "Telefon", ru: "Телефон" }),
+    tagline: pick({
+      en: "CRM for private practice: clients, bookings, payments and finance.",
+      uk: "CRM для приватної практики: клієнти, записи, оплати та фінанси.",
+      fr: "CRM pour pratique privée : clients, réservations, paiements et finances.",
+      pl: "CRM dla prywatnej praktyki: klienci, rezerwacje, płatności i finanse.",
+      ru: "CRM для частной практики: клиенты, записи, оплаты и финансы.",
+    }),
+    rights: pick({ en: "All rights reserved.", uk: "Усі права захищені.", fr: "Tous droits réservés.", pl: "Wszelkie prawa zastrzeżone.", ru: "Все права защищены." }),
+    terms: pick({ en: "Terms", uk: "Умови", fr: "Conditions", pl: "Regulamin", ru: "Условия" }),
+    privacy: pick({ en: "Privacy", uk: "Конфіденційність", fr: "Confidentialité", pl: "Prywatność", ru: "Конфиденциальность" }),
+    cookies: "Cookies",
+    manageCookies: pick({ en: "Manage cookies", uk: "Керувати cookies", fr: "Gérer les cookies", pl: "Zarządzaj cookies", ru: "Управление cookies" }),
+  };
   const groups = [
     {
-      title: isUk ? "Продукт" : "Product",
+      title: T.product,
       links: [
-        { label: isUk ? "Як це працює" : "How it works", href: "#comparison" },
-        { label: isUk ? "Ціни" : "Pricing", href: "#pricing" },
+        { label: T.howItWorks, href: "#comparison" },
+        { label: T.pricing, href: "#pricing" },
         { label: "FAQ", href: "#faq" },
       ],
     },
     {
-      title: isUk ? "Компанія" : "Company",
+      title: T.company,
       links: [
-        { label: isUk ? "Про нас" : "About us", href: "#about" },
-        { label: isUk ? "Контакти" : "Contacts", href: "#contacts" },
-        { label: isUk ? "Вакансії" : "Careers", href: VACANCIES_URL },
+        { label: T.about, href: "#about" },
+        { label: T.contacts, href: "#contacts" },
+        { label: T.careers, href: VACANCIES_URL },
       ],
     },
     {
-      title: isUk ? "Зв'язок" : "Get in touch",
+      title: T.getInTouch,
       links: [
         { label: "Email", href: `mailto:${CONTACT_EMAIL}`, external: true },
-        
-        { label: isUk ? "Телефон" : "Phone", href: `tel:${PHONE_NUMBER.replace(/\s+/g, "")}`, external: true },
+        { label: T.phone, href: `tel:${PHONE_NUMBER.replace(/\s+/g, "")}`, external: true },
       ],
     },
   ];
@@ -2081,11 +2103,7 @@ function LandingFooter() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <div className="text-xl font-bold text-foreground mb-2">SoloBizz</div>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-              {isUk
-                ? "CRM для приватної практики: клієнти, записи, оплати та фінанси."
-                : "CRM for private practice: clients, bookings, payments and finance."}
-            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">{T.tagline}</p>
             <p className="text-sm text-muted-foreground flex items-start gap-2">
               <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
               {OFFICE_ADDRESS}
@@ -2122,18 +2140,12 @@ function LandingFooter() {
 
         <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} SoloBizz. {isUk ? "Усі права захищені." : "All rights reserved."}
+            © {new Date().getFullYear()} SoloBizz. {T.rights}
           </p>
           <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-            <Link to="/terms" className="text-xs text-muted-foreground hover:text-foreground">
-              {isUk ? "Умови" : "Terms"}
-            </Link>
-            <Link to="/privacy" className="text-xs text-muted-foreground hover:text-foreground">
-              {isUk ? "Конфіденційність" : "Privacy"}
-            </Link>
-            <Link to="/cookie-policy" className="text-xs text-muted-foreground hover:text-foreground">
-              {isUk ? "Cookies" : "Cookies"}
-            </Link>
+            <Link to="/terms" className="text-xs text-muted-foreground hover:text-foreground">{T.terms}</Link>
+            <Link to="/privacy" className="text-xs text-muted-foreground hover:text-foreground">{T.privacy}</Link>
+            <Link to="/cookie-policy" className="text-xs text-muted-foreground hover:text-foreground">{T.cookies}</Link>
             <button
               type="button"
               onClick={() => {
@@ -2141,7 +2153,7 @@ function LandingFooter() {
               }}
               className="text-xs text-muted-foreground hover:text-foreground"
             >
-              {isUk ? "Керувати cookies" : "Manage cookies"}
+              {T.manageCookies}
             </button>
           </nav>
         </div>
