@@ -7,7 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, RefreshCw, BarChart3 } from "lucide-react";
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 const ADMIN_EMAIL = "o.gilevich@gmail.com";
 
@@ -23,6 +25,8 @@ type EventRow = {
   utm_medium: string | null;
   utm_campaign: string | null;
   country: string | null;
+  session_id: string | null;
+  anonymous_id: string | null;
   created_at: string;
 };
 
@@ -65,7 +69,7 @@ export default function AdminAnalyticsPage() {
       const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
       let query = (supabase
         .from("user_activity_events") as any)
-        .select("id,user_id,event_name,domain,path,device_type,source,utm_source,utm_medium,utm_campaign,country,created_at")
+        .select("id,user_id,event_name,domain,path,device_type,source,utm_source,utm_medium,utm_campaign,country,session_id,anonymous_id,created_at")
         .gte("created_at", since)
         .order("created_at", { ascending: false })
         .limit(5000);
@@ -163,6 +167,80 @@ export default function AdminAnalyticsPage() {
     });
   }, [stats]);
 
+  // Web-traffic style metrics computed from raw event rows.
+  // A "visit" = a unique session_id (falls back to anonymous_id, then user_id).
+  // A "page view" = any event with a path (we don't have $pageview-only data,
+  // so every persisted event counts as one interaction with a page).
+  const webTraffic = useMemo(() => {
+    const visitorKey = (r: EventRow) => r.session_id || r.anonymous_id || r.user_id || r.id;
+    const sessions = new Map<string, { ts: number[]; paths: Set<string>; source: string; device: string | null; country: string | null; domain: string | null }>();
+    const pageViewRows = rows.filter((r) => !!r.path);
+    for (const r of rows) {
+      const k = visitorKey(r);
+      let s = sessions.get(k);
+      if (!s) {
+        s = { ts: [], paths: new Set(), source: r.utm_source || r.source || "direct", device: r.device_type, country: r.country, domain: r.domain };
+        sessions.set(k, s);
+      }
+      s.ts.push(new Date(r.created_at).getTime());
+      if (r.path) s.paths.add(r.path);
+    }
+    const visitors = sessions.size;
+    const pageViews = pageViewRows.length;
+    const viewsPerVisit = visitors > 0 ? pageViews / visitors : 0;
+    let durSum = 0;
+    let durCount = 0;
+    let bounces = 0;
+    for (const s of sessions.values()) {
+      if (s.ts.length > 1) {
+        const min = Math.min(...s.ts);
+        const max = Math.max(...s.ts);
+        durSum += (max - min) / 1000;
+        durCount += 1;
+      }
+      if (s.paths.size <= 1) bounces += 1;
+    }
+    const avgDuration = durCount > 0 ? durSum / durCount : 0;
+    const bounceRate = visitors > 0 ? (bounces / visitors) * 100 : 0;
+
+    // Daily trend by visitor
+    const byDay = new Map<string, Set<string>>();
+    for (const r of rows) {
+      const day = r.created_at.slice(0, 10);
+      if (!byDay.has(day)) byDay.set(day, new Set());
+      byDay.get(day)!.add(visitorKey(r));
+    }
+    const trend = Array.from(byDay.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([day, set]) => ({ day, visitors: set.size }));
+
+    // Source / Page / Device / Country counted by unique visitors
+    const accum = (pick: (r: EventRow) => string | null | undefined) => {
+      const m = new Map<string, Set<string>>();
+      for (const r of rows) {
+        const key = pick(r);
+        if (!key) continue;
+        if (!m.has(key)) m.set(key, new Set());
+        m.get(key)!.add(visitorKey(r));
+      }
+      const out: Record<string, number> = {};
+      for (const [k, set] of m) out[k] = set.size;
+      return out;
+    };
+    return {
+      visitors,
+      pageViews,
+      viewsPerVisit,
+      avgDuration,
+      bounceRate,
+      trend,
+      bySource: accum((r) => r.utm_source || r.source || "direct"),
+      byPage: accum((r) => r.path),
+      byDevice: accum((r) => r.device_type),
+      byCountry: accum((r) => r.country),
+    };
+  }, [rows]);
+
   if (loading) {
     return (
       <AppLayout>
@@ -206,37 +284,50 @@ export default function AdminAnalyticsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard label="Total events" value={rows.length} />
-          <StatCard label="Unique users" value={stats.uniqueUsers} />
-          <StatCard label="Registrations" value={stats.totals["registration_completed"] ?? 0} />
-          <StatCard label="Subscriptions" value={stats.totals["subscription_completed"] ?? 0} />
-        </div>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="web">Web traffic</TabsTrigger>
+          </TabsList>
 
-        <Card>
-          <CardHeader><CardTitle>Conversion funnel</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
-            {funnel.map((s) => (
-              <div key={s.label} className="space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span className="font-medium">{s.label}</span>
-                  <span className="text-muted-foreground">{s.count} events · {s.users} users · {s.pct}%</span>
-                </div>
-                <div className="h-2 rounded bg-muted overflow-hidden">
-                  <div className="h-full bg-primary" style={{ width: `${s.pct}%` }} />
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <StatCard label="Total events" value={rows.length} />
+              <StatCard label="Unique users" value={stats.uniqueUsers} />
+              <StatCard label="Registrations" value={stats.totals["registration_completed"] ?? 0} />
+              <StatCard label="Subscriptions" value={stats.totals["subscription_completed"] ?? 0} />
+            </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          <BreakdownCard title="By domain" data={stats.byDomain} />
-          <BreakdownCard title="By source" data={stats.bySource} />
-          <BreakdownCard title="By device" data={stats.byDevice} />
-          <BreakdownCard title="By country" data={stats.byCountry} />
-          <BreakdownCard title="Top pages" data={stats.byPath} />
-        </div>
+            <Card>
+              <CardHeader><CardTitle>Conversion funnel</CardTitle></CardHeader>
+              <CardContent className="space-y-2">
+                {funnel.map((s) => (
+                  <div key={s.label} className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium">{s.label}</span>
+                      <span className="text-muted-foreground">{s.count} events · {s.users} users · {s.pct}%</span>
+                    </div>
+                    <div className="h-2 rounded bg-muted overflow-hidden">
+                      <div className="h-full bg-primary" style={{ width: `${s.pct}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <BreakdownCard title="By domain" data={stats.byDomain} />
+              <BreakdownCard title="By source" data={stats.bySource} />
+              <BreakdownCard title="By device" data={stats.byDevice} />
+              <BreakdownCard title="By country" data={stats.byCountry} />
+              <BreakdownCard title="Top pages" data={stats.byPath} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="web" className="space-y-6">
+            <WebTrafficPanel data={webTraffic} />
+          </TabsContent>
+        </Tabs>
 
         <Card>
           <CardHeader><CardTitle>Recent events</CardTitle></CardHeader>
@@ -306,5 +397,117 @@ function BreakdownCard({ title, data }: { title: string; data: Record<string, nu
         ))}
       </CardContent>
     </Card>
+  );
+}
+
+type WebTrafficData = {
+  visitors: number;
+  pageViews: number;
+  viewsPerVisit: number;
+  avgDuration: number;
+  bounceRate: number;
+  trend: { day: string; visitors: number }[];
+  bySource: Record<string, number>;
+  byPage: Record<string, number>;
+  byDevice: Record<string, number>;
+  byCountry: Record<string, number>;
+};
+
+function formatDuration(seconds: number): string {
+  if (!seconds || !isFinite(seconds)) return "0s";
+  const m = Math.floor(seconds / 60);
+  const s = Math.round(seconds % 60);
+  if (m <= 0) return `${s}s`;
+  return `${m}m ${s}s`;
+}
+
+function compactNumber(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+  return String(Math.round(n));
+}
+
+function WebTrafficPanel({ data }: { data: WebTrafficData }) {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader><CardTitle className="text-base">Web traffic</CardTitle></CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <MetricCell label="Visitors" value={compactNumber(data.visitors)} highlight />
+            <MetricCell label="Page views" value={compactNumber(data.pageViews)} />
+            <MetricCell label="Views per visit" value={data.viewsPerVisit.toFixed(2)} />
+            <MetricCell label="Visit duration" value={formatDuration(data.avgDuration)} />
+            <MetricCell label="Bounce rate" value={`${Math.round(data.bounceRate)}%`} />
+          </div>
+          <div className="h-72 w-full">
+            {data.trend.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-sm text-muted-foreground">No traffic in this period</div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={data.trend} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="visitorsFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
+                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
+                  <Area type="monotone" dataKey="visitors" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#visitorsFill)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Traffic breakdown</CardTitle></CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <BreakdownTable title="Source" header="Visitors" data={data.bySource} />
+            <BreakdownTable title="Page" header="Visitors" data={data.byPage} />
+            <BreakdownTable title="Device" header="Visitors" data={data.byDevice} />
+            <BreakdownTable title="Country" header="Visitors" data={data.byCountry} />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function MetricCell({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div className={`rounded-md border p-3 ${highlight ? "bg-muted/60" : ""}`}>
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="text-xl font-semibold mt-1">{value}</div>
+    </div>
+  );
+}
+
+function BreakdownTable({ title, header, data }: { title: string; header: string; data: Record<string, number> }) {
+  const entries = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const max = entries[0]?.[1] ?? 1;
+  return (
+    <div className="rounded-md border">
+      <div className="flex items-center justify-between px-3 py-2 border-b text-xs">
+        <span className="font-medium">{title}</span>
+        <span className="text-muted-foreground">{header}</span>
+      </div>
+      <div className="p-2 space-y-1">
+        {entries.length === 0 && <div className="px-2 py-3 text-xs text-muted-foreground">No data</div>}
+        {entries.map(([k, v]) => (
+          <div key={k} className="relative rounded px-2 py-1.5 overflow-hidden">
+            <div className="absolute inset-y-0 left-0 bg-primary/10" style={{ width: `${(v / max) * 100}%` }} />
+            <div className="relative flex items-center justify-between text-xs">
+              <span className="truncate pr-2">{k}</span>
+              <span className="text-muted-foreground tabular-nums">{compactNumber(v)}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
