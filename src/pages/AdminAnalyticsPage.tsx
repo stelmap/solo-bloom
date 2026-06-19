@@ -69,7 +69,7 @@ export default function AdminAnalyticsPage() {
       const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
       let query = (supabase
         .from("user_activity_events") as any)
-        .select("id,user_id,event_name,domain,path,device_type,source,utm_source,utm_medium,utm_campaign,country,created_at")
+        .select("id,user_id,event_name,domain,path,device_type,source,utm_source,utm_medium,utm_campaign,country,session_id,anonymous_id,created_at")
         .gte("created_at", since)
         .order("created_at", { ascending: false })
         .limit(5000);
