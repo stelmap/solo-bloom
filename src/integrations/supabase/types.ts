@@ -2425,7 +2425,7 @@ export type Database = {
           referrer: string | null
           session_id: string | null
           source: string | null
-          user_id: string
+          user_id: string | null
           utm_campaign: string | null
           utm_content: string | null
           utm_medium: string | null
@@ -2446,7 +2446,7 @@ export type Database = {
           referrer?: string | null
           session_id?: string | null
           source?: string | null
-          user_id: string
+          user_id?: string | null
           utm_campaign?: string | null
           utm_content?: string | null
           utm_medium?: string | null
@@ -2467,7 +2467,7 @@ export type Database = {
           referrer?: string | null
           session_id?: string | null
           source?: string | null
-          user_id?: string
+          user_id?: string | null
           utm_campaign?: string | null
           utm_content?: string | null
           utm_medium?: string | null
