@@ -1578,12 +1578,14 @@ function FaqSection() {
         en: "Do all plans include calendar and client booking?",
         fr: "Tous les forfaits incluent-ils le calendrier et la réservation clients ?",
         pl: "Czy wszystkie plany obejmują kalendarz i zapisy klientów?",
+        ru: "Все ли планы включают календарь и запись клиентов?",
       },
       a: {
         uk: "Так. Кожен план, включно з Free Starter, містить повний календар, планування сесій і ваше публічне посилання для запису. Клієнти можуть бронювати напряму на всіх планах. Єдина різниця між планами — кількість активних клієнтів, якими ви можете управляти одночасно, а не доступні функції.",
         en: "Yes. Every plan, including Free Starter, includes a full calendar, session scheduling and your public booking link. Clients can book directly on all plans. The only difference between plans is the number of active clients you can manage at the same time — not the available features.",
         fr: "Oui. Chaque forfait, y compris Free Starter, inclut un calendrier complet, la planification des séances et votre lien public de réservation. Les clients peuvent réserver directement sur tous les forfaits. La seule différence entre les forfaits est le nombre de clients actifs, pas les fonctionnalités.",
         pl: "Tak. Każdy plan, w tym Free Starter, zawiera pełny kalendarz, planowanie sesji i publiczny link do zapisów. Klienci mogą rezerwować bezpośrednio we wszystkich planach. Jedyna różnica między planami to liczba aktywnych klientów, a nie dostępne funkcje.",
+        ru: "Да. Каждый план, включая Free Starter, содержит полный календарь, планирование сеансов и публичную ссылку для записи. Клиенты могут бронировать напрямую на всех планах. Единственная разница между планами — количество активных клиентов, которыми вы можете управлять одновременно, а не доступные функции.",
       },
     },
     {
