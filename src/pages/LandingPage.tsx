@@ -1674,12 +1674,14 @@ function FaqSection() {
         en: "Where can I get updates and roadmap info about SoloBizz?",
         fr: "Où trouver les actualités et la feuille de route de SoloBizz ?",
         pl: "Gdzie znajdę aktualizacje i plany rozwoju SoloBizz?",
+        ru: "Где можно узнавать обновления и планы развития SoloBizz?",
       },
       a: {
         uk: <>Ми публікуємо оновлення, новини та плани розвитку на нашій {fb("Facebook-сторінці")}. Там ви також можете залишати свої побажання, ідеї та пропозиції щодо покращення системи.</>,
         en: <>We publish updates, news and roadmap on our {fb("Facebook page")}. You can also share ideas and suggestions there.</>,
         fr: <>Nous publions actualités et feuille de route sur notre {fb("page Facebook")}. Vous pouvez aussi y partager vos idées.</>,
         pl: <>Aktualizacje i plany rozwoju publikujemy na naszej {fb("stronie Facebook")}. Możesz tam też dzielić się pomysłami.</>,
+        ru: <>Мы публикуем обновления, новости и планы развития на нашей {fb("странице Facebook")}. Там же можно делиться идеями и предложениями.</>,
       },
     },
     {
