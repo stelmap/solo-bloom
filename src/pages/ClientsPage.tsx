@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Search, Phone, Mail, Send, Trash2, Download, Upload, Archive, ArchiveRestore, MoreVertical, X, ArrowLeft } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
-import { useState, memo, useRef, useMemo } from "react";
+import { useState, memo, useRef, useMemo, useEffect } from "react";
 import ExcelJS from "exceljs";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useNavigate, useSearchParams } from "react-router-dom";
