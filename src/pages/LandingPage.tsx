@@ -612,6 +612,7 @@ const LANG_CYCLE: AppLanguage[] = ["en", "fr", "uk", "ru", "pl"];
 // Russian overrides for the most-visible landing copy. Any key missing here
 // falls back to English so the page never shows a broken string.
 const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
+  // Nav
   navAudience: "Что включено",
   navHow: "Сравнение",
   navPricing: "Цены",
@@ -619,6 +620,7 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   navLogin: "Войти",
   navTry: "Начать бесплатно",
 
+  // Hero
   heroBadge: "Для психологов, психотерапевтов, супервизоров и преподавателей",
   heroTitle: "Вся ваша частная практика. В одном месте.",
   heroTitlePrefix: "Вся ваша частная практика.",
@@ -628,8 +630,9 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   heroSecondary: "Посмотреть цены",
   heroSubCta: "Free Starter: бесплатно навсегда, до 5 активных клиентов. Без банковской карты.",
   heroSocialProof: "Присоединяйтесь к 100+ психологам, психотерапевтам и супервизорам, которые уже работают в нашей системе.",
-  heroRoi: "При 20+ клиентах ручная админка может занимать 4–8+ часов в неделю. SoloBizz помогает вернуть это время.",
+  heroRoi: "При 20+ клиентах ручная админ-работа может занимать 4–8+ часов в неделю. SoloBizz помогает вернуть это время.",
 
+  // Stats
   statsTherapists: "терапевтов уже используют SoloBizz",
   statsTime: "админ-времени экономится каждую неделю",
   statsSetup: "среднее время настройки практики",
@@ -637,17 +640,226 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   statsSetupNum: "15 мин",
   setupAssist: "Хотите быстрый старт? Оставьте заявку — и мы поможем настроить практику.",
 
+  // Trust
   trustData: "Данные клиентов защищены",
-  trustStripe: "Оплата через Stripe",
+  trustStripe: "Безопасные платежи через Stripe",
   trustGdpr: "Соответствие GDPR",
-  trustSupport: "Поддержка на русском",
+  trustSupport: "Поддержка по email",
 
-  dpClients: "Клиенты",
-  dpSessions: "Сеансы",
-  dpIncome: "Доход",
-  dpUpcoming: "Предстоящие",
+  // Dashboard preview
+  dpClients: "Активные клиенты",
+  dpSessions: "Сеансов на этой неделе",
+  dpIncome: "Доход за месяц",
+  dpUpcoming: "Ближайшие сеансы",
   dpPaid: "Оплачено",
   dpPending: "Ожидает",
+
+  // Pain
+  painTitle: "Звучит знакомо?",
+  painHeadline: "Так происходит в большинстве частных практик",
+  pain1: "Вы не знаете реального месячного дохода, пока не посчитаете всё вручную.",
+  pain2: "Записи разбросаны по разным местам: календарь, мессенджеры, Excel и заметки.",
+  pain3: "Оплаты, долги и предоплаты приходится помнить или проверять вручную.",
+  pain4: "Вы можете терять клиентов, потому что не успеваете ответить вовремя.",
+  pain5: "Сложно понять, какую стоимость сеанса установить, чтобы практика была прибыльной.",
+  pain6: "Слишком много времени уходит на рутину, а целостной картины практики всё равно не видно.",
+  painBottom: "Это не проблема продуктивности. Это отсутствие системы, созданной для частной практики. SoloBizz — это такая система.",
+  painCta: "Посмотрите, как работает SoloBizz",
+
+  // What Changes
+  whatChangesEyebrow: "ЧТО МЕНЯЕТСЯ",
+  whatChangesHeadline: "Тот же понедельник. Совсем другое начало дня.",
+  whatChangesSub: "Посмотрите, как один инструмент заменяет утренний хаос ясностью и контролем.",
+  whatChangesWithoutTitle: "Понедельник без SoloBizz",
+  whatChangesWithTitle: "Понедельник с SoloBizz",
+  whatChangesWithout1: "Открываете 5 разных приложений, чтобы вспомнить, кто сегодня на приёме.",
+  whatChangesWithout2: "Проверяете оплаты вручную — и боитесь что-то упустить.",
+  whatChangesWithout3: "Тратите 30+ минут на рассылку напоминаний клиентам.",
+  whatChangesWithout4: "Не знаете точно, сколько заработали за прошлую неделю.",
+  whatChangesWithout5: "Планируете расписание «на глаз», без понимания загрузки.",
+  whatChangesWithout6: "Начало недели — это стресс и хаос.",
+  whatChangesWith1: "Один взгляд на календарь — и вы видите весь день.",
+  whatChangesWith2: "Все оплаты и долги подсвечены автоматически.",
+  whatChangesWith3: "Напоминания отправляются сами — без вашего участия.",
+  whatChangesWith4: "Доход и прибыль считаются в реальном времени.",
+  whatChangesWith5: "Клиенты записываются сами через вашу ссылку.",
+  whatChangesWith6: "Начало недели — это спокойствие и контроль.",
+  whatChangesSummary: "Разница не в том, сколько часов вы работаете. А в том, сколько из них уходит на то, что действительно важно.",
+  whatChangesSummaryHighlight: "то, что действительно важно",
+  whatChangesCta: "Начать бесплатно",
+  whatChangesCtaNote: "Карта не нужна. Можно начать за несколько минут.",
+
+  // Features
+  featEyebrow: "ЧТО ВКЛЮЧЕНО",
+  featHeadline: "Всё необходимое для вашей практики. В одной системе.",
+  featSub: "Без интеграций. Без сложной настройки. Одна система — от первой сессии до финальной оплаты.",
+  feat1Title: "Управление клиентами",
+  feat1Desc: "Все профили, заметки и история клиента — в одном структурированном месте.",
+  feat2Title: "Календарь и расписание",
+  feat2Desc: "Планируйте и ведите сеансы в одном удобном календаре практики.",
+  feat3Title: "Публичная ссылка для записи",
+  feat3Desc: "Клиенты бронируют удобное время напрямую с вашей страницы.",
+  feat4Title: "Напоминания и подтверждения",
+  feat4Desc: "Автоматические напоминания сокращают число пропущенных сеансов.",
+  feat5Title: "Учёт оплат",
+  feat5Desc: "Видите, кто заплатил, кто должен и у кого предоплата — с первого взгляда.",
+  feat6Title: "Счета-фактуры",
+  feat6Desc: "Создавайте и отправляйте счета за секунды, прямо из сеансов.",
+  feat7Title: "Финансовая аналитика",
+  feat7Desc: "Месячный доход, расходы и неоплаченные сеансы всегда перед глазами.",
+  feat8Title: "Заметки клиента",
+  feat8Desc: "Структурированные заметки, привязанные к каждому клиентскому пути.",
+  feat9Title: "Защита данных",
+  feat9Desc: "Данные клиентов полностью приватны. SoloBizz не имеет к ним доступа. Система соответствует требованиям GDPR.",
+  feat10Title: "Расчёт стоимости сеанса",
+  feat10Desc: "Поймите реальную стоимость одного сеанса и финансовое состояние практики.",
+  feat11Title: "Учёт супервизий",
+  feat11Desc: "Создавайте и ведите записи супервизий как часть вашей профессиональной работы.",
+  feat12Title: "Полный путь клиента",
+  feat12Desc: "От первого контакта до завершения терапии — в одной системе.",
+  featCta: "Попробовать SoloBizz бесплатно",
+  featCtaNote: "Все ключевые функции доступны с первого дня.",
+
+  // Demo
+  demoTitle: "Посмотрите, как может выглядеть ваша практика за 60 секунд",
+  demoText: "Живой предпросмотр клиентов, сеансов, оплат и дохода — создан для частной практики.",
+
+  // Comparison
+  cmpTitle: "Excel, блокноты и хаос — или SoloBizz",
+  cmpSub: "Сравните ручной учёт с системой, которая автоматически показывает записи, оплаты, долги, доход и прибыль.",
+  cmpManual: "Ручной учёт",
+  cmpSolo: "SoloBizz",
+  cmpM1: "Записи разбросаны по разным местам",
+  cmpM2: "Оплаты нужно проверять вручную",
+  cmpM3: "Легко забыть о долгах",
+  cmpM4: "Нет реальной аналитики",
+  cmpM5: "Сложно понять прибыль",
+  cmpM6: "Много времени уходит на таблицы",
+  cmpS1: "Клиенты, сеансы и оплаты в одной системе",
+  cmpS2: "Автоматический учёт оплат",
+  cmpS3: "Долги и предоплаты видны сразу",
+  cmpS4: "Аналитика доходов и расходов",
+  cmpS5: "Понятный финансовый результат",
+  cmpS6: "Меньше рутины, больше времени на практику",
+  cmpCta: "Попробовать бесплатно",
+  cmpCtaNote: "Без банковской карты. Без сложных настроек.",
+  cmpManualBadge: "До",
+  cmpSoloBadge: "После",
+
+  // Pricing
+  pricingEyebrow: "Цены",
+  pricingTitle: "Ваша полноценная практика, организованная с первого дня.",
+  pricingSub: "Все основные функции включены в каждый план. Единственная разница — количество активных клиентов. Никаких скрытых ограничений.",
+  pricingAllFeaturesBadge: "Все функции доступны с первого дня — на любом плане",
+  pricingCompare: "По сравнению с аналогами: SimplePractice стоит €46–73/мес, TherapyNotes — €64/мес. SoloBizz предлагает полный набор инструментов для управления частной практикой за €12/мес — без страховых модулей и лишних функций, которые частному терапевту никогда не понадобятся.",
+
+  monthly: "Ежемесячно",
+  quarterly: "Ежеквартально",
+  yearly: "Ежегодно",
+  save20: "−20%",
+  save40: "−40%",
+  perMonth: "/мес",
+  perQuarter: "/квартал",
+  perYear: "/год",
+  equivalentTo: "≈ {price}/мес",
+  billedMo: "Оплата ежемесячно",
+  billedQ: "Оплата раз в 3 месяца",
+  billedY: "Оплата раз в год",
+
+  cycleMonthly: "Ежемесячно",
+  cycleQuarterly: "Ежеквартально",
+  cycleYearly: "Ежегодно",
+  saveQ15: "−15%",
+  saveY25: "−25%",
+  equivQuarter: "{price} / мес при квартальной оплате",
+  equivYear: "{price} / мес при годовой оплате",
+  mfaSecurity: "MFA и защита данных",
+
+  // Free Starter
+  freeName: "Free Starter",
+  freeDesc: "Для тех, кто только начинает или ведёт небольшую частную практику.",
+  freeBadgeForever: "Бесплатно навсегда",
+  freeF1: "До 5 активных клиентов",
+  freeF2: "Все функции SoloBizz включены",
+  freeF3: "Календарь, клиенты, оплаты, напоминания",
+  freeF4: "Финансовая аналитика и отчёты",
+  freeF5: "Навсегда бесплатно, без карты",
+  freeCta: "Начать бесплатно",
+  freeMicro: "Без банковской карты.",
+
+  // Solo Practice
+  soloName: "Solo Practice",
+  privacyTitle: "Данные ваших клиентов — полностью приватны",
+  privacyLong: "Данные ваших клиентов остаются приватными. SoloBizz не просматривает, не анализирует и не использует информацию о ваших клиентах. Данные защищены, и доступ к ним есть только у владельца практики.",
+  privacyShort: "Данные ваших клиентов защищены. Мы не видим и не используем клиентскую информацию.",
+  soloDesc: "Для небольшой практики — ведите клиентов, сеансы и оплаты без хаоса.",
+  soloIntro: "Все функции SoloBizz включены.",
+  soloF1: "До 20 активных клиентов",
+  soloF2: "Все функции SoloBizz включены",
+  soloF3: "Календарь, клиенты, оплаты, напоминания",
+  soloF4: "Финансовая аналитика и отчёты",
+  soloF5: "Отмена в любой момент",
+  soloCta: "Выбрать Solo Practice",
+  soloBadge: "Лучший выбор для практики",
+  soloPill: "Больший лимит активных клиентов",
+  soloMicro: "Оплата ежемесячно. Отмена в любой момент.",
+
+  // Pro Practice
+  proName: "Pro Practice",
+  proDesc: "Для большой клиентской базы и приоритетной поддержки.",
+  proIntro: "Все функции SoloBizz включены.",
+  proF1: "Все функции SoloBizz включены",
+  proF2: "Неограниченное число клиентов",
+  proF3: "Приоритетная поддержка",
+  proF4: "Персональная консультация по настройке",
+  proCta: "Выбрать Pro Practice",
+  proBadge: "Для растущей практики",
+  proPill: "Неограниченное число клиентов",
+
+  pricingFooter1: "Выбирайте план по количеству активных клиентов — а не по отсутствующим функциям.",
+  pricingFooter2: "SoloBizz даёт каждому терапевту полноценную систему управления практикой с самой первой сессии.",
+
+  // ROI tiles
+  roiTilesTitle: "Сколько может стоить ручная админ-работа",
+  roiT1Value: "4–8+ ч/нед",
+  roiT1Sub: "может занимать ручная админ-работа при 20+ клиентах",
+  roiT2Value: "~10% времени",
+  roiT2Sub: "может уходить на записи, оплаты, переписку и сверку данных",
+  roiT3Value: "5 мин",
+  roiT3Sub: "чтобы добавить клиента, сеанс или оплату — без Excel",
+
+  // Pricing value
+  pricingValue: "Вы платите не за ещё один инструмент. Вы возвращаете себе часы, которые сейчас уходят на таблицы, сообщения, проверку оплат и ручные подсчёты.",
+  pricingValueNote: "Free Starter — бесплатно навсегда для до 5 активных клиентов.",
+
+  // FAQ
+  faqEyebrow: "Вопросы перед началом",
+  faqTitle: "Ответы на главные вопросы",
+  faq1Q: "Сложно ли начать пользоваться SoloBizz?",
+  faq1A: "Нет. Зарегистрируйтесь на плане Free Starter и начните пользоваться SoloBizz сразу — без сложных настроек.",
+  faq2Q: "Подойдёт ли система, если я работаю один?",
+  faq2A: "Да. SoloBizz создан именно для частных практик, где один человек ведёт клиентов, сеансы, оплаты и финансы.",
+  faq3Q: "Можно ли вести групповые сеансы или супервизии?",
+  faq3A: "Да. Система поддерживает индивидуальные и групповые сеансы, контроль посещаемости и оплат.",
+  faq4Q: "Можно ли использовать систему для преподавания или репетиторства?",
+  faq4A: "Да. Система подходит специалистам, которые работают с учениками, занятиями, оплатами и учебным прогрессом.",
+  faq5Q: "SoloBizz действительно бесплатный?",
+  faq5A: "Да. План Free Starter бесплатен навсегда для до 5 активных клиентов, без ограничения по времени.",
+  faq6Q: "Нужна ли банковская карта, чтобы начать?",
+  faq6A: "Нет. Для плана Free Starter карта не требуется.",
+  faq7Q: "Сколько времени может сэкономить SoloBizz?",
+  faq7A: "Если вы ведёте клиентов, сеансы, оплаты и долги вручную, админ-работа может занимать несколько часов в неделю — особенно когда в практике уже 20+ клиентов. SoloBizz собирает эти процессы в одном месте: календарь, клиенты, оплаты, долги и финансовый обзор.",
+  faq8Q: "Все ли планы включают календарь и запись клиентов?",
+  faq8A: "Да — каждый план, включая Free Starter, содержит полный календарь, планирование сеансов и публичную ссылку для записи. Клиенты могут бронировать напрямую на всех планах. Единственная разница между планами — количество активных клиентов, которыми вы можете управлять одновременно, а не доступные функции.",
+
+  // Final CTA
+  finalTitle1: "Можно и дальше работать в хаосе.",
+  finalTitle2: "Или взять контроль уже сегодня.",
+  finalDesc: "SoloBizz помогает видеть клиентов, записи, оплаты, доход и прибыль в одной понятной системе.",
+  finalCta: "Попробовать сейчас",
+  doubtTitle: "Остались сомнения?",
+  doubtText: "Запишитесь на короткий разговор, и мы покажем, как SoloBizz может упростить вашу работу и выявить, где теряется прибыль.",
+  doubtCta: "Связаться с нами",
 };
 
 export function LandingLangProvider({ children }: { children: React.ReactNode }) {
@@ -758,7 +970,7 @@ function LandingNav() {
             aria-label="Switch language"
             title={`Language: ${lang.toUpperCase()}`}
           >
-            {lang === "en" ? "🇬🇧 EN" : lang === "fr" ? "🇫🇷 FR" : lang === "pl" ? "🇵🇱 PL" : lang === "ru" ? "Русский" : "🇺🇦 UA"}
+            {lang === "en" ? "🇬🇧 EN" : lang === "fr" ? "🇫🇷 FR" : lang === "pl" ? "🇵🇱 PL" : lang === "ru" ? "🇷🇺 RU" : "🇺🇦 UA"}
           </button>
           <Link to="/auth" className="hidden sm:block">
             <Button variant="ghost" size="sm">{t("navLogin")}</Button>
@@ -1344,7 +1556,7 @@ const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61589480870290";
 const YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@olga.stelmakh";
 const FAQ_EMAIL = "info@solobizz.com";
 
-type FaqItem = { q: Record<Language, string>; a: Record<Language, ReactNode> | ReactNode };
+type FaqItem = { q: Record<Language, string> & { ru?: string }; a: (Record<Language, ReactNode> & { ru?: ReactNode }) | ReactNode };
 
 function FaqSection() {
   const { t, lang } = useLandingLang();
@@ -1366,12 +1578,14 @@ function FaqSection() {
         en: "Do all plans include calendar and client booking?",
         fr: "Tous les forfaits incluent-ils le calendrier et la réservation clients ?",
         pl: "Czy wszystkie plany obejmują kalendarz i zapisy klientów?",
+        ru: "Все ли планы включают календарь и запись клиентов?",
       },
       a: {
         uk: "Так. Кожен план, включно з Free Starter, містить повний календар, планування сесій і ваше публічне посилання для запису. Клієнти можуть бронювати напряму на всіх планах. Єдина різниця між планами — кількість активних клієнтів, якими ви можете управляти одночасно, а не доступні функції.",
         en: "Yes. Every plan, including Free Starter, includes a full calendar, session scheduling and your public booking link. Clients can book directly on all plans. The only difference between plans is the number of active clients you can manage at the same time — not the available features.",
         fr: "Oui. Chaque forfait, y compris Free Starter, inclut un calendrier complet, la planification des séances et votre lien public de réservation. Les clients peuvent réserver directement sur tous les forfaits. La seule différence entre les forfaits est le nombre de clients actifs, pas les fonctionnalités.",
         pl: "Tak. Każdy plan, w tym Free Starter, zawiera pełny kalendarz, planowanie sesji i publiczny link do zapisów. Klienci mogą rezerwować bezpośrednio we wszystkich planach. Jedyna różnica między planami to liczba aktywnych klientów, a nie dostępne funkcje.",
+        ru: "Да. Каждый план, включая Free Starter, содержит полный календарь, планирование сеансов и публичную ссылку для записи. Клиенты могут бронировать напрямую на всех планах. Единственная разница между планами — количество активных клиентов, которыми вы можете управлять одновременно, а не доступные функции.",
       },
     },
     {
@@ -1380,12 +1594,14 @@ function FaqSection() {
         en: "What happens when I reach my active client limit?",
         fr: "Que se passe-t-il quand j'atteins ma limite de clients actifs ?",
         pl: "Co się dzieje, gdy osiągnę limit aktywnych klientów?",
+        ru: "Что происходит, когда я достигаю лимита активных клиентов?",
       },
       a: {
         uk: "Ви отримаєте сповіщення, коли наближаєтеся до ліміту. Ви можете будь-коли перейти на вищий план. Клієнти, з якими ви вже завершили роботу і позначили як архівних, не рахуються до активного ліміту — враховуються лише поточні активні клієнти.",
         en: "You'll get a notification when you approach the limit. You can upgrade at any time. Clients you've finished working with and archived don't count toward the active limit — only current active clients do.",
         fr: "Vous serez averti·e à l'approche de la limite. Vous pouvez passer à un forfait supérieur à tout moment. Les clients archivés ne comptent pas — seuls les clients actifs sont pris en compte.",
         pl: "Otrzymasz powiadomienie, gdy zbliżasz się do limitu. Możesz przejść na wyższy plan w dowolnej chwili. Klienci zarchiwizowani nie liczą się do limitu — tylko aktywni.",
+        ru: "Вы получите уведомление при приближении к лимиту. Можно перейти на старший план в любой момент. Клиенты, с которыми вы завершили работу и которых отметили как архивных, не учитываются — учитываются только текущие активные клиенты.",
       },
     },
     {
@@ -1394,12 +1610,14 @@ function FaqSection() {
         en: "Is my client data private and secure?",
         fr: "Les données de mes clients sont-elles privées et sécurisées ?",
         pl: "Czy dane moich klientów są prywatne i bezpieczne?",
+        ru: "Являются ли данные моих клиентов приватными и защищёнными?",
       },
       a: {
         uk: "Так. Дані ваших клієнтів повністю приватні. SoloBizz не переглядає, не аналізує і не використовує інформацію про ваших клієнтів. Тільки ви маєте доступ до даних вашої практики. Система розроблена з урахуванням вимог GDPR та принципів конфіденційності.",
         en: "Yes. Your client data is fully private. SoloBizz does not view, analyze or use information about your clients. Only you have access to your practice data. The system is designed with GDPR and privacy principles in mind.",
         fr: "Oui. Les données de vos clients sont entièrement privées. SoloBizz ne consulte, n'analyse ni n'utilise ces informations. Vous seul·e avez accès. Le système est conçu selon le RGPD et les principes de confidentialité.",
         pl: "Tak. Dane Twoich klientów są w pełni prywatne. SoloBizz ich nie przegląda, nie analizuje ani nie wykorzystuje. Tylko Ty masz dostęp. System jest zaprojektowany zgodnie z RODO i zasadami prywatności.",
+        ru: "Да. Данные ваших клиентов полностью приватны. SoloBizz не просматривает, не анализирует и не использует информацию о ваших клиентах. Только у вас есть доступ к данным вашей практики. Система разработана с учётом требований GDPR и принципов конфиденциальности.",
       },
     },
     {
@@ -1408,12 +1626,14 @@ function FaqSection() {
         en: "Can I cancel or change my plan at any time?",
         fr: "Puis-je annuler ou changer de forfait à tout moment ?",
         pl: "Czy mogę anulować lub zmienić plan w dowolnej chwili?",
+        ru: "Могу ли я отменить или сменить план в любое время?",
       },
       a: {
         uk: "Так. Ви можете підвищити, знизити або скасувати підписку будь-коли — без довгострокових зобов'язань і плат за скасування. Якщо ви скасуєте підписку, ви зберігаєте доступ до кінця поточного платіжного періоду. Ваші дані не видаляються.",
         en: "Yes. You can upgrade, downgrade or cancel anytime — no long-term commitment, no cancellation fees. If you cancel, you keep access until the end of the current billing period. Your data is not deleted.",
         fr: "Oui. Vous pouvez changer ou annuler à tout moment — sans engagement ni frais. En cas d'annulation, l'accès reste actif jusqu'à la fin de la période en cours. Vos données ne sont pas supprimées.",
         pl: "Tak. Możesz zmienić lub anulować plan w dowolnym momencie — bez zobowiązań i opłat. Po anulowaniu zachowujesz dostęp do końca bieżącego okresu rozliczeniowego. Dane nie są usuwane.",
+        ru: "Да. Вы можете повысить, понизить или отменить подписку в любой момент — без долгосрочных обязательств и платы за отмену. При отмене доступ сохраняется до конца текущего платёжного периода. Ваши данные не удаляются.",
       },
     },
     {
@@ -1422,12 +1642,14 @@ function FaqSection() {
         en: "Do I need a credit card for Free Starter?",
         fr: "Faut-il une carte bancaire pour Free Starter ?",
         pl: "Czy potrzebuję karty dla Free Starter?",
+        ru: "Нужна ли банковская карта для Free Starter?",
       },
       a: {
         uk: "Ні. Free Starter безкоштовний назавжди — без пробного терміну і без автоматичного списання. Ви додаєте платіжні дані лише тоді, коли вирішите перейти на платний план.",
         en: "No. Free Starter is free forever — no trial, no automatic charge. You only add payment details if you decide to upgrade to a paid plan.",
         fr: "Non. Free Starter est gratuit pour toujours — sans essai ni prélèvement automatique. Vous n'ajoutez vos coordonnées de paiement que si vous passez à un forfait payant.",
         pl: "Nie. Free Starter jest darmowy na zawsze — bez okresu próbnego i bez automatycznych opłat. Dane płatności podajesz dopiero przy przejściu na płatny plan.",
+        ru: "Нет. Free Starter бесплатен навсегда — без пробного периода и без автоматических списаний. Платёжные данные добавляются только при переходе на платный план.",
       },
     },
     {
@@ -1436,12 +1658,14 @@ function FaqSection() {
         en: "How long does setup take?",
         fr: "Combien de temps prend la configuration ?",
         pl: "Ile czasu zajmuje konfiguracja?",
+        ru: "Сколько времени занимает настройка?",
       },
       a: {
         uk: "Більшість терапевтів налаштовують профіль, послуги та публічне посилання для запису менш ніж за 10 хвилин. Не потрібно складного онбордингу: ви додаєте основні дані, встановлюєте типи сесій і ціни — і можете починати роботу. Користувачі Pro Practice можуть отримати персональну підтримку при налаштуванні, якщо вони цього бажають.",
         en: "Most therapists set up their profile, services and public booking link in under 10 minutes. No complex onboarding required — add the basics, set session types and prices, and you're ready to go. Pro Practice users can request personal setup support if they wish.",
         fr: "La plupart des thérapeutes configurent profil, services et lien public en moins de 10 minutes. Pas d'onboarding complexe. Les utilisateurs Pro Practice peuvent demander un accompagnement personnalisé.",
         pl: "Większość terapeutów konfiguruje profil, usługi i publiczny link do zapisów w mniej niż 10 minut. Bez skomplikowanego onboardingu. Użytkownicy Pro Practice mogą poprosić o indywidualne wsparcie.",
+        ru: "Большинство терапевтов настраивают профиль, услуги и публичную ссылку для записи менее чем за 10 минут. Сложный онбординг не требуется: добавьте основные данные, задайте типы сеансов и цены — и можно начинать. Пользователи Pro Practice могут запросить персональную поддержку по настройке.",
       },
     },
     {
@@ -1450,12 +1674,14 @@ function FaqSection() {
         en: "Where can I get updates and roadmap info about SoloBizz?",
         fr: "Où trouver les actualités et la feuille de route de SoloBizz ?",
         pl: "Gdzie znajdę aktualizacje i plany rozwoju SoloBizz?",
+        ru: "Где можно узнавать обновления и планы развития SoloBizz?",
       },
       a: {
         uk: <>Ми публікуємо оновлення, новини та плани розвитку на нашій {fb("Facebook-сторінці")}. Там ви також можете залишати свої побажання, ідеї та пропозиції щодо покращення системи.</>,
         en: <>We publish updates, news and roadmap on our {fb("Facebook page")}. You can also share ideas and suggestions there.</>,
         fr: <>Nous publions actualités et feuille de route sur notre {fb("page Facebook")}. Vous pouvez aussi y partager vos idées.</>,
         pl: <>Aktualizacje i plany rozwoju publikujemy na naszej {fb("stronie Facebook")}. Możesz tam też dzielić się pomysłami.</>,
+        ru: <>Мы публикуем обновления, новости и планы развития на нашей {fb("странице Facebook")}. Там же можно делиться идеями и предложениями.</>,
       },
     },
     {
@@ -1464,12 +1690,14 @@ function FaqSection() {
         en: "Are there video demos I can watch?",
         fr: "Y a-t-il des démos vidéo à regarder ?",
         pl: "Czy są dema wideo do obejrzenia?",
+        ru: "Есть ли видео-демо, которые можно посмотреть?",
       },
       a: {
         uk: <>Так. Ми розвиваємо {yt("YouTube-канал SoloBizz")}, де будуть відео-демо, пояснення функцій, короткі інструкції та корисна інформація про роботу з системою.</>,
         en: <>Yes. We're growing the {yt("SoloBizz YouTube channel")} with demos, feature walkthroughs and short how-to guides.</>,
         fr: <>Oui. Nous développons la {yt("chaîne YouTube SoloBizz")} avec démos et tutoriels.</>,
         pl: <>Tak. Rozwijamy {yt("kanał YouTube SoloBizz")} z demami i krótkimi poradnikami.</>,
+        ru: <>Да. Мы развиваем {yt("YouTube-канал SoloBizz")}, где будут видео-демо, разборы функций и короткие инструкции.</>,
       },
     },
     {
@@ -1478,9 +1706,12 @@ function FaqSection() {
         en: "What if I need a feature that doesn't exist yet in SoloBizz?",
         fr: "Et si j'ai besoin d'une fonctionnalité qui n'existe pas encore ?",
         pl: "Co jeśli potrzebuję funkcji, której nie ma jeszcze w SoloBizz?",
+        ru: "Что делать, если мне нужна функция, которой ещё нет в SoloBizz?",
       },
       a: <>{lang === "uk"
         ? <>Ми уважно слухаємо потреби користувачів і формуємо список покращень на основі реальних запитів терапевтів. Якщо вам бракує певної функції, ви можете залишити побажання на {fb("Facebook-сторінці")} або надіслати запит через сайт.</>
+        : lang === "ru"
+        ? <>Мы внимательно прислушиваемся к пользователям и формируем дорожную карту на основе реальных запросов терапевтов. Если вам не хватает какой-то функции, оставьте пожелание на {fb("странице Facebook")} или отправьте запрос через сайт.</>
         : <>We listen to user needs and build our roadmap from real requests. If you're missing a feature, share it on our {fb("Facebook page")} or send a request through the site.</>
       }</> as any,
     },
@@ -1490,12 +1721,14 @@ function FaqSection() {
         en: "Where can I get help with setting up the system?",
         fr: "Où obtenir de l'aide pour la configuration ?",
         pl: "Gdzie mogę uzyskać pomoc przy konfiguracji?",
+        ru: "Где я могу получить консультацию по настройке системы?",
       },
       a: {
         uk: <>Ви можете написати нам на email: {mail} або залишити повідомлення через {fb("Facebook-сторінку SoloBizz")}. Ми зв'яжемося з вами і допоможемо розібратися з налаштуванням системи.</>,
         en: <>Write to us at {mail} or message us via the {fb("SoloBizz Facebook page")}. We'll get back to you and help with setup.</>,
         fr: <>Écrivez-nous à {mail} ou via notre {fb("page Facebook SoloBizz")}. Nous vous aiderons avec la configuration.</>,
         pl: <>Napisz do nas na {mail} lub przez {fb("stronę Facebook SoloBizz")}. Pomożemy z konfiguracją.</>,
+        ru: <>Напишите нам на email: {mail} или оставьте сообщение через {fb("страницу Facebook SoloBizz")}. Мы свяжемся с вами и поможем с настройкой системы.</>,
       },
     },
   ];
@@ -1514,7 +1747,7 @@ function FaqSection() {
         <Accordion type="single" collapsible className="divide-y divide-foreground/10">
           {items.map((it, idx) => {
             const answer = (it.a as any)?.[lang] ?? (it.a as any)?.en ?? (it.a as any);
-            const question = it.q[lang] ?? it.q.en;
+            const question = (it.q as Record<string, string>)[lang] ?? it.q.en;
             return (
               <AccordionItem key={idx} value={`item-${idx}`} className="border-0">
                 <AccordionTrigger className="text-left text-base sm:text-lg font-semibold text-foreground py-6 hover:no-underline [&>svg]:text-foreground/70">
@@ -1553,6 +1786,8 @@ function FinalCTA() {
             ? "Rejoignez plus de 300 psychologues, psychothérapeutes et superviseurs qui ont remplacé les tableurs éparpillés et les factures oubliées par un système clair. Gratuit pour commencer. Configuration en 5 minutes."
             : lang === "pl"
             ? "Dołącz do 300+ psychologów, psychoterapeutów i superwizorów, którzy zastąpili rozproszone arkusze i zapomniane faktury jednym przejrzystym systemem. Za darmo na start. Konfiguracja w 5 minut."
+            : lang === "ru"
+            ? "Присоединяйтесь к 300+ психологам, психотерапевтам и супервизорам, которые заменили разрозненные таблицы и забытые счета одной понятной системой. Бесплатно для старта. Настройка за 5 минут."
             : "Join 300+ psychologists, psychotherapists and supervisors who replaced scattered spreadsheets and forgotten invoices with one clear system. Free to start. Setup in 5 minutes."}
         </p>
         <div className="flex items-center justify-center">
@@ -1569,21 +1804,25 @@ function FinalCTA() {
 
         <div id="contact" className="mt-14 max-w-2xl mx-auto rounded-2xl border border-sidebar-border bg-accent/30 p-6 sm:p-10 text-center">
           <h3 className="text-2xl sm:text-3xl font-bold text-secondary-foreground mb-3">
-            {lang === "uk" ? "Залишились сумніви?" : t("doubtTitle")}
+            {t("doubtTitle")}
           </h3>
           <p className="text-base text-secondary-foreground/80 mb-3">
             {lang === "uk"
               ? "Запишіться на коротку розмову, і ми покажемо, як SoloBizz може спростити вашу роботу, упорядкувати записи, оплати та допомогти краще бачити фінансову картину вашої практики."
+              : lang === "ru"
+              ? "Запишитесь на короткий разговор — мы покажем, как SoloBizz может упростить вашу работу, упорядочить записи, оплаты и помочь лучше видеть финансовую картину вашей практики."
               : t("doubtText")}
           </p>
           <p className="text-sm text-secondary-foreground/70 mb-6">
             {lang === "uk"
               ? "Після короткої розмови ви зрозумієте, як система може підійти саме під ваш формат роботи."
+              : lang === "ru"
+              ? "После короткого разговора вы поймёте, как система может подойти именно под ваш формат работы."
               : "After a short call you'll understand how the system can fit your way of working."}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <BookingDialog
-              lang={(lang === "ru" ? "en" : lang) as Language}
+              lang={lang}
               source="/#final"
               trigger={
                 <Button
@@ -1592,7 +1831,7 @@ function FinalCTA() {
                   onClick={() => track("cta_clicked", { source_page: "/#final", cta: "book_call", lang })}
                 >
                   <MessageCircle className="h-4 w-4" />
-                  {lang === "uk" ? "Поспілкуватися" : t("doubtCta")}
+                  {t("doubtCta")}
                 </Button>
               }
             />
@@ -1605,6 +1844,7 @@ function FinalCTA() {
                 {lang === "uk" ? "Написати нам"
                   : lang === "fr" ? "Nous écrire"
                   : lang === "pl" ? "Napisz do nas"
+                  : lang === "ru" ? "Написать нам"
                   : "Email us"}
               </Button>
             </a>
@@ -1616,6 +1856,8 @@ function FinalCTA() {
               ? "Laissez une demande ou écrivez-nous par email — nous répondrons par le canal qui vous convient."
               : lang === "pl"
               ? "Zostaw zgłoszenie lub napisz e-mail — odpowiemy w wygodny dla Ciebie sposób."
+              : lang === "ru"
+              ? "Можно оставить заявку или написать на email — мы ответим удобным для вас способом."
               : "Leave a request or email us — we'll reply your way."}
           </p>
         </div>
@@ -1749,48 +1991,56 @@ function TestimonialsSection() {
 
 function AboutContactsSection() {
   const { lang } = useLandingLang();
-  const isUk = lang === "uk";
+  const pick = (m: Partial<Record<AppLanguage, string>>) => m[lang] ?? m.en ?? "";
+  const T = {
+    aboutTitle: pick({ en: "About us", uk: "Про нас", fr: "À propos", pl: "O nas", ru: "О нас" }),
+    aboutP1: pick({
+      en: "SoloBizz is a system for psychologists, psychotherapists, supervisors, teachers and solo professionals who want to manage clients, sessions, payments and see real financial results — without chaos, Excel or manual tracking.",
+      uk: "Solo Bizz — це система для психологів, психотерапевтів, супервізорів, викладачів і приватних спеціалістів, які хочуть вести клієнтів, записи, оплати та бачити фінансовий результат без хаосу, Excel і ручного обліку.",
+      fr: "SoloBizz est un système pour psychologues, psychothérapeutes, superviseurs, enseignants et professionnels en solo qui veulent gérer clients, séances, paiements et voir leurs résultats financiers — sans chaos, Excel ou suivi manuel.",
+      pl: "SoloBizz to system dla psychologów, psychoterapeutów, superwizorów, nauczycieli i solowych specjalistów, którzy chcą zarządzać klientami, sesjami i płatnościami oraz widzieć realny wynik finansowy — bez chaosu, Excela i ręcznej ewidencji.",
+      ru: "Solo Bizz — это система для психологов, психотерапевтов, супервизоров, преподавателей и частных специалистов, которые хотят вести клиентов, записи, оплаты и видеть финансовый результат без хаоса, Excel и ручного учёта.",
+    }),
+    aboutP2: pick({
+      en: "We're building a tool that turns a private practice into a more systematic, clear and manageable business.",
+      uk: "Ми створюємо інструмент, який допомагає перетворити приватну практику на більш системний, зрозумілий і керований бізнес.",
+      fr: "Nous construisons un outil qui transforme une pratique privée en une activité plus structurée, claire et maîtrisée.",
+      pl: "Tworzymy narzędzie, które zmienia prywatną praktykę w bardziej uporządkowany, przejrzysty i kontrolowany biznes.",
+      ru: "Мы создаём инструмент, который превращает частную практику в более системный, понятный и управляемый бизнес.",
+    }),
+    contactsTitle: pick({ en: "Contacts", uk: "Контакти", fr: "Contacts", pl: "Kontakt", ru: "Контакты" }),
+    location: pick({ en: "Location", uk: "Локація", fr: "Localisation", pl: "Lokalizacja", ru: "Локация" }),
+    phone: pick({ en: "Phone", uk: "Телефон", fr: "Téléphone", pl: "Telefon", ru: "Телефон" }),
+    phoneNote: pick({
+      en: "Consultations in English and Ukrainian",
+      uk: "Консультації англійською та українською мовами",
+      fr: "Consultations en anglais et en ukrainien",
+      pl: "Konsultacje w języku angielskim i ukraińskim",
+      ru: "Консультации на английском и украинском языках",
+    }),
+  };
   return (
     <section id="about" className="py-20 px-4 sm:px-6 bg-background">
       <div className="max-w-6xl mx-auto grid gap-10 lg:grid-cols-2 lg:gap-16">
-        {/* About */}
         <div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-5">
-            {isUk ? "Про нас" : "About us"}
-          </h2>
-          <p className="text-base text-muted-foreground leading-relaxed mb-4">
-            {isUk
-              ? "Solo Bizz — це система для психологів, психотерапевтів, супервізорів, викладачів і приватних спеціалістів, які хочуть вести клієнтів, записи, оплати та бачити фінансовий результат без хаосу, Excel і ручного обліку."
-              : "SoloBizz is a system for psychologists, psychotherapists, supervisors, teachers and solo professionals who want to manage clients, sessions, payments and see real financial results — without chaos, Excel or manual tracking."}
-          </p>
-          <p className="text-base text-muted-foreground leading-relaxed">
-            {isUk
-              ? "Ми створюємо інструмент, який допомагає перетворити приватну практику на більш системний, зрозумілий і керований бізнес."
-              : "We're building a tool that turns a private practice into a more systematic, clear and manageable business."}
-          </p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-5">{T.aboutTitle}</h2>
+          <p className="text-base text-muted-foreground leading-relaxed mb-4">{T.aboutP1}</p>
+          <p className="text-base text-muted-foreground leading-relaxed">{T.aboutP2}</p>
         </div>
-
-        {/* Contacts */}
         <div id="contacts">
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-5">
-            {isUk ? "Контакти" : "Contacts"}
-          </h2>
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-5">{T.contactsTitle}</h2>
           <ul className="space-y-4">
             <li className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
               <MapPin className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">
-                  {isUk ? "Локація" : "Location"}
-                </div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">{T.location}</div>
                 <div className="text-foreground">{OFFICE_ADDRESS}</div>
               </div>
             </li>
             <li className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
               <MapPin className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">
-                  {isUk ? "Локація" : "Location"}
-                </div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">{T.location}</div>
                 <div className="text-foreground">{OFFICE_ADDRESS_LVIV}</div>
               </div>
             </li>
@@ -1798,23 +2048,15 @@ function AboutContactsSection() {
               <Mail className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
                 <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">Email</div>
-                <a href={`mailto:${CONTACT_EMAIL}`} className="text-foreground hover:text-primary">
-                  {CONTACT_EMAIL}
-                </a>
+                <a href={`mailto:${CONTACT_EMAIL}`} className="text-foreground hover:text-primary">{CONTACT_EMAIL}</a>
               </div>
             </li>
             <li className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
               <Phone className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">
-                  {isUk ? "Телефон" : "Phone"}
-                </div>
-                <a href={`tel:${PHONE_NUMBER.replace(/\s+/g, "")}`} className="text-foreground hover:text-primary">
-                  {PHONE_NUMBER}
-                </a>
-                <div className="text-xs text-muted-foreground mt-0.5">
-                  {isUk ? "Консультації англійською та українською мовами" : "Consultations in English and Ukrainian"}
-                </div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">{T.phone}</div>
+                <a href={`tel:${PHONE_NUMBER.replace(/\s+/g, "")}`} className="text-foreground hover:text-primary">{PHONE_NUMBER}</a>
+                <div className="text-xs text-muted-foreground mt-0.5">{T.phoneNote}</div>
               </div>
             </li>
           </ul>
@@ -1826,30 +2068,52 @@ function AboutContactsSection() {
 
 function LandingFooter() {
   const { lang } = useLandingLang();
-  const isUk = lang === "uk";
+  const pick = (m: Partial<Record<AppLanguage, string>>) => m[lang] ?? m.en ?? "";
+  const T = {
+    product: pick({ en: "Product", uk: "Продукт", fr: "Produit", pl: "Produkt", ru: "Продукт" }),
+    howItWorks: pick({ en: "How it works", uk: "Як це працює", fr: "Comment ça marche", pl: "Jak to działa", ru: "Как это работает" }),
+    pricing: pick({ en: "Pricing", uk: "Ціни", fr: "Tarifs", pl: "Cennik", ru: "Цены" }),
+    company: pick({ en: "Company", uk: "Компанія", fr: "Société", pl: "Firma", ru: "Компания" }),
+    about: pick({ en: "About us", uk: "Про нас", fr: "À propos", pl: "O nas", ru: "О нас" }),
+    contacts: pick({ en: "Contacts", uk: "Контакти", fr: "Contacts", pl: "Kontakt", ru: "Контакты" }),
+    careers: pick({ en: "Careers", uk: "Вакансії", fr: "Carrières", pl: "Kariera", ru: "Вакансии" }),
+    getInTouch: pick({ en: "Get in touch", uk: "Зв'язок", fr: "Nous contacter", pl: "Kontakt", ru: "Связь" }),
+    phone: pick({ en: "Phone", uk: "Телефон", fr: "Téléphone", pl: "Telefon", ru: "Телефон" }),
+    tagline: pick({
+      en: "CRM for private practice: clients, bookings, payments and finance.",
+      uk: "CRM для приватної практики: клієнти, записи, оплати та фінанси.",
+      fr: "CRM pour pratique privée : clients, réservations, paiements et finances.",
+      pl: "CRM dla prywatnej praktyki: klienci, rezerwacje, płatności i finanse.",
+      ru: "CRM для частной практики: клиенты, записи, оплаты и финансы.",
+    }),
+    rights: pick({ en: "All rights reserved.", uk: "Усі права захищені.", fr: "Tous droits réservés.", pl: "Wszelkie prawa zastrzeżone.", ru: "Все права защищены." }),
+    terms: pick({ en: "Terms", uk: "Умови", fr: "Conditions", pl: "Regulamin", ru: "Условия" }),
+    privacy: pick({ en: "Privacy", uk: "Конфіденційність", fr: "Confidentialité", pl: "Prywatność", ru: "Конфиденциальность" }),
+    cookies: "Cookies",
+    manageCookies: pick({ en: "Manage cookies", uk: "Керувати cookies", fr: "Gérer les cookies", pl: "Zarządzaj cookies", ru: "Управление cookies" }),
+  };
   const groups = [
     {
-      title: isUk ? "Продукт" : "Product",
+      title: T.product,
       links: [
-        { label: isUk ? "Як це працює" : "How it works", href: "#comparison" },
-        { label: isUk ? "Ціни" : "Pricing", href: "#pricing" },
+        { label: T.howItWorks, href: "#comparison" },
+        { label: T.pricing, href: "#pricing" },
         { label: "FAQ", href: "#faq" },
       ],
     },
     {
-      title: isUk ? "Компанія" : "Company",
+      title: T.company,
       links: [
-        { label: isUk ? "Про нас" : "About us", href: "#about" },
-        { label: isUk ? "Контакти" : "Contacts", href: "#contacts" },
-        { label: isUk ? "Вакансії" : "Careers", href: VACANCIES_URL },
+        { label: T.about, href: "#about" },
+        { label: T.contacts, href: "#contacts" },
+        { label: T.careers, href: VACANCIES_URL },
       ],
     },
     {
-      title: isUk ? "Зв'язок" : "Get in touch",
+      title: T.getInTouch,
       links: [
         { label: "Email", href: `mailto:${CONTACT_EMAIL}`, external: true },
-        
-        { label: isUk ? "Телефон" : "Phone", href: `tel:${PHONE_NUMBER.replace(/\s+/g, "")}`, external: true },
+        { label: T.phone, href: `tel:${PHONE_NUMBER.replace(/\s+/g, "")}`, external: true },
       ],
     },
   ];
@@ -1860,11 +2124,7 @@ function LandingFooter() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <div className="text-xl font-bold text-foreground mb-2">SoloBizz</div>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-              {isUk
-                ? "CRM для приватної практики: клієнти, записи, оплати та фінанси."
-                : "CRM for private practice: clients, bookings, payments and finance."}
-            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">{T.tagline}</p>
             <p className="text-sm text-muted-foreground flex items-start gap-2">
               <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
               {OFFICE_ADDRESS}
@@ -1901,18 +2161,12 @@ function LandingFooter() {
 
         <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} SoloBizz. {isUk ? "Усі права захищені." : "All rights reserved."}
+            © {new Date().getFullYear()} SoloBizz. {T.rights}
           </p>
           <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-            <Link to="/terms" className="text-xs text-muted-foreground hover:text-foreground">
-              {isUk ? "Умови" : "Terms"}
-            </Link>
-            <Link to="/privacy" className="text-xs text-muted-foreground hover:text-foreground">
-              {isUk ? "Конфіденційність" : "Privacy"}
-            </Link>
-            <Link to="/cookie-policy" className="text-xs text-muted-foreground hover:text-foreground">
-              {isUk ? "Cookies" : "Cookies"}
-            </Link>
+            <Link to="/terms" className="text-xs text-muted-foreground hover:text-foreground">{T.terms}</Link>
+            <Link to="/privacy" className="text-xs text-muted-foreground hover:text-foreground">{T.privacy}</Link>
+            <Link to="/cookie-policy" className="text-xs text-muted-foreground hover:text-foreground">{T.cookies}</Link>
             <button
               type="button"
               onClick={() => {
@@ -1920,7 +2174,7 @@ function LandingFooter() {
               }}
               className="text-xs text-muted-foreground hover:text-foreground"
             >
-              {isUk ? "Керувати cookies" : "Manage cookies"}
+              {T.manageCookies}
             </button>
           </nav>
         </div>
@@ -1931,7 +2185,7 @@ function LandingFooter() {
 
 // ── SEO (localized meta) ──────────────────────────────────────────────
 
-const SEO_META: Record<Language, { title: string; description: string; ogTitle: string; ogDesc: string; ogLocale: string; htmlLang: string }> = {
+const SEO_META: Record<AppLanguage, { title: string; description: string; ogTitle: string; ogDesc: string; ogLocale: string; htmlLang: string }> = {
   en: {
     title: "Solo Bizz — CRM for psychologists, coaches & solo practices",
     description: "SoloBizz helps psychologists, therapists, coaches and tutors manage clients, sessions, payments and income — all in one calm, simple workspace.",
@@ -1963,6 +2217,14 @@ const SEO_META: Record<Language, { title: string; description: string; ogTitle: 
     ogDesc: "Klienci, sesje, płatności i dochód w jednym miejscu. Stworzone dla psychologów, terapeutów, coachów i korepetytorów.",
     ogLocale: "pl_PL",
     htmlLang: "pl",
+  },
+  ru: {
+    title: "Solo Bizz — CRM для психологов, коучей и частной практики",
+    description: "SoloBizz помогает психологам, терапевтам, коучам и репетиторам вести клиентов, сеансы, оплаты и доход — в одном простом рабочем пространстве.",
+    ogTitle: "Solo Bizz — Управляйте частной практикой без хаоса",
+    ogDesc: "Клиенты, сеансы, оплаты и доход в одном месте. Создано для психологов, терапевтов, коучей и репетиторов.",
+    ogLocale: "ru_RU",
+    htmlLang: "ru",
   },
 };
 
