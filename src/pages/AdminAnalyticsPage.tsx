@@ -81,9 +81,19 @@ export default function AdminAnalyticsPage() {
   }
 
   async function loadDomains() {
+    // Always include known production/preview domains so they're selectable
+    // in the filter even before any events have been recorded for them.
+    const KNOWN_DOMAINS = [
+      "solo-bizz.com",
+      "www.solo-bizz.com",
+      "solo-bizz.lovable.app",
+      "solo-bizz-app.lovable.app",
+      "preview--solo-bizz.lovable.app",
+    ];
     try {
       const days = RANGES.find((r) => r.key === rangeKey)?.days ?? 7;
       const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+      let dbDomains: string[] = [];
       const { data, error } = await (supabase.rpc as any)("get_distinct_domains", { since_date: since });
       if (error) {
         const { data: fallback } = await (supabase
@@ -92,12 +102,15 @@ export default function AdminAnalyticsPage() {
           .gte("created_at", since)
           .order("domain", { ascending: true })
           .limit(5000);
-        const domains = [...new Set<string>((fallback ?? []).map((r: any) => r.domain).filter(Boolean))];
-        setAllDomains(domains);
-        return;
+        dbDomains = [...new Set<string>((fallback ?? []).map((r: any) => r.domain).filter(Boolean))];
+      } else {
+        dbDomains = (data ?? []).filter(Boolean);
       }
-      setAllDomains((data ?? []).filter(Boolean));
-    } catch { /* noop */ }
+      const merged = [...new Set<string>([...KNOWN_DOMAINS, ...dbDomains])].sort();
+      setAllDomains(merged);
+    } catch {
+      setAllDomains(KNOWN_DOMAINS);
+    }
   }
 
   useEffect(() => {
