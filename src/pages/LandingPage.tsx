@@ -1783,21 +1783,25 @@ function FinalCTA() {
 
         <div id="contact" className="mt-14 max-w-2xl mx-auto rounded-2xl border border-sidebar-border bg-accent/30 p-6 sm:p-10 text-center">
           <h3 className="text-2xl sm:text-3xl font-bold text-secondary-foreground mb-3">
-            {lang === "uk" ? "Залишились сумніви?" : t("doubtTitle")}
+            {t("doubtTitle")}
           </h3>
           <p className="text-base text-secondary-foreground/80 mb-3">
             {lang === "uk"
               ? "Запишіться на коротку розмову, і ми покажемо, як SoloBizz може спростити вашу роботу, упорядкувати записи, оплати та допомогти краще бачити фінансову картину вашої практики."
+              : lang === "ru"
+              ? "Запишитесь на короткий разговор — мы покажем, как SoloBizz может упростить вашу работу, упорядочить записи, оплаты и помочь лучше видеть финансовую картину вашей практики."
               : t("doubtText")}
           </p>
           <p className="text-sm text-secondary-foreground/70 mb-6">
             {lang === "uk"
               ? "Після короткої розмови ви зрозумієте, як система може підійти саме під ваш формат роботи."
+              : lang === "ru"
+              ? "После короткого разговора вы поймёте, как система может подойти именно под ваш формат работы."
               : "After a short call you'll understand how the system can fit your way of working."}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <BookingDialog
-              lang={(lang === "ru" ? "en" : lang) as Language}
+              lang={lang}
               source="/#final"
               trigger={
                 <Button
@@ -1806,7 +1810,7 @@ function FinalCTA() {
                   onClick={() => track("cta_clicked", { source_page: "/#final", cta: "book_call", lang })}
                 >
                   <MessageCircle className="h-4 w-4" />
-                  {lang === "uk" ? "Поспілкуватися" : t("doubtCta")}
+                  {t("doubtCta")}
                 </Button>
               }
             />
@@ -1819,6 +1823,7 @@ function FinalCTA() {
                 {lang === "uk" ? "Написати нам"
                   : lang === "fr" ? "Nous écrire"
                   : lang === "pl" ? "Napisz do nas"
+                  : lang === "ru" ? "Написать нам"
                   : "Email us"}
               </Button>
             </a>
@@ -1830,6 +1835,8 @@ function FinalCTA() {
               ? "Laissez une demande ou écrivez-nous par email — nous répondrons par le canal qui vous convient."
               : lang === "pl"
               ? "Zostaw zgłoszenie lub napisz e-mail — odpowiemy w wygodny dla Ciebie sposób."
+              : lang === "ru"
+              ? "Можно оставить заявку или написать на email — мы ответим удобным для вас способом."
               : "Leave a request or email us — we'll reply your way."}
           </p>
         </div>
