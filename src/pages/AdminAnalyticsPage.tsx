@@ -164,7 +164,7 @@ export default function AdminAnalyticsPage() {
           <CardHeader><CardTitle>Conversion funnel</CardTitle></CardHeader>
           <CardContent className="space-y-2">
             {funnel.map((s) => (
-              <div key={s.key} className="space-y-1">
+              <div key={s.label} className="space-y-1">
                 <div className="flex justify-between text-sm">
                   <span className="font-medium">{s.label}</span>
                   <span className="text-muted-foreground">{s.count} events · {s.users} users · {s.pct}%</span>
