@@ -75,15 +75,38 @@ export default function AdminAnalyticsPage() {
       const { data, error } = await query;
       if (error) throw error;
       setRows((data as EventRow[]) ?? []);
-    } finally {
+    } finally Ie { /* handled by UI state */ } finally {
       setBusy(false);
     }
   }
 
+  async function loadDomains() {
+    try {
+      const days = RANGES.find((r) => r.key === rangeKey)?.days ?? 7;
+      const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+      const { data, error } = await (supabase.rpc as any)("get_distinct_domains", { since_date: since });
+      if (error) {
+        const { data: fallback } = await (supabase
+          .from("user_activity_events") as any)
+          .select("domain")
+          .gte("created_at", since)
+          .order("domain", { ascending: true })
+          .limit(5000);
+        const domains = [...new Set<string>((fallback ?? []).map((r: any) => r.domain).filter(Boolean))];
+        setAllDomains(domains);
+        return;
+      }
+      setAllDomains((data ?? []).filter(Boolean));
+    } catch { /* noop */ }
+  }
+
   useEffect(() => {
-    if (isAdmin) load();
+    if (isAdmin) {
+      load();
+      loadDomains();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAdmin, rangeKey]);
+  }, [isAdmin, rangeKey, domainFilter]);
 
   const stats = useMemo(() => {
     const totals: Record<string, number> = {};
