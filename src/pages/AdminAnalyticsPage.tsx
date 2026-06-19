@@ -115,6 +115,7 @@ export default function AdminAnalyticsPage() {
     const bySource: Record<string, number> = {};
     const byCountry: Record<string, number> = {};
     const byPath: Record<string, number> = {};
+    const byDomain: Record<string, number> = {};
     for (const r of rows) {
       totals[r.event_name] = (totals[r.event_name] ?? 0) + 1;
       if (r.user_id) {
@@ -125,9 +126,10 @@ export default function AdminAnalyticsPage() {
       bySource[src] = (bySource[src] ?? 0) + 1;
       if (r.country) byCountry[r.country] = (byCountry[r.country] ?? 0) + 1;
       if (r.path) byPath[r.path] = (byPath[r.path] ?? 0) + 1;
+      if (r.domain) byDomain[r.domain] = (byDomain[r.domain] ?? 0) + 1;
     }
     const uniqueUsers = new Set(rows.map((r) => r.user_id).filter(Boolean) as string[]).size;
-    return { totals, usersPerEvent, byDevice, bySource, byCountry, byPath, uniqueUsers };
+    return { totals, usersPerEvent, byDevice, bySource, byCountry, byPath, byDomain, uniqueUsers };
   }, [rows]);
 
   const funnel = useMemo(() => {
