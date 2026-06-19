@@ -23,6 +23,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, format, parseISO, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 
 export default function IncomePage() {
+  useEffect(() => { import("@/lib/analytics").then(({ track }) => track("income_page_opened")); }, []);
   const [page, setPage] = useState(0);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();

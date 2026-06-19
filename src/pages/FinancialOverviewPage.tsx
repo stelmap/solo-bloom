@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { useAllIncome, useExpenses, useAppointments, useTaxSettings, useExpectedPayments, useProfile } from "@/hooks/useData";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -34,6 +34,7 @@ interface MonthData {
 }
 
 export default function FinancialOverviewPage() {
+  useEffect(() => { import("@/lib/analytics").then(({ track }) => track("finances_opened")); }, []);
   const { t } = useLanguage();
   const { symbol: cs } = useCurrency();
   const [year, setYear] = useState(new Date().getFullYear());

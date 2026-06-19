@@ -85,6 +85,7 @@ export default function Dashboard() {
   // Fire once per mount. Dashboard is today-scoped, so range is fixed.
   useEffect(() => {
     track("dashboard_viewed", { range: "today", lang });
+    track("dashboard_opened", { lang });
   }, [lang]);
 
   // Click handler for KPI widgets: emits a typed event and navigates.
