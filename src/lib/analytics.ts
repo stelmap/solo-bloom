@@ -424,15 +424,22 @@ export function trackDiagnosticPing(): { name: string; at: string } {
 // Do NOT pass email, name, phone, etc.
 export function identifyUser(userId: string, traits: { locale?: string; currency?: string } = {}): void {
   if (!initialized) initAnalytics();
+  currentUserId = userId || null;
   if (!enabled || !userId) return;
+  // Alias the previously-anonymous distinct_id to this user so pre-signup
+  // pageviews + funnel steps are stitched into the same person.
+  try {
+    const anonId = posthog.get_distinct_id?.();
+    if (anonId && anonId !== userId) posthog.alias(userId, anonId);
+  } catch { /* noop */ }
   posthog.identify(userId, {
-    // Only non-PII traits.
     locale: traits.locale,
     currency: traits.currency,
   });
 }
 
 export function resetAnalytics(): void {
+  currentUserId = null;
   if (!enabled) return;
   posthog.reset();
 }
