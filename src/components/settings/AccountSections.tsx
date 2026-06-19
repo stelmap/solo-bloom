@@ -76,7 +76,7 @@ export function ProfileSection() {
           {(["en", "uk", "ru", "fr", "pl"] as const).map((code) => {
             const isCurrent = form.language === code;
             const native: Record<string, string> = { en: "English", uk: "Українська", ru: "Русский", fr: "Français", pl: "Polski" };
-            const flag: Record<string, string> = { en: "🇬🇧", uk: "🇺🇦", ru: "", fr: "🇫🇷", pl: "🇵🇱" };
+            const flag: Record<string, string> = { en: "🇬🇧", uk: "🇺🇦", ru: "🇷🇺", fr: "🇫🇷", pl: "🇵🇱" };
             return (
               <Label key={code} htmlFor={`lang-${code}`} className={cn(
                 "flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors",
