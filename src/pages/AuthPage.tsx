@@ -276,6 +276,9 @@ export default function AuthPage() {
     } catch (error: any) {
       const rawMsg: string = error?.message || "";
       const code: string = (error as any)?.code || "";
+      if (mode === "signup") {
+        track("registration_failed", { reason: rawMsg.slice(0, 200), code });
+      }
       const notConfirmed =
         code === "email_not_confirmed" ||
         /email\s*not\s*confirmed/i.test(rawMsg) ||
