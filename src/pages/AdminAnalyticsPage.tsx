@@ -62,12 +62,16 @@ export default function AdminAnalyticsPage() {
     try {
       const days = RANGES.find((r) => r.key === rangeKey)?.days ?? 7;
       const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-      const { data, error } = await (supabase
+      let query = (supabase
         .from("user_activity_events") as any)
         .select("id,user_id,event_name,domain,path,device_type,source,utm_source,utm_medium,utm_campaign,country,created_at")
         .gte("created_at", since)
         .order("created_at", { ascending: false })
         .limit(5000);
+      if (domainFilter !== "all") {
+        query = query.eq("domain", domainFilter);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       setRows((data as EventRow[]) ?? []);
     } finally {
