@@ -192,7 +192,6 @@ export type AnalyticsEvent =
   | "scroll_depth";
 
 // Events we persist to Supabase user_activity_events for the admin dashboard.
-// Anonymous events stay PostHog-only (no user_id to attach to).
 const PERSISTED_EVENTS = new Set<AnalyticsEvent>([
   "auth_page_opened",
   "registration_completed",
@@ -217,6 +216,22 @@ const PERSISTED_EVENTS = new Set<AnalyticsEvent>([
   "payment_succeeded",
   "payment_failed",
   "subscription_cancelled",
+  // Anonymous website / landing traffic — persisted even without a user_id
+  // so the admin analytics dashboard can show visits from solo-bizz.com.
+  "website_page_view",
+  "landing_view",
+  "pricing_view",
+  "cta_clicked",
+]);
+
+// Subset of PERSISTED_EVENTS that should also be saved when the visitor is
+// anonymous (no logged-in user). user_id is stored as NULL on those rows.
+const ANON_PERSISTED_EVENTS = new Set<AnalyticsEvent>([
+  "website_page_view",
+  "landing_view",
+  "pricing_view",
+  "cta_clicked",
+  "auth_page_opened",
 ]);
 
 // In-memory diagnostics for the current browser session.
