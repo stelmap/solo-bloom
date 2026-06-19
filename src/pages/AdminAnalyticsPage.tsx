@@ -52,6 +52,7 @@ export default function AdminAnalyticsPage() {
   const { user, loading } = useAuth();
   const [busy, setBusy] = useState(false);
   const [rows, setRows] = useState<EventRow[]>([]);
+  const [allDomains, setAllDomains] = useState<string[]>([]);
   const [rangeKey, setRangeKey] = useState("7d");
   const [domainFilter, setDomainFilter] = useState<string>("all");
 
