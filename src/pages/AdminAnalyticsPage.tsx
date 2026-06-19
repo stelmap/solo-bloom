@@ -102,12 +102,19 @@ export default function AdminAnalyticsPage() {
   }, [rows]);
 
   const funnel = useMemo(() => {
-    const top = FUNNEL_STEPS[0].key;
-    const topCount = stats.totals[top] ?? 0;
+    const sumStep = (keys: string[]) => {
+      let count = 0;
+      const users = new Set<string>();
+      for (const k of keys) {
+        count += stats.totals[k] ?? 0;
+        stats.usersPerEvent[k]?.forEach((u) => users.add(u));
+      }
+      return { count, users: users.size };
+    };
+    const top = sumStep(FUNNEL_STEPS[0].keys).count;
     return FUNNEL_STEPS.map((s) => {
-      const count = stats.totals[s.key] ?? 0;
-      const users = stats.usersPerEvent[s.key]?.size ?? 0;
-      const pct = topCount > 0 ? Math.round((count / topCount) * 100) : 0;
+      const { count, users } = sumStep(s.keys);
+      const pct = top > 0 ? Math.round((count / top) * 100) : 0;
       return { ...s, count, users, pct };
     });
   }, [stats]);
