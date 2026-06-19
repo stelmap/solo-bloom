@@ -245,6 +245,10 @@ export default function AuthPage() {
         });
         if (error) throw error;
         track("sign_up_started", { plan_type: planParam ?? undefined, lang });
+        track("registration_started", { plan_type: planParam ?? undefined, lang });
+        if (data.user?.id) {
+          track("registration_completed", { plan_type: planParam ?? undefined, lang, user_id: data.user.id });
+        }
 
         if (data.session) {
           // Auto-confirm enabled (rare) — straight to app
