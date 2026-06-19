@@ -109,6 +109,7 @@ const ClientCard = memo(({ client, onNavigate, onDelete, onArchive, onUnarchive,
 ClientCard.displayName = "ClientCard";
 
 export default function ClientsPage() {
+  useEffect(() => { import("@/lib/analytics").then(({ track }) => track("clients_opened")); }, []);
   const { data: clients = [], isLoading } = useClients();
   const { data: appointments = [] } = useAppointments();
   const createClient = useCreateClient();

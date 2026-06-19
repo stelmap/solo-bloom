@@ -6,8 +6,11 @@ import { ConnectedAccountsSection } from "@/components/ConnectedAccountsSection"
 import { SubscriptionSection } from "@/components/SubscriptionSection";
 import { PrivacySection } from "@/components/settings/PrivacySection";
 import { MfaAndTimeoutSection } from "@/components/settings/MfaAndTimeoutSection";
+import { useEffect } from "react";
+import { track } from "@/lib/analytics";
 
 export default function SettingsPage() {
+  useEffect(() => { track("settings_opened"); }, []);
   const { t } = useLanguage();
   return (
     <AppLayout>

@@ -200,6 +200,7 @@ function useDensity(): Density {
 }
 
 export default function CalendarPage() {
+  useEffect(() => { import("@/lib/analytics").then(({ track }) => track("calendar_opened")); }, []);
   const density = useDensity();
   const D = {
     pad: density === "compact" ? "px-4 pt-2 pb-3 sm:px-5" : density === "cozy" ? "px-4 pt-3 pb-4 sm:px-5" : "px-5 pt-4 pb-5 sm:px-6",
