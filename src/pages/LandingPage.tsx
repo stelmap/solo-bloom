@@ -2164,7 +2164,7 @@ function LandingFooter() {
 
 // ── SEO (localized meta) ──────────────────────────────────────────────
 
-const SEO_META: Record<Language, { title: string; description: string; ogTitle: string; ogDesc: string; ogLocale: string; htmlLang: string }> = {
+const SEO_META: Record<AppLanguage, { title: string; description: string; ogTitle: string; ogDesc: string; ogLocale: string; htmlLang: string }> = {
   en: {
     title: "Solo Bizz — CRM for psychologists, coaches & solo practices",
     description: "SoloBizz helps psychologists, therapists, coaches and tutors manage clients, sessions, payments and income — all in one calm, simple workspace.",
@@ -2196,6 +2196,14 @@ const SEO_META: Record<Language, { title: string; description: string; ogTitle: 
     ogDesc: "Klienci, sesje, płatności i dochód w jednym miejscu. Stworzone dla psychologów, terapeutów, coachów i korepetytorów.",
     ogLocale: "pl_PL",
     htmlLang: "pl",
+  },
+  ru: {
+    title: "Solo Bizz — CRM для психологов, коучей и частной практики",
+    description: "SoloBizz помогает психологам, терапевтам, коучам и репетиторам вести клиентов, сеансы, оплаты и доход — в одном простом рабочем пространстве.",
+    ogTitle: "Solo Bizz — Управляйте частной практикой без хаоса",
+    ogDesc: "Клиенты, сеансы, оплаты и доход в одном месте. Создано для психологов, терапевтов, коучей и репетиторов.",
+    ogLocale: "ru_RU",
+    htmlLang: "ru",
   },
 };
 
