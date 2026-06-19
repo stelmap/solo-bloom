@@ -1610,12 +1610,14 @@ function FaqSection() {
         en: "Is my client data private and secure?",
         fr: "Les données de mes clients sont-elles privées et sécurisées ?",
         pl: "Czy dane moich klientów są prywatne i bezpieczne?",
+        ru: "Являются ли данные моих клиентов приватными и защищёнными?",
       },
       a: {
         uk: "Так. Дані ваших клієнтів повністю приватні. SoloBizz не переглядає, не аналізує і не використовує інформацію про ваших клієнтів. Тільки ви маєте доступ до даних вашої практики. Система розроблена з урахуванням вимог GDPR та принципів конфіденційності.",
         en: "Yes. Your client data is fully private. SoloBizz does not view, analyze or use information about your clients. Only you have access to your practice data. The system is designed with GDPR and privacy principles in mind.",
         fr: "Oui. Les données de vos clients sont entièrement privées. SoloBizz ne consulte, n'analyse ni n'utilise ces informations. Vous seul·e avez accès. Le système est conçu selon le RGPD et les principes de confidentialité.",
         pl: "Tak. Dane Twoich klientów są w pełni prywatne. SoloBizz ich nie przegląda, nie analizuje ani nie wykorzystuje. Tylko Ty masz dostęp. System jest zaprojektowany zgodnie z RODO i zasadami prywatności.",
+        ru: "Да. Данные ваших клиентов полностью приватны. SoloBizz не просматривает, не анализирует и не использует информацию о ваших клиентах. Только у вас есть доступ к данным вашей практики. Система разработана с учётом требований GDPR и принципов конфиденциальности.",
       },
     },
     {
