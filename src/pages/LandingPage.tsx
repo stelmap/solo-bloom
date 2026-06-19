@@ -1765,6 +1765,8 @@ function FinalCTA() {
             ? "Rejoignez plus de 300 psychologues, psychothérapeutes et superviseurs qui ont remplacé les tableurs éparpillés et les factures oubliées par un système clair. Gratuit pour commencer. Configuration en 5 minutes."
             : lang === "pl"
             ? "Dołącz do 300+ psychologów, psychoterapeutów i superwizorów, którzy zastąpili rozproszone arkusze i zapomniane faktury jednym przejrzystym systemem. Za darmo na start. Konfiguracja w 5 minut."
+            : lang === "ru"
+            ? "Присоединяйтесь к 300+ психологам, психотерапевтам и супервизорам, которые заменили разрозненные таблицы и забытые счета одной понятной системой. Бесплатно для старта. Настройка за 5 минут."
             : "Join 300+ psychologists, psychotherapists and supervisors who replaced scattered spreadsheets and forgotten invoices with one clear system. Free to start. Setup in 5 minutes."}
         </p>
         <div className="flex items-center justify-center">
