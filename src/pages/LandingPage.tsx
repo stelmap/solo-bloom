@@ -1747,7 +1747,7 @@ function FaqSection() {
         <Accordion type="single" collapsible className="divide-y divide-foreground/10">
           {items.map((it, idx) => {
             const answer = (it.a as any)?.[lang] ?? (it.a as any)?.en ?? (it.a as any);
-            const question = it.q[lang] ?? it.q.en;
+            const question = (it.q as Record<string, string>)[lang] ?? it.q.en;
             return (
               <AccordionItem key={idx} value={`item-${idx}`} className="border-0">
                 <AccordionTrigger className="text-left text-base sm:text-lg font-semibold text-foreground py-6 hover:no-underline [&>svg]:text-foreground/70">
