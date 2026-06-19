@@ -1706,9 +1706,12 @@ function FaqSection() {
         en: "What if I need a feature that doesn't exist yet in SoloBizz?",
         fr: "Et si j'ai besoin d'une fonctionnalité qui n'existe pas encore ?",
         pl: "Co jeśli potrzebuję funkcji, której nie ma jeszcze w SoloBizz?",
+        ru: "Что делать, если мне нужна функция, которой ещё нет в SoloBizz?",
       },
       a: <>{lang === "uk"
         ? <>Ми уважно слухаємо потреби користувачів і формуємо список покращень на основі реальних запитів терапевтів. Якщо вам бракує певної функції, ви можете залишити побажання на {fb("Facebook-сторінці")} або надіслати запит через сайт.</>
+        : lang === "ru"
+        ? <>Мы внимательно прислушиваемся к пользователям и формируем дорожную карту на основе реальных запросов терапевтов. Если вам не хватает какой-то функции, оставьте пожелание на {fb("странице Facebook")} или отправьте запрос через сайт.</>
         : <>We listen to user needs and build our roadmap from real requests. If you're missing a feature, share it on our {fb("Facebook page")} or send a request through the site.</>
       }</> as any,
     },
