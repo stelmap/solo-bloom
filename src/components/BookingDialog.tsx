@@ -12,7 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { track } from "@/lib/analytics";
 import { CheckCircle2, Loader2 } from "lucide-react";
 
-type Lang = "en" | "uk" | "fr" | "pl";
+type Lang = "en" | "uk" | "fr" | "pl" | "ru";
 
 const COPY: Record<Lang, {
   title: string; desc: string; name: string; email: string; phone: string;
@@ -58,6 +58,16 @@ const COPY: Record<Lang, {
     success: "Dziękujemy!", successDesc: "Skontaktujemy się wkrótce.",
     error: "Nie udało się wysłać. Spróbuj ponownie lub napisz na info@solo-bizz.com.",
     placeholderMsg: "Kilka słów o Twojej praktyce lub pytanie…",
+  },
+  ru: {
+    title: "Связаться с нами",
+    desc: "Оставьте заявку — мы свяжемся с вами и покажем, как Solo Bizz упростит вашу работу.",
+    name: "Имя", email: "Email", phone: "Телефон (необязательно)",
+    message: "Что вас интересует? (необязательно)",
+    submit: "Отправить заявку", sending: "Отправляем…",
+    success: "Спасибо!", successDesc: "Мы свяжемся с вами в ближайшее время.",
+    error: "Не удалось отправить. Попробуйте ещё раз или напишите на info@solo-bizz.com.",
+    placeholderMsg: "Несколько слов о вашей практике или вопрос…",
   },
 };
 
