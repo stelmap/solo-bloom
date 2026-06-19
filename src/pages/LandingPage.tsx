@@ -1690,12 +1690,14 @@ function FaqSection() {
         en: "Are there video demos I can watch?",
         fr: "Y a-t-il des démos vidéo à regarder ?",
         pl: "Czy są dema wideo do obejrzenia?",
+        ru: "Есть ли видео-демо, которые можно посмотреть?",
       },
       a: {
         uk: <>Так. Ми розвиваємо {yt("YouTube-канал SoloBizz")}, де будуть відео-демо, пояснення функцій, короткі інструкції та корисна інформація про роботу з системою.</>,
         en: <>Yes. We're growing the {yt("SoloBizz YouTube channel")} with demos, feature walkthroughs and short how-to guides.</>,
         fr: <>Oui. Nous développons la {yt("chaîne YouTube SoloBizz")} avec démos et tutoriels.</>,
         pl: <>Tak. Rozwijamy {yt("kanał YouTube SoloBizz")} z demami i krótkimi poradnikami.</>,
+        ru: <>Да. Мы развиваем {yt("YouTube-канал SoloBizz")}, где будут видео-демо, разборы функций и короткие инструкции.</>,
       },
     },
     {
