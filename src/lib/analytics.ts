@@ -378,7 +378,7 @@ async function persistEventToSupabase(event: string, props: BaseEventProps): Pro
       anonymousId = posthog.get_distinct_id?.() ?? null;
       sessionId = posthog.get_session_id?.() ?? null;
     } catch { /* noop */ }
-    await supabase.from("user_activity_events").insert({
+    await (supabase.from("user_activity_events") as any).insert({
       user_id: currentUserId,
       event_name: event,
       event_metadata: props as Record<string, unknown>,
