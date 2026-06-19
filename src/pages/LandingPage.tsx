@@ -1970,48 +1970,56 @@ function TestimonialsSection() {
 
 function AboutContactsSection() {
   const { lang } = useLandingLang();
-  const isUk = lang === "uk";
+  const pick = (m: Partial<Record<AppLanguage, string>>) => m[lang] ?? m.en ?? "";
+  const T = {
+    aboutTitle: pick({ en: "About us", uk: "Про нас", fr: "À propos", pl: "O nas", ru: "О нас" }),
+    aboutP1: pick({
+      en: "SoloBizz is a system for psychologists, psychotherapists, supervisors, teachers and solo professionals who want to manage clients, sessions, payments and see real financial results — without chaos, Excel or manual tracking.",
+      uk: "Solo Bizz — це система для психологів, психотерапевтів, супервізорів, викладачів і приватних спеціалістів, які хочуть вести клієнтів, записи, оплати та бачити фінансовий результат без хаосу, Excel і ручного обліку.",
+      fr: "SoloBizz est un système pour psychologues, psychothérapeutes, superviseurs, enseignants et professionnels en solo qui veulent gérer clients, séances, paiements et voir leurs résultats financiers — sans chaos, Excel ou suivi manuel.",
+      pl: "SoloBizz to system dla psychologów, psychoterapeutów, superwizorów, nauczycieli i solowych specjalistów, którzy chcą zarządzać klientami, sesjami i płatnościami oraz widzieć realny wynik finansowy — bez chaosu, Excela i ręcznej ewidencji.",
+      ru: "Solo Bizz — это система для психологов, психотерапевтов, супервизоров, преподавателей и частных специалистов, которые хотят вести клиентов, записи, оплаты и видеть финансовый результат без хаоса, Excel и ручного учёта.",
+    }),
+    aboutP2: pick({
+      en: "We're building a tool that turns a private practice into a more systematic, clear and manageable business.",
+      uk: "Ми створюємо інструмент, який допомагає перетворити приватну практику на більш системний, зрозумілий і керований бізнес.",
+      fr: "Nous construisons un outil qui transforme une pratique privée en une activité plus structurée, claire et maîtrisée.",
+      pl: "Tworzymy narzędzie, które zmienia prywatną praktykę w bardziej uporządkowany, przejrzysty i kontrolowany biznes.",
+      ru: "Мы создаём инструмент, который превращает частную практику в более системный, понятный и управляемый бизнес.",
+    }),
+    contactsTitle: pick({ en: "Contacts", uk: "Контакти", fr: "Contacts", pl: "Kontakt", ru: "Контакты" }),
+    location: pick({ en: "Location", uk: "Локація", fr: "Localisation", pl: "Lokalizacja", ru: "Локация" }),
+    phone: pick({ en: "Phone", uk: "Телефон", fr: "Téléphone", pl: "Telefon", ru: "Телефон" }),
+    phoneNote: pick({
+      en: "Consultations in English and Ukrainian",
+      uk: "Консультації англійською та українською мовами",
+      fr: "Consultations en anglais et en ukrainien",
+      pl: "Konsultacje w języku angielskim i ukraińskim",
+      ru: "Консультации на английском и украинском языках",
+    }),
+  };
   return (
     <section id="about" className="py-20 px-4 sm:px-6 bg-background">
       <div className="max-w-6xl mx-auto grid gap-10 lg:grid-cols-2 lg:gap-16">
-        {/* About */}
         <div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-5">
-            {isUk ? "Про нас" : "About us"}
-          </h2>
-          <p className="text-base text-muted-foreground leading-relaxed mb-4">
-            {isUk
-              ? "Solo Bizz — це система для психологів, психотерапевтів, супервізорів, викладачів і приватних спеціалістів, які хочуть вести клієнтів, записи, оплати та бачити фінансовий результат без хаосу, Excel і ручного обліку."
-              : "SoloBizz is a system for psychologists, psychotherapists, supervisors, teachers and solo professionals who want to manage clients, sessions, payments and see real financial results — without chaos, Excel or manual tracking."}
-          </p>
-          <p className="text-base text-muted-foreground leading-relaxed">
-            {isUk
-              ? "Ми створюємо інструмент, який допомагає перетворити приватну практику на більш системний, зрозумілий і керований бізнес."
-              : "We're building a tool that turns a private practice into a more systematic, clear and manageable business."}
-          </p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-5">{T.aboutTitle}</h2>
+          <p className="text-base text-muted-foreground leading-relaxed mb-4">{T.aboutP1}</p>
+          <p className="text-base text-muted-foreground leading-relaxed">{T.aboutP2}</p>
         </div>
-
-        {/* Contacts */}
         <div id="contacts">
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-5">
-            {isUk ? "Контакти" : "Contacts"}
-          </h2>
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-5">{T.contactsTitle}</h2>
           <ul className="space-y-4">
             <li className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
               <MapPin className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">
-                  {isUk ? "Локація" : "Location"}
-                </div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">{T.location}</div>
                 <div className="text-foreground">{OFFICE_ADDRESS}</div>
               </div>
             </li>
             <li className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
               <MapPin className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">
-                  {isUk ? "Локація" : "Location"}
-                </div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">{T.location}</div>
                 <div className="text-foreground">{OFFICE_ADDRESS_LVIV}</div>
               </div>
             </li>
@@ -2019,23 +2027,15 @@ function AboutContactsSection() {
               <Mail className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
                 <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">Email</div>
-                <a href={`mailto:${CONTACT_EMAIL}`} className="text-foreground hover:text-primary">
-                  {CONTACT_EMAIL}
-                </a>
+                <a href={`mailto:${CONTACT_EMAIL}`} className="text-foreground hover:text-primary">{CONTACT_EMAIL}</a>
               </div>
             </li>
             <li className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
               <Phone className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">
-                  {isUk ? "Телефон" : "Phone"}
-                </div>
-                <a href={`tel:${PHONE_NUMBER.replace(/\s+/g, "")}`} className="text-foreground hover:text-primary">
-                  {PHONE_NUMBER}
-                </a>
-                <div className="text-xs text-muted-foreground mt-0.5">
-                  {isUk ? "Консультації англійською та українською мовами" : "Consultations in English and Ukrainian"}
-                </div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">{T.phone}</div>
+                <a href={`tel:${PHONE_NUMBER.replace(/\s+/g, "")}`} className="text-foreground hover:text-primary">{PHONE_NUMBER}</a>
+                <div className="text-xs text-muted-foreground mt-0.5">{T.phoneNote}</div>
               </div>
             </li>
           </ul>
