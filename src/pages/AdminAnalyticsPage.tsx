@@ -53,6 +53,7 @@ export default function AdminAnalyticsPage() {
   const [busy, setBusy] = useState(false);
   const [rows, setRows] = useState<EventRow[]>([]);
   const [rangeKey, setRangeKey] = useState("7d");
+  const [domainFilter, setDomainFilter] = useState<string>("all");
 
   const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL;
 
