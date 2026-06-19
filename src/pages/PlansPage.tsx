@@ -75,6 +75,10 @@ export default function PlansPage() {
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [clearing, setClearing] = useState(false);
 
+  useEffect(() => {
+    track("pricing_page_viewed", { surface: "in_app_plans" });
+  }, []);
+
   const isPaid = subscription.subscribed || subscription.on_trial;
   const canClearDemo = !isPaid && Boolean(hasDemoData);
 
