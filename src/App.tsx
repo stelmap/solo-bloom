@@ -79,6 +79,7 @@ const PurchaseSuccessPage = lazyWithReload(() => import("./pages/PurchaseSuccess
 const AdminEmailPreviewPage = lazyWithReload(() => import("./pages/AdminEmailPreviewPage"));
 const AdminUsersPage = lazyWithReload(() => import("./pages/AdminUsersPage"));
 const AdminDomainsPage = lazyWithReload(() => import("./pages/AdminDomainsPage"));
+const AdminAnalyticsPage = lazyWithReload(() => import("./pages/AdminAnalyticsPage"));
 const ServerUpdatePage = lazyWithReload(() => import("./pages/ServerUpdatePage"));
 
 const queryClient = new QueryClient({
@@ -164,6 +165,7 @@ const App = () => {
                 <Route path="/admin/booking-requests" element={<ProtectedRoute><AdminBookingRequestsPage /></ProtectedRoute>} />
                 <Route path="/admin/users" element={<ProtectedRoute><AdminUsersPage /></ProtectedRoute>} />
                 <Route path="/admin/domains" element={<ProtectedRoute><AdminDomainsPage /></ProtectedRoute>} />
+                <Route path="/admin/analytics" element={<ProtectedRoute><AdminAnalyticsPage /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
