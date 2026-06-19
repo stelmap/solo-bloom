@@ -399,3 +399,115 @@ function BreakdownCard({ title, data }: { title: string; data: Record<string, nu
     </Card>
   );
 }
+
+type WebTrafficData = {
+  visitors: number;
+  pageViews: number;
+  viewsPerVisit: number;
+  avgDuration: number;
+  bounceRate: number;
+  trend: { day: string; visitors: number }[];
+  bySource: Record<string, number>;
+  byPage: Record<string, number>;
+  byDevice: Record<string, number>;
+  byCountry: Record<string, number>;
+};
+
+function formatDuration(seconds: number): string {
+  if (!seconds || !isFinite(seconds)) return "0s";
+  const m = Math.floor(seconds / 60);
+  const s = Math.round(seconds % 60);
+  if (m <= 0) return `${s}s`;
+  return `${m}m ${s}s`;
+}
+
+function compactNumber(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+  return String(Math.round(n));
+}
+
+function WebTrafficPanel({ data }: { data: WebTrafficData }) {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader><CardTitle className="text-base">Web traffic</CardTitle></CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <MetricCell label="Visitors" value={compactNumber(data.visitors)} highlight />
+            <MetricCell label="Page views" value={compactNumber(data.pageViews)} />
+            <MetricCell label="Views per visit" value={data.viewsPerVisit.toFixed(2)} />
+            <MetricCell label="Visit duration" value={formatDuration(data.avgDuration)} />
+            <MetricCell label="Bounce rate" value={`${Math.round(data.bounceRate)}%`} />
+          </div>
+          <div className="h-72 w-full">
+            {data.trend.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-sm text-muted-foreground">No traffic in this period</div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={data.trend} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="visitorsFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
+                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
+                  <Area type="monotone" dataKey="visitors" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#visitorsFill)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Traffic breakdown</CardTitle></CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <BreakdownTable title="Source" header="Visitors" data={data.bySource} />
+            <BreakdownTable title="Page" header="Visitors" data={data.byPage} />
+            <BreakdownTable title="Device" header="Visitors" data={data.byDevice} />
+            <BreakdownTable title="Country" header="Visitors" data={data.byCountry} />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function MetricCell({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div className={`rounded-md border p-3 ${highlight ? "bg-muted/60" : ""}`}>
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="text-xl font-semibold mt-1">{value}</div>
+    </div>
+  );
+}
+
+function BreakdownTable({ title, header, data }: { title: string; header: string; data: Record<string, number> }) {
+  const entries = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const max = entries[0]?.[1] ?? 1;
+  return (
+    <div className="rounded-md border">
+      <div className="flex items-center justify-between px-3 py-2 border-b text-xs">
+        <span className="font-medium">{title}</span>
+        <span className="text-muted-foreground">{header}</span>
+      </div>
+      <div className="p-2 space-y-1">
+        {entries.length === 0 && <div className="px-2 py-3 text-xs text-muted-foreground">No data</div>}
+        {entries.map(([k, v]) => (
+          <div key={k} className="relative rounded px-2 py-1.5 overflow-hidden">
+            <div className="absolute inset-y-0 left-0 bg-primary/10" style={{ width: `${(v / max) * 100}%` }} />
+            <div className="relative flex items-center justify-between text-xs">
+              <span className="truncate pr-2">{k}</span>
+              <span className="text-muted-foreground tabular-nums">{compactNumber(v)}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
