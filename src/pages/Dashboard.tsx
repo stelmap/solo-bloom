@@ -213,9 +213,9 @@ export default function Dashboard() {
         {/* Range tabs — split dashboard into 3 focused views */}
         <div className="flex items-center gap-2 flex-wrap">
           {([
-            { k: "today", label: t("dash.tabToday") || "Today" },
-            { k: "month", label: t("dash.tabMonth") || "This month" },
-            { k: "all", label: t("dash.tabAll") || "All time" },
+            { k: "today", label: t("dash.tabToday") },
+            { k: "month", label: t("dash.tabMonth") },
+            { k: "all", label: t("dash.tabAll") },
           ] as { k: DashRange; label: string }[]).map((tab) => (
             <button
               key={tab.k}
