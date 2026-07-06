@@ -698,43 +698,43 @@ function NowNextCard({
   return (
     <div
       className={cn(
-        "rounded-[20px] p-6 sm:p-7 flex flex-col min-h-[180px] border",
+        "rounded-[16px] p-4 sm:p-5 flex flex-col min-h-[120px] border",
         isNow
           ? "bg-gradient-dark text-secondary-foreground border-secondary shadow-elegant"
           : "bg-card border-border text-foreground shadow-card",
       )}
     >
-      <div className="flex items-center gap-2 mb-5">
+      <div className="flex items-center gap-2 mb-3">
         {isNow ? (
           <>
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
             </span>
-            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-primary">{title}</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-primary">{title}</p>
           </>
         ) : (
           <>
-            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">{title}</p>
+            <ArrowRight className="h-3 w-3 text-muted-foreground" />
+            <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground">{title}</p>
           </>
         )}
       </div>
       {!apt ? (
-        <p className={cn("text-sm py-4", isNow ? "text-secondary-foreground/60" : "text-muted-foreground")}>{emptyText}</p>
+        <p className={cn("text-sm py-2", isNow ? "text-secondary-foreground/60" : "text-muted-foreground")}>{emptyText}</p>
       ) : (
-        <div className="flex-1 flex flex-col justify-between gap-5">
+        <div className="flex-1 flex flex-col justify-between gap-3">
           <div>
-            <p className="text-2xl sm:text-3xl font-semibold leading-tight truncate">
+            <p className="text-lg sm:text-xl font-semibold leading-tight truncate">
               {apt.clients?.name ?? "—"}
             </p>
-            <p className={cn("text-sm mt-1.5 truncate", isNow ? "text-secondary-foreground/60" : "text-muted-foreground")}>
+            <p className={cn("text-xs mt-1 truncate", isNow ? "text-secondary-foreground/60" : "text-muted-foreground")}>
               {formatScheduledTime(apt.scheduled_at, use12h)} · {apt.services?.name ?? "—"} · {apt.group_session_id ? t("ops.group") : t("ops.individual")}
             </p>
           </div>
           <div className="flex items-center justify-between gap-3">
             <span className={cn(
-              "text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5",
+              "text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5",
               isPaid ? (isNow ? "text-primary" : "text-success") : "text-warning",
             )}>
               <span className={cn("h-1.5 w-1.5 rounded-full", isPaid ? "bg-success" : "bg-warning")} />
@@ -747,13 +747,13 @@ function NowNextCard({
             <button
               onClick={onOpen}
               className={cn(
-                "inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-all",
+                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all",
                 isNow
                   ? "bg-primary text-primary-foreground hover:bg-primary/90"
                   : "border border-border text-foreground hover:bg-muted",
               )}
             >
-              {openLabel} <ArrowRight className="h-3.5 w-3.5" />
+              {openLabel} <ArrowRight className="h-3 w-3" />
             </button>
           </div>
         </div>
