@@ -57,6 +57,8 @@ function paymentBadgeClass(status: string) {
   return "bg-muted text-muted-foreground";
 }
 
+type DashRange = "today" | "month" | "all";
+
 export default function Dashboard() {
   const { data: stats, isLoading } = useDashboardStats();
   const { data: profile } = useProfile();
@@ -64,6 +66,8 @@ export default function Dashboard() {
   const { data: allAppointments = [] } = useAppointments();
   const { t, lang } = useLanguage();
   const { symbol: cs } = useCurrency();
+  const [range, setRange] = useState<DashRange>("today");
+
 
   // Derive "clients without next session" from the SAME data ClientsPage uses,
   // so the dashboard tile and the filtered list always match exactly.
