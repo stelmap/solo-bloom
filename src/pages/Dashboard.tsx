@@ -291,7 +291,7 @@ export default function Dashboard() {
         {/* Today compact tiles */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <MoneyTile label={t("ops.clientsToday")} value={summary.clientCount.toString()} />
-          <MoneyTile label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} onClick={() => openWidget("expected_revenue_today", "/finances/income?range=today&tab=income")} />
+          <MoneyTile label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} />
           <MoneyTile label={t("ops.todayDebt")} value={`${cs}${Number((stats as any)?.todayDebt ?? 0).toLocaleString()}`} tone={Number((stats as any)?.todayDebt ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("today_debt", "/finances/income?range=today&tab=pending")} />
         </div>
 

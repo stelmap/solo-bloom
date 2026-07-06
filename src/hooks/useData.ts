@@ -2719,9 +2719,27 @@ export function useDashboardStats() {
 
 
       // ===== Today debt =====
-      const todayAptsTyped = (todayAptRes.data ?? []) as Array<{ id: string; price: number; payment_status: string; status: string }>;
+      // Mirror useExpectedPayments (Income → Expected payments): only sessions
+      // that have a billable outcome (completed / cancelled / no-show) with an
+      // outstanding payment status count towards debt. Still-scheduled sessions
+      // are NOT debt yet, so today's total here matches the Income page when
+      // its period filter is set to "today".
       const PAID_SET = new Set(["paid_now", "paid_in_advance", "paid_from_prepayment"]);
-      const todayUnpaidApts = todayAptsTyped.filter(a => a.status !== "cancelled" && !PAID_SET.has(a.payment_status));
+      const BILLABLE_OUTCOME = new Set(["completed", "cancelled", "no-show"]);
+      const PENDING_PAY = new Set([
+        "unpaid",
+        "waiting_for_payment",
+        "partially_paid",
+        "partially_paid_from_prepayment",
+      ]);
+      const todayAptsTyped = (todayAptRes.data ?? []) as Array<{ id: string; price: number; payment_status: string; status: string }>;
+      const todayUnpaidApts = todayAptsTyped.filter(
+        (a) =>
+          BILLABLE_OUTCOME.has(a.status) &&
+          Number(a.price) > 0 &&
+          PENDING_PAY.has(a.payment_status) &&
+          !PAID_SET.has(a.payment_status),
+      );
       let todayDebt = 0;
       if (todayUnpaidApts.length) {
         const ids = todayUnpaidApts.map(a => a.id);
