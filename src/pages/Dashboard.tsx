@@ -210,6 +210,32 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="space-y-5">
+        {/* Range tabs — split dashboard into 3 focused views */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {([
+            { k: "today", label: t("dash.tabToday") || "Today" },
+            { k: "month", label: t("dash.tabMonth") || "This month" },
+            { k: "all", label: t("dash.tabAll") || "All time" },
+          ] as { k: DashRange; label: string }[]).map((tab) => (
+            <button
+              key={tab.k}
+              type="button"
+              onClick={() => setRange(tab.k)}
+              className={cn(
+                "px-4 py-2 rounded-full text-sm font-semibold transition-colors border",
+                range === tab.k
+                  ? "bg-foreground text-background border-foreground"
+                  : "bg-card text-foreground border-border hover:bg-muted",
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <div className="border-b border-border" />
+
+        {range === "today" && (
+        <>
         {/* Header — clean business style */}
         <div className="bg-card border border-border rounded-[20px] px-5 sm:px-6 py-4 shadow-card">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -217,14 +243,15 @@ export default function Dashboard() {
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
                 {t("dashboard.greeting")}
               </h1>
-              <p className="text-muted-foreground mt-1 text-xs sm:text-sm">{t("dashboard.subtitle")}</p>
+              <p className="text-muted-foreground mt-1 text-xs sm:text-sm">{todayLabel}</p>
             </div>
             <div className="self-start sm:self-auto inline-flex items-center gap-2 bg-muted border border-border px-3 py-1 rounded-full text-xs font-medium text-muted-foreground whitespace-nowrap">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-              {todayLabel}
+              <Inbox className="h-3.5 w-3.5" />
+              {t("dash.bookingEmpty")}
             </div>
           </div>
         </div>
+
 
 
         {/* Booking Requests Attention */}
