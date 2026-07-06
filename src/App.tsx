@@ -81,6 +81,8 @@ const AdminUsersPage = lazyWithReload(() => import("./pages/AdminUsersPage"));
 const AdminDomainsPage = lazyWithReload(() => import("./pages/AdminDomainsPage"));
 const AdminAnalyticsPage = lazyWithReload(() => import("./pages/AdminAnalyticsPage"));
 const ServerUpdatePage = lazyWithReload(() => import("./pages/ServerUpdatePage"));
+const OAuthConsentPage = lazyWithReload(() => import("./pages/OAuthConsentPage"));
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -130,6 +132,8 @@ const App = () => {
                 <Route path="/book/:token" element={<PublicBookingPage />} />
                 <Route path="/unsubscribe" element={<UnsubscribePage />} />
                 <Route path="/server-update" element={<ServerUpdatePage />} />
+                <Route path="/.lovable/oauth/consent" element={<OAuthConsentPage />} />
+
 
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
