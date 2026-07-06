@@ -46,7 +46,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useBookingRequests, type BookingRequestRow } from "@/hooks/useBookingInbox";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Inbox } from "lucide-react";
 import { BookingInboxPanel } from "@/components/BookingInboxPanel";
 import { WorkingHoursSection, DaysOffSection, PracticeProfileSection } from "@/components/settings/CalendarSections";
@@ -755,6 +755,26 @@ export default function CalendarPage() {
     setSessionSheetOpen(true);
     if (apt?.id) markSeen(apt.id);
   };
+
+  // Deep-link: when navigating from Dashboard with ?appointmentId=..., jump the
+  // calendar to that day and open the session sheet directly.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const deepLinkAppointmentId = searchParams.get("appointmentId");
+  const handledDeepLinkRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!deepLinkAppointmentId) return;
+    if (handledDeepLinkRef.current === deepLinkAppointmentId) return;
+    const apt = (appointments as any[]).find((a) => a.id === deepLinkAppointmentId);
+    if (!apt) return; // wait until the appointment window loads
+    handledDeepLinkRef.current = deepLinkAppointmentId;
+    setCurrentDate(new Date(apt.scheduled_at));
+    openSessionSheet(apt);
+    const next = new URLSearchParams(searchParams);
+    next.delete("appointmentId");
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deepLinkAppointmentId, appointments]);
+
 
   const handleQuickDayOff = async (date: Date) => {
     const dateStr = format(date, "yyyy-MM-dd");
