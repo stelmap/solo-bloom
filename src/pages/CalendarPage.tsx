@@ -442,7 +442,7 @@ export default function CalendarPage() {
   const [recurEndDate, setRecurEndDate] = useState("");
 
   // Localized copy for new empty-state / onboarding UI inside the create modal
-  const L = NEW_COPY[(["en", "uk", "fr", "pl"].includes(lang as any) ? lang : "en") as LangKey];
+  const L = NEW_COPY[(["en", "uk", "ru", "fr", "pl"].includes(lang as any) ? lang : "en") as LangKey];
 
   // Quick-add nested dialogs (open from inside the create-session modal,
   // form state is preserved because it lives in the parent component).
