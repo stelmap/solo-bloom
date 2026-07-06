@@ -205,22 +205,23 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="space-y-8">
+      <div className="space-y-5">
         {/* Header — clean business style */}
-        <div className="bg-card border border-border rounded-[20px] px-6 sm:px-8 py-6 shadow-card">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="bg-card border border-border rounded-[20px] px-5 sm:px-6 py-4 shadow-card">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
                 {t("dashboard.greeting")}
               </h1>
-              <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">{t("dashboard.subtitle")}</p>
+              <p className="text-muted-foreground mt-1 text-xs sm:text-sm">{t("dashboard.subtitle")}</p>
             </div>
-            <div className="self-start sm:self-auto inline-flex items-center gap-2 bg-muted border border-border px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">
+            <div className="self-start sm:self-auto inline-flex items-center gap-2 bg-muted border border-border px-3 py-1 rounded-full text-xs font-medium text-muted-foreground whitespace-nowrap">
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
               {todayLabel}
             </div>
           </div>
         </div>
+
 
         {/* Booking Requests Attention */}
         <BookingAttention navigate={navigate} t={t} use12h={use12h} />
