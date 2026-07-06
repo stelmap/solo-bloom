@@ -54,7 +54,7 @@ import { PublicBookingSection } from "@/components/PublicBookingSection";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
-type LangKey = "en" | "uk" | "fr" | "pl";
+type LangKey = "en" | "uk" | "ru" | "fr" | "pl";
 type BookingAvailabilityRule = {
   session_duration_minutes?: number | null;
   buffer_minutes?: number | null;
@@ -126,6 +126,31 @@ const NEW_COPY: Record<LangKey, {
     ctaIndividual: "Створити сесію", ctaGroup: "Створити групову сесію",
     summaryWillCreate: "Буде створено сесію:",
     summaryWillCreateGroup: "Буде створено групову сесію:",
+  },
+  ru: {
+    noClientsYet: "Пока нет клиентов. Добавьте первого клиента, чтобы создать сессию.",
+    addNewClient: "Добавить клиента",
+    noServicesYet: "Пока нет услуг. Добавьте первую услугу, чтобы продолжить.",
+    addNewService: "Добавить услугу",
+    createFirstTitle: "Создайте первую сессию",
+    createFirstDesc: "Добавьте клиента, выберите услугу, укажите дату и время, затем сохраните.",
+    stepAddClient: "Добавить клиента", stepAddService: "Добавить услугу",
+    stepDateTime: "Выбрать дату и время", stepSave: "Сохранить сессию",
+    disabledHint: "Заполните обязательные поля, чтобы создать сессию.",
+    qaClientTitle: "Новый клиент", qaServiceTitle: "Новая услуга",
+    clientName: "Имя", clientEmail: "Email (необязательно)", clientPhone: "Телефон (необязательно)",
+    serviceName: "Название", serviceDuration: "Длительность", servicePrice: "Цена",
+    saveClient: "Сохранить клиента", saveService: "Сохранить услугу", cancel: "Отмена",
+    durationMin: "мин",
+    modalSubtitle: "Запланируйте индивидуальную или групповую сессию",
+    sessionTypeLabel: "Тип сессии",
+    individualSession: "Индивидуальная сессия", groupSession: "Групповая сессия",
+    participants: "Участники",
+    notesPlaceholder: "Добавьте короткую заметку к сессии",
+    notesGroupPlaceholder: "Добавьте заметку к групповой сессии",
+    ctaIndividual: "Создать сессию", ctaGroup: "Создать групповую сессию",
+    summaryWillCreate: "Будет создана сессия:",
+    summaryWillCreateGroup: "Будет создана групповая сессия:",
   },
   fr: {
     noClientsYet: "Aucun client. Ajoutez votre premier client pour créer une séance.",
@@ -417,7 +442,7 @@ export default function CalendarPage() {
   const [recurEndDate, setRecurEndDate] = useState("");
 
   // Localized copy for new empty-state / onboarding UI inside the create modal
-  const L = NEW_COPY[(["en", "uk", "fr", "pl"].includes(lang as any) ? lang : "en") as LangKey];
+  const L = NEW_COPY[(["en", "uk", "ru", "fr", "pl"].includes(lang as any) ? lang : "en") as LangKey];
 
   // Quick-add nested dialogs (open from inside the create-session modal,
   // form state is preserved because it lives in the parent component).

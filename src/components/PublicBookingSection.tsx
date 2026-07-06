@@ -28,10 +28,10 @@ const WEEKDAY_KEYS = [
 type Interval = { start: string; end: string };
 type DayState = { is_enabled: boolean; intervals: Interval[] };
 
-type Lang = "en" | "uk" | "fr" | "pl";
+type Lang = "en" | "uk" | "ru" | "fr" | "pl";
 const normLang = (v: unknown): Lang => {
   const s = String(v || "en").toLowerCase();
-  return (["en", "uk", "fr", "pl"].includes(s) ? s : "en") as Lang;
+  return (["en", "uk", "ru", "fr", "pl"].includes(s) ? s : "en") as Lang;
 };
 
 const COPY: Record<Lang, {
@@ -94,6 +94,31 @@ const COPY: Record<Lang, {
     errOrder: "Час початку має бути раніше часу завершення",
     errOverlap: "Інтервали не можуть перетинатися",
     errEmpty: "Увімкнені дні потребують щонайменше одного інтервалу",
+  },
+  ru: {
+    cardTitle: "Публичная ссылка для записи",
+    cardDesc: "Поделитесь одной ссылкой, по которой клиенты смогут записаться на сессию. Они видят только свободное время — никаких личных данных календаря.",
+    enable: "Включить публичную запись",
+    displayName: "Отображаемое имя (видно клиентам)",
+    displayNamePh: "Ваше имя или практика",
+    customHandle: "Свой идентификатор (необязательно)",
+    handleHelp: "3–40 символов: строчные буквы, цифры, дефисы. Оставьте пустым, чтобы использовать автоматически сгенерированную секретную ссылку.",
+    handlePh: "ваше-имя",
+    mode: "Режим записи",
+    modeManual: "Ручное подтверждение (рекомендуется)",
+    modeAuto: "Авто-подтверждение (только для известных клиентов)",
+    timezone: "Часовой пояс (видно клиентам)",
+    timezoneHelp: "Все времена записи на публичной странице будут показаны в этом часовом поясе.",
+    tzPh: "напр. Europe/Moscow",
+    yourLink: "Ваша ссылка для записи",
+    linkCopied: "Ссылка скопирована",
+    linkRegenerated: "Ссылка обновлена. Старая больше не работает.",
+    regenerateConfirm: "Создать новую ссылку? Старая перестанет работать немедленно.",
+    addBlock: "Добавить интервал",
+    removeBlock: "Удалить интервал",
+    errOrder: "Время начала должно быть раньше времени окончания",
+    errOverlap: "Интервалы не могут пересекаться",
+    errEmpty: "Для включённых дней нужен хотя бы один интервал",
   },
   fr: {
     cardTitle: "Lien de réservation public",
