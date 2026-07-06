@@ -1584,4 +1584,7 @@ export default {
   "invoiceSig.errSize": "File is too large. Maximum allowed size is 2 MB.",
   "invoiceSig.errMissingSig": "Please upload a signature before enabling scanned signature on invoices.",
   "invoiceSig.inlineRequired": "Upload a scanned signature to enable this feature.",
+  "dash.tabToday": "Today",
+  "dash.tabMonth": "Month",
+  "dash.tabAll": "All",
 } as const;

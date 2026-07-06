@@ -1583,4 +1583,7 @@ export default {
   "invoiceSig.errSize": "Fichier trop volumineux. Taille maximale autorisée : 2 Mo.",
   "invoiceSig.errMissingSig": "Veuillez téléverser une signature avant d'activer la signature scannée sur les factures.",
   "invoiceSig.inlineRequired": "Téléversez une signature scannée pour activer cette fonctionnalité.",
+  "dash.tabToday": "Aujourd'hui",
+  "dash.tabMonth": "Mois",
+  "dash.tabAll": "Tout",
 } as const;
