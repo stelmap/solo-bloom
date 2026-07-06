@@ -228,10 +228,10 @@ export default function Dashboard() {
 
         {/* A. Monthly Overview */}
         <section>
-          <h2 className="text-sm font-semibold text-muted-foreground mb-3">
+          <h2 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
             {t("ops.monthlyOverview")}
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
             <OverviewTile icon={Users} label={t("ops.activeClientsThisMonth")} value={String(stats?.activeClientsThisMonth ?? 0)} trend={trendPct(stats?.activeClientsThisMonth ?? 0, (stats as any)?.prevActiveClients ?? 0)} trendLabel={t("dash.vsLastMonth")} active onClick={() => openWidget("active_clients_this_month", "/clients?filter=activeThisMonth")} />
             <OverviewTile icon={UserPlus} label={t("ops.newClientsThisMonth")} value={String(stats?.newClientsThisMonth ?? 0)} trend={trendPct(stats?.newClientsThisMonth ?? 0, (stats as any)?.prevNewClients ?? 0)} trendLabel={t("dash.vsLastMonth")} onClick={() => openWidget("new_clients_this_month", "/clients?filter=newThisMonth")} />
             <OverviewTile icon={UserCheck} label={t("ops.completedTherapyThisMonth")} value={String(stats?.completedTherapyThisMonth ?? 0)} trend={trendPct(stats?.completedTherapyThisMonth ?? 0, (stats as any)?.prevCompletedTherapy ?? 0)} trendLabel={t("dash.vsLastMonth")} onClick={() => openWidget("completed_therapy_this_month", "/clients?filter=completedThisMonth")} />
@@ -242,10 +242,10 @@ export default function Dashboard() {
 
         {/* A2. Monthly Financial Risk */}
         <section>
-          <h2 className="text-sm font-semibold text-muted-foreground mb-3">
+          <h2 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
             {t("dash.financialRisk")}
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <MoneyTile label={t("ops.lostIncomeCancellations")} value={`${cs}${Number((stats as any)?.lostIncomeThisMonth ?? 0).toLocaleString()}`} tone={Number((stats as any)?.lostIncomeThisMonth ?? 0) > 0 ? "warning" : "muted"} />
             <MoneyTile label={t("ops.monthlyExpensesTotal")} value={`${cs}${Number(stats?.monthlyExpenses ?? 0).toLocaleString()}`} onClick={() => openWidget("monthly_expenses", "/finances/expenses")} />
             <MoneyTile label={t("ops.unpaidSessionsCount")} value={String((stats as any)?.unpaidSessionsCount ?? 0)} tone={((stats as any)?.unpaidSessionsCount ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("unpaid_sessions", "/finances/income?tab=pending&range=all")} />
@@ -253,6 +253,7 @@ export default function Dashboard() {
             <MoneyTile label={t("ops.clientsWithoutNextSession")} value={String(clientsWithoutNextSessionCount)} tone={clientsWithoutNextSessionCount > 0 ? "warning" : "muted"} onClick={() => openWidget("clients_without_next_session", "/clients?filter=withoutNextSession")} />
           </div>
         </section>
+
 
         {/* B. Daily Overview - Activity | Money */}
         <section>
