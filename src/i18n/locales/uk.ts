@@ -1584,4 +1584,7 @@ export default {
   "invoiceSig.errSize": "Файл завеликий. Максимальний розмір — 2 МБ.",
   "invoiceSig.errMissingSig": "Спочатку завантажте підпис, щоб увімкнути сканований підпис на рахунках.",
   "invoiceSig.inlineRequired": "Завантажте сканований підпис, щоб увімкнути цю функцію.",
+  "dash.tabToday": "Сьогодні",
+  "dash.tabMonth": "Місяць",
+  "dash.tabAll": "Всі",
 } as const;

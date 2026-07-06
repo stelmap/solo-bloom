@@ -1555,4 +1555,7 @@ export default {
   "invoiceSig.errSize": "Plik jest za duży. Maksymalny rozmiar to 2 MB.",
   "invoiceSig.errMissingSig": "Najpierw wgraj podpis, aby włączyć zeskanowany podpis na fakturach.",
   "invoiceSig.inlineRequired": "Wgraj zeskanowany podpis, aby włączyć tę funkcję.",
+  "dash.tabToday": "Dziś",
+  "dash.tabMonth": "Miesiąc",
+  "dash.tabAll": "Wszystko",
 } as const;
