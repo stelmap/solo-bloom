@@ -205,32 +205,33 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="space-y-8">
+      <div className="space-y-5">
         {/* Header — clean business style */}
-        <div className="bg-card border border-border rounded-[20px] px-6 sm:px-8 py-6 shadow-card">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="bg-card border border-border rounded-[20px] px-5 sm:px-6 py-4 shadow-card">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
                 {t("dashboard.greeting")}
               </h1>
-              <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">{t("dashboard.subtitle")}</p>
+              <p className="text-muted-foreground mt-1 text-xs sm:text-sm">{t("dashboard.subtitle")}</p>
             </div>
-            <div className="self-start sm:self-auto inline-flex items-center gap-2 bg-muted border border-border px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">
+            <div className="self-start sm:self-auto inline-flex items-center gap-2 bg-muted border border-border px-3 py-1 rounded-full text-xs font-medium text-muted-foreground whitespace-nowrap">
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
               {todayLabel}
             </div>
           </div>
         </div>
 
+
         {/* Booking Requests Attention */}
         <BookingAttention navigate={navigate} t={t} use12h={use12h} />
 
         {/* A. Monthly Overview */}
         <section>
-          <h2 className="text-sm font-semibold text-muted-foreground mb-3">
+          <h2 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
             {t("ops.monthlyOverview")}
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
             <OverviewTile icon={Users} label={t("ops.activeClientsThisMonth")} value={String(stats?.activeClientsThisMonth ?? 0)} trend={trendPct(stats?.activeClientsThisMonth ?? 0, (stats as any)?.prevActiveClients ?? 0)} trendLabel={t("dash.vsLastMonth")} active onClick={() => openWidget("active_clients_this_month", "/clients?filter=activeThisMonth")} />
             <OverviewTile icon={UserPlus} label={t("ops.newClientsThisMonth")} value={String(stats?.newClientsThisMonth ?? 0)} trend={trendPct(stats?.newClientsThisMonth ?? 0, (stats as any)?.prevNewClients ?? 0)} trendLabel={t("dash.vsLastMonth")} onClick={() => openWidget("new_clients_this_month", "/clients?filter=newThisMonth")} />
             <OverviewTile icon={UserCheck} label={t("ops.completedTherapyThisMonth")} value={String(stats?.completedTherapyThisMonth ?? 0)} trend={trendPct(stats?.completedTherapyThisMonth ?? 0, (stats as any)?.prevCompletedTherapy ?? 0)} trendLabel={t("dash.vsLastMonth")} onClick={() => openWidget("completed_therapy_this_month", "/clients?filter=completedThisMonth")} />
@@ -241,10 +242,10 @@ export default function Dashboard() {
 
         {/* A2. Monthly Financial Risk */}
         <section>
-          <h2 className="text-sm font-semibold text-muted-foreground mb-3">
+          <h2 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
             {t("dash.financialRisk")}
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <MoneyTile label={t("ops.lostIncomeCancellations")} value={`${cs}${Number((stats as any)?.lostIncomeThisMonth ?? 0).toLocaleString()}`} tone={Number((stats as any)?.lostIncomeThisMonth ?? 0) > 0 ? "warning" : "muted"} />
             <MoneyTile label={t("ops.monthlyExpensesTotal")} value={`${cs}${Number(stats?.monthlyExpenses ?? 0).toLocaleString()}`} onClick={() => openWidget("monthly_expenses", "/finances/expenses")} />
             <MoneyTile label={t("ops.unpaidSessionsCount")} value={String((stats as any)?.unpaidSessionsCount ?? 0)} tone={((stats as any)?.unpaidSessionsCount ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("unpaid_sessions", "/finances/income?tab=pending&range=all")} />
@@ -252,6 +253,7 @@ export default function Dashboard() {
             <MoneyTile label={t("ops.clientsWithoutNextSession")} value={String(clientsWithoutNextSessionCount)} tone={clientsWithoutNextSessionCount > 0 ? "warning" : "muted"} onClick={() => openWidget("clients_without_next_session", "/clients?filter=withoutNextSession")} />
           </div>
         </section>
+
 
         {/* B. Daily Overview - Activity | Money */}
         <section>
@@ -610,8 +612,8 @@ function MoneyTile({
     "text-foreground";
   const inner = (
     <div className="flex flex-col items-center justify-center text-center h-full min-w-0">
-      <p className={cn("text-lg sm:text-2xl md:text-3xl font-bold tabular-nums break-all w-full", toneClass)}>{value}</p>
-      <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 sm:mt-2 leading-snug break-words">{label}</p>
+      <p className={cn("text-base sm:text-xl md:text-2xl font-bold tabular-nums break-all w-full", toneClass)}>{value}</p>
+      <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 leading-snug break-words">{label}</p>
     </div>
   );
   if (onClick) {
@@ -619,14 +621,14 @@ function MoneyTile({
       <button
         type="button"
         onClick={onClick}
-        className="bg-muted/40 border border-border rounded-2xl p-3 sm:p-4 min-h-[100px] sm:min-h-[110px] overflow-hidden min-w-0 hover:border-primary-border hover:bg-card transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="bg-muted/40 border border-border rounded-2xl p-2.5 sm:p-3 min-h-[76px] sm:min-h-[86px] overflow-hidden min-w-0 hover:border-primary-border hover:bg-card transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         aria-label={`${label}: ${value}`}
       >
         {inner}
       </button>
     );
   }
-  return <div className="bg-muted/40 border border-border rounded-2xl p-3 sm:p-4 min-h-[100px] sm:min-h-[110px] overflow-hidden min-w-0">{inner}</div>;
+  return <div className="bg-muted/40 border border-border rounded-2xl p-2.5 sm:p-3 min-h-[76px] sm:min-h-[86px] overflow-hidden min-w-0">{inner}</div>;
 }
 
 
@@ -634,7 +636,7 @@ function OverviewTile({
   icon: Icon, label, value, active, onClick, trend, trendLabel,
 }: { icon: any; label: string; value: string; active?: boolean; onClick?: () => void; trend?: { dir: "up" | "down" | "flat"; pct: number; positive: boolean }; trendLabel?: string }) {
   const base = cn(
-    "relative rounded-[18px] p-3 sm:p-5 text-center w-full block transition-all border flex flex-col items-center justify-between min-h-[140px] sm:min-h-[170px] overflow-hidden min-w-0",
+    "relative rounded-[16px] p-2.5 sm:p-3.5 text-center w-full block transition-all border flex flex-col items-center justify-between min-h-[108px] sm:min-h-[124px] overflow-hidden min-w-0",
     active
       ? "bg-primary-soft border-primary shadow-glow"
       : "bg-card border-border shadow-card",
@@ -646,17 +648,18 @@ function OverviewTile({
     <>
       <div className="w-full flex items-center justify-between">
         <div className={cn(
-          "p-1.5 sm:p-2 rounded-lg",
+          "p-1 sm:p-1.5 rounded-md",
           active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
         )}>
-          <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
         </div>
         {onClick && (
-          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+          <ArrowRight className="h-3 w-3 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
         )}
       </div>
-      <p className={cn("text-3xl sm:text-5xl font-extrabold leading-none tabular-nums my-2 break-all", active ? "text-primary" : "text-foreground")}>{value}</p>
+      <p className={cn("text-2xl sm:text-3xl font-extrabold leading-none tabular-nums my-1 break-all", active ? "text-primary" : "text-foreground")}>{value}</p>
       <p className="text-[10px] sm:text-xs text-muted-foreground leading-snug w-full break-words">{label}</p>
+
       {trend && <TrendBadge trend={trend} label={trendLabel} />}
     </>
   );
