@@ -257,79 +257,6 @@ export default function Dashboard() {
         {/* Booking Requests Attention */}
         <BookingAttention navigate={navigate} t={t} use12h={use12h} />
 
-        {/* A. Monthly Overview */}
-        <section>
-          <h2 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
-            {t("ops.monthlyOverview")}
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            <OverviewTile icon={Users} label={t("ops.activeClientsThisMonth")} value={String(stats?.activeClientsThisMonth ?? 0)} trend={trendPct(stats?.activeClientsThisMonth ?? 0, (stats as any)?.prevActiveClients ?? 0)} trendLabel={t("dash.vsLastMonth")} active onClick={() => openWidget("active_clients_this_month", "/clients?filter=activeThisMonth")} />
-            <OverviewTile icon={UserPlus} label={t("ops.newClientsThisMonth")} value={String(stats?.newClientsThisMonth ?? 0)} trend={trendPct(stats?.newClientsThisMonth ?? 0, (stats as any)?.prevNewClients ?? 0)} trendLabel={t("dash.vsLastMonth")} onClick={() => openWidget("new_clients_this_month", "/clients?filter=newThisMonth")} />
-            <OverviewTile icon={UserCheck} label={t("ops.completedTherapyThisMonth")} value={String(stats?.completedTherapyThisMonth ?? 0)} trend={trendPct(stats?.completedTherapyThisMonth ?? 0, (stats as any)?.prevCompletedTherapy ?? 0)} trendLabel={t("dash.vsLastMonth")} onClick={() => openWidget("completed_therapy_this_month", "/clients?filter=completedThisMonth")} />
-            <OverviewTile icon={UserMinus} label={t("ops.droppedTherapyThisMonth")} value={String(stats?.droppedTherapyThisMonth ?? 0)} trend={trendPct(stats?.droppedTherapyThisMonth ?? 0, (stats as any)?.prevDroppedTherapy ?? 0, true)} trendLabel={t("dash.vsLastMonth")} onClick={() => openWidget("dropped_therapy_this_month", "/clients?filter=droppedThisMonth")} />
-            <OverviewTile icon={XCircle} label={t("ops.cancelledSessionsThisMonth")} value={String((stats as any)?.cancelledSessionsThisMonth ?? 0)} trend={trendPct(stats?.cancelledSessionsThisMonth ?? 0, (stats as any)?.prevCancelled ?? 0, true)} trendLabel={t("dash.vsLastMonth")} />
-          </div>
-        </section>
-
-        {/* A2. Monthly Financial Risk */}
-        <section>
-          <h2 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
-            {t("dash.financialRisk")}
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <MoneyTile label={t("ops.lostIncomeCancellations")} value={`${cs}${Number((stats as any)?.lostIncomeThisMonth ?? 0).toLocaleString()}`} tone={Number((stats as any)?.lostIncomeThisMonth ?? 0) > 0 ? "warning" : "muted"} />
-            <MoneyTile label={t("ops.monthlyExpensesTotal")} value={`${cs}${Number(stats?.monthlyExpenses ?? 0).toLocaleString()}`} onClick={() => openWidget("monthly_expenses", "/finances/expenses")} />
-            <MoneyTile label={t("ops.unpaidSessionsCount")} value={String((stats as any)?.unpaidSessionsCount ?? 0)} tone={((stats as any)?.unpaidSessionsCount ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("unpaid_sessions", "/finances/income?tab=pending&range=all")} />
-
-            <MoneyTile label={t("ops.clientsWithoutNextSession")} value={String(clientsWithoutNextSessionCount)} tone={clientsWithoutNextSessionCount > 0 ? "warning" : "muted"} onClick={() => openWidget("clients_without_next_session", "/clients?filter=withoutNextSession")} />
-          </div>
-        </section>
-
-
-        {/* B. Daily Overview - Activity | Money */}
-        <section>
-          <h2 className="text-sm font-semibold text-muted-foreground mb-3">
-            {t("ops.todayOverview")}
-          </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* LEFT: Today's Activity (3 metrics) */}
-            <div className="bg-card border border-border rounded-[20px] p-4 sm:p-6 shadow-card min-w-0 overflow-hidden">
-              <div className="flex items-center gap-2 mb-4 sm:mb-5">
-                <PlayCircle className="h-4 w-4 text-primary" />
-                <h3 className="text-sm font-semibold text-muted-foreground">
-                  {t("ops.todaysActivity")}
-                </h3>
-              </div>
-              <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                <StatCell label={t("ops.clientsToday")} value={summary.clientCount.toString()} />
-                <StatCell label={t("ops.sessionsPlanned")} value={summary.planned.toString()} />
-
-                <StatCell label={t("ops.cancelledSessions")} value={cancelledTotal.toString()} tone={cancelledTotal > 0 ? "warning" : "muted"} />
-              </div>
-            </div>
-
-            {/* RIGHT: Today's Money (3 metrics) */}
-            <div className="bg-card border border-border rounded-[20px] p-4 sm:p-6 shadow-card flex flex-col min-w-0 overflow-hidden">
-              <div className="flex items-center gap-2 mb-4 sm:mb-5">
-                <DollarSign className="h-4 w-4 text-primary" />
-                <h3 className="text-sm font-semibold text-muted-foreground">
-                  {t("ops.paymentSummary")}
-                </h3>
-              </div>
-              <div className="grid grid-cols-3 gap-2 sm:gap-3 flex-1">
-                <MoneyTile label={t("ops.paidToday")} value={`${cs}${Number(stats?.todayIncome ?? 0).toLocaleString()}`} tone="success" onClick={() => openWidget("paid_today", "/finances/income?range=today&tab=income")} />
-                <MoneyTile label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} onClick={() => openWidget("expected_revenue_today", "/finances/income?range=today&tab=income")} />
-                <MoneyTile label={t("ops.todayDebt")} value={`${cs}${Number((stats as any)?.todayDebt ?? 0).toLocaleString()}`} tone={Number((stats as any)?.todayDebt ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("today_debt", "/finances/income?range=today&tab=pending")} />
-              </div>
-              <div className="mt-4 bg-gradient-dark text-secondary-foreground rounded-2xl px-4 sm:px-5 py-3 sm:py-4 flex justify-between items-center gap-2 min-w-0">
-                <span className="text-xs font-semibold opacity-80 shrink-0">{t("ops.totalDebt")}</span>
-                <span className="text-xl sm:text-2xl font-bold text-primary tabular-nums break-all text-right">{cs}{Number(stats?.outstandingBalance ?? 0).toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-
         {/* C. Now / Next */}
         <section>
           <h2 className="text-sm font-semibold text-muted-foreground mb-3">
@@ -360,6 +287,13 @@ export default function Dashboard() {
             />
           </div>
         </section>
+
+        {/* Today compact tiles */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <MoneyTile label={t("ops.clientsToday")} value={summary.clientCount.toString()} />
+          <MoneyTile label={t("ops.expectedRevenueToday")} value={`${cs}${expectedRevenueToday.toLocaleString()}`} onClick={() => openWidget("expected_revenue_today", "/finances/income?range=today&tab=income")} />
+          <MoneyTile label={t("ops.todayDebt")} value={`${cs}${Number((stats as any)?.todayDebt ?? 0).toLocaleString()}`} tone={Number((stats as any)?.todayDebt ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("today_debt", "/finances/income?range=today&tab=pending")} />
+        </div>
 
         {/* D. Today Schedule Snapshot */}
         <section className="bg-card rounded-[20px] border border-border shadow-card overflow-hidden">
@@ -443,11 +377,51 @@ export default function Dashboard() {
             </ul>
           )}
         </section>
+        </>
+        )}
 
-        {/* E. Practice Health (all-time) */}
-        <PracticeHealth stats={stats} t={t} cs={cs} />
+        {range === "month" && (
+        <>
+        {/* A. Monthly Overview */}
+        <section>
+          <h2 className="text-sm font-semibold text-foreground mb-3">
+            {t("ops.monthlyOverview")}
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <OverviewTile icon={Users} label={t("ops.activeClientsThisMonth")} value={String(stats?.activeClientsThisMonth ?? 0)} trend={trendPct(stats?.activeClientsThisMonth ?? 0, (stats as any)?.prevActiveClients ?? 0)} trendLabel={t("dash.vsLastMonth")} onClick={() => openWidget("active_clients_this_month", "/clients?filter=activeThisMonth")} />
+            <OverviewTile icon={UserPlus} label={t("ops.newClientsThisMonth")} value={String(stats?.newClientsThisMonth ?? 0)} trend={trendPct(stats?.newClientsThisMonth ?? 0, (stats as any)?.prevNewClients ?? 0)} trendLabel={t("dash.vsLastMonth")} onClick={() => openWidget("new_clients_this_month", "/clients?filter=newThisMonth")} />
+            <OverviewTile icon={UserCheck} label={t("ops.completedTherapyThisMonth")} value={String(stats?.completedTherapyThisMonth ?? 0)} trend={trendPct(stats?.completedTherapyThisMonth ?? 0, (stats as any)?.prevCompletedTherapy ?? 0)} trendLabel={t("dash.vsLastMonth")} onClick={() => openWidget("completed_therapy_this_month", "/clients?filter=completedThisMonth")} />
+            <OverviewTile icon={UserMinus} label={t("ops.droppedTherapyThisMonth")} value={String(stats?.droppedTherapyThisMonth ?? 0)} trend={trendPct(stats?.droppedTherapyThisMonth ?? 0, (stats as any)?.prevDroppedTherapy ?? 0, true)} trendLabel={t("dash.vsLastMonth")} onClick={() => openWidget("dropped_therapy_this_month", "/clients?filter=droppedThisMonth")} />
+            <OverviewTile icon={XCircle} label={t("ops.cancelledSessionsThisMonth")} value={String((stats as any)?.cancelledSessionsThisMonth ?? 0)} trend={trendPct(stats?.cancelledSessionsThisMonth ?? 0, (stats as any)?.prevCancelled ?? 0, true)} trendLabel={t("dash.vsLastMonth")} />
+            <MoneyTile label={t("ops.monthlyExpensesTotal")} value={`${cs}${Number(stats?.monthlyExpenses ?? 0).toLocaleString()}`} tone="warning" onClick={() => openWidget("monthly_expenses", "/finances/expenses")} />
+          </div>
+        </section>
+
+        {/* A2. Financial Risk */}
+        <section>
+          <h2 className="text-sm font-semibold text-foreground mb-3">
+            {t("dash.financialRisk")}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <MoneyTile label={t("ops.lostIncomeCancellations")} value={`${cs}${Number((stats as any)?.lostIncomeThisMonth ?? 0).toLocaleString()}`} tone={Number((stats as any)?.lostIncomeThisMonth ?? 0) > 0 ? "warning" : "muted"} />
+            <MoneyTile label={t("ops.unpaidSessionsCount")} value={String((stats as any)?.unpaidSessionsCount ?? 0)} tone={((stats as any)?.unpaidSessionsCount ?? 0) > 0 ? "warning" : "muted"} onClick={() => openWidget("unpaid_sessions", "/finances/income?tab=pending&range=all")} />
+            <MoneyTile label={t("ops.clientsWithoutNextSession")} value={String(clientsWithoutNextSessionCount)} tone={clientsWithoutNextSessionCount > 0 ? "warning" : "muted"} onClick={() => openWidget("clients_without_next_session", "/clients?filter=withoutNextSession")} />
+          </div>
+        </section>
+
+        <div className="bg-gradient-dark text-secondary-foreground rounded-2xl px-5 py-4 flex justify-between items-center gap-2">
+          <span className="text-sm font-semibold opacity-80">{t("ops.totalDebt")}</span>
+          <span className="text-2xl font-bold text-primary tabular-nums break-all text-right">{cs}{Number(stats?.outstandingBalance ?? 0).toLocaleString()}</span>
+        </div>
+        </>
+        )}
+
+        {range === "all" && (
+          <PracticeHealth stats={stats} t={t} cs={cs} />
+        )}
 
       </div>
+
     </AppLayout>
   );
 }
