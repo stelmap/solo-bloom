@@ -1258,7 +1258,7 @@ function FeaturesSection() {
             cta="features_cta"
           />
 
-          <p className="text-sm text-white/60">{t("featCtaNote")}</p>
+          <p className="text-sm text-white/90">{t("featCtaNote")}</p>
         </div>
       </div>
     </section>
@@ -1849,7 +1849,7 @@ function FinalCTA() {
               </Button>
             </a>
           </div>
-          <p className="text-xs text-secondary-foreground/60 mt-5">
+          <p className="text-xs text-secondary-foreground/90 mt-5">
             {lang === "uk"
               ? "Можете залишити заявку або написати на email — ми відповімо зручним для вас способом."
               : lang === "fr"
