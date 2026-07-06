@@ -2,7 +2,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { useDashboardStats, useProfile, useClients, useAppointments, useServices } from "@/hooks/useData";
 import { useBookingRequests, useConfirmBookingRequest, useDeclineBookingRequest } from "@/hooks/useBookingInbox";
 import { sendBookingConfirmationEmail } from "@/lib/sendBookingConfirmationEmail";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { track } from "@/lib/analytics";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
