@@ -636,7 +636,7 @@ function OverviewTile({
   icon: Icon, label, value, active, onClick, trend, trendLabel,
 }: { icon: any; label: string; value: string; active?: boolean; onClick?: () => void; trend?: { dir: "up" | "down" | "flat"; pct: number; positive: boolean }; trendLabel?: string }) {
   const base = cn(
-    "relative rounded-[18px] p-3 sm:p-5 text-center w-full block transition-all border flex flex-col items-center justify-between min-h-[140px] sm:min-h-[170px] overflow-hidden min-w-0",
+    "relative rounded-[16px] p-2.5 sm:p-3.5 text-center w-full block transition-all border flex flex-col items-center justify-between min-h-[108px] sm:min-h-[124px] overflow-hidden min-w-0",
     active
       ? "bg-primary-soft border-primary shadow-glow"
       : "bg-card border-border shadow-card",
@@ -648,17 +648,18 @@ function OverviewTile({
     <>
       <div className="w-full flex items-center justify-between">
         <div className={cn(
-          "p-1.5 sm:p-2 rounded-lg",
+          "p-1 sm:p-1.5 rounded-md",
           active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
         )}>
-          <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
         </div>
         {onClick && (
-          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+          <ArrowRight className="h-3 w-3 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
         )}
       </div>
-      <p className={cn("text-3xl sm:text-5xl font-extrabold leading-none tabular-nums my-2 break-all", active ? "text-primary" : "text-foreground")}>{value}</p>
+      <p className={cn("text-2xl sm:text-3xl font-extrabold leading-none tabular-nums my-1 break-all", active ? "text-primary" : "text-foreground")}>{value}</p>
       <p className="text-[10px] sm:text-xs text-muted-foreground leading-snug w-full break-words">{label}</p>
+
       {trend && <TrendBadge trend={trend} label={trendLabel} />}
     </>
   );
