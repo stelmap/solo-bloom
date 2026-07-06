@@ -1258,7 +1258,7 @@ function FeaturesSection() {
             cta="features_cta"
           />
 
-          <p className="text-sm text-white/60">{t("featCtaNote")}</p>
+          <p className="text-sm text-white/90">{t("featCtaNote")}</p>
         </div>
       </div>
     </section>
