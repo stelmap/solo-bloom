@@ -28,10 +28,10 @@ const WEEKDAY_KEYS = [
 type Interval = { start: string; end: string };
 type DayState = { is_enabled: boolean; intervals: Interval[] };
 
-type Lang = "en" | "uk" | "fr" | "pl";
+type Lang = "en" | "uk" | "ru" | "fr" | "pl";
 const normLang = (v: unknown): Lang => {
   const s = String(v || "en").toLowerCase();
-  return (["en", "uk", "fr", "pl"].includes(s) ? s : "en") as Lang;
+  return (["en", "uk", "ru", "fr", "pl"].includes(s) ? s : "en") as Lang;
 };
 
 const COPY: Record<Lang, {
