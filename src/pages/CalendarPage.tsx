@@ -54,7 +54,7 @@ import { PublicBookingSection } from "@/components/PublicBookingSection";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
-type LangKey = "en" | "uk" | "fr" | "pl";
+type LangKey = "en" | "uk" | "ru" | "fr" | "pl";
 type BookingAvailabilityRule = {
   session_duration_minutes?: number | null;
   buffer_minutes?: number | null;
