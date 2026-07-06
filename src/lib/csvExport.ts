@@ -1,7 +1,18 @@
 import { track } from "@/lib/analytics";
 
+// Neutralize CSV/Excel/Sheets formula injection: prefix a leading
+// '=', '+', '-', '@', TAB, or CR with a single quote so spreadsheet
+// apps treat it as text instead of executing a formula.
+function sanitizeCell(v: string): string {
+  if (v.length > 0 && /^[=+\-@\t\r]/.test(v)) {
+    return "'" + v;
+  }
+  return v;
+}
+
 export function downloadCSV(filename: string, headers: string[], rows: string[][]) {
-  const escape = (v: string) => {
+  const escape = (raw: string) => {
+    const v = sanitizeCell(raw);
     if (v.includes(",") || v.includes('"') || v.includes("\n")) {
       return `"${v.replace(/"/g, '""')}"`;
     }
