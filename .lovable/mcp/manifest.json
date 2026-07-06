@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://rxculneqqaziutulnocs.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "solo-bizz-mcp",
+      "version": "0.1.0",
+      "title": "Solo Bizz"
+    },
+    "tools": [
+      {
+        "name": "list_clients",
+        "title": "List clients",
+        "description": "List the signed-in user's clients. Supports search by name/email and pagination.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "search": {
+              "description": "Case-insensitive substring match on name or email.",
+              "type": "string"
+            },
+            "status": {
+              "description": "Filter by status. Defaults to active.",
+              "type": "string",
+              "enum": [
+                "active",
+                "archived"
+              ]
+            },
+            "limit": {
+              "description": "Max results (default 50).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_appointments",
+        "title": "List appointments",
+        "description": "List the signed-in user's appointments in a date range, optionally filtered by client or status.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "description": "ISO date/datetime lower bound (inclusive) for scheduled_at."
+            },
+            "to": {
+              "type": "string",
+              "description": "ISO date/datetime upper bound (exclusive) for scheduled_at."
+            },
+            "client_id": {
+              "description": "Only return appointments for this client id.",
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "status": {
+              "description": "Filter by appointment status.",
+              "type": "string",
+              "enum": [
+                "scheduled",
+                "completed",
+                "cancelled"
+              ]
+            },
+            "limit": {
+              "description": "Max results (default 100).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "finance_summary",
+        "title": "Finance summary",
+        "description": "Sum income and expenses for the signed-in user over a date range and return net profit.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "description": "ISO date lower bound (inclusive) for the `date` column."
+            },
+            "to": {
+              "type": "string",
+              "description": "ISO date upper bound (inclusive) for the `date` column."
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_client",
+        "title": "Create client",
+        "description": "Create a new client record for the signed-in user.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Client display name."
+            },
+            "email": {
+              "description": "Client email (optional).",
+              "type": "string",
+              "format": "email",
+              "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+            },
+            "phone": {
+              "description": "Client phone (optional).",
+              "type": "string"
+            },
+            "notes": {
+              "description": "Free-form notes (optional).",
+              "type": "string"
+            },
+            "base_price": {
+              "description": "Default per-session price (optional).",
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "name"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

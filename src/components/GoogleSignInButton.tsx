@@ -17,14 +17,18 @@ export function GoogleSignInButton({ disabled }: Props) {
   const handleClick = async () => {
     setLoading(true);
     try {
-      // Use the site root as redirect_uri — this is what Lovable's OAuth broker
-      // expects and what is allow-listed for preview, published, and custom
-      // domains. Once the session is set, Index.tsx will route the
-      // authenticated user to the post-auth destination (calendar).
+      // Preserve a same-origin `?next=` param (used by OAuth consent flow) so
+      // the user is taken to the pending destination after Google sign-in.
+      const currentNext = new URLSearchParams(window.location.search).get("next");
+      const safeNext = currentNext && currentNext.startsWith("/") && !currentNext.startsWith("//") ? currentNext : null;
+      const redirectUri = safeNext
+        ? `${window.location.origin}/?next=${encodeURIComponent(safeNext)}`
+        : window.location.origin;
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: redirectUri,
       });
       if (result.error) {
+
         const msg = (result.error as any)?.message?.toLowerCase?.() ?? "";
         const cancelled = msg.includes("cancel") || msg.includes("closed");
         toast({
