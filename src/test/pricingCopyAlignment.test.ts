@@ -46,13 +46,11 @@ const PAIRS: Array<[landingKey: string, i18nKey: string]> = [
   ["freeF4", "plans.bulletAnalytics"],
   // Solo Practice bullets
   ["soloF1", "plans.bulletClientsSolo"],
-  ["soloF2", "plans.bulletEverythingFree"],
   ["soloF3", "plans.bulletCoreModules"],
   ["soloF4", "plans.bulletAnalytics"],
   ["soloF5", "plans.bulletCancelAnytime"],
   // Pro Practice bullets
   ["proF1", "plans.bulletClientsPro"],
-  ["proF2", "plans.bulletEverythingSolo"],
   ["proF3", "plans.bulletPrioritySupport"],
   ["proF4", "plans.bulletCustomOnboarding"],
   ["proF5", "plans.bulletScalingTeams"],
