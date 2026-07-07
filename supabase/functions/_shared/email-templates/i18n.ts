@@ -256,9 +256,9 @@ const uk: LangStrings = {
   },
   subjects: {
     signup: 'Підтвердіть свою пошту',
-    invite: 'Вас запросили до SoloBizz',
-    magiclink: 'Ваше посилання для входу в SoloBizz',
-    recovery: 'Скиньте свій пароль SoloBizz',
+    invite: 'Вас запросили',
+    magiclink: 'Ваше посилання для входу',
+    recovery: 'Скиньте свій пароль',
     email_change: 'Підтвердіть нову адресу пошти',
     reauthentication: 'Ваш код підтвердження',
   },
