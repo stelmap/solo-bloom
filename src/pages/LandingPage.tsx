@@ -1355,7 +1355,7 @@ function PricingSection() {
       name: t("soloName"),
       desc: t("soloDesc"),
       pill: t("soloPill"),
-      bullets: [t("soloF2"), t("soloF1"), t("soloF3"), t("soloF4"), t("mfaSecurity"), t("soloF5")],
+      bullets: [t("soloF1"), t("soloF3"), t("soloF4"), t("mfaSecurity"), t("soloF5")],
       cta: t("soloCta"),
       ctaHrefBase: "/auth?plan=solo",
       ctaTracking: "upgrade_plan_selected",
