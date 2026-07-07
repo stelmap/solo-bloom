@@ -422,10 +422,10 @@ const C = {
 
   proName: { en: "Pro Practice", fr: "Pro Practice", uk: "Pro Practice", pl: "Pro Practice" },
   proDesc: {
-    en: "For a large client base and priority support.",
-    fr: "Pour une grande base de clients et un support prioritaire.",
-    uk: "Для великої бази клієнтів і пріоритетної підтримки.",
-    pl: "Dla dużej bazy klientów i wsparcia priorytetowego.",
+    en: "Advanced practice management — more active clients, group sessions, supervision and full financial control.",
+    fr: "Gestion avancée de pratique — plus de clients actifs, séances de groupe, supervision et contrôle financier complet.",
+    uk: "Розширене керування практикою — більше активних клієнтів, групові сесії, супервізія та повний фінансовий контроль.",
+    pl: "Zaawansowane zarządzanie praktyką — więcej aktywnych klientów, sesje grupowe, superwizja i pełna kontrola finansowa.",
   },
   proIntro: {
     en: "All SoloBizz features included.",
