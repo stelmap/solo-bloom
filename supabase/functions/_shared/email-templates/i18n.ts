@@ -333,9 +333,9 @@ const pl: LangStrings = {
   },
   subjects: {
     signup: 'Potwierdź swój e-mail',
-    invite: 'Zostałeś zaproszony do SoloBizz',
-    magiclink: 'Twój link do logowania w SoloBizz',
-    recovery: 'Zresetuj swoje hasło SoloBizz',
+    invite: 'Zostałeś zaproszony',
+    magiclink: 'Twój link do logowania',
+    recovery: 'Zresetuj swoje hasło',
     email_change: 'Potwierdź nowy adres e-mail',
     reauthentication: 'Twój kod weryfikacyjny',
   },
