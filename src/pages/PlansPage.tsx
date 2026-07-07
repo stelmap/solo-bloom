@@ -123,10 +123,10 @@ export default function PlansPage() {
     solo: {
       name: { en: "Solo Practice", fr: "Solo Practice", uk: "Solo Practice", pl: "Solo Practice" },
       desc: {
-        en: "For a small practice — manage clients, sessions and payments without chaos.",
-        fr: "Pour une petite pratique — gérez clients, séances et paiements sans chaos.",
-        uk: "Для невеликої практики — ведення клієнтів, сесій та оплат без хаосу.",
-        pl: "Dla małej praktyki — klienci, sesje i płatności bez chaosu.",
+        en: "All SoloBizz features included. For a small practice — manage clients, sessions and payments without chaos.",
+        fr: "Toutes les fonctionnalités SoloBizz incluses. Pour une petite pratique — gérez clients, séances et paiements sans chaos.",
+        uk: "Усі функції SoloBizz включено. Для невеликої практики — ведення клієнтів, сесій та оплат без хаосу.",
+        pl: "Wszystkie funkcje SoloBizz w komplecie. Dla małej praktyki — klienci, sesje i płatności bez chaosu.",
       },
       badge: { en: "Best for practice", fr: "Idéal pour la pratique", uk: "Найкраще для практики", pl: "Najlepsze dla praktyki" },
       pill: { en: "Larger active client limit", fr: "Limite de clients actifs plus élevée", uk: "Більший ліміт активних клієнтів", pl: "Większy limit aktywnych klientów" },
@@ -140,10 +140,10 @@ export default function PlansPage() {
     pro: {
       name: { en: "Pro Practice", fr: "Pro Practice", uk: "Pro Practice", pl: "Pro Practice" },
       desc: {
-        en: "For a large client base and priority support.",
-        fr: "Pour une grande base de clients et un support prioritaire.",
-        uk: "Для великої бази клієнтів і пріоритетної підтримки.",
-        pl: "Dla dużej bazy klientów i wsparcia priorytetowego.",
+        en: "All SoloBizz features included. For a large client base and priority support.",
+        fr: "Toutes les fonctionnalités SoloBizz incluses. Pour une grande base de clients et un support prioritaire.",
+        uk: "Усі функції SoloBizz включено. Для великої бази клієнтів і пріоритетної підтримки.",
+        pl: "Wszystkie funkcje SoloBizz w komplecie. Dla dużej bazy klientów i wsparcia priorytetowego.",
       },
       badge: { en: "For a growing practice", fr: "Pour une pratique en croissance", uk: "Для практики, що росте", pl: "Dla rosnącej praktyki" },
       pill: { en: "Unlimited clients", fr: "Clients illimités", uk: "Необмежена кількість клієнтів", pl: "Nieograniczona liczba klientów" },
