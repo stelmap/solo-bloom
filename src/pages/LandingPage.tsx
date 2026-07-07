@@ -384,10 +384,10 @@ const C = {
     pl: "Dane Twoich klientów są chronione. Nie widzimy i nie wykorzystujemy informacji o klientach.",
   },
   soloDesc: {
-    en: "Affordable plan for a small solo practice — manage clients, sessions and payments without chaos.",
-    fr: "Formule abordable pour une petite pratique solo — gérez clients, séances et paiements sans chaos.",
-    uk: "Доступний план для невеликої соло-практики — ведення клієнтів, сесій та оплат без хаосу.",
-    pl: "Przystępny plan dla małej praktyki solo — klienci, sesje i płatności bez chaosu.",
+    en: "All SoloBizz features included. Affordable plan for a small solo practice — manage clients, sessions and payments without chaos.",
+    fr: "Toutes les fonctionnalités SoloBizz incluses. Formule abordable pour une petite pratique solo — gérez clients, séances et paiements sans chaos.",
+    uk: "Усі функції SoloBizz включено. Доступний план для невеликої соло-практики — ведення клієнтів, сесій та оплат без хаосу.",
+    pl: "Wszystkie funkcje SoloBizz w komplecie. Przystępny plan dla małej praktyki solo — klienci, sesje i płatności bez chaosu.",
   },
   soloIntro: {
     en: "All SoloBizz features included.",
@@ -422,10 +422,10 @@ const C = {
 
   proName: { en: "Pro Practice", fr: "Pro Practice", uk: "Pro Practice", pl: "Pro Practice" },
   proDesc: {
-    en: "Advanced practice management — more active clients, group sessions, supervision and full financial control.",
-    fr: "Gestion avancée de pratique — plus de clients actifs, séances de groupe, supervision et contrôle financier complet.",
-    uk: "Розширене керування практикою — більше активних клієнтів, групові сесії, супервізія та повний фінансовий контроль.",
-    pl: "Zaawansowane zarządzanie praktyką — więcej aktywnych klientów, sesje grupowe, superwizja i pełna kontrola finansowa.",
+    en: "All SoloBizz features included. Advanced practice management — more active clients, group sessions, supervision and full financial control.",
+    fr: "Toutes les fonctionnalités SoloBizz incluses. Gestion avancée de pratique — plus de clients actifs, séances de groupe, supervision et contrôle financier complet.",
+    uk: "Усі функції SoloBizz включено. Розширене керування практикою — більше активних клієнтів, групові сесії, супервізія та повний фінансовий контроль.",
+    pl: "Wszystkie funkcje SoloBizz w komplecie. Zaawansowane zarządzanie praktyką — więcej aktywnych klientów, sesje grupowe, superwizja i pełna kontrola finansowa.",
   },
   proIntro: {
     en: "All SoloBizz features included.",
