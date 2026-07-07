@@ -1369,7 +1369,7 @@ function PricingSection() {
       name: t("proName"),
       desc: t("proDesc"),
       pill: t("proPill"),
-      bullets: [t("proF1"), t("proF2"), t("proF3"), t("proF4"), t("mfaSecurity")],
+      bullets: [t("proF1"), t("proF2"), t("proF3"), t("proF4"), t("proF5"), t("mfaSecurity")],
       cta: t("proCta"),
       ctaHrefBase: "/auth?plan=pro",
       ctaTracking: "upgrade_plan_selected",
