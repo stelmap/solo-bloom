@@ -19,6 +19,7 @@ import {
   typeColorClasses, typeDotClasses, statusOverlayClasses,
   type SessionKind,
 } from "@/lib/calendarVisuals";
+import { dedupeAppointmentsById } from "@/lib/calendarDedupe";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { format, addDays, startOfWeek, isSameDay, isBefore, startOfDay, addMonths, startOfMonth, endOfMonth, endOfWeek, endOfDay, eachDayOfInterval, isSameMonth } from "date-fns";
@@ -820,12 +821,11 @@ export default function CalendarPage() {
   // Apply user filters before the calendar reads events
   const visibleAppointments = useMemo(() => {
     const q = filters.search.trim().toLowerCase();
-    const seen = new Set<string>();
+    // Dedupe by id first — guards against duplicate rows from realtime races,
+    // overlapping cache updates after creation, or group-session join fan-out.
+    const unique = dedupeAppointmentsById(appointments as any[]);
     const result: any[] = [];
-    for (const apt of appointments as any[]) {
-      // Dedupe by id — guards against duplicate rows from realtime races
-      // or overlapping cache updates after creation.
-      if (!apt?.id || seen.has(apt.id)) continue;
+    for (const apt of unique) {
       const kind = getSessionKind(apt);
       if (!filters.types[kind]) continue;
       if (filters.status !== "all" && apt.status !== filters.status) continue;
@@ -836,7 +836,6 @@ export default function CalendarPage() {
         const svc = apt.services?.name || "";
         if (!name.toLowerCase().includes(q) && !svc.toLowerCase().includes(q)) continue;
       }
-      seen.add(apt.id);
       result.push(apt);
     }
     return result;
