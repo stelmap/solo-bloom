@@ -371,27 +371,49 @@ export default function AdminUsersPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        {actions.length === 0 ? (
-                          <span className="text-xs text-muted-foreground">—</span>
-                        ) : (
-                          <Select
-                            value=""
-                            onValueChange={(v) => {
-                              setDialogUser(u);
-                              setDialogAction(v as LifecycleAction);
-                              setDialogConfirm("");
-                            }}
-                          >
-                            <SelectTrigger className="h-8 w-[170px] ml-auto">
-                              <SelectValue placeholder="Action…" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {actions.map((a) => (
-                                <SelectItem key={a} value={a}>{ACTION_LABEL[a]}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
+                        {(() => {
+                          const twoMonthsMs = 60 * 24 * 60 * 60 * 1000;
+                          const recentlyLoggedIn = Boolean(
+                            u.last_sign_in_at && (Date.now() - new Date(u.last_sign_in_at).getTime()) < twoMonthsMs
+                          );
+                          const isProtected = recentlyLoggedIn && Boolean(u.has_records);
+                          const blockedFor = new Set<LifecycleAction>(
+                            isProtected ? ["deactivate", "delete_permanently"] : []
+                          );
+                          const usable = actions.filter((a) => !blockedFor.has(a));
+                          if (actions.length === 0) {
+                            return <span className="text-xs text-muted-foreground">—</span>;
+                          }
+                          if (usable.length === 0) {
+                            return (
+                              <span
+                                className="text-xs text-muted-foreground"
+                                title="Protected: signed in within the last 2 months and has active records"
+                              >
+                                Protected
+                              </span>
+                            );
+                          }
+                          return (
+                            <Select
+                              value=""
+                              onValueChange={(v) => {
+                                setDialogUser(u);
+                                setDialogAction(v as LifecycleAction);
+                                setDialogConfirm("");
+                              }}
+                            >
+                              <SelectTrigger className="h-8 w-[170px] ml-auto">
+                                <SelectValue placeholder="Action…" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {usable.map((a) => (
+                                  <SelectItem key={a} value={a}>{ACTION_LABEL[a]}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          );
+                        })()}
                       </TableCell>
                     </TableRow>
                   );

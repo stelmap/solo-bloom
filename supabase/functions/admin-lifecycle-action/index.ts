@@ -99,9 +99,33 @@ Deno.serve(async (req) => {
       return { ok: !error, error, data };
     };
 
+    // Safety guard: block deactivation / permanent deletion when the user is
+    // recently active (signed in within 2 months) AND has product records.
+    // Prevents an admin from accidentally removing a live customer.
+    async function isRecentlyActiveWithRecords(): Promise<boolean> {
+      const twoMonthsMs = 60 * 24 * 60 * 60 * 1000;
+      const lastSignIn = target.user.last_sign_in_at ? new Date(target.user.last_sign_in_at).getTime() : 0;
+      const recentlyLoggedIn = lastSignIn && (Date.now() - lastSignIn) < twoMonthsMs;
+      if (!recentlyLoggedIn) return false;
+      // Check any product activity table for at least one row.
+      const tables = ["clients", "appointments", "expenses", "services", "groups", "booking_links", "income"];
+      for (const t of tables) {
+        const { count } = await admin.from(t).select("id", { count: "exact", head: true }).eq("user_id", targetUserId);
+        if ((count ?? 0) > 0) return true;
+      }
+      return false;
+    }
+
     switch (action) {
       case "deactivate": {
         if (previousStatus === "deleted") return json({ error: "User already deleted" }, 400);
+        if (await isRecentlyActiveWithRecords()) {
+          await audit("blocked_deactivate", { reason: "recently_active_with_records" });
+          return json({
+            error: "Cannot deactivate: user has signed in within the last 2 months and has active records.",
+            code: "recently_active_with_records",
+          }, 409);
+        }
         const planned = new Date(Date.now() + graceDays * 24 * 60 * 60 * 1000).toISOString();
         const emailRes = await sendWarning();
         await admin.from("user_lifecycle").update({
@@ -147,6 +171,13 @@ Deno.serve(async (req) => {
       case "delete_permanently": {
         if (confirmation !== "DELETE") return json({ error: "Confirmation required (type DELETE)" }, 400);
         if (previousStatus !== "ready_for_deletion") return json({ error: "User is not ready for deletion" }, 400);
+        if (await isRecentlyActiveWithRecords()) {
+          await audit("blocked_delete", { reason: "recently_active_with_records" });
+          return json({
+            error: "Cannot delete: user has signed in within the last 2 months and has active records.",
+            code: "recently_active_with_records",
+          }, 409);
+        }
 
         // Send final email BEFORE deleting the auth user (address becomes unavailable after)
         if (targetEmail) {
