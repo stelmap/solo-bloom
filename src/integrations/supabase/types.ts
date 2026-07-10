@@ -1621,6 +1621,27 @@ export type Database = {
           },
         ]
       }
+      lifecycle_settings: {
+        Row: {
+          cron_enabled: boolean
+          deletion_grace_days: number
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          cron_enabled?: boolean
+          deletion_grace_days?: number
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          cron_enabled?: boolean
+          deletion_grace_days?: number
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payment_corrections: {
         Row: {
           appointment_id: string
@@ -2476,6 +2497,93 @@ export type Database = {
         }
         Relationships: []
       }
+      user_lifecycle: {
+        Row: {
+          created_at: string
+          deactivated_by: string | null
+          deactivation_email_sent_at: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          last_activity_at: string | null
+          last_login_at: string | null
+          planned_deletion_date: string | null
+          reactivated_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deactivated_by?: string | null
+          deactivation_email_sent_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          last_activity_at?: string | null
+          last_login_at?: string | null
+          planned_deletion_date?: string | null
+          reactivated_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deactivated_by?: string | null
+          deactivation_email_sent_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          last_activity_at?: string | null
+          last_login_at?: string | null
+          planned_deletion_date?: string | null
+          reactivated_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_lifecycle_audit: {
+        Row: {
+          action: string
+          admin_id: string | null
+          at: string
+          email_delivery_status: string | null
+          id: string
+          ip_address: unknown
+          metadata: Json | null
+          new_status: string | null
+          previous_status: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          admin_id?: string | null
+          at?: string
+          email_delivery_status?: string | null
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          new_status?: string | null
+          previous_status?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string | null
+          at?: string
+          email_delivery_status?: string | null
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          new_status?: string | null
+          previous_status?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_plan_history: {
         Row: {
           change_reason: string
@@ -2835,6 +2943,7 @@ export type Database = {
         Returns: number
       }
       process_gdpr_deletions: { Args: never; Returns: number }
+      promote_expired_deactivations: { Args: never; Returns: number }
       public_create_booking: {
         Args: {
           p_comment: string
@@ -2887,6 +2996,7 @@ export type Database = {
         Args: { p_appointment_id: string }
         Returns: undefined
       }
+      record_user_activity: { Args: never; Returns: Json }
       regenerate_booking_link_token: { Args: never; Returns: string }
       seed_demo_workspace: { Args: { p_user_id: string }; Returns: Json }
       set_booking_link_slug: { Args: { p_slug: string }; Returns: string }

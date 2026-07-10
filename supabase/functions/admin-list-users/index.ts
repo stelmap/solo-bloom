@@ -114,14 +114,21 @@ Deno.serve(async (req) => {
       if (page > 20) break;
     }
 
-    const [activityMap, stripeMap] = await Promise.all([
+    const [activityMap, stripeMap, lifecycleRes] = await Promise.all([
       collectActivity(admin),
       collectStripeVisits(admin),
+      admin.from("user_lifecycle").select("user_id, status, planned_deletion_date, deactivation_email_sent_at, last_login_at, reactivated_at"),
     ]);
+
+    const lifecycleMap = new Map<string, any>();
+    for (const row of (lifecycleRes.data ?? []) as any[]) {
+      lifecycleMap.set(row.user_id, row);
+    }
 
     const result = users.map((u) => {
       const lastProductActivityAt = activityMap.get(u.id) ?? null;
       const visitedStripeAt = stripeMap.get(u.id) ?? null;
+      const lc = lifecycleMap.get(u.id);
       return {
         id: u.id,
         email: u.email,
@@ -134,8 +141,12 @@ Deno.serve(async (req) => {
         last_product_activity_at: lastProductActivityAt,
         visited_stripe: Boolean(visitedStripeAt),
         visited_stripe_at: visitedStripeAt,
+        lifecycle_status: (lc?.status ?? "active") as string,
+        planned_deletion_date: lc?.planned_deletion_date ?? null,
+        deactivation_email_sent_at: lc?.deactivation_email_sent_at ?? null,
       };
     });
+
 
     return new Response(JSON.stringify({ users: result }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
