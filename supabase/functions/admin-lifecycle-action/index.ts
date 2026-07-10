@@ -171,6 +171,13 @@ Deno.serve(async (req) => {
       case "delete_permanently": {
         if (confirmation !== "DELETE") return json({ error: "Confirmation required (type DELETE)" }, 400);
         if (previousStatus !== "ready_for_deletion") return json({ error: "User is not ready for deletion" }, 400);
+        if (await isRecentlyActiveWithRecords()) {
+          await audit("blocked_delete", { reason: "recently_active_with_records" });
+          return json({
+            error: "Cannot delete: user has signed in within the last 2 months and has active records.",
+            code: "recently_active_with_records",
+          }, 409);
+        }
 
         // Send final email BEFORE deleting the auth user (address becomes unavailable after)
         if (targetEmail) {
