@@ -7,8 +7,9 @@
 // We render the templates the same way `send-transactional-email` does
 // (React Email render()) and assert distinctive language strings appear.
 import * as React from 'npm:react@18.3.1'
-import { render } from 'npm:@react-email/render@0.0.17'
+import { renderToStaticMarkup } from 'npm:react-dom@18.3.1/server'
 import { assert, assertEquals, assertStringIncludes } from 'https://deno.land/std@0.224.0/assert/mod.ts'
+const render = async (el: React.ReactElement) => renderToStaticMarkup(el)
 
 import { template as warning } from '../_shared/transactional-email-templates/account-deactivation-warning.tsx'
 import { template as finalDeletion } from '../_shared/transactional-email-templates/account-deleted-final.tsx'
