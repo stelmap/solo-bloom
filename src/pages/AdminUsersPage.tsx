@@ -13,9 +13,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Loader2, RefreshCw, Users, UserPlus, Clock, X, CreditCard, FileCheck } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+import { Loader2, RefreshCw, Users, UserPlus, Clock, X, CreditCard, FileCheck, ShieldOff } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { allowedActions, statusBadgeVariant, statusLabel, type LifecycleAction, type LifecycleStatus } from "@/lib/userLifecycle";
 
 type AdminUser = {
   id: string;
@@ -29,6 +33,9 @@ type AdminUser = {
   last_product_activity_at?: string | null;
   visited_stripe?: boolean;
   visited_stripe_at?: string | null;
+  lifecycle_status?: LifecycleStatus;
+  planned_deletion_date?: string | null;
+  deactivation_email_sent_at?: string | null;
 };
 
 type SortKey =
@@ -37,12 +44,22 @@ type SortKey =
   | "email"
   | "has_records"
   | "visited_stripe"
-  | "last_product_activity_at";
+  | "last_product_activity_at"
+  | "lifecycle_status";
 
 type CardFilter = "all" | "new7d" | "active7d" | "neverSignedIn";
 type YesNoAll = "all" | "yes" | "no";
+type LifecycleFilter = "all" | LifecycleStatus;
 
 const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+
+const ACTION_LABEL: Record<LifecycleAction, string> = {
+  deactivate: "Deactivate & notify",
+  cancel_deactivation: "Cancel deactivation",
+  resend_email: "Resend warning email",
+  cancel_deletion: "Cancel deletion",
+  delete_permanently: "Delete permanently",
+};
 
 function fmt(d: string | null | undefined) {
   if (!d) return "—";
@@ -60,6 +77,11 @@ export default function AdminUsersPage() {
   const [cardFilter, setCardFilter] = useState<CardFilter>("all");
   const [recordsFilter, setRecordsFilter] = useState<YesNoAll>("all");
   const [stripeFilter, setStripeFilter] = useState<YesNoAll>("all");
+  const [lifecycleFilter, setLifecycleFilter] = useState<LifecycleFilter>("all");
+  const [dialogUser, setDialogUser] = useState<AdminUser | null>(null);
+  const [dialogAction, setDialogAction] = useState<LifecycleAction | null>(null);
+  const [dialogConfirm, setDialogConfirm] = useState("");
+  const [dialogBusy, setDialogBusy] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -91,7 +113,9 @@ export default function AdminUsersPage() {
     const neverLogged = users.filter((u) => !u.last_sign_in_at).length;
     const withRecords = users.filter((u) => u.has_records).length;
     const visitedStripe = users.filter((u) => u.visited_stripe).length;
-    return { total, newWeek, active7, neverLogged, withRecords, visitedStripe };
+    const pending = users.filter((u) => u.lifecycle_status === "deactivation_pending").length;
+    const ready = users.filter((u) => u.lifecycle_status === "ready_for_deletion").length;
+    return { total, newWeek, active7, neverLogged, withRecords, visitedStripe, pending, ready };
   }, [users]);
 
   const filtered = useMemo(() => {
@@ -99,7 +123,6 @@ export default function AdminUsersPage() {
     const q = search.trim().toLowerCase();
     let rows = users.slice();
 
-    // Card filter
     if (cardFilter === "new7d") {
       rows = rows.filter((u) => now - new Date(u.created_at).getTime() < SEVEN_DAYS);
     } else if (cardFilter === "active7d") {
@@ -114,6 +137,9 @@ export default function AdminUsersPage() {
     if (stripeFilter !== "all") {
       rows = rows.filter((u) => Boolean(u.visited_stripe) === (stripeFilter === "yes"));
     }
+    if (lifecycleFilter !== "all") {
+      rows = rows.filter((u) => (u.lifecycle_status ?? "active") === lifecycleFilter);
+    }
 
     if (q) {
       rows = rows.filter((u) =>
@@ -126,8 +152,6 @@ export default function AdminUsersPage() {
     rows.sort((a, b) => {
       const va = (a as any)[sortKey];
       const vb = (b as any)[sortKey];
-      // Push nulls/undefined to the bottom regardless of sort direction,
-      // except when the user explicitly filters for "never signed in".
       const aEmpty = va === null || va === undefined || va === "" || va === false;
       const bEmpty = vb === null || vb === undefined || vb === "" || vb === false;
       if (aEmpty && !bEmpty) return 1;
@@ -137,7 +161,7 @@ export default function AdminUsersPage() {
       return va < vb ? -dir : dir;
     });
     return rows;
-  }, [users, search, sortKey, sortDir, cardFilter, recordsFilter, stripeFilter]);
+  }, [users, search, sortKey, sortDir, cardFilter, recordsFilter, stripeFilter, lifecycleFilter]);
 
   function toggleSort(k: SortKey) {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -148,13 +172,40 @@ export default function AdminUsersPage() {
     setCardFilter("all");
     setRecordsFilter("all");
     setStripeFilter("all");
+    setLifecycleFilter("all");
     setSearch("");
     setSortKey("last_sign_in_at");
     setSortDir("desc");
   }
 
   const hasActiveFilters =
-    cardFilter !== "all" || recordsFilter !== "all" || stripeFilter !== "all" || search.trim() !== "";
+    cardFilter !== "all" || recordsFilter !== "all" || stripeFilter !== "all" ||
+    lifecycleFilter !== "all" || search.trim() !== "";
+
+  async function runAction() {
+    if (!dialogUser || !dialogAction) return;
+    setDialogBusy(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-lifecycle-action", {
+        body: {
+          action: dialogAction,
+          user_id: dialogUser.id,
+          confirmation: dialogAction === "delete_permanently" ? dialogConfirm : undefined,
+        },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast({ title: "Done", description: ACTION_LABEL[dialogAction] });
+      setDialogUser(null);
+      setDialogAction(null);
+      setDialogConfirm("");
+      await load();
+    } catch (e: any) {
+      toast({ title: "Action failed", description: e?.message ?? String(e), variant: "destructive" });
+    } finally {
+      setDialogBusy(false);
+    }
+  }
 
   if (loading || isAdmin === null) {
     return <AppLayout><div className="flex items-center justify-center h-64"><Loader2 className="h-5 w-5 animate-spin" /></div></AppLayout>;
@@ -170,7 +221,7 @@ export default function AdminUsersPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold">Users</h1>
-            <p className="text-muted-foreground text-sm">Internal analytics: signups, activation, and Stripe funnel.</p>
+            <p className="text-muted-foreground text-sm">Internal analytics: signups, activation, Stripe funnel, and account lifecycle.</p>
           </div>
           <div className="flex items-center gap-2">
             {hasActiveFilters && (
@@ -186,31 +237,21 @@ export default function AdminUsersPage() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatCard
-            icon={Users} label="Total users" value={stats.total}
-            active={cardFilter === "all"}
-            onClick={() => setCardFilter("all")}
-          />
-          <StatCard
-            icon={UserPlus} label="New (7d)" value={stats.newWeek}
-            active={cardFilter === "new7d"}
-            onClick={() => setCardFilter((c) => (c === "new7d" ? "all" : "new7d"))}
-          />
-          <StatCard
-            icon={Clock} label="Active (7d)" value={stats.active7}
-            active={cardFilter === "active7d"}
-            onClick={() => setCardFilter((c) => (c === "active7d" ? "all" : "active7d"))}
-          />
-          <StatCard
-            icon={Users} label="Never signed in" value={stats.neverLogged}
-            active={cardFilter === "neverSignedIn"}
-            onClick={() => setCardFilter((c) => (c === "neverSignedIn" ? "all" : "neverSignedIn"))}
-          />
+          <StatCard icon={Users} label="Total users" value={stats.total}
+            active={cardFilter === "all"} onClick={() => setCardFilter("all")} />
+          <StatCard icon={UserPlus} label="New (7d)" value={stats.newWeek}
+            active={cardFilter === "new7d"} onClick={() => setCardFilter((c) => (c === "new7d" ? "all" : "new7d"))} />
+          <StatCard icon={Clock} label="Active (7d)" value={stats.active7}
+            active={cardFilter === "active7d"} onClick={() => setCardFilter((c) => (c === "active7d" ? "all" : "active7d"))} />
+          <StatCard icon={Users} label="Never signed in" value={stats.neverLogged}
+            active={cardFilter === "neverSignedIn"} onClick={() => setCardFilter((c) => (c === "neverSignedIn" ? "all" : "neverSignedIn"))} />
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <SmallStat icon={FileCheck} label="Created records" value={`${stats.withRecords} / ${stats.total}`} />
           <SmallStat icon={CreditCard} label="Visited Stripe" value={`${stats.visitedStripe} / ${stats.total}`} />
+          <SmallStat icon={ShieldOff} label="Deactivation pending" value={String(stats.pending)} />
+          <SmallStat icon={ShieldOff} label="Ready for deletion" value={String(stats.ready)} />
         </div>
 
         <Card>
@@ -247,6 +288,19 @@ export default function AdminUsersPage() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Lifecycle:</span>
+                <Select value={lifecycleFilter} onValueChange={(v) => setLifecycleFilter(v as LifecycleFilter)}>
+                  <SelectTrigger className="h-8 w-[180px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="deactivation_pending">Deactivation pending</SelectItem>
+                    <SelectItem value="ready_for_deletion">Ready for deletion</SelectItem>
+                    <SelectItem value="deleted">Deleted</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="ml-auto text-xs text-muted-foreground">
                 Showing {filtered.length} of {users.length}
               </div>
@@ -258,7 +312,9 @@ export default function AdminUsersPage() {
                 <TableRow>
                   <TableHead className="cursor-pointer" onClick={() => toggleSort("email")}>Email{sortIndicator("email")}</TableHead>
                   <TableHead>Name</TableHead>
-                  <TableHead>Provider</TableHead>
+                  <TableHead className="cursor-pointer" onClick={() => toggleSort("lifecycle_status")}>
+                    Lifecycle{sortIndicator("lifecycle_status")}
+                  </TableHead>
                   <TableHead className="cursor-pointer" onClick={() => toggleSort("created_at")}>
                     First signup{sortIndicator("created_at")}
                   </TableHead>
@@ -266,48 +322,142 @@ export default function AdminUsersPage() {
                     Last sign-in{sortIndicator("last_sign_in_at")}
                   </TableHead>
                   <TableHead className="cursor-pointer" onClick={() => toggleSort("last_product_activity_at")}>
-                    Last product activity{sortIndicator("last_product_activity_at")}
+                    Last activity{sortIndicator("last_product_activity_at")}
                   </TableHead>
                   <TableHead className="cursor-pointer" onClick={() => toggleSort("has_records")}>
-                    Created records{sortIndicator("has_records")}
+                    Records{sortIndicator("has_records")}
                   </TableHead>
                   <TableHead className="cursor-pointer" onClick={() => toggleSort("visited_stripe")}>
-                    Visited Stripe{sortIndicator("visited_stripe")}
+                    Stripe{sortIndicator("visited_stripe")}
                   </TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                       {busy ? "Loading…" : "No users"}
                     </TableCell>
                   </TableRow>
-                ) : filtered.map((u) => (
-                  <TableRow key={u.id}>
-                    <TableCell className="font-medium">{u.email ?? "—"}</TableCell>
-                    <TableCell>{u.full_name ?? "—"}</TableCell>
-                    <TableCell><Badge variant="outline">{u.provider ?? "email"}</Badge></TableCell>
-                    <TableCell>{fmt(u.created_at)}</TableCell>
-                    <TableCell>{fmt(u.last_sign_in_at)}</TableCell>
-                    <TableCell>{fmt(u.last_product_activity_at)}</TableCell>
-                    <TableCell>
-                      <Badge variant={u.has_records ? "default" : "outline"}>
-                        {u.has_records ? "Yes" : "No"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={u.visited_stripe ? "default" : "outline"}>
-                        {u.visited_stripe ? "Yes" : "No"}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                ) : filtered.map((u) => {
+                  const status = (u.lifecycle_status ?? "active") as LifecycleStatus;
+                  const actions = allowedActions(status);
+                  return (
+                    <TableRow key={u.id}>
+                      <TableCell className="font-medium">{u.email ?? "—"}</TableCell>
+                      <TableCell>{u.full_name ?? "—"}</TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <Badge variant={statusBadgeVariant(status)}>{statusLabel(status)}</Badge>
+                          {u.planned_deletion_date && status !== "active" && status !== "deleted" && (
+                            <div className="text-xs text-muted-foreground">
+                              Deletion: {new Date(u.planned_deletion_date).toLocaleDateString()}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>{fmt(u.created_at)}</TableCell>
+                      <TableCell>{fmt(u.last_sign_in_at)}</TableCell>
+                      <TableCell>{fmt(u.last_product_activity_at)}</TableCell>
+                      <TableCell>
+                        <Badge variant={u.has_records ? "default" : "outline"}>
+                          {u.has_records ? "Yes" : "No"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={u.visited_stripe ? "default" : "outline"}>
+                          {u.visited_stripe ? "Yes" : "No"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {actions.length === 0 ? (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        ) : (
+                          <Select
+                            value=""
+                            onValueChange={(v) => {
+                              setDialogUser(u);
+                              setDialogAction(v as LifecycleAction);
+                              setDialogConfirm("");
+                            }}
+                          >
+                            <SelectTrigger className="h-8 w-[170px] ml-auto">
+                              <SelectValue placeholder="Action…" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {actions.map((a) => (
+                                <SelectItem key={a} value={a}>{ACTION_LABEL[a]}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={!!dialogUser && !!dialogAction} onOpenChange={(o) => {
+        if (!o) { setDialogUser(null); setDialogAction(null); setDialogConfirm(""); }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{dialogAction ? ACTION_LABEL[dialogAction] : ""}</DialogTitle>
+            <DialogDescription>
+              {dialogUser?.email} · {dialogUser ? statusLabel((dialogUser.lifecycle_status ?? "active") as LifecycleStatus) : ""}
+            </DialogDescription>
+          </DialogHeader>
+
+          {dialogAction === "deactivate" && (
+            <p className="text-sm text-muted-foreground">
+              The user will receive a warning email and their account will be permanently deleted in 7 days
+              unless they sign in. Signing in during that window cancels the deletion automatically.
+            </p>
+          )}
+          {dialogAction === "cancel_deactivation" && (
+            <p className="text-sm text-muted-foreground">Restore this user to active status.</p>
+          )}
+          {dialogAction === "resend_email" && (
+            <p className="text-sm text-muted-foreground">Resend the deactivation warning email to this user.</p>
+          )}
+          {dialogAction === "cancel_deletion" && (
+            <p className="text-sm text-muted-foreground">
+              This user's grace period expired. Cancelling deletion restores their account to active.
+            </p>
+          )}
+          {dialogAction === "delete_permanently" && (
+            <div className="space-y-3">
+              <p className="text-sm text-destructive">
+                This permanently deletes the auth account and all owned records. This action cannot be undone.
+              </p>
+              <Input
+                placeholder='Type "DELETE" to confirm'
+                value={dialogConfirm}
+                onChange={(e) => setDialogConfirm(e.target.value)}
+              />
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setDialogUser(null); setDialogAction(null); }}>
+              Cancel
+            </Button>
+            <Button
+              variant={dialogAction === "delete_permanently" ? "destructive" : "default"}
+              disabled={dialogBusy || (dialogAction === "delete_permanently" && dialogConfirm !== "DELETE")}
+              onClick={runAction}
+            >
+              {dialogBusy && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
