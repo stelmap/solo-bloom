@@ -69,9 +69,12 @@ Deno.serve(async (req) => {
     const { data: settings } = await admin.from("lifecycle_settings").select("deletion_grace_days").maybeSingle();
     const graceDays = settings?.deletion_grace_days ?? 7;
 
-    // Detect language from profile
+    // Detect language from profile — send warning/deletion emails in the user's
+    // chosen SoloBizz language so notifications match their in-app preference.
     const { data: profile } = await admin.from("profiles").select("language").eq("user_id", targetUserId).maybeSingle();
-    const language = (profile?.language === "uk" ? "uk" : "en");
+    const SUPPORTED_LANGS = ["en", "uk", "ru", "pl", "fr"] as const;
+    const rawLang = String(profile?.language ?? "").toLowerCase().slice(0, 2);
+    const language = (SUPPORTED_LANGS as readonly string[]).includes(rawLang) ? rawLang : "en";
 
     const audit = async (a: string, extra: Record<string, unknown> = {}, newStatus?: string) => {
       await admin.from("user_lifecycle_audit").insert({

@@ -5,9 +5,11 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-type Lang = 'en' | 'uk'
+type Lang = 'en' | 'uk' | 'ru' | 'pl' | 'fr'
+const SUPPORTED: Lang[] = ['en', 'uk', 'ru', 'pl', 'fr']
 function normalizeLang(v: unknown): Lang {
-  return String(v || '').toLowerCase().slice(0, 2) === 'uk' ? 'uk' : 'en'
+  const s = String(v || '').toLowerCase().slice(0, 2) as Lang
+  return SUPPORTED.includes(s) ? s : 'en'
 }
 
 const STRINGS: Record<Lang, {
@@ -39,6 +41,45 @@ const STRINGS: Record<Lang, {
     cta: 'Увійти до SoloBizz',
     p4: 'Якщо ви більше не плануєте користуватися SoloBizz, нічого робити не потрібно.',
     sign: 'З повагою,\nКоманда SoloBizz',
+  },
+  ru: {
+    htmlLang: 'ru',
+    preview: 'Ваш аккаунт SoloBizz запланирован к удалению',
+    subject: 'Ваш аккаунт SoloBizz запланирован к удалению',
+    heading: 'Ваш аккаунт запланирован к удалению',
+    greeting: 'Здравствуйте!',
+    p1: 'Мы заметили, что в последнее время вы не пользуетесь своим аккаунтом SoloBizz.',
+    p2: 'Ваш аккаунт будет окончательно удалён через 7 дней, если вы не войдёте в систему.',
+    p3: 'Чтобы сохранить аккаунт, достаточно войти в SoloBizz в течение ближайших 7 дней — процесс удаления будет автоматически отменён.',
+    cta: 'Войти в SoloBizz',
+    p4: 'Если вы больше не планируете пользоваться SoloBizz, ничего делать не нужно.',
+    sign: 'С уважением,\nКоманда SoloBizz',
+  },
+  pl: {
+    htmlLang: 'pl',
+    preview: 'Twoje konto SoloBizz zostało zaplanowane do usunięcia',
+    subject: 'Twoje konto SoloBizz zostało zaplanowane do usunięcia',
+    heading: 'Twoje konto zostało zaplanowane do usunięcia',
+    greeting: 'Cześć,',
+    p1: 'Zauważyliśmy, że ostatnio nie korzystasz ze swojego konta SoloBizz.',
+    p2: 'Twoje konto zostanie trwale usunięte za 7 dni, jeśli się nie zalogujesz.',
+    p3: 'Aby zachować konto, wystarczy zalogować się do SoloBizz w ciągu najbliższych 7 dni — proces usuwania zostanie automatycznie anulowany.',
+    cta: 'Zaloguj się do SoloBizz',
+    p4: 'Jeśli nie planujesz już korzystać z SoloBizz, nie musisz nic robić.',
+    sign: 'Dziękujemy,\nZespół SoloBizz',
+  },
+  fr: {
+    htmlLang: 'fr',
+    preview: 'Votre compte SoloBizz est programmé pour suppression',
+    subject: 'Votre compte SoloBizz est programmé pour suppression',
+    heading: 'Votre compte est programmé pour suppression',
+    greeting: 'Bonjour,',
+    p1: "Nous avons remarqué que vous n'avez pas utilisé votre compte SoloBizz récemment.",
+    p2: 'Votre compte sera définitivement supprimé dans 7 jours si vous ne vous connectez pas.',
+    p3: 'Pour conserver votre compte, il suffit de vous connecter à SoloBizz au cours des 7 prochains jours — la suppression sera automatiquement annulée.',
+    cta: 'Se connecter à SoloBizz',
+    p4: "Si vous ne souhaitez plus utiliser SoloBizz, aucune action n'est nécessaire.",
+    sign: 'Merci,\nL’équipe SoloBizz',
   },
 }
 

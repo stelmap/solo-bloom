@@ -5,9 +5,11 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-type Lang = 'en' | 'uk'
+type Lang = 'en' | 'uk' | 'ru' | 'pl' | 'fr'
+const SUPPORTED: Lang[] = ['en', 'uk', 'ru', 'pl', 'fr']
 function normalizeLang(v: unknown): Lang {
-  return String(v || '').toLowerCase().slice(0, 2) === 'uk' ? 'uk' : 'en'
+  const s = String(v || '').toLowerCase().slice(0, 2) as Lang
+  return SUPPORTED.includes(s) ? s : 'en'
 }
 
 const STRINGS: Record<Lang, {
@@ -33,6 +35,36 @@ const STRINGS: Record<Lang, {
     p1: 'Оскільки ви не увійшли до SoloBizz протягом 7 днів після отримання попередження, ваш акаунт було остаточно видалено.',
     p2: 'Якщо в майбутньому ви захочете знову користуватися SoloBizz, ви можете створити новий акаунт у будь-який час.',
     sign: 'Дякуємо, що користувалися SoloBizz.\nКоманда SoloBizz',
+  },
+  ru: {
+    htmlLang: 'ru',
+    preview: 'Ваш аккаунт SoloBizz был удалён',
+    subject: 'Ваш аккаунт SoloBizz был удалён',
+    heading: 'Ваш аккаунт был удалён',
+    greeting: 'Здравствуйте!',
+    p1: 'Поскольку в течение 7 дней после уведомления вы не вошли в SoloBizz, ваш аккаунт был окончательно удалён.',
+    p2: 'Если в будущем вы захотите снова пользоваться SoloBizz, вы можете создать новый аккаунт в любое время.',
+    sign: 'Спасибо, что пользовались SoloBizz.\nКоманда SoloBizz',
+  },
+  pl: {
+    htmlLang: 'pl',
+    preview: 'Twoje konto SoloBizz zostało usunięte',
+    subject: 'Twoje konto SoloBizz zostało usunięte',
+    heading: 'Twoje konto zostało usunięte',
+    greeting: 'Cześć,',
+    p1: 'Ponieważ nie zalogowałeś się do SoloBizz w ciągu 7 dni od powiadomienia, Twoje konto zostało trwale usunięte.',
+    p2: 'Jeśli w przyszłości zechcesz ponownie korzystać z SoloBizz, możesz w każdej chwili utworzyć nowe konto.',
+    sign: 'Dziękujemy za korzystanie z SoloBizz.\nZespół SoloBizz',
+  },
+  fr: {
+    htmlLang: 'fr',
+    preview: 'Votre compte SoloBizz a été supprimé',
+    subject: 'Votre compte SoloBizz a été supprimé',
+    heading: 'Votre compte a été supprimé',
+    greeting: 'Bonjour,',
+    p1: "Étant donné que vous ne vous êtes pas connecté à SoloBizz dans les 7 jours suivant l'avertissement, votre compte a été définitivement supprimé.",
+    p2: "Si vous souhaitez utiliser SoloBizz à nouveau, vous pouvez créer un nouveau compte à tout moment.",
+    sign: "Merci d'avoir utilisé SoloBizz.\nL’équipe SoloBizz",
   },
 }
 
