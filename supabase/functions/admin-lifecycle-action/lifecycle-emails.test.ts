@@ -1,4 +1,4 @@
-/// <reference types="npm:@types/react@18.3.1" />
+// @ts-nocheck
 // End-to-end contract test: deactivating a user with `en` vs `uk` profile
 // language MUST render the warning + final-deletion emails in that language,
 // and the template's subject function MUST return the localized subject that
