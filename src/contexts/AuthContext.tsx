@@ -159,6 +159,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         identifyUser(session.user.id);
       }
 
+      // Record login/activity → auto-reactivates a pending account.
+      if (event === "SIGNED_IN" && session?.user?.id) {
+        // Defer to next tick to avoid deadlocking the auth callback.
+        setTimeout(() => {
+          supabase.rpc("record_user_activity").then(() => {}, () => {});
+        }, 0);
+      }
+
       if (event === "PASSWORD_RECOVERY") {
         setIsRecovery(true);
       } else if (event === "SIGNED_OUT") {
@@ -173,11 +181,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       setLoading(false);
       // Analytics: identify on initial session restore
-      if (session?.user?.id) identifyUser(session.user.id);
+      if (session?.user?.id) {
+        identifyUser(session.user.id);
+        setTimeout(() => {
+          supabase.rpc("record_user_activity").then(() => {}, () => {});
+        }, 0);
+      }
     });
 
     return () => authSub.unsubscribe();
   }, []);
+
 
   // Check subscription when session changes — do NOT force; let the edge
   // function serve its cached value so navigation isn't blocked on Stripe.
