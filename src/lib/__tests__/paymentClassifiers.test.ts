@@ -76,11 +76,12 @@ describe("paymentClassifiers", () => {
       expect(isCompleted({ status: "scheduled" })).toBe(false);
     });
 
-    it("isCancelled covers cancelled and no-show", () => {
+    it("isCancelled covers only cancelled (not no-show)", () => {
       expect(isCancelled({ status: "cancelled" })).toBe(true);
-      expect(isCancelled({ status: "no-show" })).toBe(true);
+      expect(isCancelled({ status: "no-show" })).toBe(false);
       expect(isCancelled({ status: "completed" })).toBe(false);
     });
+
   });
 
   describe("paid + awaiting are mutually exclusive", () => {
