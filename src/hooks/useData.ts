@@ -3296,12 +3296,32 @@ export function useSaveIncomeConfirmation() {
         } as any);
       }
 
+      // Cancel any active "Expected payments" attached to the sessions we just
+      // linked — a manual payment supersedes the expected placeholder, so we
+      // mark them cancelled (never delete) with an audit reason. Only runs
+      // for confirmed income; draft/cancelled income leaves EPs untouched.
+      const linkedAptIds = allocRows.map((r: any) => r.appointment_id);
+      if (input.status === "confirmed" && linkedAptIds.length > 0) {
+        await (supabase as any)
+          .from("expected_payments")
+          .update({
+            status: "cancelled",
+            cancellation_reason: "manual_payment_recorded",
+            cancelled_at: new Date().toISOString(),
+            cancelled_by: user!.id,
+          })
+          .eq("user_id", user!.id)
+          .eq("status", "pending")
+          .in("appointment_id", linkedAptIds);
+      }
+
       // Recalc affected appointments
       const allAptIds = [
         ...previousAptIds,
         ...allocRows.map((r: any) => r.appointment_id),
       ];
       await recalcAppointments(allAptIds);
+
 
       return incomeId;
     },
