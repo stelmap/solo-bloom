@@ -110,19 +110,25 @@ export default function IncomePage() {
 
 
   const handleCreate = async () => {
-    if (!form.amount) return;
-    try {
-      await createIncome.mutateAsync({
-        ...form,
-        source: "manual",
-        client_id: form.client_id || null,
-      });
-      setForm({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash", client_id: "" });
-      setOpen(false);
-      toast({ title: t("toast.incomeAdded") });
-    } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    if (!form.amount) {
+      toast({ title: t("common.error"), description: t("common.amount") + " *", variant: "destructive" });
+      return;
     }
+    if (!form.client_id) {
+      toast({ title: t("income.clientRequired"), variant: "destructive" });
+      return;
+    }
+    const client = (clients as any[]).find((c) => c.id === form.client_id);
+    setLinkedPrefill({
+      clientId: form.client_id,
+      clientName: client?.name,
+      amount: form.amount,
+      date: form.date,
+      payment_method: form.payment_method,
+      comment: form.description || undefined,
+    });
+    setOpen(false);
+    setLinkedOpen(true);
   };
 
   const handleDelete = async () => {
