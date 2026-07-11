@@ -264,19 +264,34 @@ export function AppSidebar() {
                 <span className="flex-1 truncate">Users</span>
               </Link>
               {user?.email?.toLowerCase() === "o.gilevich@gmail.com" && (
-                <Link
-                  to="/admin/analytics"
-                  onClick={() => setMobileOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                    isExactActive("/admin/analytics")
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                  )}
-                >
-                  <BarChart3 className="h-4.5 w-4.5 shrink-0" />
-                  <span className="flex-1 truncate">Analytics</span>
-                </Link>
+                <>
+                  <Link
+                    to="/admin/analytics"
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                      isExactActive("/admin/analytics")
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                    )}
+                  >
+                    <BarChart3 className="h-4.5 w-4.5 shrink-0" />
+                    <span className="flex-1 truncate">Analytics</span>
+                  </Link>
+                  <Link
+                    to="/admin/tests"
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                      isExactActive("/admin/tests")
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                    )}
+                  >
+                    <ShieldCheck className="h-4.5 w-4.5 shrink-0" />
+                    <span className="flex-1 truncate">Automated tests</span>
+                  </Link>
+                </>
               )}
             </div>
           )}

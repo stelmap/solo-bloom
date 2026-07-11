@@ -80,6 +80,7 @@ const AdminEmailPreviewPage = lazyWithReload(() => import("./pages/AdminEmailPre
 const AdminUsersPage = lazyWithReload(() => import("./pages/AdminUsersPage"));
 const AdminDomainsPage = lazyWithReload(() => import("./pages/AdminDomainsPage"));
 const AdminAnalyticsPage = lazyWithReload(() => import("./pages/AdminAnalyticsPage"));
+const AdminTestsPage = lazyWithReload(() => import("./pages/AdminTestsPage"));
 const ServerUpdatePage = lazyWithReload(() => import("./pages/ServerUpdatePage"));
 const OAuthConsentPage = lazyWithReload(() => import("./pages/OAuthConsentPage"));
 
@@ -170,6 +171,7 @@ const App = () => {
                 <Route path="/admin/users" element={<ProtectedRoute><AdminUsersPage /></ProtectedRoute>} />
                 <Route path="/admin/domains" element={<ProtectedRoute><AdminDomainsPage /></ProtectedRoute>} />
                 <Route path="/admin/analytics" element={<ProtectedRoute><AdminAnalyticsPage /></ProtectedRoute>} />
+                <Route path="/admin/tests" element={<ProtectedRoute><AdminTestsPage /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
