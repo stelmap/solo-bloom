@@ -190,6 +190,18 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
       toast({ title: t("incomeConfirm.allocExceeds"), variant: "destructive" });
       return;
     }
+    // AC3: per-session cap — cannot allocate more than remaining debt
+    for (const [aptId, v] of Object.entries(allocs)) {
+      const apt = enrichedAppointments.find((a: any) => a.id === aptId);
+      if (apt && Number(v) > Number(apt._remaining) + 0.001) {
+        toast({
+          title: t("incomeConfirm.allocExceeds"),
+          description: `${cs}${Number(apt._remaining).toFixed(2)} max`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
     if (isUnlinked && !confirmUnlinked) {
       toast({ title: t("incomeConfirm.unlinkedWarning"), variant: "destructive" });
       setConfirmUnlinked(true);
