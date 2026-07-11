@@ -146,10 +146,14 @@ test.describe("Confirm payment — double-click regression", () => {
       return json([]);
     });
 
+    page.on("console", (m) => console.log("[browser]", m.type(), m.text()));
     await page.goto("/income?tab=pending&range=all");
     await page.waitForURL(/\/income/);
+    await page.waitForTimeout(2000);
+    console.log("URL after nav:", page.url());
+    await page.screenshot({ path: "/tmp/income-debug.png", fullPage: false });
 
-    const markPaid = page.getByRole("button", { name: /mark paid|позначити оплаченим|отметить оплаченным|oznacz jako opłacone|marquer comme payé/i }).first();
+    const markPaid = page.getByRole("button", { name: /mark paid/i }).first();
     await markPaid.waitFor({ state: "visible", timeout: 15000 });
     await markPaid.click();
 
