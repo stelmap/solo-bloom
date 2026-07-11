@@ -5,6 +5,32 @@ import { useAuth } from "@/contexts/AuthContext";
 import { calculateCapacity } from "@/lib/capacity";
 import { track } from "@/lib/analytics";
 import { getDemoActionMessage, useDemoMode, useDemoWriteGuard, useFreeStarterMode, FREE_STARTER_CLIENT_LIMIT } from "@/hooks/useDemoWorkspace";
+import { claimPaymentSlot, incomeDedupeKey } from "@/lib/incomeDedupe";
+
+/**
+ * Module-level set of in-flight income dedupe keys.
+ *
+ * Guards the "Confirm payment" / "Mark as paid" click paths against
+ * double-submits (double-click, network retry storm) BEFORE the round-trip
+ * to the DB unique index `income_dedup_uniq`. Keys are released in a
+ * `finally` block so a real failure doesn't lock the slot.
+ */
+const inFlightIncomeKeys = new Set<string>();
+
+async function withIncomeDedupeGuard<T>(
+  candidate: Parameters<typeof incomeDedupeKey>[0],
+  fn: () => Promise<T>,
+): Promise<T> {
+  const key = incomeDedupeKey(candidate);
+  if (key !== null && !claimPaymentSlot(inFlightIncomeKeys, candidate)) {
+    throw new Error("Duplicate payment ignored — an identical confirmation is already being submitted.");
+  }
+  try {
+    return await fn();
+  } finally {
+    if (key !== null) inFlightIncomeKeys.delete(key);
+  }
+}
 
 export const FREE_STARTER_LIMIT_ERROR = "FREE_STARTER_CLIENT_LIMIT_REACHED";
 export const PLAN_CLIENT_LIMIT_ERROR = "PLAN_CLIENT_LIMIT_REACHED";
