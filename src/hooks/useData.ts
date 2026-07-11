@@ -183,8 +183,9 @@ export function useArchiveClient() {
   const { user } = useAuth();
   const assertCanWrite = useDemoWriteGuard();
   return useMutation({
-    mutationFn: async ({ id, reason, comment, cancelFutureSessions }: {
-      id: string; reason?: string; comment?: string; cancelFutureSessions?: boolean;
+    mutationFn: async ({ id, reason, comment, futureSessionsAction }: {
+      id: string; reason?: string; comment?: string;
+      futureSessionsAction?: "keep" | "cancel" | "delete";
     }) => {
       assertCanWrite();
       const nowIso = new Date().toISOString();
@@ -201,10 +202,17 @@ export function useArchiveClient() {
         .eq("id", id);
       if (error) throw error;
 
-      if (cancelFutureSessions) {
+      if (futureSessionsAction === "cancel") {
         await supabase
           .from("appointments")
           .update({ status: "cancelled", cancellation_reason: "client_archived" } as any)
+          .eq("client_id", id)
+          .gte("scheduled_at", nowIso)
+          .in("status", ["scheduled", "confirmed"]);
+      } else if (futureSessionsAction === "delete") {
+        await supabase
+          .from("appointments")
+          .delete()
           .eq("client_id", id)
           .gte("scheduled_at", nowIso)
           .in("status", ["scheduled", "confirmed"]);
