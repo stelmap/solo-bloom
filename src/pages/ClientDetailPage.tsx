@@ -236,20 +236,16 @@ export default function ClientDetailPage() {
   const paidSessions = (appointments as any[]).filter(isEffectivelyPaid).length;
   const awaitingSessions = (appointments as any[]).filter(isEffectivelyAwaiting).length;
 
+  // Prepaid count = strict count of sessions with payment_status='paid_in_advance'
+  // (matches DB: SELECT count(*) WHERE payment_status='paid_in_advance').
+  // Amount = remaining unallocated prepayment pool from balance computation.
   const { prepaidSessions, prepaidAmount } = useMemo(() => {
-    const balance = balanceComputation.prepaid;
-    if (balance <= 0) return { prepaidSessions: 0, prepaidAmount: 0 };
-    const sorted = [...balanceComputation.payableCompleted].sort(
-      (a: any, b: any) =>
-        new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime(),
-    );
-    const refPrice =
-      Number(sorted[0]?.price) ||
-      Number((client as any)?.base_price) ||
-      0;
-    const count = refPrice > 0 ? Math.floor(balance / refPrice) : 0;
-    return { prepaidSessions: count, prepaidAmount: balance };
-  }, [balanceComputation, client]);
+    const count = (appointments as any[]).filter(
+      (a) => a.payment_status === "paid_in_advance",
+    ).length;
+    return { prepaidSessions: count, prepaidAmount: balanceComputation.prepaid };
+  }, [appointments, balanceComputation]);
+
 
 
   // Apply selected statistic filter to the full appointment list
