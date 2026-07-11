@@ -22,6 +22,9 @@ import {
   ArrowLeft, Phone, Mail, Send, Calendar, Pencil, Trash2, Plus, Paperclip, FileText, Image, Download, X, Bell, DollarSign, History, CreditCard, ClipboardList, ShieldCheck, Archive, ArchiveRestore,
 } from "lucide-react";
 import { ArchiveClientDialog } from "@/components/ArchiveClientDialog";
+import { ClientAuditDialog } from "@/components/ClientAuditDialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { ClipboardCheck } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
