@@ -33,7 +33,7 @@ interface Props {
 
 type FilterKey = "unpaid" | "partial" | "future" | "all" | "cancelled_billable";
 
-export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientName, use12h = false, existingIncome }: Props) {
+export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientName, use12h = false, existingIncome, prefill }: Props) {
   const { t } = useLanguage();
   const dateLocale = useDateLocale();
   const { symbol: cs } = useCurrency();
