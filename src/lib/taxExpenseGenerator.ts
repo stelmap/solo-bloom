@@ -67,6 +67,12 @@ export function generateTaxExpensePeriods(
     let periodStart = startOfPeriodFn(startDate);
     const lastPeriodStart = startOfPeriodFn(today);
     while (periodStart <= lastPeriodStart) {
+      const fixedAmount = Number(tax.fixed_amount) || 0;
+      // Skip zero-amount placeholders — they only pollute the expenses list.
+      if (fixedAmount <= 0) {
+        periodStart = stepFn(periodStart, 1);
+        continue;
+      }
       // Never date entries before the configured start date.
       const entryDate = periodStart < startDate ? startDate : periodStart;
       const label = isQuarterly
@@ -76,7 +82,7 @@ export function generateTaxExpensePeriods(
         tax_setting_id: tax.id,
         tax_name: tax.tax_name,
         category: "Tax",
-        amount: Number(tax.fixed_amount) || 0,
+        amount: fixedAmount,
         date: format(entryDate, "yyyy-MM-dd"),
         description: `${tax.tax_name} — ${label}`,
         is_recurring: true,
