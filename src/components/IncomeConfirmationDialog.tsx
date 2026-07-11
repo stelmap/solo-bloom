@@ -136,7 +136,7 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
         default:
           return true;
       }
-    }).sort((a: any, b: any) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime());
+    }).sort((a: any, b: any) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
   }, [enrichedAppointments, filter]);
 
   const allocSum = useMemo(() => Object.values(allocs).reduce((s, v) => s + (Number(v) || 0), 0), [allocs]);
