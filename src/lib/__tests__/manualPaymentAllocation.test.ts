@@ -56,12 +56,10 @@ describe("manualPaymentAllocation", () => {
     it("AC3: rejects allocation above remaining debt", () => {
       const sessions = [s("x", 100, 20, "2026-01-01")]; // debt = 80
       const r = validateAllocations({ amount: 500, allocations: { x: 100 }, sessions });
-      expect(r.ok).toBe(false);
-      if (!r.ok) {
-        expect(r.code).toBe("over_session");
-        expect(r.sessionId).toBe("x");
-        expect(r.max).toBe(80);
-      }
+      if (r.ok) throw new Error("expected validation to fail");
+      expect(r.code).toBe("over_session");
+      expect(r.sessionId).toBe("x");
+      expect(r.max).toBe(80);
     });
 
     it("AC7: sum below amount produces prepaid remainder", () => {
