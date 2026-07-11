@@ -92,11 +92,11 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
         setAllocs(map);
       })();
     } else {
-      setAmount("");
-      setDate(today);
-      setMethod("");
+      setAmount(prefill?.amount != null ? String(prefill.amount) : "");
+      setDate(prefill?.date ?? today);
+      setMethod(prefill?.payment_method ?? "");
       setStatus("confirmed");
-      setComment("");
+      setComment(prefill?.comment ?? "");
       setAllocs({});
     }
     setConfirmUnlinked(false);
