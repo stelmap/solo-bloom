@@ -232,6 +232,7 @@ export default {
   "services.deleteDesc": "Spowoduje to trwałe usunięcie tej usługi. Istniejące wizyty korzystające z tej usługi nie zostaną zmienione.",
   "income.title": "Przychód",
   "income.subtitle": "Śledź swoje zarobki",
+  "income.clientRequired": "Klient jest wymagany",
   "income.addManual": "Dodaj ręczny wpis",
   "income.addIncome": "Dodaj przychód",
   "income.confirmedIncome": "Potwierdzony przychód",

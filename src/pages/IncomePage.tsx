@@ -12,6 +12,7 @@ import { useActivePaymentMethods, localizedMethodName } from "@/hooks/usePayment
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
+import { IncomeConfirmationDialog } from "@/components/IncomeConfirmationDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useMemo, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -82,6 +83,8 @@ export default function IncomePage() {
   const [payMethod, setPayMethod] = useState("cash");
   const [payDate, setPayDate] = useState(new Date().toISOString().split("T")[0]);
   const [form, setForm] = useState({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash", client_id: "" });
+  const [linkedOpen, setLinkedOpen] = useState(false);
+  const [linkedPrefill, setLinkedPrefill] = useState<{ clientId: string; clientName?: string; amount: number; date: string; payment_method: string; comment?: string } | null>(null);
 
   const filtered = income; // server-side filtered
   const total = periodTotal;
@@ -107,19 +110,25 @@ export default function IncomePage() {
 
 
   const handleCreate = async () => {
-    if (!form.amount) return;
-    try {
-      await createIncome.mutateAsync({
-        ...form,
-        source: "manual",
-        client_id: form.client_id || null,
-      });
-      setForm({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash", client_id: "" });
-      setOpen(false);
-      toast({ title: t("toast.incomeAdded") });
-    } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    if (!form.amount) {
+      toast({ title: t("common.error"), description: t("common.amount") + " *", variant: "destructive" });
+      return;
     }
+    if (!form.client_id) {
+      toast({ title: t("income.clientRequired"), variant: "destructive" });
+      return;
+    }
+    const client = (clients as any[]).find((c) => c.id === form.client_id);
+    setLinkedPrefill({
+      clientId: form.client_id,
+      clientName: client?.name,
+      amount: form.amount,
+      date: form.date,
+      payment_method: form.payment_method,
+      comment: form.description || undefined,
+    });
+    setOpen(false);
+    setLinkedOpen(true);
   };
 
   const handleDelete = async () => {
@@ -189,14 +198,14 @@ export default function IncomePage() {
                 <div className="space-y-2"><Label>{t("common.date")}</Label><DatePicker date={form.date} onDateChange={(d) => setForm(f => ({ ...f, date: d }))} /></div>
                 <div className="space-y-2"><Label>{t("common.description")}</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
                 <div className="space-y-2">
-                  <Label>{t("income.paidBy")}</Label>
-                  <Select value={form.client_id} onValueChange={v => setForm(f => ({ ...f, client_id: v === "__none__" ? "" : v }))}>
+                  <Label>{t("income.paidBy")} *</Label>
+                  <Select value={form.client_id} onValueChange={v => setForm(f => ({ ...f, client_id: v }))}>
                     <SelectTrigger><SelectValue placeholder={t("income.selectClient")} /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__none__">{t("income.noClient")}</SelectItem>
                       {(clients as any[]).filter((c: any) => c.status !== "archived").map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                  {!form.client_id && <p className="text-xs text-muted-foreground">{t("income.clientRequired")}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label>{t("calendar.paymentMethod")}</Label>
@@ -205,7 +214,7 @@ export default function IncomePage() {
                     <SelectContent>{PAYMENT_METHODS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <Button onClick={handleCreate} className="w-full" disabled={createIncome.isPending}>{createIncome.isPending ? t("common.adding") : t("income.addIncome")}</Button>
+                <Button onClick={handleCreate} className="w-full" disabled={!form.amount || !form.client_id}>{t("income.addIncome")}</Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -399,6 +408,27 @@ export default function IncomePage() {
 
       <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={handleDelete}
         title={t("income.deleteTitle")} description={t("income.deleteDesc")} loading={deleteIncome.isPending} />
+
+      {linkedPrefill && (
+        <IncomeConfirmationDialog
+          open={linkedOpen}
+          onOpenChange={(o) => {
+            setLinkedOpen(o);
+            if (!o) {
+              setLinkedPrefill(null);
+              setForm({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash", client_id: "" });
+            }
+          }}
+          clientId={linkedPrefill.clientId}
+          clientName={linkedPrefill.clientName}
+          prefill={{
+            amount: linkedPrefill.amount,
+            date: linkedPrefill.date,
+            payment_method: linkedPrefill.payment_method,
+            comment: linkedPrefill.comment,
+          }}
+        />
+      )}
     </AppLayout>
   );
 }

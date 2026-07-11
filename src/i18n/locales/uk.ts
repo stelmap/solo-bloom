@@ -230,6 +230,7 @@ export default {
   "services.deleteDesc": "Це назавжди видалить цю послугу. Існуючі записи з цією послугою не постраждають.",
   "income.title": "Дохід",
   "income.subtitle": "Відстежуйте свої заробітки",
+  "income.clientRequired": "Клієнт обов'язковий",
   "income.addManual": "Додати вручну",
   "income.addIncome": "Додати дохід",
   "income.confirmedIncome": "Підтверджений дохід",

@@ -230,6 +230,7 @@ export default {
   "services.deleteDesc": "This will permanently delete this service. Existing appointments using this service won't be affected.",
   "income.title": "Income",
   "income.subtitle": "Track your earnings",
+  "income.clientRequired": "Client is required",
   "income.addManual": "Add Manual Entry",
   "income.addIncome": "Add Income",
   "income.confirmedIncome": "Confirmed Income",

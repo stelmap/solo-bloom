@@ -28,11 +28,12 @@ interface Props {
   clientName?: string;
   use12h?: boolean;
   existingIncome?: any | null;
+  prefill?: { amount?: number; date?: string; payment_method?: string; comment?: string } | null;
 }
 
 type FilterKey = "unpaid" | "partial" | "future" | "all" | "cancelled_billable";
 
-export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientName, use12h = false, existingIncome }: Props) {
+export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientName, use12h = false, existingIncome, prefill }: Props) {
   const { t } = useLanguage();
   const dateLocale = useDateLocale();
   const { symbol: cs } = useCurrency();
@@ -91,11 +92,11 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
         setAllocs(map);
       })();
     } else {
-      setAmount("");
-      setDate(today);
-      setMethod("");
+      setAmount(prefill?.amount != null ? String(prefill.amount) : "");
+      setDate(prefill?.date ?? today);
+      setMethod(prefill?.payment_method ?? "");
       setStatus("confirmed");
-      setComment("");
+      setComment(prefill?.comment ?? "");
       setAllocs({});
     }
     setConfirmUnlinked(false);

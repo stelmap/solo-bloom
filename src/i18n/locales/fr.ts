@@ -232,6 +232,7 @@ export default {
   "services.deleteDesc": "Cela supprimera définitivement ce service. Les rendez-vous existants ne seront pas affectés.",
   "income.title": "Revenus",
   "income.subtitle": "Suivez vos gains",
+  "income.clientRequired": "Le client est requis",
   "income.addManual": "Ajout manuel",
   "income.addIncome": "Ajouter un revenu",
   "income.confirmedIncome": "Revenus confirmés",
