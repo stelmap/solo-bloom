@@ -47,6 +47,30 @@ const CASES = [
     finalSubject: "Ваш акаунт SoloBizz було видалено",
     finalDistinctive: ["було остаточно видалено", "створити новий акаунт"],
   },
+  {
+    profileLanguage: "ru",
+    expected: "ru",
+    warningSubject: "Ваш аккаунт SoloBizz запланирован к удалению",
+    warningDistinctive: ["запланирован к удалению", "Войти в SoloBizz"],
+    finalSubject: "Ваш аккаунт SoloBizz был удалён",
+    finalDistinctive: ["был окончательно удалён", "создать новый аккаунт"],
+  },
+  {
+    profileLanguage: "pl",
+    expected: "pl",
+    warningSubject: "Twoje konto SoloBizz zostało zaplanowane do usunięcia",
+    warningDistinctive: ["zaplanowane do usunięcia", "Zaloguj się do SoloBizz"],
+    finalSubject: "Twoje konto SoloBizz zostało usunięte",
+    finalDistinctive: ["trwale usunięte", "utworzyć nowe konto"],
+  },
+  {
+    profileLanguage: "fr",
+    expected: "fr",
+    warningSubject: "Votre compte SoloBizz est programmé pour suppression",
+    warningDistinctive: ["programmé pour suppression", "Se connecter à SoloBizz"],
+    finalSubject: "Votre compte SoloBizz a été supprimé",
+    finalDistinctive: ["définitivement supprimé", "créer un nouveau compte"],
+  },
 ] as const;
 
 for (const c of CASES) {
@@ -91,11 +115,44 @@ for (const c of CASES) {
   });
 }
 
+
 Deno.test("lifecycle emails: unsupported profile.language falls back to English (admin-lifecycle-action contract)", () => {
-  for (const bad of [null, undefined, "", "xx", "de", "zh"]) {
-    assertEquals(adminLifecycleNormalize(bad), "en");
+  for (const bad of [null, undefined, "", "xx", "de", "zh", "es", "it", "  ", 123, {}, []]) {
+    assertEquals(adminLifecycleNormalize(bad), "en", `bad input ${JSON.stringify(bad)} should fall back to en`);
     assertEquals(WARNING_STRINGS[normalizeLang(bad)].subject, "Your SoloBizz account is scheduled for deletion");
     assertEquals(FINAL_STRINGS[normalizeLang(bad)].subject, "Your SoloBizz account has been deleted");
+  }
+});
+
+Deno.test("lifecycle emails: locale/region variants normalize to their base language", () => {
+  // Users' profile.language may historically contain BCP-47 tags or casing variants.
+  // We only take the first 2 chars, lowercased — this test locks that contract.
+  const variants: Array<[unknown, string]> = [
+    ["EN", "en"], ["en-US", "en"], ["en_GB", "en"],
+    ["UK", "uk"], ["uk-UA", "uk"], ["uk_ua", "uk"],
+    ["RU", "ru"], ["ru-RU", "ru"],
+    ["PL", "pl"], ["pl-PL", "pl"],
+    ["FR", "fr"], ["fr-CA", "fr"], ["Fr", "fr"],
+  ];
+  for (const [input, expected] of variants) {
+    assertEquals(adminLifecycleNormalize(input), expected, `${JSON.stringify(input)} -> ${expected}`);
+    // And the resolved template must be a valid, non-empty one.
+    const w = WARNING_STRINGS[normalizeLang(input)];
+    const f = FINAL_STRINGS[normalizeLang(input)];
+    assert(w && w.subject.length > 0 && w.heading.length > 0);
+    assert(f && f.subject.length > 0 && f.heading.length > 0);
+  }
+});
+
+Deno.test("lifecycle emails: system always renders a valid template for ANY input", () => {
+  // Guarantee-of-render contract: normalizeLang must never produce a key that
+  // isn't in the strings tables, so admin-lifecycle-action can never crash on
+  // an unexpected profile.language value.
+  for (const input of [null, undefined, "", "en", "uk", "ru", "pl", "fr", "de", "xx-YY", 42, {}, true, false]) {
+    const key = normalizeLang(input);
+    assert(SUPPORTED_LANGS.includes(key as typeof SUPPORTED_LANGS[number]), `resolved key ${key} not supported`);
+    assert(WARNING_STRINGS[key], `WARNING_STRINGS missing for ${key}`);
+    assert(FINAL_STRINGS[key], `FINAL_STRINGS missing for ${key}`);
   }
 });
 
