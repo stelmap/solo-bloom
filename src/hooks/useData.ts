@@ -1251,14 +1251,29 @@ export function useMarkExpectedPaymentPaid() {
           is_demo: isDemoMode,
         },
         async () => {
+          // Skip insert if an equivalent confirmed income already exists —
+          // avoids tripping income_dedup_uniq when the appointment was already
+          // reconciled (seed data, prior confirmation, or a stale UI state).
+          const { data: existing } = await supabase
+            .from("income")
+            .select("id")
+            .eq("user_id", user!.id)
+            .eq("appointment_id", appointmentId)
+            .eq("amount", amount)
+            .eq("date", payDate)
+            .eq("status", "confirmed")
+            .maybeSingle();
+          if (existing?.id) return;
+
           const { error } = await supabase.from("income").insert({
             user_id: user!.id, appointment_id: appointmentId,
             amount, date: payDate, session_date: sessionDate, source: "appointment",
             payment_method: paymentMethod,
             ...(isDemoMode ? { is_demo: true } : {}),
           } as any);
-          if (error) throw error;
+          if (error && (error as any).code !== "23505") throw error;
         },
+
       );
     },
     onSuccess: (_d, vars) => { track("payment_marked_paid", { payment_method: vars.paymentMethod }); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
