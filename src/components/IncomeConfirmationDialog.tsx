@@ -28,6 +28,7 @@ interface Props {
   clientName?: string;
   use12h?: boolean;
   existingIncome?: any | null;
+  prefill?: { amount?: number; date?: string; payment_method?: string; comment?: string } | null;
 }
 
 type FilterKey = "unpaid" | "partial" | "future" | "all" | "cancelled_billable";
