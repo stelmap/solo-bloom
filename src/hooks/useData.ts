@@ -1210,13 +1210,25 @@ export function useMarkExpectedPaymentPaid() {
 
       await supabase.from("appointments").update({ payment_status: "paid_now" } as any).eq("id", appointmentId);
 
-      const { error: incErr } = await supabase.from("income").insert({
-        user_id: user!.id, appointment_id: appointmentId,
-        amount, date: payDate, session_date: sessionDate, source: "appointment",
-        payment_method: paymentMethod,
-        ...(isDemoMode ? { is_demo: true } : {}),
-      } as any);
-      if (incErr) throw incErr;
+      await withIncomeDedupeGuard(
+        {
+          user_id: user!.id,
+          appointment_id: appointmentId,
+          amount,
+          date: payDate,
+          status: "confirmed",
+          is_demo: isDemoMode,
+        },
+        async () => {
+          const { error } = await supabase.from("income").insert({
+            user_id: user!.id, appointment_id: appointmentId,
+            amount, date: payDate, session_date: sessionDate, source: "appointment",
+            payment_method: paymentMethod,
+            ...(isDemoMode ? { is_demo: true } : {}),
+          } as any);
+          if (error) throw error;
+        },
+      );
     },
     onSuccess: (_d, vars) => { track("payment_marked_paid", { payment_method: vars.paymentMethod }); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
