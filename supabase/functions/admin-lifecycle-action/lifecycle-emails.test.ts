@@ -115,13 +115,6 @@ for (const c of CASES) {
   });
 }
 
-Deno.test("lifecycle emails: unsupported profile.language falls back to English (admin-lifecycle-action contract)", () => {
-  for (const bad of [null, undefined, "", "xx", "de", "zh"]) {
-    assertEquals(adminLifecycleNormalize(bad), "en");
-    assertEquals(WARNING_STRINGS[normalizeLang(bad)].subject, "Your SoloBizz account is scheduled for deletion");
-    assertEquals(FINAL_STRINGS[normalizeLang(bad)].subject, "Your SoloBizz account has been deleted");
-  }
-});
 
 Deno.test("lifecycle emails: unsupported profile.language falls back to English (admin-lifecycle-action contract)", () => {
   for (const bad of [null, undefined, "", "xx", "de", "zh", "es", "it", "  ", 123, {}, []]) {
