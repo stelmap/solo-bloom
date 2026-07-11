@@ -5,6 +5,32 @@ import { useAuth } from "@/contexts/AuthContext";
 import { calculateCapacity } from "@/lib/capacity";
 import { track } from "@/lib/analytics";
 import { getDemoActionMessage, useDemoMode, useDemoWriteGuard, useFreeStarterMode, FREE_STARTER_CLIENT_LIMIT } from "@/hooks/useDemoWorkspace";
+import { claimPaymentSlot, incomeDedupeKey } from "@/lib/incomeDedupe";
+
+/**
+ * Module-level set of in-flight income dedupe keys.
+ *
+ * Guards the "Confirm payment" / "Mark as paid" click paths against
+ * double-submits (double-click, network retry storm) BEFORE the round-trip
+ * to the DB unique index `income_dedup_uniq`. Keys are released in a
+ * `finally` block so a real failure doesn't lock the slot.
+ */
+const inFlightIncomeKeys = new Set<string>();
+
+async function withIncomeDedupeGuard<T>(
+  candidate: Parameters<typeof incomeDedupeKey>[0],
+  fn: () => Promise<T>,
+): Promise<T> {
+  const key = incomeDedupeKey(candidate);
+  if (key !== null && !claimPaymentSlot(inFlightIncomeKeys, candidate)) {
+    throw new Error("Duplicate payment ignored — an identical confirmation is already being submitted.");
+  }
+  try {
+    return await fn();
+  } finally {
+    if (key !== null) inFlightIncomeKeys.delete(key);
+  }
+}
 
 export const FREE_STARTER_LIMIT_ERROR = "FREE_STARTER_CLIENT_LIMIT_REACHED";
 export const PLAN_CLIENT_LIMIT_ERROR = "PLAN_CLIENT_LIMIT_REACHED";
@@ -650,14 +676,27 @@ export function useCompleteAppointment() {
       let incomeId: string | null = null;
 
       if (received > 0) {
-        const { data: incRow, error: incErr } = await supabase.from("income").insert({
-          user_id: user!.id, appointment_id: appointmentId,
-          client_id: clientId,
-          amount: received, date: payDate, session_date: sessionDate ?? payDate, source: "appointment",
-          payment_method: paymentMethod,
-          ...(isDemoMode ? { is_demo: true } : {}),
-        } as any).select("id").single();
-        if (incErr) throw incErr;
+        const incRow = await withIncomeDedupeGuard(
+          {
+            user_id: user!.id,
+            appointment_id: appointmentId,
+            amount: received,
+            date: payDate,
+            status: "confirmed",
+            is_demo: isDemoMode,
+          },
+          async () => {
+            const { data, error } = await supabase.from("income").insert({
+              user_id: user!.id, appointment_id: appointmentId,
+              client_id: clientId,
+              amount: received, date: payDate, session_date: sessionDate ?? payDate, source: "appointment",
+              payment_method: paymentMethod,
+              ...(isDemoMode ? { is_demo: true } : {}),
+            } as any).select("id").single();
+            if (error) throw error;
+            return data;
+          },
+        );
         incomeId = (incRow as any)?.id ?? null;
 
         // 1) Close oldest debts of this client first (FIFO).
@@ -1101,18 +1140,31 @@ export function useMarkExpectedPaymentPaid() {
           : payDate;
 
         // Insert income for this participant.
-        const { data: inc, error: incErr } = await supabase.from("income").insert({
-          user_id: user!.id,
-          appointment_id: linkedAppointmentId,
-          client_id: (gsp as any)?.client_id ?? null,
-          amount,
-          date: payDate,
-          session_date: sessionDate,
-          source: "group_session",
-          payment_method: paymentMethod,
-          ...(isDemoMode ? { is_demo: true } : {}),
-        } as any).select("id").single();
-        if (incErr) throw incErr;
+        const inc = await withIncomeDedupeGuard(
+          {
+            user_id: user!.id,
+            appointment_id: linkedAppointmentId,
+            amount,
+            date: payDate,
+            status: "confirmed",
+            is_demo: isDemoMode,
+          },
+          async () => {
+            const { data, error } = await supabase.from("income").insert({
+              user_id: user!.id,
+              appointment_id: linkedAppointmentId,
+              client_id: (gsp as any)?.client_id ?? null,
+              amount,
+              date: payDate,
+              session_date: sessionDate,
+              source: "group_session",
+              payment_method: paymentMethod,
+              ...(isDemoMode ? { is_demo: true } : {}),
+            } as any).select("id").single();
+            if (error) throw error;
+            return data;
+          },
+        );
 
         // Update the participant payment row.
         const { error: updErr } = await supabase
@@ -1158,13 +1210,25 @@ export function useMarkExpectedPaymentPaid() {
 
       await supabase.from("appointments").update({ payment_status: "paid_now" } as any).eq("id", appointmentId);
 
-      const { error: incErr } = await supabase.from("income").insert({
-        user_id: user!.id, appointment_id: appointmentId,
-        amount, date: payDate, session_date: sessionDate, source: "appointment",
-        payment_method: paymentMethod,
-        ...(isDemoMode ? { is_demo: true } : {}),
-      } as any);
-      if (incErr) throw incErr;
+      await withIncomeDedupeGuard(
+        {
+          user_id: user!.id,
+          appointment_id: appointmentId,
+          amount,
+          date: payDate,
+          status: "confirmed",
+          is_demo: isDemoMode,
+        },
+        async () => {
+          const { error } = await supabase.from("income").insert({
+            user_id: user!.id, appointment_id: appointmentId,
+            amount, date: payDate, session_date: sessionDate, source: "appointment",
+            payment_method: paymentMethod,
+            ...(isDemoMode ? { is_demo: true } : {}),
+          } as any);
+          if (error) throw error;
+        },
+      );
     },
     onSuccess: (_d, vars) => { track("payment_marked_paid", { payment_method: vars.paymentMethod }); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
