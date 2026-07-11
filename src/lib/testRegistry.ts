@@ -183,6 +183,16 @@ export const TEST_REGISTRY: TestEntry[] = [
 
   // ── Finance ──────────────────────────────────────────────────────────────
   {
+    id: "fin-manual-payment-alloc",
+    name: "Manual payment allocation (linked sessions AC1–AC11)",
+    file: "src/lib/__tests__/manualPaymentAllocation.test.ts",
+    section: "Finance",
+    kind: "unit",
+    status: "passed",
+    cases: 15,
+    lastRun: LAST_RUN,
+  },
+  {
     id: "fin-income-dedupe",
     name: "Income dedupe (seeder + double-click guard)",
     file: "src/lib/__tests__/incomeDedupe.test.ts",
