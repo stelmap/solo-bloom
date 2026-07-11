@@ -300,7 +300,8 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
               </div>
             </div>
 
-            <div className="rounded-lg border border-border divide-y divide-border">
+            <div className="rounded-lg border border-border divide-y divide-border max-h-[360px] overflow-y-auto">
+              {/* AC10: ~5 rows visible without scroll (each row ~72px). Overflow scrolls the list only. */}
               {filteredAppointments.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-6">—</p>
               ) : filteredAppointments.map((a: any) => {
