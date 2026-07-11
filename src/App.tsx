@@ -80,6 +80,7 @@ const AdminEmailPreviewPage = lazyWithReload(() => import("./pages/AdminEmailPre
 const AdminUsersPage = lazyWithReload(() => import("./pages/AdminUsersPage"));
 const AdminDomainsPage = lazyWithReload(() => import("./pages/AdminDomainsPage"));
 const AdminAnalyticsPage = lazyWithReload(() => import("./pages/AdminAnalyticsPage"));
+const AdminTestsPage = lazyWithReload(() => import("./pages/AdminTestsPage"));
 const ServerUpdatePage = lazyWithReload(() => import("./pages/ServerUpdatePage"));
 const OAuthConsentPage = lazyWithReload(() => import("./pages/OAuthConsentPage"));
 
