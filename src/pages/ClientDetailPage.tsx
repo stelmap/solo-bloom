@@ -43,7 +43,9 @@ import {
   isAwaiting,
   isCancelled,
   isPrepaid,
+  isRealSession,
 } from "@/lib/paymentClassifiers";
+
 
 export default function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
