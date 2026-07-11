@@ -254,19 +254,23 @@ export default function ClientDetailPage() {
 
 
 
-  // Apply selected statistic filter to the full appointment list
+  // Apply selected statistic filter using the SAME predicates as the top counters
+  // so the Session History list length matches the card numbers exactly.
   const filteredAppointments = useMemo(() => {
-    // Exclude planned/upcoming sessions from session history
-    const PLANNED = new Set(["scheduled", "confirmed", "reminder_sent"]);
-    const all = (sortedAppointments as any[]).filter((a) => !PLANNED.has(a.status));
+    const sorted = sortedAppointments as any[];
+    // Base for "all" mirrors the Total counter (realSessions): includes upcoming
+    // scheduled/confirmed and excludes past-scheduled orphans.
+    const realSorted = sorted.filter(isRealSession);
     switch (statFilter) {
-      case "completed": return all.filter(isCompleted);
-      case "paid": return all.filter(isEffectivelyPaid);
-      case "awaiting": return all.filter(isEffectivelyAwaiting);
-      case "cancelled": return all.filter(isCancelled);
-      case "prepaid": return all.filter(isPrepaid);
+      // realSessions-based counters
+      case "completed": return realSorted.filter(isCompleted);
+      case "cancelled": return realSorted.filter(isCancelled);
+      // payment-status counters run over the full appointment list (matches top cards)
+      case "paid": return sorted.filter(isEffectivelyPaid);
+      case "awaiting": return sorted.filter(isEffectivelyAwaiting);
+      case "prepaid": return sorted.filter((a: any) => a.payment_status === "paid_in_advance");
       case "supervision": return [];
-      default: return all;
+      default: return realSorted;
     }
   }, [sortedAppointments, statFilter, balanceComputation]);
 
