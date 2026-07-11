@@ -161,7 +161,11 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
   };
 
   const updateAlloc = (aptId: string, value: string) => {
-    setAllocs((prev) => ({ ...prev, [aptId]: value }));
+    const apt = enrichedAppointments.find((a: any) => a.id === aptId);
+    const cap = apt ? Number(apt._remaining) : Infinity;
+    const n = Number(value);
+    const capped = Number.isFinite(n) && n > cap ? String(cap) : value;
+    setAllocs((prev) => ({ ...prev, [aptId]: capped }));
   };
 
   const autoAllocate = () => {
