@@ -47,6 +47,30 @@ const CASES = [
     finalSubject: "Ваш акаунт SoloBizz було видалено",
     finalDistinctive: ["було остаточно видалено", "створити новий акаунт"],
   },
+  {
+    profileLanguage: "ru",
+    expected: "ru",
+    warningSubject: "Ваш аккаунт SoloBizz запланирован к удалению",
+    warningDistinctive: ["запланирован к удалению", "Войти в SoloBizz"],
+    finalSubject: "Ваш аккаунт SoloBizz был удалён",
+    finalDistinctive: ["был окончательно удалён", "создать новый аккаунт"],
+  },
+  {
+    profileLanguage: "pl",
+    expected: "pl",
+    warningSubject: "Twoje konto SoloBizz zostało zaplanowane do usunięcia",
+    warningDistinctive: ["zaplanowane do usunięcia", "Zaloguj się do SoloBizz"],
+    finalSubject: "Twoje konto SoloBizz zostało usunięte",
+    finalDistinctive: ["trwale usunięte", "utworzyć nowe konto"],
+  },
+  {
+    profileLanguage: "fr",
+    expected: "fr",
+    warningSubject: "Votre compte SoloBizz est programmé pour suppression",
+    warningDistinctive: ["programmé pour suppression", "Se connecter à SoloBizz"],
+    finalSubject: "Votre compte SoloBizz a été supprimé",
+    finalDistinctive: ["définitivement supprimé", "créer un nouveau compte"],
+  },
 ] as const;
 
 for (const c of CASES) {
