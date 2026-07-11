@@ -181,9 +181,13 @@ export default function ClientDetailPage() {
   // Predicates — single source of truth for both card counts and filtered list.
   // See src/lib/paymentClassifiers.ts (unit-tested).
 
-  const totalSessions = appointments.length;
-  const completedSessions = (appointments as any[]).filter(isCompleted).length;
-  const cancelledSessions = (appointments as any[]).filter(isCancelled).length;
+  // Total = real sessions only (completed / cancelled / no-show / upcoming).
+  // Excludes past-dated `scheduled` orphans so the counter matches DB reality.
+  const realSessions = (appointments as any[]).filter(isRealSession);
+  const totalSessions = realSessions.length;
+  const completedSessions = realSessions.filter(isCompleted).length;
+  const cancelledSessions = realSessions.filter(isCancelled).length;
+
 
   // Total Paid = sum of REAL payments received from this client (confirmed income only).
   // Never derived from appointment.price.
