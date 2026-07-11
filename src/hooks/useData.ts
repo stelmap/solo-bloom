@@ -676,14 +676,27 @@ export function useCompleteAppointment() {
       let incomeId: string | null = null;
 
       if (received > 0) {
-        const { data: incRow, error: incErr } = await supabase.from("income").insert({
-          user_id: user!.id, appointment_id: appointmentId,
-          client_id: clientId,
-          amount: received, date: payDate, session_date: sessionDate ?? payDate, source: "appointment",
-          payment_method: paymentMethod,
-          ...(isDemoMode ? { is_demo: true } : {}),
-        } as any).select("id").single();
-        if (incErr) throw incErr;
+        const incRow = await withIncomeDedupeGuard(
+          {
+            user_id: user!.id,
+            appointment_id: appointmentId,
+            amount: received,
+            date: payDate,
+            status: "confirmed",
+            is_demo: isDemoMode,
+          },
+          async () => {
+            const { data, error } = await supabase.from("income").insert({
+              user_id: user!.id, appointment_id: appointmentId,
+              client_id: clientId,
+              amount: received, date: payDate, session_date: sessionDate ?? payDate, source: "appointment",
+              payment_method: paymentMethod,
+              ...(isDemoMode ? { is_demo: true } : {}),
+            } as any).select("id").single();
+            if (error) throw error;
+            return data;
+          },
+        );
         incomeId = (incRow as any)?.id ?? null;
 
         // 1) Close oldest debts of this client first (FIFO).
