@@ -287,6 +287,7 @@ export default {
   // Income
   "income.title": "Доход",
   "income.subtitle": "Учитывайте ваши заработки",
+  "income.clientRequired": "Клиент обязателен",
   "income.addManual": "Добавить вручную",
   "income.addIncome": "Добавить доход",
   "income.confirmedIncome": "Подтверждённый доход",
