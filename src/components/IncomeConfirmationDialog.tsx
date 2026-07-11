@@ -136,7 +136,7 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
         default:
           return true;
       }
-    }).sort((a: any, b: any) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime());
+    }).sort((a: any, b: any) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
   }, [enrichedAppointments, filter]);
 
   const allocSum = useMemo(() => Object.values(allocs).reduce((s, v) => s + (Number(v) || 0), 0), [allocs]);
@@ -161,7 +161,11 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
   };
 
   const updateAlloc = (aptId: string, value: string) => {
-    setAllocs((prev) => ({ ...prev, [aptId]: value }));
+    const apt = enrichedAppointments.find((a: any) => a.id === aptId);
+    const cap = apt ? Number(apt._remaining) : Infinity;
+    const n = Number(value);
+    const capped = Number.isFinite(n) && n > cap ? String(cap) : value;
+    setAllocs((prev) => ({ ...prev, [aptId]: capped }));
   };
 
   const autoAllocate = () => {
@@ -185,6 +189,18 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
     if (allocOver) {
       toast({ title: t("incomeConfirm.allocExceeds"), variant: "destructive" });
       return;
+    }
+    // AC3: per-session cap — cannot allocate more than remaining debt
+    for (const [aptId, v] of Object.entries(allocs)) {
+      const apt = enrichedAppointments.find((a: any) => a.id === aptId);
+      if (apt && Number(v) > Number(apt._remaining) + 0.001) {
+        toast({
+          title: t("incomeConfirm.allocExceeds"),
+          description: `${cs}${Number(apt._remaining).toFixed(2)} max`,
+          variant: "destructive",
+        });
+        return;
+      }
     }
     if (isUnlinked && !confirmUnlinked) {
       toast({ title: t("incomeConfirm.unlinkedWarning"), variant: "destructive" });
@@ -284,7 +300,8 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
               </div>
             </div>
 
-            <div className="rounded-lg border border-border divide-y divide-border">
+            <div className="rounded-lg border border-border divide-y divide-border max-h-[360px] overflow-y-auto">
+              {/* AC10: ~5 rows visible without scroll (each row ~72px). Overflow scrolls the list only. */}
               {filteredAppointments.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-6">—</p>
               ) : filteredAppointments.map((a: any) => {
