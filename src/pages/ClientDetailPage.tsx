@@ -993,6 +993,25 @@ export default function ClientDetailPage() {
         />
       )}
 
+      {isAdmin && client && (
+        <ClientAuditDialog
+          open={auditOpen}
+          onOpenChange={setAuditOpen}
+          clientId={client.id}
+          currencySymbol={cs}
+          ui={{
+            totalSessions,
+            completedSessions,
+            cancelledSessions,
+            prepaidSessions,
+            awaitingSessions,
+            paidSessions,
+            supervisionSessions: supervisionCount,
+            totalPaid: paidAmount,
+          }}
+        />
+      )}
+
       <SessionDetailSheet
         appointment={sessionApt}
         open={sessionSheetOpen}
