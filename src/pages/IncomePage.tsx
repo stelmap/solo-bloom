@@ -83,6 +83,8 @@ export default function IncomePage() {
   const [payMethod, setPayMethod] = useState("cash");
   const [payDate, setPayDate] = useState(new Date().toISOString().split("T")[0]);
   const [form, setForm] = useState({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash", client_id: "" });
+  const [linkedOpen, setLinkedOpen] = useState(false);
+  const [linkedPrefill, setLinkedPrefill] = useState<{ clientId: string; clientName?: string; amount: number; date: string; payment_method: string; comment?: string } | null>(null);
 
   const filtered = income; // server-side filtered
   const total = periodTotal;
