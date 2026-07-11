@@ -455,6 +455,11 @@ export default function ClientDetailPage() {
             <p className="text-sm text-muted-foreground">{t("clientDetail.profile")}</p>
           </div>
           {!isDemoMode && <>
+            {isAdmin && (
+              <Button variant="outline" size="sm" onClick={() => setAuditOpen(true)}>
+                <ClipboardCheck className="h-3.5 w-3.5 mr-1" /> Full audit
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={openEdit}><Pencil className="h-3.5 w-3.5 mr-1" /> {t("common.edit")}</Button>
             {client.status === "archived" ? (
               <Button variant="outline" size="sm" onClick={async () => {
