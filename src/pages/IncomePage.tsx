@@ -408,6 +408,27 @@ export default function IncomePage() {
 
       <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={handleDelete}
         title={t("income.deleteTitle")} description={t("income.deleteDesc")} loading={deleteIncome.isPending} />
+
+      {linkedPrefill && (
+        <IncomeConfirmationDialog
+          open={linkedOpen}
+          onOpenChange={(o) => {
+            setLinkedOpen(o);
+            if (!o) {
+              setLinkedPrefill(null);
+              setForm({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash", client_id: "" });
+            }
+          }}
+          clientId={linkedPrefill.clientId}
+          clientName={linkedPrefill.clientName}
+          prefill={{
+            amount: linkedPrefill.amount,
+            date: linkedPrefill.date,
+            payment_method: linkedPrefill.payment_method,
+            comment: linkedPrefill.comment,
+          }}
+        />
+      )}
     </AppLayout>
   );
 }
