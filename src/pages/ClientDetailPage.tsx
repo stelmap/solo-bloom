@@ -22,6 +22,9 @@ import {
   ArrowLeft, Phone, Mail, Send, Calendar, Pencil, Trash2, Plus, Paperclip, FileText, Image, Download, X, Bell, DollarSign, History, CreditCard, ClipboardList, ShieldCheck, Archive, ArchiveRestore,
 } from "lucide-react";
 import { ArchiveClientDialog } from "@/components/ArchiveClientDialog";
+import { ClientAuditDialog } from "@/components/ClientAuditDialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { ClipboardCheck } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -77,6 +80,9 @@ export default function ClientDetailPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
+  const [auditOpen, setAuditOpen] = useState(false);
+  const { user } = useAuth();
+  const isAdmin = user?.email?.toLowerCase() === "o.gilevich@gmail.com";
   const [noteText, setNoteText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "", notification_preference: "no_reminder", confirmation_required: false, pricing_mode: "fixed", base_price: "", billing_address: "", billing_country: "", billing_tax_id: "", billing_company_name: "" });
@@ -449,6 +455,11 @@ export default function ClientDetailPage() {
             <p className="text-sm text-muted-foreground">{t("clientDetail.profile")}</p>
           </div>
           {!isDemoMode && <>
+            {isAdmin && (
+              <Button variant="outline" size="sm" onClick={() => setAuditOpen(true)}>
+                <ClipboardCheck className="h-3.5 w-3.5 mr-1" /> Full audit
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={openEdit}><Pencil className="h-3.5 w-3.5 mr-1" /> {t("common.edit")}</Button>
             {client.status === "archived" ? (
               <Button variant="outline" size="sm" onClick={async () => {
@@ -979,6 +990,25 @@ export default function ClientDetailPage() {
           onOpenChange={setArchiveOpen}
           clientId={client.id}
           clientName={client.name}
+        />
+      )}
+
+      {isAdmin && client && (
+        <ClientAuditDialog
+          open={auditOpen}
+          onOpenChange={setAuditOpen}
+          clientId={client.id}
+          currencySymbol={cs}
+          ui={{
+            totalSessions,
+            completedSessions,
+            cancelledSessions,
+            prepaidSessions,
+            awaitingSessions,
+            paidSessions,
+            supervisionSessions: supervisionCount,
+            totalPaid: paidAmount,
+          }}
         />
       )}
 
