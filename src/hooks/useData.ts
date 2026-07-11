@@ -3296,23 +3296,57 @@ export function useSaveIncomeConfirmation() {
         } as any);
       }
 
-      // Cancel any active "Expected payments" attached to the sessions we just
-      // linked — a manual payment supersedes the expected placeholder, so we
-      // mark them cancelled (never delete) with an audit reason. Only runs
-      // for confirmed income; draft/cancelled income leaves EPs untouched.
+      // Cancel or split any active "Expected payments" attached to the
+      // sessions we just linked. If the manual allocation fully covers the
+      // EP amount, mark it cancelled with reason `manual_payment_recorded`.
+      // If the allocation only partially covers it (AC5), cancel the old
+      // EP with reason `partially_covered_by_manual_payment` and create a
+      // fresh EP for the remaining balance so expected income stays accurate.
       const linkedAptIds = allocRows.map((r: any) => r.appointment_id);
       if (input.status === "confirmed" && linkedAptIds.length > 0) {
-        await (supabase as any)
+        const allocByApt: Record<string, number> = {};
+        for (const r of allocRows) {
+          allocByApt[r.appointment_id] = (allocByApt[r.appointment_id] || 0) + Number(r.allocated_amount || 0);
+        }
+
+        const { data: activeEps } = await (supabase as any)
           .from("expected_payments")
-          .update({
-            status: "cancelled",
-            cancellation_reason: "manual_payment_recorded",
-            cancelled_at: new Date().toISOString(),
-            cancelled_by: user!.id,
-          })
+          .select("id, appointment_id, amount, client_id")
           .eq("user_id", user!.id)
           .eq("status", "pending")
           .in("appointment_id", linkedAptIds);
+
+        const nowIso = new Date().toISOString();
+        for (const ep of (activeEps ?? []) as any[]) {
+          const allocated = Number(allocByApt[ep.appointment_id] || 0);
+          const epAmount = Number(ep.amount || 0);
+          const fullyCovered = allocated + 0.001 >= epAmount;
+
+          await (supabase as any)
+            .from("expected_payments")
+            .update({
+              status: "cancelled",
+              cancellation_reason: fullyCovered
+                ? "manual_payment_recorded"
+                : "partially_covered_by_manual_payment",
+              cancelled_at: nowIso,
+              cancelled_by: user!.id,
+            })
+            .eq("id", ep.id);
+
+          if (!fullyCovered) {
+            const remaining = Number((epAmount - allocated).toFixed(2));
+            if (remaining > 0) {
+              await (supabase as any).from("expected_payments").insert({
+                user_id: user!.id,
+                client_id: ep.client_id,
+                appointment_id: ep.appointment_id,
+                amount: remaining,
+                status: "pending",
+              } as any);
+            }
+          }
+        }
       }
 
       // Recalc affected appointments
