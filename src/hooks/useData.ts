@@ -1150,6 +1150,20 @@ export function useMarkExpectedPaymentPaid() {
             is_demo: isDemoMode,
           },
           async () => {
+            // If an income row already exists for this (user, appointment, amount, date)
+            // — e.g. seeded data or a prior confirmation — reuse it instead of
+            // inserting a duplicate that would trip income_dedup_uniq.
+            const { data: existing } = await supabase
+              .from("income")
+              .select("id")
+              .eq("user_id", user!.id)
+              .eq("appointment_id", linkedAppointmentId)
+              .eq("amount", amount)
+              .eq("date", payDate)
+              .eq("status", "confirmed")
+              .maybeSingle();
+            if (existing?.id) return existing;
+
             const { data, error } = await supabase.from("income").insert({
               user_id: user!.id,
               appointment_id: linkedAppointmentId,
@@ -1161,10 +1175,27 @@ export function useMarkExpectedPaymentPaid() {
               payment_method: paymentMethod,
               ...(isDemoMode ? { is_demo: true } : {}),
             } as any).select("id").single();
-            if (error) throw error;
+            if (error) {
+              // 23505 = unique_violation. Race with the DB safeguard — fetch the
+              // winning row so the caller can still link its GSP update.
+              if ((error as any)?.code === "23505") {
+                const { data: winner } = await supabase
+                  .from("income")
+                  .select("id")
+                  .eq("user_id", user!.id)
+                  .eq("appointment_id", linkedAppointmentId)
+                  .eq("amount", amount)
+                  .eq("date", payDate)
+                  .eq("status", "confirmed")
+                  .maybeSingle();
+                if (winner?.id) return winner;
+              }
+              throw error;
+            }
             return data;
           },
         );
+
 
         // Update the participant payment row.
         const { error: updErr } = await supabase
