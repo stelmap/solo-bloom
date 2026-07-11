@@ -1140,18 +1140,31 @@ export function useMarkExpectedPaymentPaid() {
           : payDate;
 
         // Insert income for this participant.
-        const { data: inc, error: incErr } = await supabase.from("income").insert({
-          user_id: user!.id,
-          appointment_id: linkedAppointmentId,
-          client_id: (gsp as any)?.client_id ?? null,
-          amount,
-          date: payDate,
-          session_date: sessionDate,
-          source: "group_session",
-          payment_method: paymentMethod,
-          ...(isDemoMode ? { is_demo: true } : {}),
-        } as any).select("id").single();
-        if (incErr) throw incErr;
+        const inc = await withIncomeDedupeGuard(
+          {
+            user_id: user!.id,
+            appointment_id: linkedAppointmentId,
+            amount,
+            date: payDate,
+            status: "confirmed",
+            is_demo: isDemoMode,
+          },
+          async () => {
+            const { data, error } = await supabase.from("income").insert({
+              user_id: user!.id,
+              appointment_id: linkedAppointmentId,
+              client_id: (gsp as any)?.client_id ?? null,
+              amount,
+              date: payDate,
+              session_date: sessionDate,
+              source: "group_session",
+              payment_method: paymentMethod,
+              ...(isDemoMode ? { is_demo: true } : {}),
+            } as any).select("id").single();
+            if (error) throw error;
+            return data;
+          },
+        );
 
         // Update the participant payment row.
         const { error: updErr } = await supabase
