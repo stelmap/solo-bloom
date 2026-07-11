@@ -198,14 +198,14 @@ export default function IncomePage() {
                 <div className="space-y-2"><Label>{t("common.date")}</Label><DatePicker date={form.date} onDateChange={(d) => setForm(f => ({ ...f, date: d }))} /></div>
                 <div className="space-y-2"><Label>{t("common.description")}</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
                 <div className="space-y-2">
-                  <Label>{t("income.paidBy")}</Label>
-                  <Select value={form.client_id} onValueChange={v => setForm(f => ({ ...f, client_id: v === "__none__" ? "" : v }))}>
+                  <Label>{t("income.paidBy")} *</Label>
+                  <Select value={form.client_id} onValueChange={v => setForm(f => ({ ...f, client_id: v }))}>
                     <SelectTrigger><SelectValue placeholder={t("income.selectClient")} /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__none__">{t("income.noClient")}</SelectItem>
                       {(clients as any[]).filter((c: any) => c.status !== "archived").map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                  {!form.client_id && <p className="text-xs text-muted-foreground">{t("income.clientRequired")}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label>{t("calendar.paymentMethod")}</Label>
@@ -214,7 +214,7 @@ export default function IncomePage() {
                     <SelectContent>{PAYMENT_METHODS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <Button onClick={handleCreate} className="w-full" disabled={createIncome.isPending}>{createIncome.isPending ? t("common.adding") : t("income.addIncome")}</Button>
+                <Button onClick={handleCreate} className="w-full" disabled={!form.amount || !form.client_id}>{t("income.addIncome")}</Button>
               </div>
             </DialogContent>
           </Dialog>
