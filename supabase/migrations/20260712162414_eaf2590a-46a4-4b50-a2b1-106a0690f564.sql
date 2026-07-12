@@ -1,0 +1,3 @@
+ALTER TABLE public.income DROP CONSTRAINT IF EXISTS income_source_check;
+ALTER TABLE public.income ADD CONSTRAINT income_source_check
+  CHECK (source = ANY (ARRAY['appointment'::text, 'manual'::text, 'group_session'::text, 'prepayment_withdrawal'::text]));
