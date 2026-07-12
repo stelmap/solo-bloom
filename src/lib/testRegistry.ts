@@ -203,6 +203,16 @@ export const TEST_REGISTRY: TestEntry[] = [
     lastRun: LAST_RUN,
   },
   {
+    id: "fin-prepayment-regression",
+    name: "Prepayment regression (no EP, no double-count of income)",
+    file: "src/lib/__tests__/prepaymentRegression.test.ts",
+    section: "Finance",
+    kind: "unit",
+    status: "passed",
+    cases: 8,
+    lastRun: LAST_RUN,
+  },
+  {
     id: "fin-income-dedupe",
     name: "Income dedupe (seeder + double-click guard)",
     file: "src/lib/__tests__/incomeDedupe.test.ts",
