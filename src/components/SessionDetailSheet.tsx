@@ -1043,7 +1043,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
               {hasPrepayment && !prepaymentInsufficient && (
                 <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
                   <p className="font-medium text-foreground">
-                    {t("prepayment.clientHasCredit", { symbol: cs, amount: Number(clientCredit).toFixed(2) })}
+                    {t("prepayment.clientHasCredit").replace(/\{\s*symbol\s*\}/g, cs).replace(/\{\s*amount\s*\}/g, Number(clientCredit).toFixed(2))}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {sessionPrice > 0
