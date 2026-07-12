@@ -33,17 +33,20 @@ export const isPrepaid = (a: AppointmentLike) =>
 /**
  * A "real" session that should be counted in Total Sessions:
  *  - anything completed / cancelled / no-show
- *  - upcoming scheduled sessions (scheduled_at >= now)
- * Excludes past-dated `scheduled` orphans (never closed / seed leftovers)
- * so counts match DB reality shown in the audit.
+ *  - any scheduled / confirmed / reminder_sent session, regardless of date
+ *
+ * Past-dated `scheduled` sessions are legitimate — therapists often haven't
+ * marked them completed yet. We must not hide them from the client card.
  */
 export const isRealSession = (a: AppointmentLike & { scheduled_at?: string | null }) => {
   const s = a.status ?? "";
-  if (s === "completed" || s === "cancelled" || s === "no-show") return true;
-  if (s === "scheduled" || s === "confirmed" || s === "reminder_sent") {
-    const ts = a.scheduled_at ? new Date(a.scheduled_at).getTime() : 0;
-    return ts >= Date.now();
-  }
-  return false;
+  return (
+    s === "completed" ||
+    s === "cancelled" ||
+    s === "no-show" ||
+    s === "scheduled" ||
+    s === "confirmed" ||
+    s === "reminder_sent"
+  );
 };
 
