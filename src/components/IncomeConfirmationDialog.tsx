@@ -313,7 +313,13 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
             <div className="rounded-lg border border-border divide-y divide-border max-h-[360px] overflow-y-auto">
               {/* AC10: ~5 rows visible without scroll (each row ~72px). Overflow scrolls the list only. */}
               {filteredAppointments.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-6">—</p>
+                <p className="text-sm text-muted-foreground text-center py-6">
+                  {filter === "unpaid" && t("incomeConfirm.emptyUnpaid")}
+                  {filter === "partial" && t("incomeConfirm.emptyPartial")}
+                  {filter === "future" && t("incomeConfirm.emptyFuture")}
+                  {filter === "cancelled_billable" && t("incomeConfirm.emptyCancelledBillable")}
+                  {filter === "all" && t("incomeConfirm.emptyAll")}
+                </p>
               ) : filteredAppointments.map((a: any) => {
                 const checked = !!allocs[a.id] && Number(allocs[a.id]) > 0;
                 const isCancelled = a.status === "cancelled" || a.status === "no-show";
