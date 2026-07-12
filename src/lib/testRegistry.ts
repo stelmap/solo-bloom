@@ -138,6 +138,16 @@ export const TEST_REGISTRY: TestEntry[] = [
     cases: 1,
     lastRun: LAST_RUN,
   },
+  {
+    id: "cli-real-session",
+    name: "Real-session predicate (past-dated scheduled visible on client card)",
+    file: "src/lib/__tests__/isRealSession.test.ts",
+    section: "Client",
+    kind: "unit",
+    status: "passed",
+    cases: 10,
+    lastRun: LAST_RUN,
+  },
 
   // ── Services ─────────────────────────────────────────────────────────────
   {
@@ -220,6 +230,16 @@ export const TEST_REGISTRY: TestEntry[] = [
     kind: "unit",
     status: "passed",
     cases: 9,
+    lastRun: LAST_RUN,
+  },
+  {
+    id: "fin-income-apt-filters",
+    name: "Income dialog appointment filters (future/unpaid/partial/cancelled)",
+    file: "src/lib/__tests__/incomeAppointmentFilters.test.ts",
+    section: "Finance",
+    kind: "unit",
+    status: "passed",
+    cases: 13,
     lastRun: LAST_RUN,
   },
   {
