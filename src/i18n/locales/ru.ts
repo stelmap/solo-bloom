@@ -137,7 +137,7 @@ export default {
 
   // Payment
   "payment.paidNow": "Оплачено сейчас",
-  "payment.paidNowDesc": "Клиент оплатил во время или после сеанса",
+  "payment.paidNowDesc": "Клиент оплатил до или во время сеанса",
   "payment.paidInAdvance": "Оплачено заранее",
   "payment.paidInAdvanceDesc": "Клиент оплатил до сеанса",
   "payment.waitingForPayment": "Ожидает оплаты",
