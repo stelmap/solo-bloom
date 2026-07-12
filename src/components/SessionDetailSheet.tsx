@@ -195,7 +195,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
           : {
               value: "paid_from_prepayment",
               label: t("payment.paidFromPrepayment"),
-              description: t("payment.paidFromPrepaymentDesc", { symbol: cs, amount: prepaymentRemainingAfter.toFixed(2) }),
+              description: t("payment.paidFromPrepaymentDesc").replace(/\{\s*symbol\s*\}/g, cs).replace(/\{\s*amount\s*\}/g, prepaymentRemainingAfter.toFixed(2)),
             },
       ]
     : [
