@@ -190,7 +190,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
           ? {
               value: "already_paid",
               label: t("payment.alreadyPaid"),
-              description: t("payment.alreadyPaidDesc", { symbol: cs, amount: alreadyAllocated.toFixed(2) }),
+              description: t("payment.alreadyPaidDesc").replace(/\{\s*symbol\s*\}/g, cs).replace(/\{\s*amount\s*\}/g, alreadyAllocated.toFixed(2)),
             }
           : {
               value: "paid_from_prepayment",
