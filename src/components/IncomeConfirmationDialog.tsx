@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { formatScheduledTime } from "@/lib/timeFormat";
 import { AlertTriangle } from "lucide-react";
+import { matchesFilter, type FilterKey as BucketFilterKey } from "@/lib/incomeAppointmentFilters";
 
 interface Props {
   open: boolean;
@@ -31,7 +32,7 @@ interface Props {
   prefill?: { amount?: number; date?: string; payment_method?: string; comment?: string } | null;
 }
 
-type FilterKey = "unpaid" | "partial" | "future" | "all" | "cancelled_billable";
+type FilterKey = BucketFilterKey;
 
 export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientName, use12h = false, existingIncome, prefill }: Props) {
   const { t } = useLanguage();
@@ -110,9 +111,16 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
   }, [activeMethods.length, method]);
 
   const enrichedAppointments = useMemo(() => {
+    const PAID = new Set(["paid_now", "paid_in_advance", "paid_from_prepayment"]);
     return (appointments as any[]).map((a) => {
       const price = Number(a.price || 0);
-      const otherPaid = existingAllocByApt[a.id] || 0;
+      const allocated = existingAllocByApt[a.id] || 0;
+      // If the session is marked as fully paid but has no allocation row
+      // (legacy / prepayment / group), treat its price as fully covered so it
+      // never leaks into Unpaid.
+      const otherPaid = allocated > 0
+        ? allocated
+        : (PAID.has(a.payment_status) ? price : 0);
       const remaining = Math.max(price - otherPaid, 0);
       return { ...a, _price: price, _otherPaid: otherPaid, _remaining: remaining };
     });
@@ -120,23 +128,25 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
 
   const filteredAppointments = useMemo(() => {
     const now = new Date();
-    return enrichedAppointments.filter((a: any) => {
-      const isCancelled = a.status === "cancelled" || a.status === "no-show";
-      const isFuture = !!a.scheduled_at && new Date(a.scheduled_at) > now && !isCancelled && a.status !== "completed";
-      switch (filter) {
-        case "unpaid":
-          return !isCancelled && a._remaining > 0 && a._otherPaid === 0;
-        case "partial":
-          return !isCancelled && a._otherPaid > 0 && a._remaining > 0;
-        case "future":
-          return isFuture;
-        case "cancelled_billable":
-          return isCancelled && a._remaining > 0;
-        case "all":
-        default:
-          return true;
-      }
-    }).sort((a: any, b: any) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
+    return enrichedAppointments
+      .filter((a: any) =>
+        matchesFilter(
+          {
+            status: a.status,
+            payment_status: a.payment_status,
+            scheduled_at: a.scheduled_at,
+            price: a._price,
+            remaining: a._remaining,
+            otherPaid: a._otherPaid,
+          },
+          filter,
+          now,
+        ),
+      )
+      .sort(
+        (a: any, b: any) =>
+          new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime(),
+      );
   }, [enrichedAppointments, filter]);
 
   const allocSum = useMemo(() => Object.values(allocs).reduce((s, v) => s + (Number(v) || 0), 0), [allocs]);
