@@ -1,83 +1,67 @@
-## Inactive User Deactivation & Deletion — Implementation Plan
+# Payment/Prepayment/Balance Synchronization
 
-Full lifecycle: Active → Deactivation Pending → Ready for Deletion → Deleted, with auto-reactivation on login, admin UI, emails (EN/UK), audit log, and daily cron.
+## Goal
+Every financial action creates its own record. Sessions, balances, prepayments, Income Requests and Confirmed Income stay in sync. Never create an Expected Payment when the session was paid from prepayment. Client balance is computed from real financial operations.
 
----
+## Scope of change
 
-### 1. Database (single migration)
+### A. Session completion dialog (`SessionDetailSheet.tsx` + `CalendarPage.tsx`)
+Replace the current 3-option payment picker with a new set:
+1. **Pay now** — copy: *"Client paid before or during the session"*. Creates Confirmed Income = session price, links to client/session/service/payment method, session → `completed` + `paid_now`. No Expected Payment.
+2. **Waiting for payment** — session → `completed` + `waiting_for_payment`. Creates Expected Payment for full price. Client debt increases.
+3. **Complete & deduct from prepayment** — shown only when the client has an available prepaid balance.
+   - Preview card: total prepayment, approx sessions covered, session price, amount to deduct, prepayment left after deduction.
+   - If prepayment < session price → show "Not enough prepayment" hint and force the user to pick Waiting for payment (no partial auto-mix in this feature).
+   - On confirm: create `PREPAYMENT_DEDUCTION` record + a **Confirmed Income row with amount = 0** tagged `paid_from_prepayment`. Session → `completed` + `paid_from_prepayment`. No Expected Payment.
 
-New table `public.user_lifecycle`:
-- `user_id` (PK, FK auth.users)
-- `status` text: `active | deactivation_pending | ready_for_deletion | deleted` (default `active`)
-- `last_login_at`, `last_activity_at` timestamptz
-- `deactivation_email_sent_at`, `planned_deletion_date`, `reactivated_at`, `deleted_at` timestamptz
-- `deactivated_by`, `deleted_by` uuid
-- timestamps + updated_at trigger
-- RLS: users can read own row; admins full access via `has_role(_,'admin')`
-- GRANTs to authenticated + service_role
+**Remove the "Pay in advance" option entirely** from session completion.
 
-New table `public.user_lifecycle_audit`:
-- `id`, `user_id`, `admin_id`, `user_email`, `action` (`deactivated | reactivated | marked_ready | deleted | email_sent | cancelled`)
-- `previous_status`, `new_status`, `email_delivery_status`, `ip_address inet`, `metadata jsonb`, `at`
-- RLS: admin read-only; service_role insert
+### B. Backend (migration + atomic RPC)
+Add a single SECURITY DEFINER function `public.complete_session_with_payment(p_appointment_id uuid, p_mode text, p_payment_method_id uuid, p_paid_at date)` where `p_mode ∈ ('pay_now','waiting','from_prepayment')`. It performs everything in one transaction:
+- Locks the appointment row (`FOR UPDATE`).
+- Recomputes prepaid pool from `income` − allocated on completed paid sessions, minus prior `PREPAYMENT_DEDUCTION` records.
+- Branch `pay_now`: insert `income` (amount = price, `source='session_payment'`), insert `income_session_allocations`, cancel any pending EP for this session.
+- Branch `waiting`: insert `expected_payments` (status `pending`, amount = price) if none exists.
+- Branch `from_prepayment`: verify pool ≥ price (else `RAISE EXCEPTION 'insufficient_prepayment'`), insert `income` with `amount=0`, `source='prepayment_deduction'`, allocate full price to session via `income_session_allocations` (allocations reference the original prepayment income), cancel any pending EP.
+- Calls existing `recalc_appointment_payment_status` (extended to recognize `paid_from_prepayment`).
+- Writes to `payment_corrections`/audit table with: actor, before/after prepayment pool, session price, cash received, deducted amount, created income ids, source prepayment income id.
 
-New settings table `public.lifecycle_settings` (singleton row):
-- `deletion_grace_days` int default 7
-- `cron_enabled` bool default true
+Migration steps:
+1. Add `payment_status` enum value `paid_from_prepayment` if not already present (already used in code — verify).
+2. Add columns to `income`: `source text` (values: `session_payment | manual | prepayment | prepayment_deduction | refund | correction`), `source_prepayment_income_id uuid references income(id)`.
+3. Add partial unique index preventing duplicate `PREPAYMENT_DEDUCTION` per appointment.
+4. Create `complete_session_with_payment` RPC. Grant EXECUTE to `authenticated`.
+5. Extend audit table (`payment_corrections` or new `payment_audit_log`) with the fields listed in spec §9.
 
-Trigger on `auth.users` sign-in? Not allowed — instead handled client-side on login + edge function.
+### C. Client balance (single source of truth)
+Update `src/lib/clientBalance.ts`:
+```
+totalReceived = Σ income.amount WHERE source ≠ 'prepayment_deduction'
+prepaidPool   = Σ income WHERE source='prepayment' (minus allocations to sessions)
+              − Σ PREPAYMENT_DEDUCTION amounts
+              − refunds − manual adjustments
+debt          = Σ (price − allocated) for completed sessions not fully paid
+balance       = prepaidPool − debt
+```
+Zero-amount `paid_from_prepayment` income rows do **not** inflate `totalReceived`. All UI (`Dashboard`, `ClientsPage`, `ClientDetailPage`, `IncomePage`, `SessionDetailSheet`, KPIs) reads from the same helper.
 
-RPC `public.record_user_activity()` — `SECURITY DEFINER`, updates `last_login_at`/`last_activity_at`, and if status = `deactivation_pending` & `planned_deletion_date > now()`, flips back to `active`, sets `reactivated_at`, writes audit row.
+### D. UI touch-points to update
+- `SessionDetailSheet.tsx`: new payment picker + prepayment preview card + confirm labels.
+- `CalendarPage.tsx`: replace direct write with `supabase.rpc('complete_session_with_payment', …)`; keep dedupe guard.
+- `IncomePage.tsx` / `PaymentAuditPage.tsx`: render `€0` prepayment-deduction rows with badge "Paid from prepayment"; exclude them from income totals.
+- `ClientDetailPage.tsx` counters: use the updated balance helper.
+- i18n keys for the new copy in `en/uk/ru/pl/fr`.
 
-RPC `public.promote_expired_deactivations()` — service-role only, moves due `deactivation_pending` → `ready_for_deletion`.
+### E. Automated tests
+Extend the "Finance" section of `src/lib/testRegistry.ts` with a new suite `src/lib/__tests__/paymentSync.test.ts` covering all 17 scenarios from the spec (Pay now, Waiting, EP later, prepayment-equal/greater/less, no EP for prepaid, €0 confirmed income, prepayment decrement, no double income, debt, counts, balance sync across surfaces, insufficient-prepayment error path, audit log written, atomic rollback).
+Add an e2e `tests/e2e/prepayment-session.spec.ts` that double-clicks the confirm button and asserts a single RPC call + single income row.
 
-### 2. Edge functions
+## Out of scope
+- Partial prepayment + partial EP mixing (spec §8 defers this).
+- Redesigning the manual income dialog (already shipped).
+- Backfilling historical rows — new logic applies going forward; existing balances remain consistent because we route reads through the shared helper.
 
-- `admin-lifecycle-action` (single function, verified admin via `has_role`):
-  - actions: `deactivate | cancel_deactivation | resend_email | delete_permanently | cancel_deletion`
-  - deactivate: sets status, calls `send-transactional-email` with `account-deactivation-warning`, stamps `planned_deletion_date`
-  - delete_permanently: verifies `confirmation === 'DELETE'`, sends `account-deleted-final` email, then calls admin API to delete `auth.users` row (cascades user data via existing GDPR delete function `process_gdpr_deletions` logic — reuse by inlining per-table deletes), stamps `deleted_at`, keeps audit row
-  - all actions write audit log
-- `lifecycle-cron` — invoked by pg_cron daily; runs `promote_expired_deactivations` RPC and returns counts
-
-Add pg_cron schedule (via `insert` tool after migration): daily at 03:00 UTC calling `lifecycle-cron` via `net.http_post`.
-
-### 3. Email templates (React Email, EN + UK)
-
-Two new templates in `supabase/functions/_shared/transactional-email-templates/`:
-- `account-deactivation-warning.tsx` — subject/body per spec, includes login CTA to `https://solo-bizz.com/auth`
-- `account-deleted-final.tsx`
-
-Both accept `{ locale: 'en' | 'uk', loginUrl }`. Register in `registry.ts`.
-
-### 4. Client integration
-
-- `src/contexts/AuthContext.tsx`: on `SIGNED_IN` event, call `supabase.rpc('record_user_activity')` (fire-and-forget). Ensures auto-reactivation.
-- Extend `admin-list-users` edge function to left-join `user_lifecycle` and return status + lifecycle timestamps.
-
-### 5. Admin UI — `src/pages/AdminUsersPage.tsx`
-
-Add columns: Status (badge), Last activity, Deactivation email sent, Planned deletion, Reactivated, Deleted.
-Add filters: status, last-login range, planned deletion range.
-Add row-action dropdown per user based on status:
-- active → Deactivate
-- deactivation_pending → Cancel deactivation, Resend email
-- ready_for_deletion → Delete permanently (typed `DELETE` confirmation), Cancel deletion
-- deleted → none
-
-Dialogs styled with existing `AlertDialog` + `ConfirmDeleteDialog` patterns.
-
-### 6. Tests
-
-Vitest units in `src/lib/__tests__/`:
-- `userLifecycle.test.ts` — pure state machine helpers (allowed actions per status, planned-deletion date math with configurable grace, reactivation eligibility)
-
-### 7. Out of scope for this pass
-
-- Full GDPR anonymization of retained business records (existing `process_gdpr_deletions` handles cascade of user-owned tables — we call the same logic)
-- IP address capture beyond the request header (best-effort)
-- Bulk deactivation UI (single-user actions only)
-
----
-
-Approve and I'll ship the migration first, then functions + UI in one pass.
+## Technical notes
+- All writes go through the RPC so the client cannot desync balances.
+- The RPC returns `{ income_id, expected_payment_id, prepayment_before, prepayment_after }` so the UI can toast the exact numbers shown in the preview.
+- Double-click protection: RPC is idempotent per appointment via the partial unique index + `FOR UPDATE`.

@@ -98,7 +98,7 @@ export default {
   "status.noShow": "Absence",
   "status.rescheduled": "Reporté",
   "payment.paidNow": "Payé maintenant",
-  "payment.paidNowDesc": "Le client a payé pendant ou après la séance",
+  "payment.paidNowDesc": "Le client a payé avant ou pendant la séance",
   "payment.paidInAdvance": "Payé d'avance",
   "payment.paidInAdvanceDesc": "Le client a déjà payé avant la séance",
   "payment.waitingForPayment": "En attente de paiement",

@@ -98,7 +98,7 @@ export default {
   "status.noShow": "Nieobecność",
   "status.rescheduled": "Przełożono",
   "payment.paidNow": "Opłacono teraz",
-  "payment.paidNowDesc": "Klient zapłacił w trakcie lub po sesji",
+  "payment.paidNowDesc": "Klient zapłacił przed sesją lub w jej trakcie",
   "payment.paidInAdvance": "Zapłacono z góry",
   "payment.paidInAdvanceDesc": "Klient zapłacił już przed sesją",
   "payment.waitingForPayment": "Oczekiwanie na płatność",

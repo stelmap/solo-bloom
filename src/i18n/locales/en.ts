@@ -98,7 +98,7 @@ export default {
   "status.noShow": "No-show",
   "status.rescheduled": "Rescheduled",
   "payment.paidNow": "Paid now",
-  "payment.paidNowDesc": "Client paid during or after the session",
+  "payment.paidNowDesc": "Client paid before or during the session",
   "payment.paidInAdvance": "Paid in advance",
   "payment.paidInAdvanceDesc": "Client already paid before the session",
   "payment.waitingForPayment": "Waiting for payment",
