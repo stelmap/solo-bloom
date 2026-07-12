@@ -669,7 +669,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                     <span className="text-xs font-semibold text-primary">
                       +{cs}{Number(clientCredit).toFixed(2)}
                       {sessionPrice > 0
-                        ? ` · ${t("prepayment.sessionsShort", { count: Math.floor(Number(clientCredit) / sessionPrice) }).replace("{count}", String(Math.floor(Number(clientCredit) / sessionPrice)))}`
+                        ? ` · ${t("prepayment.sessionsShort").replace(/\{\s*count\s*\}/g, String(Math.floor(Number(clientCredit) / sessionPrice)))}`
                         : ""}
                     </span>
                   </div>
