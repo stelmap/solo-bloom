@@ -789,13 +789,16 @@ export function useCompleteFromPrepayment() {
       await supabase.from("income").delete().eq("appointment_id", appointmentId).eq("source", "appointment");
       await supabase.from("expected_payments").delete().eq("appointment_id", appointmentId);
 
-      const { data, error } = await (supabase as any).rpc("consume_client_credit_for_appointment", {
+      // Atomic: consume prepayment credits AND write a Prepayment Balance Withdrawal
+      // audit row (source='prepayment_withdrawal', amount=0) in one transaction.
+      const { data, error } = await (supabase as any).rpc("withdraw_from_prepayment_for_appointment", {
         p_appointment_id: appointmentId,
         p_client_id: clientId,
         p_max_amount: Number(price),
       });
       if (error) throw error;
-      return Number(data ?? 0);
+      const row = Array.isArray(data) ? data[0] : data;
+      return Number(row?.consumed ?? 0);
     },
     onSuccess: () => {
       track("session_completed", { payment_status: "paid_from_prepayment" });
