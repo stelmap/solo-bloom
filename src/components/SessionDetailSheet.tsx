@@ -205,7 +205,6 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
           description: t("payment.paidFromPrepaymentDesc", { symbol: cs, amount: prepaymentRemainingAfter.toFixed(2) }),
         }] : []),
         { value: "paid_now", label: t("payment.paidNow"), description: t("payment.paidNowDesc") },
-        { value: "paid_in_advance", label: t("payment.paidInAdvance"), description: t("payment.paidInAdvanceDesc") },
         { value: "waiting_for_payment", label: t("payment.waitingForPayment"), description: t("payment.waitingForPaymentDesc") },
       ];
 
