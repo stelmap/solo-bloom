@@ -476,7 +476,11 @@ export default function PaymentAuditPage() {
                         className="text-primary hover:underline text-sm font-medium text-left"
                       >{r.client_name}</button>
                     </TableCell>
-                    <TableCell className="py-2 align-middle text-right font-medium tabular-nums">{cs}{r.amount.toFixed(2)}</TableCell>
+                    <TableCell className="py-2 align-middle text-right font-medium tabular-nums">
+                      {(r as any).isPrepayWithdrawal
+                        ? <span className="text-muted-foreground">{cs}0.00</span>
+                        : `${cs}${r.amount.toFixed(2)}`}
+                    </TableCell>
                     <TableCell className="py-2 align-middle text-sm">{methodLabel(r.method)}</TableCell>
                     <TableCell className="py-2 align-middle text-sm">{r.invoice?.invoice_number || <span className="text-muted-foreground">{t("audit.notGenerated")}</span>}</TableCell>
                     <TableCell className="py-2 align-middle"><Badge variant="outline" className={cn("inline-flex items-center border", ab.cls)}>{t(ab.key as any)}</Badge></TableCell>
@@ -493,8 +497,10 @@ export default function PaymentAuditPage() {
                       />
                     </TableCell>
                     <TableCell className="py-2 align-middle text-right text-sm tabular-nums">
-                      {r.allocStatus === "prepayment" ? `+${cs}${r.remaining.toFixed(2)}` :
-                       r.allocStatus === "partial" ? `${cs}${r.remaining.toFixed(2)}` : "—"}
+                      {(r as any).isPrepayWithdrawal
+                        ? <span className="text-amber-700">−{cs}{Number((r as any).prepayMovement || 0).toFixed(2)}</span>
+                        : r.allocStatus === "prepayment" ? `+${cs}${r.remaining.toFixed(2)}` :
+                          r.allocStatus === "partial" ? `${cs}${r.remaining.toFixed(2)}` : "—"}
                     </TableCell>
                   </TableRow>
                 );
