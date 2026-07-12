@@ -46,7 +46,8 @@ export function translateFor(
   }
   if (params) {
     Object.entries(params).forEach(([k, v]) => {
-      const re = new RegExp(`\\{\\s*${k}\\s*\\}`, "g");
+      // Support both {key} and {{key}} placeholders, with optional whitespace.
+      const re = new RegExp(`\\{\\{?\\s*${k}\\s*\\}?\\}`, "g");
       text = (text as string).replace(re, String(v));
     });
   }
