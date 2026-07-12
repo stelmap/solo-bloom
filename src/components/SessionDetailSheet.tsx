@@ -1047,7 +1047,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {sessionPrice > 0
-                      ? t("prepayment.coversApproxSessions", { count: String(Math.floor(Number(clientCredit) / sessionPrice)) })
+                      ? t("prepayment.coversApproxSessions").replace(/\{\s*count\s*\}/g, String(Math.floor(Number(clientCredit) / sessionPrice)))
                       : null}
                   </p>
                 </div>
