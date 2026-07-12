@@ -98,7 +98,7 @@ export default {
   "status.noShow": "Неявка",
   "status.rescheduled": "Перенесено",
   "payment.paidNow": "Оплачено зараз",
-  "payment.paidNowDesc": "Клієнт оплатив під час або після сеансу",
+  "payment.paidNowDesc": "Клієнт оплатив до або під час сеансу",
   "payment.paidInAdvance": "Оплачено заздалегідь",
   "payment.paidInAdvanceDesc": "Клієнт оплатив до сеансу",
   "payment.waitingForPayment": "Очікує оплати",
