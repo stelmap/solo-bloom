@@ -1128,6 +1128,25 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                       </p>
                     )}
                   </div>
+
+                  {amountPaid > sessionPrice + 0.001 && (
+                    <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-1.5">
+                      <p className="text-sm font-semibold text-foreground">{t("payNowBreakdown.title")}</p>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">{t("payNowBreakdown.sessionPayment")}</span>
+                        <span className="font-medium text-foreground">{cs}{sessionPrice.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">{t("payNowBreakdown.prepayment")}</span>
+                        <span className="font-medium text-primary">+{cs}{(amountPaid - sessionPrice).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm border-t border-primary/20 pt-1.5">
+                        <span className="font-semibold text-foreground">{t("payNowBreakdown.total")}</span>
+                        <span className="font-semibold text-foreground">{cs}{amountPaid.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     <Label>{t("common.paymentDate")}</Label>
                     <DatePicker date={paymentDate} onDateChange={setPaymentDate} />
