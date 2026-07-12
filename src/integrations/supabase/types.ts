@@ -1352,6 +1352,8 @@ export type Database = {
         Row: {
           amount: number
           appointment_id: string | null
+          balance_after: number | null
+          balance_before: number | null
           client_id: string | null
           comment: string | null
           created_at: string
@@ -1364,6 +1366,7 @@ export type Database = {
           seed_source: string | null
           session_date: string | null
           source: string
+          source_prepayment_income_id: string | null
           status: string
           updated_at: string
           user_id: string
@@ -1371,6 +1374,8 @@ export type Database = {
         Insert: {
           amount: number
           appointment_id?: string | null
+          balance_after?: number | null
+          balance_before?: number | null
           client_id?: string | null
           comment?: string | null
           created_at?: string
@@ -1383,6 +1388,7 @@ export type Database = {
           seed_source?: string | null
           session_date?: string | null
           source?: string
+          source_prepayment_income_id?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -1390,6 +1396,8 @@ export type Database = {
         Update: {
           amount?: number
           appointment_id?: string | null
+          balance_after?: number | null
+          balance_before?: number | null
           client_id?: string | null
           comment?: string | null
           created_at?: string
@@ -1402,6 +1410,7 @@ export type Database = {
           seed_source?: string | null
           session_date?: string | null
           source?: string
+          source_prepayment_income_id?: string | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -1419,6 +1428,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "income_source_prepayment_income_id_fkey"
+            columns: ["source_prepayment_income_id"]
+            isOneToOne: false
+            referencedRelation: "income"
             referencedColumns: ["id"]
           },
         ]
@@ -3014,6 +3030,19 @@ export type Database = {
         Returns: Json
       }
       user_has_demo_data: { Args: { p_user_id: string }; Returns: boolean }
+      withdraw_from_prepayment_for_appointment: {
+        Args: {
+          p_appointment_id: string
+          p_client_id: string
+          p_max_amount: number
+        }
+        Returns: {
+          audit_income_id: string
+          balance_after: number
+          balance_before: number
+          consumed: number
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "user"

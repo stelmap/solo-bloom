@@ -151,10 +151,11 @@ export default function PaymentAuditPage() {
   const rows = useMemo(() => {
     if (!data) return [];
     const incomeRows = data.income.map(inc => {
+      const isPrepayWithdrawal = inc.source === "prepayment_withdrawal";
       let allocs = data.allocByIncome.get(inc.id) || [];
       // Synthesize a virtual allocation when income is directly attached to an appointment
       // but has no rows in income_session_allocations (legacy / single-session payments).
-      if (allocs.length === 0 && inc.appointment_id) {
+      if (allocs.length === 0 && inc.appointment_id && !isPrepayWithdrawal) {
         allocs = [{
           id: `virtual-${inc.id}`,
           income_id: inc.id,
@@ -163,8 +164,26 @@ export default function PaymentAuditPage() {
           appointments: inc.appointments || null,
         }];
       }
-      const st = statusOf(Number(inc.amount), allocs);
+      // For prepayment-withdrawal audit rows, synthesize a virtual link to the covered
+      // session so the "Linked" column shows the session even though the ledger amount is €0.
+      if (isPrepayWithdrawal && inc.appointment_id) {
+        const movement = Number(inc.balance_before || 0) - Number(inc.balance_after || 0);
+        allocs = [{
+          id: `withdrawal-${inc.id}`,
+          income_id: inc.id,
+          appointment_id: inc.appointment_id,
+          allocated_amount: movement,
+          from_prepayment: true,
+          appointments: inc.appointments || null,
+        }];
+      }
+      const st = isPrepayWithdrawal
+        ? { status: "linked" as AllocStatus, allocated: 0, remaining: 0 }
+        : statusOf(Number(inc.amount), allocs);
       const inv = inc.appointment_id ? data.invByApt.get(inc.appointment_id) : null;
+      const prepayMovement = isPrepayWithdrawal
+        ? Number(inc.balance_before || 0) - Number(inc.balance_after || 0)
+        : 0;
       return {
         kind: "income" as const,
         id: inc.id,
@@ -180,6 +199,8 @@ export default function PaymentAuditPage() {
         paymentStatus: inc.status || "confirmed",
         source: inc.source || "manual",
         allocs,
+        prepayMovement,
+        isPrepayWithdrawal,
         raw: inc,
       };
     });
@@ -455,7 +476,11 @@ export default function PaymentAuditPage() {
                         className="text-primary hover:underline text-sm font-medium text-left"
                       >{r.client_name}</button>
                     </TableCell>
-                    <TableCell className="py-2 align-middle text-right font-medium tabular-nums">{cs}{r.amount.toFixed(2)}</TableCell>
+                    <TableCell className="py-2 align-middle text-right font-medium tabular-nums">
+                      {(r as any).isPrepayWithdrawal
+                        ? <span className="text-muted-foreground">{cs}0.00</span>
+                        : `${cs}${r.amount.toFixed(2)}`}
+                    </TableCell>
                     <TableCell className="py-2 align-middle text-sm">{methodLabel(r.method)}</TableCell>
                     <TableCell className="py-2 align-middle text-sm">{r.invoice?.invoice_number || <span className="text-muted-foreground">{t("audit.notGenerated")}</span>}</TableCell>
                     <TableCell className="py-2 align-middle"><Badge variant="outline" className={cn("inline-flex items-center border", ab.cls)}>{t(ab.key as any)}</Badge></TableCell>
@@ -472,8 +497,10 @@ export default function PaymentAuditPage() {
                       />
                     </TableCell>
                     <TableCell className="py-2 align-middle text-right text-sm tabular-nums">
-                      {r.allocStatus === "prepayment" ? `+${cs}${r.remaining.toFixed(2)}` :
-                       r.allocStatus === "partial" ? `${cs}${r.remaining.toFixed(2)}` : "—"}
+                      {(r as any).isPrepayWithdrawal
+                        ? <span className="text-amber-700">−{cs}{Number((r as any).prepayMovement || 0).toFixed(2)}</span>
+                        : r.allocStatus === "prepayment" ? `+${cs}${r.remaining.toFixed(2)}` :
+                          r.allocStatus === "partial" ? `${cs}${r.remaining.toFixed(2)}` : "—"}
                     </TableCell>
                   </TableRow>
                 );
@@ -515,10 +542,17 @@ export default function PaymentAuditPage() {
               <Row label={t("audit.col.date")} value={openRow.date} />
               <Row label={t("audit.col.client")} value={openRow.client_name} />
               <Row label={t("audit.col.amount")} value={`${cs}${openRow.amount.toFixed(2)}`} />
+              {(openRow as any).isPrepayWithdrawal && (
+                <>
+                  <Row label={t("audit.prepayMovement")} value={`−${cs}${Number((openRow as any).prepayMovement || 0).toFixed(2)}`} />
+                  <Row label={t("audit.balanceBefore")} value={`${cs}${Number(openRow.raw?.balance_before || 0).toFixed(2)}`} />
+                  <Row label={t("audit.balanceAfter")} value={`${cs}${Number(openRow.raw?.balance_after || 0).toFixed(2)}`} />
+                </>
+              )}
               <Row label={t("audit.col.method")} value={openRow.method} />
               <Row label={t("audit.col.invoice")} value={openRow.invoice?.invoice_number || t("audit.notGenerated")} />
               <Row label={t("audit.col.status")} value={openRow.paymentStatus} />
-              <Row label={t("audit.col.source")} value={openRow.source} />
+              <Row label={t("audit.col.source")} value={t(`audit.src.${openRow.source}` as any) || openRow.source} />
               <Row label={t("audit.col.allocation")} value={t(allocBadgeVariant(openRow.allocStatus).key as any)} />
               {openRow.raw?.description && <Row label={t("audit.comment")} value={openRow.raw.description} />}
               <div>
