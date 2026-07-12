@@ -193,6 +193,16 @@ export const TEST_REGISTRY: TestEntry[] = [
     lastRun: LAST_RUN,
   },
   {
+    id: "fin-session-completion-sync",
+    name: "Session completion sync (Pay now / Waiting / From prepayment · AC1–AC8)",
+    file: "src/lib/__tests__/sessionCompletionOptions.test.ts",
+    section: "Finance",
+    kind: "unit",
+    status: "passed",
+    cases: 17,
+    lastRun: LAST_RUN,
+  },
+  {
     id: "fin-income-dedupe",
     name: "Income dedupe (seeder + double-click guard)",
     file: "src/lib/__tests__/incomeDedupe.test.ts",
