@@ -190,12 +190,12 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
           ? {
               value: "already_paid",
               label: t("payment.alreadyPaid"),
-              description: t("payment.alreadyPaidDesc", { symbol: cs, amount: alreadyAllocated.toFixed(2) }),
+              description: t("payment.alreadyPaidDesc").replace(/\{\s*symbol\s*\}/g, cs).replace(/\{\s*amount\s*\}/g, alreadyAllocated.toFixed(2)),
             }
           : {
               value: "paid_from_prepayment",
               label: t("payment.paidFromPrepayment"),
-              description: t("payment.paidFromPrepaymentDesc", { symbol: cs, amount: prepaymentRemainingAfter.toFixed(2) }),
+              description: t("payment.paidFromPrepaymentDesc").replace(/\{\s*symbol\s*\}/g, cs).replace(/\{\s*amount\s*\}/g, prepaymentRemainingAfter.toFixed(2)),
             },
       ]
     : [
@@ -1033,8 +1033,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 <div className="rounded-lg border border-success/30 bg-success/5 p-3 text-sm">
                   <p className="font-medium text-foreground">
                     {fullyPreallocated
-                      ? t("prepayment.sessionAlreadyCovered", { symbol: cs, amount: alreadyAllocated.toFixed(2) })
-                      : t("prepayment.sessionPartiallyCovered", { symbol: cs, covered: alreadyAllocated.toFixed(2), remaining: (sessionPrice - alreadyAllocated).toFixed(2) })}
+                      ? t("prepayment.sessionAlreadyCovered").replace(/\{\s*symbol\s*\}/g, cs).replace(/\{\s*amount\s*\}/g, alreadyAllocated.toFixed(2))
+                      : t("prepayment.sessionPartiallyCovered").replace(/\{\s*symbol\s*\}/g, cs).replace(/\{\s*covered\s*\}/g, alreadyAllocated.toFixed(2)).replace(/\{\s*remaining\s*\}/g, (sessionPrice - alreadyAllocated).toFixed(2))}
                   </p>
                 </div>
               )}
@@ -1043,7 +1043,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
               {hasPrepayment && !prepaymentInsufficient && (
                 <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
                   <p className="font-medium text-foreground">
-                    {t("prepayment.clientHasCredit", { symbol: cs, amount: Number(clientCredit).toFixed(2) })}
+                    {t("prepayment.clientHasCredit").replace(/\{\s*symbol\s*\}/g, cs).replace(/\{\s*amount\s*\}/g, Number(clientCredit).toFixed(2))}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {sessionPrice > 0
@@ -1160,12 +1160,12 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 <div>
                   <p className="text-sm font-semibold text-foreground">
                     {paymentStatus === "already_paid"
-                      ? t("prepayment.willMarkAlreadyPaid", { symbol: cs, amount: alreadyAllocated.toFixed(2) })
+                      ? t("prepayment.willMarkAlreadyPaid").replace(/\{\s*symbol\s*\}/g, cs).replace(/\{\s*amount\s*\}/g, alreadyAllocated.toFixed(2))
                       : paymentStatus === "waiting_for_payment"
-                      ? t("calendar.willBeExpected", { symbol: cs, amount: sessionPrice.toFixed(2) })
+                      ? t("calendar.willBeExpected").replace(/\{\s*symbol\s*\}/g, cs).replace(/\{\s*amount\s*\}/g, sessionPrice.toFixed(2))
                       : paymentStatus === "paid_from_prepayment"
-                      ? t("prepayment.willDeduct", { symbol: cs, amount: sessionPrice.toFixed(2), remaining: prepaymentRemainingAfter.toFixed(2) })
-                      : t("calendar.willBeIncome", { symbol: cs, amount: amountPaid.toFixed(2) })}
+                      ? t("prepayment.willDeduct").replace(/\{\s*symbol\s*\}/g, cs).replace(/\{\s*amount\s*\}/g, sessionPrice.toFixed(2)).replace(/\{\s*remaining\s*\}/g, prepaymentRemainingAfter.toFixed(2))
+                      : t("calendar.willBeIncome").replace(/\{\s*symbol\s*\}/g, cs).replace(/\{\s*amount\s*\}/g, amountPaid.toFixed(2))}
 
                   </p>
 
