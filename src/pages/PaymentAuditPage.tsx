@@ -151,10 +151,11 @@ export default function PaymentAuditPage() {
   const rows = useMemo(() => {
     if (!data) return [];
     const incomeRows = data.income.map(inc => {
+      const isPrepayWithdrawal = inc.source === "prepayment_withdrawal";
       let allocs = data.allocByIncome.get(inc.id) || [];
       // Synthesize a virtual allocation when income is directly attached to an appointment
       // but has no rows in income_session_allocations (legacy / single-session payments).
-      if (allocs.length === 0 && inc.appointment_id) {
+      if (allocs.length === 0 && inc.appointment_id && !isPrepayWithdrawal) {
         allocs = [{
           id: `virtual-${inc.id}`,
           income_id: inc.id,
@@ -163,8 +164,26 @@ export default function PaymentAuditPage() {
           appointments: inc.appointments || null,
         }];
       }
-      const st = statusOf(Number(inc.amount), allocs);
+      // For prepayment-withdrawal audit rows, synthesize a virtual link to the covered
+      // session so the "Linked" column shows the session even though the ledger amount is €0.
+      if (isPrepayWithdrawal && inc.appointment_id) {
+        const movement = Number(inc.balance_before || 0) - Number(inc.balance_after || 0);
+        allocs = [{
+          id: `withdrawal-${inc.id}`,
+          income_id: inc.id,
+          appointment_id: inc.appointment_id,
+          allocated_amount: movement,
+          from_prepayment: true,
+          appointments: inc.appointments || null,
+        }];
+      }
+      const st = isPrepayWithdrawal
+        ? { status: "linked" as AllocStatus, allocated: 0, remaining: 0 }
+        : statusOf(Number(inc.amount), allocs);
       const inv = inc.appointment_id ? data.invByApt.get(inc.appointment_id) : null;
+      const prepayMovement = isPrepayWithdrawal
+        ? Number(inc.balance_before || 0) - Number(inc.balance_after || 0)
+        : 0;
       return {
         kind: "income" as const,
         id: inc.id,
@@ -180,6 +199,8 @@ export default function PaymentAuditPage() {
         paymentStatus: inc.status || "confirmed",
         source: inc.source || "manual",
         allocs,
+        prepayMovement,
+        isPrepayWithdrawal,
         raw: inc,
       };
     });
