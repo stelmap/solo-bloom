@@ -542,10 +542,17 @@ export default function PaymentAuditPage() {
               <Row label={t("audit.col.date")} value={openRow.date} />
               <Row label={t("audit.col.client")} value={openRow.client_name} />
               <Row label={t("audit.col.amount")} value={`${cs}${openRow.amount.toFixed(2)}`} />
+              {(openRow as any).isPrepayWithdrawal && (
+                <>
+                  <Row label={t("audit.prepayMovement")} value={`−${cs}${Number((openRow as any).prepayMovement || 0).toFixed(2)}`} />
+                  <Row label={t("audit.balanceBefore")} value={`${cs}${Number(openRow.raw?.balance_before || 0).toFixed(2)}`} />
+                  <Row label={t("audit.balanceAfter")} value={`${cs}${Number(openRow.raw?.balance_after || 0).toFixed(2)}`} />
+                </>
+              )}
               <Row label={t("audit.col.method")} value={openRow.method} />
               <Row label={t("audit.col.invoice")} value={openRow.invoice?.invoice_number || t("audit.notGenerated")} />
               <Row label={t("audit.col.status")} value={openRow.paymentStatus} />
-              <Row label={t("audit.col.source")} value={openRow.source} />
+              <Row label={t("audit.col.source")} value={t(`audit.src.${openRow.source}` as any) || openRow.source} />
               <Row label={t("audit.col.allocation")} value={t(allocBadgeVariant(openRow.allocStatus).key as any)} />
               {openRow.raw?.description && <Row label={t("audit.comment")} value={openRow.raw.description} />}
               <div>
