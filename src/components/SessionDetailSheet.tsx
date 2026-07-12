@@ -1033,8 +1033,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 <div className="rounded-lg border border-success/30 bg-success/5 p-3 text-sm">
                   <p className="font-medium text-foreground">
                     {fullyPreallocated
-                      ? t("prepayment.sessionAlreadyCovered", { symbol: cs, amount: alreadyAllocated.toFixed(2) })
-                      : t("prepayment.sessionPartiallyCovered", { symbol: cs, covered: alreadyAllocated.toFixed(2), remaining: (sessionPrice - alreadyAllocated).toFixed(2) })}
+                      ? t("prepayment.sessionAlreadyCovered").replace(/\{\s*symbol\s*\}/g, cs).replace(/\{\s*amount\s*\}/g, alreadyAllocated.toFixed(2))
+                      : t("prepayment.sessionPartiallyCovered").replace(/\{\s*symbol\s*\}/g, cs).replace(/\{\s*covered\s*\}/g, alreadyAllocated.toFixed(2)).replace(/\{\s*remaining\s*\}/g, (sessionPrice - alreadyAllocated).toFixed(2))}
                   </p>
                 </div>
               )}
