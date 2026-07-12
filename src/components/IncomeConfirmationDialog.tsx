@@ -121,8 +121,8 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
   const filteredAppointments = useMemo(() => {
     const now = new Date();
     return enrichedAppointments.filter((a: any) => {
-      const isFuture = new Date(a.scheduled_at) > now && (a.status === "scheduled" || a.status === "confirmed" || a.status === "reminder_sent");
       const isCancelled = a.status === "cancelled" || a.status === "no-show";
+      const isFuture = !!a.scheduled_at && new Date(a.scheduled_at) > now && !isCancelled && a.status !== "completed";
       switch (filter) {
         case "unpaid":
           return !isCancelled && a._remaining > 0 && a._otherPaid === 0;
