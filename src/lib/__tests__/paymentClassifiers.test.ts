@@ -39,6 +39,14 @@ describe("paymentClassifiers", () => {
     it("does not count plain paid_now as prepaid", () => {
       expect(isPrepaid({ payment_status: "paid_now" })).toBe(false);
     });
+    it("completed sessions are NEVER prepaid — funds are earned, not reserved", () => {
+      expect(
+        isPrepaid({ status: "completed", payment_status: "paid_in_advance" }),
+      ).toBe(false);
+      expect(
+        isPrepaid({ status: "completed", payment_status: "paid_from_prepayment" }),
+      ).toBe(false);
+    });
   });
 
   describe("isAwaiting", () => {
