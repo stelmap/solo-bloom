@@ -30,4 +30,4 @@ project_id = "rxculneqqaziutulnocs"
   [functions.admin-lifecycle-action]
     verify_jwt = true
   [functions.lifecycle-cron]
-    verify_jwt = false
+    verify_jwt = true
