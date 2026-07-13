@@ -242,12 +242,13 @@ export default function ClientDetailPage() {
   const paidSessions = (appointments as any[]).filter(isEffectivelyPaid).length;
   const awaitingSessions = (appointments as any[]).filter(isEffectivelyAwaiting).length;
 
-  // Prepaid count = strict count of sessions with payment_status='paid_in_advance'
-  // (matches DB: SELECT count(*) WHERE payment_status='paid_in_advance').
-  // Amount = remaining unallocated prepayment pool from balance computation.
+  // Prepaid count = only FUTURE / not-yet-performed sessions whose funds are
+  // still reserved (paid_in_advance). Completed sessions are never "prepaid" —
+  // once the session happens, the money is earned, not reserved. This guards
+  // against stale rows where the DB status wasn't collapsed to paid_now.
   const { prepaidSessions, prepaidAmount } = useMemo(() => {
     const count = (appointments as any[]).filter(
-      (a) => a.payment_status === "paid_in_advance",
+      (a) => a.payment_status === "paid_in_advance" && a.status !== "completed",
     ).length;
     return { prepaidSessions: count, prepaidAmount: balanceComputation.prepaid };
   }, [appointments, balanceComputation]);
@@ -268,7 +269,7 @@ export default function ClientDetailPage() {
       // payment-status counters run over the full appointment list (matches top cards)
       case "paid": return sorted.filter(isEffectivelyPaid);
       case "awaiting": return sorted.filter(isEffectivelyAwaiting);
-      case "prepaid": return sorted.filter((a: any) => a.payment_status === "paid_in_advance");
+      case "prepaid": return sorted.filter((a: any) => a.payment_status === "paid_in_advance" && a.status !== "completed");
       case "supervision": return [];
       default: return realSorted;
     }
