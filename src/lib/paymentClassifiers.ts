@@ -26,9 +26,16 @@ export const isCancelled = (a: AppointmentLike) => a.status === "cancelled";
 
 export const isNoShow = (a: AppointmentLike) => a.status === "no-show";
 
+/**
+ * Prepaid = money still reserved for a future/not-yet-performed session.
+ * Once a session is completed, its payment is earned (paid), not reserved,
+ * so completed sessions must never be reported as prepaid — even if their
+ * payment_status column is momentarily stale.
+ */
 export const isPrepaid = (a: AppointmentLike) =>
-  a.payment_status === "paid_in_advance" ||
-  a.payment_status === "paid_from_prepayment";
+  a.status !== "completed" &&
+  (a.payment_status === "paid_in_advance" ||
+    a.payment_status === "paid_from_prepayment");
 
 /**
  * A "real" session that should be counted in Total Sessions:
