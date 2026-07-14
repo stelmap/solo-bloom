@@ -139,6 +139,61 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [notesDialogAppointmentId, setNotesDialogAppointmentId] = useState<string | null>(null);
   const [notesDialogMode, setNotesDialogMode] = useState<"post-complete" | "edit">("post-complete");
 
+  // Structured session-notes inline form state
+  const qc = useQueryClient();
+  const [snEditing, setSnEditing] = useState(false);
+  const [snSummary, setSnSummary] = useState("");
+  const [snHasHomework, setSnHasHomework] = useState(false);
+  const [snHomework, setSnHomework] = useState("");
+  const [snTransference, setSnTransference] = useState("");
+  const [snSaving, setSnSaving] = useState(false);
+
+  const hasSavedSessionNotes = !!(currentNotes && (currentNotes.session_summary || currentNotes.homework_text || currentNotes.transference || currentNotes.has_homework));
+
+  const resetSnFromCurrent = () => {
+    setSnSummary(currentNotes?.session_summary ?? "");
+    setSnHasHomework(!!currentNotes?.has_homework);
+    setSnHomework(currentNotes?.homework_text ?? "");
+    setSnTransference(currentNotes?.transference ?? "");
+  };
+
+  useEffect(() => {
+    resetSnFromCurrent();
+    setSnEditing(false);
+  }, [apt?.id, currentNotes?.id]);
+
+  const saveSessionNotes = async () => {
+    if (!apt?.id || !apt?.client_id) return;
+    setSnSaving(true);
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      const uid = auth.user?.id;
+      if (!uid) throw new Error("Not authenticated");
+      const { error } = await supabase.from("session_notes").upsert(
+        {
+          user_id: uid,
+          appointment_id: apt.id,
+          client_id: apt.client_id,
+          session_summary: snSummary.trim() || null,
+          has_homework: snHasHomework,
+          homework_text: snHasHomework ? snHomework.trim() || null : null,
+          transference: snTransference.trim() || null,
+        },
+        { onConflict: "appointment_id" }
+      );
+      if (error) throw error;
+      await qc.invalidateQueries({ queryKey: ["session_notes"] });
+      toast({ title: t("sessionNotes.saved") });
+      setSnEditing(false);
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    } finally {
+      setSnSaving(false);
+    }
+  };
+
+
+
 
 
   // Edit form
