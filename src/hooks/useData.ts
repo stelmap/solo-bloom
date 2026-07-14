@@ -3196,49 +3196,88 @@ export function useClientCreditBalance(clientId: string | undefined) {
       // completed work, i.e. money available to consume against upcoming
       // (or just-finished) sessions. Legacy `client_credits` rows are
       // additive for backwards compatibility with old data.
-      const [{ data: incomes, error: incErr }, { data: appts, error: aptErr }, { data: legacy, error: legacyErr }, { data: groupPays, error: groupErr }] = await Promise.all([
+      const [
+        { data: incomes, error: incErr },
+        { data: appts, error: aptErr },
+        { data: legacy, error: legacyErr },
+        { data: groupPays, error: groupErr },
+        { data: allocRows, error: allocErr },
+      ] = await Promise.all([
         (supabase as any)
           .from("income")
-          .select("amount, status")
+          .select("id, amount, status")
           .eq("client_id", clientId!),
         (supabase as any)
           .from("appointments")
-          .select("price, status, payment_status")
+          .select("id, price, status, payment_status")
           .eq("client_id", clientId!),
         (supabase as any)
           .from("client_credits")
-          .select("amount")
+          .select("amount, income_id")
           .eq("client_id", clientId!),
         (supabase as any)
           .from("group_session_payments")
           .select("amount, payment_state")
           .eq("client_id", clientId!)
           .eq("billing_rule_applied", true),
+        (supabase as any)
+          .from("income_session_allocations")
+          .select("appointment_id, allocated_amount, income:income_id(status, client_id)")
+          .eq("income.client_id", clientId!),
       ]);
       if (incErr) throw incErr;
       if (aptErr) throw aptErr;
       if (legacyErr) throw legacyErr;
       if (groupErr) throw groupErr;
+      if (allocErr) throw allocErr;
 
       const totalIncome = (incomes ?? [])
         .filter((i: any) => (i.status ?? "confirmed") === "confirmed")
         .reduce((s: number, i: any) => s + Number(i.amount || 0), 0);
-      const totalPayableCompleted = (appts ?? [])
+
+      // Sum all confirmed allocations against this client's sessions
+      // (reserved money for a specific appointment — future OR completed).
+      const allocatedByApt: Record<string, number> = {};
+      let totalAllocations = 0;
+      for (const r of (allocRows ?? []) as any[]) {
+        if (r.income && r.income.status && r.income.status !== "confirmed") continue;
+        const amt = Number(r.allocated_amount || 0);
+        allocatedByApt[r.appointment_id] = (allocatedByApt[r.appointment_id] || 0) + amt;
+        totalAllocations += amt;
+      }
+
+      // Debt from completed payable sessions that are NOT covered by an allocation
+      // (legacy paid_now rows or unpaid completed rows). Only the uncovered portion
+      // reduces the prepaid balance — the allocated portion is already subtracted
+      // via totalAllocations.
+      const completedUnallocatedDebt = (appts ?? [])
         .filter((a: any) =>
           a.status === "completed" &&
           Number(a.price || 0) > 0 &&
           a.payment_status !== "not_applicable"
         )
-        .reduce((s: number, a: any) => s + Number(a.price || 0), 0);
+        .reduce((s: number, a: any) => {
+          const covered = allocatedByApt[a.id] || 0;
+          return s + Math.max(0, Number(a.price || 0) - covered);
+        }, 0);
+
       const totalPayableGroup = (groupPays ?? [])
         .filter((p: any) =>
           Number(p.amount || 0) > 0 &&
           p.payment_state !== "not_applicable"
         )
         .reduce((s: number, p: any) => s + Number(p.amount || 0), 0);
-      const legacyCredit = (legacy ?? []).reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
 
-      const balance = Math.max(0, totalIncome - totalPayableCompleted - totalPayableGroup) + legacyCredit;
+      // Only truly orphan legacy credits (not tied to an income row we already
+      // count above) contribute — avoids double counting the remainder we insert
+      // on top of the income record itself.
+      const legacyCredit = (legacy ?? [])
+        .filter((r: any) => !r.income_id)
+        .reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
+
+      const balance =
+        Math.max(0, totalIncome - totalAllocations - completedUnallocatedDebt - totalPayableGroup) +
+        legacyCredit;
       return balance as number;
     },
     enabled: !!user && !!clientId,
