@@ -3211,17 +3211,42 @@ export function useClientCreditBalance(clientId: string | undefined) {
           .eq("client_id", clientId!),
         (supabase as any)
           .from("income_session_allocations")
-          .select("income_id, allocated_amount, income:income_id!inner(status, client_id)")
+          .select("income_id, allocated_amount, appointment_id, income:income_id!inner(status, client_id)")
           .eq("income.client_id", clientId!),
       ]);
       if (incErr) throw incErr;
       if (legacyErr) throw legacyErr;
       if (allocErr) throw allocErr;
 
-      // Explicit allocation totals per income row (only confirmed income counts).
+      // Gather appointment IDs we need statuses for (both explicit allocations
+      // and virtual allocations via income.appointment_id). Reservations tied
+      // to a session that has NOT been completed yet are treated as prepaid
+      // balance — the money is still in the pool from the client's POV, and a
+      // withdrawal audit row is written when the session completes.
+      const explicitAptIds = ((allocRows ?? []) as any[])
+        .map((r) => r.appointment_id)
+        .filter(Boolean);
+      const virtualAptIds = ((incomes ?? []) as any[])
+        .filter((i) => i.appointment_id && (i.source ?? "") !== "prepayment_withdrawal")
+        .map((i) => i.appointment_id);
+      const aptIds = Array.from(new Set([...explicitAptIds, ...virtualAptIds]));
+      const completedApt = new Set<string>();
+      if (aptIds.length > 0) {
+        const { data: apts } = await (supabase as any)
+          .from("appointments")
+          .select("id, status")
+          .in("id", aptIds);
+        for (const a of (apts ?? []) as any[]) {
+          if (a.status === "completed") completedApt.add(a.id);
+        }
+      }
+
+      // Explicit allocation totals per income row (only confirmed income and
+      // only allocations to already-completed sessions consume the pool).
       const allocByIncome: Record<string, number> = {};
       for (const r of (allocRows ?? []) as any[]) {
         if (r.income && r.income.status && r.income.status !== "confirmed") continue;
+        if (r.appointment_id && !completedApt.has(r.appointment_id)) continue;
         allocByIncome[r.income_id] = (allocByIncome[r.income_id] || 0) + Number(r.allocated_amount || 0);
       }
 
@@ -3234,12 +3259,17 @@ export function useClientCreditBalance(clientId: string | undefined) {
         if (inc.source === "prepayment_withdrawal") continue;
         const amount = Number(inc.amount || 0);
         const explicit = allocByIncome[inc.id] || 0;
-        // Virtual allocation: legacy single-session payments carry an
-        // appointment_id without a row in income_session_allocations.
-        const virtualAlloc = explicit === 0 && inc.appointment_id ? amount : 0;
+        // Virtual allocation only applies once the linked session is
+        // completed; otherwise the deposit is still a reservation and stays
+        // visible on the client's prepaid balance.
+        const virtualAlloc =
+          explicit === 0 && inc.appointment_id && completedApt.has(inc.appointment_id)
+            ? amount
+            : 0;
         const remaining = Math.max(0, amount - explicit - virtualAlloc);
         prepaid += remaining;
       }
+
 
       // Only truly orphan legacy credits (not tied to an income row we
       // already count) contribute.
