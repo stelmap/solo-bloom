@@ -867,18 +867,52 @@ export function useCancelAppointment() {
        */
        chargeFee?: boolean;
     }) => {
-      // Always clear any pre-existing income/expected so we start clean.
-      await supabase.from("income").delete().eq("appointment_id", id);
+      // Detect the prior payment state BEFORE mutating anything. A session
+      // that was paid_in_advance / paid_from_prepayment is backed by the
+      // client's prepayment pool — cancelling it with "must be paid" must
+      // consume that prepayment (not create a new debt or a refund).
+      const { data: prior } = await supabase
+        .from("appointments")
+        .select("payment_status")
+        .eq("id", id)
+        .maybeSingle();
+      const wasPrepaid =
+        (prior as any)?.payment_status === "paid_in_advance" ||
+        (prior as any)?.payment_status === "paid_from_prepayment";
+
+      const consumePrepayment =
+        chargeFee && wasPrepaid && !!clientId && !!price && Number(price) > 0;
+
+      // Clear pre-existing debt / non-prepayment income rows. When we're about
+      // to record a prepayment withdrawal, keep any historical prepayment
+      // audit rows intact.
+      if (consumePrepayment) {
+        await supabase.from("income").delete()
+          .eq("appointment_id", id)
+          .neq("source", "prepayment_withdrawal");
+      } else {
+        await supabase.from("income").delete().eq("appointment_id", id);
+      }
       await supabase.from("expected_payments").delete().eq("appointment_id", id);
 
-      const nextPaymentStatus = chargeFee ? "waiting_for_payment" : "not_applicable";
+      const nextPaymentStatus = consumePrepayment
+        ? "paid_from_prepayment"
+        : chargeFee ? "waiting_for_payment" : "not_applicable";
       const { error } = await supabase.from("appointments").update({
         status, payment_status: nextPaymentStatus,
         ...(cancellationReason ? { cancellation_reason: cancellationReason } : {}),
       } as any).eq("id", id);
       if (error) throw error;
 
-      if (chargeFee && clientId && price && Number(price) > 0) {
+      if (consumePrepayment) {
+        // Atomic: deduct prepayment + write €0 "Prepayment Balance Withdrawal"
+        // audit row visible in Payment Audit. No new Income, no new debt.
+        const { error: rpcErr } = await (supabase as any).rpc(
+          "withdraw_from_prepayment_for_appointment",
+          { p_appointment_id: id, p_client_id: clientId, p_max_amount: Number(price) },
+        );
+        if (rpcErr) throw rpcErr;
+      } else if (chargeFee && clientId && price && Number(price) > 0) {
         await supabase.from("expected_payments").insert({
           user_id: user!.id, appointment_id: id,
           client_id: clientId, amount: Number(price), status: "pending",
@@ -910,6 +944,10 @@ export function useCancelAppointment() {
       qc.invalidateQueries({ queryKey: ["group-all-attendance"] });
       qc.invalidateQueries({ queryKey: ["client-debt"] });
       qc.invalidateQueries({ queryKey: ["expected-payments"] });
+      qc.invalidateQueries({ queryKey: ["client-credit-balance"] });
+      qc.invalidateQueries({ queryKey: ["client-allocations"] });
+      qc.invalidateQueries({ queryKey: ["appointment-allocations"] });
+      qc.invalidateQueries({ queryKey: ["payment-audit"] });
     },
   });
 }
