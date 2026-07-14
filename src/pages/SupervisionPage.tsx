@@ -77,7 +77,11 @@ export default function SupervisionPage() {
         appointment_id: n.appointment_id,
         source: n.source,
         service_name: n.service_name,
+        session_summary: n.session_summary,
+        homework_text: n.homework_text,
+        transference: n.transference,
       }));
+
       // Only mark actual client_notes (not appointment-sourced notes)
       const clientNoteIds = unusedNotes
         .filter((n: any) => n.source === "client_note")
