@@ -307,6 +307,37 @@ export default function AdminAnalyticsPage() {
       for (const [k, set] of m) out[k] = set.size;
       return out;
     };
+
+    // Avg time on page: for each session, sort events chronologically; dwell
+    // time on path P = timestamp of the next event in the same session minus
+    // this event's timestamp. Gaps over 30 min are treated as session breaks
+    // (the user walked away) and don't contribute — this keeps averages honest.
+    const SESSION_GAP_MS = 30 * 60 * 1000;
+    const pageTime = new Map<string, { total: number; count: number }>();
+    const sessionEvents = new Map<string, EventRow[]>();
+    for (const r of rows) {
+      const k = visitorKey(r);
+      if (!sessionEvents.has(k)) sessionEvents.set(k, []);
+      sessionEvents.get(k)!.push(r);
+    }
+    for (const evs of sessionEvents.values()) {
+      evs.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      for (let i = 0; i < evs.length - 1; i++) {
+        const cur = evs[i];
+        if (!cur.path) continue;
+        const dt = new Date(evs[i + 1].created_at).getTime() - new Date(cur.created_at).getTime();
+        if (dt <= 0 || dt > SESSION_GAP_MS) continue;
+        const bucket = pageTime.get(cur.path) ?? { total: 0, count: 0 };
+        bucket.total += dt / 1000;
+        bucket.count += 1;
+        pageTime.set(cur.path, bucket);
+      }
+    }
+    const avgTimeByPage: Record<string, number> = {};
+    for (const [path, { total, count }] of pageTime) {
+      if (count > 0) avgTimeByPage[path] = total / count;
+    }
+
     return {
       visitors,
       pageViews,
@@ -318,8 +349,10 @@ export default function AdminAnalyticsPage() {
       byPage: accum((r) => r.path),
       byDevice: accum((r) => r.device_type),
       byCountry: accum((r) => r.country),
+      avgTimeByPage,
     };
   }, [rows]);
+
 
   if (loading) {
     return (
