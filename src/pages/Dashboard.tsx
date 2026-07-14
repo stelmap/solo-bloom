@@ -640,8 +640,102 @@ function TopClientsRevenue({ t, cs, navigate }: { t: (k: any, p?: any) => string
   ];
 
   const { top, distribution, totalRevenue } = useMemo(() => {
-...
-      {isLoading ? (
+    const nameById = new Map<string, string>();
+    for (const c of clients as any[]) nameById.set(c.id, c.name || "—");
+
+    const totals = new Map<string, number>();
+    let grandTotal = 0;
+    for (const inc of incomes as any[]) {
+      if ((inc.status ?? "confirmed") !== "confirmed") continue;
+      if (inc.source === "prepayment_withdrawal") continue;
+      const amt = Number(inc.amount || 0);
+      if (!(amt > 0)) continue;
+      const cid = inc.client_id || inc.appointments?.client_id;
+      const key = cid || "__unassigned__";
+      totals.set(key, (totals.get(key) || 0) + amt);
+      grandTotal += amt;
+    }
+
+    const ranked = Array.from(totals.entries())
+      .map(([id, amount]) => ({
+        id,
+        name: id === "__unassigned__" ? t("dash.unassignedClient") : (nameById.get(id) || "—"),
+        amount,
+      }))
+      .sort((a, b) => b.amount - a.amount);
+
+    const topList = ranked.slice(0, 10);
+    const topFive = ranked.slice(0, 5);
+    const rest = ranked.slice(5);
+    const restSum = rest.reduce((s, r) => s + r.amount, 0);
+    const dist = [...topFive.map((r) => ({ name: r.name, value: r.amount, id: r.id }))];
+    if (restSum > 0) dist.push({ name: t("dash.othersClients"), value: restSum, id: "__others__" });
+
+    return { top: topList, distribution: dist, totalRevenue: grandTotal };
+  }, [incomes, clients, t]);
+
+  const rangeLabel = useCustom
+    ? `${customFrom || "…"} → ${customTo || "…"}`
+    : (rangeOptions.find((o) => o.key === range)?.label ?? "");
+
+  return (
+    <section>
+      <h2 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2 flex-wrap">
+        <DollarSign className="h-4 w-4 text-primary" />
+        {t("dash.revenueByClient")}
+        <span className="ml-auto text-xs text-muted-foreground font-normal tabular-nums">
+          {rangeLabel}: <span className="font-semibold text-foreground">{cs}{totalRevenue.toLocaleString()}</span>
+        </span>
+      </h2>
+
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap gap-1 p-1 bg-muted/40 border border-border rounded-full">
+          {rangeOptions.map((opt) => {
+            const active = !useCustom && range === opt.key;
+            return (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => { setRange(opt.key); setCustomFrom(""); setCustomTo(""); }}
+                className={cn(
+                  "px-3 py-1 rounded-full text-xs font-medium transition-colors",
+                  active ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-1 text-xs">
+          <input
+            type="date"
+            value={customFrom}
+            onChange={(e) => setCustomFrom(e.target.value)}
+            className="bg-card border border-border rounded-md px-2 py-1 text-xs text-foreground"
+            aria-label={t("dash.range.from") || "From"}
+          />
+          <span className="text-muted-foreground">—</span>
+          <input
+            type="date"
+            value={customTo}
+            onChange={(e) => setCustomTo(e.target.value)}
+            className="bg-card border border-border rounded-md px-2 py-1 text-xs text-foreground"
+            aria-label={t("dash.range.to") || "To"}
+          />
+          {useCustom && (
+            <button
+              type="button"
+              onClick={() => { setCustomFrom(""); setCustomTo(""); }}
+              className="ml-1 text-muted-foreground hover:text-foreground text-xs underline"
+            >
+              {t("common.reset") || "Reset"}
+            </button>
+          )}
+        </div>
+      </div>
+
+
         <div className="bg-card border border-border rounded-[18px] p-6 text-center text-muted-foreground text-sm">{t("common.loading") || "…"}</div>
       ) : top.length === 0 ? (
         <div className="bg-card border border-border rounded-[18px] p-6 text-center text-muted-foreground text-sm">{t("dash.noRevenueYet")}</div>
