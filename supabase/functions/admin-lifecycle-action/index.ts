@@ -11,7 +11,10 @@ type Action =
   | "cancel_deactivation"
   | "resend_email"
   | "delete_permanently"
-  | "cancel_deletion";
+  | "cancel_deletion"
+  | "send_warning_email_uk"
+  | "send_warning_email_en";
+
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
