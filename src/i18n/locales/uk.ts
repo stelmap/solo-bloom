@@ -1634,6 +1634,8 @@ export default {
   "dash.range.to": "До",
   "common.reset": "Скинути",
   "dash.unassignedClient": "Без клієнта",
+  "sessionNotes.lastTitle": "Нотатки останньої сесії",
+  "common.view": "Переглянути",
   "sessionNotes.title": "Нотатки сесії",
   "sessionNotes.summaryLabel": "Про що була сесія?",
   "sessionNotes.summaryPlaceholder": "Коротко опишіть основну тему сесії…",

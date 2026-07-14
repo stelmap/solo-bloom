@@ -1634,6 +1634,8 @@ export default {
   "dash.range.to": "To",
   "common.reset": "Reset",
   "dash.unassignedClient": "Unassigned",
+  "sessionNotes.lastTitle": "Last session notes",
+  "common.view": "View",
   "sessionNotes.title": "Session notes",
   "sessionNotes.summaryLabel": "What was this session about?",
   "sessionNotes.summaryPlaceholder": "Briefly describe the main topic of the session…",

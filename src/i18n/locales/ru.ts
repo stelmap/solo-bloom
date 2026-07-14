@@ -1766,6 +1766,8 @@ export default {
   "dash.range.to": "До",
   "common.reset": "Сбросить",
   "dash.unassignedClient": "Без клиента",
+  "sessionNotes.lastTitle": "Заметки последней сессии",
+  "common.view": "Посмотреть",
   "sessionNotes.title": "Заметки сессии",
   "sessionNotes.summaryLabel": "О чём была сессия?",
   "sessionNotes.summaryPlaceholder": "Кратко опишите основную тему сессии…",
