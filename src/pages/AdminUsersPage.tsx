@@ -392,10 +392,17 @@ export default function AdminUsersPage() {
                             u.last_sign_in_at && (Date.now() - new Date(u.last_sign_in_at).getTime()) < twoMonthsMs
                           );
                           const isProtected = recentlyLoggedIn && Boolean(u.has_records);
+                          const emailInvalid = !isValidEmail(u.email);
                           const blockedFor = new Set<LifecycleAction>(
                             isProtected ? ["deactivate", "delete_permanently"] : []
                           );
+                          if (emailInvalid) {
+                            blockedFor.add("send_warning_email_uk");
+                            blockedFor.add("send_warning_email_en");
+                            blockedFor.add("resend_email");
+                          }
                           const usable = actions.filter((a) => !blockedFor.has(a));
+
                           if (actions.length === 0) {
                             return <span className="text-xs text-muted-foreground">—</span>;
                           }
