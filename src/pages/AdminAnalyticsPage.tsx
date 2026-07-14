@@ -341,7 +341,36 @@ export default function AdminAnalyticsPage() {
             </div>
 
             <Card>
-              <CardHeader><CardTitle>Conversion funnel</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle>Landing → Auth → Subscription</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Unique visitors per step. Step % = conversion from previous step.
+                  Overall % = share of landing visitors that reached the step.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {conversion.map((s, i) => (
+                  <div key={s.label} className="space-y-1">
+                    <div className="flex flex-wrap justify-between gap-2 text-sm">
+                      <span className="font-medium">{i + 1}. {s.label}</span>
+                      <span className="text-muted-foreground">
+                        {s.count.toLocaleString()} visitors
+                        {i > 0 && <> · step {s.stepPct}% · overall {s.overallPct}%</>}
+                        {i > 0 && s.drop > 0 && (
+                          <span className="text-destructive"> · -{s.drop.toLocaleString()} dropped</span>
+                        )}
+                      </span>
+                    </div>
+                    <div className="h-2 rounded bg-muted overflow-hidden">
+                      <div className="h-full bg-primary" style={{ width: `${s.overallPct}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader><CardTitle>Detailed funnel (all events)</CardTitle></CardHeader>
               <CardContent className="space-y-2">
                 {funnel.map((s) => (
                   <div key={s.label} className="space-y-1">
