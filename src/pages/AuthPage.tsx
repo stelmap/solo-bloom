@@ -340,7 +340,7 @@ export default function AuthPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-[#071A2F] via-[#071A2F] to-[#040F1F]" />
         <div className="relative z-10 max-w-md space-y-6 text-center">
           <h1 className="text-4xl font-bold text-white tracking-tight">Solo<span className="text-primary">Bizz</span></h1>
-          <p className="text-white/70 text-lg leading-relaxed">{t("auth.heroText")}</p>
+          <p className="text-white/90 text-lg leading-relaxed">{t("auth.heroText")}</p>
         </div>
       </div>
 

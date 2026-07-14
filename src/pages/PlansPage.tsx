@@ -455,7 +455,7 @@ export default function PlansPage() {
                   <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
                   <div className="space-y-1">
                     <p className="text-sm font-semibold">{t("plans.billingError")}</p>
-                    <p className="text-sm text-destructive/90">{subscriptionError}</p>
+                    <p className="text-sm text-destructive">{subscriptionError}</p>
                   </div>
                 </div>
               </div>
