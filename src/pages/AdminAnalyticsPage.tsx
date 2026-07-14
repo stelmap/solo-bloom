@@ -167,6 +167,48 @@ export default function AdminAnalyticsPage() {
     });
   }, [stats]);
 
+  // Focused Landing → Auth → Subscription conversion, using UNIQUE visitors
+  // (session_id / anonymous_id / user_id) rather than raw event counts so
+  // multiple events per visitor don't inflate the numbers.
+  const conversion = useMemo(() => {
+    const LANDING = new Set(["website_page_view", "landing_view", "$pageview"]);
+    const AUTH = new Set(["auth_page_opened"]);
+    const REG = new Set(["registration_completed", "sign_up_completed"]);
+    const CHECKOUT = new Set(["stripe_checkout_opened", "checkout_started"]);
+    const SUB = new Set(["subscription_completed", "subscription_active", "checkout_completed"]);
+
+    const bucket = (set: Set<string>) => {
+      const ids = new Set<string>();
+      for (const r of rows) {
+        if (!set.has(r.event_name)) continue;
+        const key = r.user_id || r.session_id || r.anonymous_id;
+        if (key) ids.add(key);
+      }
+      return ids;
+    };
+    const landing = bucket(LANDING);
+    const auth = bucket(AUTH);
+    const reg = bucket(REG);
+    const checkout = bucket(CHECKOUT);
+    const sub = bucket(SUB);
+
+    const steps = [
+      { label: "Landing visit", count: landing.size },
+      { label: "Opened auth", count: auth.size },
+      { label: "Registered", count: reg.size },
+      { label: "Opened checkout", count: checkout.size },
+      { label: "Subscribed", count: sub.size },
+    ];
+    const top = steps[0].count || 0;
+    return steps.map((s, i) => {
+      const prev = i === 0 ? s.count : steps[i - 1].count;
+      const overallPct = top > 0 ? Math.round((s.count / top) * 1000) / 10 : 0;
+      const stepPct = prev > 0 ? Math.round((s.count / prev) * 1000) / 10 : 0;
+      const drop = prev > 0 ? Math.max(prev - s.count, 0) : 0;
+      return { ...s, overallPct, stepPct, drop };
+    });
+  }, [rows]);
+
   // Web-traffic style metrics computed from raw event rows.
   // A "visit" = a unique session_id (falls back to anonymous_id, then user_id).
   // A "page view" = any event with a path (we don't have $pageview-only data,
