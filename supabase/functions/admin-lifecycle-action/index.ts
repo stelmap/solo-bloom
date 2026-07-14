@@ -92,21 +92,38 @@ Deno.serve(async (req) => {
       });
     };
 
+    // Call send-transactional-email via raw fetch so the admin's Authorization
+    // header (real user JWT) is forwarded unchanged. Using functions.invoke here
+    // would override Authorization with the anon publishable key (sb_publishable_*),
+    // which is NOT a JWT and fails in-code getClaims() validation.
+    const callEmailFn = async (body: Record<string, unknown>) => {
+      const res = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader,
+          apikey: anonKey,
+        },
+        body: JSON.stringify(body),
+      });
+      const text = await res.text();
+      let data: unknown = null;
+      try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+      return { ok: res.ok, status: res.status, data };
+    };
+
     const sendWarning = async (langOverride?: string) => {
       if (!targetEmail) return { ok: false, error: "no email" };
       const lang = langOverride ?? language;
-      // Invoke via userClient so the caller's JWT (validated by getClaims in the
-      // target function) is forwarded — the service-role key is no longer a JWT.
-      const { data, error } = await userClient.functions.invoke("send-transactional-email", {
-        body: {
-          templateName: "account-deactivation-warning",
-          recipientEmail: targetEmail,
-          idempotencyKey: `deactivation-warning-${targetUserId}-${Date.now()}`,
-          templateData: { language: lang, loginUrl: "https://solo-bizz.com/auth" },
-        },
+      const res = await callEmailFn({
+        templateName: "account-deactivation-warning",
+        recipientEmail: targetEmail,
+        idempotencyKey: `deactivation-warning-${targetUserId}-${Date.now()}`,
+        templateData: { language: lang, loginUrl: "https://solo-bizz.com/auth" },
       });
-      return { ok: !error, error, data, language: lang };
+      return { ok: res.ok, error: res.ok ? null : res.data, data: res.data, language: lang };
     };
+
 
 
     // Safety guard: block deactivation / permanent deletion when the user is
@@ -191,15 +208,14 @@ Deno.serve(async (req) => {
 
         // Send final email BEFORE deleting the auth user (address becomes unavailable after)
         if (targetEmail) {
-          await userClient.functions.invoke("send-transactional-email", {
-            body: {
-              templateName: "account-deleted-final",
-              recipientEmail: targetEmail,
-              idempotencyKey: `deletion-final-${targetUserId}-${Date.now()}`,
-              templateData: { language },
-            },
+          await callEmailFn({
+            templateName: "account-deleted-final",
+            recipientEmail: targetEmail,
+            idempotencyKey: `deletion-final-${targetUserId}-${Date.now()}`,
+            templateData: { language },
           });
         }
+
 
         // Mark lifecycle as deleted first (audit preserved even if auth delete fails)
         await admin.from("user_lifecycle").update({
