@@ -36,6 +36,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { useGroupAttendance, useUpdateAttendance, useGroup, useGroupMembers, useCompleteGroupSession, useGroupSessionPayments } from "@/hooks/useGroups";
 import { PaymentEditDialog } from "@/components/PaymentEditDialog";
+import { SessionNotesDialog } from "@/components/SessionNotesDialog";
+import { useQuery } from "@tanstack/react-query";
 
 interface SessionDetailSheetProps {
   appointment: any | null;
