@@ -971,27 +971,83 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 </div>
               )}
 
-              {/* Saved session notes (post-completion) — psychologist only via RLS */}
-              {currentNotes && (currentNotes.session_summary || currentNotes.homework_text || currentNotes.transference || currentNotes.has_homework) && (
-                <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
-                  <div className="flex items-center justify-between">
-                    <Label className="flex items-center gap-1.5">
-                      <FileText className="h-3.5 w-3.5" /> {t("sessionNotes.title")}
-                    </Label>
+              {/* Unified session notes — structured, inline-editable */}
+              <div className="space-y-3 rounded-lg border bg-muted/30 p-3">
+                <div className="flex items-center justify-between">
+                  <Label className="flex items-center gap-1.5">
+                    <FileText className="h-3.5 w-3.5" /> {t("session.notes")}
+                  </Label>
+                  {hasSavedSessionNotes && !snEditing && (
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => {
-                        setNotesDialogAppointmentId(apt.id);
-                        setNotesDialogMode("edit");
-                        setNotesDialogOpen(true);
-                      }}
+                      onClick={() => { resetSnFromCurrent(); setSnEditing(true); }}
                     >
                       <Pencil className="h-3.5 w-3.5 mr-1" /> {t("common.edit")}
                     </Button>
+                  )}
+                </div>
+
+                {(snEditing || !hasSavedSessionNotes) ? (
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">{t("sessionNotes.summaryLabel")}</Label>
+                      <Textarea
+                        value={snSummary}
+                        onChange={(e) => setSnSummary(e.target.value)}
+                        placeholder={t("sessionNotes.summaryPlaceholder")}
+                        className="min-h-[80px] text-sm"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id={`sn-hw-${apt.id}`}
+                          checked={snHasHomework}
+                          onCheckedChange={(v) => setSnHasHomework(!!v)}
+                        />
+                        <Label htmlFor={`sn-hw-${apt.id}`} className="cursor-pointer font-normal text-sm">
+                          {t("sessionNotes.hasHomework")}
+                        </Label>
+                      </div>
+                      {snHasHomework && (
+                        <Textarea
+                          value={snHomework}
+                          onChange={(e) => setSnHomework(e.target.value)}
+                          placeholder={t("sessionNotes.homeworkPlaceholder")}
+                          className="min-h-[60px] text-sm"
+                        />
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">{t("sessionNotes.transferenceLabel")}</Label>
+                      <Textarea
+                        value={snTransference}
+                        onChange={(e) => setSnTransference(e.target.value)}
+                        placeholder={t("sessionNotes.transferencePlaceholder")}
+                        className="min-h-[60px] text-sm"
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      {hasSavedSessionNotes && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => { resetSnFromCurrent(); setSnEditing(false); }}
+                          disabled={snSaving}
+                        >
+                          {t("common.cancel")}
+                        </Button>
+                      )}
+                      <Button size="sm" onClick={saveSessionNotes} disabled={snSaving}>
+                        <Save className="h-3.5 w-3.5 mr-1" />
+                        {snSaving ? t("common.saving") : t("common.save")}
+                      </Button>
+                    </div>
                   </div>
+                ) : (
                   <div className="space-y-2 text-sm">
-                    {currentNotes.session_summary && (
+                    {currentNotes?.session_summary && (
                       <div>
                         <div className="text-xs text-muted-foreground">{t("sessionNotes.summaryLabel")}</div>
                         <div className="whitespace-pre-wrap">{currentNotes.session_summary}</div>
@@ -1000,43 +1056,21 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                     <div>
                       <div className="text-xs text-muted-foreground">{t("sessionNotes.homeworkLabel")}</div>
                       <div className="whitespace-pre-wrap">
-                        {currentNotes.has_homework
+                        {currentNotes?.has_homework
                           ? (currentNotes.homework_text || t("sessionNotes.homeworkYes"))
                           : t("sessionNotes.homeworkNo")}
                       </div>
                     </div>
-                    {currentNotes.transference && (
+                    {currentNotes?.transference && (
                       <div>
                         <div className="text-xs text-muted-foreground">{t("sessionNotes.transferenceLabel")}</div>
                         <div className="whitespace-pre-wrap">{currentNotes.transference}</div>
                       </div>
                     )}
                   </div>
-                </div>
-              )}
-
-
-
-
-              {/* Session notes */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="flex items-center gap-1.5">
-                    <FileText className="h-3.5 w-3.5" /> {t("session.notes")}
-                  </Label>
-                  {notesDirty && (
-                    <Button size="sm" variant="ghost" onClick={handleSaveNotes} disabled={updateAppointment.isPending}>
-                      <Save className="h-3.5 w-3.5 mr-1" /> {t("session.saveNotes")}
-                    </Button>
-                  )}
-                </div>
-                <Textarea
-                  placeholder={t("session.notesPlaceholder")}
-                  value={notes}
-                  onChange={(e) => { setNotes(e.target.value); setNotesDirty(true); }}
-                  className="min-h-[120px] text-sm"
-                />
+                )}
               </div>
+
 
               <Separator />
 
