@@ -944,6 +944,10 @@ export function useCancelAppointment() {
       qc.invalidateQueries({ queryKey: ["group-all-attendance"] });
       qc.invalidateQueries({ queryKey: ["client-debt"] });
       qc.invalidateQueries({ queryKey: ["expected-payments"] });
+      qc.invalidateQueries({ queryKey: ["client-credit-balance"] });
+      qc.invalidateQueries({ queryKey: ["client-allocations"] });
+      qc.invalidateQueries({ queryKey: ["appointment-allocations"] });
+      qc.invalidateQueries({ queryKey: ["payment-audit"] });
     },
   });
 }
