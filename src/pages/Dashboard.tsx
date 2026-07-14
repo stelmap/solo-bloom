@@ -594,6 +594,146 @@ function HealthTile({ icon: Icon, label, value, sub }: { icon: any; label: strin
   );
 }
 
+const REVENUE_PIE_COLORS = [
+  "hsl(var(--primary))",
+  "hsl(var(--success))",
+  "hsl(var(--warning))",
+  "hsl(var(--destructive))",
+  "hsl(var(--accent-foreground))",
+  "hsl(var(--muted-foreground))",
+];
+
+function TopClientsRevenue({ t, cs, navigate }: { t: (k: any, p?: any) => string; cs: string; navigate: (p: string) => void }) {
+  const { data: incomes = [], isLoading } = useAllIncome();
+  const { data: clients = [] } = useClients();
+
+  const { top, distribution, totalRevenue } = useMemo(() => {
+    const nameById = new Map<string, string>();
+    for (const c of clients as any[]) nameById.set(c.id, c.name || "—");
+
+    const totals = new Map<string, number>();
+    let grandTotal = 0;
+    for (const inc of incomes as any[]) {
+      if ((inc.status ?? "confirmed") !== "confirmed") continue;
+      if (inc.source === "prepayment_withdrawal") continue;
+      const amt = Number(inc.amount || 0);
+      if (!(amt > 0)) continue;
+      const cid = inc.client_id || inc.appointments?.client_id;
+      const key = cid || "__unassigned__";
+      totals.set(key, (totals.get(key) || 0) + amt);
+      grandTotal += amt;
+    }
+
+    const ranked = Array.from(totals.entries())
+      .map(([id, amount]) => ({
+        id,
+        name: id === "__unassigned__" ? t("dash.unassignedClient") : (nameById.get(id) || "—"),
+        amount,
+      }))
+      .sort((a, b) => b.amount - a.amount);
+
+    const topList = ranked.slice(0, 10);
+
+    // Distribution: top 5 + Others aggregate
+    const topFive = ranked.slice(0, 5);
+    const rest = ranked.slice(5);
+    const restSum = rest.reduce((s, r) => s + r.amount, 0);
+    const dist = [...topFive.map((r) => ({ name: r.name, value: r.amount, id: r.id }))];
+    if (restSum > 0) dist.push({ name: t("dash.othersClients"), value: restSum, id: "__others__" });
+
+    return { top: topList, distribution: dist, totalRevenue: grandTotal };
+  }, [incomes, clients, t]);
+
+  return (
+    <section>
+      <h2 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+        <DollarSign className="h-4 w-4 text-primary" />
+        {t("dash.revenueByClient")}
+        <span className="ml-auto text-xs text-muted-foreground font-normal tabular-nums">
+          {t("dash.totalAllTime")}: <span className="font-semibold text-foreground">{cs}{totalRevenue.toLocaleString()}</span>
+        </span>
+      </h2>
+
+      {isLoading ? (
+        <div className="bg-card border border-border rounded-[18px] p-6 text-center text-muted-foreground text-sm">{t("common.loading") || "…"}</div>
+      ) : top.length === 0 ? (
+        <div className="bg-card border border-border rounded-[18px] p-6 text-center text-muted-foreground text-sm">{t("dash.noRevenueYet")}</div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+          {/* Top clients bar */}
+          <div className="bg-card border border-border rounded-[18px] p-4 sm:p-5 shadow-card lg:col-span-3 min-w-0">
+            <h3 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wide">
+              {t("dash.topClientsByRevenue")}
+            </h3>
+            <div className="w-full" style={{ height: Math.max(240, top.length * 34) }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={top} layout="vertical" margin={{ top: 4, right: 24, left: 8, bottom: 4 }}>
+                  <XAxis type="number" tickFormatter={(v) => `${cs}${Number(v).toLocaleString()}`} stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                  <YAxis type="category" dataKey="name" width={140} stroke="hsl(var(--muted-foreground))" fontSize={11} interval={0} />
+                  <Tooltip
+                    cursor={{ fill: "hsl(var(--muted) / 0.4)" }}
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 12, fontSize: 12 }}
+                    formatter={(v: any) => [`${cs}${Number(v).toLocaleString()}`, t("dash.revenueLabel")]}
+                  />
+                  <Bar dataKey="amount" radius={[0, 8, 8, 0]}>
+                    {top.map((row, idx) => (
+                      <Cell
+                        key={row.id}
+                        fill={REVENUE_PIE_COLORS[idx % REVENUE_PIE_COLORS.length]}
+                        style={row.id !== "__unassigned__" ? { cursor: "pointer" } : undefined}
+                        onClick={row.id !== "__unassigned__" ? () => navigate(`/clients/${row.id}`) : undefined}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Distribution pie */}
+          <div className="bg-card border border-border rounded-[18px] p-4 sm:p-5 shadow-card lg:col-span-2 min-w-0">
+            <h3 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wide">
+              {t("dash.incomeDistribution")}
+            </h3>
+            <div className="w-full" style={{ height: 280 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={distribution}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={55}
+                    outerRadius={95}
+                    paddingAngle={2}
+                  >
+                    {distribution.map((entry, idx) => (
+                      <Cell key={entry.id} fill={REVENUE_PIE_COLORS[idx % REVENUE_PIE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 12, fontSize: 12 }}
+                    formatter={(v: any, n: any) => [`${cs}${Number(v).toLocaleString()} (${totalRevenue > 0 ? ((Number(v) / totalRevenue) * 100).toFixed(1) : 0}%)`, n]}
+                  />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
+                    wrapperStyle={{ fontSize: 11 }}
+                    formatter={(value) => <span className="text-foreground">{value}</span>}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+
+
 
 
 
