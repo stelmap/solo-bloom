@@ -832,7 +832,11 @@ export default function ClientDetailPage() {
           // partially-paid completed sessions from the prepaid pool, so the
           // displayed Outstanding/Prepaid/Total Unpaid reflect the effective
           // financial state after that virtual allocation.
-          const { prepaid, outstanding } = balanceComputation;
+          const { outstanding } = balanceComputation;
+          // Use the same "reserved for active future sessions" figure as the
+          // Prepaid sessions counter so the two never disagree. Unallocated
+          // client credit surfaces separately in Finance → Payment Audit.
+          const prepaid = prepaidAmount;
           const totalUnpaid = outstanding;
 
           return (
