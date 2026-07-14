@@ -470,8 +470,9 @@ export default function AdminAnalyticsPage() {
               <BreakdownCard title="By source" data={stats.bySource} />
               <BreakdownCard title="By device" data={stats.byDevice} />
               <BreakdownCard title="By country" data={stats.byCountry} />
-              <BreakdownCard title="Top pages" data={stats.byPath} />
+              <BreakdownCard title="Top pages" data={stats.byPath} secondary={webTraffic.avgTimeByPage} secondaryFormat={formatDuration} secondaryLabel="avg time" />
             </div>
+
           </TabsContent>
 
           <TabsContent value="web" className="space-y-6">
