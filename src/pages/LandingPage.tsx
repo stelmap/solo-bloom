@@ -1229,7 +1229,7 @@ function FeaturesSection() {
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-5 leading-tight">
             {t("featHeadline")}
           </h2>
-          <p className="text-base sm:text-lg text-white/70 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg text-white/90 max-w-2xl mx-auto leading-relaxed">
             {t("featSub")}
           </p>
         </div>

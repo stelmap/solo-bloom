@@ -591,7 +591,7 @@ function HealthTile({ icon: Icon, label, value, sub }: { icon: any; label: strin
       </div>
       <p className="text-2xl sm:text-3xl font-bold leading-none tabular-nums text-foreground break-all">{value}</p>
       <p className="text-[10px] sm:text-xs text-muted-foreground mt-2 leading-snug break-words">{label}</p>
-      {sub && <p className="text-[10px] text-muted-foreground/70 mt-1 leading-snug break-words">{sub}</p>}
+      {sub && <p className="text-[10px] text-muted-foreground mt-1 leading-snug break-words">{sub}</p>}
     </div>
   );
 }
@@ -825,7 +825,7 @@ function StatCell({ label, value, tone }: { label: string; value: string; tone?:
   const toneClass =
     tone === "success" ? "text-success" :
     tone === "warning" ? "text-warning" :
-    tone === "muted" ? "text-muted-foreground/60" :
+    tone === "muted" ? "text-muted-foreground" :
     "text-foreground";
   return (
     <div className="bg-muted/40 border border-border rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-center text-center min-h-[100px] sm:min-h-[110px] overflow-hidden min-w-0">
@@ -841,7 +841,7 @@ function MoneyTile({
   const toneClass =
     tone === "success" ? "text-success" :
     tone === "warning" ? "text-warning" :
-    tone === "muted" ? "text-muted-foreground/60" :
+    tone === "muted" ? "text-muted-foreground" :
     "text-foreground";
   const inner = (
     <div className="flex flex-col items-center justify-center text-center h-full min-w-0">

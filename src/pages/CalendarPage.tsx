@@ -1849,7 +1849,7 @@ export default function CalendarPage() {
                     }}
                     className={cn(
                       "min-h-[110px] border-l border-b border-border p-1.5 cursor-pointer transition-colors",
-                      !inMonth && "bg-muted/20 text-muted-foreground/60",
+                      !inMonth && "bg-muted/20 text-muted-foreground",
                       dayOff && "bg-destructive/5",
                       !working && inMonth && !dayOff && "bg-muted/10",
                       working && !dayOff && "hover:bg-primary/5",
@@ -1857,10 +1857,10 @@ export default function CalendarPage() {
                     )}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className={cn("text-xs font-semibold", isToday && "text-accent-foreground", dayOff && "text-destructive/60")}>
+                      <span className={cn("text-xs font-semibold", isToday && "text-accent-foreground", dayOff && "text-destructive")}>
                         {format(day, "d")}
                       </span>
-                      {dayOff && <CalendarOff className="h-3 w-3 text-destructive/60" />}
+                      {dayOff && <CalendarOff className="h-3 w-3 text-destructive" />}
                     </div>
                     <div className="space-y-0.5">
                       {dayApts.slice(0, 3).map((apt: any) => {
@@ -1952,11 +1952,11 @@ export default function CalendarPage() {
                         dayOffStatus ? "bg-destructive/5" : !working ? "bg-muted/30" : "",
                       )}>
                         <p className="text-xs text-muted-foreground">{format(day, "EEE", { locale: dateLocale })}</p>
-                        <p className={cn("text-lg font-semibold", isSameDay(day, new Date()) ? "text-accent-foreground" : dayOffStatus ? "text-destructive/60" : "text-foreground")}>
+                        <p className={cn("text-lg font-semibold", isSameDay(day, new Date()) ? "text-accent-foreground" : dayOffStatus ? "text-destructive" : "text-foreground")}>
                           {format(day, "d")}
                         </p>
                         {dayOffStatus && (
-                          <Badge variant="outline" className="text-[9px] px-1 border-destructive/20 text-destructive/60 absolute top-1 right-1">
+                          <Badge variant="outline" className="text-[9px] px-1 border-destructive/20 text-destructive absolute top-1 right-1">
                             <CalendarOff className="h-2.5 w-2.5" />
                           </Badge>
                         )}

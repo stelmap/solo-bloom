@@ -140,27 +140,27 @@ export default function AdminDomainsPage() {
                     <>
                       <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                         <div>
-                          <span className="text-foreground/60">Last checked:</span>{" "}
+                          <span className="text-muted-foreground">Last checked:</span>{" "}
                           {new Date(row.last_checked_at).toLocaleString()}
                         </div>
                         <div>
-                          <span className="text-foreground/60">Last change:</span>{" "}
+                          <span className="text-muted-foreground">Last change:</span>{" "}
                           {new Date(row.last_transition_at).toLocaleString()}
                         </div>
                         {row.last_status_code !== null && (
                           <div>
-                            <span className="text-foreground/60">HTTP:</span> {row.last_status_code}
+                            <span className="text-muted-foreground">HTTP:</span> {row.last_status_code}
                           </div>
                         )}
                         {row.last_latency_ms !== null && (
                           <div>
-                            <span className="text-foreground/60">Latency:</span> {row.last_latency_ms} ms
+                            <span className="text-muted-foreground">Latency:</span> {row.last_latency_ms} ms
                           </div>
                         )}
                       </div>
                       {row.last_error && (
                         <div className="text-destructive">
-                          <span className="text-foreground/60">Error:</span> {row.last_error}
+                          <span className="text-muted-foreground">Error:</span> {row.last_error}
                         </div>
                       )}
                     </>
