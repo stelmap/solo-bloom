@@ -307,6 +307,37 @@ export default function AdminAnalyticsPage() {
       for (const [k, set] of m) out[k] = set.size;
       return out;
     };
+
+    // Avg time on page: for each session, sort events chronologically; dwell
+    // time on path P = timestamp of the next event in the same session minus
+    // this event's timestamp. Gaps over 30 min are treated as session breaks
+    // (the user walked away) and don't contribute — this keeps averages honest.
+    const SESSION_GAP_MS = 30 * 60 * 1000;
+    const pageTime = new Map<string, { total: number; count: number }>();
+    const sessionEvents = new Map<string, EventRow[]>();
+    for (const r of rows) {
+      const k = visitorKey(r);
+      if (!sessionEvents.has(k)) sessionEvents.set(k, []);
+      sessionEvents.get(k)!.push(r);
+    }
+    for (const evs of sessionEvents.values()) {
+      evs.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      for (let i = 0; i < evs.length - 1; i++) {
+        const cur = evs[i];
+        if (!cur.path) continue;
+        const dt = new Date(evs[i + 1].created_at).getTime() - new Date(cur.created_at).getTime();
+        if (dt <= 0 || dt > SESSION_GAP_MS) continue;
+        const bucket = pageTime.get(cur.path) ?? { total: 0, count: 0 };
+        bucket.total += dt / 1000;
+        bucket.count += 1;
+        pageTime.set(cur.path, bucket);
+      }
+    }
+    const avgTimeByPage: Record<string, number> = {};
+    for (const [path, { total, count }] of pageTime) {
+      if (count > 0) avgTimeByPage[path] = total / count;
+    }
+
     return {
       visitors,
       pageViews,
@@ -318,8 +349,10 @@ export default function AdminAnalyticsPage() {
       byPage: accum((r) => r.path),
       byDevice: accum((r) => r.device_type),
       byCountry: accum((r) => r.country),
+      avgTimeByPage,
     };
   }, [rows]);
+
 
   if (loading) {
     return (
@@ -437,8 +470,9 @@ export default function AdminAnalyticsPage() {
               <BreakdownCard title="By source" data={stats.bySource} />
               <BreakdownCard title="By device" data={stats.byDevice} />
               <BreakdownCard title="By country" data={stats.byCountry} />
-              <BreakdownCard title="Top pages" data={stats.byPath} />
+              <BreakdownCard title="Top pages" data={stats.byPath} secondary={webTraffic.avgTimeByPage} secondaryFormat={formatDuration} secondaryLabel="avg time" />
             </div>
+
           </TabsContent>
 
           <TabsContent value="web" className="space-y-6">
@@ -493,7 +527,19 @@ function StatCard({ label, value }: { label: string; value: number }) {
   );
 }
 
-function BreakdownCard({ title, data }: { title: string; data: Record<string, number> }) {
+function BreakdownCard({
+  title,
+  data,
+  secondary,
+  secondaryFormat,
+  secondaryLabel,
+}: {
+  title: string;
+  data: Record<string, number>;
+  secondary?: Record<string, number>;
+  secondaryFormat?: (v: number) => string;
+  secondaryLabel?: string;
+}) {
   const entries = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, 8);
   const max = entries[0]?.[1] ?? 1;
   return (
@@ -501,21 +547,32 @@ function BreakdownCard({ title, data }: { title: string; data: Record<string, nu
       <CardHeader><CardTitle className="text-base">{title}</CardTitle></CardHeader>
       <CardContent className="space-y-2">
         {entries.length === 0 && <div className="text-sm text-muted-foreground">No data</div>}
-        {entries.map(([k, v]) => (
-          <div key={k} className="space-y-1">
-            <div className="flex justify-between text-xs">
-              <span className="truncate pr-2">{k}</span>
-              <span className="text-muted-foreground">{v}</span>
+        {entries.map(([k, v]) => {
+          const sec = secondary?.[k];
+          return (
+            <div key={k} className="space-y-1">
+              <div className="flex justify-between text-xs gap-2">
+                <span className="truncate pr-2">{k}</span>
+                <span className="text-muted-foreground whitespace-nowrap">
+                  {v}
+                  {sec !== undefined && secondaryFormat && (
+                    <span className="ml-2 text-muted-foreground/80">
+                      · {secondaryLabel ?? ""} {secondaryFormat(sec)}
+                    </span>
+                  )}
+                </span>
+              </div>
+              <div className="h-1.5 rounded bg-muted overflow-hidden">
+                <div className="h-full bg-primary/70" style={{ width: `${(v / max) * 100}%` }} />
+              </div>
             </div>
-            <div className="h-1.5 rounded bg-muted overflow-hidden">
-              <div className="h-full bg-primary/70" style={{ width: `${(v / max) * 100}%` }} />
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </CardContent>
     </Card>
   );
 }
+
 
 type WebTrafficData = {
   visitors: number;
@@ -528,7 +585,9 @@ type WebTrafficData = {
   byPage: Record<string, number>;
   byDevice: Record<string, number>;
   byCountry: Record<string, number>;
+  avgTimeByPage: Record<string, number>;
 };
+
 
 function formatDuration(seconds: number): string {
   if (!seconds || !isFinite(seconds)) return "0s";
@@ -585,7 +644,7 @@ function WebTrafficPanel({ data }: { data: WebTrafficData }) {
         <CardContent>
           <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
             <BreakdownTable title="Source" header="Visitors" data={data.bySource} />
-            <BreakdownTable title="Page" header="Visitors" data={data.byPage} />
+            <BreakdownTable title="Page" header="Visitors" data={data.byPage} secondary={data.avgTimeByPage} secondaryHeader="Avg time" secondaryFormat={formatDuration} />
             <BreakdownTable title="Device" header="Visitors" data={data.byDevice} />
             <BreakdownTable title="Country" header="Visitors" data={data.byCountry} />
           </div>
@@ -604,27 +663,53 @@ function MetricCell({ label, value, highlight }: { label: string; value: string;
   );
 }
 
-function BreakdownTable({ title, header, data }: { title: string; header: string; data: Record<string, number> }) {
+function BreakdownTable({
+  title,
+  header,
+  data,
+  secondary,
+  secondaryHeader,
+  secondaryFormat,
+}: {
+  title: string;
+  header: string;
+  data: Record<string, number>;
+  secondary?: Record<string, number>;
+  secondaryHeader?: string;
+  secondaryFormat?: (v: number) => string;
+}) {
   const entries = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, 8);
   const max = entries[0]?.[1] ?? 1;
+  const showSecondary = !!secondary && !!secondaryFormat;
   return (
     <div className="rounded-md border">
-      <div className="flex items-center justify-between px-3 py-2 border-b text-xs">
+      <div className="flex items-center justify-between px-3 py-2 border-b text-xs gap-2">
         <span className="font-medium">{title}</span>
-        <span className="text-muted-foreground">{header}</span>
+        <span className="text-muted-foreground whitespace-nowrap">
+          {header}{showSecondary && secondaryHeader ? ` · ${secondaryHeader}` : ""}
+        </span>
       </div>
       <div className="p-2 space-y-1">
         {entries.length === 0 && <div className="px-2 py-3 text-xs text-muted-foreground">No data</div>}
-        {entries.map(([k, v]) => (
-          <div key={k} className="relative rounded px-2 py-1.5 overflow-hidden">
-            <div className="absolute inset-y-0 left-0 bg-primary/10" style={{ width: `${(v / max) * 100}%` }} />
-            <div className="relative flex items-center justify-between text-xs">
-              <span className="truncate pr-2">{k}</span>
-              <span className="text-muted-foreground tabular-nums">{compactNumber(v)}</span>
+        {entries.map(([k, v]) => {
+          const sec = secondary?.[k];
+          return (
+            <div key={k} className="relative rounded px-2 py-1.5 overflow-hidden">
+              <div className="absolute inset-y-0 left-0 bg-primary/10" style={{ width: `${(v / max) * 100}%` }} />
+              <div className="relative flex items-center justify-between text-xs gap-2">
+                <span className="truncate pr-2">{k}</span>
+                <span className="text-muted-foreground tabular-nums whitespace-nowrap">
+                  {compactNumber(v)}
+                  {showSecondary && sec !== undefined && (
+                    <span className="ml-2 text-muted-foreground/80">· {secondaryFormat!(sec)}</span>
+                  )}
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
+
 }
