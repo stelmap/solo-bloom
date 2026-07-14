@@ -418,7 +418,10 @@ export default function Dashboard() {
         )}
 
         {range === "all" && (
-          <PracticeHealth stats={stats} t={t} cs={cs} />
+          <>
+            <PracticeHealth stats={stats} t={t} cs={cs} />
+            <TopClientsRevenue t={t} cs={cs} navigate={navigate} />
+          </>
         )}
 
       </div>
