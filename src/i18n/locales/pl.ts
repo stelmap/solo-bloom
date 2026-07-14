@@ -1633,6 +1633,8 @@ export default {
   "dash.range.to": "Do",
   "common.reset": "Resetuj",
   "dash.unassignedClient": "Nieprzypisany",
+  "sessionNotes.lastTitle": "Notatki z ostatniej sesji",
+  "common.view": "Zobacz",
   "sessionNotes.title": "Notatki z sesji",
   "sessionNotes.summaryLabel": "O czym była sesja?",
   "sessionNotes.summaryPlaceholder": "Krótko opisz główny temat sesji…",
