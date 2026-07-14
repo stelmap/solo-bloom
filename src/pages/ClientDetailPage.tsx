@@ -193,7 +193,11 @@ export default function ClientDetailPage() {
   // Excludes past-dated `scheduled` orphans so the counter matches DB reality.
   const realSessions = (appointments as any[]).filter(isRealSession);
   const totalSessions = realSessions.length;
-  const completedSessions = realSessions.filter(isCompleted).length;
+  // Delivered = true completions + billed cancellations (late-cancel fee, paid
+  // from prepayment, or debt). Cancelled counter intentionally still includes
+  // billed cancellations, so the two counters overlap by design — finance and
+  // session-management stay independent.
+  const completedSessions = realSessions.filter(isDelivered).length;
   const cancelledSessions = realSessions.filter(isCancelled).length;
 
 
@@ -277,7 +281,7 @@ export default function ClientDetailPage() {
     const realSorted = sorted.filter(isRealSession);
     switch (statFilter) {
       // realSessions-based counters
-      case "completed": return realSorted.filter(isCompleted);
+      case "completed": return realSorted.filter(isDelivered);
       case "cancelled": return realSorted.filter(isCancelled);
       // payment-status counters run over the full appointment list (matches top cards)
       case "paid": return sorted.filter(isEffectivelyPaid);
