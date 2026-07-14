@@ -74,6 +74,24 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const { data: clientDebtData } = useClientDebt(apt?.client_id);
   const clientDebt = Number(clientDebtData?.total ?? 0);
 
+  // Previous session notes for this client (last completed session, excluding current one)
+  const { data: previousNotes } = useQuery({
+    queryKey: ["session_notes", "previous", apt?.client_id, apt?.id],
+    enabled: !!apt?.client_id && !!apt?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("session_notes")
+        .select("session_summary, has_homework, homework_text, transference, created_at, appointment_id")
+        .eq("client_id", apt.client_id)
+        .neq("appointment_id", apt.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
 
   // Group attendance hooks — must be before any early return
   const groupSessionId = apt?.group_session_id
