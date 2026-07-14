@@ -1458,6 +1458,19 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
         appointment={apt}
         use12h={use12h}
       />
+
+      <SessionNotesDialog
+        open={notesDialogOpen}
+        onOpenChange={(v) => {
+          setNotesDialogOpen(v);
+          if (!v) {
+            setNotesDialogAppointmentId(null);
+            onOpenChange(false);
+          }
+        }}
+        appointmentId={notesDialogAppointmentId}
+        clientId={apt?.client_id ?? null}
+      />
       <Dialog open={noShowOpen} onOpenChange={setNoShowOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>{t("calendar.noShow")}</DialogTitle></DialogHeader>
