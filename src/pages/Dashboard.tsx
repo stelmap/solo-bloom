@@ -212,6 +212,7 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="space-y-5">
+        <BackButton />
         {/* Range tabs — split dashboard into 3 focused views */}
         <div className="flex items-center gap-2 flex-wrap">
           {([
