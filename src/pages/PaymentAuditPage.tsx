@@ -57,7 +57,7 @@ function useAuditData() {
       if (aptIds.length > 0) {
         const { data: apts } = await supabase
           .from("appointments")
-          .select("id,scheduled_at,price,services(name)")
+          .select("id,scheduled_at,price,status,payment_status,services(name)")
           .in("id", aptIds);
         (apts || []).forEach((a: any) => aptById.set(a.id, a));
       }
