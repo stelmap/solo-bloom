@@ -36,6 +36,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { useGroupAttendance, useUpdateAttendance, useGroup, useGroupMembers, useCompleteGroupSession, useGroupSessionPayments } from "@/hooks/useGroups";
 import { PaymentEditDialog } from "@/components/PaymentEditDialog";
+import { SessionNotesDialog } from "@/components/SessionNotesDialog";
+import { useQuery } from "@tanstack/react-query";
 
 interface SessionDetailSheetProps {
   appointment: any | null;
@@ -72,6 +74,24 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const { data: clientDebtData } = useClientDebt(apt?.client_id);
   const clientDebt = Number(clientDebtData?.total ?? 0);
 
+  // Previous session notes for this client (last completed session, excluding current one)
+  const { data: previousNotes } = useQuery({
+    queryKey: ["session_notes", "previous", apt?.client_id, apt?.id],
+    enabled: !!apt?.client_id && !!apt?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("session_notes")
+        .select("session_summary, has_homework, homework_text, transference, created_at, appointment_id")
+        .eq("client_id", apt.client_id)
+        .neq("appointment_id", apt.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
 
   // Group attendance hooks — must be before any early return
   const groupSessionId = apt?.group_session_id
@@ -97,6 +117,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [noShowOpen, setNoShowOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [sendingReminder, setSendingReminder] = useState(false);
+  const [notesDialogOpen, setNotesDialogOpen] = useState(false);
+  const [notesDialogAppointmentId, setNotesDialogAppointmentId] = useState<string | null>(null);
 
 
   // Edit form
@@ -508,7 +530,13 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
         toast({ title: t("toast.appointmentCompleted"), description: msg });
       }
 
-      onOpenChange(false);
+      // Open session notes dialog (except for group sessions).
+      if (!isGroupSession && apt?.id && apt?.client_id) {
+        setNotesDialogAppointmentId(apt.id);
+        setNotesDialogOpen(true);
+      } else {
+        onOpenChange(false);
+      }
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
@@ -834,6 +862,38 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   />
                 </div>
               )}
+
+              {/* Previous session notes */}
+              {previousNotes && (previousNotes.session_summary || previousNotes.homework_text || previousNotes.transference || previousNotes.has_homework) && (
+                <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                  <Label className="flex items-center gap-1.5 text-primary">
+                    <FileText className="h-3.5 w-3.5" /> {t("sessionNotes.previousTitle")}
+                  </Label>
+                  <div className="space-y-2 text-sm">
+                    {previousNotes.session_summary && (
+                      <div>
+                        <div className="text-xs text-muted-foreground">{t("sessionNotes.summaryLabel")}</div>
+                        <div className="whitespace-pre-wrap">{previousNotes.session_summary}</div>
+                      </div>
+                    )}
+                    <div>
+                      <div className="text-xs text-muted-foreground">{t("sessionNotes.homeworkLabel")}</div>
+                      <div className="whitespace-pre-wrap">
+                        {previousNotes.has_homework
+                          ? (previousNotes.homework_text || t("sessionNotes.homeworkYes"))
+                          : t("sessionNotes.homeworkNo")}
+                      </div>
+                    </div>
+                    {previousNotes.transference && (
+                      <div>
+                        <div className="text-xs text-muted-foreground">{t("sessionNotes.transferenceLabel")}</div>
+                        <div className="whitespace-pre-wrap">{previousNotes.transference}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
 
               {/* Session notes */}
               <div className="space-y-2">
@@ -1397,6 +1457,19 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
         onOpenChange={setPaymentEditOpen}
         appointment={apt}
         use12h={use12h}
+      />
+
+      <SessionNotesDialog
+        open={notesDialogOpen}
+        onOpenChange={(v) => {
+          setNotesDialogOpen(v);
+          if (!v) {
+            setNotesDialogAppointmentId(null);
+            onOpenChange(false);
+          }
+        }}
+        appointmentId={notesDialogAppointmentId}
+        clientId={apt?.client_id ?? null}
       />
       <Dialog open={noShowOpen} onOpenChange={setNoShowOpen}>
         <DialogContent className="max-w-sm">

@@ -2165,6 +2165,45 @@ export type Database = {
           },
         ]
       }
+      session_notes: {
+        Row: {
+          appointment_id: string
+          client_id: string
+          created_at: string
+          has_homework: boolean
+          homework_text: string | null
+          id: string
+          session_summary: string | null
+          transference: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          appointment_id: string
+          client_id: string
+          created_at?: string
+          has_homework?: boolean
+          homework_text?: string | null
+          id?: string
+          session_summary?: string | null
+          transference?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          appointment_id?: string
+          client_id?: string
+          created_at?: string
+          has_homework?: boolean
+          homework_text?: string | null
+          id?: string
+          session_summary?: string | null
+          transference?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscription_cache: {
         Row: {
           cancel_at_period_end: boolean
