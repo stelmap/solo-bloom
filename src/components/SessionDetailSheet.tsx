@@ -138,6 +138,13 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [notesDialogOpen, setNotesDialogOpen] = useState(false);
   const [notesDialogAppointmentId, setNotesDialogAppointmentId] = useState<string | null>(null);
   const [notesDialogMode, setNotesDialogMode] = useState<"post-complete" | "edit">("post-complete");
+  const qc = useQueryClient();
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [draftSummary, setDraftSummary] = useState("");
+  const [draftHasHomework, setDraftHasHomework] = useState(false);
+  const [draftHomework, setDraftHomework] = useState("");
+  const [draftTransference, setDraftTransference] = useState("");
+  const [savingNotes, setSavingNotes] = useState(false);
 
 
 
