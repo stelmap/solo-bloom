@@ -150,9 +150,10 @@ export function SessionNotesDialog({ open, onOpenChange, appointmentId, clientId
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
             {t("common.close")}
           </Button>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? t("common.saving") : t("sessionNotes.saveAndFinish")}
+          <Button onClick={handleSave} disabled={saving || loading}>
+            {saving ? t("common.saving") : (existingId ? t("common.save") : t("sessionNotes.saveAndFinish"))}
           </Button>
+
         </DialogFooter>
       </DialogContent>
     </Dialog>
