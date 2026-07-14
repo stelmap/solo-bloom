@@ -15,6 +15,7 @@ import {
   useClientAttachments, useUploadAttachment, useDeleteAttachment, useProfile,
   useClientPriceHistory, useCreatePriceChange, useClientIncome,
   useClientCreditBalance, useClientAllocations, useClientDebt,
+  useServices,
 } from "@/hooks/useData";
 import { useSupervisions, useSupervisionCount } from "@/hooks/useSupervisions";
 import { supabase } from "@/integrations/supabase/client";
