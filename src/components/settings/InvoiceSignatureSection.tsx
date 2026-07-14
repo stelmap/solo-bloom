@@ -147,7 +147,7 @@ export function InvoiceSignatureSection() {
             )}
             <div className="h-28 rounded-md bg-muted/40 border border-dashed border-border flex items-center justify-center overflow-hidden">
               {sigUrl ? (
-                <img src={sigUrl} alt="signature" className="max-h-full max-w-full object-contain" />
+                <img src={sigUrl} alt={t("invoiceSig.signatureAlt")} className="max-h-full max-w-full object-contain" />
               ) : (
                 <span className="text-xs text-muted-foreground">{t("invoiceSig.noFile")}</span>
               )}
@@ -177,7 +177,7 @@ export function InvoiceSignatureSection() {
             <Label>{t("invoiceSig.stamp")} <span className="text-muted-foreground text-xs">({t("invoiceSig.optional")})</span></Label>
             <div className="h-28 rounded-md bg-muted/40 border border-dashed border-border flex items-center justify-center overflow-hidden">
               {stampUrl ? (
-                <img src={stampUrl} alt="stamp" className="max-h-full max-w-full object-contain" />
+                <img src={stampUrl} alt={t("invoiceSig.stampAlt")} className="max-h-full max-w-full object-contain" />
               ) : (
                 <span className="text-xs text-muted-foreground">{t("invoiceSig.noFile")}</span>
               )}

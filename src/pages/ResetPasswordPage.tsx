@@ -112,7 +112,7 @@ export default function ResetPasswordPage() {
         <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold text-foreground">
-            Solo<span className="text-primary">.Biz</span>
+            Solo<span className="text-primary">Bizz</span> — {t("auth.pageTitleReset")}
           </h1>
         </div>
 
