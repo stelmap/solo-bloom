@@ -191,7 +191,7 @@ Deno.serve(async (req) => {
 
         // Send final email BEFORE deleting the auth user (address becomes unavailable after)
         if (targetEmail) {
-          await admin.functions.invoke("send-transactional-email", {
+          await userClient.functions.invoke("send-transactional-email", {
             body: {
               templateName: "account-deleted-final",
               recipientEmail: targetEmail,
