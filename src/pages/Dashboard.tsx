@@ -603,9 +603,41 @@ const REVENUE_PIE_COLORS = [
   "hsl(var(--muted-foreground))",
 ];
 
+type RevenueRange = "all" | "7d" | "30d" | "90d" | "ytd" | "1y";
+
+function computeRange(range: RevenueRange): { from?: string; to?: string } {
+  if (range === "all") return {};
+  const now = new Date();
+  const to = now.toISOString().slice(0, 10);
+  const from = new Date(now);
+  if (range === "7d") from.setDate(now.getDate() - 6);
+  else if (range === "30d") from.setDate(now.getDate() - 29);
+  else if (range === "90d") from.setDate(now.getDate() - 89);
+  else if (range === "1y") from.setFullYear(now.getFullYear() - 1);
+  else if (range === "ytd") { from.setMonth(0); from.setDate(1); }
+  return { from: from.toISOString().slice(0, 10), to };
+}
+
 function TopClientsRevenue({ t, cs, navigate }: { t: (k: any, p?: any) => string; cs: string; navigate: (p: string) => void }) {
-  const { data: incomes = [], isLoading } = useAllIncome();
+  const [range, setRange] = useState<RevenueRange>("all");
+  const [customFrom, setCustomFrom] = useState<string>("");
+  const [customTo, setCustomTo] = useState<string>("");
+  const useCustom = !!(customFrom || customTo);
+  const { from: presetFrom, to: presetTo } = useMemo(() => computeRange(range), [range]);
+  const dateFrom = useCustom ? (customFrom || undefined) : presetFrom;
+  const dateTo = useCustom ? (customTo || undefined) : presetTo;
+
+  const { data: incomes = [], isLoading } = useAllIncome(dateFrom, dateTo);
   const { data: clients = [] } = useClients();
+
+  const rangeOptions: { key: RevenueRange; label: string }[] = [
+    { key: "all", label: t("dash.range.all") || "All" },
+    { key: "7d", label: t("dash.range.7d") || "7d" },
+    { key: "30d", label: t("dash.range.30d") || "30d" },
+    { key: "90d", label: t("dash.range.90d") || "90d" },
+    { key: "ytd", label: t("dash.range.ytd") || "YTD" },
+    { key: "1y", label: t("dash.range.1y") || "1y" },
+  ];
 
   const { top, distribution, totalRevenue } = useMemo(() => {
     const nameById = new Map<string, string>();
@@ -633,8 +665,6 @@ function TopClientsRevenue({ t, cs, navigate }: { t: (k: any, p?: any) => string
       .sort((a, b) => b.amount - a.amount);
 
     const topList = ranked.slice(0, 10);
-
-    // Distribution: top 5 + Others aggregate
     const topFive = ranked.slice(0, 5);
     const rest = ranked.slice(5);
     const restSum = rest.reduce((s, r) => s + r.amount, 0);
@@ -644,18 +674,70 @@ function TopClientsRevenue({ t, cs, navigate }: { t: (k: any, p?: any) => string
     return { top: topList, distribution: dist, totalRevenue: grandTotal };
   }, [incomes, clients, t]);
 
+  const rangeLabel = useCustom
+    ? `${customFrom || "…"} → ${customTo || "…"}`
+    : (rangeOptions.find((o) => o.key === range)?.label ?? "");
+
   return (
     <section>
-      <h2 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+      <h2 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2 flex-wrap">
         <DollarSign className="h-4 w-4 text-primary" />
         {t("dash.revenueByClient")}
         <span className="ml-auto text-xs text-muted-foreground font-normal tabular-nums">
-          {t("dash.totalAllTime")}: <span className="font-semibold text-foreground">{cs}{totalRevenue.toLocaleString()}</span>
+          {rangeLabel}: <span className="font-semibold text-foreground">{cs}{totalRevenue.toLocaleString()}</span>
         </span>
       </h2>
 
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap gap-1 p-1 bg-muted/40 border border-border rounded-full">
+          {rangeOptions.map((opt) => {
+            const active = !useCustom && range === opt.key;
+            return (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => { setRange(opt.key); setCustomFrom(""); setCustomTo(""); }}
+                className={cn(
+                  "px-3 py-1 rounded-full text-xs font-medium transition-colors",
+                  active ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-1 text-xs">
+          <input
+            type="date"
+            value={customFrom}
+            onChange={(e) => setCustomFrom(e.target.value)}
+            className="bg-card border border-border rounded-md px-2 py-1 text-xs text-foreground"
+            aria-label={t("dash.range.from") || "From"}
+          />
+          <span className="text-muted-foreground">—</span>
+          <input
+            type="date"
+            value={customTo}
+            onChange={(e) => setCustomTo(e.target.value)}
+            className="bg-card border border-border rounded-md px-2 py-1 text-xs text-foreground"
+            aria-label={t("dash.range.to") || "To"}
+          />
+          {useCustom && (
+            <button
+              type="button"
+              onClick={() => { setCustomFrom(""); setCustomTo(""); }}
+              className="ml-1 text-muted-foreground hover:text-foreground text-xs underline"
+            >
+              {t("common.reset") || "Reset"}
+            </button>
+          )}
+        </div>
+      </div>
+
       {isLoading ? (
         <div className="bg-card border border-border rounded-[18px] p-6 text-center text-muted-foreground text-sm">{t("common.loading") || "…"}</div>
+
       ) : top.length === 0 ? (
         <div className="bg-card border border-border rounded-[18px] p-6 text-center text-muted-foreground text-sm">{t("dash.noRevenueYet")}</div>
       ) : (
