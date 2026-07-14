@@ -18,6 +18,14 @@ export type AuditQuickFilter =
   | "draft"
   | "cancelled";
 
+export type AuditTxType =
+  | "all"
+  | "payment"
+  | "prepayment"
+  | "prepayment_withdrawal"
+  | "refund"
+  | "adjustment";
+
 export interface AuditRow {
   id: string;
   kind: "income" | "expected";
@@ -45,7 +53,20 @@ export interface AuditFilterOptions {
   dateFrom: string;
   /** yyyy-MM-dd, inclusive. */
   dateTo: string;
+  /** Optional filter on transaction type. */
+  txType?: AuditTxType;
 }
+
+/** Classify a row into a coarse transaction type shown in the Payment Audit filter. */
+export function classifyTxType(row: AuditRow): AuditTxType {
+  const s = (row.source || "").toLowerCase();
+  if (s === "prepayment_withdrawal") return "prepayment_withdrawal";
+  if (s === "refund") return "refund";
+  if (s === "adjustment") return "adjustment";
+  if (row.allocStatus === "prepayment" || row.allocStatus === "overpayment") return "prepayment";
+  return "payment";
+}
+
 
 /** Apply the quick-filter chip / summary-card filter to a single row. */
 export function matchesQuickFilter(row: AuditRow, qf: AuditQuickFilter): boolean {
