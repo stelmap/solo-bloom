@@ -55,21 +55,30 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
   const [confirmUnlinked, setConfirmUnlinked] = useState(false);
 
   const [existingAllocByApt, setExistingAllocByApt] = useState<Record<string, number>>({});
+  // Appointments whose current fully-paid status comes from THIS income being edited.
+  // For those we must not treat payment_status=paid_* as "already covered", otherwise
+  // the remaining cap collapses to 0 and the user can't change the allocation.
+  const [thisIncomeApts, setThisIncomeApts] = useState<Set<string>>(new Set());
   useEffect(() => {
     if (!open || !clientId) return;
     (async () => {
       const aptIds = (appointments as any[]).map((a) => a.id);
-      if (aptIds.length === 0) { setExistingAllocByApt({}); return; }
+      if (aptIds.length === 0) { setExistingAllocByApt({}); setThisIncomeApts(new Set()); return; }
       const { data } = await (supabase as any)
         .from("income_session_allocations")
         .select("appointment_id, allocated_amount, income_id")
         .in("appointment_id", aptIds);
       const map: Record<string, number> = {};
+      const own = new Set<string>();
       for (const row of (data ?? []) as any[]) {
-        if (existingIncome?.id && row.income_id === existingIncome.id) continue;
+        if (existingIncome?.id && row.income_id === existingIncome.id) {
+          own.add(row.appointment_id);
+          continue;
+        }
         map[row.appointment_id] = (map[row.appointment_id] || 0) + Number(row.allocated_amount || 0);
       }
       setExistingAllocByApt(map);
+      setThisIncomeApts(own);
     })();
   }, [open, clientId, appointments.length, existingIncome?.id]);
 
