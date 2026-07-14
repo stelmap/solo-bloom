@@ -99,6 +99,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [noShowOpen, setNoShowOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [sendingReminder, setSendingReminder] = useState(false);
+  const [notesDialogOpen, setNotesDialogOpen] = useState(false);
+  const [notesDialogAppointmentId, setNotesDialogAppointmentId] = useState<string | null>(null);
 
 
   // Edit form
