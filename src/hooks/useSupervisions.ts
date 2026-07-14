@@ -81,13 +81,33 @@ export function useUnusedClientNotes(clientId: string | undefined) {
         .order("scheduled_at", { ascending: true });
       if (apErr) throw apErr;
 
-      // 2b. Fetch structured session_notes (summary / homework / transference)
-      const { data: sessionNotes, error: snErr } = await supabase
+      // 2b. Fetch structured session_notes (no FK join — resolve appointments separately)
+      const { data: sessionNotesRaw, error: snErr } = await supabase
         .from("session_notes" as any)
-        .select("id, appointment_id, session_summary, homework_text, has_homework, transference, created_at, appointments!inner(scheduled_at, status, services(name))")
+        .select("id, appointment_id, session_summary, homework_text, has_homework, transference, created_at")
         .eq("client_id", clientId!)
         .order("created_at", { ascending: true });
       if (snErr) throw snErr;
+
+      // Resolve appointment metadata for those session notes
+      const snApptIds = Array.from(new Set((sessionNotesRaw || []).map((n: any) => n.appointment_id).filter(Boolean)));
+      let apptMetaById: Record<string, { scheduled_at?: string; status?: string; service_name?: string }> = {};
+      if (snApptIds.length > 0) {
+        const { data: snAppts } = await supabase
+          .from("appointments")
+          .select("id, scheduled_at, status, services(name)")
+          .in("id", snApptIds);
+        (snAppts || []).forEach((a: any) => {
+          apptMetaById[a.id] = { scheduled_at: a.scheduled_at, status: a.status, service_name: a.services?.name };
+        });
+      }
+      const sessionNotes = (sessionNotesRaw || []).map((n: any) => ({
+        ...n,
+        appointments: apptMetaById[n.appointment_id]
+          ? { scheduled_at: apptMetaById[n.appointment_id].scheduled_at, status: apptMetaById[n.appointment_id].status, services: { name: apptMetaById[n.appointment_id].service_name } }
+          : null,
+      }));
+
 
       // 3. Get all supervisions for this client to find already-used appointment IDs
       const { data: supervisions, error: supErr } = await supabase
