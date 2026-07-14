@@ -32,10 +32,10 @@ export const isNoShow = (a: AppointmentLike) => a.status === "no-show";
  * so completed sessions must never be reported as prepaid — even if their
  * payment_status column is momentarily stale.
  */
-export const isPrepaid = (a: AppointmentLike) =>
-  a.status !== "completed" &&
-  (a.payment_status === "paid_in_advance" ||
-    a.payment_status === "paid_from_prepayment");
+export const isPrepaid = (a: AppointmentLike) => {
+  const active = a.status === "scheduled" || a.status === "confirmed" || a.status === "reminder_sent";
+  return active && (a.payment_status === "paid_in_advance" || a.payment_status === "paid_from_prepayment");
+};
 
 /**
  * A "real" session that should be counted in Total Sessions:
