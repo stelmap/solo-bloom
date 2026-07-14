@@ -273,7 +273,10 @@ export default function ClientDetailPage() {
       // payment-status counters run over the full appointment list (matches top cards)
       case "paid": return sorted.filter(isEffectivelyPaid);
       case "awaiting": return sorted.filter(isEffectivelyAwaiting);
-      case "prepaid": return sorted.filter((a: any) => a.payment_status === "paid_in_advance" && a.status !== "completed");
+      case "prepaid": {
+        const ACTIVE = new Set(["scheduled", "confirmed", "reminder_sent"]);
+        return sorted.filter((a: any) => a.payment_status === "paid_in_advance" && ACTIVE.has(a.status));
+      }
       case "supervision": return [];
       default: return realSorted;
     }
