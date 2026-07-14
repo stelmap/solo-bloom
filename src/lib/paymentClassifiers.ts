@@ -10,6 +10,37 @@ export type AppointmentLike = {
 
 export const isCompleted = (a: AppointmentLike) => a.status === "completed";
 
+/**
+ * A cancellation that still carries a financial obligation (late-cancel fee,
+ * paid from prepayment, or debt owed). From a session-management / clinical
+ * perspective these count as delivered sessions — the slot was billed, only
+ * the client's attendance changed. Finance side remains fully separate.
+ *
+ * Non-billed cancellations keep `payment_status = 'not_applicable'` (or null)
+ * and are excluded here so free cancellations don't inflate delivered counts.
+ */
+const BILLED_PAYMENT_STATUSES = new Set([
+  "paid_now",
+  "paid_in_advance",
+  "paid_from_prepayment",
+  "waiting_for_payment",
+  "partially_paid",
+  "partially_paid_from_prepayment",
+]);
+export const isBilledCancellation = (a: AppointmentLike) =>
+  (a.status === "cancelled" || a.status === "no-show") &&
+  BILLED_PAYMENT_STATUSES.has(String(a.payment_status ?? ""));
+
+/**
+ * "Delivered" = session that counts toward the therapist's completed workload.
+ * Includes true completions AND billed cancellations. Per product decision,
+ * billed cancellations are ALSO still counted under `isCancelled` — the two
+ * counters intentionally overlap so finance and session-management stay
+ * independent.
+ */
+export const isDelivered = (a: AppointmentLike) =>
+  isCompleted(a) || isBilledCancellation(a);
+
 export const isPaid = (a: AppointmentLike) =>
   a.payment_status === "paid_now" ||
   a.payment_status === "paid_in_advance" ||
