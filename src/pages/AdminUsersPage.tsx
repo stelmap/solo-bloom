@@ -203,7 +203,13 @@ export default function AdminUsersPage() {
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
-      toast({ title: "Done", description: ACTION_LABEL[dialogAction] });
+      const isWarning = dialogAction === "send_warning_email_uk" || dialogAction === "send_warning_email_en";
+      toast({
+        title: isWarning ? "Email sent" : "Done",
+        description: isWarning
+          ? `Warning email was successfully sent to ${dialogUser.email}.`
+          : ACTION_LABEL[dialogAction],
+      });
       setDialogUser(null);
       setDialogAction(null);
       setDialogConfirm("");
@@ -214,6 +220,7 @@ export default function AdminUsersPage() {
       setDialogBusy(false);
     }
   }
+
 
   if (loading || isAdmin === null) {
     return <AppLayout><div className="flex items-center justify-center h-64"><Loader2 className="h-5 w-5 animate-spin" /></div></AppLayout>;
