@@ -251,11 +251,12 @@ export default function ClientDetailPage() {
     // not deleted) sessions whose funds are still reserved. Cancelled sessions
     // must never count as prepaid — their allocation is released.
     const ACTIVE = new Set(["scheduled", "confirmed", "reminder_sent"]);
-    const count = (appointments as any[]).filter(
+    const reserved = (appointments as any[]).filter(
       (a) => a.payment_status === "paid_in_advance" && ACTIVE.has(a.status),
-    ).length;
-    return { prepaidSessions: count, prepaidAmount: balanceComputation.prepaid };
-  }, [appointments, balanceComputation]);
+    );
+    const amount = reserved.reduce((s, a) => s + Number(a.price || 0), 0);
+    return { prepaidSessions: reserved.length, prepaidAmount: amount };
+  }, [appointments]);
 
 
 
