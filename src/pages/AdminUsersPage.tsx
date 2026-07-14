@@ -59,7 +59,15 @@ const ACTION_LABEL: Record<LifecycleAction, string> = {
   resend_email: "Resend warning email",
   cancel_deletion: "Cancel deletion",
   delete_permanently: "Delete permanently",
+  send_warning_email_uk: "Send warning email — Ukrainian",
+  send_warning_email_en: "Send warning email — English",
 };
+
+function isValidEmail(email: string | null | undefined): boolean {
+  if (!email) return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 
 function fmt(d: string | null | undefined) {
   if (!d) return "—";
