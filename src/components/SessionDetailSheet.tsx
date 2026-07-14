@@ -119,6 +119,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [sendingReminder, setSendingReminder] = useState(false);
   const [notesDialogOpen, setNotesDialogOpen] = useState(false);
   const [notesDialogAppointmentId, setNotesDialogAppointmentId] = useState<string | null>(null);
+  const [notesDialogMode, setNotesDialogMode] = useState<"post-complete" | "edit">("post-complete");
+
 
 
   // Edit form
