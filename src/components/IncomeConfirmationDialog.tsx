@@ -55,21 +55,30 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
   const [confirmUnlinked, setConfirmUnlinked] = useState(false);
 
   const [existingAllocByApt, setExistingAllocByApt] = useState<Record<string, number>>({});
+  // Appointments whose current fully-paid status comes from THIS income being edited.
+  // For those we must not treat payment_status=paid_* as "already covered", otherwise
+  // the remaining cap collapses to 0 and the user can't change the allocation.
+  const [thisIncomeApts, setThisIncomeApts] = useState<Set<string>>(new Set());
   useEffect(() => {
     if (!open || !clientId) return;
     (async () => {
       const aptIds = (appointments as any[]).map((a) => a.id);
-      if (aptIds.length === 0) { setExistingAllocByApt({}); return; }
+      if (aptIds.length === 0) { setExistingAllocByApt({}); setThisIncomeApts(new Set()); return; }
       const { data } = await (supabase as any)
         .from("income_session_allocations")
         .select("appointment_id, allocated_amount, income_id")
         .in("appointment_id", aptIds);
       const map: Record<string, number> = {};
+      const own = new Set<string>();
       for (const row of (data ?? []) as any[]) {
-        if (existingIncome?.id && row.income_id === existingIncome.id) continue;
+        if (existingIncome?.id && row.income_id === existingIncome.id) {
+          own.add(row.appointment_id);
+          continue;
+        }
         map[row.appointment_id] = (map[row.appointment_id] || 0) + Number(row.allocated_amount || 0);
       }
       setExistingAllocByApt(map);
+      setThisIncomeApts(own);
     })();
   }, [open, clientId, appointments.length, existingIncome?.id]);
 
@@ -115,16 +124,16 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
     return (appointments as any[]).map((a) => {
       const price = Number(a.price || 0);
       const allocated = existingAllocByApt[a.id] || 0;
-      // If the session is marked as fully paid but has no allocation row
-      // (legacy / prepayment / group), treat its price as fully covered so it
-      // never leaks into Unpaid.
+      // Exclude the CURRENT income's own allocation so editing frees capacity.
+      // Only fall back to "fully paid via other means" when no other allocation exists
+      // AND this session isn't paid through the income we're editing.
       const otherPaid = allocated > 0
         ? allocated
-        : (PAID.has(a.payment_status) ? price : 0);
+        : (!thisIncomeApts.has(a.id) && PAID.has(a.payment_status) ? price : 0);
       const remaining = Math.max(price - otherPaid, 0);
       return { ...a, _price: price, _otherPaid: otherPaid, _remaining: remaining };
     });
-  }, [appointments, existingAllocByApt]);
+  }, [appointments, existingAllocByApt, thisIncomeApts]);
 
   const filteredAppointments = useMemo(() => {
     const now = new Date();

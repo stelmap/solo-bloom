@@ -478,7 +478,7 @@ export default function PaymentAuditPage() {
                     </TableCell>
                     <TableCell className="py-2 align-middle text-right font-medium tabular-nums">
                       {(r as any).isPrepayWithdrawal
-                        ? <span className="text-muted-foreground">{cs}0.00</span>
+                        ? <span className="text-amber-700">−{cs}{Number((r as any).prepayMovement || 0).toFixed(2)}</span>
                         : `${cs}${r.amount.toFixed(2)}`}
                     </TableCell>
                     <TableCell className="py-2 align-middle text-sm">{methodLabel(r.method)}</TableCell>
@@ -541,7 +541,7 @@ export default function PaymentAuditPage() {
             <div className="mt-4 space-y-4 text-sm">
               <Row label={t("audit.col.date")} value={openRow.date} />
               <Row label={t("audit.col.client")} value={openRow.client_name} />
-              <Row label={t("audit.col.amount")} value={`${cs}${openRow.amount.toFixed(2)}`} />
+              <Row label={t("audit.col.amount")} value={(openRow as any).isPrepayWithdrawal ? `−${cs}${Number((openRow as any).prepayMovement || 0).toFixed(2)}` : `${cs}${openRow.amount.toFixed(2)}`} />
               {(openRow as any).isPrepayWithdrawal && (
                 <>
                   <Row label={t("audit.prepayMovement")} value={`−${cs}${Number((openRow as any).prepayMovement || 0).toFixed(2)}`} />
