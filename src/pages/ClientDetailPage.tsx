@@ -247,8 +247,12 @@ export default function ClientDetailPage() {
   // once the session happens, the money is earned, not reserved. This guards
   // against stale rows where the DB status wasn't collapsed to paid_now.
   const { prepaidSessions, prepaidAmount } = useMemo(() => {
+    // Prepaid sessions = only ACTIVE (not cancelled, not no-show, not completed,
+    // not deleted) sessions whose funds are still reserved. Cancelled sessions
+    // must never count as prepaid — their allocation is released.
+    const ACTIVE = new Set(["scheduled", "confirmed", "reminder_sent"]);
     const count = (appointments as any[]).filter(
-      (a) => a.payment_status === "paid_in_advance" && a.status !== "completed",
+      (a) => a.payment_status === "paid_in_advance" && ACTIVE.has(a.status),
     ).length;
     return { prepaidSessions: count, prepaidAmount: balanceComputation.prepaid };
   }, [appointments, balanceComputation]);
@@ -269,7 +273,10 @@ export default function ClientDetailPage() {
       // payment-status counters run over the full appointment list (matches top cards)
       case "paid": return sorted.filter(isEffectivelyPaid);
       case "awaiting": return sorted.filter(isEffectivelyAwaiting);
-      case "prepaid": return sorted.filter((a: any) => a.payment_status === "paid_in_advance" && a.status !== "completed");
+      case "prepaid": {
+        const ACTIVE = new Set(["scheduled", "confirmed", "reminder_sent"]);
+        return sorted.filter((a: any) => a.payment_status === "paid_in_advance" && ACTIVE.has(a.status));
+      }
       case "supervision": return [];
       default: return realSorted;
     }

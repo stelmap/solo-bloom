@@ -30,22 +30,25 @@ describe("paymentClassifiers", () => {
   });
 
   describe("isPrepaid", () => {
-    it("counts paid_in_advance as prepaid", () => {
-      expect(isPrepaid({ payment_status: "paid_in_advance" })).toBe(true);
+    it("counts paid_in_advance on an active scheduled session as prepaid", () => {
+      expect(isPrepaid({ status: "scheduled", payment_status: "paid_in_advance" })).toBe(true);
     });
-    it("counts paid_from_prepayment as prepaid (consumed credit)", () => {
-      expect(isPrepaid({ payment_status: "paid_from_prepayment" })).toBe(true);
+    it("counts paid_from_prepayment on an active scheduled session as prepaid", () => {
+      expect(isPrepaid({ status: "scheduled", payment_status: "paid_from_prepayment" })).toBe(true);
     });
     it("does not count plain paid_now as prepaid", () => {
-      expect(isPrepaid({ payment_status: "paid_now" })).toBe(false);
+      expect(isPrepaid({ status: "scheduled", payment_status: "paid_now" })).toBe(false);
     });
     it("completed sessions are NEVER prepaid — funds are earned, not reserved", () => {
-      expect(
-        isPrepaid({ status: "completed", payment_status: "paid_in_advance" }),
-      ).toBe(false);
-      expect(
-        isPrepaid({ status: "completed", payment_status: "paid_from_prepayment" }),
-      ).toBe(false);
+      expect(isPrepaid({ status: "completed", payment_status: "paid_in_advance" })).toBe(false);
+      expect(isPrepaid({ status: "completed", payment_status: "paid_from_prepayment" })).toBe(false);
+    });
+    it("cancelled sessions are NEVER prepaid — allocation is released back to balance", () => {
+      expect(isPrepaid({ status: "cancelled", payment_status: "paid_in_advance" })).toBe(false);
+      expect(isPrepaid({ status: "cancelled", payment_status: "paid_from_prepayment" })).toBe(false);
+    });
+    it("no-show sessions are NEVER prepaid", () => {
+      expect(isPrepaid({ status: "no-show", payment_status: "paid_in_advance" })).toBe(false);
     });
   });
 
