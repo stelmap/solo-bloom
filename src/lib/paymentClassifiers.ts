@@ -47,11 +47,11 @@ export const isPaid = (a: AppointmentLike) =>
   a.payment_status === "paid_from_prepayment";
 
 export const isAwaiting = (a: AppointmentLike) =>
-  a.status === "completed" &&
-  (a.payment_status === "unpaid" ||
-    a.payment_status === "waiting_for_payment" ||
+  (a.status === "completed" || a.status === "cancelled" || a.status === "no-show") &&
+  (a.payment_status === "waiting_for_payment" ||
     a.payment_status === "partially_paid" ||
-    a.payment_status === "partially_paid_from_prepayment");
+    a.payment_status === "partially_paid_from_prepayment" ||
+    (a.status === "completed" && a.payment_status === "unpaid"));
 
 export const isCancelled = (a: AppointmentLike) => a.status === "cancelled";
 
