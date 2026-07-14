@@ -208,15 +208,14 @@ Deno.serve(async (req) => {
 
         // Send final email BEFORE deleting the auth user (address becomes unavailable after)
         if (targetEmail) {
-          await userClient.functions.invoke("send-transactional-email", {
-            body: {
-              templateName: "account-deleted-final",
-              recipientEmail: targetEmail,
-              idempotencyKey: `deletion-final-${targetUserId}-${Date.now()}`,
-              templateData: { language },
-            },
+          await callEmailFn({
+            templateName: "account-deleted-final",
+            recipientEmail: targetEmail,
+            idempotencyKey: `deletion-final-${targetUserId}-${Date.now()}`,
+            templateData: { language },
           });
         }
+
 
         // Mark lifecycle as deleted first (audit preserved even if auth delete fails)
         await admin.from("user_lifecycle").update({
