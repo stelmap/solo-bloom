@@ -213,8 +213,30 @@ Deno.serve(async (req) => {
         if (delErr) return json({ ok: false, error: delErr.message }, 500);
         return json({ ok: true });
       }
+      case "send_warning_email_uk":
+      case "send_warning_email_en": {
+        if (previousStatus === "deleted") return json({ error: "User already deleted" }, 400);
+        if (!targetEmail) return json({ error: "User has no email", code: "no_email" }, 400);
+        const lang = action === "send_warning_email_uk" ? "uk" : "en";
+        const emailRes = await sendWarning(lang);
+        if (emailRes.ok) {
+          await admin.from("user_lifecycle").update({
+            deactivation_email_sent_at: new Date().toISOString(),
+          }).eq("user_id", targetUserId);
+        }
+        await audit("warning_email_sent", {
+          language: lang,
+          email_ok: emailRes.ok,
+          error: emailRes.ok ? null : String((emailRes as any).error?.message ?? (emailRes as any).error ?? ""),
+        });
+        if (!emailRes.ok) {
+          return json({ ok: false, error: "Email could not be sent. Please try again later." }, 502);
+        }
+        return json({ ok: true, email: targetEmail, language: lang });
+      }
       default:
         return json({ error: "Unknown action" }, 400);
+
     }
   } catch (e) {
     return json({ error: String((e as any)?.message ?? e) }, 500);
