@@ -528,8 +528,9 @@ export default function AdminUsersPage() {
             >
 
               {dialogBusy && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Confirm
+              {dialogAction === "send_warning_email_uk" || dialogAction === "send_warning_email_en" ? "Send email" : "Confirm"}
             </Button>
+
           </DialogFooter>
         </DialogContent>
       </Dialog>
