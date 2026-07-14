@@ -478,7 +478,7 @@ export default function PaymentAuditPage() {
                     </TableCell>
                     <TableCell className="py-2 align-middle text-right font-medium tabular-nums">
                       {(r as any).isPrepayWithdrawal
-                        ? <span className="text-muted-foreground">{cs}0.00</span>
+                        ? <span className="text-amber-700">−{cs}{Number((r as any).prepayMovement || 0).toFixed(2)}</span>
                         : `${cs}${r.amount.toFixed(2)}`}
                     </TableCell>
                     <TableCell className="py-2 align-middle text-sm">{methodLabel(r.method)}</TableCell>
