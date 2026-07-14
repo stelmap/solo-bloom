@@ -45,6 +45,44 @@ const FUNNEL_STEPS: { keys: string[]; label: string }[] = [
   { keys: ["subscription_completed", "subscription_active", "checkout_completed"], label: "Subscribed" },
 ];
 
+// Escape CSV cell to prevent formula injection (=, +, -, @, tab, CR).
+const csvCell = (v: unknown): string => {
+  let s = v === null || v === undefined ? "" : String(v);
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  if (/[",\r\n]/.test(s)) s = `"${s.replace(/"/g, '""')}"`;
+  return s;
+};
+
+type ConversionStep = {
+  label: string;
+  count: number;
+  overallPct: number;
+  stepPct: number;
+  drop: number;
+};
+
+const exportConversionCsv = (steps: ConversionStep[]) => {
+  const header = ["Step", "Label", "Visitors", "Step %", "Overall %", "Dropped from previous"];
+  const rows = steps.map((s, i) => [
+    i + 1,
+    s.label,
+    s.count,
+    i === 0 ? "" : `${s.stepPct}%`,
+    i === 0 ? "" : `${s.overallPct}%`,
+    i === 0 ? "" : s.drop,
+  ]);
+  const csv = [header, ...rows].map((r) => r.map(csvCell).join(",")).join("\r\n");
+  const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `conversion-funnel-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+};
+
 const RANGES = [
   { key: "1d", label: "Last 24h", days: 1 },
   { key: "7d", label: "Last 7 days", days: 7 },
@@ -342,11 +380,18 @@ export default function AdminAnalyticsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Landing → Auth → Subscription</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Unique visitors per step. Step % = conversion from previous step.
-                  Overall % = share of landing visitors that reached the step.
-                </p>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <CardTitle>Landing → Auth → Subscription</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Unique visitors per step. Step % = conversion from previous step.
+                      Overall % = share of landing visitors that reached the step.
+                    </p>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => exportConversionCsv(conversion)}>
+                    Export CSV
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-3">
                 {conversion.map((s, i) => (
@@ -368,6 +413,7 @@ export default function AdminAnalyticsPage() {
                 ))}
               </CardContent>
             </Card>
+
 
             <Card>
               <CardHeader><CardTitle>Detailed funnel (all events)</CardTitle></CardHeader>
