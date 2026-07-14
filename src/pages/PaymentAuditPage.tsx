@@ -248,6 +248,7 @@ export default function PaymentAuditPage() {
       search,
       dateFrom,
       dateTo,
+      txType,
     }) as typeof rows;
     const sorted = [...r];
     sorted.sort((a, b) => {
@@ -261,9 +262,9 @@ export default function PaymentAuditPage() {
       }
     });
     return sorted;
-  }, [rows, clientId, quickFilter, sortBy, search, dateFrom, dateTo]);
+  }, [rows, clientId, quickFilter, sortBy, search, dateFrom, dateTo, txType]);
 
-  useEffect(() => { setPage(1); }, [clientId, quickFilter, sortBy, search, pageSize, dateFrom, dateTo]);
+  useEffect(() => { setPage(1); }, [clientId, quickFilter, sortBy, search, pageSize, dateFrom, dateTo, txType]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
