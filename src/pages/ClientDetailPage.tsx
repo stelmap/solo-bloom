@@ -564,6 +564,10 @@ export default function ClientDetailPage() {
             {/* Client-level notes — moved up; reused in Supervision */}
             {!isDemoMode && <ClientNotesCard client={client as any} />}
 
+            {/* Last completed session notes */}
+            {!isDemoMode && <LastSessionNotesCard clientId={id!} />}
+
+
             {/* Notification Settings */}
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
