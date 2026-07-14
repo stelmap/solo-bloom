@@ -1617,4 +1617,12 @@ export default {
   "dash.tabToday": "Сьогодні",
   "dash.tabMonth": "Місяць",
   "dash.tabAll": "Всі",
+  "dash.revenueByClient": "Дохід за клієнтами · Весь час",
+  "dash.topClientsByRevenue": "Топ клієнтів за доходом",
+  "dash.incomeDistribution": "Розподіл доходу",
+  "dash.totalAllTime": "Всього",
+  "dash.noRevenueYet": "Дохід ще не зафіксовано.",
+  "dash.revenueLabel": "Дохід",
+  "dash.othersClients": "Інші",
+  "dash.unassignedClient": "Без клієнта",
 } as const;
