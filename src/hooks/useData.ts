@@ -3222,7 +3222,7 @@ export function useClientCreditBalance(clientId: string | undefined) {
           .eq("billing_rule_applied", true),
         (supabase as any)
           .from("income_session_allocations")
-          .select("appointment_id, allocated_amount, income:income_id(status, client_id)")
+          .select("appointment_id, allocated_amount, income:income_id!inner(status, client_id)")
           .eq("income.client_id", clientId!),
       ]);
       if (incErr) throw incErr;
