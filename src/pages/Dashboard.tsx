@@ -603,57 +603,44 @@ const REVENUE_PIE_COLORS = [
   "hsl(var(--muted-foreground))",
 ];
 
+type RevenueRange = "all" | "7d" | "30d" | "90d" | "ytd" | "1y";
+
+function computeRange(range: RevenueRange): { from?: string; to?: string } {
+  if (range === "all") return {};
+  const now = new Date();
+  const to = now.toISOString().slice(0, 10);
+  const from = new Date(now);
+  if (range === "7d") from.setDate(now.getDate() - 6);
+  else if (range === "30d") from.setDate(now.getDate() - 29);
+  else if (range === "90d") from.setDate(now.getDate() - 89);
+  else if (range === "1y") from.setFullYear(now.getFullYear() - 1);
+  else if (range === "ytd") { from.setMonth(0); from.setDate(1); }
+  return { from: from.toISOString().slice(0, 10), to };
+}
+
 function TopClientsRevenue({ t, cs, navigate }: { t: (k: any, p?: any) => string; cs: string; navigate: (p: string) => void }) {
-  const { data: incomes = [], isLoading } = useAllIncome();
+  const [range, setRange] = useState<RevenueRange>("all");
+  const [customFrom, setCustomFrom] = useState<string>("");
+  const [customTo, setCustomTo] = useState<string>("");
+  const useCustom = !!(customFrom || customTo);
+  const { from: presetFrom, to: presetTo } = useMemo(() => computeRange(range), [range]);
+  const dateFrom = useCustom ? (customFrom || undefined) : presetFrom;
+  const dateTo = useCustom ? (customTo || undefined) : presetTo;
+
+  const { data: incomes = [], isLoading } = useAllIncome(dateFrom, dateTo);
   const { data: clients = [] } = useClients();
 
+  const rangeOptions: { key: RevenueRange; label: string }[] = [
+    { key: "all", label: t("dash.range.all") || "All" },
+    { key: "7d", label: t("dash.range.7d") || "7d" },
+    { key: "30d", label: t("dash.range.30d") || "30d" },
+    { key: "90d", label: t("dash.range.90d") || "90d" },
+    { key: "ytd", label: t("dash.range.ytd") || "YTD" },
+    { key: "1y", label: t("dash.range.1y") || "1y" },
+  ];
+
   const { top, distribution, totalRevenue } = useMemo(() => {
-    const nameById = new Map<string, string>();
-    for (const c of clients as any[]) nameById.set(c.id, c.name || "—");
-
-    const totals = new Map<string, number>();
-    let grandTotal = 0;
-    for (const inc of incomes as any[]) {
-      if ((inc.status ?? "confirmed") !== "confirmed") continue;
-      if (inc.source === "prepayment_withdrawal") continue;
-      const amt = Number(inc.amount || 0);
-      if (!(amt > 0)) continue;
-      const cid = inc.client_id || inc.appointments?.client_id;
-      const key = cid || "__unassigned__";
-      totals.set(key, (totals.get(key) || 0) + amt);
-      grandTotal += amt;
-    }
-
-    const ranked = Array.from(totals.entries())
-      .map(([id, amount]) => ({
-        id,
-        name: id === "__unassigned__" ? t("dash.unassignedClient") : (nameById.get(id) || "—"),
-        amount,
-      }))
-      .sort((a, b) => b.amount - a.amount);
-
-    const topList = ranked.slice(0, 10);
-
-    // Distribution: top 5 + Others aggregate
-    const topFive = ranked.slice(0, 5);
-    const rest = ranked.slice(5);
-    const restSum = rest.reduce((s, r) => s + r.amount, 0);
-    const dist = [...topFive.map((r) => ({ name: r.name, value: r.amount, id: r.id }))];
-    if (restSum > 0) dist.push({ name: t("dash.othersClients"), value: restSum, id: "__others__" });
-
-    return { top: topList, distribution: dist, totalRevenue: grandTotal };
-  }, [incomes, clients, t]);
-
-  return (
-    <section>
-      <h2 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-        <DollarSign className="h-4 w-4 text-primary" />
-        {t("dash.revenueByClient")}
-        <span className="ml-auto text-xs text-muted-foreground font-normal tabular-nums">
-          {t("dash.totalAllTime")}: <span className="font-semibold text-foreground">{cs}{totalRevenue.toLocaleString()}</span>
-        </span>
-      </h2>
-
+...
       {isLoading ? (
         <div className="bg-card border border-border rounded-[18px] p-6 text-center text-muted-foreground text-sm">{t("common.loading") || "…"}</div>
       ) : top.length === 0 ? (
