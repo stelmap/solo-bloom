@@ -557,8 +557,11 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
         toast({ title: t("toast.appointmentCompleted"), description: msg });
       }
 
-      // Open session notes dialog (except for group sessions).
-      if (!isGroupSession && apt?.id && apt?.client_id) {
+      // Open session notes dialog once, only if notes were not yet created for this session.
+      const alreadyHasNotes = !!currentNotes && (
+        !!currentNotes.session_summary || !!currentNotes.homework_text || !!currentNotes.transference || !!currentNotes.has_homework
+      );
+      if (!isGroupSession && apt?.id && apt?.client_id && !alreadyHasNotes) {
         setNotesDialogAppointmentId(apt.id);
         setNotesDialogMode("post-complete");
         setNotesDialogOpen(true);
