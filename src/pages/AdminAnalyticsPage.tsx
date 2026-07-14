@@ -644,7 +644,7 @@ function WebTrafficPanel({ data }: { data: WebTrafficData }) {
         <CardContent>
           <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
             <BreakdownTable title="Source" header="Visitors" data={data.bySource} />
-            <BreakdownTable title="Page" header="Visitors" data={data.byPage} />
+            <BreakdownTable title="Page" header="Visitors" data={data.byPage} secondary={data.avgTimeByPage} secondaryHeader="Avg time" secondaryFormat={formatDuration} />
             <BreakdownTable title="Device" header="Visitors" data={data.byDevice} />
             <BreakdownTable title="Country" header="Visitors" data={data.byCountry} />
           </div>
