@@ -11,7 +11,10 @@ type Action =
   | "cancel_deactivation"
   | "resend_email"
   | "delete_permanently"
-  | "cancel_deletion";
+  | "cancel_deletion"
+  | "send_warning_email_uk"
+  | "send_warning_email_en";
+
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -89,18 +92,20 @@ Deno.serve(async (req) => {
       });
     };
 
-    const sendWarning = async () => {
+    const sendWarning = async (langOverride?: string) => {
       if (!targetEmail) return { ok: false, error: "no email" };
+      const lang = langOverride ?? language;
       const { data, error } = await admin.functions.invoke("send-transactional-email", {
         body: {
           templateName: "account-deactivation-warning",
           recipientEmail: targetEmail,
           idempotencyKey: `deactivation-warning-${targetUserId}-${Date.now()}`,
-          templateData: { language, loginUrl: "https://solo-bizz.com/auth" },
+          templateData: { language: lang, loginUrl: "https://solo-bizz.com/auth" },
         },
       });
-      return { ok: !error, error, data };
+      return { ok: !error, error, data, language: lang };
     };
+
 
     // Safety guard: block deactivation / permanent deletion when the user is
     // recently active (signed in within 2 months) AND has product records.
@@ -208,8 +213,30 @@ Deno.serve(async (req) => {
         if (delErr) return json({ ok: false, error: delErr.message }, 500);
         return json({ ok: true });
       }
+      case "send_warning_email_uk":
+      case "send_warning_email_en": {
+        if (previousStatus === "deleted") return json({ error: "User already deleted" }, 400);
+        if (!targetEmail) return json({ error: "User has no email", code: "no_email" }, 400);
+        const lang = action === "send_warning_email_uk" ? "uk" : "en";
+        const emailRes = await sendWarning(lang);
+        if (emailRes.ok) {
+          await admin.from("user_lifecycle").update({
+            deactivation_email_sent_at: new Date().toISOString(),
+          }).eq("user_id", targetUserId);
+        }
+        await audit("warning_email_sent", {
+          language: lang,
+          email_ok: emailRes.ok,
+          error: emailRes.ok ? null : String((emailRes as any).error?.message ?? (emailRes as any).error ?? ""),
+        });
+        if (!emailRes.ok) {
+          return json({ ok: false, error: "Email could not be sent. Please try again later." }, 502);
+        }
+        return json({ ok: true, email: targetEmail, language: lang });
+      }
       default:
         return json({ error: "Unknown action" }, 400);
+
     }
   } catch (e) {
     return json({ error: String((e as any)?.message ?? e) }, 500);

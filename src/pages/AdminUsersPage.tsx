@@ -59,7 +59,15 @@ const ACTION_LABEL: Record<LifecycleAction, string> = {
   resend_email: "Resend warning email",
   cancel_deletion: "Cancel deletion",
   delete_permanently: "Delete permanently",
+  send_warning_email_uk: "Send warning email — Ukrainian",
+  send_warning_email_en: "Send warning email — English",
 };
+
+function isValidEmail(email: string | null | undefined): boolean {
+  if (!email) return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 
 function fmt(d: string | null | undefined) {
   if (!d) return "—";
@@ -195,7 +203,13 @@ export default function AdminUsersPage() {
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
-      toast({ title: "Done", description: ACTION_LABEL[dialogAction] });
+      const isWarning = dialogAction === "send_warning_email_uk" || dialogAction === "send_warning_email_en";
+      toast({
+        title: isWarning ? "Email sent" : "Done",
+        description: isWarning
+          ? `Warning email was successfully sent to ${dialogUser.email}.`
+          : ACTION_LABEL[dialogAction],
+      });
       setDialogUser(null);
       setDialogAction(null);
       setDialogConfirm("");
@@ -206,6 +220,7 @@ export default function AdminUsersPage() {
       setDialogBusy(false);
     }
   }
+
 
   if (loading || isAdmin === null) {
     return <AppLayout><div className="flex items-center justify-center h-64"><Loader2 className="h-5 w-5 animate-spin" /></div></AppLayout>;
@@ -377,10 +392,17 @@ export default function AdminUsersPage() {
                             u.last_sign_in_at && (Date.now() - new Date(u.last_sign_in_at).getTime()) < twoMonthsMs
                           );
                           const isProtected = recentlyLoggedIn && Boolean(u.has_records);
+                          const emailInvalid = !isValidEmail(u.email);
                           const blockedFor = new Set<LifecycleAction>(
                             isProtected ? ["deactivate", "delete_permanently"] : []
                           );
+                          if (emailInvalid) {
+                            blockedFor.add("send_warning_email_uk");
+                            blockedFor.add("send_warning_email_en");
+                            blockedFor.add("resend_email");
+                          }
                           const usable = actions.filter((a) => !blockedFor.has(a));
+
                           if (actions.length === 0) {
                             return <span className="text-xs text-muted-foreground">—</span>;
                           }
@@ -465,6 +487,36 @@ export default function AdminUsersPage() {
             </div>
           )}
 
+          {(dialogAction === "send_warning_email_uk" || dialogAction === "send_warning_email_en") && dialogUser && (() => {
+            const lang = dialogAction === "send_warning_email_uk" ? "Ukrainian" : "English";
+            const lastSent = dialogUser.deactivation_email_sent_at;
+            const sentRecently = lastSent && (Date.now() - new Date(lastSent).getTime()) < 24 * 60 * 60 * 1000;
+            const planned = dialogUser.planned_deletion_date;
+            return (
+              <div className="space-y-3 text-sm">
+                <p>The warning email will be sent to:</p>
+                <p className="font-medium">{dialogUser.email}</p>
+                {dialogUser.full_name && <p className="text-muted-foreground">Name: {dialogUser.full_name}</p>}
+                <p>Language: <span className="font-medium">{lang}</span></p>
+                {planned && (
+                  <p>Scheduled account deletion date:{" "}
+                    <span className="font-medium">{new Date(planned).toLocaleDateString()}</span>
+                  </p>
+                )}
+                {lastSent && (
+                  <p className="text-xs text-muted-foreground">
+                    Last warning email sent: {new Date(lastSent).toLocaleString()}
+                  </p>
+                )}
+                {sentRecently && (
+                  <p className="text-sm text-warning-foreground bg-warning/10 border border-warning/30 rounded p-2">
+                    A warning email was already sent to this user within the last 24 hours. Do you want to send it again?
+                  </p>
+                )}
+              </div>
+            );
+          })()}
+
           <DialogFooter>
             <Button variant="outline" onClick={() => { setDialogUser(null); setDialogAction(null); }}>
               Cancel
@@ -474,9 +526,11 @@ export default function AdminUsersPage() {
               disabled={dialogBusy || (dialogAction === "delete_permanently" && dialogConfirm !== "DELETE")}
               onClick={runAction}
             >
+
               {dialogBusy && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Confirm
+              {dialogAction === "send_warning_email_uk" || dialogAction === "send_warning_email_en" ? "Send email" : "Confirm"}
             </Button>
+
           </DialogFooter>
         </DialogContent>
       </Dialog>
