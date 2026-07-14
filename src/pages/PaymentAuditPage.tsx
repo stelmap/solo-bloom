@@ -131,6 +131,7 @@ export default function PaymentAuditPage() {
   const { toast } = useToast();
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
+  const [txType, setTxType] = useState<"all" | "payment" | "prepayment" | "prepayment_withdrawal" | "refund" | "adjustment">("all");
 
   useEffect(() => {
     const urlClient = searchParams.get("client") || "all";
