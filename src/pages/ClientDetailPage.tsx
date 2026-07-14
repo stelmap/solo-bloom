@@ -251,11 +251,12 @@ export default function ClientDetailPage() {
     // not deleted) sessions whose funds are still reserved. Cancelled sessions
     // must never count as prepaid — their allocation is released.
     const ACTIVE = new Set(["scheduled", "confirmed", "reminder_sent"]);
-    const count = (appointments as any[]).filter(
+    const reserved = (appointments as any[]).filter(
       (a) => a.payment_status === "paid_in_advance" && ACTIVE.has(a.status),
-    ).length;
-    return { prepaidSessions: count, prepaidAmount: balanceComputation.prepaid };
-  }, [appointments, balanceComputation]);
+    );
+    const amount = reserved.reduce((s, a) => s + Number(a.price || 0), 0);
+    return { prepaidSessions: reserved.length, prepaidAmount: amount };
+  }, [appointments]);
 
 
 
@@ -831,7 +832,11 @@ export default function ClientDetailPage() {
           // partially-paid completed sessions from the prepaid pool, so the
           // displayed Outstanding/Prepaid/Total Unpaid reflect the effective
           // financial state after that virtual allocation.
-          const { prepaid, outstanding } = balanceComputation;
+          const { outstanding } = balanceComputation;
+          // Use the same "reserved for active future sessions" figure as the
+          // Prepaid sessions counter so the two never disagree. Unallocated
+          // client credit surfaces separately in Finance → Payment Audit.
+          const prepaid = prepaidAmount;
           const totalUnpaid = outstanding;
 
           return (
