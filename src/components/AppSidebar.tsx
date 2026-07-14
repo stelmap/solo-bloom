@@ -103,6 +103,7 @@ export function AppSidebar() {
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
         className="fixed top-4 left-4 z-50 lg:hidden p-2 rounded-lg bg-secondary text-secondary-foreground border border-sidebar-border shadow-lg"
+        aria-label={mobileOpen ? "Close menu" : "Open menu"}
       >
         {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
@@ -118,9 +119,9 @@ export function AppSidebar() {
       )}>
         <div className="p-6 border-b border-sidebar-border">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-sidebar-foreground tracking-tight">
+            <div className="text-xl font-bold text-sidebar-foreground tracking-tight">
               Solo<span className="text-sidebar-primary">Bizz</span>
-            </h1>
+            </div>
           </div>
           <p className="text-xs text-sidebar-foreground/50 mt-0.5">Business Manager</p>
           {(() => {
