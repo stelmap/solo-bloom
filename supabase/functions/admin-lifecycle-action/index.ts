@@ -92,18 +92,20 @@ Deno.serve(async (req) => {
       });
     };
 
-    const sendWarning = async () => {
+    const sendWarning = async (langOverride?: string) => {
       if (!targetEmail) return { ok: false, error: "no email" };
+      const lang = langOverride ?? language;
       const { data, error } = await admin.functions.invoke("send-transactional-email", {
         body: {
           templateName: "account-deactivation-warning",
           recipientEmail: targetEmail,
           idempotencyKey: `deactivation-warning-${targetUserId}-${Date.now()}`,
-          templateData: { language, loginUrl: "https://solo-bizz.com/auth" },
+          templateData: { language: lang, loginUrl: "https://solo-bizz.com/auth" },
         },
       });
-      return { ok: !error, error, data };
+      return { ok: !error, error, data, language: lang };
     };
+
 
     // Safety guard: block deactivation / permanent deletion when the user is
     // recently active (signed in within 2 months) AND has product records.
