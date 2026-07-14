@@ -1749,4 +1749,12 @@ export default {
   "landing.pricing.noCreditCard": "Кредитная карта для старта не нужна",
   "landing.cta.title": "Начните управлять своим делом уже сегодня.",
   "landing.cta.subtitle": "Присоединяйтесь к специалистам, которые наконец понимают свой бизнес.",
+  "dash.revenueByClient": "Доход по клиентам · За всё время",
+  "dash.topClientsByRevenue": "Топ клиентов по доходу",
+  "dash.incomeDistribution": "Распределение дохода",
+  "dash.totalAllTime": "Всего",
+  "dash.noRevenueYet": "Доход ещё не зафиксирован.",
+  "dash.revenueLabel": "Доход",
+  "dash.othersClients": "Остальные",
+  "dash.unassignedClient": "Без клиента",
 };

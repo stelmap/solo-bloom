@@ -1617,4 +1617,12 @@ export default {
   "dash.tabToday": "Today",
   "dash.tabMonth": "Month",
   "dash.tabAll": "All",
+  "dash.revenueByClient": "Revenue by client · All time",
+  "dash.topClientsByRevenue": "Top clients by revenue",
+  "dash.incomeDistribution": "Income distribution",
+  "dash.totalAllTime": "Total",
+  "dash.noRevenueYet": "No revenue recorded yet.",
+  "dash.revenueLabel": "Revenue",
+  "dash.othersClients": "Others",
+  "dash.unassignedClient": "Unassigned",
 } as const;

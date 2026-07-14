@@ -1616,4 +1616,12 @@ export default {
   "dash.tabToday": "Aujourd'hui",
   "dash.tabMonth": "Mois",
   "dash.tabAll": "Tout",
+  "dash.revenueByClient": "Revenus par client · Tout",
+  "dash.topClientsByRevenue": "Top clients par revenu",
+  "dash.incomeDistribution": "Répartition des revenus",
+  "dash.totalAllTime": "Total",
+  "dash.noRevenueYet": "Aucun revenu enregistré.",
+  "dash.revenueLabel": "Revenu",
+  "dash.othersClients": "Autres",
+  "dash.unassignedClient": "Non attribué",
 } as const;

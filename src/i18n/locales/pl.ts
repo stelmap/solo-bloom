@@ -1616,4 +1616,12 @@ export default {
   "booking.confirm": "Potwierdź",
   "booking.decline": "Odrzuć",
   "booking.open": "Otwórz",
+  "dash.revenueByClient": "Przychód wg klientów · Wszystko",
+  "dash.topClientsByRevenue": "Top klienci wg przychodu",
+  "dash.incomeDistribution": "Rozkład przychodu",
+  "dash.totalAllTime": "Razem",
+  "dash.noRevenueYet": "Brak zarejestrowanego przychodu.",
+  "dash.revenueLabel": "Przychód",
+  "dash.othersClients": "Pozostali",
+  "dash.unassignedClient": "Nieprzypisany",
 } as const;
