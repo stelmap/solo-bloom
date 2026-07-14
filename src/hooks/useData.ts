@@ -203,9 +203,26 @@ export function useArchiveClient() {
       if (error) throw error;
 
       if (futureSessionsAction === "cancel") {
+        // Also release any pre-allocated income / expected payments so
+        // paid_in_advance sessions don't linger as phantom "prepaid" reservations.
+        const { data: futureIds } = await supabase
+          .from("appointments")
+          .select("id")
+          .eq("client_id", id)
+          .gte("scheduled_at", nowIso)
+          .in("status", ["scheduled", "confirmed"] as any);
+        const ids = (futureIds ?? []).map((r: any) => r.id);
+        if (ids.length > 0) {
+          await supabase.from("income").delete().in("appointment_id", ids);
+          await supabase.from("expected_payments").delete().in("appointment_id", ids);
+        }
         await supabase
           .from("appointments")
-          .update({ status: "cancelled", cancellation_reason: "client_archived" } as any)
+          .update({
+            status: "cancelled",
+            payment_status: "not_applicable",
+            cancellation_reason: "client_archived",
+          } as any)
           .eq("client_id", id)
           .gte("scheduled_at", nowIso)
           .in("status", ["scheduled", "confirmed"]);
