@@ -92,6 +92,23 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     },
   });
 
+  // Current appointment's saved notes (for edit)
+  const { data: currentNotes } = useQuery({
+    queryKey: ["session_notes", "current", apt?.id],
+    enabled: !!apt?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("session_notes")
+        .select("id, session_summary, has_homework, homework_text, transference, updated_at")
+        .eq("appointment_id", apt.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+
+
 
   // Group attendance hooks — must be before any early return
   const groupSessionId = apt?.group_session_id
