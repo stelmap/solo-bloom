@@ -535,10 +535,12 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       // Open session notes dialog (except for group sessions).
       if (!isGroupSession && apt?.id && apt?.client_id) {
         setNotesDialogAppointmentId(apt.id);
+        setNotesDialogMode("post-complete");
         setNotesDialogOpen(true);
       } else {
         onOpenChange(false);
       }
+
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
