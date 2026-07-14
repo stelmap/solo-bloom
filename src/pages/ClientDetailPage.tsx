@@ -242,21 +242,19 @@ export default function ClientDetailPage() {
   const paidSessions = (appointments as any[]).filter(isEffectivelyPaid).length;
   const awaitingSessions = (appointments as any[]).filter(isEffectivelyAwaiting).length;
 
-  // Prepaid count = only FUTURE / not-yet-performed sessions whose funds are
-  // still reserved (paid_in_advance). Completed sessions are never "prepaid" —
-  // once the session happens, the money is earned, not reserved. This guards
-  // against stale rows where the DB status wasn't collapsed to paid_now.
+  // Prepaid balance = actual unspent client funds derived from confirmed
+  // financial transactions (see useClientCreditBalance). It is INDEPENDENT of
+  // whether future sessions exist or their `paid_in_advance` status.
+  // Prepaid sessions = floor(balance / current service price). A residual
+  // balance smaller than one session price still shows as a non-zero balance
+  // with 0 prepaid sessions.
   const { prepaidSessions, prepaidAmount } = useMemo(() => {
-    // Prepaid sessions = only ACTIVE (not cancelled, not no-show, not completed,
-    // not deleted) sessions whose funds are still reserved. Cancelled sessions
-    // must never count as prepaid — their allocation is released.
-    const ACTIVE = new Set(["scheduled", "confirmed", "reminder_sent"]);
-    const reserved = (appointments as any[]).filter(
-      (a) => a.payment_status === "paid_in_advance" && ACTIVE.has(a.status),
-    );
-    const amount = reserved.reduce((s, a) => s + Number(a.price || 0), 0);
-    return { prepaidSessions: reserved.length, prepaidAmount: amount };
-  }, [appointments]);
+    const amount = Number(creditBalance || 0);
+    const price = Number((client as any)?.base_price || 0);
+    const sessions = price > 0 ? Math.floor(amount / price) : 0;
+    return { prepaidSessions: sessions, prepaidAmount: amount };
+  }, [creditBalance, client]);
+
 
 
 
