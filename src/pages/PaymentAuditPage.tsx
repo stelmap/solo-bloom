@@ -423,6 +423,19 @@ export default function PaymentAuditPage() {
               {t("audit.clearDates")}
             </Button>
           )}
+          <Select value={txType} onValueChange={(v) => setTxType(v as any)}>
+            <SelectTrigger className="h-9 w-[200px]" data-testid="audit-tx-type">
+              <SelectValue placeholder={t("audit.txType.all")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("audit.txType.all")}</SelectItem>
+              <SelectItem value="payment">{t("audit.txType.payment")}</SelectItem>
+              <SelectItem value="prepayment">{t("audit.txType.prepayment")}</SelectItem>
+              <SelectItem value="prepayment_withdrawal">{t("audit.txType.withdrawal")}</SelectItem>
+              <SelectItem value="refund">{t("audit.txType.refund")}</SelectItem>
+              <SelectItem value="adjustment">{t("audit.txType.adjustment")}</SelectItem>
+            </SelectContent>
+          </Select>
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="h-9 w-[200px]"><SelectValue /></SelectTrigger>
             <SelectContent>
