@@ -1,4 +1,5 @@
 import { AppLayout } from "@/components/AppLayout";
+import { BackButton } from "@/components/BackButton";
 import { useDashboardStats, useProfile, useClients, useAppointments, useServices, useAllIncome } from "@/hooks/useData";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, PieChart, Pie, Legend } from "recharts";
 import { useBookingRequests, useConfirmBookingRequest, useDeclineBookingRequest } from "@/hooks/useBookingInbox";
@@ -211,6 +212,7 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="space-y-5">
+        <BackButton />
         {/* Range tabs — split dashboard into 3 focused views */}
         <div className="flex items-center gap-2 flex-wrap">
           {([
