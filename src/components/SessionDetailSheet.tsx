@@ -915,6 +915,52 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 </div>
               )}
 
+              {/* Saved session notes (post-completion) — psychologist only via RLS */}
+              {currentNotes && (currentNotes.session_summary || currentNotes.homework_text || currentNotes.transference || currentNotes.has_homework) && (
+                <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="flex items-center gap-1.5">
+                      <FileText className="h-3.5 w-3.5" /> {t("sessionNotes.title")}
+                    </Label>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setNotesDialogAppointmentId(apt.id);
+                        setNotesDialogMode("edit");
+                        setNotesDialogOpen(true);
+                      }}
+                    >
+                      <Pencil className="h-3.5 w-3.5 mr-1" /> {t("common.edit")}
+                    </Button>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    {currentNotes.session_summary && (
+                      <div>
+                        <div className="text-xs text-muted-foreground">{t("sessionNotes.summaryLabel")}</div>
+                        <div className="whitespace-pre-wrap">{currentNotes.session_summary}</div>
+                      </div>
+                    )}
+                    <div>
+                      <div className="text-xs text-muted-foreground">{t("sessionNotes.homeworkLabel")}</div>
+                      <div className="whitespace-pre-wrap">
+                        {currentNotes.has_homework
+                          ? (currentNotes.homework_text || t("sessionNotes.homeworkYes"))
+                          : t("sessionNotes.homeworkNo")}
+                      </div>
+                    </div>
+                    {currentNotes.transference && (
+                      <div>
+                        <div className="text-xs text-muted-foreground">{t("sessionNotes.transferenceLabel")}</div>
+                        <div className="whitespace-pre-wrap">{currentNotes.transference}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+
+
 
               {/* Session notes */}
               <div className="space-y-2">
