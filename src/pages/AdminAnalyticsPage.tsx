@@ -527,7 +527,19 @@ function StatCard({ label, value }: { label: string; value: number }) {
   );
 }
 
-function BreakdownCard({ title, data }: { title: string; data: Record<string, number> }) {
+function BreakdownCard({
+  title,
+  data,
+  secondary,
+  secondaryFormat,
+  secondaryLabel,
+}: {
+  title: string;
+  data: Record<string, number>;
+  secondary?: Record<string, number>;
+  secondaryFormat?: (v: number) => string;
+  secondaryLabel?: string;
+}) {
   const entries = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, 8);
   const max = entries[0]?.[1] ?? 1;
   return (
@@ -535,21 +547,32 @@ function BreakdownCard({ title, data }: { title: string; data: Record<string, nu
       <CardHeader><CardTitle className="text-base">{title}</CardTitle></CardHeader>
       <CardContent className="space-y-2">
         {entries.length === 0 && <div className="text-sm text-muted-foreground">No data</div>}
-        {entries.map(([k, v]) => (
-          <div key={k} className="space-y-1">
-            <div className="flex justify-between text-xs">
-              <span className="truncate pr-2">{k}</span>
-              <span className="text-muted-foreground">{v}</span>
+        {entries.map(([k, v]) => {
+          const sec = secondary?.[k];
+          return (
+            <div key={k} className="space-y-1">
+              <div className="flex justify-between text-xs gap-2">
+                <span className="truncate pr-2">{k}</span>
+                <span className="text-muted-foreground whitespace-nowrap">
+                  {v}
+                  {sec !== undefined && secondaryFormat && (
+                    <span className="ml-2 text-muted-foreground/80">
+                      · {secondaryLabel ?? ""} {secondaryFormat(sec)}
+                    </span>
+                  )}
+                </span>
+              </div>
+              <div className="h-1.5 rounded bg-muted overflow-hidden">
+                <div className="h-full bg-primary/70" style={{ width: `${(v / max) * 100}%` }} />
+              </div>
             </div>
-            <div className="h-1.5 rounded bg-muted overflow-hidden">
-              <div className="h-full bg-primary/70" style={{ width: `${(v / max) * 100}%` }} />
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </CardContent>
     </Card>
   );
 }
+
 
 type WebTrafficData = {
   visitors: number;
