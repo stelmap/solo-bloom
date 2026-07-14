@@ -27,14 +27,44 @@ export function SessionNotesDialog({ open, onOpenChange, appointmentId, clientId
   const [transference, setTransference] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+  const [existingId, setExistingId] = useState<string | null>(null);
+
   useEffect(() => {
-    if (open) {
-      setSummary("");
-      setHasHomework(false);
-      setHomework("");
-      setTransference("");
-    }
+    if (!open) return;
+    setSummary("");
+    setHasHomework(false);
+    setHomework("");
+    setTransference("");
+    setExistingId(null);
+    if (!appointmentId) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("session_notes")
+          .select("id, session_summary, has_homework, homework_text, transference")
+          .eq("appointment_id", appointmentId)
+          .maybeSingle();
+        if (error) throw error;
+        if (cancelled || !data) return;
+        setExistingId(data.id);
+        setSummary(data.session_summary ?? "");
+        setHasHomework(!!data.has_homework);
+        setHomework(data.homework_text ?? "");
+        setTransference(data.transference ?? "");
+      } catch (e: any) {
+        if (!cancelled) toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [open, appointmentId]);
+
 
   const handleSave = async () => {
     if (!appointmentId || !clientId) return;
