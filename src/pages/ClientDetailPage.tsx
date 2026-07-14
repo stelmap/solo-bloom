@@ -43,6 +43,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { useDemoMode } from "@/hooks/useDemoWorkspace";
 import {
   isCompleted,
+  isDelivered,
   isPaid,
   isAwaiting,
   isCancelled,
