@@ -1355,11 +1355,6 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                         {t("partial.willCreateDebt", { symbol: cs, paid: amountPaid.toFixed(2), debt: (sessionPrice - amountPaid).toFixed(2) })}
                       </p>
                     )}
-                    {clientDebt > 0.001 && amountPaid > 0 && (
-                      <p className="text-xs text-primary">
-                        {t("partial.willCloseDebts", { symbol: cs, debt: Math.min(clientDebt, amountPaid).toFixed(2) })}
-                      </p>
-                    )}
                   </div>
 
                   {amountPaid > sessionPrice + 0.001 && (
