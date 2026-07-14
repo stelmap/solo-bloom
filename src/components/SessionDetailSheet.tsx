@@ -934,36 +934,122 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                       size="sm"
                       variant="ghost"
                       onClick={() => {
-                        setNotesDialogAppointmentId(apt.id);
-                        setNotesDialogMode("edit");
-                        setNotesDialogOpen(true);
+                        setDraftSummary(currentNotes.session_summary ?? "");
+                        setDraftHasHomework(!!currentNotes.has_homework);
+                        setDraftHomework(currentNotes.homework_text ?? "");
+                        setDraftTransference(currentNotes.transference ?? "");
+                        setEditingNotes(true);
                       }}
+                      disabled={editingNotes}
                     >
                       <Pencil className="h-3.5 w-3.5 mr-1" /> {t("common.edit")}
                     </Button>
                   </div>
-                  <div className="space-y-2 text-sm">
-                    {currentNotes.session_summary && (
-                      <div>
-                        <div className="text-xs text-muted-foreground">{t("sessionNotes.summaryLabel")}</div>
-                        <div className="whitespace-pre-wrap">{currentNotes.session_summary}</div>
+                  {editingNotes ? (
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{t("sessionNotes.summaryLabel")}</Label>
+                        <Textarea
+                          value={draftSummary}
+                          onChange={(e) => setDraftSummary(e.target.value)}
+                          placeholder={t("sessionNotes.summaryPlaceholder")}
+                          className="min-h-[100px]"
+                        />
                       </div>
-                    )}
-                    <div>
-                      <div className="text-xs text-muted-foreground">{t("sessionNotes.homeworkLabel")}</div>
-                      <div className="whitespace-pre-wrap">
-                        {currentNotes.has_homework
-                          ? (currentNotes.homework_text || t("sessionNotes.homeworkYes"))
-                          : t("sessionNotes.homeworkNo")}
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            id="inline-has-homework"
+                            checked={draftHasHomework}
+                            onCheckedChange={(v) => setDraftHasHomework(!!v)}
+                          />
+                          <Label htmlFor="inline-has-homework" className="cursor-pointer font-normal">
+                            {t("sessionNotes.hasHomework")}
+                          </Label>
+                        </div>
+                        {draftHasHomework && (
+                          <Textarea
+                            value={draftHomework}
+                            onChange={(e) => setDraftHomework(e.target.value)}
+                            placeholder={t("sessionNotes.homeworkPlaceholder")}
+                            className="min-h-[80px]"
+                          />
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{t("sessionNotes.transferenceLabel")}</Label>
+                        <Textarea
+                          value={draftTransference}
+                          onChange={(e) => setDraftTransference(e.target.value)}
+                          placeholder={t("sessionNotes.transferencePlaceholder")}
+                          className="min-h-[80px]"
+                        />
+                      </div>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button size="sm" variant="outline" onClick={() => setEditingNotes(false)} disabled={savingNotes}>
+                          {t("common.cancel")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={async () => {
+                            if (!apt?.id || !apt?.client_id) return;
+                            setSavingNotes(true);
+                            try {
+                              const { data: auth } = await supabase.auth.getUser();
+                              const uid = auth.user?.id;
+                              if (!uid) throw new Error("Not authenticated");
+                              const { error } = await supabase.from("session_notes").upsert(
+                                {
+                                  user_id: uid,
+                                  appointment_id: apt.id,
+                                  client_id: apt.client_id,
+                                  session_summary: draftSummary.trim() || null,
+                                  has_homework: draftHasHomework,
+                                  homework_text: draftHasHomework ? (draftHomework.trim() || null) : null,
+                                  transference: draftTransference.trim() || null,
+                                },
+                                { onConflict: "appointment_id" }
+                              );
+                              if (error) throw error;
+                              await qc.invalidateQueries({ queryKey: ["session_notes"] });
+                              toast({ title: t("sessionNotes.saved") });
+                              setEditingNotes(false);
+                            } catch (e: any) {
+                              toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+                            } finally {
+                              setSavingNotes(false);
+                            }
+                          }}
+                          disabled={savingNotes}
+                        >
+                          {savingNotes ? t("common.saving") : t("common.save")}
+                        </Button>
                       </div>
                     </div>
-                    {currentNotes.transference && (
+                  ) : (
+                    <div className="space-y-2 text-sm">
+                      {currentNotes.session_summary && (
+                        <div>
+                          <div className="text-xs text-muted-foreground">{t("sessionNotes.summaryLabel")}</div>
+                          <div className="whitespace-pre-wrap">{currentNotes.session_summary}</div>
+                        </div>
+                      )}
                       <div>
-                        <div className="text-xs text-muted-foreground">{t("sessionNotes.transferenceLabel")}</div>
-                        <div className="whitespace-pre-wrap">{currentNotes.transference}</div>
+                        <div className="text-xs text-muted-foreground">{t("sessionNotes.homeworkLabel")}</div>
+                        <div className="whitespace-pre-wrap">
+                          {currentNotes.has_homework
+                            ? (currentNotes.homework_text || t("sessionNotes.homeworkYes"))
+                            : t("sessionNotes.homeworkNo")}
+                        </div>
                       </div>
-                    )}
-                  </div>
+                      {currentNotes.transference && (
+                        <div>
+                          <div className="text-xs text-muted-foreground">{t("sessionNotes.transferenceLabel")}</div>
+                          <div className="whitespace-pre-wrap">{currentNotes.transference}</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
