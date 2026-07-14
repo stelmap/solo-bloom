@@ -125,7 +125,33 @@
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!--
+        Static hero H1 pre-rendered for LCP. React replaces #root's children
+        on first render (see src/main.tsx), so this only paints until hydration.
+        Inline styles avoid waiting on Tailwind CSS to parse. Kept for the
+        landing route only — a tiny script strips it on non-landing paths so
+        the user never sees it flash on /auth, /dashboard, etc.
+      -->
+      <section id="lcp-hero" style="padding:7rem 1rem 2.5rem;text-align:center;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;">
+        <div style="max-width:72rem;margin:0 auto;">
+          <h1 style="font-size:clamp(2.25rem,5vw,4.5rem);font-weight:700;letter-spacing:-0.02em;line-height:1.1;margin:0 auto 2rem;max-width:64rem;color:hsl(222,47%,11%);">
+            <span style="display:block;">Your full private practice.</span>
+            <span style="display:block;margin-top:0.5rem;color:hsl(221,83%,53%);">Organised in one place.</span>
+          </h1>
+        </div>
+      </section>
+    </div>
+    <script>
+      // Remove the placeholder immediately on non-landing routes to avoid a flash.
+      (function () {
+        var p = window.location.pathname;
+        if (p !== "/" && p !== "/index.html") {
+          var el = document.getElementById("lcp-hero");
+          if (el && el.parentNode) el.parentNode.removeChild(el);
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
     <!--
       Plerdy analytics is loaded ONLY after the user opts in via the
