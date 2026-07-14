@@ -636,14 +636,87 @@ export function useCompleteAppointment() {
       // (prepayment for this specific session). Just mark it completed and
       // recalc payment_status from the existing allocations. Do NOT wipe.
       if (paymentStatus === "already_paid") {
+        // The session was pre-allocated to existing income (a manual payment
+        // linked to this future slot). Until now the reservation surfaced on
+        // the client's prepaid balance; completing the session moves that
+        // money out of the pool. Mark it completed, force
+        // payment_status = paid_from_prepayment, and record a
+        // "Prepayment Balance Withdrawal" audit row so Payment Audit reflects
+        // the movement — same pattern as `withdraw_from_prepayment_for_appointment`.
+        const priceNum = Number(price);
+
+        // Snapshot balance BEFORE marking completed (which will flip this
+        // allocation from "reservation" to "consumed" in the balance formula).
+        const [{ data: balIncomes }, { data: balAllocs }] = await Promise.all([
+          (supabase as any)
+            .from("income")
+            .select("id, amount, status, source, appointment_id")
+            .eq("client_id", clientId),
+          (supabase as any)
+            .from("income_session_allocations")
+            .select("income_id, allocated_amount, appointment_id, income:income_id!inner(status, client_id)")
+            .eq("income.client_id", clientId),
+        ]);
+        const aptIdsForBal = Array.from(
+          new Set([
+            ...((balAllocs ?? []) as any[]).map((r) => r.appointment_id).filter(Boolean),
+            ...((balIncomes ?? []) as any[])
+              .filter((i: any) => i.appointment_id && (i.source ?? "") !== "prepayment_withdrawal")
+              .map((i: any) => i.appointment_id),
+          ]),
+        );
+        const completedSet = new Set<string>();
+        if (aptIdsForBal.length > 0) {
+          const { data: apts } = await (supabase as any)
+            .from("appointments").select("id, status").in("id", aptIdsForBal);
+          for (const a of (apts ?? []) as any[]) if (a.status === "completed") completedSet.add(a.id);
+        }
+        const allocByIncomeBefore: Record<string, number> = {};
+        for (const r of (balAllocs ?? []) as any[]) {
+          if (r.income && r.income.status && r.income.status !== "confirmed") continue;
+          if (r.appointment_id && !completedSet.has(r.appointment_id)) continue;
+          allocByIncomeBefore[r.income_id] =
+            (allocByIncomeBefore[r.income_id] || 0) + Number(r.allocated_amount || 0);
+        }
+        let balanceBefore = 0;
+        for (const inc of (balIncomes ?? []) as any[]) {
+          if ((inc.status ?? "confirmed") !== "confirmed") continue;
+          if (inc.source === "prepayment_withdrawal") continue;
+          const amt = Number(inc.amount || 0);
+          const explicit = allocByIncomeBefore[inc.id] || 0;
+          const virt = explicit === 0 && inc.appointment_id && completedSet.has(inc.appointment_id) ? amt : 0;
+          balanceBefore += Math.max(0, amt - explicit - virt);
+        }
+        const balanceAfter = Math.max(0, balanceBefore - priceNum);
+
         const { error: aptErr } = await supabase
           .from("appointments")
-          .update({ status: "completed", price: Number(price) } as any)
+          .update({ status: "completed", price: priceNum, payment_status: "paid_from_prepayment" } as any)
           .eq("id", appointmentId);
         if (aptErr) throw aptErr;
+
+        // Insert the withdrawal audit row (amount=0, source=prepayment_withdrawal).
+        const sessionDateStr = sessionDate
+          ? new Date(sessionDate).toLocaleDateString("uk-UA")
+          : new Date().toLocaleDateString("uk-UA");
+        await (supabase as any).from("income").insert({
+          user_id: user!.id,
+          client_id: clientId,
+          appointment_id: appointmentId,
+          amount: 0,
+          date: new Date().toISOString().split("T")[0],
+          source: "prepayment_withdrawal",
+          status: "confirmed",
+          balance_before: balanceBefore,
+          balance_after: balanceAfter,
+          description: `${priceNum.toFixed(2)} deducted from prepayment balance for session on ${sessionDateStr}. Balance before: ${balanceBefore.toFixed(2)}. Balance after: ${balanceAfter.toFixed(2)}.`,
+          ...(isDemoMode ? { is_demo: true } : {}),
+        } as any);
+
         await (supabase as any).rpc("recalc_appointment_payment_status", { p_appointment_id: appointmentId });
         return;
       }
+
 
       // Clean up any prior records for THIS appointment.
       await supabase.from("income_session_allocations").delete().eq("appointment_id", appointmentId);
