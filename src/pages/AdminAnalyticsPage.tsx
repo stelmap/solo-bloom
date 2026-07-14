@@ -663,27 +663,53 @@ function MetricCell({ label, value, highlight }: { label: string; value: string;
   );
 }
 
-function BreakdownTable({ title, header, data }: { title: string; header: string; data: Record<string, number> }) {
+function BreakdownTable({
+  title,
+  header,
+  data,
+  secondary,
+  secondaryHeader,
+  secondaryFormat,
+}: {
+  title: string;
+  header: string;
+  data: Record<string, number>;
+  secondary?: Record<string, number>;
+  secondaryHeader?: string;
+  secondaryFormat?: (v: number) => string;
+}) {
   const entries = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, 8);
   const max = entries[0]?.[1] ?? 1;
+  const showSecondary = !!secondary && !!secondaryFormat;
   return (
     <div className="rounded-md border">
-      <div className="flex items-center justify-between px-3 py-2 border-b text-xs">
+      <div className="flex items-center justify-between px-3 py-2 border-b text-xs gap-2">
         <span className="font-medium">{title}</span>
-        <span className="text-muted-foreground">{header}</span>
+        <span className="text-muted-foreground whitespace-nowrap">
+          {header}{showSecondary && secondaryHeader ? ` · ${secondaryHeader}` : ""}
+        </span>
       </div>
       <div className="p-2 space-y-1">
         {entries.length === 0 && <div className="px-2 py-3 text-xs text-muted-foreground">No data</div>}
-        {entries.map(([k, v]) => (
-          <div key={k} className="relative rounded px-2 py-1.5 overflow-hidden">
-            <div className="absolute inset-y-0 left-0 bg-primary/10" style={{ width: `${(v / max) * 100}%` }} />
-            <div className="relative flex items-center justify-between text-xs">
-              <span className="truncate pr-2">{k}</span>
-              <span className="text-muted-foreground tabular-nums">{compactNumber(v)}</span>
+        {entries.map(([k, v]) => {
+          const sec = secondary?.[k];
+          return (
+            <div key={k} className="relative rounded px-2 py-1.5 overflow-hidden">
+              <div className="absolute inset-y-0 left-0 bg-primary/10" style={{ width: `${(v / max) * 100}%` }} />
+              <div className="relative flex items-center justify-between text-xs gap-2">
+                <span className="truncate pr-2">{k}</span>
+                <span className="text-muted-foreground tabular-nums whitespace-nowrap">
+                  {compactNumber(v)}
+                  {showSecondary && sec !== undefined && (
+                    <span className="ml-2 text-muted-foreground/80">· {secondaryFormat!(sec)}</span>
+                  )}
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
+
 }
