@@ -77,7 +77,11 @@ export default function SupervisionPage() {
         appointment_id: n.appointment_id,
         source: n.source,
         service_name: n.service_name,
+        session_summary: n.session_summary,
+        homework_text: n.homework_text,
+        transference: n.transference,
       }));
+
       // Only mark actual client_notes (not appointment-sourced notes)
       const clientNoteIds = unusedNotes
         .filter((n: any) => n.source === "client_note")
@@ -248,13 +252,28 @@ export default function SupervisionPage() {
                       ) : (
                         importedNotes.map((note: any, i: number) => (
                           <div key={note.id || i} className="bg-background rounded-lg p-3 border border-border">
-                            <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
+                            {note.source === "session_note" ? (
+                              <div className="space-y-2 text-sm">
+                                {note.session_summary && (
+                                  <p className="text-foreground whitespace-pre-wrap">{note.session_summary}</p>
+                                )}
+                                {note.homework_text && (
+                                  <p className="text-foreground whitespace-pre-wrap"><span className="font-medium">📋 </span>{note.homework_text}</p>
+                                )}
+                                {note.transference && (
+                                  <p className="text-foreground whitespace-pre-wrap"><span className="font-medium">🔄 </span>{note.transference}</p>
+                                )}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
+                            )}
                             <p className="text-xs text-muted-foreground mt-1">
                               {note.service_name && <span className="font-medium">{note.service_name} · </span>}
                               {t("supervision.notesFromSession")} {format(new Date(note.created_at), "MMM d, yyyy")}
                             </p>
                           </div>
                         ))
+
                       )}
                     </div>
                   )}
@@ -355,13 +374,22 @@ export default function SupervisionPage() {
                   ) : (
                     unusedNotes.map((n: any) => (
                       <div key={n.id} className="bg-background rounded p-2 border border-border text-sm">
-                        <p className="text-foreground whitespace-pre-wrap">{n.content}</p>
+                        {n.source === "session_note" ? (
+                          <div className="space-y-1.5">
+                            {n.session_summary && <p className="text-foreground whitespace-pre-wrap">{n.session_summary}</p>}
+                            {n.homework_text && <p className="text-foreground whitespace-pre-wrap"><span className="font-medium">📋 </span>{n.homework_text}</p>}
+                            {n.transference && <p className="text-foreground whitespace-pre-wrap"><span className="font-medium">🔄 </span>{n.transference}</p>}
+                          </div>
+                        ) : (
+                          <p className="text-foreground whitespace-pre-wrap">{n.content}</p>
+                        )}
                         <p className="text-xs text-muted-foreground mt-1">
                           {n.service_name && <span className="font-medium">{n.service_name} · </span>}
                           {format(new Date(n.created_at), "MMM d, yyyy")}
                         </p>
                       </div>
                     ))
+
                   )}
                 </div>
               </div>

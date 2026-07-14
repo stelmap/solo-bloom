@@ -71,7 +71,7 @@ export function useUnusedClientNotes(clientId: string | undefined) {
         .order("created_at", { ascending: true });
       if (cnErr) throw cnErr;
 
-      // 2. Fetch appointments with notes for this client
+      // 2. Fetch appointments with legacy notes for this client
       const { data: appointments, error: apErr } = await supabase
         .from("appointments")
         .select("id, notes, scheduled_at, status, services(name)")
@@ -81,6 +81,14 @@ export function useUnusedClientNotes(clientId: string | undefined) {
         .order("scheduled_at", { ascending: true });
       if (apErr) throw apErr;
 
+      // 2b. Fetch structured session_notes (summary / homework / transference)
+      const { data: sessionNotes, error: snErr } = await supabase
+        .from("session_notes" as any)
+        .select("id, appointment_id, session_summary, homework_text, has_homework, transference, created_at, appointments!inner(scheduled_at, status, services(name))")
+        .eq("client_id", clientId!)
+        .order("created_at", { ascending: true });
+      if (snErr) throw snErr;
+
       // 3. Get all supervisions for this client to find already-used appointment IDs
       const { data: supervisions, error: supErr } = await supabase
         .from("supervisions" as any)
@@ -89,10 +97,12 @@ export function useUnusedClientNotes(clientId: string | undefined) {
       if (supErr) throw supErr;
 
       const usedAppointmentIds = new Set<string>();
+      const usedSessionNoteIds = new Set<string>();
       (supervisions || []).forEach((sup: any) => {
         const snapshot = sup.imported_notes_snapshot || [];
         snapshot.forEach((n: any) => {
           if (n.appointment_id) usedAppointmentIds.add(n.appointment_id);
+          if (n.source === "session_note" && n.id) usedSessionNoteIds.add(n.id);
         });
       });
 
@@ -109,10 +119,35 @@ export function useUnusedClientNotes(clientId: string | undefined) {
           service_name: a.services?.name,
         }));
 
-      // 5. Merge both sources
+      // 4b. Build structured session-note entries
+      const unusedSessionNotes = (sessionNotes || [])
+        .filter((n: any) => !usedSessionNoteIds.has(n.id))
+        .map((n: any) => {
+          const parts: string[] = [];
+          if (n.session_summary) parts.push(n.session_summary);
+          if (n.has_homework && n.homework_text) parts.push(`📋 Homework: ${n.homework_text}`);
+          if (n.transference) parts.push(`🔄 Transference: ${n.transference}`);
+          return {
+            id: n.id,
+            appointment_id: n.appointment_id,
+            content: parts.join("\n\n"),
+            session_summary: n.session_summary,
+            homework_text: n.has_homework ? n.homework_text : null,
+            transference: n.transference,
+            created_at: n.appointments?.scheduled_at || n.created_at,
+            source: "session_note" as const,
+            service_name: n.appointments?.services?.name,
+          };
+        })
+        .filter((n: any) => n.content.length > 0);
+
+      // 5. Merge all sources, dedupe appointment-level entries when a structured
+      //    session_note exists for the same appointment (session_note wins).
+      const sessionNoteApptIds = new Set(unusedSessionNotes.map(n => n.appointment_id));
       const allNotes = [
         ...(clientNotes || []).map((n: any) => ({ ...n, source: "client_note" as const })),
-        ...unusedAppointmentNotes,
+        ...unusedAppointmentNotes.filter(n => !sessionNoteApptIds.has(n.appointment_id)),
+        ...unusedSessionNotes,
       ].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
       return allNotes;
@@ -120,6 +155,7 @@ export function useUnusedClientNotes(clientId: string | undefined) {
     enabled: !!user && !!clientId,
   });
 }
+
 
 export function useCreateSupervision() {
   const qc = useQueryClient();
