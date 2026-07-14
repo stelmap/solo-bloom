@@ -370,13 +370,22 @@ export default function SupervisionPage() {
                   ) : (
                     unusedNotes.map((n: any) => (
                       <div key={n.id} className="bg-background rounded p-2 border border-border text-sm">
-                        <p className="text-foreground whitespace-pre-wrap">{n.content}</p>
+                        {n.source === "session_note" ? (
+                          <div className="space-y-1.5">
+                            {n.session_summary && <p className="text-foreground whitespace-pre-wrap">{n.session_summary}</p>}
+                            {n.homework_text && <p className="text-foreground whitespace-pre-wrap"><span className="font-medium">📋 </span>{n.homework_text}</p>}
+                            {n.transference && <p className="text-foreground whitespace-pre-wrap"><span className="font-medium">🔄 </span>{n.transference}</p>}
+                          </div>
+                        ) : (
+                          <p className="text-foreground whitespace-pre-wrap">{n.content}</p>
+                        )}
                         <p className="text-xs text-muted-foreground mt-1">
                           {n.service_name && <span className="font-medium">{n.service_name} · </span>}
                           {format(new Date(n.created_at), "MMM d, yyyy")}
                         </p>
                       </div>
                     ))
+
                   )}
                 </div>
               </div>
