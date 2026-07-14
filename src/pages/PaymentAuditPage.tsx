@@ -541,7 +541,7 @@ export default function PaymentAuditPage() {
             <div className="mt-4 space-y-4 text-sm">
               <Row label={t("audit.col.date")} value={openRow.date} />
               <Row label={t("audit.col.client")} value={openRow.client_name} />
-              <Row label={t("audit.col.amount")} value={`${cs}${openRow.amount.toFixed(2)}`} />
+              <Row label={t("audit.col.amount")} value={(openRow as any).isPrepayWithdrawal ? `−${cs}${Number((openRow as any).prepayMovement || 0).toFixed(2)}` : `${cs}${openRow.amount.toFixed(2)}`} />
               {(openRow as any).isPrepayWithdrawal && (
                 <>
                   <Row label={t("audit.prepayMovement")} value={`−${cs}${Number((openRow as any).prepayMovement || 0).toFixed(2)}`} />
