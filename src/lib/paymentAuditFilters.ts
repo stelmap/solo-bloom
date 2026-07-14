@@ -103,7 +103,7 @@ export function matchesQuickFilter(row: AuditRow, qf: AuditQuickFilter): boolean
  * and are inclusive on both ends.
  */
 export function filterAuditRows(rows: AuditRow[], opts: AuditFilterOptions): AuditRow[] {
-  const { clientId, quickFilter, search, dateFrom, dateTo } = opts;
+  const { clientId, quickFilter, search, dateFrom, dateTo, txType } = opts;
   let r = rows;
   if (clientId !== "all") r = r.filter(x => x.client_id === clientId);
   if (dateFrom) r = r.filter(x => (x.date || "") >= dateFrom);
@@ -121,5 +121,8 @@ export function filterAuditRows(rows: AuditRow[], opts: AuditFilterOptions): Aud
     );
   }
   r = r.filter(x => matchesQuickFilter(x, quickFilter));
+  if (txType && txType !== "all") {
+    r = r.filter(x => classifyTxType(x) === txType);
+  }
   return r;
 }
