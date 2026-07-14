@@ -585,7 +585,9 @@ type WebTrafficData = {
   byPage: Record<string, number>;
   byDevice: Record<string, number>;
   byCountry: Record<string, number>;
+  avgTimeByPage: Record<string, number>;
 };
+
 
 function formatDuration(seconds: number): string {
   if (!seconds || !isFinite(seconds)) return "0s";
