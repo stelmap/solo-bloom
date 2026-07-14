@@ -82,14 +82,24 @@ function useAuditData() {
   });
 }
 
+const ACTIVE_FUTURE_STATUSES = new Set(["scheduled", "confirmed", "reminder_sent"]);
 function statusOf(amount: number, allocs: any[]): { status: AllocStatus; allocated: number; remaining: number } {
   const allocated = allocs.reduce((s, a) => s + Number(a.allocated_amount || 0), 0);
   const remaining = Number(amount) - allocated;
   if (allocs.length === 0) return { status: "prepayment", allocated: 0, remaining: amount };
+  // If every allocation targets an ACTIVE FUTURE session (scheduled / confirmed / reminder_sent),
+  // this payment is functionally a prepayment reservation — money still on the client's balance,
+  // awaiting session completion. Surface it in the Audit as a prepayment, not "linked".
+  const hasApts = allocs.every(a => a.appointments?.status);
+  const allFutureActive = hasApts && allocs.every(a => ACTIVE_FUTURE_STATUSES.has(a.appointments?.status));
+  if (allFutureActive && Math.abs(remaining) < 0.01) {
+    return { status: "prepayment", allocated: 0, remaining: allocated };
+  }
   if (Math.abs(remaining) < 0.01) return { status: "linked", allocated, remaining: 0 };
   if (remaining > 0) return { status: "partial", allocated, remaining };
   return { status: "overpayment", allocated, remaining };
 }
+
 
 const allocBadgeVariant = (s: AllocStatus): { cls: string; key: string } => {
   switch (s) {
