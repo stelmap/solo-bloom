@@ -487,6 +487,36 @@ export default function AdminUsersPage() {
             </div>
           )}
 
+          {(dialogAction === "send_warning_email_uk" || dialogAction === "send_warning_email_en") && dialogUser && (() => {
+            const lang = dialogAction === "send_warning_email_uk" ? "Ukrainian" : "English";
+            const lastSent = dialogUser.deactivation_email_sent_at;
+            const sentRecently = lastSent && (Date.now() - new Date(lastSent).getTime()) < 24 * 60 * 60 * 1000;
+            const planned = dialogUser.planned_deletion_date;
+            return (
+              <div className="space-y-3 text-sm">
+                <p>The warning email will be sent to:</p>
+                <p className="font-medium">{dialogUser.email}</p>
+                {dialogUser.full_name && <p className="text-muted-foreground">Name: {dialogUser.full_name}</p>}
+                <p>Language: <span className="font-medium">{lang}</span></p>
+                {planned && (
+                  <p>Scheduled account deletion date:{" "}
+                    <span className="font-medium">{new Date(planned).toLocaleDateString()}</span>
+                  </p>
+                )}
+                {lastSent && (
+                  <p className="text-xs text-muted-foreground">
+                    Last warning email sent: {new Date(lastSent).toLocaleString()}
+                  </p>
+                )}
+                {sentRecently && (
+                  <p className="text-sm text-warning-foreground bg-warning/10 border border-warning/30 rounded p-2">
+                    A warning email was already sent to this user within the last 24 hours. Do you want to send it again?
+                  </p>
+                )}
+              </div>
+            );
+          })()}
+
           <DialogFooter>
             <Button variant="outline" onClick={() => { setDialogUser(null); setDialogAction(null); }}>
               Cancel
@@ -496,6 +526,7 @@ export default function AdminUsersPage() {
               disabled={dialogBusy || (dialogAction === "delete_permanently" && dialogConfirm !== "DELETE")}
               onClick={runAction}
             >
+
               {dialogBusy && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
               Confirm
             </Button>
