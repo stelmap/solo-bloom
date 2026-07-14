@@ -735,8 +735,9 @@ function TopClientsRevenue({ t, cs, navigate }: { t: (k: any, p?: any) => string
         </div>
       </div>
 
-
+      {isLoading ? (
         <div className="bg-card border border-border rounded-[18px] p-6 text-center text-muted-foreground text-sm">{t("common.loading") || "…"}</div>
+
       ) : top.length === 0 ? (
         <div className="bg-card border border-border rounded-[18px] p-6 text-center text-muted-foreground text-sm">{t("dash.noRevenueYet")}</div>
       ) : (
