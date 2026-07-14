@@ -249,12 +249,20 @@ export default function ClientDetailPage() {
   // Prepaid sessions = floor(balance / current service price). A residual
   // balance smaller than one session price still shows as a non-zero balance
   // with 0 prepaid sessions.
+  const { data: services = [] } = useServices();
   const { prepaidSessions, prepaidAmount } = useMemo(() => {
     const amount = Number(creditBalance || 0);
-    const price = Number((client as any)?.base_price || 0);
+    let price = Number((client as any)?.base_price || 0);
+    if (!price || price <= 0) {
+      // Fallback: cheapest individual-service price the therapist offers.
+      const prices = (services as any[])
+        .map((s) => Number(s?.price))
+        .filter((p) => Number.isFinite(p) && p > 0);
+      if (prices.length > 0) price = Math.min(...prices);
+    }
     const sessions = price > 0 ? Math.floor(amount / price) : 0;
     return { prepaidSessions: sessions, prepaidAmount: amount };
-  }, [creditBalance, client]);
+  }, [creditBalance, client, services]);
 
 
 
