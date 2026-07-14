@@ -92,6 +92,23 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     },
   });
 
+  // Current appointment's saved notes (for edit)
+  const { data: currentNotes } = useQuery({
+    queryKey: ["session_notes", "current", apt?.id],
+    enabled: !!apt?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("session_notes")
+        .select("id, session_summary, has_homework, homework_text, transference, updated_at")
+        .eq("appointment_id", apt.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+
+
 
   // Group attendance hooks — must be before any early return
   const groupSessionId = apt?.group_session_id
@@ -119,6 +136,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [sendingReminder, setSendingReminder] = useState(false);
   const [notesDialogOpen, setNotesDialogOpen] = useState(false);
   const [notesDialogAppointmentId, setNotesDialogAppointmentId] = useState<string | null>(null);
+  const [notesDialogMode, setNotesDialogMode] = useState<"post-complete" | "edit">("post-complete");
+
 
 
   // Edit form
@@ -533,10 +552,12 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       // Open session notes dialog (except for group sessions).
       if (!isGroupSession && apt?.id && apt?.client_id) {
         setNotesDialogAppointmentId(apt.id);
+        setNotesDialogMode("post-complete");
         setNotesDialogOpen(true);
       } else {
         onOpenChange(false);
       }
+
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     }
@@ -893,6 +914,52 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   </div>
                 </div>
               )}
+
+              {/* Saved session notes (post-completion) — psychologist only via RLS */}
+              {currentNotes && (currentNotes.session_summary || currentNotes.homework_text || currentNotes.transference || currentNotes.has_homework) && (
+                <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="flex items-center gap-1.5">
+                      <FileText className="h-3.5 w-3.5" /> {t("sessionNotes.title")}
+                    </Label>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setNotesDialogAppointmentId(apt.id);
+                        setNotesDialogMode("edit");
+                        setNotesDialogOpen(true);
+                      }}
+                    >
+                      <Pencil className="h-3.5 w-3.5 mr-1" /> {t("common.edit")}
+                    </Button>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    {currentNotes.session_summary && (
+                      <div>
+                        <div className="text-xs text-muted-foreground">{t("sessionNotes.summaryLabel")}</div>
+                        <div className="whitespace-pre-wrap">{currentNotes.session_summary}</div>
+                      </div>
+                    )}
+                    <div>
+                      <div className="text-xs text-muted-foreground">{t("sessionNotes.homeworkLabel")}</div>
+                      <div className="whitespace-pre-wrap">
+                        {currentNotes.has_homework
+                          ? (currentNotes.homework_text || t("sessionNotes.homeworkYes"))
+                          : t("sessionNotes.homeworkNo")}
+                      </div>
+                    </div>
+                    {currentNotes.transference && (
+                      <div>
+                        <div className="text-xs text-muted-foreground">{t("sessionNotes.transferenceLabel")}</div>
+                        <div className="whitespace-pre-wrap">{currentNotes.transference}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+
 
 
               {/* Session notes */}
@@ -1465,12 +1532,13 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
           setNotesDialogOpen(v);
           if (!v) {
             setNotesDialogAppointmentId(null);
-            onOpenChange(false);
+            if (notesDialogMode === "post-complete") onOpenChange(false);
           }
         }}
         appointmentId={notesDialogAppointmentId}
         clientId={apt?.client_id ?? null}
       />
+
       <Dialog open={noShowOpen} onOpenChange={setNoShowOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>{t("calendar.noShow")}</DialogTitle></DialogHeader>
