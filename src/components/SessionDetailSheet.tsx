@@ -226,9 +226,18 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
 
   const statusInfo = STATUSES[apt.status] || STATUSES.scheduled;
-  const payInfo = PAYMENT_STATUS_STYLES[apt.payment_status] || PAYMENT_STATUS_STYLES.unpaid;
   const fmtTime = (dateStr: string) => formatScheduledTime(dateStr, use12h);
   const isActive = apt.status === "scheduled" || apt.status === "confirmed" || apt.status === "reminder_sent";
+  // If a scheduled/active session is still marked "unpaid" but the client has
+  // enough prepaid balance (or an existing allocation) to cover it, display it
+  // as "Paid in advance" so the badge matches the prepayment banner shown
+  // right below (avoids the "Unpaid + Prepayment balance covers 1 session"
+  // contradiction on the sheet).
+  const displayPaymentStatus =
+    isActive && (apt.payment_status === "unpaid" || apt.payment_status === "waiting_for_payment") && fullyCoveredByPrepayment
+      ? "paid_in_advance"
+      : apt.payment_status;
+  const payInfo = PAYMENT_STATUS_STYLES[displayPaymentStatus] || PAYMENT_STATUS_STYLES.unpaid;
 
   const CONFIRMATION_STYLES: Record<string, { label: string; color: string }> = {
     pending: { label: t("confirmation.pending"), color: "text-warning" },
