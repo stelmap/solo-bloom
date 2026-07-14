@@ -95,7 +95,9 @@ Deno.serve(async (req) => {
     const sendWarning = async (langOverride?: string) => {
       if (!targetEmail) return { ok: false, error: "no email" };
       const lang = langOverride ?? language;
-      const { data, error } = await admin.functions.invoke("send-transactional-email", {
+      // Invoke via userClient so the caller's JWT (validated by getClaims in the
+      // target function) is forwarded — the service-role key is no longer a JWT.
+      const { data, error } = await userClient.functions.invoke("send-transactional-email", {
         body: {
           templateName: "account-deactivation-warning",
           recipientEmail: targetEmail,
