@@ -336,10 +336,11 @@ export default function AuthPage() {
         Main page
       </Link>
 
+      <h1 className="sr-only">SoloBizz — {t("auth.pageTitle")}</h1>
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 relative overflow-hidden" style={{ backgroundColor: "#071A2F" }}>
         <div className="absolute inset-0 bg-gradient-to-br from-[#071A2F] via-[#071A2F] to-[#040F1F]" />
         <div className="relative z-10 max-w-md space-y-6 text-center">
-          <h1 className="text-4xl font-bold text-white tracking-tight">Solo<span className="text-primary">Bizz</span> — {t("auth.pageTitle")}</h1>
+          <div className="text-4xl font-bold text-white tracking-tight" aria-hidden="true">Solo<span className="text-primary">Bizz</span> — {t("auth.pageTitle")}</div>
           <p className="text-white/90 text-lg leading-relaxed">{t("auth.heroText")}</p>
         </div>
       </div>
@@ -348,7 +349,7 @@ export default function AuthPage() {
         <div className="flex flex-1 items-center justify-center p-6">
           <div className="w-full max-w-sm space-y-6">
             <div className="text-center space-y-2 lg:hidden">
-              <h1 className="text-2xl font-bold text-foreground">Solo<span className="text-primary">Bizz</span> — {t("auth.pageTitle")}</h1>
+              <div className="text-2xl font-bold text-foreground" aria-hidden="true">Solo<span className="text-primary">Bizz</span> — {t("auth.pageTitle")}</div>
             </div>
             {sent ? (
               mode === "forgot" ? (
