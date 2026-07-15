@@ -200,43 +200,51 @@ Deno.serve(async (req) => {
       })
     }
 
-    const normalizedRecipient = effectiveRecipient.trim().toLowerCase()
-    const { data: ownedClient, error: ownershipError } = await supabase
-      .from('clients')
-      .select('id')
-      .eq('user_id', callerSub)
-      .ilike('email', normalizedRecipient)
-      .limit(1)
-      .maybeSingle()
+    // Admins may send to any recipient (lifecycle warnings, deletion notices, etc.)
+    const { data: isAdmin } = await supabase.rpc('has_role', {
+      _user_id: callerSub,
+      _role: 'admin',
+    })
 
-    if (ownershipError) {
-      console.error('[send-transactional-email] Recipient ownership check failed', {
-        error: ownershipError.message,
-        callerSub,
-      })
-      return new Response(
-        JSON.stringify({ error: 'Failed to verify recipient' }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        },
-      )
-    }
+    if (!isAdmin) {
+      const normalizedRecipient = effectiveRecipient.trim().toLowerCase()
+      const { data: ownedClient, error: ownershipError } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('user_id', callerSub)
+        .ilike('email', normalizedRecipient)
+        .limit(1)
+        .maybeSingle()
 
-    if (!ownedClient) {
-      console.warn('[send-transactional-email] Blocked: recipient not owned by caller', {
-        callerSub,
-        templateName,
-      })
-      return new Response(
-        JSON.stringify({
-          error: 'Recipient must be one of your own clients',
-        }),
-        {
-          status: 403,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        },
-      )
+      if (ownershipError) {
+        console.error('[send-transactional-email] Recipient ownership check failed', {
+          error: ownershipError.message,
+          callerSub,
+        })
+        return new Response(
+          JSON.stringify({ error: 'Failed to verify recipient' }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          },
+        )
+      }
+
+      if (!ownedClient) {
+        console.warn('[send-transactional-email] Blocked: recipient not owned by caller', {
+          callerSub,
+          templateName,
+        })
+        return new Response(
+          JSON.stringify({
+            error: 'Recipient must be one of your own clients',
+          }),
+          {
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          },
+        )
+      }
     }
   }
 
