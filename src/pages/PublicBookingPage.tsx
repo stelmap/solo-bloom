@@ -467,7 +467,7 @@ export default function PublicBookingPage() {
               </div>
             </div>
           )}
-          <h1 className="text-2xl font-semibold tracking-tight">{info.display_name}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Book a session with {info.display_name}</h1>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5" />
