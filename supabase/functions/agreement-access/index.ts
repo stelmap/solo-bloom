@@ -24,7 +24,8 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const token = String(body?.token ?? "");
     const email = String(body?.email ?? "").trim().toLowerCase();
-    if (!token || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    const sessionToken = String(body?.session_token ?? "");
+    if (!token || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !sessionToken) {
       return new Response(JSON.stringify({ error: "invalid_input" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -53,6 +54,22 @@ Deno.serve(async (req) => {
     if (String(inv.email_bound).toLowerCase() !== email) {
       return new Response(JSON.stringify({ error: "email_mismatch" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
+
+    // Validate verified OTP session — content is only served after OTP verification
+    const sessionHash = await sha256Hex(sessionToken);
+    const { data: session } = await supabase
+      .from("agreement_verified_sessions")
+      .select("id, expires_at")
+      .eq("session_token_hash", sessionHash)
+      .eq("invitation_id", inv.id)
+      .maybeSingle();
+    if (!session) {
+      return new Response(JSON.stringify({ error: "session_invalid" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (new Date(session.expires_at).getTime() < Date.now()) {
+      return new Response(JSON.stringify({ error: "session_expired" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
 
     const [{ data: rev }, { data: client }, { data: profile }, { data: instance }] = await Promise.all([
       supabase.from("agreement_revisions").select("id, content_snapshot, controls_snapshot, content_hash").eq("id", inv.revision_id).maybeSingle(),
