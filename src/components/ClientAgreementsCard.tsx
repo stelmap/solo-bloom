@@ -242,6 +242,22 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
     await load();
   }
 
+  async function deleteInstance(instance: Instance) {
+    if (!user) return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase.from("agreement_instances").delete().eq("id", instance.id);
+      if (error) throw error;
+      toast({ title: t("agreements.toast.deleted") });
+      setDeleteInst(null);
+      await load();
+    } catch (e: any) {
+      toast({ title: t("agreements.toast.deleteFail"), description: e?.message, variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="bg-card rounded-xl border border-border p-5 space-y-4">
       <div className="flex items-center justify-between">
