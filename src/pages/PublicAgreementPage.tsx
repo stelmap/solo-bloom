@@ -374,32 +374,38 @@ export default function PublicAgreementPage() {
           ))}
           {((access.content.sessionFormats?.length ?? 0) > 0 || access.content.cycleLength || access.content.frequency) && (
             <section>
-              <h2 className="text-lg font-semibold text-foreground">Session formats</h2>
-              {(access.content.sessionFormats ?? []).length > 0 && (
-                <table className="w-full text-sm border border-border rounded overflow-hidden my-2">
-                  <thead className="bg-muted/50">
-                    <tr>
-                      <th className="text-left p-2">Format</th>
-                      <th className="text-left p-2">Duration</th>
-                      <th className="text-left p-2">Price</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(access.content.sessionFormats ?? []).map((f) => (
-                      <tr key={f.id} className="border-t border-border">
-                        <td className="p-2">{f.label || "—"}</td>
-                        <td className="p-2">{f.durationMinutes ? `${f.durationMinutes} min` : "—"}</td>
-                        <td className="p-2">{f.price !== "" && f.price != null ? `${f.price} ${f.currency || ""}`.trim() : "—"}</td>
+              <h2 className="text-lg font-semibold text-foreground">{t("af.title")}</h2>
+              {(access.content.sessionFormats ?? []).length > 0 && (() => {
+                const formats = access.content.sessionFormats ?? [];
+                const anyPrice = formats.some((f) => f.price !== "" && f.price != null);
+                return (
+                  <table className="w-full text-sm border border-border rounded overflow-hidden my-2">
+                    <thead className="bg-muted/50">
+                      <tr>
+                        <th className="text-left p-2">{t("af.label")}</th>
+                        <th className="text-left p-2">{t("af.duration")}</th>
+                        {anyPrice && <th className="text-left p-2">{t("af.price")}</th>}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
+                    </thead>
+                    <tbody>
+                      {formats.map((f) => (
+                        <tr key={f.id} className="border-t border-border">
+                          <td className="p-2">{f.label || "—"}</td>
+                          <td className="p-2">{f.durationMinutes ? `${f.durationMinutes} ${t("common.min")}` : "—"}</td>
+                          {anyPrice && (
+                            <td className="p-2">{f.price !== "" && f.price != null ? `${f.price} ${f.currency || ""}`.trim() : ""}</td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                );
+              })()}
               {access.content.cycleLength ? (
-                <p className="text-sm text-foreground">Cycle: {access.content.cycleLength} sessions.</p>
+                <p className="text-sm text-foreground">{t("af.cycleLine", { n: String(access.content.cycleLength) })}</p>
               ) : null}
               {access.content.frequency ? (
-                <p className="text-sm text-foreground">Frequency: {access.content.frequency}.</p>
+                <p className="text-sm text-foreground">{t("af.frequencyLine", { v: access.content.frequency })}</p>
               ) : null}
             </section>
           )}
