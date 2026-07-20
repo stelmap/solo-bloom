@@ -703,13 +703,13 @@ export default function AgreementTemplateEditorPage() {
                   }
                   style={{ minHeight: 400 }}
                 >
-                  <h2 className="text-xl font-semibold mb-3">{content.title || "Untitled agreement"}</h2>
+                  <h2 className="text-xl font-semibold mb-3">{interpolateText(content.title, previewVars) || "Untitled agreement"}</h2>
                   {(() => {
                     const hasServices = content.sections.some((s) => s.id === "services");
                     return content.sections.map((s) => (
                       <section key={s.id} className="mb-4">
-                        {s.heading && <h3 className="font-medium mb-1">{s.heading}</h3>}
-                        <p className="text-sm text-foreground whitespace-pre-wrap">{s.body}</p>
+                        {s.heading && <h3 className="font-medium mb-1">{interpolateText(s.heading, previewVars)}</h3>}
+                        <p className="text-sm text-foreground whitespace-pre-wrap">{interpolateText(s.body, previewVars)}</p>
                         {s.id === "services" && (
                           <SessionFormatsBlock data={content} />
                         )}
