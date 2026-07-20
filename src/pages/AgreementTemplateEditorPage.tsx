@@ -88,6 +88,23 @@ export default function AgreementTemplateEditorPage() {
     onSave: (v: string) => void;
   } | null>(null);
   const [expandDraft, setExpandDraft] = useState("");
+  const [therapistProfile, setTherapistProfile] = useState<{ full_name: string; business_name: string }>({ full_name: "", business_name: "" });
+
+  useEffect(() => {
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      const uid = u?.user?.id;
+      if (!uid) return;
+      const { data: prof } = await supabase.from("profiles").select("full_name, business_name").eq("id", uid).maybeSingle();
+      if (prof) setTherapistProfile({ full_name: (prof as any).full_name || "", business_name: (prof as any).business_name || "" });
+    })();
+  }, []);
+
+  const previewVars = useMemo(() => buildVarMap({
+    therapistFullName: therapistProfile.full_name,
+    therapistBusinessName: therapistProfile.business_name,
+  }), [therapistProfile]);
+
 
   function openExpand(opts: { title: string; value: string; multiline?: boolean; onSave: (v: string) => void }) {
     setExpand({ title: opts.title, value: opts.value, multiline: opts.multiline ?? true, onSave: opts.onSave });
