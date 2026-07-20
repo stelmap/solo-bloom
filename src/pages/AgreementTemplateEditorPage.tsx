@@ -64,6 +64,30 @@ export default function AgreementTemplateEditorPage() {
   const [content, setContent] = useState<Content>({ title: "", sections: [], sessionFormats: [], cycleLength: "", frequency: "" });
   const [controls, setControls] = useState<Control[]>([]);
   const [preview, setPreview] = useState<"desktop" | "mobile">("desktop");
+  const [expand, setExpand] = useState<{
+    title: string;
+    value: string;
+    multiline: boolean;
+    onSave: (v: string) => void;
+  } | null>(null);
+  const [expandDraft, setExpandDraft] = useState("");
+
+  function openExpand(opts: { title: string; value: string; multiline?: boolean; onSave: (v: string) => void }) {
+    setExpand({ title: opts.title, value: opts.value, multiline: opts.multiline ?? true, onSave: opts.onSave });
+    setExpandDraft(opts.value);
+  }
+  const ExpandBtn = ({ onClick }: { onClick: () => void }) => (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
+      className="h-8 w-8 shrink-0"
+      title="Expand editor"
+      onClick={onClick}
+    >
+      <Maximize2 className="w-4 h-4" />
+    </Button>
+  );
 
   const readOnly = status !== "draft";
 
