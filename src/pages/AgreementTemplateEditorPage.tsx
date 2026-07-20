@@ -374,7 +374,7 @@ export default function AgreementTemplateEditorPage() {
                         })} />
                       </div>
                     </div>
-                    {idx === 1 && (
+                    {idx === 0 && (
                       <Card className="mt-6">
                         <CardHeader><CardTitle className="text-base">Session formats</CardTitle></CardHeader>
                         <CardContent className="space-y-4">
