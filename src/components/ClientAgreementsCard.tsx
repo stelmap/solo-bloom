@@ -287,6 +287,9 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
                   </div>
                 )}
                 <div className="flex flex-wrap gap-2 pt-1">
+                  <Button size="sm" variant="outline" onClick={() => setPreviewInst(inst)}>
+                    <Eye className="h-3.5 w-3.5 mr-1" /> {t("agreements.card.preview")}
+                  </Button>
                   {canLink && (
                     <Button size="sm" variant="outline" onClick={() => generateInvitation(inst)}>
                       <LinkIcon className="h-3.5 w-3.5 mr-1" />
