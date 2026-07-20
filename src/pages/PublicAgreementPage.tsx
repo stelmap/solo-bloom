@@ -43,8 +43,21 @@ type DraftState = {
   otpExpiresAt: string | null;
   answers: Record<string, boolean | string>;
   typedName: string;
+  firstName: string;
+  lastName: string;
   savedAt: number;
 };
+
+function interpolate(text: string, firstName: string, lastName: string): string {
+  if (!text) return text;
+  const fn = (firstName || "").trim();
+  const ln = (lastName || "").trim();
+  const full = [fn, ln].filter(Boolean).join(" ");
+  return text
+    .replace(/\{\{\s*client\.first_name\s*\}\}/g, fn || "_________")
+    .replace(/\{\{\s*client\.last_name\s*\}\}/g, ln || "_________")
+    .replace(/\{\{\s*client\.(full_name|name)\s*\}\}/g, full || "_________");
+}
 
 const DRAFT_TTL_MS = 24 * 60 * 60 * 1000; // 24h — matches verified session lifetime
 const draftKey = (token?: string) => (token ? `agreement-draft:${token}` : null);
