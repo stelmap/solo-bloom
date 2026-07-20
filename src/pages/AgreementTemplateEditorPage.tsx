@@ -77,7 +77,7 @@ export default function AgreementTemplateEditorPage() {
   const [status, setStatus] = useState<"draft" | "active" | "archived">("draft");
   const [versionNumber, setVersionNumber] = useState(1);
   const [templateId, setTemplateId] = useState<string>("");
-  const [content, setContent] = useState<Content>({ title: "", sections: [], sessionFormats: [], cycleLength: "", frequency: "" });
+  const [content, setContent] = useState<Content>({ title: "", sections: [], sessionFormats: [], cycleMode: "specified", cycleLength: "", frequency: "" });
   const [controls, setControls] = useState<Control[]>([]);
   const [preview, setPreview] = useState<"desktop" | "mobile">("desktop");
   const [expand, setExpand] = useState<{
