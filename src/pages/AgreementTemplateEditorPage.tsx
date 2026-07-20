@@ -23,6 +23,7 @@ import { useServices } from "@/hooks/useData";
 import { useCurrency, type CurrencyCode } from "@/hooks/useCurrency";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { SessionFormatsBlock, stripLegacySessionFormatsSection } from "@/components/SessionFormatsBlock";
+import { buildVarMap, interpolateText } from "@/lib/agreementInterpolate";
 
 
 const SUPPORTED_CURRENCIES: CurrencyCode[] = ["EUR", "UAH", "PLN", "USD"];
