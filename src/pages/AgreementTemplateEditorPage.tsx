@@ -247,10 +247,34 @@ export default function AgreementTemplateEditorPage() {
   }
 
   function addFormat() {
-    setContent((c) => ({
-      ...c,
-      sessionFormats: [...(c.sessionFormats ?? []), { id: uid(), label: "", durationMinutes: 60, price: "", currency: "" }],
-    }));
+    try {
+      const newId = uid();
+      newFormatRef.current = newId;
+      setContent((c) => ({
+        ...c,
+        sessionFormats: [
+          ...(c.sessionFormats ?? []),
+          { id: newId, serviceId: "", label: "", durationMinutes: "", price: "", currency: "" },
+        ],
+      }));
+    } catch {
+      toast({ title: t("af.addFail"), variant: "destructive" });
+    }
+  }
+  function selectServiceForFormat(id: string, serviceId: string) {
+    const svc = services.find((s: any) => s.id === serviceId);
+    if (!svc) {
+      updateFormat(id, { serviceId: "", label: "", durationMinutes: "", price: "", currency: "" });
+      return;
+    }
+    const hasPrice = svc.price !== null && svc.price !== undefined && Number(svc.price) > 0;
+    updateFormat(id, {
+      serviceId: svc.id,
+      label: svc.name,
+      durationMinutes: Number(svc.duration_minutes) || "",
+      price: hasPrice ? Number(svc.price) : "",
+      currency: hasPrice ? profileCurrency : "",
+    });
   }
   function updateFormat(id: string, patch: Partial<SessionFormat>) {
     setContent((c) => ({
@@ -259,6 +283,9 @@ export default function AgreementTemplateEditorPage() {
     }));
   }
   function removeFormat(id: string) {
+    const fmt = (content.sessionFormats ?? []).find((f) => f.id === id);
+    const hasData = !!fmt && (fmt.label || fmt.serviceId || fmt.durationMinutes !== "" || fmt.price !== "");
+    if (hasData && !window.confirm(t("af.confirmDelete"))) return;
     setContent((c) => ({ ...c, sessionFormats: (c.sessionFormats ?? []).filter((f) => f.id !== id) }));
   }
 
