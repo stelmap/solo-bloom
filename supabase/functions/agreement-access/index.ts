@@ -23,9 +23,9 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
     const token = String(body?.token ?? "");
-    const email = String(body?.email ?? "").trim().toLowerCase();
+    const providedEmail = String(body?.email ?? "").trim().toLowerCase();
     const sessionToken = String(body?.session_token ?? "");
-    if (!token || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !sessionToken) {
+    if (!token || !sessionToken) {
       return new Response(JSON.stringify({ error: "invalid_input" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -51,7 +51,8 @@ Deno.serve(async (req) => {
     if (new Date(inv.expires_at).getTime() < Date.now()) {
       return new Response(JSON.stringify({ error: "expired" }), { status: 410, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    if (String(inv.email_bound).toLowerCase() !== email) {
+    const email = String(inv.email_bound || "").toLowerCase();
+    if (providedEmail && providedEmail !== email) {
       return new Response(JSON.stringify({ error: "email_mismatch" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 

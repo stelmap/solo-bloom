@@ -39,3 +39,5 @@ project_id = "rxculneqqaziutulnocs"
     verify_jwt = false
   [functions.agreement-otp-verify]
     verify_jwt = false
+  [functions.agreement-invitation-info]
+    verify_jwt = false

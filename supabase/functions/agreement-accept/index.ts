@@ -27,12 +27,12 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
     const token = String(body?.token ?? "");
-    const email = String(body?.email ?? "").trim().toLowerCase();
+    const providedEmail = String(body?.email ?? "").trim().toLowerCase();
     const typedName = String(body?.typed_name ?? "").trim();
     const sessionToken = String(body?.session_token ?? "");
     const answersInput = (body?.answers ?? {}) as Record<string, any>;
 
-    if (!token || !email || !typedName || typedName.length > 200 || !sessionToken) {
+    if (!token || !typedName || typedName.length > 200 || !sessionToken) {
       return new Response(JSON.stringify({ error: "invalid_input" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -55,7 +55,8 @@ Deno.serve(async (req) => {
     if (inv.revoked_at) return new Response(JSON.stringify({ error: "revoked" }), { status: 410, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     if (inv.accepted_at) return new Response(JSON.stringify({ error: "already_accepted" }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     if (new Date(inv.expires_at).getTime() < Date.now()) return new Response(JSON.stringify({ error: "expired" }), { status: 410, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    if (String(inv.email_bound).toLowerCase() !== email) return new Response(JSON.stringify({ error: "email_mismatch" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const email = String(inv.email_bound || "").toLowerCase();
+    if (providedEmail && providedEmail !== email) return new Response(JSON.stringify({ error: "email_mismatch" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     // Require verified OTP session
     const sessionHash = await sha256Hex(sessionToken);

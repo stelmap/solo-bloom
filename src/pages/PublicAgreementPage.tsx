@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { CheckCircle2, ShieldCheck, AlertTriangle, FileSignature, KeyRound, Mail } from "lucide-react";
+import { CheckCircle2, ShieldCheck, AlertTriangle, FileSignature, KeyRound, FileText } from "lucide-react";
 
 type Control =
   | { id: string; type: "required_checkbox"; label: string; required: boolean }
@@ -35,13 +35,24 @@ type AccessResponse = {
   controls: Control[];
 };
 
-type Step = "email" | "otp" | "sign" | "done";
+type InvitationInfo = {
+  therapist_name: string;
+  business_name: string;
+  therapist_avatar_url: string;
+  masked_email: string;
+  agreement_title: string;
+  revoked: boolean;
+  expired: boolean;
+  already_accepted: boolean;
+};
+
+type Step = "welcome" | "otp" | "sign" | "done";
 
 type DraftState = {
   step: Step;
-  email: string;
   sessionToken: string;
   otpExpiresAt: string | null;
+  resendReadyAt: number | null;
   answers: Record<string, boolean | string>;
   typedName: string;
   firstName: string;
@@ -60,7 +71,7 @@ function interpolate(text: string, firstName: string, lastName: string): string 
     .replace(/\{\{\s*client\.(full_name|name)\s*\}\}/g, full || "_________");
 }
 
-const DRAFT_TTL_MS = 24 * 60 * 60 * 1000; // 24h — matches verified session lifetime
+const DRAFT_TTL_MS = 24 * 60 * 60 * 1000;
 const draftKey = (token?: string) => (token ? `agreement-draft:${token}` : null);
 
 function loadDraft(token?: string): DraftState | null {
@@ -86,19 +97,30 @@ function clearDraft(token?: string) {
   if (k) try { localStorage.removeItem(k); } catch { /* ignore */ }
 }
 
+function pad2(n: number) { return n.toString().padStart(2, "0"); }
+function formatCountdown(msLeft: number) {
+  const s = Math.max(0, Math.floor(msLeft / 1000));
+  return `${pad2(Math.floor(s / 60))}:${pad2(s % 60)}`;
+}
+
 export default function PublicAgreementPage() {
   const { token } = useParams<{ token: string }>();
   const { t } = useLanguage();
   const draftRef = useRef<DraftState | null>(loadDraft(token));
   const initial = draftRef.current;
 
-  const [step, setStep] = useState<Step>(initial?.step && initial.step !== "done" ? initial.step : "email");
-  const [email, setEmail] = useState(initial?.email ?? "");
+  const [info, setInfo] = useState<InvitationInfo | null>(null);
+  const [infoError, setInfoError] = useState<string | null>(null);
+  const [loadingInfo, setLoadingInfo] = useState(true);
+
+  const [step, setStep] = useState<Step>(initial?.step && initial.step !== "done" ? initial.step : "welcome");
   const [code, setCode] = useState("");
   const [sessionToken, setSessionToken] = useState(initial?.sessionToken ?? "");
   const [otpExpiresAt, setOtpExpiresAt] = useState<string | null>(initial?.otpExpiresAt ?? null);
+  const [resendReadyAt, setResendReadyAt] = useState<number | null>(initial?.resendReadyAt ?? null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [now, setNow] = useState<number>(Date.now());
 
   const [access, setAccess] = useState<AccessResponse | null>(null);
   const [answers, setAnswers] = useState<Record<string, boolean | string>>(initial?.answers ?? {});
@@ -106,54 +128,80 @@ export default function PublicAgreementPage() {
   const [accepted, setAccepted] = useState<{ at: string; hash: string } | null>(null);
   const [firstName, setFirstName] = useState(initial?.firstName ?? "");
   const [lastName, setLastName] = useState(initial?.lastName ?? "");
-  const [restoring, setRestoring] = useState<boolean>(!!(initial?.sessionToken && initial?.email));
 
-  // Persist draft to localStorage on any relevant change
+  // Load invitation info (welcome data) — no OTP triggered
   useEffect(() => {
-    const k = draftKey(token);
-    if (!k) return;
-    if (step === "done") return;
-    const draft: DraftState = { step, email, sessionToken, otpExpiresAt, answers, typedName, firstName, lastName, savedAt: Date.now() };
-    try { localStorage.setItem(k, JSON.stringify(draft)); } catch { /* ignore quota */ }
-  }, [token, step, email, sessionToken, otpExpiresAt, answers, typedName, firstName, lastName]);
+    let cancelled = false;
+    (async () => {
+      if (!token) { setLoadingInfo(false); return; }
+      try {
+        const { data, error } = await supabase.functions.invoke("agreement-invitation-info", { body: { token } });
+        if (error) throw new Error(error.message || "not_found");
+        const payload = data as any;
+        if (payload?.error) throw new Error(payload.error);
+        if (cancelled) return;
+        setInfo(payload as InvitationInfo);
+      } catch (err: any) {
+        if (!cancelled) setInfoError(errorLabel(err.message, t));
+      } finally {
+        if (!cancelled) setLoadingInfo(false);
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
-  // Attempt to resume a verified session on mount
+  // Try resume verified session on mount
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const saved = draftRef.current;
-      if (!saved?.sessionToken || !saved?.email || !token) { setRestoring(false); return; }
+      if (!saved?.sessionToken || !token) return;
       try {
         await loadAgreement(saved.sessionToken);
       } catch {
         if (cancelled) return;
         setSessionToken("");
-        setStep("email");
-      } finally {
-        if (!cancelled) setRestoring(false);
+        setStep("welcome");
       }
     })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function requestOtp(e?: React.FormEvent) {
-    e?.preventDefault();
+  // Persist draft
+  useEffect(() => {
+    const k = draftKey(token);
+    if (!k) return;
+    if (step === "done") return;
+    const draft: DraftState = { step, sessionToken, otpExpiresAt, resendReadyAt, answers, typedName, firstName, lastName, savedAt: Date.now() };
+    try { localStorage.setItem(k, JSON.stringify(draft)); } catch { /* ignore quota */ }
+  }, [token, step, sessionToken, otpExpiresAt, resendReadyAt, answers, typedName, firstName, lastName]);
+
+  // Ticker for countdowns
+  useEffect(() => {
+    if (step !== "otp") return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [step]);
+
+  async function requestOtp() {
     if (!token) return;
     setBusy(true);
     setError(null);
     try {
-      const { data, error } = await supabase.functions.invoke("agreement-otp-request", {
-        body: { token, email: email.trim().toLowerCase() },
-      });
+      const { data, error } = await supabase.functions.invoke("agreement-otp-request", { body: { token } });
       if (error) throw new Error(error.message || "otp_request_failed");
       const payload = data as any;
       if (payload?.error) throw new Error(payload.error);
       setOtpExpiresAt(payload.expires_at);
+      setResendReadyAt(Date.now() + 60_000);
+      setCode("");
       setStep("otp");
-      toast({ title: "Verification code sent", description: `Check ${email} for a 6-digit code.` });
+      toast({ title: t("pa.codeSent") });
     } catch (err: any) {
-      setError(errorLabel(err.message));
+      setError(errorLabel(err.message, t));
+      toast({ title: t("pa.sendFailed"), variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -166,18 +214,17 @@ export default function PublicAgreementPage() {
     setError(null);
     try {
       const { data, error } = await supabase.functions.invoke("agreement-otp-verify", {
-        body: { token, email: email.trim().toLowerCase(), code: code.trim() },
+        body: { token, code: code.trim() },
       });
       if (error) throw new Error(error.message || "otp_verify_failed");
       const payload = data as any;
       if (payload?.error) {
-        const suffix = payload.attempts_remaining != null ? ` (${payload.attempts_remaining} left)` : "";
-        throw new Error((payload.error as string) + suffix);
+        throw new Error(payload.error as string);
       }
       setSessionToken(payload.session_token);
       await loadAgreement(payload.session_token);
     } catch (err: any) {
-      setError(errorLabel(err.message.split(" (")[0]) + (err.message.includes("(") ? " (" + err.message.split(" (")[1] : ""));
+      setError(errorLabel(err.message, t));
     } finally {
       setBusy(false);
     }
@@ -185,7 +232,7 @@ export default function PublicAgreementPage() {
 
   async function loadAgreement(session: string) {
     const { data, error } = await supabase.functions.invoke("agreement-access", {
-      body: { token, email: email.trim().toLowerCase(), session_token: session },
+      body: { token, session_token: session },
     });
     if (error) throw new Error(error.message || "access_failed");
     const payload = data as any;
@@ -205,7 +252,6 @@ export default function PublicAgreementPage() {
       });
       return merged;
     });
-    // Prefill first/last name from client_name only if user hasn't entered anything yet
     if (!firstName && !lastName && res.client_name) {
       const parts = res.client_name.trim().split(/\s+/);
       if (parts.length > 0) {
@@ -226,20 +272,20 @@ export default function PublicAgreementPage() {
     if (!access || !token) return;
     for (const c of access.controls) {
       if (c.type === "required_checkbox" && answers[c.id] !== true) {
-        toast({ title: "Please tick all required boxes", variant: "destructive" });
+        toast({ title: t("pa.tickRequired"), variant: "destructive" });
         return;
       }
       if (c.type === "typed_acknowledgement" && !String(answers[c.id] ?? "").trim()) {
-        toast({ title: "Please complete all typed acknowledgements", variant: "destructive" });
+        toast({ title: t("pa.completeTyped"), variant: "destructive" });
         return;
       }
     }
     if (!firstName.trim() || !lastName.trim()) {
-      toast({ title: "Please enter your first and last name", variant: "destructive" });
+      toast({ title: t("pa.enterName"), variant: "destructive" });
       return;
     }
     if (!typedName.trim()) {
-      toast({ title: "Please type your full name to sign", variant: "destructive" });
+      toast({ title: t("pa.typeSignature"), variant: "destructive" });
       return;
     }
     setBusy(true);
@@ -247,7 +293,6 @@ export default function PublicAgreementPage() {
       const { data, error } = await supabase.functions.invoke("agreement-accept", {
         body: {
           token,
-          email: email.trim().toLowerCase(),
           session_token: sessionToken,
           typed_name: typedName.trim(),
           first_name: firstName.trim(),
@@ -262,12 +307,16 @@ export default function PublicAgreementPage() {
       clearDraft(token);
       setStep("done");
     } catch (err: any) {
-      toast({ title: "Could not sign", description: errorLabel(err.message), variant: "destructive" });
+      toast({ title: t("pa.couldNotSign"), description: errorLabel(err.message, t), variant: "destructive" });
     } finally {
       setBusy(false);
     }
   }
 
+  const therapistDisplay = info?.business_name || info?.therapist_name || t("pa.defaultTherapist");
+  const therapistInitial = (therapistDisplay || "?").trim().charAt(0).toUpperCase();
+
+  // DONE
   if (step === "done" && accepted) {
     return (
       <Shell>
@@ -275,98 +324,171 @@ export default function PublicAgreementPage() {
           <div className="mx-auto h-14 w-14 rounded-full bg-success/15 flex items-center justify-center">
             <CheckCircle2 className="h-7 w-7 text-success" />
           </div>
-          <h1 className="text-2xl font-bold">Agreement signed</h1>
-          <p className="text-muted-foreground">Thank you. A copy has been recorded and shared with your therapist.</p>
-          {accepted.at && <p className="text-xs text-muted-foreground">Signed at {new Date(accepted.at).toLocaleString()}</p>}
-          {accepted.hash && <p className="text-[11px] text-muted-foreground font-mono break-all px-4">Evidence hash: {accepted.hash}</p>}
+          <h1 className="text-2xl font-bold">{t("pa.signedTitle")}</h1>
+          <p className="text-muted-foreground">{t("pa.signedDesc")}</p>
+          {accepted.at && <p className="text-xs text-muted-foreground">{t("pa.signedAt")} {new Date(accepted.at).toLocaleString()}</p>}
         </div>
       </Shell>
     );
   }
 
-  if (step === "email") {
+  // WELCOME
+  if (step === "welcome") {
+    if (loadingInfo) {
+      return <Shell><p className="text-sm text-muted-foreground text-center py-8">{t("common.loading") || "Loading…"}</p></Shell>;
+    }
+    if (infoError || !info) {
+      return (
+        <Shell>
+          <div className="text-center space-y-3 py-6">
+            <div className="mx-auto h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
+              <AlertTriangle className="h-6 w-6 text-destructive" />
+            </div>
+            <h1 className="text-xl font-bold">{t("pa.linkUnavailable")}</h1>
+            <p className="text-sm text-muted-foreground">{infoError || t("pa.contactTherapist")}</p>
+          </div>
+        </Shell>
+      );
+    }
+    if (info.revoked || info.expired) {
+      return (
+        <Shell>
+          <div className="text-center space-y-3 py-6">
+            <div className="mx-auto h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
+              <AlertTriangle className="h-6 w-6 text-destructive" />
+            </div>
+            <h1 className="text-xl font-bold">{t("pa.linkUnavailable")}</h1>
+            <p className="text-sm text-muted-foreground">{t("pa.contactTherapist")}</p>
+          </div>
+        </Shell>
+      );
+    }
     return (
       <Shell>
         <div className="space-y-6">
-          <StepHeader icon={<Mail className="h-6 w-6 text-primary" />} title="Information agreement" subtitle="Enter your email — we'll send a 6-digit code to open the document." />
-          <form onSubmit={requestOtp} className="space-y-3">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
-            {error && <ErrorLine text={error} />}
-            <Button type="submit" className="w-full" disabled={busy}>{busy ? "Sending…" : "Send verification code"}</Button>
-          </form>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground justify-center">
+            <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Solo.Bizz
+          </div>
+          <div className="text-center space-y-3">
+            <div className="mx-auto h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
+              <FileText className="h-7 w-7 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold">{t("pa.welcomeTitle")}</h1>
+            {info.agreement_title && <p className="text-sm font-medium text-foreground">{info.agreement_title}</p>}
+          </div>
+
+          <div className="flex items-center gap-3 justify-center rounded-lg bg-muted/40 p-3">
+            {info.therapist_avatar_url ? (
+              <img src={info.therapist_avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />
+            ) : (
+              <div className="h-10 w-10 rounded-full bg-primary/15 text-primary flex items-center justify-center font-semibold">{therapistInitial}</div>
+            )}
+            <div className="text-left">
+              <p className="text-sm font-medium text-foreground">{therapistDisplay}</p>
+              <p className="text-xs text-muted-foreground">{t("pa.sender")}</p>
+            </div>
+          </div>
+
+          <p className="text-sm text-muted-foreground text-center">
+            {t("pa.welcomeDesc", { therapist: therapistDisplay })}
+          </p>
+
+          <div className="rounded-lg border border-border p-4 space-y-2 text-sm">
+            <p className="flex items-start gap-2 text-muted-foreground">
+              <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+              <span>{t("pa.securityExplanation")}</span>
+            </p>
+            <p className="text-muted-foreground">{t("pa.emailInfo", { email: info.masked_email })}</p>
+          </div>
+
+          {error && <ErrorLine text={error} />}
+
+          <Button className="w-full" size="lg" disabled={busy} onClick={requestOtp}>
+            {busy ? t("pa.sending") : t("pa.sendCode")}
+          </Button>
+
+          <p className="text-xs text-muted-foreground text-center">{t("pa.noAccountNeeded")}</p>
+          <p className="text-xs text-muted-foreground text-center">{t("pa.wrongEmailHelp")}</p>
         </div>
       </Shell>
     );
   }
 
+  // OTP
   if (step === "otp") {
+    const otpExpMs = otpExpiresAt ? new Date(otpExpiresAt).getTime() - now : 0;
+    const otpExpired = otpExpMs <= 0;
+    const resendMs = resendReadyAt ? resendReadyAt - now : 0;
+    const canResend = !busy && resendMs <= 0;
     return (
       <Shell>
         <div className="space-y-6">
-          <StepHeader icon={<KeyRound className="h-6 w-6 text-primary" />} title="Enter verification code" subtitle={`We sent a 6-digit code to ${email}. It expires in about 10 minutes.`} />
+          <StepHeader icon={<KeyRound className="h-6 w-6 text-primary" />} title={t("pa.enterCodeTitle")} subtitle={t("pa.enterCodeDesc", { email: info?.masked_email || "" })} />
           <form onSubmit={verifyOtp} className="space-y-3">
-            <Label htmlFor="code">6-digit code</Label>
+            <Label htmlFor="code">{t("pa.codeLabel")}</Label>
             <Input
               id="code"
               inputMode="numeric"
               pattern="\d{6}"
               maxLength={6}
               autoComplete="one-time-code"
+              autoFocus
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
               placeholder="000000"
               className="text-center text-2xl tracking-[0.5em] font-mono"
-              required
+              aria-label={t("pa.codeLabel")}
             />
             {error && <ErrorLine text={error} />}
-            <Button type="submit" className="w-full" disabled={busy || code.length !== 6}>
-              {busy ? "Verifying…" : "Verify and open agreement"}
+            <Button type="submit" className="w-full" disabled={busy || code.length !== 6 || otpExpired}>
+              {busy ? t("pa.verifying") : t("pa.verifyAndOpen")}
             </Button>
             <div className="flex items-center justify-between text-xs">
-              <button type="button" className="text-muted-foreground hover:text-foreground underline" onClick={() => { setStep("email"); setCode(""); setError(null); }}>
-                Change email
-              </button>
-              <button type="button" className="text-muted-foreground hover:text-foreground underline disabled:opacity-50" disabled={busy} onClick={() => requestOtp()}>
-                Resend code
+              <span className="text-muted-foreground">
+                {otpExpired ? t("pa.codeExpired") : t("pa.codeValidFor", { time: formatCountdown(otpExpMs) })}
+              </span>
+              <button
+                type="button"
+                className="text-muted-foreground hover:text-foreground underline disabled:opacity-50 disabled:no-underline"
+                disabled={!canResend}
+                onClick={() => requestOtp()}
+              >
+                {canResend ? t("pa.resendCode") : t("pa.resendIn", { time: formatCountdown(resendMs) })}
               </button>
             </div>
-            {otpExpiresAt && (
-              <p className="text-[11px] text-muted-foreground text-center">Code expires at {new Date(otpExpiresAt).toLocaleTimeString()}</p>
-            )}
+            <p className="text-xs text-muted-foreground text-center">{t("pa.checkSpam")}</p>
           </form>
         </div>
       </Shell>
     );
   }
 
-  // step === "sign"
-  if (!access) return <Shell><p className="text-sm text-muted-foreground">Loading…</p></Shell>;
+  // SIGN
+  if (!access) return <Shell><p className="text-sm text-muted-foreground">{t("common.loading") || "Loading…"}</p></Shell>;
   return (
     <Shell wide>
       <div className="mb-4 flex items-center gap-2 text-xs text-success">
-        <ShieldCheck className="h-4 w-4" /> Verified — session valid for 24 hours
+        <ShieldCheck className="h-4 w-4" /> {t("pa.verifiedBanner")}
       </div>
 
       <div className="mb-6 rounded-lg border border-border bg-muted/30 p-4 space-y-3">
-        <p className="text-sm font-medium text-foreground">Enter your name to personalise the agreement</p>
-        <p className="text-xs text-muted-foreground">Your name will replace placeholders like {"{{client.first_name}}"} in the document below.</p>
+        <p className="text-sm font-medium text-foreground">{t("pa.nameHeader")}</p>
+        <p className="text-xs text-muted-foreground">{t("pa.nameHelp")}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1">
-            <Label htmlFor="firstName">First name <span className="text-destructive">*</span></Label>
-            <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Anna" maxLength={100} autoComplete="given-name" />
+            <Label htmlFor="firstName">{t("pa.firstName")} <span className="text-destructive">*</span></Label>
+            <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} maxLength={100} autoComplete="given-name" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="lastName">Last name <span className="text-destructive">*</span></Label>
-            <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Kowalska" maxLength={100} autoComplete="family-name" />
+            <Label htmlFor="lastName">{t("pa.lastName")} <span className="text-destructive">*</span></Label>
+            <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} maxLength={100} autoComplete="family-name" />
           </div>
         </div>
       </div>
 
       <article className="prose prose-sm max-w-none">
         <h1 className="text-2xl font-bold text-foreground">{interpolate(access.content.title, firstName, lastName)}</h1>
-        {access.therapist_name && <p className="text-sm text-muted-foreground">From {access.therapist_name}</p>}
-        <p className="text-sm text-muted-foreground">For {access.client_name} · {email}</p>
+        {access.therapist_name && <p className="text-sm text-muted-foreground">{t("pa.from")} {access.therapist_name}</p>}
         <div className="mt-6 space-y-6">
           {access.content.sections.map((s) => (
             <section key={s.id}>
@@ -416,10 +538,10 @@ export default function PublicAgreementPage() {
 
       <div className="mt-8 border-t border-border pt-6 space-y-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
-          <FileSignature className="h-4 w-4 text-primary" /> Your acknowledgements
+          <FileSignature className="h-4 w-4 text-primary" /> {t("pa.acknowledgements")}
         </h2>
         <div className="space-y-4">
-          {access.controls.length === 0 && <p className="text-sm text-muted-foreground">No additional acknowledgements required.</p>}
+          {access.controls.length === 0 && <p className="text-sm text-muted-foreground">{t("pa.noAcks")}</p>}
           {access.controls.map((c) => {
             if (c.type === "typed_acknowledgement") {
               return (
@@ -442,15 +564,13 @@ export default function PublicAgreementPage() {
         </div>
 
         <div className="space-y-2 pt-2">
-          <Label htmlFor="typedName">Type your full name to sign <span className="text-destructive">*</span></Label>
-          <Input id="typedName" value={typedName} onChange={(e) => setTypedName(e.target.value)} placeholder={`${firstName} ${lastName}`.trim() || "e.g. Anna Kowalska"} maxLength={200} />
-          <p className="text-xs text-muted-foreground">
-            By signing, you confirm you have read and understood this document. Your IP address, device information and a cryptographic hash of the document will be recorded as evidence.
-          </p>
+          <Label htmlFor="typedName">{t("pa.typeToSign")} <span className="text-destructive">*</span></Label>
+          <Input id="typedName" value={typedName} onChange={(e) => setTypedName(e.target.value)} placeholder={`${firstName} ${lastName}`.trim()} maxLength={200} />
+          <p className="text-xs text-muted-foreground">{t("pa.signatureNote")}</p>
         </div>
 
         <Button className="w-full" size="lg" onClick={submitAcceptance} disabled={busy}>
-          {busy ? "Signing…" : "Sign agreement"}
+          {busy ? t("pa.signing") : t("pa.signButton")}
         </Button>
       </div>
     </Shell>
@@ -475,31 +595,31 @@ function ErrorLine({ text }: { text: string }) {
   );
 }
 
-function errorLabel(code?: string): string {
+function errorLabel(code: string | undefined, t: (k: string, v?: Record<string, string>) => string): string {
   switch (code) {
-    case "not_found": return "This link is not valid.";
-    case "expired": return "This link has expired.";
-    case "revoked": return "This link has been revoked.";
-    case "email_mismatch": return "The email address does not match the invitation.";
-    case "already_accepted": return "This agreement has already been signed.";
-    case "invalid_input": return "Please check your input and try again.";
-    case "rate_limited": return "Please wait a moment before requesting another code.";
-    case "email_send_failed": return "We couldn't send the code. Please try again.";
-    case "otp_not_found": return "No active code — request a new one.";
-    case "otp_expired": return "This code has expired. Request a new one.";
-    case "otp_invalid": return "Incorrect code.";
-    case "otp_locked": return "Too many attempts. Request a new code.";
+    case "not_found": return t("pa.err.notFound");
+    case "expired": return t("pa.err.expired");
+    case "revoked": return t("pa.err.revoked");
+    case "email_mismatch": return t("pa.err.emailMismatch");
+    case "already_accepted": return t("pa.err.alreadyAccepted");
+    case "invalid_input": return t("pa.err.invalidInput");
+    case "rate_limited": return t("pa.err.rateLimited");
+    case "email_send_failed": return t("pa.err.sendFailed");
+    case "otp_not_found": return t("pa.err.otpNotFound");
+    case "otp_expired": return t("pa.err.otpExpired");
+    case "otp_invalid": return t("pa.err.otpInvalid");
+    case "otp_locked": return t("pa.err.otpLocked");
     case "session_invalid":
     case "session_expired":
-    case "session_required": return "Your verified session ended. Please verify again.";
-    default: return code || "Something went wrong.";
+    case "session_required": return t("pa.err.sessionEnded");
+    default: return code || t("pa.err.generic");
   }
 }
 
 function Shell({ children, wide }: { children: React.ReactNode; wide?: boolean }) {
   return (
     <div className="min-h-screen bg-background flex items-start justify-center py-10 px-4">
-      <div className={`w-full ${wide ? "max-w-3xl" : "max-w-md"} bg-card border border-border rounded-xl p-6 shadow-sm`}>
+      <div className={`w-full ${wide ? "max-w-3xl" : "max-w-xl"} bg-card border border-border rounded-xl p-6 sm:p-8 shadow-sm`}>
         {children}
       </div>
     </div>
