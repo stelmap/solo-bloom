@@ -169,13 +169,22 @@ export default function PublicAgreementPage() {
     if (payload?.error) throw new Error(payload.error);
     const res = payload as AccessResponse;
     setAccess(res);
-    const init: Record<string, boolean | string> = {};
-    (res.controls || []).forEach((c) => {
-      init[c.id] = c.type === "typed_acknowledgement" ? "" : false;
+    const saved = draftRef.current;
+    setAnswers((prev) => {
+      const merged: Record<string, boolean | string> = {};
+      (res.controls || []).forEach((c) => {
+        const draftVal = saved?.answers?.[c.id];
+        const prevVal = prev?.[c.id];
+        const fallback = c.type === "typed_acknowledgement" ? "" : false;
+        merged[c.id] = prevVal !== undefined && prevVal !== "" && prevVal !== false
+          ? prevVal
+          : (draftVal !== undefined ? draftVal : fallback);
+      });
+      return merged;
     });
-    setAnswers(init);
     if (res.already_accepted) {
       setAccepted({ at: res.accepted_at || "", hash: "" });
+      clearDraft(token);
       setStep("done");
     } else {
       setStep("sign");
