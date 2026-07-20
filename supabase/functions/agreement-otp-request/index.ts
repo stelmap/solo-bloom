@@ -32,8 +32,8 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
     const token = String(body?.token ?? "");
-    const email = String(body?.email ?? "").trim().toLowerCase();
-    if (!token || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    const providedEmail = String(body?.email ?? "").trim().toLowerCase();
+    if (!token) {
       return json({ error: "invalid_input" }, 400);
     }
 
@@ -46,7 +46,8 @@ Deno.serve(async (req) => {
     const inv = await loadInvitationByToken(supabase, token);
     const err = invitationErrorCode(inv);
     if (err) return json({ error: err }, err === "not_found" ? 404 : 410);
-    if (String(inv.email_bound).toLowerCase() !== email) return json({ error: "email_mismatch" }, 403);
+    const email = String(inv.email_bound || "").toLowerCase();
+    if (providedEmail && providedEmail !== email) return json({ error: "email_mismatch" }, 403);
 
     // Rate limit: throttle if last challenge < 30s ago
     const { data: recent } = await supabase
