@@ -11,7 +11,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { FileSignature, Plus, Copy, Link as LinkIcon, Ban, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
+import { FileSignature, Plus, Copy, Link as LinkIcon, Ban, ExternalLink, ChevronDown, ChevronUp, Share2, Mail, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { AgreementStatusTimeline } from "@/components/AgreementStatusTimeline";
 
@@ -367,11 +367,38 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
             <DialogDescription>{t("agreements.link.subtitle")}</DialogDescription>
           </DialogHeader>
           <div className="rounded-md border border-border bg-muted/40 p-3 text-xs break-all font-mono">{linkDialog.url}</div>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => window.open(linkDialog.url, "_blank")}>
+          <DialogFooter className="flex flex-wrap gap-2 sm:justify-end">
+            <Button variant="outline" size="sm" onClick={() => window.open(linkDialog.url, "_blank")}>
               <ExternalLink className="h-3.5 w-3.5 mr-1" /> {t("agreements.link.open")}
             </Button>
-            <Button onClick={async () => {
+            {typeof navigator !== "undefined" && "share" in navigator && (
+              <Button variant="outline" size="sm" onClick={async () => {
+                try {
+                  await (navigator as any).share({
+                    title: t("agreements.link.emailSubject"),
+                    text: t("agreements.link.shareText", { url: linkDialog.url }),
+                    url: linkDialog.url,
+                  });
+                } catch {}
+              }}>
+                <Share2 className="h-3.5 w-3.5 mr-1" /> {t("agreements.link.share")}
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={() => {
+              const subject = encodeURIComponent(t("agreements.link.emailSubject"));
+              const body = encodeURIComponent(t("agreements.link.emailBody", { name: clientName, url: linkDialog.url }));
+              const to = clientEmail ? encodeURIComponent(clientEmail) : "";
+              window.open(`mailto:${to}?subject=${subject}&body=${body}`, "_self");
+            }}>
+              <Mail className="h-3.5 w-3.5 mr-1" /> {t("agreements.link.email")}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => {
+              const text = encodeURIComponent(t("agreements.link.shareText", { url: linkDialog.url }));
+              window.open(`https://wa.me/?text=${text}`, "_blank");
+            }}>
+              <MessageCircle className="h-3.5 w-3.5 mr-1" /> {t("agreements.link.whatsapp")}
+            </Button>
+            <Button size="sm" onClick={async () => {
               try { await navigator.clipboard.writeText(linkDialog.url); toast({ title: t("agreements.link.copied") }); } catch {}
             }}>
               <Copy className="h-3.5 w-3.5 mr-1" /> {t("agreements.link.copy")}
