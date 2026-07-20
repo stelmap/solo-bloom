@@ -4,6 +4,8 @@ import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { ClientNotesCard } from "@/components/ClientNotesCard";
 import { LastSessionNotesCard } from "@/components/LastSessionNotesCard";
 import { ClientAgreementsCard } from "@/components/ClientAgreementsCard";
+import { ClientLanguageSelect } from "@/components/ClientLanguageSelect";
+import { CLIENT_LANGUAGES, type ClientLanguage } from "@/lib/clientLanguage";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,7 +92,7 @@ export default function ClientDetailPage() {
   const isAdmin = user?.email?.toLowerCase() === "o.gilevich@gmail.com";
   const [noteText, setNoteText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "", notification_preference: "no_reminder", confirmation_required: false, pricing_mode: "fixed", base_price: "", billing_address: "", billing_country: "", billing_tax_id: "", billing_company_name: "" });
+  const [editForm, setEditForm] = useState<{ name: string; phone: string; email: string; notes: string; telegram: string; notification_preference: string; confirmation_required: boolean; pricing_mode: string; base_price: string; billing_address: string; billing_country: string; billing_tax_id: string; billing_company_name: string; communication_language: "" | ClientLanguage }>({ name: "", phone: "", email: "", notes: "", telegram: "", notification_preference: "no_reminder", confirmation_required: false, pricing_mode: "fixed", base_price: "", billing_address: "", billing_country: "", billing_tax_id: "", billing_company_name: "", communication_language: "" });
   const [sessionApt, setSessionApt] = useState<any>(null);
   const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
   type StatFilter = "all" | "completed" | "paid" | "awaiting" | "cancelled" | "prepaid" | "supervision";
@@ -327,12 +329,17 @@ export default function ClientDetailPage() {
       billing_country: (client as any).billing_country || "",
       billing_tax_id: (client as any).billing_tax_id || "",
       billing_company_name: (client as any).billing_company_name || "",
+      communication_language: (CLIENT_LANGUAGES as readonly string[]).includes((client as any).communication_language) ? (client as any).communication_language as ClientLanguage : "",
     });
     setEditOpen(true);
   };
 
   const handleSaveEdit = async () => {
     if (!editForm.name.trim()) return;
+    if (!editForm.communication_language) {
+      toast({ title: t("clientLang.required"), variant: "destructive" });
+      return;
+    }
     try {
       const oldBasePrice = (client as any).base_price;
       const newBasePrice = editForm.base_price ? Number(editForm.base_price) : null;
@@ -350,6 +357,7 @@ export default function ClientDetailPage() {
         billing_country: editForm.billing_country || undefined,
         billing_tax_id: editForm.billing_tax_id || undefined,
         billing_company_name: editForm.billing_company_name || undefined,
+        communication_language: editForm.communication_language || undefined,
       } as any);
 
       if (basePriceChanged) {
