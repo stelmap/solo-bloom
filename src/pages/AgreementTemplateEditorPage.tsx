@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/AppLayout";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,12 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Plus, Trash2, Save, Smartphone, Monitor, Maximize2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { useServices } from "@/hooks/useData";
+import { useCurrency, type CurrencyCode } from "@/hooks/useCurrency";
+import { useLanguage } from "@/i18n/LanguageContext";
+
+const SUPPORTED_CURRENCIES: CurrencyCode[] = ["EUR", "UAH", "PLN", "USD"];
+
 
 type Section = { id: string; heading: string; body: string };
 type Control = {
