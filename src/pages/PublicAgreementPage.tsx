@@ -45,6 +45,7 @@ type InvitationInfo = {
   therapist_avatar_url: string;
   masked_email: string;
   agreement_title: string;
+  language?: string;
   revoked: boolean;
   expired: boolean;
   already_accepted: boolean;
