@@ -251,6 +251,11 @@ export default function AgreementTemplateEditorPage() {
               {preview === "desktop" ? <Smartphone className="w-4 h-4 mr-1" /> : <Monitor className="w-4 h-4 mr-1" />}
               {preview === "desktop" ? "Mobile preview" : "Desktop preview"}
             </Button>
+            {readOnly && status === "active" && (
+              <Button onClick={editAsNewDraft} disabled={saving}>
+                <Save className="w-4 h-4 mr-1" /> Edit (new draft)
+              </Button>
+            )}
             {!readOnly && (
               <>
                 <Button variant="outline" onClick={save} disabled={saving}>
@@ -266,7 +271,9 @@ export default function AgreementTemplateEditorPage() {
 
         {readOnly && (
           <div className="text-sm text-muted-foreground">
-            This version is {status} and cannot be edited. Create a new draft from the templates list to make changes.
+            {status === "active"
+              ? "This version is active. Click \"Edit (new draft)\" to create an editable copy; activating it will replace the current active version."
+              : "This version is archived and cannot be edited."}
           </div>
         )}
 
