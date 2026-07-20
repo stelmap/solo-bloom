@@ -109,6 +109,7 @@ Deno.serve(async (req) => {
         text: `Your verification code is ${code}. It expires in ${OTP_TTL_MINUTES} minutes.`,
         purpose: "transactional",
         label: "agreement-otp",
+        idempotency_key: `agreement-otp-${messageId}`,
         queued_at: new Date().toISOString(),
       },
     });
