@@ -110,7 +110,7 @@ function formatCountdown(msLeft: number) {
 
 export default function PublicAgreementPage() {
   const { token } = useParams<{ token: string }>();
-  const { t } = useLanguage();
+  const { t, setLang } = useLanguage();
   const draftRef = useRef<DraftState | null>(loadDraft(token));
   const initial = draftRef.current;
 
