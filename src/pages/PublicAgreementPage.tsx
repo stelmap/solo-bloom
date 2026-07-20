@@ -248,6 +248,8 @@ export default function PublicAgreementPage() {
           email: email.trim().toLowerCase(),
           session_token: sessionToken,
           typed_name: typedName.trim(),
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
           answers,
         },
       });
