@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/AppLayout";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,12 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Plus, Trash2, Save, Smartphone, Monitor, Maximize2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { useServices } from "@/hooks/useData";
+import { useCurrency, type CurrencyCode } from "@/hooks/useCurrency";
+import { useLanguage } from "@/i18n/LanguageContext";
+
+const SUPPORTED_CURRENCIES: CurrencyCode[] = ["EUR", "UAH", "PLN", "USD"];
+
 
 type Section = { id: string; heading: string; body: string };
 type Control = {
@@ -29,6 +35,7 @@ type Control = {
 };
 type SessionFormat = {
   id: string;
+  serviceId?: string;
   label: string;
   durationMinutes: number | "";
   price: number | "";
@@ -56,6 +63,10 @@ function uid() { return Math.random().toString(36).slice(2, 10); }
 export default function AgreementTemplateEditorPage() {
   const { versionId } = useParams<{ versionId: string }>();
   const navigate = useNavigate();
+  const { t } = useLanguage();
+  const { data: services = [] } = useServices();
+  const { code: profileCurrency } = useCurrency();
+  const newFormatRef = useRef<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<"draft" | "active" | "archived">("draft");
@@ -119,6 +130,7 @@ export default function AgreementTemplateEditorPage() {
         })),
         sessionFormats: rawFormats.map((f: any) => ({
           id: f.id ?? uid(),
+          serviceId: typeof f.serviceId === "string" ? f.serviceId : "",
           label: f.label ?? "",
           durationMinutes: typeof f.durationMinutes === "number" ? f.durationMinutes : "",
           price: typeof f.price === "number" ? f.price : "",
@@ -235,10 +247,34 @@ export default function AgreementTemplateEditorPage() {
   }
 
   function addFormat() {
-    setContent((c) => ({
-      ...c,
-      sessionFormats: [...(c.sessionFormats ?? []), { id: uid(), label: "", durationMinutes: 60, price: "", currency: "" }],
-    }));
+    try {
+      const newId = uid();
+      newFormatRef.current = newId;
+      setContent((c) => ({
+        ...c,
+        sessionFormats: [
+          ...(c.sessionFormats ?? []),
+          { id: newId, serviceId: "", label: "", durationMinutes: "", price: "", currency: "" },
+        ],
+      }));
+    } catch {
+      toast({ title: t("af.addFail"), variant: "destructive" });
+    }
+  }
+  function selectServiceForFormat(id: string, serviceId: string) {
+    const svc = services.find((s: any) => s.id === serviceId);
+    if (!svc) {
+      updateFormat(id, { serviceId: "", label: "", durationMinutes: "", price: "", currency: "" });
+      return;
+    }
+    const hasPrice = svc.price !== null && svc.price !== undefined && Number(svc.price) > 0;
+    updateFormat(id, {
+      serviceId: svc.id,
+      label: svc.name,
+      durationMinutes: Number(svc.duration_minutes) || "",
+      price: hasPrice ? Number(svc.price) : "",
+      currency: hasPrice ? profileCurrency : "",
+    });
   }
   function updateFormat(id: string, patch: Partial<SessionFormat>) {
     setContent((c) => ({
@@ -247,6 +283,9 @@ export default function AgreementTemplateEditorPage() {
     }));
   }
   function removeFormat(id: string) {
+    const fmt = (content.sessionFormats ?? []).find((f) => f.id === id);
+    const hasData = !!fmt && (fmt.label || fmt.serviceId || fmt.durationMinutes !== "" || fmt.price !== "");
+    if (hasData && !window.confirm(t("af.confirmDelete"))) return;
     setContent((c) => ({ ...c, sessionFormats: (c.sessionFormats ?? []).filter((f) => f.id !== id) }));
   }
 
@@ -376,89 +415,130 @@ export default function AgreementTemplateEditorPage() {
                     </div>
                     {idx === 0 && (
                       <Card className="mt-6">
-                        <CardHeader><CardTitle className="text-base">Session formats</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">{t("af.title")}</CardTitle></CardHeader>
                         <CardContent className="space-y-4">
-                          <p className="text-xs text-muted-foreground">
-                            Define the session durations, cycle length and frequency offered under this agreement. They render as a table in the signed document.
-                          </p>
-                          {(content.sessionFormats ?? []).map((f, idx) => (
-                            <div key={f.id} className="rounded border border-border p-3 space-y-2">
+                          <p className="text-xs text-muted-foreground">{t("af.description")}</p>
+                          {services.length === 0 && (
+                            <p className="text-xs text-muted-foreground italic">{t("af.noServices")}</p>
+                          )}
+                          {(content.sessionFormats ?? []).map((f, fi) => (
+                            <div
+                              key={f.id}
+                              ref={(el) => {
+                                if (el && newFormatRef.current === f.id) {
+                                  el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                                  const input = el.querySelector<HTMLElement>("[data-format-focus]");
+                                  input?.focus();
+                                  newFormatRef.current = null;
+                                }
+                              }}
+                              className="rounded border border-border p-3 space-y-2"
+                            >
                               <div className="flex items-center justify-between">
-                                <span className="text-xs text-muted-foreground">Format {idx + 1}</span>
+                                <span className="text-xs text-muted-foreground">{t("af.format")} {fi + 1}</span>
                                 {!readOnly && (
-                                  <Button variant="ghost" size="icon" onClick={() => removeFormat(f.id)}>
+                                  <Button variant="ghost" size="icon" onClick={() => removeFormat(f.id)} aria-label={t("af.remove")}>
                                     <Trash2 className="w-4 h-4" />
                                   </Button>
                                 )}
                               </div>
-                              <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-                                <div className="sm:col-span-2">
-                                  <Label className="text-xs">Label</Label>
-                                  <Input
-                                    placeholder="Individual consultation"
-                                    value={f.label}
-                                    disabled={readOnly}
-                                    onChange={(e) => updateFormat(f.id, { label: e.target.value })}
-                                  />
+                              <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
+                                <div className="md:col-span-5 min-w-0">
+                                  <Label className="text-xs">{t("af.label")}</Label>
+                                  <Select
+                                    value={f.serviceId || ""}
+                                    disabled={readOnly || services.length === 0}
+                                    onValueChange={(v) => selectServiceForFormat(f.id, v)}
+                                  >
+                                    <SelectTrigger data-format-focus aria-label={t("af.selectService")}>
+                                      <SelectValue placeholder={t("af.selectService")}>
+                                        {f.label || undefined}
+                                      </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {services.map((s: any) => (
+                                        <SelectItem key={s.id} value={s.id}>
+                                          {s.name}{s.duration_minutes ? ` · ${s.duration_minutes} ${t("common.min")}` : ""}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
                                 </div>
-                                <div>
-                                  <Label className="text-xs">Duration (min)</Label>
+                                <div className="md:col-span-2 min-w-0">
+                                  <Label className="text-xs">{t("af.duration")}</Label>
                                   <Input
                                     type="number"
-                                    min={5}
+                                    min={1}
                                     step={5}
                                     value={f.durationMinutes}
                                     disabled={readOnly}
-                                    onChange={(e) => updateFormat(f.id, { durationMinutes: e.target.value === "" ? "" : Number(e.target.value) })}
+                                    onChange={(e) => updateFormat(f.id, { durationMinutes: e.target.value === "" ? "" : Math.max(1, Math.floor(Number(e.target.value))) })}
                                   />
                                 </div>
-                                <div>
-                                  <Label className="text-xs">Price</Label>
-                                  <div className="flex gap-1">
-                                    <Input
-                                      type="number"
-                                      min={0}
-                                      step={1}
-                                      value={f.price}
-                                      disabled={readOnly}
-                                      onChange={(e) => updateFormat(f.id, { price: e.target.value === "" ? "" : Number(e.target.value) })}
-                                    />
-                                    <Input
-                                      placeholder="EUR"
-                                      className="w-20"
-                                      value={f.currency}
-                                      disabled={readOnly}
-                                      onChange={(e) => updateFormat(f.id, { currency: e.target.value })}
-                                    />
-                                  </div>
+                                <div className="md:col-span-3 min-w-0">
+                                  <Label className="text-xs">{t("af.price")}</Label>
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    step="0.01"
+                                    inputMode="decimal"
+                                    value={f.price}
+                                    disabled={readOnly}
+                                    onChange={(e) => {
+                                      const v = e.target.value;
+                                      if (v === "") {
+                                        updateFormat(f.id, { price: "", currency: "" });
+                                      } else {
+                                        updateFormat(f.id, { price: Number(v), currency: f.currency || profileCurrency });
+                                      }
+                                    }}
+                                  />
+                                </div>
+                                <div className="md:col-span-2 min-w-0">
+                                  <Label className="text-xs">{t("af.currency")}</Label>
+                                  <Select
+                                    value={f.currency || ""}
+                                    disabled={readOnly || f.price === "" || f.price === null}
+                                    onValueChange={(v) => updateFormat(f.id, { currency: v })}
+                                  >
+                                    <SelectTrigger aria-label={t("af.selectCurrency")}>
+                                      <SelectValue placeholder={t("af.selectCurrency")} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {SUPPORTED_CURRENCIES.map((c) => (
+                                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
                                 </div>
                               </div>
                             </div>
                           ))}
                           {!readOnly && (
                             <Button variant="outline" size="sm" onClick={addFormat}>
-                              <Plus className="w-4 h-4 mr-1" /> Add format
+                              <Plus className="w-4 h-4 mr-1" /> {t("af.add")}
                             </Button>
                           )}
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
                             <div>
-                              <Label className="text-xs">Cycle length (sessions)</Label>
+                              <Label className="text-xs">{t("af.cycleLength")}</Label>
                               <Input
                                 type="number"
                                 min={1}
                                 value={content.cycleLength ?? ""}
                                 disabled={readOnly}
-                                onChange={(e) => setContent({ ...content, cycleLength: e.target.value === "" ? "" : Number(e.target.value) })}
+                                onChange={(e) => setContent({ ...content, cycleLength: e.target.value === "" ? "" : Math.max(1, Math.floor(Number(e.target.value))) })}
                               />
                             </div>
                             <div>
-                              <Label className="text-xs">Frequency</Label>
+                              <Label className="text-xs">{t("af.frequency")}</Label>
                               <Input
-                                placeholder="e.g. 1 session per week"
+                                placeholder={t("af.frequencyPlaceholder")}
                                 value={content.frequency ?? ""}
                                 disabled={readOnly}
                                 onChange={(e) => setContent({ ...content, frequency: e.target.value })}
                               />
+
                             </div>
                           </div>
                         </CardContent>
@@ -581,32 +661,38 @@ export default function AgreementTemplateEditorPage() {
                   ))}
                   {((content.sessionFormats?.length ?? 0) > 0 || content.cycleLength || content.frequency) && (
                     <section className="mb-4">
-                      <h3 className="font-medium mb-2">Session formats</h3>
-                      {(content.sessionFormats ?? []).length > 0 && (
-                        <table className="w-full text-sm border border-border rounded overflow-hidden mb-2">
-                          <thead className="bg-muted/50">
-                            <tr>
-                              <th className="text-left p-2">Format</th>
-                              <th className="text-left p-2">Duration</th>
-                              <th className="text-left p-2">Price</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {(content.sessionFormats ?? []).map((f) => (
-                              <tr key={f.id} className="border-t border-border">
-                                <td className="p-2">{f.label || "—"}</td>
-                                <td className="p-2">{f.durationMinutes ? `${f.durationMinutes} min` : "—"}</td>
-                                <td className="p-2">{f.price !== "" ? `${f.price} ${f.currency || ""}`.trim() : "—"}</td>
+                      <h3 className="font-medium mb-2">{t("af.title")}</h3>
+                      {(content.sessionFormats ?? []).length > 0 && (() => {
+                        const formats = content.sessionFormats ?? [];
+                        const anyPrice = formats.some((f) => f.price !== "" && f.price != null);
+                        return (
+                          <table className="w-full text-sm border border-border rounded overflow-hidden mb-2">
+                            <thead className="bg-muted/50">
+                              <tr>
+                                <th className="text-left p-2">{t("af.label")}</th>
+                                <th className="text-left p-2">{t("af.duration")}</th>
+                                {anyPrice && <th className="text-left p-2">{t("af.price")}</th>}
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      )}
+                            </thead>
+                            <tbody>
+                              {formats.map((f) => (
+                                <tr key={f.id} className="border-t border-border">
+                                  <td className="p-2">{f.label || "—"}</td>
+                                  <td className="p-2">{f.durationMinutes ? `${f.durationMinutes} ${t("common.min")}` : "—"}</td>
+                                  {anyPrice && (
+                                    <td className="p-2">{f.price !== "" && f.price != null ? `${f.price} ${f.currency || ""}`.trim() : ""}</td>
+                                  )}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        );
+                      })()}
                       {content.cycleLength ? (
-                        <p className="text-sm text-foreground">Cycle: {content.cycleLength} sessions.</p>
+                        <p className="text-sm text-foreground">{t("af.cycleLine", { n: String(content.cycleLength) })}</p>
                       ) : null}
                       {content.frequency ? (
-                        <p className="text-sm text-foreground">Frequency: {content.frequency}.</p>
+                        <p className="text-sm text-foreground">{t("af.frequencyLine", { v: content.frequency })}</p>
                       ) : null}
                     </section>
                   )}

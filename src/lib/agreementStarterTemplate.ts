@@ -9,10 +9,10 @@ export const STARTER_TEMPLATE_DESCRIPTION =
 export const STARTER_TEMPLATE_CONTENT = {
   title: "Інформована згода на отримання психологічних послуг",
   sessionFormats: [
-    { id: "fmt-60", label: "60 хвилин — індивідуальна консультація", durationMinutes: 60, price: "", currency: "" },
-    { id: "fmt-90", label: "90 хвилин — поглиблена сесія", durationMinutes: 90, price: "", currency: "" },
+    { id: "fmt-60", serviceId: "", label: "Індивідуальна консультація", durationMinutes: 60, price: "", currency: "" },
+    { id: "fmt-90", serviceId: "", label: "Поглиблена консультація", durationMinutes: 90, price: "", currency: "" },
   ],
-  cycleLength: 12,
+  cycleLength: 10,
   frequency: "1 раз на тиждень",
   sections: [
     {
