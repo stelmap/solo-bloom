@@ -232,6 +232,10 @@ export default function PublicAgreementPage() {
         return;
       }
     }
+    if (!firstName.trim() || !lastName.trim()) {
+      toast({ title: "Please enter your first and last name", variant: "destructive" });
+      return;
+    }
     if (!typedName.trim()) {
       toast({ title: "Please type your full name to sign", variant: "destructive" });
       return;
