@@ -1,115 +1,76 @@
-# Information Agreement — Implementation Plan
+# Client Language as Single Source of Truth
 
-Delivers the spec in `Solo_Bizz_Information_Agreement_Functional_Specification_v1.0.docx` as a therapist-owned versioned template, a client-specific agreement instance, a secure recipient-bound link with email OTP, immutable acceptance evidence, and an accepted document stored in the client card.
+Rework the app so **Client Card → Client Language** drives every client-facing document, email and notification. Remove language selection from Information Agreement creation and any implicit derivation from country/browser/interface.
 
-Full spec is saved to `docs/information-agreement-spec.md` in Phase 0 so all details (business rules BR-1..N, error catalogue, traceability matrix) stay accessible during build.
+## Phase 1 — Client profile field
 
----
+- DB migration: add `clients.communication_language TEXT` (nullable during backfill, no default). Allowed values enforced by trigger: `uk | ru | en | pl`.
+- Add "Client language" field to:
+  - Create Client dialog (`ClientsPage.tsx`)
+  - Edit Client form (`ClientDetailPage.tsx`)
+  - Client Card details display
+- Placed next to/after Country, with localized help text (uk/ru/en/pl/fr).
+- Required on create + edit. Save blocked with localized validation.
+- On existing clients without a value: show badge **"Мову клієнта не вибрано"** in Client Card + client list.
+- Add filter chip in Clients list (uk / ru / en / pl / not selected).
+- Audit events: `CLIENT_LANGUAGE_SET`, `CLIENT_LANGUAGE_CHANGED` (previous, new, actor, client, timestamp) via existing `client_status_audit`-style table (new `client_language_audit` or reuse pattern).
 
-## Phase 0 — Foundations (1 turn)
+## Phase 2 — Central language resolver
 
-- Save spec to `docs/information-agreement-spec.md`.
-- Add feature flag `information_agreement` (default OFF) so we can ship phases behind a switch.
-- Seed the Ukrainian starter template content as a JSON fixture in `supabase/seed/agreement-starter-uk.json`.
+- New file `src/lib/clientCommunicationLanguage.ts`:
+  - `resolveClientCommunicationLanguage(clientId): 'uk'|'ru'|'en'|'pl'`
+  - Throws typed error `CLIENT_LANGUAGE_MISSING` when null/unsupported.
+- Edge-function equivalent in `supabase/functions/_shared/client-language.ts` used by all send functions.
+- Reusable UI helper `<MissingClientLanguageGuard/>` — blocks action, shows message + **"Відкрити картку клієнта"** button.
 
----
+## Phase 3 — Information Agreement
 
-## Phase 1 — Data model & security (1 turn, DB migration)
+- Remove any "document language" selector from the Create Agreement flow (`ClientAgreementsCard.tsx` / agreement creation dialog).
+- On create:
+  1. Call resolver.
+  2. Look up active `agreement_templates` where `language = client.communication_language`.
+  3. If none → block with "Немає активного шаблону цією мовою" + actions to Templates / Client card.
+  4. Snapshot language into `agreement_instances.language`, `agreement_revisions.language`, `agreement_invitations.language`.
+- Public flow (`PublicAgreementPage`, OTP request/verify functions) already reads snapshot language — verify + fix any place still using interface language.
+- Handle Client Language change while an unaccepted invitation exists: show modal offering **Keep** / **Revoke & recreate**.
+- Accepted documents remain immutable.
 
-New tables (all with GRANTs + RLS, scoped by `user_id = auth.uid()` for therapist rows):
+## Phase 4 — Notifications wired to client language
 
-```text
-agreement_templates          therapist-owned master; latest_version_id
-agreement_template_versions  immutable content + controls (JSONB), status: draft|active|archived
-agreement_instances          one per client; template_version_id, client_id, status
-agreement_revisions          frozen shareable snapshot; content_hash
-agreement_invitations        token_hash (never raw), expires_at, revoked_at, email_bound
-agreement_otp_challenges     otp_hash, attempts, expires_at, invitation_id
-agreement_verified_sessions  short-lived server session bound to one revision
-agreement_acceptances        answers JSONB, typed_name, ip, ua, accepted_at, evidence_hash
-agreement_audit_events       correlation_id, event_type, safe metadata only
-accepted_documents           rendered HTML/PDF stored in Storage bucket + row metadata
-```
+Update each send site to call the resolver and pass `language` to the template:
 
-Storage bucket `agreement-documents` (private, RLS by therapist).
+- `send-transactional-email` invocations from:
+  - `agreement-otp-request`, `agreement-invitation` (OTP + invite emails)
+  - `send-session-reminders`
+  - Session created / rescheduled / cancelled by therapist / cancelled by client / confirmation (find call sites in `useData.ts`, `SessionDetailSheet.tsx`, `BookingDialog.tsx`)
+  - Invoice sent / payment reminder (where present)
+- All React Email templates already accept a `locale` prop — extend where missing (uk/ru/en/pl variants).
+- Internal therapist notifications keep using therapist interface language.
 
-Business-rule enforcement handled in edge functions, not client SQL.
+## Phase 5 — Placeholders, dates, services
 
----
+- Central placeholder resolver validates required fields before send; blocks on missing.
+- Date formatting helper uses locale map `uk→uk-UA`, `ru→ru`, `en→en-GB`, `pl→pl-PL`.
+- Service name: if selected service lacks a translated `name_<lang>`, prompt therapist to provide it and block send. (Add `service_translations` table or JSON column `services.name_i18n`.)
 
-## Phase 2 — Settings: template editor (2–3 turns)
+## Phase 6 — Migration & tests
 
-Route: `/settings/agreements`
+- Backfill: mark existing clients as `NULL` (no guessing). No automatic assignment.
+- Vitest: resolver, blocking behaviour, snapshot correctness.
+- Playwright e2e: create client without language → blocked; create Ukrainian client → agreement is uk; change language mid-invite → warning modal.
+- Register new suites in `src/lib/testRegistry.ts`.
 
-- List templates + version history.
-- Draft editor: rich text sections, insertable variables (`{{client.first_name}}`, `{{therapist.business_name}}`, etc.), configurable controls (required checkbox, optional checkbox, typed acknowledgement).
-- Desktop/mobile preview.
-- Validate → Activate flow (exactly one Active version per template).
-- Archive obsolete versions.
-- Ukrainian UI first, i18n keys added for en/ru/pl/fr.
+## Technical notes
 
----
+- Language code column, not display strings. Localized names rendered from i18n dictionaries in all 5 interface locales.
+- No CHECK constraint with dynamic list — use trigger for validation (per project rules).
+- `agreement_instances.language` already exists; verify & reuse rather than adding new columns where possible (will confirm via `supabase--read_query` before migration).
+- Audit uses existing `data_access_audit` / `client_status_audit` patterns.
 
-## Phase 3 — Client card: agreement instance (2 turns)
+## Deliverables reported after implementation
 
-In `ClientDetailPage` add a **Documents / Agreements** section:
-
-- Create instance from Active template → client-specific snapshot.
-- Allow per-client edits before sharing.
-- Precondition validation: client has deliverable email.
-- Generate secure link (`/agreement/:token`, high-entropy, token_hash stored server-side).
-- Copy / Revoke / Regenerate actions.
-- Status timeline: Draft → Sent → Opened → Verified → Accepted / Revoked / Expired.
-- Read-only view of accepted document.
-
----
-
-## Phase 4 — Public client flow (2–3 turns)
-
-Public route `/agreement/:token` (no Solo.Bizz account required):
-
-- Resolve token server-side → return only revision id + email hint (`o***@gmail.com`).
-- Uniform failure response (no info leak about existence).
-- Request OTP → email via `send-transactional-email` (new template `agreement-otp`).
-- OTP verify → mint short-lived verified session cookie bound to that revision.
-- Render frozen revision content + interactive controls.
-- Submit once (idempotent): store answers, typed name, evidence hash, audit events.
-- Show safe completion page.
-- Rate limiting + attempt counters + lockout.
-
-Edge functions: `agreement-resolve-token`, `agreement-request-otp`, `agreement-verify-otp`, `agreement-submit`.
+Migration summary, changed client fields, connected communication types, template structure, count of legacy clients missing language, new automated tests, and any client-facing notifications still not wired.
 
 ---
 
-## Phase 5 — Accepted document generation & storage (1–2 turns)
-
-- Render final HTML server-side from frozen snapshot + answers.
-- Compute `evidence_hash` (sha256 of canonicalized JSON).
-- Save HTML (and PDF via existing invoice PDF pipeline) to `agreement-documents` bucket.
-- Link to `accepted_documents` row visible in client card.
-- Invalidate invitation, transition to `Accepted` atomically.
-
----
-
-## Phase 6 — Audit, security hardening, tests (1–2 turns)
-
-- Structured audit rows for every state transition (no body/OTP/token/full email in logs).
-- Automated tests:
-  - Unit: token binding, OTP throttle, snapshot immutability, evidence hash stability.
-  - E2E: therapist creates template → shares → client OTP flow → accepted doc appears in client card.
-- Add to Admin Tests registry.
-- Security scan pass on new tables/functions.
-
----
-
-## Explicitly out of scope (per spec §2.3)
-
-Guardian consent, multi-party signing, arbitrary DOCX upload, real-time collab, therapist counter-signature, qualified e-signature certification, general client portal.
-
----
-
-## Deliverable cadence
-
-Each phase is one review/approval checkpoint. I'll pause after each phase for you to test before starting the next.
-
-Reply **approve** to start with Phase 0 + Phase 1 (spec doc + database migration), or tell me which phase to prioritise or adjust.
+This is a large multi-phase change touching DB schema, ~15 edge functions, agreement flow, notifications, and UI. Approve to proceed, or tell me to start with a subset (e.g. Phase 1+3 only).

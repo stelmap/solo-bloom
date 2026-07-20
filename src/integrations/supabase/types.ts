@@ -215,6 +215,7 @@ export type Database = {
           created_at: string
           current_revision_id: string | null
           id: string
+          language: string | null
           status: Database["public"]["Enums"]["agreement_instance_status"]
           template_version_id: string
           updated_at: string
@@ -227,6 +228,7 @@ export type Database = {
           created_at?: string
           current_revision_id?: string | null
           id?: string
+          language?: string | null
           status?: Database["public"]["Enums"]["agreement_instance_status"]
           template_version_id: string
           updated_at?: string
@@ -239,6 +241,7 @@ export type Database = {
           created_at?: string
           current_revision_id?: string | null
           id?: string
+          language?: string | null
           status?: Database["public"]["Enums"]["agreement_instance_status"]
           template_version_id?: string
           updated_at?: string
@@ -277,6 +280,7 @@ export type Database = {
           expires_at: string
           id: string
           instance_id: string
+          language: string | null
           opened_at: string | null
           revision_id: string
           revoked_at: string | null
@@ -293,6 +297,7 @@ export type Database = {
           expires_at: string
           id?: string
           instance_id: string
+          language?: string | null
           opened_at?: string | null
           revision_id: string
           revoked_at?: string | null
@@ -309,6 +314,7 @@ export type Database = {
           expires_at?: string
           id?: string
           instance_id?: string
+          language?: string | null
           opened_at?: string | null
           revision_id?: string
           revoked_at?: string | null
@@ -390,6 +396,7 @@ export type Database = {
           created_at: string
           id: string
           instance_id: string
+          language: string | null
           revision_number: number
           user_id: string
         }
@@ -400,6 +407,7 @@ export type Database = {
           created_at?: string
           id?: string
           instance_id: string
+          language?: string | null
           revision_number: number
           user_id: string
         }
@@ -410,6 +418,7 @@ export type Database = {
           created_at?: string
           id?: string
           instance_id?: string
+          language?: string | null
           revision_number?: number
           user_id?: string
         }
@@ -891,6 +900,44 @@ export type Database = {
         }
         Relationships: []
       }
+      client_language_audit: {
+        Row: {
+          actor_id: string | null
+          client_id: string
+          created_at: string
+          id: string
+          new_language: string | null
+          previous_language: string | null
+          user_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          new_language?: string | null
+          previous_language?: string | null
+          user_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          new_language?: string | null
+          previous_language?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_language_audit_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_notes_raw: {
         Row: {
           appointment_id: string | null
@@ -1038,6 +1085,7 @@ export type Database = {
           billing_company_name: string | null
           billing_country: string | null
           billing_tax_id: string | null
+          communication_language: string | null
           confirmation_required: boolean
           created_at: string
           email: string | null
@@ -1071,6 +1119,7 @@ export type Database = {
           billing_company_name?: string | null
           billing_country?: string | null
           billing_tax_id?: string | null
+          communication_language?: string | null
           confirmation_required?: boolean
           created_at?: string
           email?: string | null
@@ -1104,6 +1153,7 @@ export type Database = {
           billing_company_name?: string | null
           billing_country?: string | null
           billing_tax_id?: string | null
+          communication_language?: string | null
           confirmation_required?: boolean
           created_at?: string
           email?: string | null

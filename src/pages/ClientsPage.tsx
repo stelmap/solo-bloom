@@ -20,6 +20,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useFreeStarterMode } from "@/hooks/useDemoWorkspace";
 import { PaywallDialog } from "@/components/PaywallDialog";
 import { ListSkeleton } from "@/components/ListSkeleton";
+import { ClientLanguageSelect } from "@/components/ClientLanguageSelect";
 
 
 const getArchiveReasonLabel = (reason: string, t: any) => {
@@ -129,7 +130,7 @@ export default function ClientsPage() {
   const [statusFilter, setStatusFilter] = useState<"active" | "archived" | "all">("active");
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [form, setForm] = useState({ name: "", phone: "", email: "", notes: "", telegram: "" });
+  const [form, setForm] = useState<{ name: string; phone: string; email: string; notes: string; telegram: string; communication_language: "" | "uk" | "ru" | "en" | "pl" }>({ name: "", phone: "", email: "", notes: "", telegram: "", communication_language: "" });
 
   const debouncedSearch = useDebouncedValue(search, 200);
   const counts = {
@@ -264,9 +265,13 @@ export default function ClientsPage() {
 
   const handleCreate = async () => {
     if (!form.name.trim()) return;
+    if (!form.communication_language) {
+      toast({ title: t("clientLang.required"), variant: "destructive" });
+      return;
+    }
     try {
       await createClient.mutateAsync(form);
-      setForm({ name: "", phone: "", email: "", notes: "", telegram: "" });
+      setForm({ name: "", phone: "", email: "", notes: "", telegram: "", communication_language: "" });
       setOpen(false);
       toast({ title: t("toast.clientAdded") });
     } catch (e: any) {
@@ -410,6 +415,11 @@ export default function ClientsPage() {
                 <div className="space-y-2"><Label>{t("common.email")}</Label><Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
                 
                 <div className="space-y-2"><Label>{t("common.notes")}</Label><Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
+                <ClientLanguageSelect
+                  value={form.communication_language}
+                  onChange={(v) => setForm(f => ({ ...f, communication_language: v }))}
+                  required
+                />
                 <Button onClick={handleCreate} className="w-full" disabled={createClient.isPending}>
                   {createClient.isPending ? t("common.adding") : t("clients.addClient")}
                 </Button>
