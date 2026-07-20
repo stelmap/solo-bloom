@@ -85,6 +85,7 @@ const ServerUpdatePage = lazyWithReload(() => import("./pages/ServerUpdatePage")
 const OAuthConsentPage = lazyWithReload(() => import("./pages/OAuthConsentPage"));
 const AgreementTemplatesPage = lazyWithReload(() => import("./pages/AgreementTemplatesPage"));
 const AgreementTemplateEditorPage = lazyWithReload(() => import("./pages/AgreementTemplateEditorPage"));
+const PublicAgreementPage = lazyWithReload(() => import("./pages/PublicAgreementPage"));
 
 
 const queryClient = new QueryClient({
@@ -134,6 +135,7 @@ const App = () => {
                 <Route path="/confirm-session" element={<ConfirmSessionPage />} />
                 <Route path="/book/:token" element={<PublicBookingPage />} />
                 <Route path="/unsubscribe" element={<UnsubscribePage />} />
+                <Route path="/agreement/:token" element={<PublicAgreementPage />} />
                 <Route path="/server-update" element={<ServerUpdatePage />} />
                 <Route path="/.lovable/oauth/consent" element={<OAuthConsentPage />} />
 

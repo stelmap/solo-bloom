@@ -31,3 +31,7 @@ project_id = "rxculneqqaziutulnocs"
     verify_jwt = true
   [functions.lifecycle-cron]
     verify_jwt = true
+  [functions.agreement-access]
+    verify_jwt = false
+  [functions.agreement-accept]
+    verify_jwt = false
