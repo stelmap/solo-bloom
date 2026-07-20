@@ -518,6 +518,15 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={!!deleteInst}
+        onOpenChange={(open) => !open && setDeleteInst(null)}
+        onConfirm={() => deleteInst && deleteInstance(deleteInst)}
+        loading={deleting}
+        title={t("agreements.delete.title")}
+        description={t("agreements.delete.description")}
+      />
     </div>
   );
 }
