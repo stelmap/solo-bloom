@@ -8,7 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Plus, FileText, Archive, CheckCircle2, Pencil } from "lucide-react";
+import { Plus, FileText, Archive, CheckCircle2, Pencil, Sparkles } from "lucide-react";
+import {
+  STARTER_TEMPLATE_NAME,
+  STARTER_TEMPLATE_DESCRIPTION,
+  STARTER_TEMPLATE_CONTENT,
+  STARTER_TEMPLATE_CONTROLS,
+} from "@/lib/agreementStarterTemplate";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type Template = {
   id: string;
@@ -36,6 +43,8 @@ export default function AgreementTemplatesPage() {
   const [loading, setLoading] = useState(true);
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
+  const [seeding, setSeeding] = useState(false);
+  const { t } = useLanguage();
 
   async function load() {
     if (!user) return;
