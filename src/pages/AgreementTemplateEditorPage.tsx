@@ -468,13 +468,21 @@ export default function AgreementTemplateEditorPage() {
                         <SelectItem value="typed_acknowledgement">Typed acknowledgement</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Textarea
-                      placeholder="Label shown to the client"
-                      rows={2}
-                      value={c.label}
-                      disabled={readOnly}
-                      onChange={(e) => updateControl(c.id, { label: e.target.value })}
-                    />
+                    <div className="flex gap-1 items-start">
+                      <Textarea
+                        placeholder="Label shown to the client"
+                        rows={2}
+                        value={c.label}
+                        disabled={readOnly}
+                        onChange={(e) => updateControl(c.id, { label: e.target.value })}
+                      />
+                      <ExpandBtn onClick={() => openExpand({
+                        title: `Control ${i + 1} — Label`,
+                        value: c.label,
+                        multiline: true,
+                        onSave: (v) => updateControl(c.id, { label: v }),
+                      })} />
+                    </div>
                     {c.type === "optional_checkbox" && (
                       <div className="flex items-center gap-2 text-sm">
                         <Switch
