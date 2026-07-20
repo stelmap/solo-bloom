@@ -568,7 +568,16 @@ export default function ClientDetailPage() {
               <div className="space-y-2 text-sm">
                 {client.phone && <div className="flex items-center gap-2 text-muted-foreground"><Phone className="h-4 w-4 text-primary" />{client.phone}</div>}
                 {client.email && <div className="flex items-center gap-2 text-muted-foreground"><Mail className="h-4 w-4 text-primary" />{client.email}</div>}
-                
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground text-xs">{t("clientLang.label")}:</span>
+                  {(client as any).communication_language ? (
+                    <Badge variant="secondary" className="text-xs">
+                      {t(`clientLang.option.${(client as any).communication_language}` as any)}
+                    </Badge>
+                  ) : (
+                    <Badge variant="destructive" className="text-xs">{t("clientLang.notSelected")}</Badge>
+                  )}
+                </div>
               </div>
             </div>
 
