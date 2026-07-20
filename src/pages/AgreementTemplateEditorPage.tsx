@@ -35,6 +35,7 @@ type Control = {
 };
 type SessionFormat = {
   id: string;
+  serviceId?: string;
   label: string;
   durationMinutes: number | "";
   price: number | "";
