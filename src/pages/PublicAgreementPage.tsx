@@ -102,6 +102,8 @@ export default function PublicAgreementPage() {
   const [answers, setAnswers] = useState<Record<string, boolean | string>>(initial?.answers ?? {});
   const [typedName, setTypedName] = useState(initial?.typedName ?? "");
   const [accepted, setAccepted] = useState<{ at: string; hash: string } | null>(null);
+  const [firstName, setFirstName] = useState(initial?.firstName ?? "");
+  const [lastName, setLastName] = useState(initial?.lastName ?? "");
   const [restoring, setRestoring] = useState<boolean>(!!(initial?.sessionToken && initial?.email));
 
   // Persist draft to localStorage on any relevant change
@@ -109,9 +111,9 @@ export default function PublicAgreementPage() {
     const k = draftKey(token);
     if (!k) return;
     if (step === "done") return;
-    const draft: DraftState = { step, email, sessionToken, otpExpiresAt, answers, typedName, savedAt: Date.now() };
+    const draft: DraftState = { step, email, sessionToken, otpExpiresAt, answers, typedName, firstName, lastName, savedAt: Date.now() };
     try { localStorage.setItem(k, JSON.stringify(draft)); } catch { /* ignore quota */ }
-  }, [token, step, email, sessionToken, otpExpiresAt, answers, typedName]);
+  }, [token, step, email, sessionToken, otpExpiresAt, answers, typedName, firstName, lastName]);
 
   // Attempt to resume a verified session on mount
   useEffect(() => {
