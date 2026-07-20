@@ -17,7 +17,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, Trash2, Save, Smartphone, Monitor } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Save, Smartphone, Monitor, Maximize2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 type Section = { id: string; heading: string; body: string };
 type Control = {
@@ -63,6 +64,30 @@ export default function AgreementTemplateEditorPage() {
   const [content, setContent] = useState<Content>({ title: "", sections: [], sessionFormats: [], cycleLength: "", frequency: "" });
   const [controls, setControls] = useState<Control[]>([]);
   const [preview, setPreview] = useState<"desktop" | "mobile">("desktop");
+  const [expand, setExpand] = useState<{
+    title: string;
+    value: string;
+    multiline: boolean;
+    onSave: (v: string) => void;
+  } | null>(null);
+  const [expandDraft, setExpandDraft] = useState("");
+
+  function openExpand(opts: { title: string; value: string; multiline?: boolean; onSave: (v: string) => void }) {
+    setExpand({ title: opts.title, value: opts.value, multiline: opts.multiline ?? true, onSave: opts.onSave });
+    setExpandDraft(opts.value);
+  }
+  const ExpandBtn = ({ onClick }: { onClick: () => void }) => (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
+      className="h-8 w-8 shrink-0"
+      title="Expand editor"
+      onClick={onClick}
+    >
+      <Maximize2 className="w-4 h-4" />
+    </Button>
+  );
 
   const readOnly = status !== "draft";
 
@@ -253,11 +278,19 @@ export default function AgreementTemplateEditorPage() {
               <CardContent className="space-y-4">
                 <div>
                   <Label>Title</Label>
-                  <Input
-                    value={content.title}
-                    disabled={readOnly}
-                    onChange={(e) => setContent({ ...content, title: e.target.value })}
-                  />
+                  <div className="flex gap-1">
+                    <Input
+                      value={content.title}
+                      disabled={readOnly}
+                      onChange={(e) => setContent({ ...content, title: e.target.value })}
+                    />
+                    <ExpandBtn onClick={() => openExpand({
+                      title: "Title",
+                      value: content.title,
+                      multiline: false,
+                      onSave: (v) => setContent({ ...content, title: v }),
+                    })} />
+                  </div>
                 </div>
                 {content.sections.map((s, idx) => (
                   <div key={s.id} className="rounded border border-border p-3 space-y-2">
@@ -269,19 +302,35 @@ export default function AgreementTemplateEditorPage() {
                         </Button>
                       )}
                     </div>
-                    <Input
-                      placeholder="Heading"
-                      value={s.heading}
-                      disabled={readOnly}
-                      onChange={(e) => updateSection(s.id, { heading: e.target.value })}
-                    />
-                    <Textarea
-                      placeholder="Body text. Use variables like {{client.first_name}}."
-                      rows={5}
-                      value={s.body}
-                      disabled={readOnly}
-                      onChange={(e) => updateSection(s.id, { body: e.target.value })}
-                    />
+                    <div className="flex gap-1">
+                      <Input
+                        placeholder="Heading"
+                        value={s.heading}
+                        disabled={readOnly}
+                        onChange={(e) => updateSection(s.id, { heading: e.target.value })}
+                      />
+                      <ExpandBtn onClick={() => openExpand({
+                        title: `Section ${idx + 1} — Heading`,
+                        value: s.heading,
+                        multiline: false,
+                        onSave: (v) => updateSection(s.id, { heading: v }),
+                      })} />
+                    </div>
+                    <div className="flex gap-1 items-start">
+                      <Textarea
+                        placeholder="Body text. Use variables like {{client.first_name}}."
+                        rows={5}
+                        value={s.body}
+                        disabled={readOnly}
+                        onChange={(e) => updateSection(s.id, { body: e.target.value })}
+                      />
+                      <ExpandBtn onClick={() => openExpand({
+                        title: `Section ${idx + 1} — Body`,
+                        value: s.body,
+                        multiline: true,
+                        onSave: (v) => updateSection(s.id, { body: v }),
+                      })} />
+                    </div>
                   </div>
                 ))}
                 {!readOnly && (
@@ -419,13 +468,21 @@ export default function AgreementTemplateEditorPage() {
                         <SelectItem value="typed_acknowledgement">Typed acknowledgement</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Textarea
-                      placeholder="Label shown to the client"
-                      rows={2}
-                      value={c.label}
-                      disabled={readOnly}
-                      onChange={(e) => updateControl(c.id, { label: e.target.value })}
-                    />
+                    <div className="flex gap-1 items-start">
+                      <Textarea
+                        placeholder="Label shown to the client"
+                        rows={2}
+                        value={c.label}
+                        disabled={readOnly}
+                        onChange={(e) => updateControl(c.id, { label: e.target.value })}
+                      />
+                      <ExpandBtn onClick={() => openExpand({
+                        title: `Control ${i + 1} — Label`,
+                        value: c.label,
+                        multiline: true,
+                        onSave: (v) => updateControl(c.id, { label: v }),
+                      })} />
+                    </div>
                     {c.type === "optional_checkbox" && (
                       <div className="flex items-center gap-2 text-sm">
                         <Switch
@@ -539,6 +596,46 @@ export default function AgreementTemplateEditorPage() {
           </div>
         </div>
       </div>
+
+      <Dialog open={!!expand} onOpenChange={(o) => !o && setExpand(null)}>
+        <DialogContent className="max-w-4xl w-[95vw]">
+          <DialogHeader>
+            <DialogTitle>{expand?.title}</DialogTitle>
+          </DialogHeader>
+          {expand?.multiline ? (
+            <Textarea
+              value={expandDraft}
+              onChange={(e) => setExpandDraft(e.target.value)}
+              className="min-h-[60vh] font-mono text-sm"
+              autoFocus
+            />
+          ) : (
+            <Input
+              value={expandDraft}
+              onChange={(e) => setExpandDraft(e.target.value)}
+              className="text-base"
+              autoFocus
+            />
+          )}
+          <div className="text-xs text-muted-foreground">
+            Variables: {AVAILABLE_VARIABLES.map((v) => (
+              <code key={v} className="mr-1 px-1 py-0.5 bg-muted rounded">{v}</code>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setExpand(null)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                expand?.onSave(expandDraft);
+                setExpand(null);
+              }}
+              disabled={readOnly}
+            >
+              Apply
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
