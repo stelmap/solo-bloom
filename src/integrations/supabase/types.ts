@@ -14,6 +14,537 @@ export type Database = {
   }
   public: {
     Tables: {
+      accepted_documents: {
+        Row: {
+          acceptance_id: string
+          client_id: string
+          created_at: string
+          evidence_hash: string
+          id: string
+          instance_id: string
+          mime_type: string
+          revision_id: string
+          storage_bucket: string
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          acceptance_id: string
+          client_id: string
+          created_at?: string
+          evidence_hash: string
+          id?: string
+          instance_id: string
+          mime_type?: string
+          revision_id: string
+          storage_bucket?: string
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          acceptance_id?: string
+          client_id?: string
+          created_at?: string
+          evidence_hash?: string
+          id?: string
+          instance_id?: string
+          mime_type?: string
+          revision_id?: string
+          storage_bucket?: string
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accepted_documents_acceptance_id_fkey"
+            columns: ["acceptance_id"]
+            isOneToOne: false
+            referencedRelation: "agreement_acceptances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accepted_documents_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accepted_documents_instance_id_fkey"
+            columns: ["instance_id"]
+            isOneToOne: false
+            referencedRelation: "agreement_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accepted_documents_revision_id_fkey"
+            columns: ["revision_id"]
+            isOneToOne: false
+            referencedRelation: "agreement_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agreement_acceptances: {
+        Row: {
+          accepted_at: string
+          answers: Json
+          client_id: string
+          evidence_hash: string
+          id: string
+          instance_id: string
+          invitation_id: string
+          ip_address: string | null
+          revision_id: string
+          typed_name: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          answers: Json
+          client_id: string
+          evidence_hash: string
+          id?: string
+          instance_id: string
+          invitation_id: string
+          ip_address?: string | null
+          revision_id: string
+          typed_name: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string
+          answers?: Json
+          client_id?: string
+          evidence_hash?: string
+          id?: string
+          instance_id?: string
+          invitation_id?: string
+          ip_address?: string | null
+          revision_id?: string
+          typed_name?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agreement_acceptances_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agreement_acceptances_instance_id_fkey"
+            columns: ["instance_id"]
+            isOneToOne: false
+            referencedRelation: "agreement_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agreement_acceptances_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: true
+            referencedRelation: "agreement_invitations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agreement_acceptances_revision_id_fkey"
+            columns: ["revision_id"]
+            isOneToOne: false
+            referencedRelation: "agreement_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agreement_audit_events: {
+        Row: {
+          correlation_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          instance_id: string | null
+          invitation_id: string | null
+          metadata: Json
+          user_id: string | null
+        }
+        Insert: {
+          correlation_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          instance_id?: string | null
+          invitation_id?: string | null
+          metadata?: Json
+          user_id?: string | null
+        }
+        Update: {
+          correlation_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          instance_id?: string | null
+          invitation_id?: string | null
+          metadata?: Json
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agreement_audit_events_instance_id_fkey"
+            columns: ["instance_id"]
+            isOneToOne: false
+            referencedRelation: "agreement_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agreement_audit_events_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "agreement_invitations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agreement_instances: {
+        Row: {
+          client_id: string
+          content: Json
+          controls: Json
+          created_at: string
+          current_revision_id: string | null
+          id: string
+          status: Database["public"]["Enums"]["agreement_instance_status"]
+          template_version_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          content?: Json
+          controls?: Json
+          created_at?: string
+          current_revision_id?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["agreement_instance_status"]
+          template_version_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          content?: Json
+          controls?: Json
+          created_at?: string
+          current_revision_id?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["agreement_instance_status"]
+          template_version_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agreement_instances_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agreement_instances_current_revision_fk"
+            columns: ["current_revision_id"]
+            isOneToOne: false
+            referencedRelation: "agreement_revisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agreement_instances_template_version_id_fkey"
+            columns: ["template_version_id"]
+            isOneToOne: false
+            referencedRelation: "agreement_template_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agreement_invitations: {
+        Row: {
+          accepted_at: string | null
+          client_id: string
+          created_at: string
+          email_bound: string
+          expires_at: string
+          id: string
+          instance_id: string
+          opened_at: string | null
+          revision_id: string
+          revoked_at: string | null
+          token_hash: string
+          updated_at: string
+          user_id: string
+          verified_at: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          client_id: string
+          created_at?: string
+          email_bound: string
+          expires_at: string
+          id?: string
+          instance_id: string
+          opened_at?: string | null
+          revision_id: string
+          revoked_at?: string | null
+          token_hash: string
+          updated_at?: string
+          user_id: string
+          verified_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          client_id?: string
+          created_at?: string
+          email_bound?: string
+          expires_at?: string
+          id?: string
+          instance_id?: string
+          opened_at?: string | null
+          revision_id?: string
+          revoked_at?: string | null
+          token_hash?: string
+          updated_at?: string
+          user_id?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agreement_invitations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agreement_invitations_instance_id_fkey"
+            columns: ["instance_id"]
+            isOneToOne: false
+            referencedRelation: "agreement_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agreement_invitations_revision_id_fkey"
+            columns: ["revision_id"]
+            isOneToOne: false
+            referencedRelation: "agreement_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agreement_otp_challenges: {
+        Row: {
+          attempts: number
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          invitation_id: string
+          max_attempts: number
+          otp_hash: string
+        }
+        Insert: {
+          attempts?: number
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          invitation_id: string
+          max_attempts?: number
+          otp_hash: string
+        }
+        Update: {
+          attempts?: number
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invitation_id?: string
+          max_attempts?: number
+          otp_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agreement_otp_challenges_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "agreement_invitations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agreement_revisions: {
+        Row: {
+          content_hash: string
+          content_snapshot: Json
+          controls_snapshot: Json
+          created_at: string
+          id: string
+          instance_id: string
+          revision_number: number
+          user_id: string
+        }
+        Insert: {
+          content_hash: string
+          content_snapshot: Json
+          controls_snapshot: Json
+          created_at?: string
+          id?: string
+          instance_id: string
+          revision_number: number
+          user_id: string
+        }
+        Update: {
+          content_hash?: string
+          content_snapshot?: Json
+          controls_snapshot?: Json
+          created_at?: string
+          id?: string
+          instance_id?: string
+          revision_number?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agreement_revisions_instance_id_fkey"
+            columns: ["instance_id"]
+            isOneToOne: false
+            referencedRelation: "agreement_instances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agreement_template_versions: {
+        Row: {
+          activated_at: string | null
+          content: Json
+          controls: Json
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["agreement_version_status"]
+          template_id: string
+          updated_at: string
+          user_id: string
+          version_number: number
+        }
+        Insert: {
+          activated_at?: string | null
+          content?: Json
+          controls?: Json
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["agreement_version_status"]
+          template_id: string
+          updated_at?: string
+          user_id: string
+          version_number: number
+        }
+        Update: {
+          activated_at?: string | null
+          content?: Json
+          controls?: Json
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["agreement_version_status"]
+          template_id?: string
+          updated_at?: string
+          user_id?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agreement_template_versions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "agreement_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agreement_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_system_starter: boolean
+          language: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_system_starter?: boolean
+          language?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_system_starter?: boolean
+          language?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      agreement_verified_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          invitation_id: string
+          revision_id: string
+          session_token_hash: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          invitation_id: string
+          revision_id: string
+          session_token_hash: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invitation_id?: string
+          revision_id?: string
+          session_token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agreement_verified_sessions_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "agreement_invitations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agreement_verified_sessions_revision_id_fkey"
+            columns: ["revision_id"]
+            isOneToOne: false
+            referencedRelation: "agreement_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           cancellation_reason: string | null
@@ -3084,6 +3615,15 @@ export type Database = {
       }
     }
     Enums: {
+      agreement_instance_status:
+        | "draft"
+        | "sent"
+        | "opened"
+        | "verified"
+        | "accepted"
+        | "revoked"
+        | "expired"
+      agreement_version_status: "draft" | "active" | "archived"
       app_role: "admin" | "user"
     }
     CompositeTypes: {
@@ -3212,6 +3752,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      agreement_instance_status: [
+        "draft",
+        "sent",
+        "opened",
+        "verified",
+        "accepted",
+        "revoked",
+        "expired",
+      ],
+      agreement_version_status: ["draft", "active", "archived"],
       app_role: ["admin", "user"],
     },
   },
