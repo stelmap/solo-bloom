@@ -1034,6 +1034,14 @@ export default {
   "client.billingTaxId": "Налоговый номер",
   "client.billingCompany": "Название компании",
   "client.billingDetails": "Реквизиты для счёта",
+  "clientDetail.locationLanguage": "Местоположение и язык клиента",
+  "client.country": "Страна",
+  "client.countryPlaceholder": "Выберите или введите страну",
+  "client.thirdPartyPayer": "За клиента платит третья сторона",
+  "client.thirdPartyPayerDesc": "Включите, если сессии клиента оплачивает работодатель, страховая компания или другая организация.",
+  "notification.emailInviteLabel": "Отправлять email-приглашения и запрашивать подтверждение",
+  "notification.emailInviteDesc": "Клиент получает email-приглашение и может подтвердить или отклонить каждую запланированную сессию.",
+  "notification.emailInviteRequiresEmail": "Добавьте email клиента, чтобы включить email-приглашения.",
 
   // Groups
   "groups.title": "Группы",
