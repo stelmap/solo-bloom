@@ -11,9 +11,10 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { FileSignature, Plus, Copy, Link as LinkIcon, Ban, ExternalLink, ChevronDown, ChevronUp, Mail, Eye } from "lucide-react";
+import { FileSignature, Plus, Copy, Link as LinkIcon, Ban, ExternalLink, ChevronDown, ChevronUp, Mail, Eye, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { AgreementStatusTimeline } from "@/components/AgreementStatusTimeline";
+import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 
 type Template = {
   id: string;
