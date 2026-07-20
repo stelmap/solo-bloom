@@ -85,6 +85,8 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
   const [sendingEmail, setSendingEmail] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [previewInst, setPreviewInst] = useState<Instance | null>(null);
+  const [deleteInst, setDeleteInst] = useState<Instance | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
 
   async function load() {
