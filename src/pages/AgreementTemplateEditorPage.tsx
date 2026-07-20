@@ -1,0 +1,383 @@
+import { AppLayout } from "@/components/AppLayout";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "@/hooks/use-toast";
+import { ArrowLeft, Plus, Trash2, Save, Smartphone, Monitor } from "lucide-react";
+
+type Section = { id: string; heading: string; body: string };
+type Control = {
+  id: string;
+  type: "required_checkbox" | "optional_checkbox" | "typed_acknowledgement";
+  label: string;
+  required: boolean;
+};
+type Content = { title: string; sections: Section[] };
+
+const AVAILABLE_VARIABLES = [
+  "{{client.first_name}}",
+  "{{client.last_name}}",
+  "{{client.email}}",
+  "{{therapist.business_name}}",
+  "{{therapist.full_name}}",
+  "{{today}}",
+];
+
+function uid() { return Math.random().toString(36).slice(2, 10); }
+
+export default function AgreementTemplateEditorPage() {
+  const { versionId } = useParams<{ versionId: string }>();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<"draft" | "active" | "archived">("draft");
+  const [versionNumber, setVersionNumber] = useState(1);
+  const [templateId, setTemplateId] = useState<string>("");
+  const [content, setContent] = useState<Content>({ title: "", sections: [] });
+  const [controls, setControls] = useState<Control[]>([]);
+  const [preview, setPreview] = useState<"desktop" | "mobile">("desktop");
+
+  const readOnly = status !== "draft";
+
+  useEffect(() => {
+    (async () => {
+      if (!versionId) return;
+      const { data, error } = await supabase
+        .from("agreement_template_versions")
+        .select("*")
+        .eq("id", versionId)
+        .maybeSingle();
+      if (error || !data) {
+        toast({ title: "Not found", description: error?.message, variant: "destructive" });
+        navigate("/settings/agreements");
+        return;
+      }
+      setStatus(data.status as any);
+      setVersionNumber(data.version_number);
+      setTemplateId(data.template_id);
+      const c = (data.content as any) || {};
+      const rawSections = Array.isArray(c.sections) ? c.sections : [];
+      setContent({
+        title: typeof c.title === "string" ? c.title : "",
+        sections: rawSections.map((s: any) => ({
+          id: s.id ?? uid(),
+          heading: s.heading ?? "",
+          body: s.body ?? "",
+        })),
+      });
+      const rawCtrls = Array.isArray(data.controls) ? (data.controls as any[]) : [];
+      setControls(
+        rawCtrls.map((x: any) => ({
+          id: x.id ?? uid(),
+          type: x.type ?? "required_checkbox",
+          label: x.label ?? "",
+          required: x.required ?? x.type === "required_checkbox",
+        })),
+      );
+      setLoading(false);
+    })();
+  }, [versionId, navigate]);
+
+  const validationErrors = useMemo(() => {
+    const errs: string[] = [];
+    if (!content.title.trim()) errs.push("Title is required.");
+    if (content.sections.length === 0) errs.push("Add at least one section.");
+    content.sections.forEach((s, i) => {
+      if (!s.heading.trim() && !s.body.trim())
+        errs.push(`Section ${i + 1} is empty.`);
+    });
+    controls.forEach((c, i) => {
+      if (!c.label.trim()) errs.push(`Control ${i + 1} needs a label.`);
+    });
+    const requiredAcks = controls.filter(
+      (c) => c.type === "required_checkbox" || c.type === "typed_acknowledgement",
+    );
+    if (requiredAcks.length === 0)
+      errs.push("Add at least one required acknowledgement control.");
+    return errs;
+  }, [content, controls]);
+
+  async function save() {
+    if (!versionId || readOnly) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("agreement_template_versions")
+      .update({ content: content as any, controls: controls as any })
+      .eq("id", versionId);
+    setSaving(false);
+    if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
+    else toast({ title: "Draft saved" });
+  }
+
+  async function activate() {
+    if (!versionId || validationErrors.length) return;
+    await save();
+    await supabase
+      .from("agreement_template_versions")
+      .update({ status: "archived" })
+      .eq("template_id", templateId)
+      .eq("status", "active");
+    const { error } = await supabase
+      .from("agreement_template_versions")
+      .update({ status: "active", activated_at: new Date().toISOString() })
+      .eq("id", versionId);
+    if (error) toast({ title: "Activate failed", description: error.message, variant: "destructive" });
+    else {
+      toast({ title: `Version ${versionNumber} activated` });
+      navigate("/settings/agreements");
+    }
+  }
+
+  function addSection() {
+    setContent((c) => ({ ...c, sections: [...c.sections, { id: uid(), heading: "", body: "" }] }));
+  }
+  function updateSection(id: string, patch: Partial<Section>) {
+    setContent((c) => ({ ...c, sections: c.sections.map((s) => (s.id === id ? { ...s, ...patch } : s)) }));
+  }
+  function removeSection(id: string) {
+    setContent((c) => ({ ...c, sections: c.sections.filter((s) => s.id !== id) }));
+  }
+
+  function addControl() {
+    setControls((cs) => [
+      ...cs,
+      { id: uid(), type: "required_checkbox", label: "", required: true },
+    ]);
+  }
+  function updateControl(id: string, patch: Partial<Control>) {
+    setControls((cs) => cs.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+  }
+  function removeControl(id: string) {
+    setControls((cs) => cs.filter((c) => c.id !== id));
+  }
+
+  if (loading) return <AppLayout><div className="p-6 text-sm text-muted-foreground">Loading…</div></AppLayout>;
+
+  return (
+    <AppLayout>
+      <div className="space-y-6 max-w-6xl">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/settings/agreements")}>
+              <ArrowLeft className="w-4 h-4 mr-1" /> Back
+            </Button>
+            <h1 className="text-2xl font-bold text-foreground">
+              Version {versionNumber}
+            </h1>
+            <Badge variant={status === "active" ? "default" : status === "draft" ? "secondary" : "outline"}>
+              {status}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setPreview(preview === "desktop" ? "mobile" : "desktop")}>
+              {preview === "desktop" ? <Smartphone className="w-4 h-4 mr-1" /> : <Monitor className="w-4 h-4 mr-1" />}
+              {preview === "desktop" ? "Mobile preview" : "Desktop preview"}
+            </Button>
+            {!readOnly && (
+              <>
+                <Button variant="outline" onClick={save} disabled={saving}>
+                  <Save className="w-4 h-4 mr-1" /> Save draft
+                </Button>
+                <Button onClick={activate} disabled={validationErrors.length > 0}>
+                  Activate
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {readOnly && (
+          <div className="text-sm text-muted-foreground">
+            This version is {status} and cannot be edited. Create a new draft from the templates list to make changes.
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Editor */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader><CardTitle className="text-base">Content</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>Title</Label>
+                  <Input
+                    value={content.title}
+                    disabled={readOnly}
+                    onChange={(e) => setContent({ ...content, title: e.target.value })}
+                  />
+                </div>
+                {content.sections.map((s, idx) => (
+                  <div key={s.id} className="rounded border border-border p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Section {idx + 1}</span>
+                      {!readOnly && (
+                        <Button variant="ghost" size="icon" onClick={() => removeSection(s.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <Input
+                      placeholder="Heading"
+                      value={s.heading}
+                      disabled={readOnly}
+                      onChange={(e) => updateSection(s.id, { heading: e.target.value })}
+                    />
+                    <Textarea
+                      placeholder="Body text. Use variables like {{client.first_name}}."
+                      rows={5}
+                      value={s.body}
+                      disabled={readOnly}
+                      onChange={(e) => updateSection(s.id, { body: e.target.value })}
+                    />
+                  </div>
+                ))}
+                {!readOnly && (
+                  <Button variant="outline" size="sm" onClick={addSection}>
+                    <Plus className="w-4 h-4 mr-1" /> Add section
+                  </Button>
+                )}
+                <div className="text-xs text-muted-foreground">
+                  <span className="font-medium">Variables:</span>{" "}
+                  {AVAILABLE_VARIABLES.map((v) => (
+                    <code key={v} className="mr-1 px-1 py-0.5 bg-muted rounded">{v}</code>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader><CardTitle className="text-base">Client controls</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                {controls.map((c, i) => (
+                  <div key={c.id} className="rounded border border-border p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Control {i + 1}</span>
+                      {!readOnly && (
+                        <Button variant="ghost" size="icon" onClick={() => removeControl(c.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <Select
+                      value={c.type}
+                      disabled={readOnly}
+                      onValueChange={(val: any) =>
+                        updateControl(c.id, {
+                          type: val,
+                          required: val === "optional_checkbox" ? false : true,
+                        })
+                      }
+                    >
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="required_checkbox">Required checkbox</SelectItem>
+                        <SelectItem value="optional_checkbox">Optional checkbox</SelectItem>
+                        <SelectItem value="typed_acknowledgement">Typed acknowledgement</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Textarea
+                      placeholder="Label shown to the client"
+                      rows={2}
+                      value={c.label}
+                      disabled={readOnly}
+                      onChange={(e) => updateControl(c.id, { label: e.target.value })}
+                    />
+                    {c.type === "optional_checkbox" && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Switch
+                          checked={c.required}
+                          disabled={readOnly}
+                          onCheckedChange={(v) => updateControl(c.id, { required: v })}
+                        />
+                        <span className="text-muted-foreground">Mark as required</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {!readOnly && (
+                  <Button variant="outline" size="sm" onClick={addControl}>
+                    <Plus className="w-4 h-4 mr-1" /> Add control
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+
+            {!readOnly && validationErrors.length > 0 && (
+              <Card>
+                <CardHeader><CardTitle className="text-base text-destructive">To activate, fix:</CardTitle></CardHeader>
+                <CardContent>
+                  <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1">
+                    {validationErrors.map((e) => <li key={e}>{e}</li>)}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Preview */}
+          <div>
+            <Card>
+              <CardHeader><CardTitle className="text-base">Preview ({preview})</CardTitle></CardHeader>
+              <CardContent>
+                <div
+                  className={
+                    "mx-auto border border-border rounded bg-background p-4 overflow-auto " +
+                    (preview === "mobile" ? "max-w-[380px]" : "w-full")
+                  }
+                  style={{ minHeight: 400 }}
+                >
+                  <h2 className="text-xl font-semibold mb-3">{content.title || "Untitled agreement"}</h2>
+                  {content.sections.map((s) => (
+                    <section key={s.id} className="mb-4">
+                      {s.heading && <h3 className="font-medium mb-1">{s.heading}</h3>}
+                      <p className="text-sm text-foreground whitespace-pre-wrap">{s.body}</p>
+                    </section>
+                  ))}
+                  {controls.length > 0 && (
+                    <div className="mt-6 border-t border-border pt-4 space-y-3">
+                      {controls.map((c) => (
+                        <label key={c.id} className="flex items-start gap-2 text-sm">
+                          {c.type === "typed_acknowledgement" ? (
+                            <div className="w-full">
+                              <div className="mb-1">
+                                {c.label}
+                                {c.required && <span className="text-destructive"> *</span>}
+                              </div>
+                              <Input placeholder="Type to acknowledge" disabled />
+                            </div>
+                          ) : (
+                            <>
+                              <input type="checkbox" disabled className="mt-1" />
+                              <span>
+                                {c.label}
+                                {c.required && <span className="text-destructive"> *</span>}
+                              </span>
+                            </>
+                          )}
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </AppLayout>
+  );
+}

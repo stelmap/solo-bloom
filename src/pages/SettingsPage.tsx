@@ -6,6 +6,10 @@ import { ConnectedAccountsSection } from "@/components/ConnectedAccountsSection"
 import { SubscriptionSection } from "@/components/SubscriptionSection";
 import { PrivacySection } from "@/components/settings/PrivacySection";
 import { MfaAndTimeoutSection } from "@/components/settings/MfaAndTimeoutSection";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { FileText, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import { track } from "@/lib/analytics";
 
@@ -28,6 +32,7 @@ export default function SettingsPage() {
             <TabsTrigger value="notifications">{t("settings.notifications")}</TabsTrigger>
             <TabsTrigger value="connected">{t("settings.connectedAccounts")}</TabsTrigger>
             <TabsTrigger value="subscription">{t("settings.subscriptionTab")}</TabsTrigger>
+            <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="privacy">{t("settings.privacyAndData")}</TabsTrigger>
           </TabsList>
 
@@ -42,6 +47,26 @@ export default function SettingsPage() {
           <TabsContent value="notifications"><NotificationsSection /></TabsContent>
           <TabsContent value="connected"><ConnectedAccountsSection /></TabsContent>
           <TabsContent value="subscription"><SubscriptionSection /></TabsContent>
+          <TabsContent value="documents">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileText className="w-4 h-4" /> Information agreements
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex items-center justify-between gap-4 flex-wrap">
+                <p className="text-sm text-muted-foreground max-w-xl">
+                  Create reusable agreement templates you can send to clients. Each template
+                  can have one active version used when generating new client agreements.
+                </p>
+                <Button asChild>
+                  <Link to="/settings/agreements">
+                    Manage templates <ArrowRight className="w-4 h-4 ml-1" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
           <TabsContent value="privacy"><PrivacySection /></TabsContent>
         </Tabs>
       </div>
