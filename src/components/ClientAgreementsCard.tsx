@@ -34,6 +34,8 @@ type Instance = {
   updated_at: string;
   template_version_id: string;
   current_revision_id: string | null;
+  content: any;
+  controls: any;
 };
 type Invitation = {
   id: string;
