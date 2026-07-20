@@ -334,44 +334,136 @@ export default function AgreementTemplateEditorPage() {
                   </div>
                 </div>
                 {content.sections.map((s, idx) => (
-                  <div key={s.id} className="rounded border border-border p-3 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Section {idx + 1}</span>
-                      {!readOnly && (
-                        <Button variant="ghost" size="icon" onClick={() => removeSection(s.id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
+                  <div key={s.id}>
+                    <div className="rounded border border-border p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Section {idx + 1}</span>
+                        {!readOnly && (
+                          <Button variant="ghost" size="icon" onClick={() => removeSection(s.id)}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                      <div className="flex gap-1">
+                        <Input
+                          placeholder="Heading"
+                          value={s.heading}
+                          disabled={readOnly}
+                          onChange={(e) => updateSection(s.id, { heading: e.target.value })}
+                        />
+                        <ExpandBtn onClick={() => openExpand({
+                          title: `Section ${idx + 1} — Heading`,
+                          value: s.heading,
+                          multiline: false,
+                          onSave: (v) => updateSection(s.id, { heading: v }),
+                        })} />
+                      </div>
+                      <div className="flex gap-1 items-start">
+                        <Textarea
+                          placeholder="Body text. Use variables like {{client.first_name}}."
+                          rows={5}
+                          value={s.body}
+                          disabled={readOnly}
+                          onChange={(e) => updateSection(s.id, { body: e.target.value })}
+                        />
+                        <ExpandBtn onClick={() => openExpand({
+                          title: `Section ${idx + 1} — Body`,
+                          value: s.body,
+                          multiline: true,
+                          onSave: (v) => updateSection(s.id, { body: v }),
+                        })} />
+                      </div>
                     </div>
-                    <div className="flex gap-1">
-                      <Input
-                        placeholder="Heading"
-                        value={s.heading}
-                        disabled={readOnly}
-                        onChange={(e) => updateSection(s.id, { heading: e.target.value })}
-                      />
-                      <ExpandBtn onClick={() => openExpand({
-                        title: `Section ${idx + 1} — Heading`,
-                        value: s.heading,
-                        multiline: false,
-                        onSave: (v) => updateSection(s.id, { heading: v }),
-                      })} />
-                    </div>
-                    <div className="flex gap-1 items-start">
-                      <Textarea
-                        placeholder="Body text. Use variables like {{client.first_name}}."
-                        rows={5}
-                        value={s.body}
-                        disabled={readOnly}
-                        onChange={(e) => updateSection(s.id, { body: e.target.value })}
-                      />
-                      <ExpandBtn onClick={() => openExpand({
-                        title: `Section ${idx + 1} — Body`,
-                        value: s.body,
-                        multiline: true,
-                        onSave: (v) => updateSection(s.id, { body: v }),
-                      })} />
-                    </div>
+                    {idx === 1 && (
+                      <Card className="mt-6">
+                        <CardHeader><CardTitle className="text-base">Session formats</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                          <p className="text-xs text-muted-foreground">
+                            Define the session durations, cycle length and frequency offered under this agreement. They render as a table in the signed document.
+                          </p>
+                          {(content.sessionFormats ?? []).map((f, idx) => (
+                            <div key={f.id} className="rounded border border-border p-3 space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-muted-foreground">Format {idx + 1}</span>
+                                {!readOnly && (
+                                  <Button variant="ghost" size="icon" onClick={() => removeFormat(f.id)}>
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                )}
+                              </div>
+                              <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                                <div className="sm:col-span-2">
+                                  <Label className="text-xs">Label</Label>
+                                  <Input
+                                    placeholder="Individual consultation"
+                                    value={f.label}
+                                    disabled={readOnly}
+                                    onChange={(e) => updateFormat(f.id, { label: e.target.value })}
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Duration (min)</Label>
+                                  <Input
+                                    type="number"
+                                    min={5}
+                                    step={5}
+                                    value={f.durationMinutes}
+                                    disabled={readOnly}
+                                    onChange={(e) => updateFormat(f.id, { durationMinutes: e.target.value === "" ? "" : Number(e.target.value) })}
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Price</Label>
+                                  <div className="flex gap-1">
+                                    <Input
+                                      type="number"
+                                      min={0}
+                                      step={1}
+                                      value={f.price}
+                                      disabled={readOnly}
+                                      onChange={(e) => updateFormat(f.id, { price: e.target.value === "" ? "" : Number(e.target.value) })}
+                                    />
+                                    <Input
+                                      placeholder="EUR"
+                                      className="w-20"
+                                      value={f.currency}
+                                      disabled={readOnly}
+                                      onChange={(e) => updateFormat(f.id, { currency: e.target.value })}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          {!readOnly && (
+                            <Button variant="outline" size="sm" onClick={addFormat}>
+                              <Plus className="w-4 h-4 mr-1" /> Add format
+                            </Button>
+                          )}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
+                            <div>
+                              <Label className="text-xs">Cycle length (sessions)</Label>
+                              <Input
+                                type="number"
+                                min={1}
+                                value={content.cycleLength ?? ""}
+                                disabled={readOnly}
+                                onChange={(e) => setContent({ ...content, cycleLength: e.target.value === "" ? "" : Number(e.target.value) })}
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs">Frequency</Label>
+                              <Input
+                                placeholder="e.g. 1 session per week"
+                                value={content.frequency ?? ""}
+                                disabled={readOnly}
+                                onChange={(e) => setContent({ ...content, frequency: e.target.value })}
+                              />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
                   </div>
                 ))}
                 {!readOnly && (
@@ -388,94 +480,6 @@ export default function AgreementTemplateEditorPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader><CardTitle className="text-base">Session formats</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-xs text-muted-foreground">
-                  Define the session durations, cycle length and frequency offered under this agreement. They render as a table in the signed document.
-                </p>
-                {(content.sessionFormats ?? []).map((f, idx) => (
-                  <div key={f.id} className="rounded border border-border p-3 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Format {idx + 1}</span>
-                      {!readOnly && (
-                        <Button variant="ghost" size="icon" onClick={() => removeFormat(f.id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-                      <div className="sm:col-span-2">
-                        <Label className="text-xs">Label</Label>
-                        <Input
-                          placeholder="Individual consultation"
-                          value={f.label}
-                          disabled={readOnly}
-                          onChange={(e) => updateFormat(f.id, { label: e.target.value })}
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-xs">Duration (min)</Label>
-                        <Input
-                          type="number"
-                          min={5}
-                          step={5}
-                          value={f.durationMinutes}
-                          disabled={readOnly}
-                          onChange={(e) => updateFormat(f.id, { durationMinutes: e.target.value === "" ? "" : Number(e.target.value) })}
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-xs">Price</Label>
-                        <div className="flex gap-1">
-                          <Input
-                            type="number"
-                            min={0}
-                            step={1}
-                            value={f.price}
-                            disabled={readOnly}
-                            onChange={(e) => updateFormat(f.id, { price: e.target.value === "" ? "" : Number(e.target.value) })}
-                          />
-                          <Input
-                            placeholder="EUR"
-                            className="w-20"
-                            value={f.currency}
-                            disabled={readOnly}
-                            onChange={(e) => updateFormat(f.id, { currency: e.target.value })}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {!readOnly && (
-                  <Button variant="outline" size="sm" onClick={addFormat}>
-                    <Plus className="w-4 h-4 mr-1" /> Add format
-                  </Button>
-                )}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
-                  <div>
-                    <Label className="text-xs">Cycle length (sessions)</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={content.cycleLength ?? ""}
-                      disabled={readOnly}
-                      onChange={(e) => setContent({ ...content, cycleLength: e.target.value === "" ? "" : Number(e.target.value) })}
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Frequency</Label>
-                    <Input
-                      placeholder="e.g. 1 session per week"
-                      value={content.frequency ?? ""}
-                      disabled={readOnly}
-                      onChange={(e) => setContent({ ...content, frequency: e.target.value })}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
 
 
