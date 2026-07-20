@@ -11,7 +11,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { FileSignature, Plus, Copy, Link as LinkIcon, Ban, ExternalLink, ChevronDown, ChevronUp, Mail, Eye, Trash2 } from "lucide-react";
+import { FileSignature, Plus, Copy, Link as LinkIcon, Ban, ExternalLink, ChevronDown, ChevronUp, Mail, Eye, Trash2, Pencil } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { AgreementStatusTimeline } from "@/components/AgreementStatusTimeline";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
