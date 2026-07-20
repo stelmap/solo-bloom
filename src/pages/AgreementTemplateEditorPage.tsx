@@ -596,6 +596,46 @@ export default function AgreementTemplateEditorPage() {
           </div>
         </div>
       </div>
+
+      <Dialog open={!!expand} onOpenChange={(o) => !o && setExpand(null)}>
+        <DialogContent className="max-w-4xl w-[95vw]">
+          <DialogHeader>
+            <DialogTitle>{expand?.title}</DialogTitle>
+          </DialogHeader>
+          {expand?.multiline ? (
+            <Textarea
+              value={expandDraft}
+              onChange={(e) => setExpandDraft(e.target.value)}
+              className="min-h-[60vh] font-mono text-sm"
+              autoFocus
+            />
+          ) : (
+            <Input
+              value={expandDraft}
+              onChange={(e) => setExpandDraft(e.target.value)}
+              className="text-base"
+              autoFocus
+            />
+          )}
+          <div className="text-xs text-muted-foreground">
+            Variables: {AVAILABLE_VARIABLES.map((v) => (
+              <code key={v} className="mr-1 px-1 py-0.5 bg-muted rounded">{v}</code>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setExpand(null)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                expand?.onSave(expandDraft);
+                setExpand(null);
+              }}
+              disabled={readOnly}
+            >
+              Apply
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
