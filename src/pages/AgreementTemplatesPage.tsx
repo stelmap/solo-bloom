@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Plus, FileText, Archive, CheckCircle2, Pencil, Sparkles } from "lucide-react";
+import { Plus, FileText, Archive, CheckCircle2, Pencil, Sparkles, Check, X } from "lucide-react";
 import {
   STARTER_TEMPLATE_NAME,
   STARTER_TEMPLATE_DESCRIPTION,
@@ -44,7 +44,27 @@ export default function AgreementTemplatesPage() {
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
   const [seeding, setSeeding] = useState(false);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
   const { t } = useLanguage();
+
+  async function renameTemplate(tpl: Template) {
+    const name = renameValue.trim();
+    if (!name || name === tpl.name) {
+      setRenamingId(null);
+      return;
+    }
+    const { error } = await supabase
+      .from("agreement_templates")
+      .update({ name })
+      .eq("id", tpl.id);
+    if (error) {
+      toast({ title: "Rename failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    setRenamingId(null);
+    setTemplates((prev) => prev.map((x) => (x.id === tpl.id ? { ...x, name } : x)));
+  }
 
   async function load() {
     if (!user) return;
@@ -256,10 +276,44 @@ export default function AgreementTemplatesPage() {
             return (
               <Card key={tpl.id}>
                 <CardHeader className="flex-row items-center justify-between gap-4 space-y-0">
-                  <div>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <FileText className="w-4 h-4" /> {tpl.name}
-                    </CardTitle>
+                  <div className="min-w-0 flex-1">
+                    {renamingId === tpl.id ? (
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 shrink-0" />
+                        <Input
+                          autoFocus
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") renameTemplate(tpl);
+                            if (e.key === "Escape") setRenamingId(null);
+                          }}
+                          className="h-8"
+                        />
+                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => renameTemplate(tpl)}>
+                          <Check className="w-4 h-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setRenamingId(null)}>
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <FileText className="w-4 h-4" /> {tpl.name}
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7"
+                          onClick={() => {
+                            setRenameValue(tpl.name);
+                            setRenamingId(tpl.id);
+                          }}
+                          aria-label="Rename template"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </Button>
+                      </CardTitle>
+                    )}
                     <div className="text-xs text-muted-foreground mt-1">
                       Language: {tpl.language.toUpperCase()} · Created {new Date(tpl.created_at).toLocaleDateString()}
                     </div>
