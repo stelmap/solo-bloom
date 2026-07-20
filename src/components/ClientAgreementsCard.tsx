@@ -371,13 +371,41 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
             <Button variant="outline" size="sm" onClick={() => window.open(linkDialog.url, "_blank")}>
               <ExternalLink className="h-3.5 w-3.5 mr-1" /> {t("agreements.link.open")}
             </Button>
-            <Button variant="outline" size="sm" onClick={() => {
-              const subject = encodeURIComponent(t("agreements.link.emailSubject"));
-              const body = encodeURIComponent(t("agreements.link.emailBody", { name: clientName, url: linkDialog.url }));
-              const to = clientEmail ? encodeURIComponent(clientEmail) : "";
-              window.open(`mailto:${to}?subject=${subject}&body=${body}`, "_self");
+            <Button variant="outline" size="sm" disabled={!clientEmail || sendingEmail} onClick={async () => {
+              if (!clientEmail) return;
+              setSendingEmail(true);
+              try {
+                const { data: prof } = await supabase
+                  .from("profiles")
+                  .select("full_name, business_name, language")
+                  .eq("id", (await supabase.auth.getUser()).data.user?.id ?? "")
+                  .maybeSingle();
+                const specialistName =
+                  (prof as any)?.business_name ||
+                  (prof as any)?.full_name ||
+                  t("agreements.link.defaultSpecialist");
+                const { error } = await supabase.functions.invoke("send-transactional-email", {
+                  body: {
+                    templateName: "agreement-invitation",
+                    recipientEmail: clientEmail,
+                    idempotencyKey: `agreement-invite-${linkDialog.url.split("/").pop()}`,
+                    templateData: {
+                      clientName,
+                      specialistName,
+                      agreementUrl: linkDialog.url,
+                      language: (prof as any)?.language || "en",
+                    },
+                  },
+                });
+                if (error) throw error;
+                toast({ title: t("agreements.link.emailSent") });
+              } catch (e: any) {
+                toast({ title: t("agreements.link.emailFailed"), description: e?.message, variant: "destructive" });
+              } finally {
+                setSendingEmail(false);
+              }
             }}>
-              <Mail className="h-3.5 w-3.5 mr-1" /> {t("agreements.link.email")}
+              <Mail className="h-3.5 w-3.5 mr-1" /> {sendingEmail ? t("common.loading") : t("agreements.link.email")}
             </Button>
             <Button size="sm" onClick={async () => {
               try { await navigator.clipboard.writeText(linkDialog.url); toast({ title: t("agreements.link.copied") }); } catch {}
