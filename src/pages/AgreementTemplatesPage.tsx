@@ -157,6 +157,26 @@ export default function AgreementTemplatesPage() {
     if (!user) return;
     setSeeding(true);
     try {
+      // Prevent duplicates: reuse existing system starter template if present.
+      const { data: existing } = await supabase
+        .from("agreement_templates")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("is_system_starter", true)
+        .limit(1)
+        .maybeSingle();
+      if (existing) {
+        const { data: existingVersion } = await supabase
+          .from("agreement_template_versions")
+          .select("id")
+          .eq("template_id", existing.id)
+          .order("version_number", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        toast({ title: t("agreements.starter.done"), description: "Starter template already exists — opening it." });
+        if (existingVersion) navigate(`/settings/agreements/version/${existingVersion.id}`);
+        return;
+      }
       const { data: tpl, error } = await supabase
         .from("agreement_templates")
         .insert({
@@ -190,6 +210,7 @@ export default function AgreementTemplatesPage() {
       setSeeding(false);
     }
   }
+
 
   return (
     <AppLayout>
