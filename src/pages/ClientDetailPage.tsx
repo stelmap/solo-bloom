@@ -85,7 +85,6 @@ export default function ClientDetailPage() {
   const { data: clientSupervisions = [] } = useSupervisions(id);
 
   const [editOpen, setEditOpen] = useState(false);
-  const [thirdPartyPayer, setThirdPartyPayer] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [auditOpen, setAuditOpen] = useState(false);
@@ -332,9 +331,6 @@ export default function ClientDetailPage() {
       billing_company_name: (client as any).billing_company_name || "",
       communication_language: (CLIENT_LANGUAGES as readonly string[]).includes((client as any).communication_language) ? (client as any).communication_language as ClientLanguage : "",
     });
-    setThirdPartyPayer(
-      !!((client as any).billing_company_name || (client as any).billing_address || (client as any).billing_tax_id),
-    );
     setEditOpen(true);
   };
 
@@ -954,84 +950,83 @@ export default function ClientDetailPage() {
           <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
             <DialogTitle>{t("clientDetail.editClient")}</DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-5 space-y-6">
-            {/* 1. Client Profile */}
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+            {/* Contact info */}
             <section className="space-y-4">
               <h4 className="text-sm font-semibold text-foreground">{t("clientDetail.profile")}</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2 sm:col-span-2"><Label>{t("common.name")} *</Label><Input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>{t("common.phone")}</Label><Input value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>{t("common.email")}</Label><Input type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} /></div>
+                
                 <div className="space-y-2 sm:col-span-2"><Label>{t("common.generalNotes")}</Label><Textarea rows={3} value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} /></div>
               </div>
             </section>
 
-            {/* 2. Client Location and Language */}
-            <section className="border-t border-border pt-5 space-y-4">
-              <h4 className="text-sm font-semibold text-foreground">{t("clientDetail.locationLanguage")}</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
-                <div className="space-y-1.5">
-                  <Label htmlFor="client-country">{t("client.country")}</Label>
-                  <Input
-                    id="client-country"
-                    value={editForm.billing_country}
-                    onChange={e => setEditForm(f => ({ ...f, billing_country: e.target.value }))}
-                    placeholder={t("client.countryPlaceholder")}
-                  />
-                </div>
-                <ClientLanguageSelect
-                  id="client-language"
-                  value={editForm.communication_language}
-                  onChange={(v) => setEditForm(f => ({ ...f, communication_language: v }))}
-                  required
-                />
-              </div>
-            </section>
-
-            {/* 3. Billing Details */}
             <section className="border-t border-border pt-5 space-y-4">
               <h4 className="text-sm font-semibold flex items-center gap-2"><FileText className="h-4 w-4" /> {t("client.billingDetails")}</h4>
-              <div className="flex items-start justify-between gap-4 rounded-lg border border-border p-3">
-                <div className="min-w-0">
-                  <Label htmlFor="third-party-payer">{t("client.thirdPartyPayer")}</Label>
-                  <p className="text-xs text-muted-foreground mt-1">{t("client.thirdPartyPayerDesc")}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2"><Label>{t("client.billingCompany")}</Label><Input value={editForm.billing_company_name} onChange={e => setEditForm(f => ({ ...f, billing_company_name: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>{t("client.billingTaxId")}</Label><Input value={editForm.billing_tax_id} onChange={e => setEditForm(f => ({ ...f, billing_tax_id: e.target.value }))} /></div>
+                <div className="space-y-2 sm:col-span-2"><Label>{t("client.billingAddress")}</Label><Input value={editForm.billing_address} onChange={e => setEditForm(f => ({ ...f, billing_address: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>{t("client.billingCountry")}</Label><Input value={editForm.billing_country} onChange={e => setEditForm(f => ({ ...f, billing_country: e.target.value }))} /></div>
+                <div className="sm:col-span-2">
+                  <ClientLanguageSelect
+                    value={editForm.communication_language}
+                    onChange={(v) => setEditForm(f => ({ ...f, communication_language: v }))}
+                    required
+                  />
                 </div>
-                <Switch
-                  id="third-party-payer"
-                  checked={thirdPartyPayer}
-                  onCheckedChange={setThirdPartyPayer}
-                />
               </div>
-              {thirdPartyPayer && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2"><Label>{t("client.billingCompany")} *</Label><Input value={editForm.billing_company_name} onChange={e => setEditForm(f => ({ ...f, billing_company_name: e.target.value }))} /></div>
-                  <div className="space-y-2"><Label>{t("client.billingTaxId")}</Label><Input value={editForm.billing_tax_id} onChange={e => setEditForm(f => ({ ...f, billing_tax_id: e.target.value }))} /></div>
-                  <div className="space-y-2 sm:col-span-2"><Label>{t("client.billingAddress")} *</Label><Input value={editForm.billing_address} onChange={e => setEditForm(f => ({ ...f, billing_address: e.target.value }))} /></div>
-                </div>
-              )}
             </section>
 
-            {/* 4. Notification Settings */}
             <section className="border-t border-border pt-5 space-y-4">
               <h4 className="text-sm font-semibold flex items-center gap-2"><Bell className="h-4 w-4" /> {t("notification.title")}</h4>
-              <div className="flex items-start justify-between gap-4 rounded-lg border border-border p-3">
-                <div className="min-w-0">
-                  <Label htmlFor="email-invite">{t("notification.emailInviteLabel")}</Label>
-                  <p className="text-xs text-muted-foreground mt-1">{t("notification.emailInviteDesc")}</p>
-                  {!editForm.email.trim() && (
-                    <p className="text-xs text-destructive mt-1">{t("notification.emailInviteRequiresEmail")}</p>
-                  )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                <div className="space-y-2">
+                  <Label>{t("notification.channel")}</Label>
+                  <Select value={editForm.notification_preference} onValueChange={v => setEditForm(f => ({ ...f, notification_preference: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="no_reminder">{t("notification.noReminder")}</SelectItem>
+                      <SelectItem value="email_only">{t("notification.emailOnly")}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <Switch
-                  id="email-invite"
-                  checked={editForm.confirmation_required && !!editForm.email.trim()}
-                  disabled={!editForm.email.trim()}
-                  onCheckedChange={v => setEditForm(f => ({
-                    ...f,
-                    confirmation_required: v,
-                    notification_preference: v ? "email_only" : "no_reminder",
-                  }))}
-                />
+                <div className="flex items-center justify-between gap-4 rounded-lg border border-border p-3">
+                  <div className="min-w-0">
+                    <Label>{t("notification.confirmationRequired")}</Label>
+                    <p className="text-xs text-muted-foreground mt-1">{t("notification.confirmationRequiredDesc")}</p>
+                  </div>
+                  <Switch checked={editForm.confirmation_required} onCheckedChange={v => setEditForm(f => ({ ...f, confirmation_required: v }))} />
+                </div>
+              </div>
+            </section>
+
+            <section className="border-t border-border pt-5 space-y-4">
+              <h4 className="text-sm font-semibold flex items-center gap-2"><DollarSign className="h-4 w-4" /> {t("pricing.title")}</h4>
+              <div className="space-y-2">
+                <Label>{t("pricing.mode")}</Label>
+                <RadioGroup value={editForm.pricing_mode} onValueChange={v => setEditForm(f => ({ ...f, pricing_mode: v }))} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="flex items-start gap-2 rounded-lg border border-border p-3">
+                    <RadioGroupItem value="fixed" id="pricing-fixed" className="mt-0.5" />
+                    <Label htmlFor="pricing-fixed" className="font-normal cursor-pointer">
+                      {t("pricing.fixed")}
+                      <span className="block text-xs text-muted-foreground mt-0.5">{t("pricing.fixedDesc")}</span>
+                    </Label>
+                  </div>
+                  <div className="flex items-start gap-2 rounded-lg border border-border p-3">
+                    <RadioGroupItem value="dynamic" id="pricing-dynamic" className="mt-0.5" />
+                    <Label htmlFor="pricing-dynamic" className="font-normal cursor-pointer">
+                      {t("pricing.dynamic")}
+                      <span className="block text-xs text-muted-foreground mt-0.5">{t("pricing.dynamicDesc")}</span>
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="space-y-2 max-w-xs">
+                <Label>{t("pricing.basePrice")}</Label>
+                <Input type="number" min="0" step="1" placeholder="0" value={editForm.base_price} onChange={e => setEditForm(f => ({ ...f, base_price: e.target.value }))} />
               </div>
             </section>
           </div>
