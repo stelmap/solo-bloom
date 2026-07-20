@@ -222,6 +222,7 @@ export default function PublicAgreementPage() {
       const payload = data as any;
       if (payload?.error) throw new Error(payload.error);
       setAccepted({ at: payload.accepted_at, hash: payload.evidence_hash });
+      clearDraft(token);
       setStep("done");
     } catch (err: any) {
       toast({ title: "Could not sign", description: errorLabel(err.message), variant: "destructive" });
