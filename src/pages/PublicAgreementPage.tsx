@@ -494,51 +494,21 @@ export default function PublicAgreementPage() {
         <h1 className="text-2xl font-bold text-foreground">{interpolate(access.content.title, firstName, lastName)}</h1>
         {access.therapist_name && <p className="text-sm text-muted-foreground">{t("pa.from")} {access.therapist_name}</p>}
         <div className="mt-6 space-y-6">
-          {access.content.sections.map((s) => (
-            <section key={s.id}>
-              <h2 className="text-lg font-semibold text-foreground">{interpolate(s.heading, firstName, lastName)}</h2>
-              <div className="text-sm text-foreground whitespace-pre-wrap">{interpolate(s.body, firstName, lastName)}</div>
-            </section>
-          ))}
-          {((access.content.sessionFormats?.length ?? 0) > 0 || access.content.cycleLength || access.content.frequency) && (
-            <section>
-              <h2 className="text-lg font-semibold text-foreground">{t("af.title")}</h2>
-              {(access.content.sessionFormats ?? []).length > 0 && (() => {
-                const formats = access.content.sessionFormats ?? [];
-                const anyPrice = formats.some((f) => f.price !== "" && f.price != null);
-                return (
-                  <table className="w-full text-sm border border-border rounded overflow-hidden my-2">
-                    <thead className="bg-muted/50">
-                      <tr>
-                        <th className="text-left p-2">{t("af.label")}</th>
-                        <th className="text-left p-2">{t("af.duration")}</th>
-                        {anyPrice && <th className="text-left p-2">{t("af.price")}</th>}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {formats.map((f) => (
-                        <tr key={f.id} className="border-t border-border">
-                          <td className="p-2">{f.label || "—"}</td>
-                          <td className="p-2">{f.durationMinutes ? `${f.durationMinutes} ${t("common.min")}` : "—"}</td>
-                          {anyPrice && (
-                            <td className="p-2">{f.price !== "" && f.price != null ? `${f.price} ${f.currency || ""}`.trim() : ""}</td>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                );
-              })()}
-              {access.content.cycleLength ? (
-                <p className="text-sm text-foreground">{t("af.cycleLine", { n: String(access.content.cycleLength) })}</p>
-              ) : null}
-              {access.content.frequency ? (
-                <p className="text-sm text-foreground">{t("af.frequencyLine", { v: access.content.frequency })}</p>
-              ) : null}
-            </section>
-          )}
+          {(() => {
+            const sections = stripLegacySessionFormatsSection(access.content.sections);
+            const hasServices = sections.some((s) => s.id === "services");
+            return sections.map((s, idx) => (
+              <section key={s.id}>
+                <h2 className="text-lg font-semibold text-foreground">{interpolate(s.heading, firstName, lastName)}</h2>
+                <div className="text-sm text-foreground whitespace-pre-wrap">{interpolate(s.body, firstName, lastName)}</div>
+                {s.id === "services" && <SessionFormatsBlock data={access.content} />}
+                {!hasServices && idx === sections.length - 1 && <SessionFormatsBlock data={access.content} />}
+              </section>
+            ));
+          })()}
         </div>
       </article>
+
 
       <div className="mt-8 border-t border-border pt-6 space-y-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
