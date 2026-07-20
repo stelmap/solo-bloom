@@ -90,7 +90,7 @@ export function useCreateClient() {
   const assertCanWrite = useDemoWriteGuard();
   const { atClientLimit, planCode, limit } = useFreeStarterMode();
   return useMutation({
-    mutationFn: async (client: { name: string; phone?: string; email?: string; notes?: string; telegram?: string }) => {
+    mutationFn: async (client: { name: string; phone?: string; email?: string; notes?: string; telegram?: string; communication_language?: string }) => {
       assertCanWrite();
       if (atClientLimit) {
         throw new Error(planCode === "free" ? FREE_STARTER_LIMIT_ERROR : `${PLAN_CLIENT_LIMIT_ERROR}:${limit ?? ""}`);
@@ -113,7 +113,7 @@ export function useUpdateClient() {
   const qc = useQueryClient();
   const assertCanWrite = useDemoWriteGuard();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; phone?: string; email?: string; notes?: string; telegram?: string; notification_preference?: string; confirmation_required?: boolean; pricing_mode?: string; base_price?: number | null }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; name?: string; phone?: string; email?: string; notes?: string; telegram?: string; notification_preference?: string; confirmation_required?: boolean; pricing_mode?: string; base_price?: number | null; communication_language?: string | null }) => {
       assertCanWrite();
       const { error } = await supabase.from("clients").update(updates as any).eq("id", id);
       if (error) throw error;
