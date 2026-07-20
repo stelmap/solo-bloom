@@ -31,9 +31,11 @@ type AccessResponse = {
     title: string;
     sections: Section[];
     sessionFormats?: Array<{ id: string; label: string; durationMinutes: number | ""; price: number | ""; currency: string }>;
+    cycleMode?: "specified" | "indefinite" | "hidden";
     cycleLength?: number | "";
     frequency?: string;
   };
+
   controls: Control[];
 };
 
