@@ -26,7 +26,20 @@ type Control = {
   label: string;
   required: boolean;
 };
-type Content = { title: string; sections: Section[] };
+type SessionFormat = {
+  id: string;
+  label: string;
+  durationMinutes: number | "";
+  price: number | "";
+  currency: string;
+};
+type Content = {
+  title: string;
+  sections: Section[];
+  sessionFormats?: SessionFormat[];
+  cycleLength?: number | "";
+  frequency?: string;
+};
 
 const AVAILABLE_VARIABLES = [
   "{{client.first_name}}",
@@ -47,7 +60,7 @@ export default function AgreementTemplateEditorPage() {
   const [status, setStatus] = useState<"draft" | "active" | "archived">("draft");
   const [versionNumber, setVersionNumber] = useState(1);
   const [templateId, setTemplateId] = useState<string>("");
-  const [content, setContent] = useState<Content>({ title: "", sections: [] });
+  const [content, setContent] = useState<Content>({ title: "", sections: [], sessionFormats: [], cycleLength: "", frequency: "" });
   const [controls, setControls] = useState<Control[]>([]);
   const [preview, setPreview] = useState<"desktop" | "mobile">("desktop");
 
@@ -71,6 +84,7 @@ export default function AgreementTemplateEditorPage() {
       setTemplateId(data.template_id);
       const c = (data.content as any) || {};
       const rawSections = Array.isArray(c.sections) ? c.sections : [];
+      const rawFormats = Array.isArray(c.sessionFormats) ? c.sessionFormats : [];
       setContent({
         title: typeof c.title === "string" ? c.title : "",
         sections: rawSections.map((s: any) => ({
@@ -78,6 +92,15 @@ export default function AgreementTemplateEditorPage() {
           heading: s.heading ?? "",
           body: s.body ?? "",
         })),
+        sessionFormats: rawFormats.map((f: any) => ({
+          id: f.id ?? uid(),
+          label: f.label ?? "",
+          durationMinutes: typeof f.durationMinutes === "number" ? f.durationMinutes : "",
+          price: typeof f.price === "number" ? f.price : "",
+          currency: typeof f.currency === "string" ? f.currency : "",
+        })),
+        cycleLength: typeof c.cycleLength === "number" ? c.cycleLength : "",
+        frequency: typeof c.frequency === "string" ? c.frequency : "",
       });
       const rawCtrls = Array.isArray(data.controls) ? (data.controls as any[]) : [];
       setControls(
@@ -150,6 +173,22 @@ export default function AgreementTemplateEditorPage() {
   }
   function removeSection(id: string) {
     setContent((c) => ({ ...c, sections: c.sections.filter((s) => s.id !== id) }));
+  }
+
+  function addFormat() {
+    setContent((c) => ({
+      ...c,
+      sessionFormats: [...(c.sessionFormats ?? []), { id: uid(), label: "", durationMinutes: 60, price: "", currency: "" }],
+    }));
+  }
+  function updateFormat(id: string, patch: Partial<SessionFormat>) {
+    setContent((c) => ({
+      ...c,
+      sessionFormats: (c.sessionFormats ?? []).map((f) => (f.id === id ? { ...f, ...patch } : f)),
+    }));
+  }
+  function removeFormat(id: string) {
+    setContent((c) => ({ ...c, sessionFormats: (c.sessionFormats ?? []).filter((f) => f.id !== id) }));
   }
 
   function addControl() {
@@ -260,6 +299,97 @@ export default function AgreementTemplateEditorPage() {
             </Card>
 
             <Card>
+              <CardHeader><CardTitle className="text-base">Session formats</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-xs text-muted-foreground">
+                  Define the session durations, cycle length and frequency offered under this agreement. They render as a table in the signed document.
+                </p>
+                {(content.sessionFormats ?? []).map((f, idx) => (
+                  <div key={f.id} className="rounded border border-border p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Format {idx + 1}</span>
+                      {!readOnly && (
+                        <Button variant="ghost" size="icon" onClick={() => removeFormat(f.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                      <div className="sm:col-span-2">
+                        <Label className="text-xs">Label</Label>
+                        <Input
+                          placeholder="Individual consultation"
+                          value={f.label}
+                          disabled={readOnly}
+                          onChange={(e) => updateFormat(f.id, { label: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Duration (min)</Label>
+                        <Input
+                          type="number"
+                          min={5}
+                          step={5}
+                          value={f.durationMinutes}
+                          disabled={readOnly}
+                          onChange={(e) => updateFormat(f.id, { durationMinutes: e.target.value === "" ? "" : Number(e.target.value) })}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Price</Label>
+                        <div className="flex gap-1">
+                          <Input
+                            type="number"
+                            min={0}
+                            step={1}
+                            value={f.price}
+                            disabled={readOnly}
+                            onChange={(e) => updateFormat(f.id, { price: e.target.value === "" ? "" : Number(e.target.value) })}
+                          />
+                          <Input
+                            placeholder="EUR"
+                            className="w-20"
+                            value={f.currency}
+                            disabled={readOnly}
+                            onChange={(e) => updateFormat(f.id, { currency: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {!readOnly && (
+                  <Button variant="outline" size="sm" onClick={addFormat}>
+                    <Plus className="w-4 h-4 mr-1" /> Add format
+                  </Button>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
+                  <div>
+                    <Label className="text-xs">Cycle length (sessions)</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={content.cycleLength ?? ""}
+                      disabled={readOnly}
+                      onChange={(e) => setContent({ ...content, cycleLength: e.target.value === "" ? "" : Number(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Frequency</Label>
+                    <Input
+                      placeholder="e.g. 1 session per week"
+                      value={content.frequency ?? ""}
+                      disabled={readOnly}
+                      onChange={(e) => setContent({ ...content, frequency: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+
+
+            <Card>
               <CardHeader><CardTitle className="text-base">Client controls</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 {controls.map((c, i) => (
@@ -347,6 +477,37 @@ export default function AgreementTemplateEditorPage() {
                       <p className="text-sm text-foreground whitespace-pre-wrap">{s.body}</p>
                     </section>
                   ))}
+                  {((content.sessionFormats?.length ?? 0) > 0 || content.cycleLength || content.frequency) && (
+                    <section className="mb-4">
+                      <h3 className="font-medium mb-2">Session formats</h3>
+                      {(content.sessionFormats ?? []).length > 0 && (
+                        <table className="w-full text-sm border border-border rounded overflow-hidden mb-2">
+                          <thead className="bg-muted/50">
+                            <tr>
+                              <th className="text-left p-2">Format</th>
+                              <th className="text-left p-2">Duration</th>
+                              <th className="text-left p-2">Price</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(content.sessionFormats ?? []).map((f) => (
+                              <tr key={f.id} className="border-t border-border">
+                                <td className="p-2">{f.label || "—"}</td>
+                                <td className="p-2">{f.durationMinutes ? `${f.durationMinutes} min` : "—"}</td>
+                                <td className="p-2">{f.price !== "" ? `${f.price} ${f.currency || ""}`.trim() : "—"}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                      {content.cycleLength ? (
+                        <p className="text-sm text-foreground">Cycle: {content.cycleLength} sessions.</p>
+                      ) : null}
+                      {content.frequency ? (
+                        <p className="text-sm text-foreground">Frequency: {content.frequency}.</p>
+                      ) : null}
+                    </section>
+                  )}
                   {controls.length > 0 && (
                     <div className="mt-6 border-t border-border pt-4 space-y-3">
                       {controls.map((c) => (

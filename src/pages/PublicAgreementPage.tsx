@@ -24,7 +24,13 @@ type AccessResponse = {
   accepted_at: string | null;
   client_name: string;
   therapist_name: string;
-  content: { title: string; sections: Section[] };
+  content: {
+    title: string;
+    sections: Section[];
+    sessionFormats?: Array<{ id: string; label: string; durationMinutes: number | ""; price: number | ""; currency: string }>;
+    cycleLength?: number | "";
+    frequency?: string;
+  };
   controls: Control[];
 };
 
@@ -321,6 +327,37 @@ export default function PublicAgreementPage() {
               <div className="text-sm text-foreground whitespace-pre-wrap">{s.body}</div>
             </section>
           ))}
+          {((access.content.sessionFormats?.length ?? 0) > 0 || access.content.cycleLength || access.content.frequency) && (
+            <section>
+              <h2 className="text-lg font-semibold text-foreground">Session formats</h2>
+              {(access.content.sessionFormats ?? []).length > 0 && (
+                <table className="w-full text-sm border border-border rounded overflow-hidden my-2">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="text-left p-2">Format</th>
+                      <th className="text-left p-2">Duration</th>
+                      <th className="text-left p-2">Price</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(access.content.sessionFormats ?? []).map((f) => (
+                      <tr key={f.id} className="border-t border-border">
+                        <td className="p-2">{f.label || "—"}</td>
+                        <td className="p-2">{f.durationMinutes ? `${f.durationMinutes} min` : "—"}</td>
+                        <td className="p-2">{f.price !== "" && f.price != null ? `${f.price} ${f.currency || ""}`.trim() : "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+              {access.content.cycleLength ? (
+                <p className="text-sm text-foreground">Cycle: {access.content.cycleLength} sessions.</p>
+              ) : null}
+              {access.content.frequency ? (
+                <p className="text-sm text-foreground">Frequency: {access.content.frequency}.</p>
+              ) : null}
+            </section>
+          )}
         </div>
       </article>
 
