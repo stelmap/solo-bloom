@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { CheckCircle2, ShieldCheck, AlertTriangle, FileSignature, KeyRound, FileText } from "lucide-react";
+import { SessionFormatsBlock, stripLegacySessionFormatsSection } from "@/components/SessionFormatsBlock";
+
 
 type Control =
   | { id: string; type: "required_checkbox"; label: string; required: boolean }
