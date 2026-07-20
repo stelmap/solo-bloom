@@ -17,7 +17,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, Trash2, Save, Smartphone, Monitor } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Save, Smartphone, Monitor, Maximize2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 type Section = { id: string; heading: string; body: string };
 type Control = {
