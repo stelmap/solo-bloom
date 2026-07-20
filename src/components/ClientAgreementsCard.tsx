@@ -79,6 +79,7 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
   const [pickedTemplate, setPickedTemplate] = useState<string>("");
   const [creating, setCreating] = useState(false);
   const [linkDialog, setLinkDialog] = useState<{ open: boolean; url: string }>({ open: false, url: "" });
+  const [sendingEmail, setSendingEmail] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   async function load() {
