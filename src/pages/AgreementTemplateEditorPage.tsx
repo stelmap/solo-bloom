@@ -23,6 +23,7 @@ import { useServices } from "@/hooks/useData";
 import { useCurrency, type CurrencyCode } from "@/hooks/useCurrency";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { SessionFormatsBlock, stripLegacySessionFormatsSection } from "@/components/SessionFormatsBlock";
+import { buildVarMap, interpolateText } from "@/lib/agreementInterpolate";
 
 
 const SUPPORTED_CURRENCIES: CurrencyCode[] = ["EUR", "UAH", "PLN", "USD"];
@@ -87,6 +88,23 @@ export default function AgreementTemplateEditorPage() {
     onSave: (v: string) => void;
   } | null>(null);
   const [expandDraft, setExpandDraft] = useState("");
+  const [therapistProfile, setTherapistProfile] = useState<{ full_name: string; business_name: string }>({ full_name: "", business_name: "" });
+
+  useEffect(() => {
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      const uid = u?.user?.id;
+      if (!uid) return;
+      const { data: prof } = await supabase.from("profiles").select("full_name, business_name").eq("id", uid).maybeSingle();
+      if (prof) setTherapistProfile({ full_name: (prof as any).full_name || "", business_name: (prof as any).business_name || "" });
+    })();
+  }, []);
+
+  const previewVars = useMemo(() => buildVarMap({
+    therapistFullName: therapistProfile.full_name,
+    therapistBusinessName: therapistProfile.business_name,
+  }), [therapistProfile]);
+
 
   function openExpand(opts: { title: string; value: string; multiline?: boolean; onSave: (v: string) => void }) {
     setExpand({ title: opts.title, value: opts.value, multiline: opts.multiline ?? true, onSave: opts.onSave });
@@ -685,13 +703,13 @@ export default function AgreementTemplateEditorPage() {
                   }
                   style={{ minHeight: 400 }}
                 >
-                  <h2 className="text-xl font-semibold mb-3">{content.title || "Untitled agreement"}</h2>
+                  <h2 className="text-xl font-semibold mb-3">{interpolateText(content.title, previewVars) || "Untitled agreement"}</h2>
                   {(() => {
                     const hasServices = content.sections.some((s) => s.id === "services");
                     return content.sections.map((s) => (
                       <section key={s.id} className="mb-4">
-                        {s.heading && <h3 className="font-medium mb-1">{s.heading}</h3>}
-                        <p className="text-sm text-foreground whitespace-pre-wrap">{s.body}</p>
+                        {s.heading && <h3 className="font-medium mb-1">{interpolateText(s.heading, previewVars)}</h3>}
+                        <p className="text-sm text-foreground whitespace-pre-wrap">{interpolateText(s.body, previewVars)}</p>
                         {s.id === "services" && (
                           <SessionFormatsBlock data={content} />
                         )}
