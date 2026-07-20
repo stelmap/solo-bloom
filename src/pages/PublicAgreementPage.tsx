@@ -345,15 +345,31 @@ export default function PublicAgreementPage() {
       <div className="mb-4 flex items-center gap-2 text-xs text-success">
         <ShieldCheck className="h-4 w-4" /> Verified — session valid for 24 hours
       </div>
+
+      <div className="mb-6 rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+        <p className="text-sm font-medium text-foreground">Enter your name to personalise the agreement</p>
+        <p className="text-xs text-muted-foreground">Your name will replace placeholders like {"{{client.first_name}}"} in the document below.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <Label htmlFor="firstName">First name <span className="text-destructive">*</span></Label>
+            <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Anna" maxLength={100} autoComplete="given-name" />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="lastName">Last name <span className="text-destructive">*</span></Label>
+            <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Kowalska" maxLength={100} autoComplete="family-name" />
+          </div>
+        </div>
+      </div>
+
       <article className="prose prose-sm max-w-none">
-        <h1 className="text-2xl font-bold text-foreground">{access.content.title}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{interpolate(access.content.title, firstName, lastName)}</h1>
         {access.therapist_name && <p className="text-sm text-muted-foreground">From {access.therapist_name}</p>}
         <p className="text-sm text-muted-foreground">For {access.client_name} · {email}</p>
         <div className="mt-6 space-y-6">
           {access.content.sections.map((s) => (
             <section key={s.id}>
-              <h2 className="text-lg font-semibold text-foreground">{s.heading}</h2>
-              <div className="text-sm text-foreground whitespace-pre-wrap">{s.body}</div>
+              <h2 className="text-lg font-semibold text-foreground">{interpolate(s.heading, firstName, lastName)}</h2>
+              <div className="text-sm text-foreground whitespace-pre-wrap">{interpolate(s.body, firstName, lastName)}</div>
             </section>
           ))}
           {((access.content.sessionFormats?.length ?? 0) > 0 || access.content.cycleLength || access.content.frequency) && (
@@ -400,7 +416,7 @@ export default function PublicAgreementPage() {
             if (c.type === "typed_acknowledgement") {
               return (
                 <div key={c.id} className="space-y-1">
-                  <Label htmlFor={`ctl-${c.id}`}>{c.label} <span className="text-destructive">*</span></Label>
+                  <Label htmlFor={`ctl-${c.id}`}>{interpolate(c.label, firstName, lastName)} <span className="text-destructive">*</span></Label>
                   <Input id={`ctl-${c.id}`} value={String(answers[c.id] ?? "")} onChange={(e) => setAnswers((a) => ({ ...a, [c.id]: e.target.value }))} maxLength={500} />
                 </div>
               );
@@ -410,7 +426,7 @@ export default function PublicAgreementPage() {
               <div key={c.id} className="flex items-start gap-3">
                 <Checkbox id={`ctl-${c.id}`} checked={answers[c.id] === true} onCheckedChange={(v) => setAnswers((a) => ({ ...a, [c.id]: v === true }))} />
                 <Label htmlFor={`ctl-${c.id}`} className="text-sm font-normal leading-snug">
-                  {c.label} {required && <span className="text-destructive">*</span>}
+                  {interpolate(c.label, firstName, lastName)} {required && <span className="text-destructive">*</span>}
                 </Label>
               </div>
             );
