@@ -22,6 +22,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { useServices } from "@/hooks/useData";
 import { useCurrency, type CurrencyCode } from "@/hooks/useCurrency";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { SessionFormatsBlock, stripLegacySessionFormatsSection } from "@/components/SessionFormatsBlock";
+
 
 const SUPPORTED_CURRENCIES: CurrencyCode[] = ["EUR", "UAH", "PLN", "USD"];
 
@@ -41,13 +43,16 @@ type SessionFormat = {
   price: number | "";
   currency: string;
 };
+type CycleMode = "specified" | "indefinite" | "hidden";
 type Content = {
   title: string;
   sections: Section[];
   sessionFormats?: SessionFormat[];
+  cycleMode?: CycleMode;
   cycleLength?: number | "";
   frequency?: string;
 };
+
 
 const AVAILABLE_VARIABLES = [
   "{{client.first_name}}",
@@ -72,7 +77,7 @@ export default function AgreementTemplateEditorPage() {
   const [status, setStatus] = useState<"draft" | "active" | "archived">("draft");
   const [versionNumber, setVersionNumber] = useState(1);
   const [templateId, setTemplateId] = useState<string>("");
-  const [content, setContent] = useState<Content>({ title: "", sections: [], sessionFormats: [], cycleLength: "", frequency: "" });
+  const [content, setContent] = useState<Content>({ title: "", sections: [], sessionFormats: [], cycleMode: "specified", cycleLength: "", frequency: "" });
   const [controls, setControls] = useState<Control[]>([]);
   const [preview, setPreview] = useState<"desktop" | "mobile">("desktop");
   const [expand, setExpand] = useState<{
@@ -119,8 +124,12 @@ export default function AgreementTemplateEditorPage() {
       setVersionNumber(data.version_number);
       setTemplateId(data.template_id);
       const c = (data.content as any) || {};
-      const rawSections = Array.isArray(c.sections) ? c.sections : [];
+      const rawSections = stripLegacySessionFormatsSection(Array.isArray(c.sections) ? c.sections : []);
       const rawFormats = Array.isArray(c.sessionFormats) ? c.sessionFormats : [];
+      const rawCycleMode: CycleMode =
+        c.cycleMode === "specified" || c.cycleMode === "indefinite" || c.cycleMode === "hidden"
+          ? c.cycleMode
+          : (typeof c.cycleLength === "number" && c.cycleLength > 0 ? "specified" : "hidden");
       setContent({
         title: typeof c.title === "string" ? c.title : "",
         sections: rawSections.map((s: any) => ({
@@ -136,9 +145,11 @@ export default function AgreementTemplateEditorPage() {
           price: typeof f.price === "number" ? f.price : "",
           currency: typeof f.currency === "string" ? f.currency : "",
         })),
+        cycleMode: rawCycleMode,
         cycleLength: typeof c.cycleLength === "number" ? c.cycleLength : "",
         frequency: typeof c.frequency === "string" ? c.frequency : "",
       });
+
       const rawCtrls = Array.isArray(data.controls) ? (data.controls as any[]) : [];
       setControls(
         rawCtrls.map((x: any) => ({
@@ -520,15 +531,37 @@ export default function AgreementTemplateEditorPage() {
                             </Button>
                           )}
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
-                            <div>
+                            <div className="space-y-2">
                               <Label className="text-xs">{t("af.cycleLength")}</Label>
-                              <Input
-                                type="number"
-                                min={1}
-                                value={content.cycleLength ?? ""}
+                              <Select
+                                value={content.cycleMode ?? "specified"}
                                 disabled={readOnly}
-                                onChange={(e) => setContent({ ...content, cycleLength: e.target.value === "" ? "" : Math.max(1, Math.floor(Number(e.target.value))) })}
-                              />
+                                onValueChange={(v: CycleMode) =>
+                                  setContent((c) => ({
+                                    ...c,
+                                    cycleMode: v,
+                                    cycleLength: v === "specified" ? (c.cycleLength || "") : "",
+                                  }))
+                                }
+                              >
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="specified">{t("af.cycleModeSpecified")}</SelectItem>
+                                  <SelectItem value="indefinite">{t("af.cycleModeIndefinite")}</SelectItem>
+                                  <SelectItem value="hidden">{t("af.cycleModeHidden")}</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              {(content.cycleMode ?? "specified") === "specified" && (
+                                <Input
+                                  type="number"
+                                  min={1}
+                                  step={1}
+                                  placeholder="20"
+                                  value={content.cycleLength ?? ""}
+                                  disabled={readOnly}
+                                  onChange={(e) => setContent({ ...content, cycleLength: e.target.value === "" ? "" : Math.max(1, Math.floor(Number(e.target.value))) })}
+                                />
+                              )}
                             </div>
                             <div>
                               <Label className="text-xs">{t("af.frequency")}</Label>
@@ -538,9 +571,9 @@ export default function AgreementTemplateEditorPage() {
                                 disabled={readOnly}
                                 onChange={(e) => setContent({ ...content, frequency: e.target.value })}
                               />
-
                             </div>
                           </div>
+
                         </CardContent>
                       </Card>
                     )}
@@ -653,49 +686,22 @@ export default function AgreementTemplateEditorPage() {
                   style={{ minHeight: 400 }}
                 >
                   <h2 className="text-xl font-semibold mb-3">{content.title || "Untitled agreement"}</h2>
-                  {content.sections.map((s) => (
-                    <section key={s.id} className="mb-4">
-                      {s.heading && <h3 className="font-medium mb-1">{s.heading}</h3>}
-                      <p className="text-sm text-foreground whitespace-pre-wrap">{s.body}</p>
-                    </section>
-                  ))}
-                  {((content.sessionFormats?.length ?? 0) > 0 || content.cycleLength || content.frequency) && (
-                    <section className="mb-4">
-                      <h3 className="font-medium mb-2">{t("af.title")}</h3>
-                      {(content.sessionFormats ?? []).length > 0 && (() => {
-                        const formats = content.sessionFormats ?? [];
-                        const anyPrice = formats.some((f) => f.price !== "" && f.price != null);
-                        return (
-                          <table className="w-full text-sm border border-border rounded overflow-hidden mb-2">
-                            <thead className="bg-muted/50">
-                              <tr>
-                                <th className="text-left p-2">{t("af.label")}</th>
-                                <th className="text-left p-2">{t("af.duration")}</th>
-                                {anyPrice && <th className="text-left p-2">{t("af.price")}</th>}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {formats.map((f) => (
-                                <tr key={f.id} className="border-t border-border">
-                                  <td className="p-2">{f.label || "—"}</td>
-                                  <td className="p-2">{f.durationMinutes ? `${f.durationMinutes} ${t("common.min")}` : "—"}</td>
-                                  {anyPrice && (
-                                    <td className="p-2">{f.price !== "" && f.price != null ? `${f.price} ${f.currency || ""}`.trim() : ""}</td>
-                                  )}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        );
-                      })()}
-                      {content.cycleLength ? (
-                        <p className="text-sm text-foreground">{t("af.cycleLine", { n: String(content.cycleLength) })}</p>
-                      ) : null}
-                      {content.frequency ? (
-                        <p className="text-sm text-foreground">{t("af.frequencyLine", { v: content.frequency })}</p>
-                      ) : null}
-                    </section>
-                  )}
+                  {(() => {
+                    const hasServices = content.sections.some((s) => s.id === "services");
+                    return content.sections.map((s) => (
+                      <section key={s.id} className="mb-4">
+                        {s.heading && <h3 className="font-medium mb-1">{s.heading}</h3>}
+                        <p className="text-sm text-foreground whitespace-pre-wrap">{s.body}</p>
+                        {s.id === "services" && (
+                          <SessionFormatsBlock data={content} />
+                        )}
+                        {!hasServices && s === content.sections[content.sections.length - 1] && (
+                          <SessionFormatsBlock data={content} />
+                        )}
+                      </section>
+                    ));
+                  })()}
+
                   {controls.length > 0 && (
                     <div className="mt-6 border-t border-border pt-4 space-y-3">
                       {controls.map((c) => (
