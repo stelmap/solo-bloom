@@ -11,9 +11,10 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { FileSignature, Plus, Copy, Link as LinkIcon, Ban, ExternalLink, ChevronDown, ChevronUp, Mail, Eye } from "lucide-react";
+import { FileSignature, Plus, Copy, Link as LinkIcon, Ban, ExternalLink, ChevronDown, ChevronUp, Mail, Eye, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { AgreementStatusTimeline } from "@/components/AgreementStatusTimeline";
+import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 
 type Template = {
   id: string;
@@ -84,6 +85,8 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
   const [sendingEmail, setSendingEmail] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [previewInst, setPreviewInst] = useState<Instance | null>(null);
+  const [deleteInst, setDeleteInst] = useState<Instance | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
 
   async function load() {
@@ -239,6 +242,22 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
     await load();
   }
 
+  async function deleteInstance(instance: Instance) {
+    if (!user) return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase.from("agreement_instances").delete().eq("id", instance.id);
+      if (error) throw error;
+      toast({ title: t("agreements.toast.deleted") });
+      setDeleteInst(null);
+      await load();
+    } catch (e: any) {
+      toast({ title: t("agreements.toast.deleteFail"), description: e?.message, variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="bg-card rounded-xl border border-border p-5 space-y-4">
       <div className="flex items-center justify-between">
@@ -299,6 +318,11 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
                   {canRevoke && (
                     <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => revokeInvitation(inst)}>
                       <Ban className="h-3.5 w-3.5 mr-1" /> {t("agreements.card.revoke")}
+                    </Button>
+                  )}
+                  {inst.status === "draft" && (
+                    <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => setDeleteInst(inst)}>
+                      <Trash2 className="h-3.5 w-3.5 mr-1" /> {t("common.delete")}
                     </Button>
                   )}
                   <Button
@@ -494,6 +518,15 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={!!deleteInst}
+        onOpenChange={(open) => !open && setDeleteInst(null)}
+        onConfirm={() => deleteInst && deleteInstance(deleteInst)}
+        loading={deleting}
+        title={t("agreements.delete.title")}
+        description={t("agreements.delete.description")}
+      />
     </div>
   );
 }
