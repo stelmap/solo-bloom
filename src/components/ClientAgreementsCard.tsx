@@ -91,6 +91,69 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
   const [previewInst, setPreviewInst] = useState<Instance | null>(null);
   const [deleteInst, setDeleteInst] = useState<Instance | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [editInst, setEditInst] = useState<Instance | null>(null);
+  const [editContent, setEditContent] = useState<any>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  function openEdit(inst: Instance) {
+    // Deep clone so edits don't mutate list state before saving
+    setEditContent(JSON.parse(JSON.stringify(inst.content ?? { title: "", sections: [] })));
+    setEditInst(inst);
+  }
+
+  async function saveEdit() {
+    if (!user || !editInst || !editContent) return;
+    setSavingEdit(true);
+    try {
+      const contentString = JSON.stringify({ c: editContent, k: editInst.controls });
+      const contentHash = await sha256Hex(contentString);
+
+      // Bump revision so the snapshot reflects the customization
+      const { data: existingRevs } = await supabase
+        .from("agreement_revisions")
+        .select("revision_number")
+        .eq("instance_id", editInst.id)
+        .order("revision_number", { ascending: false })
+        .limit(1);
+      const nextNum = ((existingRevs?.[0] as any)?.revision_number ?? 0) + 1;
+
+      const { data: rev, error: revErr } = await supabase
+        .from("agreement_revisions")
+        .insert({
+          instance_id: editInst.id,
+          user_id: user.id,
+          revision_number: nextNum,
+          content_snapshot: editContent,
+          controls_snapshot: editInst.controls,
+          content_hash: contentHash,
+        })
+        .select()
+        .single();
+      if (revErr) throw revErr;
+
+      const { error: updErr } = await supabase
+        .from("agreement_instances")
+        .update({ content: editContent, current_revision_id: rev.id })
+        .eq("id", editInst.id);
+      if (updErr) throw updErr;
+
+      await supabase.from("agreement_audit_events").insert({
+        instance_id: editInst.id,
+        user_id: user.id,
+        event_type: "instance_customized",
+        metadata: { revision_number: nextNum },
+      });
+
+      toast({ title: t("agreements.edit.saved") });
+      setEditInst(null);
+      setEditContent(null);
+      await load();
+    } catch (e: any) {
+      toast({ title: t("agreements.edit.saveFail"), description: e?.message, variant: "destructive" });
+    } finally {
+      setSavingEdit(false);
+    }
+  }
 
 
   async function load() {
