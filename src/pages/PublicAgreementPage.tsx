@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -30,20 +30,89 @@ type AccessResponse = {
 
 type Step = "email" | "otp" | "sign" | "done";
 
+type DraftState = {
+  step: Step;
+  email: string;
+  sessionToken: string;
+  otpExpiresAt: string | null;
+  answers: Record<string, boolean | string>;
+  typedName: string;
+  savedAt: number;
+};
+
+const DRAFT_TTL_MS = 24 * 60 * 60 * 1000; // 24h — matches verified session lifetime
+const draftKey = (token?: string) => (token ? `agreement-draft:${token}` : null);
+
+function loadDraft(token?: string): DraftState | null {
+  const k = draftKey(token);
+  if (!k) return null;
+  try {
+    const raw = localStorage.getItem(k);
+    if (!raw) return null;
+    const d = JSON.parse(raw) as DraftState;
+    if (!d || typeof d !== "object") return null;
+    if (Date.now() - (d.savedAt || 0) > DRAFT_TTL_MS) {
+      localStorage.removeItem(k);
+      return null;
+    }
+    return d;
+  } catch {
+    return null;
+  }
+}
+
+function clearDraft(token?: string) {
+  const k = draftKey(token);
+  if (k) try { localStorage.removeItem(k); } catch { /* ignore */ }
+}
+
 export default function PublicAgreementPage() {
   const { token } = useParams<{ token: string }>();
-  const [step, setStep] = useState<Step>("email");
-  const [email, setEmail] = useState("");
+  const draftRef = useRef<DraftState | null>(loadDraft(token));
+  const initial = draftRef.current;
+
+  const [step, setStep] = useState<Step>(initial?.step && initial.step !== "done" ? initial.step : "email");
+  const [email, setEmail] = useState(initial?.email ?? "");
   const [code, setCode] = useState("");
-  const [sessionToken, setSessionToken] = useState("");
-  const [otpExpiresAt, setOtpExpiresAt] = useState<string | null>(null);
+  const [sessionToken, setSessionToken] = useState(initial?.sessionToken ?? "");
+  const [otpExpiresAt, setOtpExpiresAt] = useState<string | null>(initial?.otpExpiresAt ?? null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [access, setAccess] = useState<AccessResponse | null>(null);
-  const [answers, setAnswers] = useState<Record<string, boolean | string>>({});
-  const [typedName, setTypedName] = useState("");
+  const [answers, setAnswers] = useState<Record<string, boolean | string>>(initial?.answers ?? {});
+  const [typedName, setTypedName] = useState(initial?.typedName ?? "");
   const [accepted, setAccepted] = useState<{ at: string; hash: string } | null>(null);
+  const [restoring, setRestoring] = useState<boolean>(!!(initial?.sessionToken && initial?.email));
+
+  // Persist draft to localStorage on any relevant change
+  useEffect(() => {
+    const k = draftKey(token);
+    if (!k) return;
+    if (step === "done") return;
+    const draft: DraftState = { step, email, sessionToken, otpExpiresAt, answers, typedName, savedAt: Date.now() };
+    try { localStorage.setItem(k, JSON.stringify(draft)); } catch { /* ignore quota */ }
+  }, [token, step, email, sessionToken, otpExpiresAt, answers, typedName]);
+
+  // Attempt to resume a verified session on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const saved = draftRef.current;
+      if (!saved?.sessionToken || !saved?.email || !token) { setRestoring(false); return; }
+      try {
+        await loadAgreement(saved.sessionToken);
+      } catch {
+        if (cancelled) return;
+        setSessionToken("");
+        setStep("email");
+      } finally {
+        if (!cancelled) setRestoring(false);
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function requestOtp(e?: React.FormEvent) {
     e?.preventDefault();
