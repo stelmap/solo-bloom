@@ -60,7 +60,7 @@ export default function AgreementTemplateEditorPage() {
   const [status, setStatus] = useState<"draft" | "active" | "archived">("draft");
   const [versionNumber, setVersionNumber] = useState(1);
   const [templateId, setTemplateId] = useState<string>("");
-  const [content, setContent] = useState<Content>({ title: "", sections: [] });
+  const [content, setContent] = useState<Content>({ title: "", sections: [], sessionFormats: [], cycleLength: "", frequency: "" });
   const [controls, setControls] = useState<Control[]>([]);
   const [preview, setPreview] = useState<"desktop" | "mobile">("desktop");
 
@@ -84,6 +84,7 @@ export default function AgreementTemplateEditorPage() {
       setTemplateId(data.template_id);
       const c = (data.content as any) || {};
       const rawSections = Array.isArray(c.sections) ? c.sections : [];
+      const rawFormats = Array.isArray(c.sessionFormats) ? c.sessionFormats : [];
       setContent({
         title: typeof c.title === "string" ? c.title : "",
         sections: rawSections.map((s: any) => ({
@@ -91,6 +92,15 @@ export default function AgreementTemplateEditorPage() {
           heading: s.heading ?? "",
           body: s.body ?? "",
         })),
+        sessionFormats: rawFormats.map((f: any) => ({
+          id: f.id ?? uid(),
+          label: f.label ?? "",
+          durationMinutes: typeof f.durationMinutes === "number" ? f.durationMinutes : "",
+          price: typeof f.price === "number" ? f.price : "",
+          currency: typeof f.currency === "string" ? f.currency : "",
+        })),
+        cycleLength: typeof c.cycleLength === "number" ? c.cycleLength : "",
+        frequency: typeof c.frequency === "string" ? c.frequency : "",
       });
       const rawCtrls = Array.isArray(data.controls) ? (data.controls as any[]) : [];
       setControls(
