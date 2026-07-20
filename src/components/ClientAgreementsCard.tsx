@@ -11,8 +11,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { FileSignature, Plus, Copy, Link as LinkIcon, Ban, ExternalLink } from "lucide-react";
+import { FileSignature, Plus, Copy, Link as LinkIcon, Ban, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
+import { AgreementStatusTimeline } from "@/components/AgreementStatusTimeline";
 
 type Template = {
   id: string;
@@ -78,6 +79,7 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
   const [pickedTemplate, setPickedTemplate] = useState<string>("");
   const [creating, setCreating] = useState(false);
   const [linkDialog, setLinkDialog] = useState<{ open: boolean; url: string }>({ open: false, url: "" });
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   async function load() {
     if (!user) return;
@@ -291,7 +293,36 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
                       <Ban className="h-3.5 w-3.5 mr-1" /> {t("agreements.card.revoke")}
                     </Button>
                   )}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="ml-auto"
+                    onClick={() => setExpanded((s) => ({ ...s, [inst.id]: !s[inst.id] }))}
+                  >
+                    {expanded[inst.id] ? (
+                      <><ChevronUp className="h-3.5 w-3.5 mr-1" /> {t("agreements.timeline.hide")}</>
+                    ) : (
+                      <><ChevronDown className="h-3.5 w-3.5 mr-1" /> {t("agreements.timeline.show")}</>
+                    )}
+                  </Button>
                 </div>
+                {expanded[inst.id] && (
+                  <div className="pt-2 border-t border-border">
+                    <div className="text-xs font-medium text-muted-foreground mb-1">
+                      {t("agreements.timeline.title")}
+                    </div>
+                    <AgreementStatusTimeline
+                      data={{
+                        instanceCreatedAt: inst.created_at,
+                        invitationCreatedAt: inv?.created_at,
+                        openedAt: inv?.opened_at,
+                        verifiedAt: inv?.verified_at,
+                        acceptedAt: inv?.accepted_at,
+                        revokedAt: inv?.revoked_at,
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             );
           })}
