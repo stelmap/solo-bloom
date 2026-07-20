@@ -686,49 +686,22 @@ export default function AgreementTemplateEditorPage() {
                   style={{ minHeight: 400 }}
                 >
                   <h2 className="text-xl font-semibold mb-3">{content.title || "Untitled agreement"}</h2>
-                  {content.sections.map((s) => (
-                    <section key={s.id} className="mb-4">
-                      {s.heading && <h3 className="font-medium mb-1">{s.heading}</h3>}
-                      <p className="text-sm text-foreground whitespace-pre-wrap">{s.body}</p>
-                    </section>
-                  ))}
-                  {((content.sessionFormats?.length ?? 0) > 0 || content.cycleLength || content.frequency) && (
-                    <section className="mb-4">
-                      <h3 className="font-medium mb-2">{t("af.title")}</h3>
-                      {(content.sessionFormats ?? []).length > 0 && (() => {
-                        const formats = content.sessionFormats ?? [];
-                        const anyPrice = formats.some((f) => f.price !== "" && f.price != null);
-                        return (
-                          <table className="w-full text-sm border border-border rounded overflow-hidden mb-2">
-                            <thead className="bg-muted/50">
-                              <tr>
-                                <th className="text-left p-2">{t("af.label")}</th>
-                                <th className="text-left p-2">{t("af.duration")}</th>
-                                {anyPrice && <th className="text-left p-2">{t("af.price")}</th>}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {formats.map((f) => (
-                                <tr key={f.id} className="border-t border-border">
-                                  <td className="p-2">{f.label || "—"}</td>
-                                  <td className="p-2">{f.durationMinutes ? `${f.durationMinutes} ${t("common.min")}` : "—"}</td>
-                                  {anyPrice && (
-                                    <td className="p-2">{f.price !== "" && f.price != null ? `${f.price} ${f.currency || ""}`.trim() : ""}</td>
-                                  )}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        );
-                      })()}
-                      {content.cycleLength ? (
-                        <p className="text-sm text-foreground">{t("af.cycleLine", { n: String(content.cycleLength) })}</p>
-                      ) : null}
-                      {content.frequency ? (
-                        <p className="text-sm text-foreground">{t("af.frequencyLine", { v: content.frequency })}</p>
-                      ) : null}
-                    </section>
-                  )}
+                  {(() => {
+                    const hasServices = content.sections.some((s) => s.id === "services");
+                    return content.sections.map((s) => (
+                      <section key={s.id} className="mb-4">
+                        {s.heading && <h3 className="font-medium mb-1">{s.heading}</h3>}
+                        <p className="text-sm text-foreground whitespace-pre-wrap">{s.body}</p>
+                        {s.id === "services" && (
+                          <SessionFormatsBlock data={content} />
+                        )}
+                        {!hasServices && s === content.sections[content.sections.length - 1] && (
+                          <SessionFormatsBlock data={content} />
+                        )}
+                      </section>
+                    ));
+                  })()}
+
                   {controls.length > 0 && (
                     <div className="mt-6 border-t border-border pt-4 space-y-3">
                       {controls.map((c) => (
