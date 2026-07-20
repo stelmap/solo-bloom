@@ -85,6 +85,7 @@ const ServerUpdatePage = lazyWithReload(() => import("./pages/ServerUpdatePage")
 const OAuthConsentPage = lazyWithReload(() => import("./pages/OAuthConsentPage"));
 const AgreementTemplatesPage = lazyWithReload(() => import("./pages/AgreementTemplatesPage"));
 const AgreementTemplateEditorPage = lazyWithReload(() => import("./pages/AgreementTemplateEditorPage"));
+const PublicAgreementPage = lazyWithReload(() => import("./pages/PublicAgreementPage"));
 
 
 const queryClient = new QueryClient({
