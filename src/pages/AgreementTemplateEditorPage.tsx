@@ -41,13 +41,16 @@ type SessionFormat = {
   price: number | "";
   currency: string;
 };
+type CycleMode = "specified" | "indefinite" | "hidden";
 type Content = {
   title: string;
   sections: Section[];
   sessionFormats?: SessionFormat[];
+  cycleMode?: CycleMode;
   cycleLength?: number | "";
   frequency?: string;
 };
+
 
 const AVAILABLE_VARIABLES = [
   "{{client.first_name}}",
