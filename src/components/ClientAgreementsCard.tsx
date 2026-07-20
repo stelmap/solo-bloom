@@ -319,6 +319,10 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
                     <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => revokeInvitation(inst)}>
                       <Ban className="h-3.5 w-3.5 mr-1" /> {t("agreements.card.revoke")}
                     </Button>
+                  {inst.status === "draft" && (
+                    <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => setDeleteInst(inst)}>
+                      <Trash2 className="h-3.5 w-3.5 mr-1" /> {t("common.delete")}
+                    </Button>
                   )}
                   <Button
                     size="sm"
