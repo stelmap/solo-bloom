@@ -24,7 +24,13 @@ type AccessResponse = {
   accepted_at: string | null;
   client_name: string;
   therapist_name: string;
-  content: { title: string; sections: Section[] };
+  content: {
+    title: string;
+    sections: Section[];
+    sessionFormats?: Array<{ id: string; label: string; durationMinutes: number | ""; price: number | ""; currency: string }>;
+    cycleLength?: number | "";
+    frequency?: string;
+  };
   controls: Control[];
 };
 
