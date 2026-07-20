@@ -26,7 +26,20 @@ type Control = {
   label: string;
   required: boolean;
 };
-type Content = { title: string; sections: Section[] };
+type SessionFormat = {
+  id: string;
+  label: string;
+  durationMinutes: number | "";
+  price: number | "";
+  currency: string;
+};
+type Content = {
+  title: string;
+  sections: Section[];
+  sessionFormats?: SessionFormat[];
+  cycleLength?: number | "";
+  frequency?: string;
+};
 
 const AVAILABLE_VARIABLES = [
   "{{client.first_name}}",
