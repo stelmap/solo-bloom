@@ -313,7 +313,7 @@ export default function PublicAgreementPage() {
     }
   }
 
-  const therapistDisplay = info?.business_name || info?.therapist_name || t("pa.defaultTherapist");
+  const therapistDisplay = info?.therapist_name || info?.business_name || t("pa.defaultTherapist");
   const therapistInitial = (therapistDisplay || "?").trim().charAt(0).toUpperCase();
 
   // DONE
