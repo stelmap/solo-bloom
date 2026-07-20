@@ -175,6 +175,22 @@ export default function AgreementTemplateEditorPage() {
     setContent((c) => ({ ...c, sections: c.sections.filter((s) => s.id !== id) }));
   }
 
+  function addFormat() {
+    setContent((c) => ({
+      ...c,
+      sessionFormats: [...(c.sessionFormats ?? []), { id: uid(), label: "", durationMinutes: 60, price: "", currency: "" }],
+    }));
+  }
+  function updateFormat(id: string, patch: Partial<SessionFormat>) {
+    setContent((c) => ({
+      ...c,
+      sessionFormats: (c.sessionFormats ?? []).map((f) => (f.id === id ? { ...f, ...patch } : f)),
+    }));
+  }
+  function removeFormat(id: string) {
+    setContent((c) => ({ ...c, sessionFormats: (c.sessionFormats ?? []).filter((f) => f.id !== id) }));
+  }
+
   function addControl() {
     setControls((cs) => [
       ...cs,
