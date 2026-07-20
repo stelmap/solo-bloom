@@ -371,19 +371,6 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
             <Button variant="outline" size="sm" onClick={() => window.open(linkDialog.url, "_blank")}>
               <ExternalLink className="h-3.5 w-3.5 mr-1" /> {t("agreements.link.open")}
             </Button>
-            {typeof navigator !== "undefined" && "share" in navigator && (
-              <Button variant="outline" size="sm" onClick={async () => {
-                try {
-                  await (navigator as any).share({
-                    title: t("agreements.link.emailSubject"),
-                    text: t("agreements.link.shareText", { url: linkDialog.url }),
-                    url: linkDialog.url,
-                  });
-                } catch {}
-              }}>
-                <Share2 className="h-3.5 w-3.5 mr-1" /> {t("agreements.link.share")}
-              </Button>
-            )}
             <Button variant="outline" size="sm" onClick={() => {
               const subject = encodeURIComponent(t("agreements.link.emailSubject"));
               const body = encodeURIComponent(t("agreements.link.emailBody", { name: clientName, url: linkDialog.url }));
@@ -391,12 +378,6 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
               window.open(`mailto:${to}?subject=${subject}&body=${body}`, "_self");
             }}>
               <Mail className="h-3.5 w-3.5 mr-1" /> {t("agreements.link.email")}
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => {
-              const text = encodeURIComponent(t("agreements.link.shareText", { url: linkDialog.url }));
-              window.open(`https://wa.me/?text=${text}`, "_blank");
-            }}>
-              <MessageCircle className="h-3.5 w-3.5 mr-1" /> {t("agreements.link.whatsapp")}
             </Button>
             <Button size="sm" onClick={async () => {
               try { await navigator.clipboard.writeText(linkDialog.url); toast({ title: t("agreements.link.copied") }); } catch {}
