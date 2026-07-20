@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -95,6 +95,30 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
   const [editInst, setEditInst] = useState<Instance | null>(null);
   const [editContent, setEditContent] = useState<any>(null);
   const [savingEdit, setSavingEdit] = useState(false);
+  const [therapistProfile, setTherapistProfile] = useState<{ full_name: string; business_name: string }>({ full_name: "", business_name: "" });
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("full_name, business_name")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (prof) setTherapistProfile({ full_name: (prof as any).full_name || "", business_name: (prof as any).business_name || "" });
+    })();
+  }, [user]);
+
+  const previewVars = useMemo(() => {
+    const { first, last } = splitClientName(clientName);
+    return buildVarMap({
+      clientFirstName: first,
+      clientLastName: last,
+      clientEmail: clientEmail || "",
+      therapistFullName: therapistProfile.full_name,
+      therapistBusinessName: therapistProfile.business_name,
+    });
+  }, [clientName, clientEmail, therapistProfile]);
 
   function openEdit(inst: Instance) {
     // Deep clone so edits don't mutate list state before saving
@@ -524,7 +548,7 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
       <Dialog open={!!previewInst} onOpenChange={(open) => !open && setPreviewInst(null)}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{previewInst?.content?.title || t("agreements.preview.title")}</DialogTitle>
+            <DialogTitle>{interpolateText(previewInst?.content?.title || "", previewVars) || t("agreements.preview.title")}</DialogTitle>
             <DialogDescription>{t("agreements.preview.subtitle")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -533,8 +557,8 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
               const hasServices = sections.some((s: any) => s?.id === "services");
               return sections.map((s: any, idx: number) => (
                 <section key={s.id}>
-                  <h2 className="text-base font-semibold text-foreground mb-1">{s.heading}</h2>
-                  <div className="text-sm text-foreground whitespace-pre-wrap">{s.body}</div>
+                  <h2 className="text-base font-semibold text-foreground mb-1">{interpolateText(s.heading, previewVars)}</h2>
+                  <div className="text-sm text-foreground whitespace-pre-wrap">{interpolateText(s.body, previewVars)}</div>
                   {s.id === "services" && <SessionFormatsBlock data={previewInst?.content ?? {}} />}
                   {!hasServices && idx === sections.length - 1 && <SessionFormatsBlock data={previewInst?.content ?? {}} />}
                 </section>
@@ -547,7 +571,7 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
                 {previewInst!.controls.map((c: any) => (
                   <div key={c.id} className="text-sm text-foreground flex items-start gap-2">
                     <span className="mt-0.5">☐</span>
-                    <span>{c.label}{c.required ? " *" : ""}</span>
+                    <span>{interpolateText(c.label, previewVars)}{c.required ? " *" : ""}</span>
                   </div>
                 ))}
               </div>
