@@ -423,6 +423,40 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!previewInst} onOpenChange={(open) => !open && setPreviewInst(null)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{previewInst?.content?.title || t("agreements.preview.title")}</DialogTitle>
+            <DialogDescription>{t("agreements.preview.subtitle")}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {(previewInst?.content?.sections ?? []).map((s: any) => (
+              <section key={s.id}>
+                <h2 className="text-base font-semibold text-foreground mb-1">{s.heading}</h2>
+                <div className="text-sm text-foreground whitespace-pre-wrap">{s.body}</div>
+              </section>
+            ))}
+            {Array.isArray(previewInst?.controls) && previewInst!.controls.length > 0 && (
+              <div className="pt-3 border-t border-border space-y-2">
+                <div className="text-xs font-medium text-muted-foreground">{t("agreements.preview.controls")}</div>
+                {previewInst!.controls.map((c: any) => (
+                  <div key={c.id} className="text-sm text-foreground flex items-start gap-2">
+                    <span className="mt-0.5">☐</span>
+                    <span>{c.label}{c.required ? " *" : ""}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {(!previewInst?.content?.sections || previewInst.content.sections.length === 0) && (
+              <p className="text-sm text-muted-foreground">{t("agreements.preview.empty")}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPreviewInst(null)}>{t("common.close")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
