@@ -531,15 +531,37 @@ export default function AgreementTemplateEditorPage() {
                             </Button>
                           )}
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
-                            <div>
+                            <div className="space-y-2">
                               <Label className="text-xs">{t("af.cycleLength")}</Label>
-                              <Input
-                                type="number"
-                                min={1}
-                                value={content.cycleLength ?? ""}
+                              <Select
+                                value={content.cycleMode ?? "specified"}
                                 disabled={readOnly}
-                                onChange={(e) => setContent({ ...content, cycleLength: e.target.value === "" ? "" : Math.max(1, Math.floor(Number(e.target.value))) })}
-                              />
+                                onValueChange={(v: CycleMode) =>
+                                  setContent((c) => ({
+                                    ...c,
+                                    cycleMode: v,
+                                    cycleLength: v === "specified" ? (c.cycleLength || "") : "",
+                                  }))
+                                }
+                              >
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="specified">{t("af.cycleModeSpecified")}</SelectItem>
+                                  <SelectItem value="indefinite">{t("af.cycleModeIndefinite")}</SelectItem>
+                                  <SelectItem value="hidden">{t("af.cycleModeHidden")}</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              {(content.cycleMode ?? "specified") === "specified" && (
+                                <Input
+                                  type="number"
+                                  min={1}
+                                  step={1}
+                                  placeholder="20"
+                                  value={content.cycleLength ?? ""}
+                                  disabled={readOnly}
+                                  onChange={(e) => setContent({ ...content, cycleLength: e.target.value === "" ? "" : Math.max(1, Math.floor(Number(e.target.value))) })}
+                                />
+                              )}
                             </div>
                             <div>
                               <Label className="text-xs">{t("af.frequency")}</Label>
@@ -549,9 +571,9 @@ export default function AgreementTemplateEditorPage() {
                                 disabled={readOnly}
                                 onChange={(e) => setContent({ ...content, frequency: e.target.value })}
                               />
-
                             </div>
                           </div>
+
                         </CardContent>
                       </Card>
                     )}
