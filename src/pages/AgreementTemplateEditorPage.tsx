@@ -63,6 +63,10 @@ function uid() { return Math.random().toString(36).slice(2, 10); }
 export default function AgreementTemplateEditorPage() {
   const { versionId } = useParams<{ versionId: string }>();
   const navigate = useNavigate();
+  const { t } = useLanguage();
+  const { data: services = [] } = useServices();
+  const { code: profileCurrency } = useCurrency();
+  const newFormatRef = useRef<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<"draft" | "active" | "archived">("draft");
