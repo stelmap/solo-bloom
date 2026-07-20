@@ -16,6 +16,7 @@ import { template as bookingConfirmation } from './booking-confirmation.tsx'
 import { template as domainStatusAlert } from './domain-status-alert.tsx'
 import { template as accountDeactivationWarning } from './account-deactivation-warning.tsx'
 import { template as accountDeletedFinal } from './account-deleted-final.tsx'
+import { template as agreementInvitation } from './agreement-invitation.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'session-reminder': sessionReminder,
@@ -25,4 +26,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'domain-status-alert': domainStatusAlert,
   'account-deactivation-warning': accountDeactivationWarning,
   'account-deleted-final': accountDeletedFinal,
+  'agreement-invitation': agreementInvitation,
 }
