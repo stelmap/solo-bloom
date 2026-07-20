@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import { AgreementStatusTimeline } from "@/components/AgreementStatusTimeline";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { SessionFormatsBlock, stripLegacySessionFormatsSection } from "@/components/SessionFormatsBlock";
+import { buildVarMap, interpolateText, splitClientName } from "@/lib/agreementInterpolate";
 
 
 type Template = {
