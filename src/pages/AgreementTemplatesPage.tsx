@@ -44,7 +44,27 @@ export default function AgreementTemplatesPage() {
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
   const [seeding, setSeeding] = useState(false);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
   const { t } = useLanguage();
+
+  async function renameTemplate(tpl: Template) {
+    const name = renameValue.trim();
+    if (!name || name === tpl.name) {
+      setRenamingId(null);
+      return;
+    }
+    const { error } = await supabase
+      .from("agreement_templates")
+      .update({ name })
+      .eq("id", tpl.id);
+    if (error) {
+      toast({ title: "Rename failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    setRenamingId(null);
+    setTemplates((prev) => prev.map((x) => (x.id === tpl.id ? { ...x, name } : x)));
+  }
 
   async function load() {
     if (!user) return;
