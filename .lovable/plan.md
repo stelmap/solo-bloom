@@ -1,67 +1,115 @@
-# Payment/Prepayment/Balance Synchronization
+# Information Agreement — Implementation Plan
 
-## Goal
-Every financial action creates its own record. Sessions, balances, prepayments, Income Requests and Confirmed Income stay in sync. Never create an Expected Payment when the session was paid from prepayment. Client balance is computed from real financial operations.
+Delivers the spec in `Solo_Bizz_Information_Agreement_Functional_Specification_v1.0.docx` as a therapist-owned versioned template, a client-specific agreement instance, a secure recipient-bound link with email OTP, immutable acceptance evidence, and an accepted document stored in the client card.
 
-## Scope of change
+Full spec is saved to `docs/information-agreement-spec.md` in Phase 0 so all details (business rules BR-1..N, error catalogue, traceability matrix) stay accessible during build.
 
-### A. Session completion dialog (`SessionDetailSheet.tsx` + `CalendarPage.tsx`)
-Replace the current 3-option payment picker with a new set:
-1. **Pay now** — copy: *"Client paid before or during the session"*. Creates Confirmed Income = session price, links to client/session/service/payment method, session → `completed` + `paid_now`. No Expected Payment.
-2. **Waiting for payment** — session → `completed` + `waiting_for_payment`. Creates Expected Payment for full price. Client debt increases.
-3. **Complete & deduct from prepayment** — shown only when the client has an available prepaid balance.
-   - Preview card: total prepayment, approx sessions covered, session price, amount to deduct, prepayment left after deduction.
-   - If prepayment < session price → show "Not enough prepayment" hint and force the user to pick Waiting for payment (no partial auto-mix in this feature).
-   - On confirm: create `PREPAYMENT_DEDUCTION` record + a **Confirmed Income row with amount = 0** tagged `paid_from_prepayment`. Session → `completed` + `paid_from_prepayment`. No Expected Payment.
+---
 
-**Remove the "Pay in advance" option entirely** from session completion.
+## Phase 0 — Foundations (1 turn)
 
-### B. Backend (migration + atomic RPC)
-Add a single SECURITY DEFINER function `public.complete_session_with_payment(p_appointment_id uuid, p_mode text, p_payment_method_id uuid, p_paid_at date)` where `p_mode ∈ ('pay_now','waiting','from_prepayment')`. It performs everything in one transaction:
-- Locks the appointment row (`FOR UPDATE`).
-- Recomputes prepaid pool from `income` − allocated on completed paid sessions, minus prior `PREPAYMENT_DEDUCTION` records.
-- Branch `pay_now`: insert `income` (amount = price, `source='session_payment'`), insert `income_session_allocations`, cancel any pending EP for this session.
-- Branch `waiting`: insert `expected_payments` (status `pending`, amount = price) if none exists.
-- Branch `from_prepayment`: verify pool ≥ price (else `RAISE EXCEPTION 'insufficient_prepayment'`), insert `income` with `amount=0`, `source='prepayment_deduction'`, allocate full price to session via `income_session_allocations` (allocations reference the original prepayment income), cancel any pending EP.
-- Calls existing `recalc_appointment_payment_status` (extended to recognize `paid_from_prepayment`).
-- Writes to `payment_corrections`/audit table with: actor, before/after prepayment pool, session price, cash received, deducted amount, created income ids, source prepayment income id.
+- Save spec to `docs/information-agreement-spec.md`.
+- Add feature flag `information_agreement` (default OFF) so we can ship phases behind a switch.
+- Seed the Ukrainian starter template content as a JSON fixture in `supabase/seed/agreement-starter-uk.json`.
 
-Migration steps:
-1. Add `payment_status` enum value `paid_from_prepayment` if not already present (already used in code — verify).
-2. Add columns to `income`: `source text` (values: `session_payment | manual | prepayment | prepayment_deduction | refund | correction`), `source_prepayment_income_id uuid references income(id)`.
-3. Add partial unique index preventing duplicate `PREPAYMENT_DEDUCTION` per appointment.
-4. Create `complete_session_with_payment` RPC. Grant EXECUTE to `authenticated`.
-5. Extend audit table (`payment_corrections` or new `payment_audit_log`) with the fields listed in spec §9.
+---
 
-### C. Client balance (single source of truth)
-Update `src/lib/clientBalance.ts`:
+## Phase 1 — Data model & security (1 turn, DB migration)
+
+New tables (all with GRANTs + RLS, scoped by `user_id = auth.uid()` for therapist rows):
+
+```text
+agreement_templates          therapist-owned master; latest_version_id
+agreement_template_versions  immutable content + controls (JSONB), status: draft|active|archived
+agreement_instances          one per client; template_version_id, client_id, status
+agreement_revisions          frozen shareable snapshot; content_hash
+agreement_invitations        token_hash (never raw), expires_at, revoked_at, email_bound
+agreement_otp_challenges     otp_hash, attempts, expires_at, invitation_id
+agreement_verified_sessions  short-lived server session bound to one revision
+agreement_acceptances        answers JSONB, typed_name, ip, ua, accepted_at, evidence_hash
+agreement_audit_events       correlation_id, event_type, safe metadata only
+accepted_documents           rendered HTML/PDF stored in Storage bucket + row metadata
 ```
-totalReceived = Σ income.amount WHERE source ≠ 'prepayment_deduction'
-prepaidPool   = Σ income WHERE source='prepayment' (minus allocations to sessions)
-              − Σ PREPAYMENT_DEDUCTION amounts
-              − refunds − manual adjustments
-debt          = Σ (price − allocated) for completed sessions not fully paid
-balance       = prepaidPool − debt
-```
-Zero-amount `paid_from_prepayment` income rows do **not** inflate `totalReceived`. All UI (`Dashboard`, `ClientsPage`, `ClientDetailPage`, `IncomePage`, `SessionDetailSheet`, KPIs) reads from the same helper.
 
-### D. UI touch-points to update
-- `SessionDetailSheet.tsx`: new payment picker + prepayment preview card + confirm labels.
-- `CalendarPage.tsx`: replace direct write with `supabase.rpc('complete_session_with_payment', …)`; keep dedupe guard.
-- `IncomePage.tsx` / `PaymentAuditPage.tsx`: render `€0` prepayment-deduction rows with badge "Paid from prepayment"; exclude them from income totals.
-- `ClientDetailPage.tsx` counters: use the updated balance helper.
-- i18n keys for the new copy in `en/uk/ru/pl/fr`.
+Storage bucket `agreement-documents` (private, RLS by therapist).
 
-### E. Automated tests
-Extend the "Finance" section of `src/lib/testRegistry.ts` with a new suite `src/lib/__tests__/paymentSync.test.ts` covering all 17 scenarios from the spec (Pay now, Waiting, EP later, prepayment-equal/greater/less, no EP for prepaid, €0 confirmed income, prepayment decrement, no double income, debt, counts, balance sync across surfaces, insufficient-prepayment error path, audit log written, atomic rollback).
-Add an e2e `tests/e2e/prepayment-session.spec.ts` that double-clicks the confirm button and asserts a single RPC call + single income row.
+Business-rule enforcement handled in edge functions, not client SQL.
 
-## Out of scope
-- Partial prepayment + partial EP mixing (spec §8 defers this).
-- Redesigning the manual income dialog (already shipped).
-- Backfilling historical rows — new logic applies going forward; existing balances remain consistent because we route reads through the shared helper.
+---
 
-## Technical notes
-- All writes go through the RPC so the client cannot desync balances.
-- The RPC returns `{ income_id, expected_payment_id, prepayment_before, prepayment_after }` so the UI can toast the exact numbers shown in the preview.
-- Double-click protection: RPC is idempotent per appointment via the partial unique index + `FOR UPDATE`.
+## Phase 2 — Settings: template editor (2–3 turns)
+
+Route: `/settings/agreements`
+
+- List templates + version history.
+- Draft editor: rich text sections, insertable variables (`{{client.first_name}}`, `{{therapist.business_name}}`, etc.), configurable controls (required checkbox, optional checkbox, typed acknowledgement).
+- Desktop/mobile preview.
+- Validate → Activate flow (exactly one Active version per template).
+- Archive obsolete versions.
+- Ukrainian UI first, i18n keys added for en/ru/pl/fr.
+
+---
+
+## Phase 3 — Client card: agreement instance (2 turns)
+
+In `ClientDetailPage` add a **Documents / Agreements** section:
+
+- Create instance from Active template → client-specific snapshot.
+- Allow per-client edits before sharing.
+- Precondition validation: client has deliverable email.
+- Generate secure link (`/agreement/:token`, high-entropy, token_hash stored server-side).
+- Copy / Revoke / Regenerate actions.
+- Status timeline: Draft → Sent → Opened → Verified → Accepted / Revoked / Expired.
+- Read-only view of accepted document.
+
+---
+
+## Phase 4 — Public client flow (2–3 turns)
+
+Public route `/agreement/:token` (no Solo.Bizz account required):
+
+- Resolve token server-side → return only revision id + email hint (`o***@gmail.com`).
+- Uniform failure response (no info leak about existence).
+- Request OTP → email via `send-transactional-email` (new template `agreement-otp`).
+- OTP verify → mint short-lived verified session cookie bound to that revision.
+- Render frozen revision content + interactive controls.
+- Submit once (idempotent): store answers, typed name, evidence hash, audit events.
+- Show safe completion page.
+- Rate limiting + attempt counters + lockout.
+
+Edge functions: `agreement-resolve-token`, `agreement-request-otp`, `agreement-verify-otp`, `agreement-submit`.
+
+---
+
+## Phase 5 — Accepted document generation & storage (1–2 turns)
+
+- Render final HTML server-side from frozen snapshot + answers.
+- Compute `evidence_hash` (sha256 of canonicalized JSON).
+- Save HTML (and PDF via existing invoice PDF pipeline) to `agreement-documents` bucket.
+- Link to `accepted_documents` row visible in client card.
+- Invalidate invitation, transition to `Accepted` atomically.
+
+---
+
+## Phase 6 — Audit, security hardening, tests (1–2 turns)
+
+- Structured audit rows for every state transition (no body/OTP/token/full email in logs).
+- Automated tests:
+  - Unit: token binding, OTP throttle, snapshot immutability, evidence hash stability.
+  - E2E: therapist creates template → shares → client OTP flow → accepted doc appears in client card.
+- Add to Admin Tests registry.
+- Security scan pass on new tables/functions.
+
+---
+
+## Explicitly out of scope (per spec §2.3)
+
+Guardian consent, multi-party signing, arbitrary DOCX upload, real-time collab, therapist counter-signature, qualified e-signature certification, general client portal.
+
+---
+
+## Deliverable cadence
+
+Each phase is one review/approval checkpoint. I'll pause after each phase for you to test before starting the next.
+
+Reply **approve** to start with Phase 0 + Phase 1 (spec doc + database migration), or tell me which phase to prioritise or adjust.
