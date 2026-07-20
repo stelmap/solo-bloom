@@ -130,6 +130,7 @@ export default function AgreementTemplateEditorPage() {
         })),
         sessionFormats: rawFormats.map((f: any) => ({
           id: f.id ?? uid(),
+          serviceId: typeof f.serviceId === "string" ? f.serviceId : "",
           label: f.label ?? "",
           durationMinutes: typeof f.durationMinutes === "number" ? f.durationMinutes : "",
           price: typeof f.price === "number" ? f.price : "",
