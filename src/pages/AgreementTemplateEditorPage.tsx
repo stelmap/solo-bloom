@@ -415,89 +415,130 @@ export default function AgreementTemplateEditorPage() {
                     </div>
                     {idx === 0 && (
                       <Card className="mt-6">
-                        <CardHeader><CardTitle className="text-base">Session formats</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">{t("af.title")}</CardTitle></CardHeader>
                         <CardContent className="space-y-4">
-                          <p className="text-xs text-muted-foreground">
-                            Define the session durations, cycle length and frequency offered under this agreement. They render as a table in the signed document.
-                          </p>
-                          {(content.sessionFormats ?? []).map((f, idx) => (
-                            <div key={f.id} className="rounded border border-border p-3 space-y-2">
+                          <p className="text-xs text-muted-foreground">{t("af.description")}</p>
+                          {services.length === 0 && (
+                            <p className="text-xs text-muted-foreground italic">{t("af.noServices")}</p>
+                          )}
+                          {(content.sessionFormats ?? []).map((f, fi) => (
+                            <div
+                              key={f.id}
+                              ref={(el) => {
+                                if (el && newFormatRef.current === f.id) {
+                                  el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                                  const input = el.querySelector<HTMLElement>("[data-format-focus]");
+                                  input?.focus();
+                                  newFormatRef.current = null;
+                                }
+                              }}
+                              className="rounded border border-border p-3 space-y-2"
+                            >
                               <div className="flex items-center justify-between">
-                                <span className="text-xs text-muted-foreground">Format {idx + 1}</span>
+                                <span className="text-xs text-muted-foreground">{t("af.format")} {fi + 1}</span>
                                 {!readOnly && (
-                                  <Button variant="ghost" size="icon" onClick={() => removeFormat(f.id)}>
+                                  <Button variant="ghost" size="icon" onClick={() => removeFormat(f.id)} aria-label={t("af.remove")}>
                                     <Trash2 className="w-4 h-4" />
                                   </Button>
                                 )}
                               </div>
-                              <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-                                <div className="sm:col-span-2">
-                                  <Label className="text-xs">Label</Label>
-                                  <Input
-                                    placeholder="Individual consultation"
-                                    value={f.label}
-                                    disabled={readOnly}
-                                    onChange={(e) => updateFormat(f.id, { label: e.target.value })}
-                                  />
+                              <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
+                                <div className="md:col-span-5 min-w-0">
+                                  <Label className="text-xs">{t("af.label")}</Label>
+                                  <Select
+                                    value={f.serviceId || ""}
+                                    disabled={readOnly || services.length === 0}
+                                    onValueChange={(v) => selectServiceForFormat(f.id, v)}
+                                  >
+                                    <SelectTrigger data-format-focus aria-label={t("af.selectService")}>
+                                      <SelectValue placeholder={t("af.selectService")}>
+                                        {f.label || undefined}
+                                      </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {services.map((s: any) => (
+                                        <SelectItem key={s.id} value={s.id}>
+                                          {s.name}{s.duration_minutes ? ` · ${s.duration_minutes} ${t("common.min")}` : ""}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
                                 </div>
-                                <div>
-                                  <Label className="text-xs">Duration (min)</Label>
+                                <div className="md:col-span-2 min-w-0">
+                                  <Label className="text-xs">{t("af.duration")}</Label>
                                   <Input
                                     type="number"
-                                    min={5}
+                                    min={1}
                                     step={5}
                                     value={f.durationMinutes}
                                     disabled={readOnly}
-                                    onChange={(e) => updateFormat(f.id, { durationMinutes: e.target.value === "" ? "" : Number(e.target.value) })}
+                                    onChange={(e) => updateFormat(f.id, { durationMinutes: e.target.value === "" ? "" : Math.max(1, Math.floor(Number(e.target.value))) })}
                                   />
                                 </div>
-                                <div>
-                                  <Label className="text-xs">Price</Label>
-                                  <div className="flex gap-1">
-                                    <Input
-                                      type="number"
-                                      min={0}
-                                      step={1}
-                                      value={f.price}
-                                      disabled={readOnly}
-                                      onChange={(e) => updateFormat(f.id, { price: e.target.value === "" ? "" : Number(e.target.value) })}
-                                    />
-                                    <Input
-                                      placeholder="EUR"
-                                      className="w-20"
-                                      value={f.currency}
-                                      disabled={readOnly}
-                                      onChange={(e) => updateFormat(f.id, { currency: e.target.value })}
-                                    />
-                                  </div>
+                                <div className="md:col-span-3 min-w-0">
+                                  <Label className="text-xs">{t("af.price")}</Label>
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    step="0.01"
+                                    inputMode="decimal"
+                                    value={f.price}
+                                    disabled={readOnly}
+                                    onChange={(e) => {
+                                      const v = e.target.value;
+                                      if (v === "") {
+                                        updateFormat(f.id, { price: "", currency: "" });
+                                      } else {
+                                        updateFormat(f.id, { price: Number(v), currency: f.currency || profileCurrency });
+                                      }
+                                    }}
+                                  />
+                                </div>
+                                <div className="md:col-span-2 min-w-0">
+                                  <Label className="text-xs">{t("af.currency")}</Label>
+                                  <Select
+                                    value={f.currency || ""}
+                                    disabled={readOnly || f.price === "" || f.price === null}
+                                    onValueChange={(v) => updateFormat(f.id, { currency: v })}
+                                  >
+                                    <SelectTrigger aria-label={t("af.selectCurrency")}>
+                                      <SelectValue placeholder={t("af.selectCurrency")} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {SUPPORTED_CURRENCIES.map((c) => (
+                                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
                                 </div>
                               </div>
                             </div>
                           ))}
                           {!readOnly && (
                             <Button variant="outline" size="sm" onClick={addFormat}>
-                              <Plus className="w-4 h-4 mr-1" /> Add format
+                              <Plus className="w-4 h-4 mr-1" /> {t("af.add")}
                             </Button>
                           )}
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
                             <div>
-                              <Label className="text-xs">Cycle length (sessions)</Label>
+                              <Label className="text-xs">{t("af.cycleLength")}</Label>
                               <Input
                                 type="number"
                                 min={1}
                                 value={content.cycleLength ?? ""}
                                 disabled={readOnly}
-                                onChange={(e) => setContent({ ...content, cycleLength: e.target.value === "" ? "" : Number(e.target.value) })}
+                                onChange={(e) => setContent({ ...content, cycleLength: e.target.value === "" ? "" : Math.max(1, Math.floor(Number(e.target.value))) })}
                               />
                             </div>
                             <div>
-                              <Label className="text-xs">Frequency</Label>
+                              <Label className="text-xs">{t("af.frequency")}</Label>
                               <Input
-                                placeholder="e.g. 1 session per week"
+                                placeholder={t("af.frequencyPlaceholder")}
                                 value={content.frequency ?? ""}
                                 disabled={readOnly}
                                 onChange={(e) => setContent({ ...content, frequency: e.target.value })}
                               />
+
                             </div>
                           </div>
                         </CardContent>
