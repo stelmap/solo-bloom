@@ -153,6 +153,44 @@ export default function AgreementTemplatesPage() {
     await load();
   }
 
+  async function loadStarter() {
+    if (!user) return;
+    setSeeding(true);
+    try {
+      const { data: tpl, error } = await supabase
+        .from("agreement_templates")
+        .insert({
+          user_id: user.id,
+          name: STARTER_TEMPLATE_NAME,
+          description: STARTER_TEMPLATE_DESCRIPTION,
+          language: "uk",
+          is_system_starter: true,
+        })
+        .select()
+        .single();
+      if (error || !tpl) throw error ?? new Error("insert failed");
+      const { data: version } = await supabase
+        .from("agreement_template_versions")
+        .insert({
+          template_id: tpl.id,
+          user_id: user.id,
+          version_number: 1,
+          status: "draft",
+          content: STARTER_TEMPLATE_CONTENT as any,
+          controls: STARTER_TEMPLATE_CONTROLS as any,
+        })
+        .select()
+        .single();
+      toast({ title: t("agreements.starter.done") });
+      await load();
+      if (version) navigate(`/settings/agreements/version/${version.id}`);
+    } catch (e: any) {
+      toast({ title: t("agreements.starter.fail"), description: e?.message, variant: "destructive" });
+    } finally {
+      setSeeding(false);
+    }
+  }
+
   return (
     <AppLayout>
       <div className="space-y-6 max-w-4xl">
@@ -165,18 +203,24 @@ export default function AgreementTemplatesPage() {
 
         <Card>
           <CardHeader><CardTitle className="text-base">New template</CardTitle></CardHeader>
-          <CardContent className="flex gap-2">
+          <CardContent className="flex gap-2 flex-wrap">
             <Input
               placeholder="Template name (e.g. Informed consent — individual therapy)"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && createTemplate()}
+              className="flex-1 min-w-[240px]"
             />
             <Button onClick={createTemplate} disabled={creating || !newName.trim()}>
               <Plus className="w-4 h-4 mr-1" /> Create
             </Button>
+            <Button variant="outline" onClick={loadStarter} disabled={seeding}>
+              <Sparkles className="w-4 h-4 mr-1" />
+              {seeding ? t("agreements.starter.loading") : t("agreements.starter.button")}
+            </Button>
           </CardContent>
         </Card>
+
 
         {loading && <div className="text-sm text-muted-foreground">Loading…</div>}
         {!loading && templates.length === 0 && (
