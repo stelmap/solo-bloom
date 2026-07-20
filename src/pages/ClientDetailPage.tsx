@@ -961,6 +961,13 @@ export default function ClientDetailPage() {
                 <div className="space-y-2"><Label>{t("client.billingTaxId")}</Label><Input value={editForm.billing_tax_id} onChange={e => setEditForm(f => ({ ...f, billing_tax_id: e.target.value }))} /></div>
                 <div className="space-y-2 sm:col-span-2"><Label>{t("client.billingAddress")}</Label><Input value={editForm.billing_address} onChange={e => setEditForm(f => ({ ...f, billing_address: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>{t("client.billingCountry")}</Label><Input value={editForm.billing_country} onChange={e => setEditForm(f => ({ ...f, billing_country: e.target.value }))} /></div>
+                <div className="sm:col-span-2">
+                  <ClientLanguageSelect
+                    value={editForm.communication_language}
+                    onChange={(v) => setEditForm(f => ({ ...f, communication_language: v }))}
+                    required
+                  />
+                </div>
               </div>
             </section>
 
