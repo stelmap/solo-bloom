@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { CheckCircle2, ShieldCheck, AlertTriangle, FileSignature, KeyRound, Mail } from "lucide-react";
 
 type Control =
