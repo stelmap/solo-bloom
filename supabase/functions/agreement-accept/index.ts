@@ -29,9 +29,10 @@ Deno.serve(async (req) => {
     const token = String(body?.token ?? "");
     const email = String(body?.email ?? "").trim().toLowerCase();
     const typedName = String(body?.typed_name ?? "").trim();
+    const sessionToken = String(body?.session_token ?? "");
     const answersInput = (body?.answers ?? {}) as Record<string, any>;
 
-    if (!token || !email || !typedName || typedName.length > 200) {
+    if (!token || !email || !typedName || typedName.length > 200 || !sessionToken) {
       return new Response(JSON.stringify({ error: "invalid_input" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -55,6 +56,18 @@ Deno.serve(async (req) => {
     if (inv.accepted_at) return new Response(JSON.stringify({ error: "already_accepted" }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     if (new Date(inv.expires_at).getTime() < Date.now()) return new Response(JSON.stringify({ error: "expired" }), { status: 410, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     if (String(inv.email_bound).toLowerCase() !== email) return new Response(JSON.stringify({ error: "email_mismatch" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+    // Require verified OTP session
+    const sessionHash = await sha256Hex(sessionToken);
+    const { data: session } = await supabase
+      .from("agreement_verified_sessions")
+      .select("id, expires_at, revision_id")
+      .eq("session_token_hash", sessionHash)
+      .eq("invitation_id", inv.id)
+      .maybeSingle();
+    if (!session) return new Response(JSON.stringify({ error: "session_invalid" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (new Date(session.expires_at).getTime() < Date.now()) return new Response(JSON.stringify({ error: "session_expired" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
 
     const { data: rev } = await supabase.from("agreement_revisions").select("*").eq("id", inv.revision_id).maybeSingle();
     const { data: client } = await supabase.from("clients").select("name, email").eq("id", inv.client_id).maybeSingle();
