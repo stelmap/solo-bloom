@@ -124,8 +124,12 @@ export default function AgreementTemplateEditorPage() {
       setVersionNumber(data.version_number);
       setTemplateId(data.template_id);
       const c = (data.content as any) || {};
-      const rawSections = Array.isArray(c.sections) ? c.sections : [];
+      const rawSections = stripLegacySessionFormatsSection(Array.isArray(c.sections) ? c.sections : []);
       const rawFormats = Array.isArray(c.sessionFormats) ? c.sessionFormats : [];
+      const rawCycleMode: CycleMode =
+        c.cycleMode === "specified" || c.cycleMode === "indefinite" || c.cycleMode === "hidden"
+          ? c.cycleMode
+          : (typeof c.cycleLength === "number" && c.cycleLength > 0 ? "specified" : "hidden");
       setContent({
         title: typeof c.title === "string" ? c.title : "",
         sections: rawSections.map((s: any) => ({
@@ -141,9 +145,11 @@ export default function AgreementTemplateEditorPage() {
           price: typeof f.price === "number" ? f.price : "",
           currency: typeof f.currency === "string" ? f.currency : "",
         })),
+        cycleMode: rawCycleMode,
         cycleLength: typeof c.cycleLength === "number" ? c.cycleLength : "",
         frequency: typeof c.frequency === "string" ? c.frequency : "",
       });
+
       const rawCtrls = Array.isArray(data.controls) ? (data.controls as any[]) : [];
       setControls(
         rawCtrls.map((x: any) => ({
