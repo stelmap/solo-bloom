@@ -569,6 +569,7 @@ export default function ClientDetailPage() {
 
             {/* Last completed session notes */}
             {!isDemoMode && <LastSessionNotesCard clientId={id!} />}
+            {!isDemoMode && <ClientAgreementsCard clientId={id!} clientEmail={(client as any).email ?? null} clientName={client.name} />}
 
 
             {/* Notification Settings */}
