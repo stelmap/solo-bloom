@@ -11,7 +11,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { FileSignature, Plus, Copy, Link as LinkIcon, Ban, ExternalLink, ChevronDown, ChevronUp, Mail } from "lucide-react";
+import { FileSignature, Plus, Copy, Link as LinkIcon, Ban, ExternalLink, ChevronDown, ChevronUp, Mail, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { AgreementStatusTimeline } from "@/components/AgreementStatusTimeline";
 
@@ -34,6 +34,8 @@ type Instance = {
   updated_at: string;
   template_version_id: string;
   current_revision_id: string | null;
+  content: any;
+  controls: any;
 };
 type Invitation = {
   id: string;
@@ -81,6 +83,8 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
   const [linkDialog, setLinkDialog] = useState<{ open: boolean; url: string }>({ open: false, url: "" });
   const [sendingEmail, setSendingEmail] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [previewInst, setPreviewInst] = useState<Instance | null>(null);
+
 
   async function load() {
     if (!user) return;
@@ -283,6 +287,9 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
                   </div>
                 )}
                 <div className="flex flex-wrap gap-2 pt-1">
+                  <Button size="sm" variant="outline" onClick={() => setPreviewInst(inst)}>
+                    <Eye className="h-3.5 w-3.5 mr-1" /> {t("agreements.card.preview")}
+                  </Button>
                   {canLink && (
                     <Button size="sm" variant="outline" onClick={() => generateInvitation(inst)}>
                       <LinkIcon className="h-3.5 w-3.5 mr-1" />
@@ -413,6 +420,40 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
             }}>
               <Copy className="h-3.5 w-3.5 mr-1" /> {t("agreements.link.copy")}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!previewInst} onOpenChange={(open) => !open && setPreviewInst(null)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{previewInst?.content?.title || t("agreements.preview.title")}</DialogTitle>
+            <DialogDescription>{t("agreements.preview.subtitle")}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {(previewInst?.content?.sections ?? []).map((s: any) => (
+              <section key={s.id}>
+                <h2 className="text-base font-semibold text-foreground mb-1">{s.heading}</h2>
+                <div className="text-sm text-foreground whitespace-pre-wrap">{s.body}</div>
+              </section>
+            ))}
+            {Array.isArray(previewInst?.controls) && previewInst!.controls.length > 0 && (
+              <div className="pt-3 border-t border-border space-y-2">
+                <div className="text-xs font-medium text-muted-foreground">{t("agreements.preview.controls")}</div>
+                {previewInst!.controls.map((c: any) => (
+                  <div key={c.id} className="text-sm text-foreground flex items-start gap-2">
+                    <span className="mt-0.5">☐</span>
+                    <span>{c.label}{c.required ? " *" : ""}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {(!previewInst?.content?.sections || previewInst.content.sections.length === 0) && (
+              <p className="text-sm text-muted-foreground">{t("agreements.preview.empty")}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPreviewInst(null)}>{t("common.close")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
