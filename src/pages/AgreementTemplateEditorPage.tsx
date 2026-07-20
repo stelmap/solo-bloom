@@ -190,6 +190,40 @@ export default function AgreementTemplateEditorPage() {
     }
   }
 
+  async function editAsNewDraft() {
+    if (!templateId) return;
+    setSaving(true);
+    try {
+      const { data: userRes } = await supabase.auth.getUser();
+      const uid = userRes.user?.id;
+      if (!uid) throw new Error("Not signed in");
+      const { data: siblings } = await supabase
+        .from("agreement_template_versions")
+        .select("version_number")
+        .eq("template_id", templateId);
+      const nextNum = Math.max(0, ...(siblings ?? []).map((s: any) => s.version_number)) + 1;
+      const { data: created, error } = await supabase
+        .from("agreement_template_versions")
+        .insert({
+          template_id: templateId,
+          user_id: uid,
+          version_number: nextNum,
+          status: "draft",
+          content: content as any,
+          controls: controls as any,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      toast({ title: `Draft v${nextNum} created` });
+      if (created) navigate(`/settings/agreements/version/${created.id}`);
+    } catch (e: any) {
+      toast({ title: "Failed to create draft", description: e.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  }
+
   function addSection() {
     setContent((c) => ({ ...c, sections: [...c.sections, { id: uid(), heading: "", body: "" }] }));
   }
