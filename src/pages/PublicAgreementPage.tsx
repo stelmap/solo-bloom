@@ -435,7 +435,7 @@ export default function PublicAgreementPage() {
 
         <div className="space-y-2 pt-2">
           <Label htmlFor="typedName">Type your full name to sign <span className="text-destructive">*</span></Label>
-          <Input id="typedName" value={typedName} onChange={(e) => setTypedName(e.target.value)} placeholder="e.g. Anna Kowalska" maxLength={200} />
+          <Input id="typedName" value={typedName} onChange={(e) => setTypedName(e.target.value)} placeholder={`${firstName} ${lastName}`.trim() || "e.g. Anna Kowalska"} maxLength={200} />
           <p className="text-xs text-muted-foreground">
             By signing, you confirm you have read and understood this document. Your IP address, device information and a cryptographic hash of the document will be recorded as evidence.
           </p>
