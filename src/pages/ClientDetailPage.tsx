@@ -3,6 +3,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { ClientNotesCard } from "@/components/ClientNotesCard";
 import { LastSessionNotesCard } from "@/components/LastSessionNotesCard";
+import { ClientAgreementsCard } from "@/components/ClientAgreementsCard";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
