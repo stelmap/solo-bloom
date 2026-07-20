@@ -332,6 +332,9 @@ export default function ClientDetailPage() {
       billing_company_name: (client as any).billing_company_name || "",
       communication_language: (CLIENT_LANGUAGES as readonly string[]).includes((client as any).communication_language) ? (client as any).communication_language as ClientLanguage : "",
     });
+    setThirdPartyPayer(
+      !!((client as any).billing_company_name || (client as any).billing_address || (client as any).billing_tax_id),
+    );
     setEditOpen(true);
   };
 
