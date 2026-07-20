@@ -85,6 +85,7 @@ export default function ClientDetailPage() {
   const { data: clientSupervisions = [] } = useSupervisions(id);
 
   const [editOpen, setEditOpen] = useState(false);
+  const [thirdPartyPayer, setThirdPartyPayer] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [auditOpen, setAuditOpen] = useState(false);
