@@ -278,11 +278,19 @@ export default function AgreementTemplateEditorPage() {
               <CardContent className="space-y-4">
                 <div>
                   <Label>Title</Label>
-                  <Input
-                    value={content.title}
-                    disabled={readOnly}
-                    onChange={(e) => setContent({ ...content, title: e.target.value })}
-                  />
+                  <div className="flex gap-1">
+                    <Input
+                      value={content.title}
+                      disabled={readOnly}
+                      onChange={(e) => setContent({ ...content, title: e.target.value })}
+                    />
+                    <ExpandBtn onClick={() => openExpand({
+                      title: "Title",
+                      value: content.title,
+                      multiline: false,
+                      onSave: (v) => setContent({ ...content, title: v }),
+                    })} />
+                  </div>
                 </div>
                 {content.sections.map((s, idx) => (
                   <div key={s.id} className="rounded border border-border p-3 space-y-2">
@@ -294,19 +302,35 @@ export default function AgreementTemplateEditorPage() {
                         </Button>
                       )}
                     </div>
-                    <Input
-                      placeholder="Heading"
-                      value={s.heading}
-                      disabled={readOnly}
-                      onChange={(e) => updateSection(s.id, { heading: e.target.value })}
-                    />
-                    <Textarea
-                      placeholder="Body text. Use variables like {{client.first_name}}."
-                      rows={5}
-                      value={s.body}
-                      disabled={readOnly}
-                      onChange={(e) => updateSection(s.id, { body: e.target.value })}
-                    />
+                    <div className="flex gap-1">
+                      <Input
+                        placeholder="Heading"
+                        value={s.heading}
+                        disabled={readOnly}
+                        onChange={(e) => updateSection(s.id, { heading: e.target.value })}
+                      />
+                      <ExpandBtn onClick={() => openExpand({
+                        title: `Section ${idx + 1} — Heading`,
+                        value: s.heading,
+                        multiline: false,
+                        onSave: (v) => updateSection(s.id, { heading: v }),
+                      })} />
+                    </div>
+                    <div className="flex gap-1 items-start">
+                      <Textarea
+                        placeholder="Body text. Use variables like {{client.first_name}}."
+                        rows={5}
+                        value={s.body}
+                        disabled={readOnly}
+                        onChange={(e) => updateSection(s.id, { body: e.target.value })}
+                      />
+                      <ExpandBtn onClick={() => openExpand({
+                        title: `Section ${idx + 1} — Body`,
+                        value: s.body,
+                        multiline: true,
+                        onSave: (v) => updateSection(s.id, { body: v }),
+                      })} />
+                    </div>
                   </div>
                 ))}
                 {!readOnly && (
