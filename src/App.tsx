@@ -83,6 +83,8 @@ const AdminAnalyticsPage = lazyWithReload(() => import("./pages/AdminAnalyticsPa
 const AdminTestsPage = lazyWithReload(() => import("./pages/AdminTestsPage"));
 const ServerUpdatePage = lazyWithReload(() => import("./pages/ServerUpdatePage"));
 const OAuthConsentPage = lazyWithReload(() => import("./pages/OAuthConsentPage"));
+const AgreementTemplatesPage = lazyWithReload(() => import("./pages/AgreementTemplatesPage"));
+const AgreementTemplateEditorPage = lazyWithReload(() => import("./pages/AgreementTemplateEditorPage"));
 
 
 const queryClient = new QueryClient({
@@ -160,6 +162,8 @@ const App = () => {
                 <Route path="/financial" element={<Navigate to="/finances" replace />} />
 
                 <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+                <Route path="/settings/agreements" element={<ProtectedRoute><AgreementTemplatesPage /></ProtectedRoute>} />
+                <Route path="/settings/agreements/version/:versionId" element={<ProtectedRoute><AgreementTemplateEditorPage /></ProtectedRoute>} />
                 <Route path="/booking-inbox" element={<ProtectedRoute><BookingInboxPage /></ProtectedRoute>} />
                 <Route path="/supervision" element={<ProtectedRoute><SupervisionPage /></ProtectedRoute>} />
 
