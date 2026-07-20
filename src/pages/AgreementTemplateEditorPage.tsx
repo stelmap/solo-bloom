@@ -477,6 +477,37 @@ export default function AgreementTemplateEditorPage() {
                       <p className="text-sm text-foreground whitespace-pre-wrap">{s.body}</p>
                     </section>
                   ))}
+                  {((content.sessionFormats?.length ?? 0) > 0 || content.cycleLength || content.frequency) && (
+                    <section className="mb-4">
+                      <h3 className="font-medium mb-2">Session formats</h3>
+                      {(content.sessionFormats ?? []).length > 0 && (
+                        <table className="w-full text-sm border border-border rounded overflow-hidden mb-2">
+                          <thead className="bg-muted/50">
+                            <tr>
+                              <th className="text-left p-2">Format</th>
+                              <th className="text-left p-2">Duration</th>
+                              <th className="text-left p-2">Price</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(content.sessionFormats ?? []).map((f) => (
+                              <tr key={f.id} className="border-t border-border">
+                                <td className="p-2">{f.label || "—"}</td>
+                                <td className="p-2">{f.durationMinutes ? `${f.durationMinutes} min` : "—"}</td>
+                                <td className="p-2">{f.price !== "" ? `${f.price} ${f.currency || ""}`.trim() : "—"}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                      {content.cycleLength ? (
+                        <p className="text-sm text-foreground">Cycle: {content.cycleLength} sessions.</p>
+                      ) : null}
+                      {content.frequency ? (
+                        <p className="text-sm text-foreground">Frequency: {content.frequency}.</p>
+                      ) : null}
+                    </section>
+                  )}
                   {controls.length > 0 && (
                     <div className="mt-6 border-t border-border pt-4 space-y-3">
                       {controls.map((c) => (
