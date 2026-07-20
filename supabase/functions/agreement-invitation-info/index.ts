@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     const tokenHash = await sha256Hex(token);
     const { data: inv } = await supabase
       .from("agreement_invitations")
-      .select("id, user_id, email_bound, revoked_at, expires_at, accepted_at, revision_id")
+      .select("id, user_id, client_id, email_bound, revoked_at, expires_at, accepted_at, revision_id")
       .eq("token_hash", tokenHash)
       .maybeSingle();
     if (!inv) return json({ error: "not_found" }, 404);
@@ -46,18 +46,22 @@ Deno.serve(async (req) => {
     const expired = new Date(inv.expires_at).getTime() < Date.now();
     const alreadyAccepted = !!inv.accepted_at;
 
-    const [{ data: profile }, { data: rev }] = await Promise.all([
+    const [{ data: profile }, { data: rev }, { data: client }] = await Promise.all([
       supabase.from("profiles").select("full_name, business_name, avatar_url").eq("id", inv.user_id).maybeSingle(),
       supabase.from("agreement_revisions").select("content_snapshot").eq("id", inv.revision_id).maybeSingle(),
+      supabase.from("clients").select("communication_language").eq("id", (inv as any).client_id).maybeSingle(),
     ]);
 
     const contentRaw: any = rev?.content_snapshot ?? {};
+    const rawLang = String((client as any)?.communication_language || "").toLowerCase().slice(0, 2);
+    const language = ["en", "uk", "ru", "pl", "fr"].includes(rawLang) ? rawLang : "en";
     return json({
       therapist_name: profile?.full_name || "",
       business_name: profile?.business_name || "",
       therapist_avatar_url: profile?.avatar_url || "",
       masked_email: maskEmail(String(inv.email_bound || "").toLowerCase()),
       agreement_title: String(contentRaw?.title || ""),
+      language,
       revoked,
       expired,
       already_accepted: alreadyAccepted,

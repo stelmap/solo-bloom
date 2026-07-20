@@ -45,6 +45,7 @@ type InvitationInfo = {
   therapist_avatar_url: string;
   masked_email: string;
   agreement_title: string;
+  language?: string;
   revoked: boolean;
   expired: boolean;
   already_accepted: boolean;
@@ -109,7 +110,7 @@ function formatCountdown(msLeft: number) {
 
 export default function PublicAgreementPage() {
   const { token } = useParams<{ token: string }>();
-  const { t } = useLanguage();
+  const { t, setLang } = useLanguage();
   const draftRef = useRef<DraftState | null>(loadDraft(token));
   const initial = draftRef.current;
 
@@ -145,6 +146,10 @@ export default function PublicAgreementPage() {
         if (payload?.error) throw new Error(payload.error);
         if (cancelled) return;
         setInfo(payload as InvitationInfo);
+        const lang = String(payload?.language || "").toLowerCase();
+        if (["en", "uk", "ru", "pl", "fr"].includes(lang)) {
+          try { setLang(lang as any); } catch { /* ignore */ }
+        }
       } catch (err: any) {
         if (!cancelled) setInfoError(errorLabel(err.message, t));
       } finally {
