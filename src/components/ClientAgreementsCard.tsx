@@ -11,7 +11,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { FileSignature, Plus, Copy, Link as LinkIcon, Ban, ExternalLink, ChevronDown, ChevronUp, Mail, Eye, Trash2 } from "lucide-react";
+import { FileSignature, Plus, Copy, Link as LinkIcon, Ban, ExternalLink, ChevronDown, ChevronUp, Mail, Eye, Trash2, Pencil } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { AgreementStatusTimeline } from "@/components/AgreementStatusTimeline";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
@@ -89,6 +91,69 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
   const [previewInst, setPreviewInst] = useState<Instance | null>(null);
   const [deleteInst, setDeleteInst] = useState<Instance | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [editInst, setEditInst] = useState<Instance | null>(null);
+  const [editContent, setEditContent] = useState<any>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  function openEdit(inst: Instance) {
+    // Deep clone so edits don't mutate list state before saving
+    setEditContent(JSON.parse(JSON.stringify(inst.content ?? { title: "", sections: [] })));
+    setEditInst(inst);
+  }
+
+  async function saveEdit() {
+    if (!user || !editInst || !editContent) return;
+    setSavingEdit(true);
+    try {
+      const contentString = JSON.stringify({ c: editContent, k: editInst.controls });
+      const contentHash = await sha256Hex(contentString);
+
+      // Bump revision so the snapshot reflects the customization
+      const { data: existingRevs } = await supabase
+        .from("agreement_revisions")
+        .select("revision_number")
+        .eq("instance_id", editInst.id)
+        .order("revision_number", { ascending: false })
+        .limit(1);
+      const nextNum = ((existingRevs?.[0] as any)?.revision_number ?? 0) + 1;
+
+      const { data: rev, error: revErr } = await supabase
+        .from("agreement_revisions")
+        .insert({
+          instance_id: editInst.id,
+          user_id: user.id,
+          revision_number: nextNum,
+          content_snapshot: editContent,
+          controls_snapshot: editInst.controls,
+          content_hash: contentHash,
+        })
+        .select()
+        .single();
+      if (revErr) throw revErr;
+
+      const { error: updErr } = await supabase
+        .from("agreement_instances")
+        .update({ content: editContent, current_revision_id: rev.id })
+        .eq("id", editInst.id);
+      if (updErr) throw updErr;
+
+      await supabase.from("agreement_audit_events").insert({
+        instance_id: editInst.id,
+        user_id: user.id,
+        event_type: "instance_customized",
+        metadata: { revision_number: nextNum },
+      });
+
+      toast({ title: t("agreements.edit.saved") });
+      setEditInst(null);
+      setEditContent(null);
+      await load();
+    } catch (e: any) {
+      toast({ title: t("agreements.edit.saveFail"), description: e?.message, variant: "destructive" });
+    } finally {
+      setSavingEdit(false);
+    }
+  }
 
 
   async function load() {
@@ -323,9 +388,14 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
                     </Button>
                   )}
                   {inst.status === "draft" && (
-                    <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => setDeleteInst(inst)}>
-                      <Trash2 className="h-3.5 w-3.5 mr-1" /> {t("common.delete")}
-                    </Button>
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => openEdit(inst)}>
+                        <Pencil className="h-3.5 w-3.5 mr-1" /> {t("agreements.card.customize")}
+                      </Button>
+                      <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => setDeleteInst(inst)}>
+                        <Trash2 className="h-3.5 w-3.5 mr-1" /> {t("common.delete")}
+                      </Button>
+                    </>
                   )}
                   <Button
                     size="sm"
@@ -490,6 +560,61 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!editInst} onOpenChange={(open) => { if (!open) { setEditInst(null); setEditContent(null); } }}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t("agreements.edit.title")}</DialogTitle>
+            <DialogDescription>{t("agreements.edit.subtitle", { name: clientName })}</DialogDescription>
+          </DialogHeader>
+          {editContent && (
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">{t("agreements.edit.docTitle")}</label>
+                <Input
+                  value={editContent.title ?? ""}
+                  onChange={(e) => setEditContent({ ...editContent, title: e.target.value })}
+                />
+              </div>
+              <div className="space-y-3">
+                {(editContent.sections ?? []).map((s: any, idx: number) => (
+                  <div key={s.id ?? idx} className="border border-border rounded-md p-3 space-y-2">
+                    <Input
+                      value={s.heading ?? ""}
+                      onChange={(e) => {
+                        const copy = { ...editContent, sections: [...editContent.sections] };
+                        copy.sections[idx] = { ...copy.sections[idx], heading: e.target.value };
+                        setEditContent(copy);
+                      }}
+                      className="font-semibold"
+                    />
+                    <Textarea
+                      value={s.body ?? ""}
+                      onChange={(e) => {
+                        const copy = { ...editContent, sections: [...editContent.sections] };
+                        copy.sections[idx] = { ...copy.sections[idx], body: e.target.value };
+                        setEditContent(copy);
+                      }}
+                      rows={6}
+                    />
+                  </div>
+                ))}
+                {(!editContent.sections || editContent.sections.length === 0) && (
+                  <p className="text-sm text-muted-foreground">{t("agreements.preview.empty")}</p>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">{t("agreements.edit.hint")}</p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setEditInst(null); setEditContent(null); }}>{t("common.cancel")}</Button>
+            <Button onClick={saveEdit} disabled={savingEdit}>
+              {savingEdit ? t("common.loading") : t("common.save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       <ConfirmDeleteDialog
         open={!!deleteInst}
