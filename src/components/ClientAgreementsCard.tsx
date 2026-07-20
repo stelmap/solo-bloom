@@ -15,6 +15,8 @@ import { FileSignature, Plus, Copy, Link as LinkIcon, Ban, ExternalLink, Chevron
 import { format } from "date-fns";
 import { AgreementStatusTimeline } from "@/components/AgreementStatusTimeline";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
+import { SessionFormatsBlock, stripLegacySessionFormatsSection } from "@/components/SessionFormatsBlock";
+
 
 type Template = {
   id: string;
