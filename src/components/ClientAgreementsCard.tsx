@@ -439,32 +439,38 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
             ))}
             {((previewInst?.content?.sessionFormats?.length ?? 0) > 0 || previewInst?.content?.cycleLength || previewInst?.content?.frequency) && (
               <section className="pt-2">
-                <h2 className="text-base font-semibold text-foreground mb-2">Session formats</h2>
-                {(previewInst?.content?.sessionFormats ?? []).length > 0 && (
-                  <table className="w-full text-sm border border-border rounded overflow-hidden mb-2">
-                    <thead className="bg-muted/50">
-                      <tr>
-                        <th className="text-left p-2">Format</th>
-                        <th className="text-left p-2">Duration</th>
-                        <th className="text-left p-2">Price</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(previewInst?.content?.sessionFormats ?? []).map((f: any) => (
-                        <tr key={f.id} className="border-t border-border">
-                          <td className="p-2">{f.label || "—"}</td>
-                          <td className="p-2">{f.durationMinutes ? `${f.durationMinutes} min` : "—"}</td>
-                          <td className="p-2">{f.price !== "" && f.price != null ? `${f.price} ${f.currency || ""}`.trim() : "—"}</td>
+                <h2 className="text-base font-semibold text-foreground mb-2">{t("af.title")}</h2>
+                {(previewInst?.content?.sessionFormats ?? []).length > 0 && (() => {
+                  const formats: any[] = previewInst?.content?.sessionFormats ?? [];
+                  const anyPrice = formats.some((f) => f.price !== "" && f.price != null);
+                  return (
+                    <table className="w-full text-sm border border-border rounded overflow-hidden mb-2">
+                      <thead className="bg-muted/50">
+                        <tr>
+                          <th className="text-left p-2">{t("af.label")}</th>
+                          <th className="text-left p-2">{t("af.duration")}</th>
+                          {anyPrice && <th className="text-left p-2">{t("af.price")}</th>}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
+                      </thead>
+                      <tbody>
+                        {formats.map((f: any) => (
+                          <tr key={f.id} className="border-t border-border">
+                            <td className="p-2">{f.label || "—"}</td>
+                            <td className="p-2">{f.durationMinutes ? `${f.durationMinutes} ${t("common.min")}` : "—"}</td>
+                            {anyPrice && (
+                              <td className="p-2">{f.price !== "" && f.price != null ? `${f.price} ${f.currency || ""}`.trim() : ""}</td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  );
+                })()}
                 {previewInst?.content?.cycleLength ? (
-                  <p className="text-sm text-foreground">Cycle: {previewInst.content.cycleLength} sessions.</p>
+                  <p className="text-sm text-foreground">{t("af.cycleLine", { n: String(previewInst.content.cycleLength) })}</p>
                 ) : null}
                 {previewInst?.content?.frequency ? (
-                  <p className="text-sm text-foreground">Frequency: {previewInst.content.frequency}.</p>
+                  <p className="text-sm text-foreground">{t("af.frequencyLine", { v: previewInst.content.frequency })}</p>
                 ) : null}
               </section>
             )}
