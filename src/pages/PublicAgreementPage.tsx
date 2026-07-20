@@ -203,6 +203,14 @@ export default function PublicAgreementPage() {
       });
       return merged;
     });
+    // Prefill first/last name from client_name only if user hasn't entered anything yet
+    if (!firstName && !lastName && res.client_name) {
+      const parts = res.client_name.trim().split(/\s+/);
+      if (parts.length > 0) {
+        setFirstName((prev) => prev || parts[0] || "");
+        setLastName((prev) => prev || parts.slice(1).join(" ") || "");
+      }
+    }
     if (res.already_accepted) {
       setAccepted({ at: res.accepted_at || "", hash: "" });
       clearDraft(token);
