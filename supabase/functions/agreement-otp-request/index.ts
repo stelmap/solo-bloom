@@ -89,6 +89,33 @@ Deno.serve(async (req) => {
       .maybeSingle();
     const therapistName = profile?.business_name || profile?.full_name || "Your therapist";
 
+    // Get or create unsubscribe token (required by the email API for transactional sends)
+    const normalizedEmail = email.toLowerCase();
+    let unsubscribeToken: string | null = null;
+    const { data: existingToken } = await supabase
+      .from("email_unsubscribe_tokens")
+      .select("token, used_at")
+      .eq("email", normalizedEmail)
+      .maybeSingle();
+    if (existingToken?.token && !existingToken.used_at) {
+      unsubscribeToken = existingToken.token;
+    } else if (!existingToken) {
+      const bytes = new Uint8Array(32);
+      crypto.getRandomValues(bytes);
+      const newToken = Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+      await supabase
+        .from("email_unsubscribe_tokens")
+        .upsert({ token: newToken, email: normalizedEmail }, { onConflict: "email", ignoreDuplicates: true });
+      const { data: stored } = await supabase
+        .from("email_unsubscribe_tokens")
+        .select("token")
+        .eq("email", normalizedEmail)
+        .maybeSingle();
+      unsubscribeToken = stored?.token ?? newToken;
+    } else {
+      unsubscribeToken = existingToken.token;
+    }
+
     // Enqueue email through managed pipeline (same as send-transactional-email)
     const messageId = crypto.randomUUID();
     await supabase.from("email_send_log").insert({
@@ -110,6 +137,7 @@ Deno.serve(async (req) => {
         purpose: "transactional",
         label: "agreement-otp",
         idempotency_key: `agreement-otp-${messageId}`,
+        unsubscribe_token: unsubscribeToken,
         queued_at: new Date().toISOString(),
       },
     });
