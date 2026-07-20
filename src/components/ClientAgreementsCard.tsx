@@ -561,6 +561,61 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
         </DialogContent>
       </Dialog>
 
+      <Dialog open={!!editInst} onOpenChange={(open) => { if (!open) { setEditInst(null); setEditContent(null); } }}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t("agreements.edit.title")}</DialogTitle>
+            <DialogDescription>{t("agreements.edit.subtitle", { name: clientName })}</DialogDescription>
+          </DialogHeader>
+          {editContent && (
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">{t("agreements.edit.docTitle")}</label>
+                <Input
+                  value={editContent.title ?? ""}
+                  onChange={(e) => setEditContent({ ...editContent, title: e.target.value })}
+                />
+              </div>
+              <div className="space-y-3">
+                {(editContent.sections ?? []).map((s: any, idx: number) => (
+                  <div key={s.id ?? idx} className="border border-border rounded-md p-3 space-y-2">
+                    <Input
+                      value={s.heading ?? ""}
+                      onChange={(e) => {
+                        const copy = { ...editContent, sections: [...editContent.sections] };
+                        copy.sections[idx] = { ...copy.sections[idx], heading: e.target.value };
+                        setEditContent(copy);
+                      }}
+                      className="font-semibold"
+                    />
+                    <Textarea
+                      value={s.body ?? ""}
+                      onChange={(e) => {
+                        const copy = { ...editContent, sections: [...editContent.sections] };
+                        copy.sections[idx] = { ...copy.sections[idx], body: e.target.value };
+                        setEditContent(copy);
+                      }}
+                      rows={6}
+                    />
+                  </div>
+                ))}
+                {(!editContent.sections || editContent.sections.length === 0) && (
+                  <p className="text-sm text-muted-foreground">{t("agreements.preview.empty")}</p>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">{t("agreements.edit.hint")}</p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setEditInst(null); setEditContent(null); }}>{t("common.cancel")}</Button>
+            <Button onClick={saveEdit} disabled={savingEdit}>
+              {savingEdit ? t("common.loading") : t("common.save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
       <ConfirmDeleteDialog
         open={!!deleteInst}
         onOpenChange={(open) => !open && setDeleteInst(null)}
