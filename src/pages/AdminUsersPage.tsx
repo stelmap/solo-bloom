@@ -61,6 +61,7 @@ const ACTION_LABEL: Record<LifecycleAction, string> = {
   delete_permanently: "Delete permanently",
   send_warning_email_uk: "Send warning email — Ukrainian",
   send_warning_email_en: "Send warning email — English",
+  delete_user_and_data: "Delete user & data",
 };
 
 function isValidEmail(email: string | null | undefined): boolean {
@@ -198,18 +199,28 @@ export default function AdminUsersPage() {
         body: {
           action: dialogAction,
           user_id: dialogUser.id,
-          confirmation: dialogAction === "delete_permanently" ? dialogConfirm : undefined,
+          confirmation:
+            dialogAction === "delete_permanently" || dialogAction === "delete_user_and_data"
+              ? dialogConfirm
+              : undefined,
         },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
       const isWarning = dialogAction === "send_warning_email_uk" || dialogAction === "send_warning_email_en";
+      const isHardDelete = dialogAction === "delete_user_and_data";
       toast({
-        title: isWarning ? "Email sent" : "Done",
-        description: isWarning
-          ? `Warning email was successfully sent to ${dialogUser.email}.`
-          : ACTION_LABEL[dialogAction],
+        title: isHardDelete ? "User deleted" : isWarning ? "Email sent" : "Done",
+        description: isHardDelete
+          ? `${dialogUser.email} and all data owned by this account were successfully deleted.`
+          : isWarning
+            ? `Warning email was successfully sent to ${dialogUser.email}.`
+            : ACTION_LABEL[dialogAction],
       });
+      if (isHardDelete) {
+        const deletedId = dialogUser.id;
+        setUsers((prev) => prev.filter((u) => u.id !== deletedId));
+      }
       setDialogUser(null);
       setDialogAction(null);
       setDialogConfirm("");
@@ -522,13 +533,22 @@ export default function AdminUsersPage() {
               Cancel
             </Button>
             <Button
-              variant={dialogAction === "delete_permanently" ? "destructive" : "default"}
-              disabled={dialogBusy || (dialogAction === "delete_permanently" && dialogConfirm !== "DELETE")}
+              variant={dialogAction === "delete_permanently" || dialogAction === "delete_user_and_data" ? "destructive" : "default"}
+              disabled={
+                dialogBusy ||
+                (dialogAction === "delete_permanently" && dialogConfirm !== "DELETE") ||
+                (dialogAction === "delete_user_and_data" &&
+                  dialogConfirm.trim().toLowerCase() !== (dialogUser?.email ?? "").toLowerCase())
+              }
               onClick={runAction}
             >
 
               {dialogBusy && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              {dialogAction === "send_warning_email_uk" || dialogAction === "send_warning_email_en" ? "Send email" : "Confirm"}
+              {dialogAction === "send_warning_email_uk" || dialogAction === "send_warning_email_en"
+                ? "Send email"
+                : dialogAction === "delete_user_and_data"
+                  ? "Delete user & data"
+                  : "Confirm"}
             </Button>
 
           </DialogFooter>

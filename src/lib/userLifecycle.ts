@@ -11,13 +11,14 @@ export type LifecycleAction =
   | "delete_permanently"
   | "cancel_deletion"
   | "send_warning_email_uk"
-  | "send_warning_email_en";
+  | "send_warning_email_en"
+  | "delete_user_and_data";
 
 export function allowedActions(status: LifecycleStatus): LifecycleAction[] {
   switch (status) {
     case "active": return ["deactivate", "send_warning_email_uk", "send_warning_email_en"];
-    case "deactivation_pending": return ["cancel_deactivation", "resend_email", "send_warning_email_uk", "send_warning_email_en"];
-    case "ready_for_deletion": return ["delete_permanently", "cancel_deletion", "send_warning_email_uk", "send_warning_email_en"];
+    case "deactivation_pending": return ["cancel_deactivation", "resend_email", "send_warning_email_uk", "send_warning_email_en", "delete_user_and_data"];
+    case "ready_for_deletion": return ["delete_permanently", "cancel_deletion", "send_warning_email_uk", "send_warning_email_en", "delete_user_and_data"];
     case "deleted": return [];
   }
 }
