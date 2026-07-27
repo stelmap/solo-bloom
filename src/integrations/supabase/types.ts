@@ -3398,7 +3398,10 @@ export type Database = {
       _gdpr_decrypt: { Args: { cipher: string }; Returns: string }
       _gdpr_encrypt: { Args: { plain: string }; Returns: string }
       _gdpr_key: { Args: never; Returns: string }
-      admin_delete_user_and_data: { Args: { p_user_id: string }; Returns: Json }
+      admin_delete_user_and_data: {
+        Args: { p_admin_id: string; p_user_id: string }
+        Returns: Json
+      }
       admin_list_booking_email_logs: {
         Args: { p_ids: string[] }
         Returns: {
