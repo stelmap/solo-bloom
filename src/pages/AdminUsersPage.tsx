@@ -498,6 +498,38 @@ export default function AdminUsersPage() {
             </div>
           )}
 
+          {dialogAction === "delete_user_and_data" && dialogUser && (
+            <div className="space-y-3 text-sm">
+              <div className="rounded-md border p-3 space-y-1">
+                <p>Email: <span className="font-medium">{dialogUser.email}</span></p>
+                <p>Status: <span className="font-medium">{statusLabel(dialogUser.lifecycle_status ?? "active")}</span></p>
+                {dialogUser.planned_deletion_date && (
+                  <p>Deletion scheduled:{" "}
+                    <span className="font-medium">
+                      {new Date(dialogUser.planned_deletion_date).toLocaleDateString()}
+                    </span>
+                  </p>
+                )}
+              </div>
+              <p className="text-destructive">
+                This will permanently delete this SoloBizz account and all data owned by this user,
+                including clients, sessions, documents, financial records and uploaded files.
+              </p>
+              <p className="text-muted-foreground">
+                Data belonging to other SoloBizz users will not be affected. This action cannot be undone.
+              </p>
+              <div className="space-y-1">
+                <p>Type <span className="font-medium">{dialogUser.email}</span> to confirm.</p>
+                <Input
+                  placeholder={dialogUser.email ?? ""}
+                  autoComplete="off"
+                  value={dialogConfirm}
+                  onChange={(e) => setDialogConfirm(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+
           {(dialogAction === "send_warning_email_uk" || dialogAction === "send_warning_email_en") && dialogUser && (() => {
             const lang = dialogAction === "send_warning_email_uk" ? "Ukrainian" : "English";
             const lastSent = dialogUser.deactivation_email_sent_at;
