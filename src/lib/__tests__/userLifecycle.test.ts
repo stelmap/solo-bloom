@@ -7,10 +7,21 @@ import {
 
 describe("userLifecycle", () => {
   it("returns correct actions per status", () => {
-    expect(allowedActions("active")).toEqual(["deactivate"]);
-    expect(allowedActions("deactivation_pending")).toEqual(["cancel_deactivation", "resend_email"]);
-    expect(allowedActions("ready_for_deletion")).toEqual(["delete_permanently", "cancel_deletion"]);
+    expect(allowedActions("active")).toEqual([
+      "deactivate", "send_warning_email_uk", "send_warning_email_en",
+    ]);
+    expect(allowedActions("deactivation_pending")).toEqual([
+      "cancel_deactivation", "resend_email", "send_warning_email_uk", "send_warning_email_en", "delete_user_and_data",
+    ]);
+    expect(allowedActions("ready_for_deletion")).toEqual([
+      "delete_permanently", "cancel_deletion", "send_warning_email_uk", "send_warning_email_en", "delete_user_and_data",
+    ]);
     expect(allowedActions("deleted")).toEqual([]);
+  });
+
+  it("never offers hard deletion for active or already deleted accounts", () => {
+    expect(allowedActions("active")).not.toContain("delete_user_and_data");
+    expect(allowedActions("deleted")).not.toContain("delete_user_and_data");
   });
 
   it("computes planned deletion date with default 7 days", () => {
