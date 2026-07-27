@@ -13,8 +13,37 @@ type Action =
   | "delete_permanently"
   | "cancel_deletion"
   | "send_warning_email_uk"
-  | "send_warning_email_en";
+  | "send_warning_email_en"
+  | "delete_user_and_data";
 
+
+
+// Recursively remove every storage object stored under `<userId>/` in a bucket.
+// Paths in every SoloBizz bucket start with the owning user's id, so this is
+// strictly tenant-scoped: no other user's files can ever be matched.
+async function purgeUserStorage(admin: any, bucket: string, userId: string): Promise<number> {
+  let removed = 0;
+  const walk = async (prefix: string, depth: number) => {
+    if (depth > 5) return;
+    const { data, error } = await admin.storage.from(bucket).list(prefix, { limit: 1000 });
+    if (error || !data) return;
+    const files: string[] = [];
+    for (const entry of data) {
+      const full = `${prefix}/${entry.name}`;
+      if (entry.id === null) await walk(full, depth + 1);
+      else files.push(full);
+    }
+    if (files.length) {
+      const safe = files.filter((f) => f.startsWith(`${userId}/`));
+      if (safe.length) {
+        await admin.storage.from(bucket).remove(safe);
+        removed += safe.length;
+      }
+    }
+  };
+  await walk(userId, 0);
+  return removed;
+}
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -230,6 +259,58 @@ Deno.serve(async (req) => {
         await audit("deleted", { auth_delete_error: delErr?.message ?? null }, "deleted");
         if (delErr) return json({ ok: false, error: delErr.message }, 500);
         return json({ ok: true });
+      }
+      case "delete_user_and_data": {
+        // ---- Pre-delete validation. Any failure aborts with zero changes. ----
+        if (!targetEmail) return json({ error: "User could not be safely deleted. No data was changed." }, 400);
+        if (targetUserId === userData.user.id) {
+          return json({ error: "You cannot delete your own admin account." }, 400);
+        }
+        const { data: targetIsAdmin } = await admin.rpc("has_role", { _user_id: targetUserId, _role: "admin" });
+        if (targetIsAdmin) {
+          return json({ error: "Admin accounts cannot be deleted with this operation." }, 400);
+        }
+        if (String(confirmation ?? "").trim().toLowerCase() !== targetEmail.toLowerCase()) {
+          return json({ error: "Confirmation email does not match. No data was changed." }, 400);
+        }
+        if (previousStatus !== "deactivation_pending" && previousStatus !== "ready_for_deletion") {
+          return json({ error: "User must be in Deactivation pending or Ready for deletion status." }, 400);
+        }
+
+        // ---- Storage first (not transactional; DB rows still point at files) --
+        let filesRemoved = 0;
+        try {
+          for (const bucket of ["client-attachments", "practice-avatars", "invoice-signatures", "agreement-documents"]) {
+            filesRemoved += await purgeUserStorage(admin, bucket, targetUserId);
+          }
+        } catch (e) {
+          await audit("delete_user_and_data_failed", { stage: "storage", error: String((e as Error).message ?? e) });
+          return json({ error: "User deletion failed. No unrelated user data was affected." }, 500);
+        }
+
+        // ---- Tenant-scoped DB deletion (single transactional RPC) ------------
+        const { data: rpcData, error: rpcErr } = await admin.rpc("admin_delete_user_and_data", {
+          p_user_id: targetUserId,
+          p_admin_id: userData.user.id,
+        });
+        if (rpcErr) {
+          await audit("delete_user_and_data_failed", { stage: "database", error: rpcErr.message });
+          return json({ error: "User deletion failed. No unrelated user data was affected." }, 500);
+        }
+
+        // ---- Authentication identity ----------------------------------------
+        const { error: authErr } = await admin.auth.admin.deleteUser(targetUserId);
+        if (authErr) {
+          await audit("delete_user_and_data_failed", { stage: "auth", error: authErr.message });
+          return json({ error: "User deletion failed. No unrelated user data was affected." }, 500);
+        }
+
+        await audit("user_account_deleted", {
+          deleted_user_email: targetEmail,
+          files_removed: filesRemoved,
+          deleted_counts: (rpcData as any)?.deleted_counts ?? null,
+        }, "deleted");
+        return json({ ok: true, email: targetEmail, files_removed: filesRemoved });
       }
       case "send_warning_email_uk":
       case "send_warning_email_en": {
