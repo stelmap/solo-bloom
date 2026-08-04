@@ -183,22 +183,22 @@ export default function AgreementTemplateEditorPage() {
 
   const validationErrors = useMemo(() => {
     const errs: string[] = [];
-    if (!content.title.trim()) errs.push("Title is required.");
-    if (content.sections.length === 0) errs.push("Add at least one section.");
+    if (!content.title.trim()) errs.push(t("ae.err.title"));
+    if (content.sections.length === 0) errs.push(t("ae.err.addSection"));
     content.sections.forEach((s, i) => {
       if (!s.heading.trim() && !s.body.trim())
-        errs.push(`Section ${i + 1} is empty.`);
+        errs.push(t("ae.err.sectionEmpty", { n: String(i + 1) }));
     });
     controls.forEach((c, i) => {
-      if (!c.label.trim()) errs.push(`Control ${i + 1} needs a label.`);
+      if (!c.label.trim()) errs.push(t("ae.err.controlLabel", { n: String(i + 1) }));
     });
     const requiredAcks = controls.filter(
       (c) => c.type === "required_checkbox" || c.type === "typed_acknowledgement",
     );
     if (requiredAcks.length === 0)
-      errs.push("Add at least one required acknowledgement control.");
+      errs.push(t("ae.err.needAck"));
     return errs;
-  }, [content, controls]);
+  }, [content, controls, t]);
 
   async function save() {
     if (!versionId || readOnly) return;
@@ -208,8 +208,8 @@ export default function AgreementTemplateEditorPage() {
       .update({ content: content as any, controls: controls as any })
       .eq("id", versionId);
     setSaving(false);
-    if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
-    else toast({ title: "Draft saved" });
+    if (error) toast({ title: t("ae.saveFailed"), description: error.message, variant: "destructive" });
+    else toast({ title: t("ae.draftSaved") });
   }
 
   async function activate() {
@@ -383,10 +383,10 @@ export default function AgreementTemplateEditorPage() {
           {/* Editor */}
           <div className="space-y-6">
             <Card>
-              <CardHeader><CardTitle className="text-base">Content</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t("ae.content")}</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>Title</Label>
+                  <Label>{t("ae.title")}</Label>
                   <div className="flex gap-1">
                     <Input
                       value={content.title}
@@ -394,7 +394,7 @@ export default function AgreementTemplateEditorPage() {
                       onChange={(e) => setContent({ ...content, title: e.target.value })}
                     />
                     <ExpandBtn onClick={() => openExpand({
-                      title: "Title",
+                      title: t("ae.title"),
                       value: content.title,
                       multiline: false,
                       onSave: (v) => setContent({ ...content, title: v }),
@@ -405,7 +405,7 @@ export default function AgreementTemplateEditorPage() {
                   <div key={s.id}>
                     <div className="rounded border border-border p-3 space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">Section {idx + 1}</span>
+                        <span className="text-xs text-muted-foreground">{t("ae.section", { n: String(idx + 1) })}</span>
                         {!readOnly && (
                           <Button variant="ghost" size="icon" onClick={() => removeSection(s.id)}>
                             <Trash2 className="w-4 h-4" />
@@ -414,13 +414,13 @@ export default function AgreementTemplateEditorPage() {
                       </div>
                       <div className="flex gap-1">
                         <Input
-                          placeholder="Heading"
+                          placeholder={t("ae.heading")}
                           value={s.heading}
                           disabled={readOnly}
                           onChange={(e) => updateSection(s.id, { heading: e.target.value })}
                         />
                         <ExpandBtn onClick={() => openExpand({
-                          title: `Section ${idx + 1} — Heading`,
+                          title: t("ae.sectionHeading", { n: String(idx + 1) }),
                           value: s.heading,
                           multiline: false,
                           onSave: (v) => updateSection(s.id, { heading: v }),
@@ -428,14 +428,14 @@ export default function AgreementTemplateEditorPage() {
                       </div>
                       <div className="flex gap-1 items-start">
                         <Textarea
-                          placeholder="Body text. Use variables like {{client.first_name}}."
+                          placeholder={t("ae.bodyPlaceholder")}
                           rows={5}
                           value={s.body}
                           disabled={readOnly}
                           onChange={(e) => updateSection(s.id, { body: e.target.value })}
                         />
                         <ExpandBtn onClick={() => openExpand({
-                          title: `Section ${idx + 1} — Body`,
+                          title: t("ae.sectionBody", { n: String(idx + 1) }),
                           value: s.body,
                           multiline: true,
                           onSave: (v) => updateSection(s.id, { body: v }),
@@ -562,7 +562,7 @@ export default function AgreementTemplateEditorPage() {
                                   }))
                                 }
                               >
-                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectTrigger aria-label={t("ac.typeLabel")}><SelectValue>{t(`ac.type.${c.type}`)}</SelectValue></SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="specified">{t("af.cycleModeSpecified")}</SelectItem>
                                   <SelectItem value="indefinite">{t("af.cycleModeIndefinite")}</SelectItem>
@@ -599,11 +599,11 @@ export default function AgreementTemplateEditorPage() {
                 ))}
                 {!readOnly && (
                   <Button variant="outline" size="sm" onClick={addSection}>
-                    <Plus className="w-4 h-4 mr-1" /> Add section
+                    <Plus className="w-4 h-4 mr-1" /> {t("ae.addSection")}
                   </Button>
                 )}
                 <div className="text-xs text-muted-foreground">
-                  <span className="font-medium">Variables:</span>{" "}
+                  <span className="font-medium">{t("ae.variables")}</span>{" "}
                   {AVAILABLE_VARIABLES.map((v) => (
                     <code key={v} className="mr-1 px-1 py-0.5 bg-muted rounded">{v}</code>
                   ))}
@@ -615,14 +615,14 @@ export default function AgreementTemplateEditorPage() {
 
 
             <Card>
-              <CardHeader><CardTitle className="text-base">Client controls</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t("ac.controls")}</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 {controls.map((c, i) => (
                   <div key={c.id} className="rounded border border-border p-3 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Control {i + 1}</span>
+                      <span className="text-xs text-muted-foreground">{t("ac.control", { n: String(i + 1) })}</span>
                       {!readOnly && (
-                        <Button variant="ghost" size="icon" onClick={() => removeControl(c.id)}>
+                        <Button variant="ghost" size="icon" aria-label={t("ac.remove")} onClick={() => removeControl(c.id)}>
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       )}
@@ -639,21 +639,21 @@ export default function AgreementTemplateEditorPage() {
                     >
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="required_checkbox">Required checkbox</SelectItem>
-                        <SelectItem value="optional_checkbox">Optional checkbox</SelectItem>
-                        <SelectItem value="typed_acknowledgement">Typed acknowledgement</SelectItem>
+                        <SelectItem value="required_checkbox">{t("ac.type.required_checkbox")}</SelectItem>
+                        <SelectItem value="optional_checkbox">{t("ac.type.optional_checkbox")}</SelectItem>
+                        <SelectItem value="typed_acknowledgement">{t("ac.type.typed_acknowledgement")}</SelectItem>
                       </SelectContent>
                     </Select>
                     <div className="flex gap-1 items-start">
                       <Textarea
-                        placeholder="Label shown to the client"
+                        placeholder={t("ac.labelPlaceholder")}
                         rows={2}
                         value={c.label}
                         disabled={readOnly}
                         onChange={(e) => updateControl(c.id, { label: e.target.value })}
                       />
                       <ExpandBtn onClick={() => openExpand({
-                        title: `Control ${i + 1} — Label`,
+                        title: t("ac.labelTitle", { n: String(i + 1) }),
                         value: c.label,
                         multiline: true,
                         onSave: (v) => updateControl(c.id, { label: v }),
@@ -666,14 +666,14 @@ export default function AgreementTemplateEditorPage() {
                           disabled={readOnly}
                           onCheckedChange={(v) => updateControl(c.id, { required: v })}
                         />
-                        <span className="text-muted-foreground">Mark as required</span>
+                        <span className="text-muted-foreground">{t("ac.markRequired")}</span>
                       </div>
                     )}
                   </div>
                 ))}
                 {!readOnly && (
                   <Button variant="outline" size="sm" onClick={addControl}>
-                    <Plus className="w-4 h-4 mr-1" /> Add control
+                    <Plus className="w-4 h-4 mr-1" /> {t("ac.addControl")}
                   </Button>
                 )}
               </CardContent>
@@ -681,7 +681,7 @@ export default function AgreementTemplateEditorPage() {
 
             {!readOnly && validationErrors.length > 0 && (
               <Card>
-                <CardHeader><CardTitle className="text-base text-destructive">To activate, fix:</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-base text-destructive">{t("ae.toActivate")}</CardTitle></CardHeader>
                 <CardContent>
                   <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1">
                     {validationErrors.map((e) => <li key={e}>{e}</li>)}
@@ -694,7 +694,7 @@ export default function AgreementTemplateEditorPage() {
           {/* Preview */}
           <div>
             <Card>
-              <CardHeader><CardTitle className="text-base">Preview ({preview})</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t("ae.preview")} ({preview})</CardTitle></CardHeader>
               <CardContent>
                 <div
                   className={
@@ -703,7 +703,7 @@ export default function AgreementTemplateEditorPage() {
                   }
                   style={{ minHeight: 400 }}
                 >
-                  <h2 className="text-xl font-semibold mb-3">{interpolateText(content.title, previewVars) || "Untitled agreement"}</h2>
+                  <h2 className="text-xl font-semibold mb-3">{interpolateText(content.title, previewVars) || t("ae.untitled")}</h2>
                   {(() => {
                     const hasServices = content.sections.some((s) => s.id === "services");
                     return content.sections.map((s) => (
@@ -730,7 +730,7 @@ export default function AgreementTemplateEditorPage() {
                                 {c.label}
                                 {c.required && <span className="text-destructive"> *</span>}
                               </div>
-                              <Input placeholder="Type to acknowledge" disabled />
+                              <Input placeholder={t("ac.typeToAcknowledge")} disabled />
                             </div>
                           ) : (
                             <>
