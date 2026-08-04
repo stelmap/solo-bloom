@@ -562,7 +562,7 @@ export default function AgreementTemplateEditorPage() {
                                   }))
                                 }
                               >
-                                <SelectTrigger aria-label={t("ac.typeLabel")}><SelectValue>{t(`ac.type.${c.type}`)}</SelectValue></SelectTrigger>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="specified">{t("af.cycleModeSpecified")}</SelectItem>
                                   <SelectItem value="indefinite">{t("af.cycleModeIndefinite")}</SelectItem>
