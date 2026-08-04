@@ -637,7 +637,7 @@ export default function AgreementTemplateEditorPage() {
                         })
                       }
                     >
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger aria-label={t("ac.typeLabel")}><SelectValue>{t(`ac.type.${c.type}`)}</SelectValue></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="required_checkbox">{t("ac.type.required_checkbox")}</SelectItem>
                         <SelectItem value="optional_checkbox">{t("ac.type.optional_checkbox")}</SelectItem>
