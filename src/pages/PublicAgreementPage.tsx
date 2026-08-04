@@ -526,7 +526,7 @@ export default function PublicAgreementPage() {
               return (
                 <div key={c.id} className="space-y-1">
                   <Label htmlFor={`ctl-${c.id}`}>{interpolate(c.label, firstName, lastName)} <span className="text-destructive">*</span></Label>
-                  <Input id={`ctl-${c.id}`} value={String(answers[c.id] ?? "")} onChange={(e) => setAnswers((a) => ({ ...a, [c.id]: e.target.value }))} maxLength={500} />
+                  <Input id={`ctl-${c.id}`} placeholder={t("ac.typeToAcknowledge")} value={String(answers[c.id] ?? "")} onChange={(e) => setAnswers((a) => ({ ...a, [c.id]: e.target.value }))} maxLength={500} />
                 </div>
               );
             }
