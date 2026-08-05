@@ -79,7 +79,9 @@ export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditReque
     await persist(value);
   };
 
-  const isEmpty = !value.trim();
+  const plainText = noteToPlainText(value);
+  const isEmpty = !plainText.trim();
+
   const saving = update.isPending;
   const status = saving
     ? { icon: <Loader2 className="h-3 w-3 animate-spin" />, text: t("clientNotes.saving"), tone: "text-muted-foreground" }
