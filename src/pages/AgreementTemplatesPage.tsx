@@ -56,7 +56,47 @@ export default function AgreementTemplatesPage() {
   const [seeding, setSeeding] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<Template | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const { t } = useLanguage();
+
+  async function deleteTemplate(tpl: Template) {
+    setDeleting(true);
+    try {
+      const versionIds = (versions[tpl.id] || []).map((v) => v.id);
+      if (versionIds.length) {
+        const { count, error: cntErr } = await supabase
+          .from("agreement_instances")
+          .select("id", { count: "exact", head: true })
+          .in("template_version_id", versionIds);
+        if (cntErr) throw cntErr;
+        if ((count ?? 0) > 0) {
+          toast({
+            title: t("agreements.templates.deleteBlocked"),
+            description: t("agreements.templates.deleteBlockedDesc"),
+            variant: "destructive",
+          });
+          setDeleteTarget(null);
+          return;
+        }
+        await supabase.from("agreement_template_versions").delete().in("id", versionIds);
+      }
+      const { error } = await supabase.from("agreement_templates").delete().eq("id", tpl.id);
+      if (error) throw error;
+      setTemplates((prev) => prev.filter((x) => x.id !== tpl.id));
+      setVersions((prev) => {
+        const next = { ...prev };
+        delete next[tpl.id];
+        return next;
+      });
+      setDeleteTarget(null);
+      toast({ title: t("agreements.templates.deleted") });
+    } catch (e: any) {
+      toast({ title: t("agreements.templates.deleteFail"), description: e.message, variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   async function renameTemplate(tpl: Template) {
     const name = renameValue.trim();
