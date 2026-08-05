@@ -436,6 +436,30 @@ export default function AgreementTemplatesPage() {
             );
           })}
         </div>
+
+        <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("agreements.templates.deleteTitle")}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("agreements.templates.deleteDesc", { name: deleteTarget?.name ?? "" })}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deleting}>{t("common.cancel")}</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={deleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (deleteTarget) deleteTemplate(deleteTarget);
+                }}
+              >
+                {t("agreements.templates.delete")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AppLayout>
   );
