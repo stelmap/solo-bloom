@@ -19,6 +19,9 @@ import { AgreementStatusTimeline } from "@/components/AgreementStatusTimeline";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { SessionFormatsBlock, stripLegacySessionFormatsSection } from "@/components/SessionFormatsBlock";
 import { buildVarMap, interpolateText, splitClientName } from "@/lib/agreementInterpolate";
+import { SignedAgreementDocument, useSignedPdfLabels } from "@/components/SignedAgreementDocument";
+import { downloadSignedAgreementPdf, type SignedAgreementData } from "@/lib/signedAgreementPdf";
+import { Download, FileCheck2 } from "lucide-react";
 
 
 type Template = {
@@ -96,6 +99,10 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
   const [editContent, setEditContent] = useState<any>(null);
   const [savingEdit, setSavingEdit] = useState(false);
   const [therapistProfile, setTherapistProfile] = useState<{ full_name: string; business_name: string }>({ full_name: "", business_name: "" });
+  const [signedDocs, setSignedDocs] = useState<Record<string, SignedAgreementData[]>>({});
+  const [signedView, setSignedView] = useState<SignedAgreementData | null>(null);
+  const [clientLanguage, setClientLanguage] = useState<string>("en");
+  const pdfLabels = useSignedPdfLabels();
 
   useEffect(() => {
     if (!user) return;
@@ -212,6 +219,60 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
     } else {
       setInvitations({});
     }
+
+    // Signed documents (immutable acceptance records) per instance
+    const { data: clientRow } = await supabase
+      .from("clients")
+      .select("communication_language")
+      .eq("id", clientId)
+      .maybeSingle();
+    const lang = String((clientRow as any)?.communication_language || "en");
+    setClientLanguage(lang);
+
+    const { data: accs } = await supabase
+      .from("agreement_acceptances")
+      .select("id, instance_id, revision_id, answers, typed_name, accepted_at, evidence_hash")
+      .eq("client_id", clientId)
+      .order("accepted_at", { ascending: false });
+
+    const accList = (accs ?? []) as any[];
+    if (accList.length) {
+      const { data: revs } = await supabase
+        .from("agreement_revisions")
+        .select("id, revision_number, content_snapshot, controls_snapshot")
+        .in("id", accList.map((a) => a.revision_id));
+      const revById = new Map<string, any>((revs ?? []).map((r: any) => [r.id, r]));
+      const grouped: Record<string, SignedAgreementData[]> = {};
+      for (const a of accList) {
+        const rev = revById.get(a.revision_id);
+        if (!rev) continue;
+        const content = rev.content_snapshot || {};
+        const inst = instList.find((i) => i.id === a.instance_id);
+        const tv = (vers ?? []).find((v: any) => v.id === inst?.template_version_id) as any;
+        const item: SignedAgreementData = {
+          title: content.title || "",
+          sections: content.sections || [],
+          sessionFormats: content.sessionFormats ?? null,
+          cycleLength: content.cycleLength ?? null,
+          frequency: content.frequency ?? null,
+          controls: (rev.controls_snapshot || []) as any[],
+          answers: (a.answers || {}) as Record<string, boolean | string>,
+          clientName,
+          therapistName: "",
+          signedName: a.typed_name || "",
+          acceptedAt: a.accepted_at,
+          language: lang,
+          documentId: a.id,
+          versionLabel: `v${tv?.version_number ?? 1}.${rev.revision_number ?? 1}`,
+          evidenceHash: a.evidence_hash || "",
+        };
+        (grouped[a.instance_id] ||= []).push(item);
+      }
+      setSignedDocs(grouped);
+    } else {
+      setSignedDocs({});
+    }
+
     setLoading(false);
   }
 
