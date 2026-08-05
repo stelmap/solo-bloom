@@ -273,7 +273,7 @@ export default function FinancialOverviewPage() {
         expenseItems: p.expenseItems,
       };
     });
-  }, [year, allIncome, allExpenses, allAppointments, activeTaxes, expectedPayments, currentMonth, currentYear, incomeDateField]);
+  }, [year, allIncome, allExpenses, allAppointments, activeTaxes, expectedPayments, currentMonth, currentYear, incomeDateField, dateLocale, lang]);
 
   // Yearly summaries
   const pastMonths = monthsData.filter(m => !m.isFuture && (m.income > 0 || m.expenses > 0));
