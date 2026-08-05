@@ -176,18 +176,16 @@ export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditReque
 
 
   const editor = (full: boolean) => (
-    <Textarea
+    <RichTextEditor
       value={value}
-      onChange={(e) => handleChange(e.target.value)}
+      onChange={handleChange}
       onBlur={handleManualSave}
       placeholder={t("clientNotes.placeholder")}
       disabled={disabled}
-      className={cn(
-        "resize-none text-sm leading-relaxed",
-        full ? "min-h-[60vh]" : "min-h-[180px]",
-      )}
+      minHeight={full ? "55vh" : "180px"}
     />
   );
+
 
   return (
     <>
