@@ -138,13 +138,14 @@ export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditReque
             <DialogHeader>
               <DialogTitle>{t("clientNotes.shortTitle")} — {client.name}</DialogTitle>
             </DialogHeader>
-            <Textarea
+            <RichTextEditor
               value={draft}
-              onChange={(e) => setDraft(e.target.value)}
+              onChange={setDraft}
               placeholder={t("clientNotes.placeholder")}
-              className="min-h-[260px] resize-none text-sm leading-relaxed"
+              minHeight="260px"
               autoFocus
             />
+
             <div className="flex items-center justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setInlineOpen(false)}>
                 <X className="h-4 w-4 mr-1" /> {t("clientNotes.close")}
