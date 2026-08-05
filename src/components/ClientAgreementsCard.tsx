@@ -483,6 +483,17 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
                       </Button>
                     </>
                   )}
+                  {(signedDocs[inst.id] ?? []).slice(0, 1).map((doc) => (
+                    <span key={doc.documentId} className="contents">
+                      <Button size="sm" variant="outline" onClick={() => setSignedView(prepareSigned(doc))}>
+                        <FileCheck2 className="h-3.5 w-3.5 mr-1" /> {t("signed.viewDocument")}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => downloadSignedAgreementPdf(prepareSigned(doc), pdfLabels)}>
+                        <Download className="h-3.5 w-3.5 mr-1" /> {t("signed.downloadPdf")}
+                      </Button>
+                    </span>
+                  ))}
+
                   <Button
                     size="sm"
                     variant="ghost"
