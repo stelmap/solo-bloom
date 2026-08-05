@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { FileText, Maximize2, X, CheckCircle2, Loader2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { useUpdateClient } from "@/hooks/useData";
@@ -9,6 +8,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { RichTextEditor, RichTextView } from "@/components/RichTextEditor";
+import { noteToPlainText } from "@/lib/richText";
+
 
 type Props = {
   client: { id: string; name: string; notes?: string | null; updated_at?: string | null };
