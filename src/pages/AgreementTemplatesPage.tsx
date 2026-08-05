@@ -8,7 +8,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Plus, FileText, Archive, CheckCircle2, Pencil, Sparkles, Check, X } from "lucide-react";
+import { Plus, FileText, Archive, CheckCircle2, Pencil, Sparkles, Check, X, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   STARTER_TEMPLATE_NAME,
   STARTER_TEMPLATE_DESCRIPTION,
