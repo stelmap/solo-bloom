@@ -62,7 +62,7 @@ export const STARTER_TEMPLATE_CONTENT = {
       id: "signature",
       heading: "Підпис сторін",
       body:
-        "Я, {{client.first_name}} {{client.last_name}}, прочитав(-ла) цей текст, розумію його зміст і згоден(-на) з викладеними умовами.\n\nПсихолог: {{therapist.full_name}}\nДата підписання: {{today}}",
+        "Я, {{client.first_name}} {{client.last_name}}, прочитав(-ла) цей текст, розумію його зміст і згоден(-на) з викладеними умовами.\n\nПсихолог: {{therapist.full_name}}\nДата підписання: {{document.signed_at}}",
     },
   ],
 };
