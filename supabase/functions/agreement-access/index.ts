@@ -171,6 +171,7 @@ Deno.serve(async (req) => {
       accepted_at: inv.accepted_at,
       client_name: client.name,
       therapist_name: profile?.business_name || profile?.full_name || "",
+      therapist_full_name: profile?.full_name || profile?.business_name || "",
       content,
       controls: controlsRendered,
       language,
