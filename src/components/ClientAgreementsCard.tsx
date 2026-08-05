@@ -19,6 +19,9 @@ import { AgreementStatusTimeline } from "@/components/AgreementStatusTimeline";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { SessionFormatsBlock, stripLegacySessionFormatsSection } from "@/components/SessionFormatsBlock";
 import { buildVarMap, interpolateText, splitClientName } from "@/lib/agreementInterpolate";
+import { SignedAgreementDocument, useSignedPdfLabels } from "@/components/SignedAgreementDocument";
+import { downloadSignedAgreementPdf, type SignedAgreementData } from "@/lib/signedAgreementPdf";
+import { Download, FileCheck2 } from "lucide-react";
 
 
 type Template = {
@@ -96,6 +99,10 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
   const [editContent, setEditContent] = useState<any>(null);
   const [savingEdit, setSavingEdit] = useState(false);
   const [therapistProfile, setTherapistProfile] = useState<{ full_name: string; business_name: string }>({ full_name: "", business_name: "" });
+  const [signedDocs, setSignedDocs] = useState<Record<string, SignedAgreementData[]>>({});
+  const [signedView, setSignedView] = useState<SignedAgreementData | null>(null);
+  const [clientLanguage, setClientLanguage] = useState<string>("en");
+  const pdfLabels = useSignedPdfLabels();
 
   useEffect(() => {
     if (!user) return;
@@ -119,6 +126,21 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
       therapistBusinessName: therapistProfile.business_name,
     });
   }, [clientName, clientEmail, therapistProfile]);
+
+  function prepareSigned(d: SignedAgreementData): SignedAgreementData {
+    return {
+      ...d,
+      title: interpolateText(d.title, previewVars),
+      sections: (d.sections || []).map((sec) => ({
+        ...sec,
+        heading: interpolateText(sec.heading || "", previewVars),
+        body: interpolateText(sec.body || "", previewVars),
+      })),
+      controls: (d.controls || []).map((c) => ({ ...c, label: interpolateText(c.label || "", previewVars) })),
+      therapistName: therapistProfile.full_name || therapistProfile.business_name || "",
+      language: clientLanguage,
+    };
+  }
 
   function openEdit(inst: Instance) {
     // Deep clone so edits don't mutate list state before saving
@@ -212,6 +234,60 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
     } else {
       setInvitations({});
     }
+
+    // Signed documents (immutable acceptance records) per instance
+    const { data: clientRow } = await supabase
+      .from("clients")
+      .select("communication_language")
+      .eq("id", clientId)
+      .maybeSingle();
+    const lang = String((clientRow as any)?.communication_language || "en");
+    setClientLanguage(lang);
+
+    const { data: accs } = await supabase
+      .from("agreement_acceptances")
+      .select("id, instance_id, revision_id, answers, typed_name, accepted_at, evidence_hash")
+      .eq("client_id", clientId)
+      .order("accepted_at", { ascending: false });
+
+    const accList = (accs ?? []) as any[];
+    if (accList.length) {
+      const { data: revs } = await supabase
+        .from("agreement_revisions")
+        .select("id, revision_number, content_snapshot, controls_snapshot")
+        .in("id", accList.map((a) => a.revision_id));
+      const revById = new Map<string, any>((revs ?? []).map((r: any) => [r.id, r]));
+      const grouped: Record<string, SignedAgreementData[]> = {};
+      for (const a of accList) {
+        const rev = revById.get(a.revision_id);
+        if (!rev) continue;
+        const content = rev.content_snapshot || {};
+        const inst = instList.find((i) => i.id === a.instance_id);
+        const tv = (vers ?? []).find((v: any) => v.id === inst?.template_version_id) as any;
+        const item: SignedAgreementData = {
+          title: content.title || "",
+          sections: content.sections || [],
+          sessionFormats: content.sessionFormats ?? null,
+          cycleLength: content.cycleLength ?? null,
+          frequency: content.frequency ?? null,
+          controls: (rev.controls_snapshot || []) as any[],
+          answers: (a.answers || {}) as Record<string, boolean | string>,
+          clientName,
+          therapistName: "",
+          signedName: a.typed_name || "",
+          acceptedAt: a.accepted_at,
+          language: lang,
+          documentId: a.id,
+          versionLabel: `v${tv?.version_number ?? 1}.${rev.revision_number ?? 1}`,
+          evidenceHash: a.evidence_hash || "",
+        };
+        (grouped[a.instance_id] ||= []).push(item);
+      }
+      setSignedDocs(grouped);
+    } else {
+      setSignedDocs({});
+    }
+
     setLoading(false);
   }
 
@@ -422,6 +498,17 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
                       </Button>
                     </>
                   )}
+                  {(signedDocs[inst.id] ?? []).slice(0, 1).map((doc) => (
+                    <span key={doc.documentId} className="contents">
+                      <Button size="sm" variant="outline" onClick={() => setSignedView(prepareSigned(doc))}>
+                        <FileCheck2 className="h-3.5 w-3.5 mr-1" /> {t("signed.viewDocument")}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => downloadSignedAgreementPdf(prepareSigned(doc), pdfLabels)}>
+                        <Download className="h-3.5 w-3.5 mr-1" /> {t("signed.downloadPdf")}
+                      </Button>
+                    </span>
+                  ))}
+
                   <Button
                     size="sm"
                     variant="ghost"
@@ -542,6 +629,23 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
               <Copy className="h-3.5 w-3.5 mr-1" /> {t("agreements.link.copy")}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!signedView} onOpenChange={(open) => !open && setSignedView(null)}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{signedView?.title}</DialogTitle>
+          </DialogHeader>
+          {signedView && <SignedAgreementDocument data={signedView} />}
+          <div className="flex flex-wrap gap-2 justify-end pt-2">
+            {signedView && (
+              <Button variant="outline" onClick={() => downloadSignedAgreementPdf(signedView, pdfLabels)}>
+                <Download className="h-4 w-4 mr-1" /> {t("signed.downloadPdf")}
+              </Button>
+            )}
+            <Button variant="ghost" onClick={() => setSignedView(null)}>{t("common.close")}</Button>
+          </div>
         </DialogContent>
       </Dialog>
 

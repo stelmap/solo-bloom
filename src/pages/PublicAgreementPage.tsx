@@ -7,8 +7,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { CheckCircle2, ShieldCheck, AlertTriangle, FileSignature, KeyRound, FileText } from "lucide-react";
+import { CheckCircle2, ShieldCheck, AlertTriangle, FileSignature, KeyRound, FileText, Download } from "lucide-react";
 import { SessionFormatsBlock, stripLegacySessionFormatsSection } from "@/components/SessionFormatsBlock";
+import { SignedAgreementDocument, useSignedPdfLabels } from "@/components/SignedAgreementDocument";
+import { downloadSignedAgreementPdf, type SignedAgreementData } from "@/lib/signedAgreementPdf";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 
 type Control =
@@ -27,6 +30,16 @@ type AccessResponse = {
   accepted_at: string | null;
   client_name: string;
   therapist_name: string;
+  language?: string;
+  revision_number?: number | null;
+  template_version_number?: number | null;
+  acceptance?: {
+    id: string;
+    answers: Record<string, boolean | string>;
+    typed_name: string;
+    accepted_at: string;
+    evidence_hash: string;
+  } | null;
   content: {
     title: string;
     sections: Section[];
@@ -130,7 +143,9 @@ export default function PublicAgreementPage() {
   const [access, setAccess] = useState<AccessResponse | null>(null);
   const [answers, setAnswers] = useState<Record<string, boolean | string>>(initial?.answers ?? {});
   const [typedName, setTypedName] = useState(initial?.typedName ?? "");
-  const [accepted, setAccepted] = useState<{ at: string; hash: string } | null>(null);
+  const [accepted, setAccepted] = useState<{ at: string; hash: string; id: string; answers: Record<string, boolean | string>; typedName: string } | null>(null);
+  const [viewOpen, setViewOpen] = useState(false);
+  const pdfLabels = useSignedPdfLabels();
   const [firstName, setFirstName] = useState(initial?.firstName ?? "");
   const [lastName, setLastName] = useState(initial?.lastName ?? "");
 
@@ -269,7 +284,13 @@ export default function PublicAgreementPage() {
       }
     }
     if (res.already_accepted) {
-      setAccepted({ at: res.accepted_at || "", hash: "" });
+      setAccepted({
+        at: res.acceptance?.accepted_at || res.accepted_at || "",
+        hash: res.acceptance?.evidence_hash || "",
+        id: res.acceptance?.id || "",
+        answers: res.acceptance?.answers || {},
+        typedName: res.acceptance?.typed_name || "",
+      });
       clearDraft(token);
       setStep("done");
     } else {
@@ -312,7 +333,13 @@ export default function PublicAgreementPage() {
       if (error) throw new Error(error.message || "accept_failed");
       const payload = data as any;
       if (payload?.error) throw new Error(payload.error);
-      setAccepted({ at: payload.accepted_at, hash: payload.evidence_hash });
+      setAccepted({
+        at: payload.accepted_at,
+        hash: payload.evidence_hash,
+        id: payload.acceptance_id || "",
+        answers: { ...answers },
+        typedName: typedName.trim(),
+      });
       clearDraft(token);
       setStep("done");
     } catch (err: any) {
@@ -327,6 +354,30 @@ export default function PublicAgreementPage() {
 
   // DONE
   if (step === "done" && accepted) {
+    const signedData: SignedAgreementData | null = access
+      ? {
+          title: interpolate(access.content.title, firstName, lastName),
+          sections: stripLegacySessionFormatsSection(access.content.sections).map((s) => ({
+            id: s.id,
+            heading: interpolate(s.heading, firstName, lastName),
+            body: interpolate(s.body, firstName, lastName),
+          })),
+          sessionFormats: access.content.sessionFormats ?? null,
+          cycleLength: access.content.cycleLength ?? null,
+          frequency: access.content.frequency ?? null,
+          controls: (access.controls || []).map((c) => ({ ...c, label: interpolate(c.label, firstName, lastName) })),
+          answers: accepted.answers,
+          clientName: `${firstName} ${lastName}`.trim() || access.client_name,
+          therapistName: access.therapist_name || therapistDisplay,
+          signedName: accepted.typedName,
+          acceptedAt: accepted.at,
+          language: access.language || info?.language || "en",
+          documentId: accepted.id,
+          versionLabel: `v${access.template_version_number ?? 1}.${access.revision_number ?? 1}`,
+          evidenceHash: accepted.hash,
+        }
+      : null;
+
     return (
       <Shell>
         <div className="text-center space-y-4 py-8">
@@ -336,10 +387,41 @@ export default function PublicAgreementPage() {
           <h1 className="text-2xl font-bold">{t("pa.signedTitle")}</h1>
           <p className="text-muted-foreground">{t("pa.signedDesc")}</p>
           {accepted.at && <p className="text-xs text-muted-foreground">{t("pa.signedAt")} {new Date(accepted.at).toLocaleString()}</p>}
+
+          {signedData && (
+            <div className="flex flex-wrap gap-2 justify-center pt-2">
+              <Button variant="outline" onClick={() => setViewOpen(true)}>
+                <FileText className="h-4 w-4 mr-1" /> {t("signed.viewDocument")}
+              </Button>
+              <Button onClick={() => downloadSignedAgreementPdf(signedData, pdfLabels)}>
+                <Download className="h-4 w-4 mr-1" /> {t("signed.downloadPdf")}
+              </Button>
+              <Button variant="ghost" onClick={() => window.close()}>{t("common.close")}</Button>
+            </div>
+          )}
         </div>
+
+        {signedData && (
+          <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+            <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>{signedData.title}</DialogTitle>
+              </DialogHeader>
+              <SignedAgreementDocument data={signedData} />
+              <div className="flex flex-wrap gap-2 justify-end pt-2">
+                <Button variant="outline" onClick={() => downloadSignedAgreementPdf(signedData, pdfLabels)}>
+                  <Download className="h-4 w-4 mr-1" /> {t("signed.downloadPdf")}
+                </Button>
+                <Button variant="ghost" onClick={() => setViewOpen(false)}>{t("common.close")}</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </Shell>
     );
   }
+
+
 
   // WELCOME
   if (step === "welcome") {
