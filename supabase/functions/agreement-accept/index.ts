@@ -17,8 +17,24 @@ function escapeHtml(s: string) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 }
 
+const NOT_SPECIFIED: Record<string, string> = {
+  en: "Not specified", uk: "Не вказано", ru: "Не указано", pl: "Nie podano", fr: "Non renseigné",
+};
+function notSpecifiedLabel(language: string) {
+  return NOT_SPECIFIED[(language || "en").slice(0, 2)] || NOT_SPECIFIED.en;
+}
+function formatSignedAt(iso: string, language: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  try {
+    return d.toLocaleDateString(language || "en", { day: "2-digit", month: "2-digit", year: "numeric" });
+  } catch {
+    return d.toLocaleDateString("en");
+  }
+}
+
 function renderVars(text: string, vars: Record<string, string>) {
-  return text.replace(/\{\{\s*([a-z_.]+)\s*\}\}/gi, (_, k) => vars[k] ?? "");
+  return text.replace(/\{\{\s*([a-z_.]+)\s*\}\}/gi, (_, k) => vars[String(k).toLowerCase()] ?? "");
 }
 
 Deno.serve(async (req) => {
@@ -71,7 +87,7 @@ Deno.serve(async (req) => {
 
 
     const { data: rev } = await supabase.from("agreement_revisions").select("*").eq("id", inv.revision_id).maybeSingle();
-    const { data: client } = await supabase.from("clients").select("name, email").eq("id", inv.client_id).maybeSingle();
+    const { data: client } = await supabase.from("clients").select("name, email, communication_language").eq("id", inv.client_id).maybeSingle();
     const { data: profile } = await supabase.from("profiles").select("full_name, business_name").eq("id", inv.user_id).maybeSingle();
     if (!rev || !client) return new Response(JSON.stringify({ error: "not_found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
@@ -132,14 +148,17 @@ Deno.serve(async (req) => {
     if (accErr) throw accErr;
 
     // Render final document HTML
+    const docLanguage = String((client as any).communication_language || "en");
+    const signedAtLabel = formatSignedAt(acceptedAt, docLanguage);
     const [first_name, ...rest] = String(client.name || "").trim().split(/\s+/);
     const vars: Record<string, string> = {
       "client.first_name": first_name || "",
       "client.last_name": rest.join(" "),
       "client.email": client.email || inv.email_bound,
-      "therapist.business_name": profile?.business_name || "",
-      "therapist.full_name": profile?.full_name || "",
-      "today": new Date().toLocaleDateString(),
+      "therapist.business_name": profile?.business_name || notSpecifiedLabel(docLanguage),
+      "therapist.full_name": profile?.full_name || profile?.business_name || notSpecifiedLabel(docLanguage),
+      "document.signed_at": signedAtLabel,
+      "today": signedAtLabel,
     };
     const contentRaw: any = rev.content_snapshot;
     const sectionsHtml = (contentRaw?.sections || [])
