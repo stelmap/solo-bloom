@@ -221,7 +221,7 @@ export function RichTextEditor({
 export function RichTextView({ value, className }: { value?: string | null; className?: string }) {
   return (
     <div
-      className={cn(richTextContentClass, "whitespace-pre-wrap", className)}
+      className={cn(richTextContentClass, className)}
       dangerouslySetInnerHTML={{ __html: noteToHtml(value) }}
     />
   );
