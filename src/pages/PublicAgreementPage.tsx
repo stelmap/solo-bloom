@@ -9,6 +9,9 @@ import { toast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { CheckCircle2, ShieldCheck, AlertTriangle, FileSignature, KeyRound, FileText } from "lucide-react";
 import { SessionFormatsBlock, stripLegacySessionFormatsSection } from "@/components/SessionFormatsBlock";
+import { SignedAgreementDocument, useSignedPdfLabels } from "@/components/SignedAgreementDocument";
+import { downloadSignedAgreementPdf, type SignedAgreementData } from "@/lib/signedAgreementPdf";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 
 type Control =
@@ -27,6 +30,16 @@ type AccessResponse = {
   accepted_at: string | null;
   client_name: string;
   therapist_name: string;
+  language?: string;
+  revision_number?: number | null;
+  template_version_number?: number | null;
+  acceptance?: {
+    id: string;
+    answers: Record<string, boolean | string>;
+    typed_name: string;
+    accepted_at: string;
+    evidence_hash: string;
+  } | null;
   content: {
     title: string;
     sections: Section[];
@@ -130,7 +143,9 @@ export default function PublicAgreementPage() {
   const [access, setAccess] = useState<AccessResponse | null>(null);
   const [answers, setAnswers] = useState<Record<string, boolean | string>>(initial?.answers ?? {});
   const [typedName, setTypedName] = useState(initial?.typedName ?? "");
-  const [accepted, setAccepted] = useState<{ at: string; hash: string } | null>(null);
+  const [accepted, setAccepted] = useState<{ at: string; hash: string; id: string; answers: Record<string, boolean | string>; typedName: string } | null>(null);
+  const [viewOpen, setViewOpen] = useState(false);
+  const pdfLabels = useSignedPdfLabels();
   const [firstName, setFirstName] = useState(initial?.firstName ?? "");
   const [lastName, setLastName] = useState(initial?.lastName ?? "");
 
@@ -269,7 +284,13 @@ export default function PublicAgreementPage() {
       }
     }
     if (res.already_accepted) {
-      setAccepted({ at: res.accepted_at || "", hash: "" });
+      setAccepted({
+        at: res.acceptance?.accepted_at || res.accepted_at || "",
+        hash: res.acceptance?.evidence_hash || "",
+        id: res.acceptance?.id || "",
+        answers: res.acceptance?.answers || {},
+        typedName: res.acceptance?.typed_name || "",
+      });
       clearDraft(token);
       setStep("done");
     } else {
@@ -312,7 +333,13 @@ export default function PublicAgreementPage() {
       if (error) throw new Error(error.message || "accept_failed");
       const payload = data as any;
       if (payload?.error) throw new Error(payload.error);
-      setAccepted({ at: payload.accepted_at, hash: payload.evidence_hash });
+      setAccepted({
+        at: payload.accepted_at,
+        hash: payload.evidence_hash,
+        id: payload.acceptance_id || "",
+        answers: { ...answers },
+        typedName: typedName.trim(),
+      });
       clearDraft(token);
       setStep("done");
     } catch (err: any) {
