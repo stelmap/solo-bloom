@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { FileText, Maximize2, X, CheckCircle2, Loader2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { useUpdateClient } from "@/hooks/useData";
@@ -9,6 +8,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { RichTextEditor, RichTextView } from "@/components/RichTextEditor";
+import { noteToPlainText } from "@/lib/richText";
+
 
 type Props = {
   client: { id: string; name: string; notes?: string | null; updated_at?: string | null };
@@ -77,7 +79,9 @@ export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditReque
     await persist(value);
   };
 
-  const isEmpty = !value.trim();
+  const plainText = noteToPlainText(value);
+  const isEmpty = !plainText.trim();
+
   const saving = update.isPending;
   const status = saving
     ? { icon: <Loader2 className="h-3 w-3 animate-spin" />, text: t("clientNotes.saving"), tone: "text-muted-foreground" }
@@ -119,7 +123,8 @@ export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditReque
           </div>
         ) : (
           <div className="rounded-lg bg-muted/50 p-3 max-h-56 overflow-y-auto">
-            <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{value}</p>
+            <RichTextView value={value} />
+
             {savedAt && (
               <p className="text-[11px] text-muted-foreground mt-2">
                 {t("clientNotes.updated")} {format(savedAt, "dd.MM.yyyy HH:mm")}
@@ -134,13 +139,14 @@ export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditReque
             <DialogHeader>
               <DialogTitle>{t("clientNotes.shortTitle")} — {client.name}</DialogTitle>
             </DialogHeader>
-            <Textarea
+            <RichTextEditor
               value={draft}
-              onChange={(e) => setDraft(e.target.value)}
+              onChange={setDraft}
               placeholder={t("clientNotes.placeholder")}
-              className="min-h-[260px] resize-none text-sm leading-relaxed"
+              minHeight="260px"
               autoFocus
             />
+
             <div className="flex items-center justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setInlineOpen(false)}>
                 <X className="h-4 w-4 mr-1" /> {t("clientNotes.close")}
@@ -171,18 +177,16 @@ export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditReque
 
 
   const editor = (full: boolean) => (
-    <Textarea
+    <RichTextEditor
       value={value}
-      onChange={(e) => handleChange(e.target.value)}
+      onChange={handleChange}
       onBlur={handleManualSave}
       placeholder={t("clientNotes.placeholder")}
       disabled={disabled}
-      className={cn(
-        "resize-none text-sm leading-relaxed",
-        full ? "min-h-[60vh]" : "min-h-[180px]",
-      )}
+      minHeight={full ? "55vh" : "180px"}
     />
   );
+
 
   return (
     <>
@@ -218,7 +222,7 @@ export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditReque
         )}
 
         <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-          <span>{value.length} {t("clientNotes.chars")}</span>
+          <span>{plainText.length} {t("clientNotes.chars")}</span>
           {savedAt && !dirty && !saving && (
             <span>{t("clientNotes.updated")} {format(savedAt, "dd.MM.yyyy HH:mm")}</span>
           )}
