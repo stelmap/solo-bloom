@@ -30,13 +30,13 @@ export function SignedAgreementDocument({ data }: { data: SignedAgreementData })
       <div>
         <h2 className="text-xl font-bold text-foreground">{data.title}</h2>
         <p className="text-xs text-muted-foreground mt-1">
-          {data.therapist ? null : null}
-          {`${useLabel(t, "signed.therapist")}: ${data.therapistName || "—"}`}
+          {t("signed.therapist")}: {data.therapistName || "—"}
         </p>
         <p className="text-xs text-muted-foreground">
-          {`${useLabel(t, "signed.client")}: ${data.clientName || "—"}`}
+          {t("signed.client")}: {data.clientName || "—"}
         </p>
       </div>
+
 
       <div className="space-y-4">
         {(data.sections || []).map((s, idx) => (
