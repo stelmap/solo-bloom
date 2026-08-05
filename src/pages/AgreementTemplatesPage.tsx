@@ -362,6 +362,15 @@ export default function AgreementTemplatesPage() {
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 text-destructive hover:text-destructive"
+                          onClick={() => setDeleteTarget(tpl)}
+                          aria-label={t("agreements.templates.delete")}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
                       </CardTitle>
                     )}
                     <div className="text-xs text-muted-foreground mt-1">
