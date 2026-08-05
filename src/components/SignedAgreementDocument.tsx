@@ -92,7 +92,3 @@ export function SignedAgreementDocument({ data }: { data: SignedAgreementData })
     </div>
   );
 }
-
-function useLabel(t: (k: string) => string, key: string) {
-  return t(key);
-}
