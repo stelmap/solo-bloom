@@ -289,7 +289,7 @@ Deno.serve(async (req) => {
         }
 
         // ---- Tenant-scoped DB deletion (single transactional RPC) ------------
-        const { data: rpcData, error: rpcErr } = await admin.rpc("admin_delete_user_and_data", {
+        const { error: rpcErr } = await admin.rpc("admin_delete_user_and_data", {
           p_user_id: targetUserId,
           p_admin_id: userData.user.id,
         });
