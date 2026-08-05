@@ -345,6 +345,8 @@ export default function PublicAgreementPage() {
       });
       clearDraft(token);
       setStep("done");
+      // Re-fetch so the stored signing timestamp is rendered into the document text.
+      try { await loadAgreement(sessionToken); } catch { /* keep local state */ }
     } catch (err: any) {
       toast({ title: t("pa.couldNotSign"), description: errorLabel(err.message, t), variant: "destructive" });
     } finally {
