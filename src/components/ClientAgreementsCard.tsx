@@ -18,7 +18,7 @@ import { format } from "date-fns";
 import { AgreementStatusTimeline } from "@/components/AgreementStatusTimeline";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { SessionFormatsBlock, stripLegacySessionFormatsSection } from "@/components/SessionFormatsBlock";
-import { buildVarMap, interpolateText, splitClientName } from "@/lib/agreementInterpolate";
+import { buildVarMap, interpolateText, splitClientName, notSpecifiedLabel } from "@/lib/agreementInterpolate";
 import { SignedAgreementDocument, useSignedPdfLabels } from "@/components/SignedAgreementDocument";
 import { downloadSignedAgreementPdf, type SignedAgreementData } from "@/lib/signedAgreementPdf";
 import { Download, FileCheck2 } from "lucide-react";
@@ -124,20 +124,32 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
       clientEmail: clientEmail || "",
       therapistFullName: therapistProfile.full_name,
       therapistBusinessName: therapistProfile.business_name,
+      language: clientLanguage,
+      signedAt: null,
     });
-  }, [clientName, clientEmail, therapistProfile]);
+  }, [clientName, clientEmail, therapistProfile, clientLanguage]);
 
   function prepareSigned(d: SignedAgreementData): SignedAgreementData {
+    const { first, last } = splitClientName(clientName);
+    const vars = buildVarMap({
+      clientFirstName: first,
+      clientLastName: last,
+      clientEmail: clientEmail || "",
+      therapistFullName: therapistProfile.full_name,
+      therapistBusinessName: therapistProfile.business_name,
+      language: clientLanguage,
+      signedAt: d.acceptedAt,
+    });
     return {
       ...d,
-      title: interpolateText(d.title, previewVars),
+      title: interpolateText(d.title, vars),
       sections: (d.sections || []).map((sec) => ({
         ...sec,
-        heading: interpolateText(sec.heading || "", previewVars),
-        body: interpolateText(sec.body || "", previewVars),
+        heading: interpolateText(sec.heading || "", vars),
+        body: interpolateText(sec.body || "", vars),
       })),
-      controls: (d.controls || []).map((c) => ({ ...c, label: interpolateText(c.label || "", previewVars) })),
-      therapistName: therapistProfile.full_name || therapistProfile.business_name || "",
+      controls: (d.controls || []).map((c) => ({ ...c, label: interpolateText(c.label || "", vars) })),
+      therapistName: therapistProfile.full_name || therapistProfile.business_name || notSpecifiedLabel(clientLanguage),
       language: clientLanguage,
     };
   }
@@ -273,7 +285,7 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
           controls: (rev.controls_snapshot || []) as any[],
           answers: (a.answers || {}) as Record<string, boolean | string>,
           clientName,
-          therapistName: "",
+          therapistName: "",  // filled by prepareSigned
           signedName: a.typed_name || "",
           acceptedAt: a.accepted_at,
           language: lang,

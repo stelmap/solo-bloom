@@ -9,6 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { CheckCircle2, ShieldCheck, AlertTriangle, FileSignature, KeyRound, FileText, Download } from "lucide-react";
 import { SessionFormatsBlock, stripLegacySessionFormatsSection } from "@/components/SessionFormatsBlock";
+import { buildVarMap, interpolateText, notSpecifiedLabel } from "@/lib/agreementInterpolate";
 import { SignedAgreementDocument, useSignedPdfLabels } from "@/components/SignedAgreementDocument";
 import { downloadSignedAgreementPdf, type SignedAgreementData } from "@/lib/signedAgreementPdf";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -30,6 +31,8 @@ type AccessResponse = {
   accepted_at: string | null;
   client_name: string;
   therapist_name: string;
+  therapist_full_name?: string;
+  signed_at?: string | null;
   language?: string;
   revision_number?: number | null;
   template_version_number?: number | null;
@@ -342,6 +345,8 @@ export default function PublicAgreementPage() {
       });
       clearDraft(token);
       setStep("done");
+      // Re-fetch so the stored signing timestamp is rendered into the document text.
+      try { await loadAgreement(sessionToken); } catch { /* keep local state */ }
     } catch (err: any) {
       toast({ title: t("pa.couldNotSign"), description: errorLabel(err.message, t), variant: "destructive" });
     } finally {
@@ -352,26 +357,37 @@ export default function PublicAgreementPage() {
   const therapistDisplay = info?.therapist_name || info?.business_name || t("pa.defaultTherapist");
   const therapistInitial = (therapistDisplay || "?").trim().charAt(0).toUpperCase();
 
+  const docLanguage = access?.language || info?.language || "en";
+  const docVars = buildVarMap({
+    clientFirstName: firstName,
+    clientLastName: lastName,
+    therapistFullName: access?.therapist_full_name || info?.therapist_name || "",
+    therapistBusinessName: access?.therapist_name || info?.business_name || "",
+    signedAt: accepted?.at || access?.signed_at || null,
+    language: docLanguage,
+  });
+  const renderDoc = (text: string) => interpolateText(interpolate(text || "", firstName, lastName), docVars);
+
   // DONE
   if (step === "done" && accepted) {
     const signedData: SignedAgreementData | null = access
       ? {
-          title: interpolate(access.content.title, firstName, lastName),
+          title: renderDoc(access.content.title),
           sections: stripLegacySessionFormatsSection(access.content.sections).map((s) => ({
             id: s.id,
-            heading: interpolate(s.heading, firstName, lastName),
-            body: interpolate(s.body, firstName, lastName),
+            heading: renderDoc(s.heading),
+            body: renderDoc(s.body),
           })),
           sessionFormats: access.content.sessionFormats ?? null,
           cycleLength: access.content.cycleLength ?? null,
           frequency: access.content.frequency ?? null,
-          controls: (access.controls || []).map((c) => ({ ...c, label: interpolate(c.label, firstName, lastName) })),
+          controls: (access.controls || []).map((c) => ({ ...c, label: renderDoc(c.label) })),
           answers: accepted.answers,
           clientName: `${firstName} ${lastName}`.trim() || access.client_name,
-          therapistName: access.therapist_name || therapistDisplay,
+          therapistName: access.therapist_full_name || access.therapist_name || notSpecifiedLabel(docLanguage),
           signedName: accepted.typedName,
           acceptedAt: accepted.at,
-          language: access.language || info?.language || "en",
+          language: docLanguage,
           documentId: accepted.id,
           versionLabel: `v${access.template_version_number ?? 1}.${access.revision_number ?? 1}`,
           evidenceHash: accepted.hash,
@@ -578,7 +594,7 @@ export default function PublicAgreementPage() {
       </div>
 
       <article className="prose prose-sm max-w-none">
-        <h1 className="text-2xl font-bold text-foreground">{interpolate(access.content.title, firstName, lastName)}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{renderDoc(access.content.title)}</h1>
         {access.therapist_name && <p className="text-sm text-muted-foreground">{t("pa.from")} {access.therapist_name}</p>}
         <div className="mt-6 space-y-6">
           {(() => {
@@ -586,8 +602,8 @@ export default function PublicAgreementPage() {
             const hasServices = sections.some((s) => s.id === "services");
             return sections.map((s, idx) => (
               <section key={s.id}>
-                <h2 className="text-lg font-semibold text-foreground">{interpolate(s.heading, firstName, lastName)}</h2>
-                <div className="text-sm text-foreground whitespace-pre-wrap">{interpolate(s.body, firstName, lastName)}</div>
+                <h2 className="text-lg font-semibold text-foreground">{renderDoc(s.heading)}</h2>
+                <div className="text-sm text-foreground whitespace-pre-wrap">{renderDoc(s.body)}</div>
                 {s.id === "services" && <SessionFormatsBlock data={access.content} />}
                 {!hasServices && idx === sections.length - 1 && <SessionFormatsBlock data={access.content} />}
               </section>
@@ -607,7 +623,7 @@ export default function PublicAgreementPage() {
             if (c.type === "typed_acknowledgement") {
               return (
                 <div key={c.id} className="space-y-1">
-                  <Label htmlFor={`ctl-${c.id}`}>{interpolate(c.label, firstName, lastName)} <span className="text-destructive">*</span></Label>
+                  <Label htmlFor={`ctl-${c.id}`}>{renderDoc(c.label)} <span className="text-destructive">*</span></Label>
                   <Input id={`ctl-${c.id}`} placeholder={t("ac.typeToAcknowledge")} value={String(answers[c.id] ?? "")} onChange={(e) => setAnswers((a) => ({ ...a, [c.id]: e.target.value }))} maxLength={500} />
                 </div>
               );
@@ -617,7 +633,7 @@ export default function PublicAgreementPage() {
               <div key={c.id} className="flex items-start gap-3">
                 <Checkbox id={`ctl-${c.id}`} checked={answers[c.id] === true} onCheckedChange={(v) => setAnswers((a) => ({ ...a, [c.id]: v === true }))} />
                 <Label htmlFor={`ctl-${c.id}`} className="text-sm font-normal leading-snug">
-                  {interpolate(c.label, firstName, lastName)} {required && <span className="text-destructive">*</span>}
+                  {renderDoc(c.label)} {required && <span className="text-destructive">*</span>}
                 </Label>
               </div>
             );
