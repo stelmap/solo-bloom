@@ -9,7 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { CheckCircle2, ShieldCheck, AlertTriangle, FileSignature, KeyRound, FileText, Download } from "lucide-react";
 import { SessionFormatsBlock, stripLegacySessionFormatsSection } from "@/components/SessionFormatsBlock";
-import { buildVarMap, interpolateText } from "@/lib/agreementInterpolate";
+import { buildVarMap, interpolateText, notSpecifiedLabel } from "@/lib/agreementInterpolate";
 import { SignedAgreementDocument, useSignedPdfLabels } from "@/components/SignedAgreementDocument";
 import { downloadSignedAgreementPdf, type SignedAgreementData } from "@/lib/signedAgreementPdf";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -384,7 +384,7 @@ export default function PublicAgreementPage() {
           controls: (access.controls || []).map((c) => ({ ...c, label: renderDoc(c.label) })),
           answers: accepted.answers,
           clientName: `${firstName} ${lastName}`.trim() || access.client_name,
-          therapistName: access.therapist_name || therapistDisplay,
+          therapistName: access.therapist_full_name || access.therapist_name || notSpecifiedLabel(docLanguage),
           signedName: accepted.typedName,
           acceptedAt: accepted.at,
           language: docLanguage,

@@ -18,7 +18,7 @@ import { format } from "date-fns";
 import { AgreementStatusTimeline } from "@/components/AgreementStatusTimeline";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { SessionFormatsBlock, stripLegacySessionFormatsSection } from "@/components/SessionFormatsBlock";
-import { buildVarMap, interpolateText, splitClientName } from "@/lib/agreementInterpolate";
+import { buildVarMap, interpolateText, splitClientName, notSpecifiedLabel } from "@/lib/agreementInterpolate";
 import { SignedAgreementDocument, useSignedPdfLabels } from "@/components/SignedAgreementDocument";
 import { downloadSignedAgreementPdf, type SignedAgreementData } from "@/lib/signedAgreementPdf";
 import { Download, FileCheck2 } from "lucide-react";
@@ -149,7 +149,7 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
         body: interpolateText(sec.body || "", vars),
       })),
       controls: (d.controls || []).map((c) => ({ ...c, label: interpolateText(c.label || "", vars) })),
-      therapistName: therapistProfile.full_name || therapistProfile.business_name || "",
+      therapistName: therapistProfile.full_name || therapistProfile.business_name || notSpecifiedLabel(clientLanguage),
       language: clientLanguage,
     };
   }
