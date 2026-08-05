@@ -15,7 +15,7 @@ export function useSignedPdfLabels(): SignedPdfLabels {
     documentId: t("signed.documentId"),
     version: t("signed.version"),
     evidenceHash: t("signed.evidenceHash"),
-    sessionFormats: t("af.sessionFormats"),
+    sessionFormats: t("af.title"),
   };
 }
 
