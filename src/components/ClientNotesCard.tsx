@@ -222,7 +222,7 @@ export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditReque
         )}
 
         <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-          <span>{value.length} {t("clientNotes.chars")}</span>
+          <span>{plainText.length} {t("clientNotes.chars")}</span>
           {savedAt && !dirty && !saving && (
             <span>{t("clientNotes.updated")} {format(savedAt, "dd.MM.yyyy HH:mm")}</span>
           )}
