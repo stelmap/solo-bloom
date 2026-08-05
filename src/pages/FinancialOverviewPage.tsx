@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MonthlyDetailsModal } from "@/components/MonthlyDetailsModal";
+import { getDateLocale } from "@/lib/dateLocale";
 
 interface MonthData {
   month: number;
@@ -35,7 +36,9 @@ interface MonthData {
 
 export default function FinancialOverviewPage() {
   useEffect(() => { import("@/lib/analytics").then(({ track }) => track("finances_opened")); }, []);
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const dateLocale = useMemo(() => getDateLocale(lang), [lang]);
+  const capitalize = (v: string) => (v ? v.charAt(0).toLocaleUpperCase(lang) + v.slice(1) : v);
   const { symbol: cs } = useCurrency();
   const [year, setYear] = useState(new Date().getFullYear());
   const [drillMonth, setDrillMonth] = useState<MonthData | null>(null);
@@ -195,12 +198,12 @@ export default function FinancialOverviewPage() {
           incomeItems: [
             ...confirmedApts.map(a => ({
               description: `${(a.clients as any)?.name || "Client"} — ${(a.services as any)?.name || "Service"}`,
-              amount: Number(a.price), date: format(new Date(a.scheduled_at), "MMM d"),
+              amount: Number(a.price), date: format(new Date(a.scheduled_at), "MMM d", { locale: dateLocale }),
               type: "confirmed" as const,
             })),
             ...expectedApts.map(a => ({
               description: `${(a.clients as any)?.name || "Client"} — ${(a.services as any)?.name || "Service"}`,
-              amount: Number(a.price), date: format(new Date(a.scheduled_at), "MMM d"),
+              amount: Number(a.price), date: format(new Date(a.scheduled_at), "MMM d", { locale: dateLocale }),
               type: "expected" as const,
             })),
           ],
@@ -230,13 +233,13 @@ export default function FinancialOverviewPage() {
         expenses: totalExpenses, sessions: monthSessions,
         incomeItems: monthIncome.map((i: any) => ({
           description: i.description || (i.appointments?.clients?.name ? `${i.appointments.clients.name} — ${i.appointments.services?.name}` : "Manual"),
-          amount: Number(i.amount), date: format(new Date(incomeDateOf(i)), "MMM d"),
+          amount: Number(i.amount), date: format(new Date(incomeDateOf(i)), "MMM d", { locale: dateLocale }),
           type: "confirmed" as const,
         })),
         expenseItems: [
           ...oneOffMonthExpenses.map((e: any) => ({
             description: e.description || e.category, amount: Number(e.amount),
-            date: format(new Date(e.date), "MMM d"), category: e.category, isRecurring: false,
+            date: format(new Date(e.date), "MMM d", { locale: dateLocale }), category: e.category, isRecurring: false,
           })),
           ...recurringItemsForMonth(mKey),
         ],
@@ -256,8 +259,8 @@ export default function FinancialOverviewPage() {
       const monthTaxes = calcTaxes(p.income, p.idx, year, fcQuarterMap);
       return {
         month: p.idx,
-        label: format(p.monthDate, "MMMM"),
-        shortLabel: format(p.monthDate, "MMM"),
+        label: capitalize(format(p.monthDate, "LLLL", { locale: dateLocale })),
+        shortLabel: capitalize(format(p.monthDate, "LLL", { locale: dateLocale })),
         income: p.income,
         confirmedIncome: p.confirmedIncome,
         expectedIncome: p.expectedIncome,
@@ -270,7 +273,7 @@ export default function FinancialOverviewPage() {
         expenseItems: p.expenseItems,
       };
     });
-  }, [year, allIncome, allExpenses, allAppointments, activeTaxes, expectedPayments, currentMonth, currentYear, incomeDateField]);
+  }, [year, allIncome, allExpenses, allAppointments, activeTaxes, expectedPayments, currentMonth, currentYear, incomeDateField, dateLocale, lang]);
 
   // Yearly summaries
   const pastMonths = monthsData.filter(m => !m.isFuture && (m.income > 0 || m.expenses > 0));
