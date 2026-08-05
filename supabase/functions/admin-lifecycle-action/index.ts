@@ -305,12 +305,15 @@ Deno.serve(async (req) => {
           return json({ error: "User deletion failed. No unrelated user data was affected." }, 500);
         }
 
-        await audit("user_account_deleted", {
+        // Minimal admin-level audit only: who deleted whom and when.
+        // Never store the deleted user's business/client data (notes, clients,
+        // sessions, documents, therapy records) or record counts derived from it.
+        await audit("USER_ACCOUNT_DELETED", {
           deleted_user_email: targetEmail,
-          files_removed: filesRemoved,
-          deleted_counts: (rpcData as any)?.deleted_counts ?? null,
+          deleted_user_id: targetUserId,
         }, "deleted");
         return json({ ok: true, email: targetEmail, files_removed: filesRemoved });
+
       }
       case "send_warning_email_uk":
       case "send_warning_email_en": {
