@@ -123,7 +123,8 @@ export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditReque
           </div>
         ) : (
           <div className="rounded-lg bg-muted/50 p-3 max-h-56 overflow-y-auto">
-            <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{value}</p>
+            <RichTextView value={value} />
+
             {savedAt && (
               <p className="text-[11px] text-muted-foreground mt-2">
                 {t("clientNotes.updated")} {format(savedAt, "dd.MM.yyyy HH:mm")}
