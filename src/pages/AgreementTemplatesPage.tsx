@@ -8,7 +8,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Plus, FileText, Archive, CheckCircle2, Pencil, Sparkles, Check, X } from "lucide-react";
+import { Plus, FileText, Archive, CheckCircle2, Pencil, Sparkles, Check, X, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   STARTER_TEMPLATE_NAME,
   STARTER_TEMPLATE_DESCRIPTION,
@@ -46,7 +56,47 @@ export default function AgreementTemplatesPage() {
   const [seeding, setSeeding] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<Template | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const { t } = useLanguage();
+
+  async function deleteTemplate(tpl: Template) {
+    setDeleting(true);
+    try {
+      const versionIds = (versions[tpl.id] || []).map((v) => v.id);
+      if (versionIds.length) {
+        const { count, error: cntErr } = await supabase
+          .from("agreement_instances")
+          .select("id", { count: "exact", head: true })
+          .in("template_version_id", versionIds);
+        if (cntErr) throw cntErr;
+        if ((count ?? 0) > 0) {
+          toast({
+            title: t("agreements.templates.deleteBlocked"),
+            description: t("agreements.templates.deleteBlockedDesc"),
+            variant: "destructive",
+          });
+          setDeleteTarget(null);
+          return;
+        }
+        await supabase.from("agreement_template_versions").delete().in("id", versionIds);
+      }
+      const { error } = await supabase.from("agreement_templates").delete().eq("id", tpl.id);
+      if (error) throw error;
+      setTemplates((prev) => prev.filter((x) => x.id !== tpl.id));
+      setVersions((prev) => {
+        const next = { ...prev };
+        delete next[tpl.id];
+        return next;
+      });
+      setDeleteTarget(null);
+      toast({ title: t("agreements.templates.deleted") });
+    } catch (e: any) {
+      toast({ title: t("agreements.templates.deleteFail"), description: e.message, variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   async function renameTemplate(tpl: Template) {
     const name = renameValue.trim();
@@ -312,6 +362,15 @@ export default function AgreementTemplatesPage() {
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 text-destructive hover:text-destructive"
+                          onClick={() => setDeleteTarget(tpl)}
+                          aria-label={t("agreements.templates.delete")}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
                       </CardTitle>
                     )}
                     <div className="text-xs text-muted-foreground mt-1">
@@ -377,6 +436,30 @@ export default function AgreementTemplatesPage() {
             );
           })}
         </div>
+
+        <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("agreements.templates.deleteTitle")}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("agreements.templates.deleteDesc", { name: deleteTarget?.name ?? "" })}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deleting}>{t("common.cancel")}</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={deleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (deleteTarget) deleteTemplate(deleteTarget);
+                }}
+              >
+                {t("agreements.templates.delete")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AppLayout>
   );
