@@ -73,10 +73,10 @@ Deno.serve(async (req) => {
 
 
     const [{ data: rev }, { data: client }, { data: profile }, { data: instance }] = await Promise.all([
-      supabase.from("agreement_revisions").select("id, content_snapshot, controls_snapshot, content_hash").eq("id", inv.revision_id).maybeSingle(),
-      supabase.from("clients").select("name, email").eq("id", inv.client_id).maybeSingle(),
+      supabase.from("agreement_revisions").select("id, revision_number, content_snapshot, controls_snapshot, content_hash").eq("id", inv.revision_id).maybeSingle(),
+      supabase.from("clients").select("name, email, communication_language").eq("id", inv.client_id).maybeSingle(),
       supabase.from("profiles").select("full_name, business_name").eq("id", inv.user_id).maybeSingle(),
-      supabase.from("agreement_instances").select("id, status").eq("id", inv.instance_id).maybeSingle(),
+      supabase.from("agreement_instances").select("id, status, template_version_id").eq("id", inv.instance_id).maybeSingle(),
     ]);
     if (!rev || !client || !instance) {
       return new Response(JSON.stringify({ error: "not_found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -105,13 +105,40 @@ Deno.serve(async (req) => {
     };
     const contentRaw: any = rev.content_snapshot;
     const content = {
+      ...(contentRaw && typeof contentRaw === "object" ? contentRaw : {}),
       title: renderVars(String(contentRaw?.title || ""), vars),
       sections: (contentRaw?.sections || []).map((s: any) => ({
         id: s.id, heading: renderVars(String(s.heading || ""), vars), body: renderVars(String(s.body || ""), vars),
       })),
     };
 
+    const controlsRendered = (Array.isArray(rev.controls_snapshot) ? rev.controls_snapshot as any[] : []).map((c: any) => ({
+      ...c, label: renderVars(String(c.label || ""), vars),
+    }));
+
     const alreadyAccepted = !!inv.accepted_at;
+
+    let acceptance: any = null;
+    if (alreadyAccepted) {
+      const { data: acc } = await supabase
+        .from("agreement_acceptances")
+        .select("id, answers, typed_name, accepted_at, evidence_hash")
+        .eq("invitation_id", inv.id)
+        .order("accepted_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (acc) acceptance = acc;
+    }
+
+    let templateVersionNumber: number | null = null;
+    if (instance.template_version_id) {
+      const { data: tv } = await supabase
+        .from("agreement_template_versions")
+        .select("version_number")
+        .eq("id", instance.template_version_id)
+        .maybeSingle();
+      templateVersionNumber = (tv as any)?.version_number ?? null;
+    }
 
     return new Response(JSON.stringify({
       invitation_id: inv.id,
@@ -123,7 +150,11 @@ Deno.serve(async (req) => {
       client_name: client.name,
       therapist_name: profile?.business_name || profile?.full_name || "",
       content,
-      controls: rev.controls_snapshot,
+      controls: controlsRendered,
+      language: String((client as any).communication_language || "en"),
+      revision_number: (rev as any).revision_number ?? null,
+      template_version_number: templateVersionNumber,
+      acceptance,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });
   } catch (e) {
     return new Response(JSON.stringify({ error: "server_error", message: (e as Error).message }), {
