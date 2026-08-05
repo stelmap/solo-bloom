@@ -354,6 +354,30 @@ export default function PublicAgreementPage() {
 
   // DONE
   if (step === "done" && accepted) {
+    const signedData: SignedAgreementData | null = access
+      ? {
+          title: interpolate(access.content.title, firstName, lastName),
+          sections: stripLegacySessionFormatsSection(access.content.sections).map((s) => ({
+            id: s.id,
+            heading: interpolate(s.heading, firstName, lastName),
+            body: interpolate(s.body, firstName, lastName),
+          })),
+          sessionFormats: access.content.sessionFormats ?? null,
+          cycleLength: access.content.cycleLength ?? null,
+          frequency: access.content.frequency ?? null,
+          controls: (access.controls || []).map((c) => ({ ...c, label: interpolate(c.label, firstName, lastName) })),
+          answers: accepted.answers,
+          clientName: `${firstName} ${lastName}`.trim() || access.client_name,
+          therapistName: access.therapist_name || therapistDisplay,
+          signedName: accepted.typedName,
+          acceptedAt: accepted.at,
+          language: access.language || info?.language || "en",
+          documentId: accepted.id,
+          versionLabel: `v${access.template_version_number ?? 1}.${access.revision_number ?? 1}`,
+          evidenceHash: accepted.hash,
+        }
+      : null;
+
     return (
       <Shell>
         <div className="text-center space-y-4 py-8">
@@ -363,10 +387,41 @@ export default function PublicAgreementPage() {
           <h1 className="text-2xl font-bold">{t("pa.signedTitle")}</h1>
           <p className="text-muted-foreground">{t("pa.signedDesc")}</p>
           {accepted.at && <p className="text-xs text-muted-foreground">{t("pa.signedAt")} {new Date(accepted.at).toLocaleString()}</p>}
+
+          {signedData && (
+            <div className="flex flex-wrap gap-2 justify-center pt-2">
+              <Button variant="outline" onClick={() => setViewOpen(true)}>
+                <FileText className="h-4 w-4 mr-1" /> {t("signed.viewDocument")}
+              </Button>
+              <Button onClick={() => downloadSignedAgreementPdf(signedData, pdfLabels)}>
+                <Download className="h-4 w-4 mr-1" /> {t("signed.downloadPdf")}
+              </Button>
+              <Button variant="ghost" onClick={() => window.close()}>{t("common.close")}</Button>
+            </div>
+          )}
         </div>
+
+        {signedData && (
+          <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+            <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>{signedData.title}</DialogTitle>
+              </DialogHeader>
+              <SignedAgreementDocument data={signedData} />
+              <div className="flex flex-wrap gap-2 justify-end pt-2">
+                <Button variant="outline" onClick={() => downloadSignedAgreementPdf(signedData, pdfLabels)}>
+                  <Download className="h-4 w-4 mr-1" /> {t("signed.downloadPdf")}
+                </Button>
+                <Button variant="ghost" onClick={() => setViewOpen(false)}>{t("common.close")}</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </Shell>
     );
   }
+
+
 
   // WELCOME
   if (step === "welcome") {
