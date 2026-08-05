@@ -1470,6 +1470,40 @@ export function useExpenses(page = 0, filters?: ExpenseFilters) {
 }
 
 /**
+ * ALL non-template expense rows for the current user (no pagination).
+ *
+ * `useExpenses` is page-limited (50 rows, oldest first), which silently truncated
+ * financial aggregations — monthly cards showed 0 expenses once a user had more
+ * than 50 rows (materialized recurring instances hit that fast). Analytics views
+ * must use this hook instead.
+ */
+export function useAllExpenses() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["expenses", "all", user?.id],
+    queryFn: async () => {
+      const pageSize = 1000;
+      const all: any[] = [];
+      for (let page = 0; page < 20; page++) {
+        const { data, error } = await supabase
+          .from("expenses")
+          .select("*")
+          .eq("is_template", false)
+          .order("date", { ascending: true })
+          .range(page * pageSize, page * pageSize + pageSize - 1);
+        if (error) throw error;
+        const rows = data ?? [];
+        all.push(...rows);
+        if (rows.length < pageSize) break;
+      }
+      return all;
+    },
+    enabled: !!user,
+    staleTime: STALE_MEDIUM,
+  });
+}
+
+/**
  * Server-side aggregates for the expenses list, applied with the same filters as
  * `useExpenses` but across ALL matching rows (not just the current page).
  */
