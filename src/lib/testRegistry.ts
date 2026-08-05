@@ -416,6 +416,16 @@ export const TEST_REGISTRY: TestEntry[] = [
     cases: 3,
     lastRun: LAST_RUN,
   },
+  {
+    id: "plat-user-deletion-regression",
+    name: "Critical regression — safe user data deletion & tenant isolation",
+    file: "supabase/functions/admin-regression-user-deletion/index.ts",
+    section: "Platform",
+    kind: "e2e",
+    status: "skipped",
+    cases: 18,
+    lastRun: LAST_RUN,
+  },
 ];
 
 export interface SectionSummary {
