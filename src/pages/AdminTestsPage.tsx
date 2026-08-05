@@ -22,6 +22,7 @@ import {
   Cell,
 } from "recharts";
 import { CheckCircle2, XCircle, MinusCircle, FlaskConical } from "lucide-react";
+import { UserDeletionRegressionCard } from "@/components/admin/UserDeletionRegressionCard";
 import {
   TEST_REGISTRY,
   TEST_SECTIONS,
