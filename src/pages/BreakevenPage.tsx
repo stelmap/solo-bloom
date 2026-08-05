@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Target, DollarSign, Users, Calculator, Settings, Info, AlertTriangle, Receipt, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useExpenses, useIncome, useServices, useAppointments, useBreakevenGoals, useUpsertBreakevenGoals, useWorkingSchedule, useDaysOff, useProfile, useTaxSettings } from "@/hooks/useData";
+import { useAllExpenses, useIncome, useServices, useAppointments, useBreakevenGoals, useUpsertBreakevenGoals, useWorkingSchedule, useDaysOff, useProfile, useTaxSettings } from "@/hooks/useData";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -38,8 +38,7 @@ const defaultGoals = (t: any): GoalForm[] => [
 export default function BreakevenPage() {
   // Analytics: enriched event fires once per mount after data is ready (see below).
   const breakevenTrackedRef = useRef(false);
-  const { data: expenseResult } = useExpenses();
-  const expenses = (expenseResult as any)?.data ?? expenseResult ?? [];
+  const { data: expenses = [] } = useAllExpenses();
   const { data: incomeResult } = useIncome();
   const income = (incomeResult as any)?.data ?? incomeResult ?? [];
   const { data: services = [] } = useServices();
@@ -77,7 +76,7 @@ export default function BreakevenPage() {
       const key = (d as string).substring(0, 7);
       incMap.set(key, (incMap.get(key) || 0) + Number(inc.amount));
     }
-    // Instances are real rows; just bucket by month. Templates are filtered out by useExpenses.
+    // Instances are real rows; just bucket by month. Templates are filtered out by useAllExpenses.
     for (const exp of expenses) {
       if ((exp as any).instance_status === "cancelled") continue;
       const key = exp.date.substring(0, 7);
