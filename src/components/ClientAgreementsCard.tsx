@@ -127,6 +127,21 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
     });
   }, [clientName, clientEmail, therapistProfile]);
 
+  function prepareSigned(d: SignedAgreementData): SignedAgreementData {
+    return {
+      ...d,
+      title: interpolateText(d.title, previewVars),
+      sections: (d.sections || []).map((sec) => ({
+        ...sec,
+        heading: interpolateText(sec.heading || "", previewVars),
+        body: interpolateText(sec.body || "", previewVars),
+      })),
+      controls: (d.controls || []).map((c) => ({ ...c, label: interpolateText(c.label || "", previewVars) })),
+      therapistName: therapistProfile.full_name || therapistProfile.business_name || "",
+      language: clientLanguage,
+    };
+  }
+
   function openEdit(inst: Instance) {
     // Deep clone so edits don't mutate list state before saving
     setEditContent(JSON.parse(JSON.stringify(inst.content ?? { title: "", sections: [] })));
@@ -614,6 +629,23 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
               <Copy className="h-3.5 w-3.5 mr-1" /> {t("agreements.link.copy")}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!signedView} onOpenChange={(open) => !open && setSignedView(null)}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{signedView?.title}</DialogTitle>
+          </DialogHeader>
+          {signedView && <SignedAgreementDocument data={signedView} />}
+          <div className="flex flex-wrap gap-2 justify-end pt-2">
+            {signedView && (
+              <Button variant="outline" onClick={() => downloadSignedAgreementPdf(signedView, pdfLabels)}>
+                <Download className="h-4 w-4 mr-1" /> {t("signed.downloadPdf")}
+              </Button>
+            )}
+            <Button variant="ghost" onClick={() => setSignedView(null)}>{t("common.close")}</Button>
+          </div>
         </DialogContent>
       </Dialog>
 
