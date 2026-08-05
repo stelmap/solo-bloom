@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { AppLayout } from "@/components/AppLayout";
-import { useAllIncome, useExpenses, useAppointments, useTaxSettings, useExpectedPayments, useProfile } from "@/hooks/useData";
+import { useAllIncome, useAllExpenses, useAppointments, useTaxSettings, useExpectedPayments, useProfile } from "@/hooks/useData";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { format, startOfMonth, endOfMonth, eachMonthOfInterval, isBefore, isAfter, isSameMonth } from "date-fns";
@@ -45,8 +45,8 @@ export default function FinancialOverviewPage() {
   const [viewMode, setViewMode] = useState<"table" | "chart">("chart");
 
   const { data: allIncome = [] } = useAllIncome();
-  const { data: expenseResult } = useExpenses();
-  const allExpenses = (expenseResult as any)?.data ?? expenseResult ?? [];
+  const { data: allExpenses = [] } = useAllExpenses();
+  
   const { data: allAppointments = [] } = useAppointments();
   const { data: taxSettings = [] } = useTaxSettings();
   const { data: expectedPayments = [] } = useExpectedPayments();
