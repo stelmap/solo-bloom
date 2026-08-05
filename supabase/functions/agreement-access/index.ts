@@ -13,8 +13,25 @@ async function sha256Hex(s: string) {
   return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+const NOT_SPECIFIED: Record<string, string> = {
+  en: "Not specified", uk: "Не вказано", ru: "Не указано", pl: "Nie podano", fr: "Non renseigné",
+};
+function notSpecifiedLabel(language: string) {
+  return NOT_SPECIFIED[(language || "en").slice(0, 2)] || NOT_SPECIFIED.en;
+}
+function formatSignedAt(iso: string | null, language: string) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  try {
+    return d.toLocaleDateString(language || "en", { day: "2-digit", month: "2-digit", year: "numeric" });
+  } catch {
+    return d.toLocaleDateString("en");
+  }
+}
+
 function renderVars(text: string, vars: Record<string, string>) {
-  return text.replace(/\{\{\s*([a-z_.]+)\s*\}\}/gi, (_, k) => vars[k] ?? "");
+  return text.replace(/\{\{\s*([a-z_.]+)\s*\}\}/gi, (_, k) => vars[String(k).toLowerCase()] ?? "");
 }
 
 Deno.serve(async (req) => {
@@ -93,29 +110,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Personalize content
-    const [first_name, ...rest] = String(client.name || "").trim().split(/\s+/);
-    const vars: Record<string, string> = {
-      "client.first_name": first_name || "",
-      "client.last_name": rest.join(" "),
-      "client.email": client.email || inv.email_bound,
-      "therapist.business_name": profile?.business_name || "",
-      "therapist.full_name": profile?.full_name || "",
-      "today": new Date().toLocaleDateString(),
-    };
-    const contentRaw: any = rev.content_snapshot;
-    const content = {
-      ...(contentRaw && typeof contentRaw === "object" ? contentRaw : {}),
-      title: renderVars(String(contentRaw?.title || ""), vars),
-      sections: (contentRaw?.sections || []).map((s: any) => ({
-        id: s.id, heading: renderVars(String(s.heading || ""), vars), body: renderVars(String(s.body || ""), vars),
-      })),
-    };
-
-    const controlsRendered = (Array.isArray(rev.controls_snapshot) ? rev.controls_snapshot as any[] : []).map((c: any) => ({
-      ...c, label: renderVars(String(c.label || ""), vars),
-    }));
-
     const alreadyAccepted = !!inv.accepted_at;
 
     let acceptance: any = null;
@@ -129,6 +123,34 @@ Deno.serve(async (req) => {
         .maybeSingle();
       if (acc) acceptance = acc;
     }
+
+    // Personalize content
+    const language = String((client as any).communication_language || "en");
+    const signedAtIso: string | null = acceptance?.accepted_at || inv.accepted_at || null;
+    const [first_name, ...rest] = String(client.name || "").trim().split(/\s+/);
+    const notSpecified = notSpecifiedLabel(language);
+    const signedAtLabel = formatSignedAt(signedAtIso, language);
+    const vars: Record<string, string> = {
+      "client.first_name": first_name || "",
+      "client.last_name": rest.join(" "),
+      "client.email": client.email || inv.email_bound,
+      "therapist.business_name": profile?.business_name || notSpecified,
+      "therapist.full_name": profile?.full_name || profile?.business_name || notSpecified,
+      "document.signed_at": signedAtLabel,
+      "today": signedAtLabel,
+    };
+    const contentRaw: any = rev.content_snapshot;
+    const content = {
+      ...(contentRaw && typeof contentRaw === "object" ? contentRaw : {}),
+      title: renderVars(String(contentRaw?.title || ""), vars),
+      sections: (contentRaw?.sections || []).map((s: any) => ({
+        id: s.id, heading: renderVars(String(s.heading || ""), vars), body: renderVars(String(s.body || ""), vars),
+      })),
+    };
+
+    const controlsRendered = (Array.isArray(rev.controls_snapshot) ? rev.controls_snapshot as any[] : []).map((c: any) => ({
+      ...c, label: renderVars(String(c.label || ""), vars),
+    }));
 
     let templateVersionNumber: number | null = null;
     if (instance.template_version_id) {
@@ -151,7 +173,8 @@ Deno.serve(async (req) => {
       therapist_name: profile?.business_name || profile?.full_name || "",
       content,
       controls: controlsRendered,
-      language: String((client as any).communication_language || "en"),
+      language,
+      signed_at: signedAtIso,
       revision_number: (rev as any).revision_number ?? null,
       template_version_number: templateVersionNumber,
       acceptance,
