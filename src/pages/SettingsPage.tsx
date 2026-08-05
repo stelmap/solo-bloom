@@ -32,7 +32,7 @@ export default function SettingsPage() {
             <TabsTrigger value="notifications">{t("settings.notifications")}</TabsTrigger>
             <TabsTrigger value="connected">{t("settings.connectedAccounts")}</TabsTrigger>
             <TabsTrigger value="subscription">{t("settings.subscriptionTab")}</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
+            <TabsTrigger value="documents">{t("settings.documents")}</TabsTrigger>
             <TabsTrigger value="privacy">{t("settings.privacyAndData")}</TabsTrigger>
           </TabsList>
 
@@ -51,17 +51,16 @@ export default function SettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <FileText className="w-4 h-4" /> Information agreements
+                  <FileText className="w-4 h-4" /> {t("agreements.settings.title")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex items-center justify-between gap-4 flex-wrap">
                 <p className="text-sm text-muted-foreground max-w-xl">
-                  Create reusable agreement templates you can send to clients. Each template
-                  can have one active version used when generating new client agreements.
+                  {t("agreements.settings.desc")}
                 </p>
                 <Button asChild>
                   <Link to="/settings/agreements">
-                    Manage templates <ArrowRight className="w-4 h-4 ml-1" />
+                    {t("agreements.settings.manage")} <ArrowRight className="w-4 h-4 ml-1" />
                   </Link>
                 </Button>
               </CardContent>

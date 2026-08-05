@@ -59,7 +59,7 @@ export default function AgreementTemplatesPage() {
       .update({ name })
       .eq("id", tpl.id);
     if (error) {
-      toast({ title: "Rename failed", description: error.message, variant: "destructive" });
+      toast({ title: t("agreements.templates.renameFail"), description: error.message, variant: "destructive" });
       return;
     }
     setRenamingId(null);
@@ -74,7 +74,7 @@ export default function AgreementTemplatesPage() {
       .select("*")
       .order("created_at", { ascending: false });
     if (error) {
-      toast({ title: "Failed to load", description: error.message, variant: "destructive" });
+      toast({ title: t("agreements.templates.loadFail"), description: error.message, variant: "destructive" });
       setLoading(false);
       return;
     }
@@ -106,7 +106,7 @@ export default function AgreementTemplatesPage() {
       .select()
       .single();
     if (error || !tpl) {
-      toast({ title: "Could not create", description: error?.message, variant: "destructive" });
+      toast({ title: t("agreements.templates.createFail"), description: error?.message, variant: "destructive" });
       setCreating(false);
       return;
     }
@@ -163,8 +163,8 @@ export default function AgreementTemplatesPage() {
       .from("agreement_template_versions")
       .update({ status: "active", activated_at: new Date().toISOString() })
       .eq("id", v.id);
-    if (error) toast({ title: "Activate failed", description: error.message, variant: "destructive" });
-    else toast({ title: `Version ${v.version_number} is now active` });
+    if (error) toast({ title: t("agreements.templates.activateFail"), description: error.message, variant: "destructive" });
+    else toast({ title: t("agreements.templates.activatedToast", { n: v.version_number }) });
     await load();
   }
 
@@ -193,7 +193,7 @@ export default function AgreementTemplatesPage() {
           .order("version_number", { ascending: false })
           .limit(1)
           .maybeSingle();
-        toast({ title: t("agreements.starter.done"), description: "Starter template already exists — opening it." });
+        toast({ title: t("agreements.starter.done"), description: t("agreements.templates.starterExists") });
         if (existingVersion) navigate(`/settings/agreements/version/${existingVersion.id}`);
         return;
       }
@@ -236,24 +236,24 @@ export default function AgreementTemplatesPage() {
     <AppLayout>
       <div className="space-y-6 max-w-4xl">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Information Agreements</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("agreements.templates.title")}</h1>
           <p className="text-muted-foreground mt-1">
-            Reusable agreement templates. Each template can have one active version used when creating client agreements.
+            {t("agreements.templates.subtitle")}
           </p>
         </div>
 
         <Card>
-          <CardHeader><CardTitle className="text-base">New template</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">{t("agreements.templates.newTemplate")}</CardTitle></CardHeader>
           <CardContent className="flex gap-2 flex-wrap">
             <Input
-              placeholder="Template name (e.g. Informed consent — individual therapy)"
+              placeholder={t("agreements.templates.namePlaceholder")}
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && createTemplate()}
               className="flex-1 min-w-[240px]"
             />
             <Button onClick={createTemplate} disabled={creating || !newName.trim()}>
-              <Plus className="w-4 h-4 mr-1" /> Create
+              <Plus className="w-4 h-4 mr-1" /> {t("agreements.templates.create")}
             </Button>
             <Button variant="outline" onClick={loadStarter} disabled={seeding}>
               <Sparkles className="w-4 h-4 mr-1" />
@@ -263,10 +263,10 @@ export default function AgreementTemplatesPage() {
         </Card>
 
 
-        {loading && <div className="text-sm text-muted-foreground">Loading…</div>}
+        {loading && <div className="text-sm text-muted-foreground">{t("agreements.templates.loading")}</div>}
         {!loading && templates.length === 0 && (
           <div className="text-sm text-muted-foreground">
-            No templates yet. Create your first template above.
+            {t("agreements.templates.empty")}
           </div>
         )}
 
@@ -308,19 +308,19 @@ export default function AgreementTemplatesPage() {
                             setRenameValue(tpl.name);
                             setRenamingId(tpl.id);
                           }}
-                          aria-label="Rename template"
+                          aria-label={t("agreements.templates.rename")}
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </Button>
                       </CardTitle>
                     )}
                     <div className="text-xs text-muted-foreground mt-1">
-                      Language: {tpl.language.toUpperCase()} · Created {new Date(tpl.created_at).toLocaleDateString()}
+                      {t("agreements.templates.language")}: {tpl.language.toUpperCase()} · {t("agreements.templates.created", { date: new Date(tpl.created_at).toLocaleDateString() })}
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {vs.length === 0 && <div className="text-sm text-muted-foreground">No versions.</div>}
+                  {vs.length === 0 && <div className="text-sm text-muted-foreground">{t("agreements.templates.noVersions")}</div>}
                   {vs.map((v) => (
                     <div
                       key={v.id}
@@ -337,12 +337,12 @@ export default function AgreementTemplatesPage() {
                               : "outline"
                           }
                         >
-                          {v.status}
+                          {t(`agreements.status.${v.status}`)}
                         </Badge>
                         <span className="text-xs text-muted-foreground truncate">
                           {v.activated_at
-                            ? `Activated ${new Date(v.activated_at).toLocaleDateString()}`
-                            : `Created ${new Date(v.created_at).toLocaleDateString()}`}
+                            ? t("agreements.templates.activated", { date: new Date(v.activated_at).toLocaleDateString() })
+                            : t("agreements.templates.created", { date: new Date(v.created_at).toLocaleDateString() })}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
@@ -352,21 +352,21 @@ export default function AgreementTemplatesPage() {
                           onClick={() => navigate(`/settings/agreements/version/${v.id}`)}
                         >
                           <Pencil className="w-4 h-4 mr-1" />
-                          {v.status === "draft" ? "Edit" : "View"}
+                          {v.status === "draft" ? t("agreements.templates.edit") : t("agreements.templates.view")}
                         </Button>
                         {v.status === "draft" && (
                           <Button size="sm" onClick={() => activate(v)}>
-                            <CheckCircle2 className="w-4 h-4 mr-1" /> Activate
+                            <CheckCircle2 className="w-4 h-4 mr-1" /> {t("agreements.templates.activate")}
                           </Button>
                         )}
                         {v.status === "active" && (
                           <Button variant="outline" size="sm" onClick={() => newDraftFrom(v)}>
-                            New draft
+                            {t("agreements.templates.newDraft")}
                           </Button>
                         )}
                         {v.status !== "archived" && v.status !== "active" && (
                           <Button variant="ghost" size="sm" onClick={() => archive(v)}>
-                            <Archive className="w-4 h-4" />
+                            <Archive className="w-4 h-4" aria-label={t("agreements.templates.archive")} />
                           </Button>
                         )}
                       </div>
