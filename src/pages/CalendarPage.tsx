@@ -1712,107 +1712,75 @@ export default function CalendarPage() {
 
 
 
-        {/* Period analytics — recomputes with selected Day / Week / Month view */}
-        <div className="bg-card rounded-xl border border-border p-3 sm:p-4 animate-fade-in">
-          <div className="flex items-center gap-2 sm:gap-3 mb-3 flex-wrap">
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">
-              {effectiveView === "day"
-                ? format(currentDate, "EEE, MMM d", { locale: dateLocale })
-                : effectiveView === "month"
-                  ? format(currentDate, "MMMM yyyy", { locale: dateLocale })
-                  : `${format(weekStart, "MMM d", { locale: dateLocale })} – ${format(addDays(weekStart, 6), "MMM d", { locale: dateLocale })}`}
-            </span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3 mb-3">
+        {/* Period summary strip — recomputes with selected Day / Week / Month view */}
+        <div className="bg-card rounded-xl border border-border animate-fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center divide-y sm:divide-y-0 sm:divide-x divide-border">
             <button
               type="button"
               onClick={() => clearFilters()}
-              className="flex flex-col items-center justify-center text-center rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-4 min-h-[88px]"
+              className="flex items-center gap-3 px-5 py-4 text-left flex-1 min-w-0 hover:bg-accent/30 transition-colors rounded-t-xl sm:rounded-l-xl sm:rounded-tr-none"
             >
-              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.thisWeek.slots}</p>
-              <p className="text-xs text-muted-foreground mt-2">
-                {effectiveView === "day" ? "Total slots this day" : effectiveView === "month" ? "Total slots this month" : t("capacity.totalSlotsThisWeek")}
-              </p>
+              <CalendarDays className="h-5 w-5 text-muted-foreground shrink-0" aria-hidden="true" />
+              <div className="min-w-0">
+                <p className="text-lg font-bold text-foreground tabular-nums leading-tight">{fillRates.thisWeek.occupied}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {effectiveView === "day"
+                    ? format(currentDate, "EEE, MMM d", { locale: dateLocale })
+                    : effectiveView === "month"
+                      ? format(currentDate, "MMMM yyyy", { locale: dateLocale })
+                      : `${format(weekStart, "MMM d", { locale: dateLocale })} – ${format(addDays(weekStart, 6), "MMM d", { locale: dateLocale })}`}
+                </p>
+              </div>
             </button>
-            <button
-              type="button"
-              onClick={() => clearFilters()}
-              className="flex flex-col items-center justify-center text-center rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-4 min-h-[88px]"
-            >
-              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.thisWeek.pct}%</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {effectiveView === "day" ? "Fill rate this day" : effectiveView === "month" ? "Fill rate this month" : t("capacity.fillRateThisWeek")}
-              </p>
-              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.thisWeek.occupied} / {fillRates.thisWeek.slots}</p>
-            </button>
-            <button
-              type="button"
-              onClick={() => clearFilters()}
-              className="flex flex-col items-center justify-center text-center rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-4 min-h-[88px]"
-            >
-              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.nextWeek.pct}%</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {effectiveView === "day" ? "Fill rate next day" : effectiveView === "month" ? "Fill rate next month" : t("capacity.fillRateNextWeek")}
-              </p>
-              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.nextWeek.occupied} / {fillRates.nextWeek.slots}</p>
-            </button>
-            <button
-              type="button"
-              onClick={() => clearFilters()}
-              className="flex flex-col items-center justify-center text-center rounded-lg border border-border bg-background hover:bg-accent/40 transition-colors p-4 min-h-[88px]"
-            >
-              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{fillRates.next30.pct}%</p>
-              <p className="text-xs text-muted-foreground mt-1">{t("capacity.fillRateNext30")}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{fillRates.next30.occupied} / {fillRates.next30.slots}</p>
-            </button>
-            <button
-              type="button"
-              onClick={() => setInboxOpen(true)}
-              className={cn(
-                "flex flex-col items-center justify-center text-center rounded-lg border transition-colors p-4 min-h-[88px] relative",
-                pendingRequests.length > 0
-                  ? "border-warning/40 bg-warning/10 hover:bg-warning/15"
-                  : "border-border bg-background hover:bg-accent/40",
-              )}
-            >
-              <p className="text-3xl font-bold text-foreground tabular-nums leading-none">{pendingRequests.length}</p>
-              <p className="text-xs text-muted-foreground mt-2">{(t as any)("booking.pendingRequests") || "Pending requests"}</p>
-            </button>
-          </div>
 
-          {effectiveView !== "month" && (
-            <div className={cn("grid gap-0", isMobile ? "grid-cols-[56px_1fr]" : "grid-cols-[72px_repeat(7,1fr)]")}>
-              <div />{/* spacer for time column */}
-              {periodCapacity.dayStats.map((ds, i) => {
-                const dow = days[i].getDay();
-                const dayKeyIdx = dow === 0 ? 6 : dow - 1;
-                const pct = ds.slots > 0 ? (ds.booked / ds.slots) * 100 : 0;
-                const isFull = ds.slots > 0 && ds.booked >= ds.slots;
-                const isLow = ds.working && ds.slots > 0 && pct < 30;
-                return (
-                  <div key={i} className="text-center">
-                    <p className="text-xs text-muted-foreground mb-1">{t(DAY_KEYS[dayKeyIdx] as any)}</p>
-                    {ds.working ? (
-                      <>
-                        <Progress value={pct} className={cn("h-2", isFull ? "[&>div]:bg-destructive" : isLow ? "[&>div]:bg-warning" : "")} />
-                        <p className="text-xs mt-1">
-                          <span className="font-medium text-foreground">{ds.booked}</span>
-                          <span className="text-muted-foreground">/{ds.slots}</span>
-                        </p>
-                        {isFull && <Badge variant="outline" className="text-[10px] px-1 mt-0.5 border-destructive/30 text-destructive">{t("capacity.fullyBooked")}</Badge>}
-                      </>
-                    ) : (
-                      <div className="flex items-center justify-center h-6">
-                        <CalendarOff className="h-3.5 w-3.5 text-muted-foreground/40" />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+            <button
+              type="button"
+              onClick={() => clearFilters()}
+              className="flex items-center gap-3 px-5 py-4 text-left flex-1 min-w-0 hover:bg-accent/30 transition-colors"
+            >
+              <svg viewBox="0 0 36 36" className="h-9 w-9 shrink-0 -rotate-90" aria-hidden="true">
+                <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="3" className="stroke-muted" />
+                <circle
+                  cx="18" cy="18" r="15.5" fill="none" strokeWidth="3" strokeLinecap="round"
+                  className="stroke-primary"
+                  strokeDasharray={`${(Math.min(fillRates.thisWeek.pct, 100) / 100) * 97.4} 97.4`}
+                />
+              </svg>
+              <div className="min-w-0">
+                <p className="text-lg font-bold text-foreground tabular-nums leading-tight">{fillRates.thisWeek.pct}%</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {effectiveView === "day" ? "Fill rate this day" : effectiveView === "month" ? "Fill rate this month" : t("capacity.fillRateThisWeek")}
+                </p>
+              </div>
+            </button>
+
+            <div className="px-5 py-4 flex-[1.6] min-w-0 w-full">
+              <p className="text-xs text-muted-foreground mb-1.5">{t("capacity.totalSlotsThisWeek")}</p>
+              <div className="flex items-center gap-3">
+                <p className="text-sm font-semibold text-foreground tabular-nums whitespace-nowrap">
+                  {fillRates.thisWeek.occupied} / {fillRates.thisWeek.slots}
+                </p>
+                <Progress
+                  value={Math.min(fillRates.thisWeek.pct, 100)}
+                  className={cn("h-2 flex-1", fillRates.thisWeek.pct >= 100 ? "[&>div]:bg-destructive" : "")}
+                />
+              </div>
             </div>
-          )}
+
+            {pendingRequests.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setInboxOpen(true)}
+                className="flex items-center gap-2 px-5 py-4 hover:bg-warning/10 transition-colors sm:rounded-r-xl"
+              >
+                <Inbox className="h-4 w-4 text-warning" aria-hidden="true" />
+                <span className="text-sm font-semibold text-foreground tabular-nums">{pendingRequests.length}</span>
+                <span className="text-xs text-muted-foreground">{(t as any)("booking.pendingRequests") || "Pending requests"}</span>
+              </button>
+            )}
+          </div>
         </div>
+
 
         {effectiveView === "month" && (
           <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
