@@ -457,7 +457,7 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName, maxIte
         </p>
       ) : (
         <div className="space-y-3">
-          {instances.map((inst) => {
+          {(maxItems ? instances.slice(0, maxItems) : instances).map((inst) => {
             const tplName = templates.find((tp) => tp.activeVersion?.id === inst.template_version_id)?.name
               ?? t("agreements.card.agreement");
             const inv = invitations[inst.id];
