@@ -79,7 +79,7 @@ const STATUS_STYLE: Record<string, string> = {
   expired: "bg-muted text-muted-foreground",
 };
 
-export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { clientId: string; clientEmail: string | null; clientName: string }) {
+export function ClientAgreementsCard({ clientId, clientEmail, clientName, maxItems }: { clientId: string; clientEmail: string | null; clientName: string; maxItems?: number }) {
   const { user } = useAuth();
   const { t } = useLanguage();
   const [instances, setInstances] = useState<Instance[]>([]);
@@ -457,7 +457,7 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { cl
         </p>
       ) : (
         <div className="space-y-3">
-          {instances.map((inst) => {
+          {(maxItems ? instances.slice(0, maxItems) : instances).map((inst) => {
             const tplName = templates.find((tp) => tp.activeVersion?.id === inst.template_version_id)?.name
               ?? t("agreements.card.agreement");
             const inv = invitations[inst.id];
