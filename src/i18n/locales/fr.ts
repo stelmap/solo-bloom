@@ -1948,4 +1948,5 @@ export default {
   "ov.showMore": "Afficher plus",
   "ov.showLess": "Afficher moins",
   "ov.next": "Prochaine",
+  "common.download": "Télécharger",
 } as const;

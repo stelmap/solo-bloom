@@ -1949,4 +1949,5 @@ export default {
   "ov.showMore": "Show more",
   "ov.showLess": "Show less",
   "ov.next": "Next",
+  "common.download": "Download",
 } as const;

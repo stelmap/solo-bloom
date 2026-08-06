@@ -2080,4 +2080,5 @@ export default {
   "ov.showMore": "Показать больше",
   "ov.showLess": "Свернуть",
   "ov.next": "Ближайший",
+  "common.download": "Скачать",
 };

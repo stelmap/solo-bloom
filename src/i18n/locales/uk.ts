@@ -1949,4 +1949,5 @@ export default {
   "ov.showMore": "Показати більше",
   "ov.showLess": "Згорнути",
   "ov.next": "Найближчий",
+  "common.download": "Завантажити",
 } as const;
