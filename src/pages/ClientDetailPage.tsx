@@ -189,7 +189,7 @@ export default function ClientDetailPage() {
     upcoming.sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
     past.sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime());
     const sorted = [...upcoming, ...past];
-    return { sortedAppointments: sorted, nextUpcomingId: upcoming.length > 0 ? upcoming[0].id : null };
+    return { sortedAppointments: sorted, nextUpcomingId: upcoming.length > 0 ? upcoming[0].id : null, upcomingSessions: upcoming, pastSessions: past };
   }, [appointments]);
 
   // Predicates — single source of truth for both card counts and filtered list.
