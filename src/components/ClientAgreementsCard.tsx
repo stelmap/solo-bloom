@@ -79,7 +79,7 @@ const STATUS_STYLE: Record<string, string> = {
   expired: "bg-muted text-muted-foreground",
 };
 
-export function ClientAgreementsCard({ clientId, clientEmail, clientName }: { clientId: string; clientEmail: string | null; clientName: string }) {
+export function ClientAgreementsCard({ clientId, clientEmail, clientName, maxItems }: { clientId: string; clientEmail: string | null; clientName: string; maxItems?: number }) {
   const { user } = useAuth();
   const { t } = useLanguage();
   const [instances, setInstances] = useState<Instance[]>([]);
