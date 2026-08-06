@@ -777,7 +777,7 @@ export default function ClientDetailPage() {
 
               <div className="space-y-6">
                 {!isDemoMode && <ClientNotesCard client={client as any} mode="preview" inlineEdit collapsible />}
-                {!isDemoMode && <ClientAgreementsCard clientId={id!} clientEmail={(client as any).email ?? null} clientName={client.name} />}
+                {!isDemoMode && <ClientAgreementsCard clientId={id!} clientEmail={(client as any).email ?? null} clientName={client.name} maxItems={1} />}
                 {!isDemoMode && <LastSessionNotesCard clientId={id!} />}
               </div>
             </div>
