@@ -2062,7 +2062,60 @@ export default function CalendarPage() {
             </table>
           </div>
         </div>
+
+          <aside className="w-full xl:w-[320px] shrink-0">
+            <div className="bg-card rounded-xl border border-border p-4 animate-fade-in">
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <div>
+                  <h2 className="text-sm font-semibold text-foreground">{t("calendar.today") || "Today"}</h2>
+                  <p className="text-xs text-muted-foreground">{format(new Date(), "d MMMM yyyy", { locale: dateLocale })}</p>
+                </div>
+                <CalendarDays className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+              </div>
+              {(() => {
+                const now = new Date();
+                const next = (visibleAppointments as any[])
+                  .filter((a) => a.status !== "cancelled" && new Date(a.scheduled_at).getTime() >= now.getTime())
+                  .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())[0];
+                if (!next) {
+                  return (
+                    <p className="text-sm text-muted-foreground rounded-lg border border-dashed border-border p-4 text-center">
+                      {(t as any)("calendar.noUpcoming") || "No upcoming sessions"}
+                    </p>
+                  );
+                }
+                const si = statusInfo(next.status);
+                const isGroupEvt = !!next.group_session_id;
+                const displayName = isGroupEvt ? (next.group_sessions?.groups?.name || "") : next.clients?.name;
+                return (
+                  <div className="rounded-lg border border-border bg-background p-3 space-y-2">
+                    <p className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground">
+                      {(t as any)("dashboard.nextSession") || "Next session"}
+                    </p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm text-muted-foreground tabular-nums">
+                        {format(new Date(next.scheduled_at), "EEE, MMM d", { locale: dateLocale })} · {fmtTime(next.scheduled_at)}
+                      </p>
+                      <ChevronRightIcon className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />
+                    </div>
+                    <p className="text-base font-semibold text-foreground truncate">{displayName}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {next.services?.name} · {next.duration_minutes} {L.durationMin}
+                    </p>
+                    <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium", si.color)}>
+                      {si.label}
+                    </span>
+                    <Button className="w-full mt-1" size="sm" onClick={() => openSessionSheet(next)}>
+                      {(t as any)("calendar.openSession") || t("common.view") || "Open session"}
+                    </Button>
+                  </div>
+                );
+              })()}
+            </div>
+          </aside>
+        </div>
         )}
+
         </section>
 
       </div>
