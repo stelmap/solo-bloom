@@ -1871,8 +1871,9 @@ export default function CalendarPage() {
         )}
 
         {effectiveView !== "month" && (
+        <div className="flex flex-col xl:flex-row gap-4 items-start">
         <div
-          className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex flex-col"
+          className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex flex-col flex-1 min-w-0 w-full"
           style={{ maxHeight: "calc(100vh - 180px)", minHeight: "480px", touchAction: isMobile ? "pan-y" : undefined }}
           onTouchStart={isMobile ? (e) => {
             const t = e.touches[0];
