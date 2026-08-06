@@ -30,7 +30,9 @@ import {
 import { ArchiveClientDialog } from "@/components/ArchiveClientDialog";
 import { ClientAuditDialog } from "@/components/ClientAuditDialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { ClipboardCheck } from "lucide-react";
+import { ClipboardCheck, ChevronRight, MoreHorizontal } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
