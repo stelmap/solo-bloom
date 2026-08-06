@@ -174,7 +174,7 @@ export default function ClientDetailPage() {
   }, [clientAllocs]);
 
   // Sort: upcoming (nearest first), then past (newest first)
-  const { sortedAppointments, nextUpcomingId } = useMemo(() => {
+  const { sortedAppointments, nextUpcomingId, upcomingSessions, pastSessions } = useMemo(() => {
     const now = new Date();
     const upcoming: any[] = [];
     const past: any[] = [];
