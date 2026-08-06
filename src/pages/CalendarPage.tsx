@@ -1914,21 +1914,32 @@ export default function CalendarPage() {
                   {days.map((day, i) => {
                     const dayOffStatus = isDayOff(day);
                     const working = isDayWorking(day);
+                    const isTodayCol = isSameDay(day, new Date());
+                    const ds = periodCapacity.dayStats[i];
                     return (
                       <th key={i} className={cn(
                         "p-3 text-center border-l border-border relative group font-normal",
-                        isSameDay(day, new Date()) ? "bg-accent" : "",
+                        isTodayCol ? "bg-accent" : "",
                         dayOffStatus ? "bg-destructive/5" : !working ? "bg-muted/30" : "",
                       )}>
-                        <p className="text-xs text-muted-foreground">{format(day, "EEE", { locale: dateLocale })}</p>
-                        <p className={cn("text-lg font-semibold", isSameDay(day, new Date()) ? "text-accent-foreground" : dayOffStatus ? "text-destructive" : "text-foreground")}>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide">{format(day, "EEE", { locale: dateLocale })}</p>
+                        <p className={cn(
+                          "text-lg font-semibold mt-0.5",
+                          isTodayCol
+                            ? "inline-flex items-center justify-center h-7 min-w-7 px-1.5 rounded-full bg-primary text-primary-foreground"
+                            : dayOffStatus ? "text-destructive" : "text-foreground",
+                        )}>
                           {format(day, "d")}
                         </p>
+                        {ds?.working && ds.slots > 0 && (
+                          <p className="text-[10px] text-muted-foreground tabular-nums mt-0.5">{ds.booked}/{ds.slots}</p>
+                        )}
                         {dayOffStatus && (
                           <Badge variant="outline" className="text-[9px] px-1 border-destructive/20 text-destructive absolute top-1 right-1">
                             <CalendarOff className="h-2.5 w-2.5" />
                           </Badge>
                         )}
+
                         <button
                           onClick={() => handleQuickDayOff(day)}
                           className="absolute bottom-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity text-[9px] text-muted-foreground hover:text-foreground"
