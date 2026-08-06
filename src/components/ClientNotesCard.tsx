@@ -24,11 +24,13 @@ type Props = {
    * instead of calling onEditRequested. Keeps the user on the current screen.
    */
   inlineEdit?: boolean;
+  /** Preview mode: clamp long notes and offer Show more / Show less instead of an inner scrollbar. */
+  collapsible?: boolean;
   onEditRequested?: () => void;
   disabled?: boolean;
 };
 
-export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditRequested, disabled }: Props) {
+export function ClientNotesCard({ client, mode = "edit", inlineEdit, collapsible, onEditRequested, disabled }: Props) {
 
   const update = useUpdateClient();
   const { toast } = useToast();
@@ -119,6 +121,31 @@ export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditReque
             <p className="text-sm text-muted-foreground">{t("clientNotes.noneShort")}</p>
             {showEditAction && (
               <Button variant="outline" size="sm" onClick={handleEditClick}>{t("clientNotes.addNote")}</Button>
+            )}
+          </div>
+        ) : collapsible ? (
+          <div className="rounded-lg bg-muted/50 p-3">
+            <div className={cn(!expanded && "max-h-40 overflow-hidden relative")}>
+              <RichTextView value={value} />
+              {!expanded && plainText.length > 220 && (
+                <span aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-muted/80 to-transparent" />
+              )}
+            </div>
+            {plainText.length > 220 && (
+              <Button
+                variant="link"
+                size="sm"
+                className="px-0 h-auto mt-1"
+                aria-expanded={expanded}
+                onClick={() => setExpanded((v) => !v)}
+              >
+                {expanded ? t("ov.showLess") : t("ov.showMore")}
+              </Button>
+            )}
+            {savedAt && (
+              <p className="text-[11px] text-muted-foreground mt-2">
+                {t("clientNotes.updated")} {format(savedAt, "dd.MM.yyyy HH:mm")}
+              </p>
             )}
           </div>
         ) : (

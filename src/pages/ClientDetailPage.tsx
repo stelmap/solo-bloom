@@ -30,7 +30,9 @@ import {
 import { ArchiveClientDialog } from "@/components/ArchiveClientDialog";
 import { ClientAuditDialog } from "@/components/ClientAuditDialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { ClipboardCheck } from "lucide-react";
+import { ClipboardCheck, ChevronRight, MoreHorizontal } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -98,6 +100,7 @@ export default function ClientDetailPage() {
   const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
   type StatFilter = "all" | "completed" | "paid" | "awaiting" | "cancelled" | "prepaid" | "supervision";
   const [statFilter, setStatFilter] = useState<StatFilter>("all");
+  const [activeTab, setActiveTab] = useState<"overview" | "sessions" | "agreements" | "finance" | "files">("overview");
   const PAGE_SIZE = 20;
   const [page, setPage] = useState(1);
   const setFilter = (f: StatFilter) => { setStatFilter(f); setPage(1); };
@@ -174,7 +177,7 @@ export default function ClientDetailPage() {
   }, [clientAllocs]);
 
   // Sort: upcoming (nearest first), then past (newest first)
-  const { sortedAppointments, nextUpcomingId } = useMemo(() => {
+  const { sortedAppointments, nextUpcomingId, upcomingSessions, pastSessions } = useMemo(() => {
     const now = new Date();
     const upcoming: any[] = [];
     const past: any[] = [];
@@ -189,7 +192,7 @@ export default function ClientDetailPage() {
     upcoming.sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
     past.sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime());
     const sorted = [...upcoming, ...past];
-    return { sortedAppointments: sorted, nextUpcomingId: upcoming.length > 0 ? upcoming[0].id : null };
+    return { sortedAppointments: sorted, nextUpcomingId: upcoming.length > 0 ? upcoming[0].id : null, upcomingSessions: upcoming, pastSessions: past };
   }, [appointments]);
 
   // Predicates — single source of truth for both card counts and filtered list.
@@ -482,41 +485,190 @@ export default function ClientDetailPage() {
 
   const initials = client.name.split(" ").map(n => n[0]).join("").toUpperCase();
 
+  const renderSessionRow = (apt: any, opts?: { highlight?: boolean }) => {
+    const notePreview = apt.notes ? (apt.notes.length > 80 ? apt.notes.slice(0, 80) + "…" : apt.notes) : null;
+    const isNextUpcoming = opts?.highlight ?? apt.id === nextUpcomingId;
+    const dimmed = apt.status === "cancelled" || apt.status === "no-show";
+    const info = allocByApt[apt.id];
+    const paid = info?.paid || 0;
+    const price = Number(apt.price || 0);
+    const partial = paid > 0 && paid + 0.001 < price;
+    return (
+      <div
+        key={apt.id}
+        role="button"
+        tabIndex={0}
+        onClick={() => { setSessionApt(apt); setSessionSheetOpen(true); }}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSessionApt(apt); setSessionSheetOpen(true); } }}
+        className={cn(
+          "p-3 rounded-lg border text-sm cursor-pointer transition focus:outline-none focus-visible:ring-2 focus-visible:ring-ring hover:ring-1 hover:ring-ring/20",
+          isNextUpcoming ? "bg-primary/5 border-primary/30" :
+          dimmed ? "bg-muted/30 border-border opacity-70" :
+          "bg-muted/50 border-border"
+        )}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="font-medium text-foreground">
+                {format(new Date(apt.scheduled_at), "MMM d, yyyy", { locale: dateLocale })}
+              </p>
+              <span className="text-xs text-muted-foreground">
+                {formatScheduledTime(apt.scheduled_at, use12h)}
+              </span>
+              {isNextUpcoming && (
+                <Badge className="text-[10px] px-1.5 py-0 bg-primary/15 text-primary border-0">
+                  {t("ov.next")}
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground truncate">
+              {apt.services?.name ?? "—"} · {apt.duration_minutes} {t("common.min")}
+            </p>
+          </div>
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <span className="font-semibold text-foreground">{cs}{price.toFixed(0)}</span>
+            {partial && (
+              <span className="text-[10px] text-muted-foreground">
+                {cs}{paid.toFixed(0)} / {cs}{price.toFixed(0)}
+              </span>
+            )}
+            <div className="flex gap-1 flex-wrap justify-end">
+              {statusBadge(apt.status)}
+              {paymentBadge(apt)}
+            </div>
+          </div>
+        </div>
+        {notePreview && (
+          <p className="mt-2 pt-2 border-t border-border/50 text-xs text-muted-foreground italic">
+            📝 {notePreview}
+          </p>
+        )}
+      </div>
+    );
+  };
+
+  const { outstanding } = balanceComputation;
+  const financeTiles = (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="rounded-lg border border-border bg-card px-4 py-3">
+        <div className="text-xs text-muted-foreground">{t("balance.totalPaid")}</div>
+        <div className="text-lg font-semibold text-foreground break-words">{cs}{Number(paidAmount || 0).toFixed(2)}</div>
+      </div>
+      <div className="rounded-lg border border-border bg-card px-4 py-3">
+        <div className="text-xs text-muted-foreground">{t("balance.outstanding")}</div>
+        <div className={cn("text-lg font-semibold break-words", outstanding > 0 ? "text-destructive" : "text-foreground")}>{cs}{outstanding.toFixed(2)}</div>
+      </div>
+      <div className="rounded-lg border border-border bg-card px-4 py-3">
+        <div className="text-xs text-muted-foreground">{t("balance.prepaid")}</div>
+        <div className={cn("text-lg font-semibold break-words", prepaidAmount > 0 ? "text-success" : "text-foreground")}>{cs}{prepaidAmount.toFixed(2)}</div>
+      </div>
+      <div className="rounded-lg border border-border bg-card px-4 py-3">
+        <div className="text-xs text-muted-foreground">{t("clientDetail.pendingPayments")}</div>
+        <div className={cn("text-lg font-semibold", awaitingSessions > 0 ? "text-warning" : "text-foreground")}>{awaitingSessions}</div>
+      </div>
+    </div>
+  );
+
+  const statCards = (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      {([
+        { key: "all", value: totalSessions, label: t("clientDetail.totalSessions"), color: "text-foreground", border: "border-border" },
+        { key: "prepaid", value: prepaidSessions, label: t("clientDetail.prepaidSessions"), color: prepaidSessions > 0 ? "text-success" : "text-muted-foreground", border: "border-success/30", sub: prepaidSessions > 0 ? `${cs}${prepaidAmount.toFixed(0)}` : undefined },
+        { key: "paid", value: paidSessions, label: t("clientDetail.paidSessions"), color: "text-primary", border: "border-primary/30", icon: <CreditCard className="h-4 w-4 text-primary" />, sub: `${cs}${paidAmount.toFixed(0)}` },
+        { key: "awaiting", value: awaitingSessions, label: t("clientDetail.pendingPayments"), color: "text-warning", border: "border-border" },
+        { key: "cancelled", value: cancelledSessions, label: t("clientDetail.cancelled"), color: "text-destructive", border: "border-border" },
+        { key: "supervision", value: supervisionCount, label: t("clientDetail.supervisionSessions"), color: "text-primary", border: "border-primary/20", icon: <ClipboardList className="h-4 w-4 text-primary" /> },
+      ] as Array<{ key: StatFilter; value: number; label: string; color: string; border: string; icon?: any; sub?: string }>).map((card) => {
+        const active = statFilter === card.key;
+        return (
+          <button
+            key={card.key}
+            type="button"
+            onClick={() => setFilter(card.key)}
+            aria-pressed={active}
+            className={cn(
+              "bg-card rounded-xl border p-4 text-center transition-all hover:ring-2 hover:ring-ring/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              card.border,
+              active && "ring-2 ring-primary border-primary shadow-sm"
+            )}
+          >
+            <div className="flex items-center justify-center gap-1">
+              {card.icon}
+              <p className={cn("text-2xl font-bold", card.color)}>{card.value}</p>
+            </div>
+            <p className="text-xs text-muted-foreground">{card.label}</p>
+            {card.sub && <p className="text-[10px] text-muted-foreground mt-0.5">{card.sub}</p>}
+          </button>
+        );
+      })}
+    </div>
+  );
+
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/clients")}><ArrowLeft className="h-5 w-5" /></Button>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-foreground">{client.name}</h1>
+        {/* 1. Compact client header */}
+        <div className="flex items-start gap-3">
+          <Button variant="ghost" size="icon" aria-label={t("common.back")} onClick={() => navigate("/clients")}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">
+            {initials}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl font-bold text-foreground break-words">{client.name}</h1>
               {client.status === "archived" && <Badge variant="secondary">{t("archive.badge")}</Badge>}
             </div>
-            <p className="text-sm text-muted-foreground">{t("clientDetail.profile")}</p>
+            <div className="flex items-center gap-x-4 gap-y-1 flex-wrap text-sm text-muted-foreground mt-1">
+              {client.phone && <span className="flex items-center gap-1.5 break-all"><Phone className="h-3.5 w-3.5 text-primary" />{client.phone}</span>}
+              {client.email && <span className="flex items-center gap-1.5 break-all"><Mail className="h-3.5 w-3.5 text-primary" />{client.email}</span>}
+              <span className="flex items-center gap-1.5">
+                <span className="text-xs">{t("clientLang.label")}:</span>
+                {(client as any).communication_language ? (
+                  <Badge variant="secondary" className="text-xs">{t(`clientLang.option.${(client as any).communication_language}` as any)}</Badge>
+                ) : (
+                  <Badge variant="destructive" className="text-xs">{t("clientLang.notSelected")}</Badge>
+                )}
+              </span>
+              <span className="text-xs">{t("clientDetail.clientSince", { date: format(new Date(client.created_at), "MMM yyyy", { locale: dateLocale }) })}</span>
+            </div>
           </div>
-          {!isDemoMode && <>
-            {isAdmin && (
-              <Button variant="outline" size="sm" onClick={() => setAuditOpen(true)}>
-                <ClipboardCheck className="h-3.5 w-3.5 mr-1" /> Full audit
-              </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={openEdit}><Pencil className="h-3.5 w-3.5 mr-1" /> {t("common.edit")}</Button>
-            {client.status === "archived" ? (
-              <Button variant="outline" size="sm" onClick={async () => {
-                try { await unarchiveClient.mutateAsync(client.id); toast({ title: t("archive.toast.unarchived") }); }
-                catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
-              }}>
-                <ArchiveRestore className="h-3.5 w-3.5 mr-1" /> {t("archive.action.unarchive")}
-              </Button>
-            ) : (
-              <Button variant="outline" size="sm" onClick={() => setArchiveOpen(true)}>
-                <Archive className="h-3.5 w-3.5 mr-1" /> {t("archive.action.archive")}
-              </Button>
-            )}
-            <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteOpen(true)}>
-              <Trash2 className="h-3.5 w-3.5 mr-1" /> {t("common.delete")}
-            </Button>
-          </>}
+          {!isDemoMode && (
+            <div className="flex items-center gap-2 shrink-0">
+              <Button size="sm" onClick={openEdit}><Pencil className="h-3.5 w-3.5 mr-1" /> {t("common.edit")}</Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" aria-label={t("ov.more")}>
+                    <MoreHorizontal className="h-4 w-4 mr-1" /> {t("ov.more")}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  {isAdmin && (
+                    <DropdownMenuItem onSelect={() => setAuditOpen(true)}>
+                      <ClipboardCheck className="h-4 w-4 mr-2" /> Full audit
+                    </DropdownMenuItem>
+                  )}
+                  {client.status === "archived" ? (
+                    <DropdownMenuItem onSelect={async () => {
+                      try { await unarchiveClient.mutateAsync(client.id); toast({ title: t("archive.toast.unarchived") }); }
+                      catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
+                    }}>
+                      <ArchiveRestore className="h-4 w-4 mr-2" /> {t("archive.action.unarchive")}
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem onSelect={() => setArchiveOpen(true)}>
+                      <Archive className="h-4 w-4 mr-2" /> {t("archive.action.archive")}
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => setDeleteOpen(true)}>
+                    <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
         </div>
 
         {client.status === "archived" && (
@@ -525,218 +677,132 @@ export default function ClientDetailPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
-          {([
-            { key: "all", value: totalSessions, label: t("clientDetail.totalSessions"), color: "text-foreground", border: "border-border" },
-            { key: "prepaid", value: prepaidSessions, label: t("clientDetail.prepaidSessions"), color: prepaidSessions > 0 ? "text-success" : "text-muted-foreground", border: "border-success/30", sub: prepaidSessions > 0 ? `${cs}${prepaidAmount.toFixed(0)}` : undefined },
+        {/* 2. Compact financial summary */}
+        {financeTiles}
 
-            { key: "paid", value: paidSessions, label: t("clientDetail.paidSessions"), color: "text-primary", border: "border-primary/30", icon: <CreditCard className="h-4 w-4 text-primary" />, sub: `${cs}${paidAmount.toFixed(0)}` },
-            { key: "awaiting", value: awaitingSessions, label: t("clientDetail.pendingPayments"), color: "text-warning", border: "border-border" },
-            { key: "cancelled", value: cancelledSessions, label: t("clientDetail.cancelled"), color: "text-destructive", border: "border-border" },
-            { key: "supervision", value: supervisionCount, label: t("clientDetail.supervisionSessions"), color: "text-primary", border: "border-primary/20", icon: <ClipboardList className="h-4 w-4 text-primary" /> },
-          ] as Array<{ key: StatFilter; value: number; label: string; color: string; border: string; icon?: any; sub?: string }>).map((card) => {
-            const active = statFilter === card.key;
-            return (
-              <button
-                key={card.key}
-                type="button"
-                onClick={() => setFilter(card.key)}
-                aria-pressed={active}
-                className={cn(
-                  "bg-card rounded-xl border p-4 text-center transition-all hover:ring-2 hover:ring-ring/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  card.border,
-                  active && "ring-2 ring-primary border-primary shadow-sm"
-                )}
-              >
-                <div className="flex items-center justify-center gap-1">
-                  {card.icon}
-                  <p className={cn("text-2xl font-bold", card.color)}>{card.value}</p>
-                </div>
-                <p className="text-xs text-muted-foreground">{card.label}</p>
-                {card.sub && <p className="text-[10px] text-muted-foreground mt-0.5">{card.sub}</p>}
-              </button>
-            );
-          })}
-        </div>
+        {/* 3. Tabs */}
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="space-y-6">
+          <TabsList className="w-full justify-start overflow-x-auto">
+            <TabsTrigger value="overview">{t("ov.tab.overview")}</TabsTrigger>
+            <TabsTrigger value="sessions">{t("ov.tab.sessions")}</TabsTrigger>
+            <TabsTrigger value="agreements">{t("ov.tab.agreements")}</TabsTrigger>
+            <TabsTrigger value="finance">{t("ov.tab.finance")}</TabsTrigger>
+            <TabsTrigger value="files">{t("ov.tab.files")}</TabsTrigger>
+          </TabsList>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="space-y-6">
-            <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">{initials}</div>
-                <div>
-                  <h3 className="font-semibold text-foreground text-lg">{client.name}</h3>
-                  <p className="text-xs text-muted-foreground">{t("clientDetail.clientSince", { date: format(new Date(client.created_at), "MMM yyyy", { locale: dateLocale }) })}</p>
-                </div>
-              </div>
-              <div className="space-y-2 text-sm">
-                {client.phone && <div className="flex items-center gap-2 text-muted-foreground"><Phone className="h-4 w-4 text-primary" />{client.phone}</div>}
-                {client.email && <div className="flex items-center gap-2 text-muted-foreground"><Mail className="h-4 w-4 text-primary" />{client.email}</div>}
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-xs">{t("clientLang.label")}:</span>
-                  {(client as any).communication_language ? (
-                    <Badge variant="secondary" className="text-xs">
-                      {t(`clientLang.option.${(client as any).communication_language}` as any)}
-                    </Badge>
+          {/* ---------- Overview ---------- */}
+          <TabsContent value="overview" className="space-y-6 mt-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-6">
+                {/* Upcoming sessions */}
+                <div className="bg-card rounded-xl border border-border p-5 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="font-semibold text-foreground flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-primary" /> {t("ov.upcoming")}
+                    </h3>
+                    {(upcomingSessions as any[]).length > 3 && (
+                      <Button variant="ghost" size="sm" onClick={() => setActiveTab("sessions")}>
+                        {t("ov.viewAll")} <ChevronRight className="h-3.5 w-3.5 ml-1" />
+                      </Button>
+                    )}
+                  </div>
+                  {(upcomingSessions as any[]).length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-2">{t("ov.noUpcoming")}</p>
                   ) : (
-                    <Badge variant="destructive" className="text-xs">{t("clientLang.notSelected")}</Badge>
+                    <div className="space-y-2">
+                      {(upcomingSessions as any[]).slice(0, 3).map((apt, i) => renderSessionRow(apt, { highlight: i === 0 }))}
+                    </div>
                   )}
                 </div>
-              </div>
-            </div>
 
-            {/* Client-level notes — moved up; reused in Supervision */}
-            {!isDemoMode && <ClientNotesCard client={client as any} />}
-
-            {/* Last completed session notes */}
-            {!isDemoMode && <LastSessionNotesCard clientId={id!} />}
-            {!isDemoMode && <ClientAgreementsCard clientId={id!} clientEmail={(client as any).email ?? null} clientName={client.name} />}
-
-
-            {/* Notification Settings */}
-            <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-              <h3 className="font-semibold text-foreground flex items-center gap-2">
-                <Bell className="h-4 w-4 text-primary" /> {t("notification.title")}
-              </h3>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">{t("notification.channel")}</span>
-                  <Badge variant="outline" className="text-xs">
-                    {(client as any).notification_preference === "email_only" || (client as any).notification_preference === "email_and_telegram" ? t("notification.emailOnly") :
-                     t("notification.noReminder")}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">{t("notification.confirmationRequired")}</span>
-                  <Badge variant="outline" className={cn("text-xs", (client as any).confirmation_required ? "text-primary" : "text-muted-foreground")}>
-                    {(client as any).confirmation_required ? "✓" : "—"}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-
-
-            <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-              <h3 className="font-semibold text-foreground flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-primary" /> {t("pricing.title")}
-              </h3>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">{t("pricing.mode")}</span>
-                  <Badge variant="outline" className="text-xs">
-                    {(client as any).pricing_mode === "dynamic" ? t("pricing.dynamic") : t("pricing.fixed")}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">{t("pricing.currentBase")}</span>
-                  <span className="font-semibold text-foreground">
-                    {(client as any).base_price != null ? `${cs}${Number((client as any).base_price).toFixed(0)}` : t("pricing.notSet")}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Price History */}
-            {priceHistory.length > 0 && (
-              <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-                <h3 className="font-semibold text-foreground flex items-center gap-2">
-                  <History className="h-4 w-4 text-primary" /> {t("pricing.history")}
-                </h3>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {priceHistory.map((ph: any) => (
-                    <div key={ph.id} className="bg-muted/50 rounded-lg p-3 text-sm">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-foreground">
-                          {ph.change_type === "session_override" ? t("pricing.sessionOverrideLabel") : t("pricing.basePriceChange")}
-                        </span>
-                        <span className="text-xs text-muted-foreground">{format(new Date(ph.created_at), "MMM d, yyyy", { locale: dateLocale })}</span>
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        {ph.old_price != null && <span className="text-muted-foreground line-through">{cs}{Number(ph.old_price).toFixed(0)}</span>}
-                        <span className="text-foreground font-semibold">{cs}{Number(ph.new_price).toFixed(0)}</span>
-                      </div>
-                      {ph.reason && <p className="text-xs text-muted-foreground mt-1 italic">"{ph.reason}"</p>}
+                {/* Recent sessions */}
+                <div className="bg-card rounded-xl border border-border p-5 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="font-semibold text-foreground flex items-center gap-2">
+                      <History className="h-4 w-4 text-primary" /> {t("ov.recent")}
+                    </h3>
+                    <Button variant="ghost" size="sm" onClick={() => setActiveTab("sessions")}>
+                      {t("ov.viewAll")} <ChevronRight className="h-3.5 w-3.5 ml-1" />
+                    </Button>
+                  </div>
+                  {(pastSessions as any[]).filter(isRealSession).length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-2">{t("ov.noRecent")}</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {(pastSessions as any[]).filter(isRealSession).slice(0, 5).map((apt) => renderSessionRow(apt, { highlight: false }))}
                     </div>
-                  ))}
+                  )}
                 </div>
-              </div>
-            )}
-            <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-              <h3 className="font-semibold text-foreground flex items-center gap-2"><Paperclip className="h-4 w-4 text-primary" /> {t("clientDetail.attachments")}</h3>
-              {!isDemoMode && <>
-                <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
-                <Button variant="outline" size="sm" className="w-full" onClick={() => fileInputRef.current?.click()} disabled={uploadAttachment.isPending}>
-                  <Plus className="h-4 w-4 mr-1" /> {uploadAttachment.isPending ? t("clientDetail.uploading") : t("clientDetail.uploadFile")}
-                </Button>
-              </>}
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {(attachments as any[]).length === 0 && <p className="text-xs text-muted-foreground text-center py-2">{t("clientDetail.noAttachments")}</p>}
-                {(attachments as any[]).map((att: any) => (
-                  <div key={att.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/50 group">
-                    {att.file_type === "image" ? <Image className="h-4 w-4 text-primary shrink-0" /> : <FileText className="h-4 w-4 text-primary shrink-0" />}
-                    <span className="text-sm text-foreground truncate flex-1">{att.file_name}</span>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={async () => {
-                        const url = await getSignedUrl(att.file_path);
-                        if (url) window.open(url, "_blank");
-                      }} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground">
-                        <Download className="h-3.5 w-3.5" />
-                      </button>
-                      {!isDemoMode && <button onClick={() => deleteAttachment.mutate({ id: att.id, filePath: att.file_path, clientId: client.id })} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>}
+
+                {/* Client settings summary */}
+                <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="font-semibold text-foreground flex items-center gap-2">
+                      <Bell className="h-4 w-4 text-primary" /> {t("ov.settings")}
+                    </h3>
+                    {!isDemoMode && (
+                      <Button variant="ghost" size="sm" onClick={openEdit}>
+                        <Pencil className="h-3.5 w-3.5 mr-1" /> {t("common.edit")}
+                      </Button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-muted-foreground">{t("notification.channel")}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {(client as any).notification_preference === "email_only" || (client as any).notification_preference === "email_and_telegram" ? t("notification.emailOnly") : t("notification.noReminder")}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-muted-foreground">{t("notification.confirmationRequired")}</span>
+                      <Badge variant="outline" className={cn("text-xs", (client as any).confirmation_required ? "text-primary" : "text-muted-foreground")}>
+                        {(client as any).confirmation_required ? "✓" : "—"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-muted-foreground">{t("pricing.mode")}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {(client as any).pricing_mode === "dynamic" ? t("pricing.dynamic") : t("pricing.fixed")}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-muted-foreground">{t("pricing.currentBase")}</span>
+                      <span className="font-semibold text-foreground">
+                        {(client as any).base_price != null ? `${cs}${Number((client as any).base_price).toFixed(0)}` : t("pricing.notSet")}
+                      </span>
                     </div>
                   </div>
-                ))}
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                {!isDemoMode && <ClientNotesCard client={client as any} mode="preview" inlineEdit collapsible />}
+                {!isDemoMode && <ClientAgreementsCard clientId={id!} clientEmail={(client as any).email ?? null} clientName={client.name} />}
+                {!isDemoMode && <LastSessionNotesCard clientId={id!} />}
               </div>
             </div>
+          </TabsContent>
 
-            {/* Supervision History */}
-            <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-              <h3 className="font-semibold text-foreground flex items-center gap-2">
-                <ClipboardList className="h-4 w-4 text-primary" /> {t("supervision.history")}
-                <span className="text-xs text-muted-foreground ml-auto">{supervisionCount}</span>
-              </h3>
-              {clientSupervisions.length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-4">{t("supervision.noSupervisions")}</p>
-              ) : (
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {clientSupervisions.map((sup: any) => (
-                    <div key={sup.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border text-sm cursor-pointer hover:ring-1 hover:ring-ring/20" onClick={() => navigate("/supervision")}>
-                      <div>
-                        <p className="font-medium text-foreground">{format(new Date(sup.supervision_date + "T00:00:00"), "MMM d, yyyy", { locale: dateLocale })}</p>
-                        <p className="text-xs text-muted-foreground">{(sup.imported_notes_snapshot || []).length} notes</p>
-                      </div>
-                      <span className="font-semibold text-foreground">{cs}{Number(sup.paid_amount).toFixed(0)}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-           </div>
-
-          <div className="lg:col-span-2 flex">
+          {/* ---------- Sessions ---------- */}
+          <TabsContent value="sessions" className="space-y-6 mt-0">
+            {statCards}
             <div className="bg-card rounded-xl border border-border p-5 space-y-4 flex flex-col w-full">
-
               {(() => {
                 const totalForFilter = statFilter === "supervision" ? (clientSupervisions as any[]).length : filteredAppointments.length;
+                const labelLower = (statFilter === "all" ? t("dashboard.sessions") : filterLabelMap[statFilter]).toLowerCase();
                 const totalPages = Math.max(1, Math.ceil(totalForFilter / PAGE_SIZE));
                 const safePage = Math.min(page, totalPages);
                 const start = (safePage - 1) * PAGE_SIZE;
                 const end = Math.min(start + PAGE_SIZE, totalForFilter);
                 const shown = Math.max(end - start, 0);
-                const labelLower = (statFilter === "all" ? t("dashboard.sessions") : filterLabelMap[statFilter]).toLowerCase();
                 const countText = totalForFilter > PAGE_SIZE
                   ? t("clientDetail.resultCount", { shown: String(shown), total: String(totalForFilter), label: labelLower })
                   : t("clientDetail.resultCountSimple", { count: String(totalForFilter), label: labelLower });
                 return (
-                  <>
-                    <h3 className="font-semibold text-foreground flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-primary" /> {t("clientDetail.sessionHistory")}
-                      <span className="text-xs text-muted-foreground ml-auto">{countText}</span>
-                    </h3>
-                  </>
+                  <h3 className="font-semibold text-foreground flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-primary" /> {t("clientDetail.sessionHistory")}
+                    <span className="text-xs text-muted-foreground ml-auto">{countText}</span>
+                  </h3>
                 );
               })()}
 
@@ -769,7 +835,7 @@ export default function ClientDetailPage() {
 
                 return (
                   <>
-                    <div className="space-y-2 flex-1 min-h-0 overflow-y-auto pr-1">
+                    <div className="space-y-2">
                       {isSup
                         ? pageItems.map((sup: any) => (
                             <div key={sup.id} onClick={() => navigate("/supervision")}
@@ -784,65 +850,7 @@ export default function ClientDetailPage() {
                               <span className="text-sm font-semibold text-foreground">{cs}{Number(sup.paid_amount).toFixed(0)}</span>
                             </div>
                           ))
-                        : pageItems.map((apt: any) => {
-                            const notePreview = apt.notes ? (apt.notes.length > 80 ? apt.notes.slice(0, 80) + "…" : apt.notes) : null;
-                            const isNextUpcoming = apt.id === nextUpcomingId;
-                            const dimmed = apt.status === "cancelled" || apt.status === "no-show";
-                            const info = allocByApt[apt.id];
-                            const paid = info?.paid || 0;
-                            const price = Number(apt.price || 0);
-                            const partial = paid > 0 && paid + 0.001 < price;
-                            return (
-                              <div
-                                key={apt.id}
-                                onClick={() => { setSessionApt(apt); setSessionSheetOpen(true); }}
-                                className={cn(
-                                  "p-3 rounded-lg border text-sm cursor-pointer hover:ring-1 hover:ring-ring/20 transition",
-                                  isNextUpcoming ? "bg-primary/5 border-primary/30" :
-                                  dimmed ? "bg-muted/30 border-border opacity-70" :
-                                  "bg-muted/50 border-border"
-                                )}
-                              >
-                                <div className="flex items-center justify-between gap-3">
-                                  <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <p className="font-medium text-foreground">
-                                        {format(new Date(apt.scheduled_at), "MMM d, yyyy", { locale: dateLocale })}
-                                      </p>
-                                      <span className="text-xs text-muted-foreground">
-                                        {formatScheduledTime(apt.scheduled_at, use12h)}
-                                      </span>
-                                      {isNextUpcoming && (
-                                        <Badge className="text-[10px] px-1.5 py-0 bg-primary/15 text-primary border-0">
-                                          {t("status.scheduled")}
-                                        </Badge>
-                                      )}
-                                    </div>
-                                    <p className="text-xs text-muted-foreground truncate">
-                                      {apt.services?.name ?? "—"} · {apt.duration_minutes} {t("common.min")}
-                                    </p>
-                                  </div>
-                                  <div className="flex flex-col items-end gap-1 shrink-0">
-                                    <span className="font-semibold text-foreground">{cs}{price.toFixed(0)}</span>
-                                    {partial && (
-                                      <span className="text-[10px] text-muted-foreground">
-                                        {cs}{paid.toFixed(0)} / {cs}{price.toFixed(0)}
-                                      </span>
-                                    )}
-                                    <div className="flex gap-1">
-                                      {statusBadge(apt.status)}
-                                      {paymentBadge(apt)}
-                                    </div>
-                                  </div>
-                                </div>
-                                {notePreview && (
-                                  <p className="mt-2 pt-2 border-t border-border/50 text-xs text-muted-foreground italic">
-                                    📝 {notePreview}
-                                  </p>
-                                )}
-                              </div>
-                            );
-                          })}
+                        : pageItems.map((apt: any) => renderSessionRow(apt))}
                     </div>
 
                     {totalPages > 1 && (
@@ -864,23 +872,17 @@ export default function ClientDetailPage() {
                 );
               })()}
             </div>
-          </div>
-        </div>
+          </TabsContent>
 
-        {/* Balance — payments are managed in Finance → Payment Audit */}
-        {(() => {
-          // Single source of truth: balanceComputation handles auto-coverage of
-          // partially-paid completed sessions from the prepaid pool, so the
-          // displayed Outstanding/Prepaid/Total Unpaid reflect the effective
-          // financial state after that virtual allocation.
-          const { outstanding } = balanceComputation;
-          // Use the same "reserved for active future sessions" figure as the
-          // Prepaid sessions counter so the two never disagree. Unallocated
-          // client credit surfaces separately in Finance → Payment Audit.
-          const prepaid = prepaidAmount;
-          const totalUnpaid = outstanding;
+          {/* ---------- Agreements ---------- */}
+          <TabsContent value="agreements" className="space-y-6 mt-0">
+            {!isDemoMode
+              ? <ClientAgreementsCard clientId={id!} clientEmail={(client as any).email ?? null} clientName={client.name} />
+              : <p className="text-sm text-muted-foreground">{t("ov.tab.agreements")}</p>}
+          </TabsContent>
 
-          return (
+          {/* ---------- Finance ---------- */}
+          <TabsContent value="finance" className="space-y-6 mt-0">
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
@@ -907,46 +909,125 @@ export default function ClientDetailPage() {
                 </div>
                 <div className="rounded-lg border border-border bg-muted/30 px-3 py-2">
                   <div className="text-xs text-muted-foreground">{t("balance.prepaid")}</div>
-                  <div className={cn("text-base font-semibold", prepaid > 0 ? "text-success" : "text-foreground")}>{cs}{prepaid.toFixed(2)}</div>
+                  <div className={cn("text-base font-semibold", prepaidAmount > 0 ? "text-success" : "text-foreground")}>{cs}{prepaidAmount.toFixed(2)}</div>
                 </div>
                 <div className="rounded-lg border border-border bg-muted/30 px-3 py-2">
                   <div className="text-xs text-muted-foreground">{t("balance.totalUnpaid")}</div>
-                  <div className={cn("text-base font-semibold", totalUnpaid > 0 ? "text-destructive" : "text-foreground")}>{cs}{totalUnpaid.toFixed(2)}</div>
+                  <div className={cn("text-base font-semibold", outstanding > 0 ? "text-destructive" : "text-foreground")}>{cs}{outstanding.toFixed(2)}</div>
                 </div>
               </div>
             </div>
-          );
-        })()}
 
-        {/* Outstanding debt — per-session breakdown */}
-        {clientDebtData && clientDebtData.items?.length > 0 && (
-          <div className="bg-card rounded-xl border border-warning/30 p-5 space-y-3">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div>
-                <h3 className="font-semibold text-foreground">{t("clientDetail.outstandingDebt")}</h3>
-                <p className="text-xs text-muted-foreground">{t("clientDetail.outstandingDebtHint")}</p>
-              </div>
-              <div className="text-lg font-semibold text-destructive">{cs}{Number(clientDebtData.total).toFixed(2)}</div>
-            </div>
-            <div className="space-y-2">
-              {clientDebtData.items.map((d: any) => {
-                const apt = d.appointment;
-                const dateStr = apt?.scheduled_at
-                  ? format(new Date(apt.scheduled_at), "MMM d, yyyy", { locale: dateLocale })
-                  : "—";
-                return (
-                  <div key={d.id} className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2 text-sm">
-                    <div>
-                      <p className="font-medium text-foreground">{apt?.service?.name ?? t("session.title")}</p>
-                      <p className="text-xs text-muted-foreground">{dateStr}</p>
-                    </div>
-                    <div className="font-semibold text-destructive">{cs}{Number(d.amount).toFixed(2)}</div>
+            {clientDebtData && clientDebtData.items?.length > 0 && (
+              <div className="bg-card rounded-xl border border-warning/30 p-5 space-y-3">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div>
+                    <h3 className="font-semibold text-foreground">{t("clientDetail.outstandingDebt")}</h3>
+                    <p className="text-xs text-muted-foreground">{t("clientDetail.outstandingDebtHint")}</p>
                   </div>
-                );
-              })}
+                  <div className="text-lg font-semibold text-destructive">{cs}{Number(clientDebtData.total).toFixed(2)}</div>
+                </div>
+                <div className="space-y-2">
+                  {clientDebtData.items.map((d: any) => {
+                    const apt = d.appointment;
+                    const dateStr = apt?.scheduled_at
+                      ? format(new Date(apt.scheduled_at), "MMM d, yyyy", { locale: dateLocale })
+                      : "—";
+                    return (
+                      <div key={d.id} className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2 text-sm">
+                        <div>
+                          <p className="font-medium text-foreground">{apt?.service?.name ?? t("session.title")}</p>
+                          <p className="text-xs text-muted-foreground">{dateStr}</p>
+                        </div>
+                        <div className="font-semibold text-destructive">{cs}{Number(d.amount).toFixed(2)}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {priceHistory.length > 0 && (
+              <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <History className="h-4 w-4 text-primary" /> {t("pricing.history")}
+                </h3>
+                <div className="space-y-2">
+                  {priceHistory.map((ph: any) => (
+                    <div key={ph.id} className="bg-muted/50 rounded-lg p-3 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-foreground">
+                          {ph.change_type === "session_override" ? t("pricing.sessionOverrideLabel") : t("pricing.basePriceChange")}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{format(new Date(ph.created_at), "MMM d, yyyy", { locale: dateLocale })}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        {ph.old_price != null && <span className="text-muted-foreground line-through">{cs}{Number(ph.old_price).toFixed(0)}</span>}
+                        <span className="text-foreground font-semibold">{cs}{Number(ph.new_price).toFixed(0)}</span>
+                      </div>
+                      {ph.reason && <p className="text-xs text-muted-foreground mt-1 italic">"{ph.reason}"</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <ClipboardList className="h-4 w-4 text-primary" /> {t("supervision.history")}
+                <span className="text-xs text-muted-foreground ml-auto">{supervisionCount}</span>
+              </h3>
+              {clientSupervisions.length === 0 ? (
+                <p className="text-xs text-muted-foreground py-2">{t("supervision.noSupervisions")}</p>
+              ) : (
+                <div className="space-y-2">
+                  {clientSupervisions.map((sup: any) => (
+                    <div key={sup.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border text-sm cursor-pointer hover:ring-1 hover:ring-ring/20" onClick={() => navigate("/supervision")}>
+                      <div>
+                        <p className="font-medium text-foreground">{format(new Date(sup.supervision_date + "T00:00:00"), "MMM d, yyyy", { locale: dateLocale })}</p>
+                        <p className="text-xs text-muted-foreground">{(sup.imported_notes_snapshot || []).length} notes</p>
+                      </div>
+                      <span className="font-semibold text-foreground">{cs}{Number(sup.paid_amount).toFixed(0)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          </TabsContent>
+
+          {/* ---------- Files ---------- */}
+          <TabsContent value="files" className="space-y-6 mt-0">
+            <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+              <h3 className="font-semibold text-foreground flex items-center gap-2"><Paperclip className="h-4 w-4 text-primary" /> {t("clientDetail.attachments")}</h3>
+              {!isDemoMode && <>
+                <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
+                <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadAttachment.isPending}>
+                  <Plus className="h-4 w-4 mr-1" /> {uploadAttachment.isPending ? t("clientDetail.uploading") : t("clientDetail.uploadFile")}
+                </Button>
+              </>}
+              <div className="space-y-2">
+                {(attachments as any[]).length === 0 && <p className="text-xs text-muted-foreground py-2">{t("clientDetail.noAttachments")}</p>}
+                {(attachments as any[]).map((att: any) => (
+                  <div key={att.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/50 group">
+                    {att.file_type === "image" ? <Image className="h-4 w-4 text-primary shrink-0" /> : <FileText className="h-4 w-4 text-primary shrink-0" />}
+                    <span className="text-sm text-foreground truncate flex-1">{att.file_name}</span>
+                    <div className="flex gap-1">
+                      <button aria-label={t("common.download")} onClick={async () => {
+                        const url = await getSignedUrl(att.file_path);
+                        if (url) window.open(url, "_blank");
+                      }} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground">
+                        <Download className="h-3.5 w-3.5" />
+                      </button>
+                      {!isDemoMode && <button aria-label={t("common.delete")} onClick={() => deleteAttachment.mutate({ id: att.id, filePath: att.file_path, clientId: client.id })} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
