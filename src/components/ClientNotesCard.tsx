@@ -24,11 +24,13 @@ type Props = {
    * instead of calling onEditRequested. Keeps the user on the current screen.
    */
   inlineEdit?: boolean;
+  /** Preview mode: clamp long notes and offer Show more / Show less instead of an inner scrollbar. */
+  collapsible?: boolean;
   onEditRequested?: () => void;
   disabled?: boolean;
 };
 
-export function ClientNotesCard({ client, mode = "edit", inlineEdit, onEditRequested, disabled }: Props) {
+export function ClientNotesCard({ client, mode = "edit", inlineEdit, collapsible, onEditRequested, disabled }: Props) {
 
   const update = useUpdateClient();
   const { toast } = useToast();
