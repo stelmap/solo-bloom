@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { ClientPicker } from "@/components/ClientPicker";
 import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
-import { ChevronLeft, ChevronRight, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon, UserPlus, Briefcase, CheckCircle2, Circle, Flag, Search, X as XIcon, AlertTriangle } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronRight as ChevronRightIcon, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon, UserPlus, Briefcase, CheckCircle2, Circle, Flag, Search, X as XIcon, AlertTriangle, CalendarDays } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import {
   useCalendarDisplay, initialFilters, isFiltersActive,
