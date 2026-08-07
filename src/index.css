@@ -48,11 +48,12 @@
     --sidebar-border: 222 40% 18%;
     --sidebar-ring: 24 95% 53%;
 
-    --state-paid: 142 71% 40%;
-    --state-unpaid: 0 74% 52%;
-    --state-confirmed: 217 91% 55%;
-    --state-cancelled-charged: 272 60% 55%;
-    --state-cancelled-free: 220 9% 55%;
+    /* Unified session status palette — see src/lib/sessionStatusColors.ts */
+    --state-paid: 142 71% 45%;             /* #22C55E */
+    --state-unpaid: 220 13% 84%;           /* #D1D5DB */
+    --state-confirmed: 217 91% 60%;        /* #3B82F6 */
+    --state-cancelled-charged: 271 91% 65%;/* #A855F7 */
+    --state-cancelled-free: 220 9% 46%;    /* #6B7280 */
 
     --success: 142 71% 36%;
     --success-foreground: 0 0% 100%;
