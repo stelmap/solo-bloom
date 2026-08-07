@@ -1593,17 +1593,24 @@ export default function CalendarPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">{(t as any)("calendar.sessionType") || "Type"}</Label>
-                  {(["individual", "group", "pair"] as const).map(k => (
-                    <label key={k} className="flex items-center gap-2 text-sm capitalize cursor-pointer">
+                  <Label className="text-xs text-muted-foreground">{(t as any)("calendar.stateFilter") || "State"}</Label>
+                  {([
+                    ["paid", "calendar.state.paid", "Paid"],
+                    ["unpaid", "calendar.state.unpaid", "Unpaid"],
+                    ["confirmed", "calendar.state.confirmed", "Confirmed"],
+                    ["cancelled_charged", "calendar.state.cancelledCharged", "Cancelled — client charged"],
+                    ["cancelled_free", "calendar.state.cancelledFree", "Cancelled — no charge"],
+                  ] as const).map(([k, key, fallback]) => (
+                    <label key={k} className="flex items-center gap-2 text-sm cursor-pointer">
                       <Checkbox
-                        checked={filters.types[k]}
-                        onCheckedChange={(c) => setFilters(f => ({ ...f, types: { ...f.types, [k]: !!c } }))}
+                        checked={filters.states[k]}
+                        onCheckedChange={(c) => setFilters(f => ({ ...f, states: { ...f.states, [k]: !!c } }))}
                       />
-                      {k}
+                      {(t as any)(key) || fallback}
                     </label>
                   ))}
                 </div>
+
                 <Button variant="ghost" size="sm" className="w-full" onClick={clearFilters} disabled={!filtersActive}>
                   {(t as any)("common.clear") || "Clear"}
                 </Button>
