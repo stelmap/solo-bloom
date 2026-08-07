@@ -165,8 +165,19 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       setNotes(apt.notes || "");
       setNotesDirty(false);
       setMode("view");
+      setPaymentStatus("paid_now");
     }
   }, [apt?.id, apt?.notes]);
+
+  // Default to the prepayment option when the client's balance covers the session.
+  useEffect(() => {
+    if (!apt) return;
+    const price = Number(apt.price || 0);
+    if (!apt.group_session_id && Number(clientCredit) >= price - 0.001 && Number(clientCredit) > 0.001) {
+      setPaymentStatus("paid_from_prepayment");
+    }
+  }, [apt?.id, clientCredit]);
+
 
   // Group billing data — must be before early return
   const isGroupSession = !!apt?.group_session_id;
