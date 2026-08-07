@@ -369,16 +369,16 @@ export default function CalendarPage() {
   // --- Responsive grid sizing -------------------------------------------------
   // The time grid stretches to the available height; hour rows are sized from
   // the measured viewport so a normal working day fits without inner scrolling.
-  const [density, setDensity] = useState<"compact" | "comfortable">(() => {
+  const [gridDensity, setGridDensity] = useState<"compact" | "comfortable">(() => {
     if (typeof window === "undefined") return "comfortable";
     return (localStorage.getItem("calendar.density") as "compact" | "comfortable") || "comfortable";
   });
   useEffect(() => {
-    try { localStorage.setItem("calendar.density", density); } catch { /* ignore */ }
-  }, [density]);
+    try { localStorage.setItem("calendar.density", gridDensity); } catch { /* ignore */ }
+  }, [gridDensity]);
 
-  const MIN_ROW_H = density === "compact" ? 32 : 44;
-  const MAX_ROW_H = density === "compact" ? 56 : 88;
+  const MIN_ROW_H = gridDensity === "compact" ? 32 : 44;
+  const MAX_ROW_H = gridDensity === "compact" ? 56 : 88;
   const gridScrollRef = useRef<HTMLDivElement | null>(null);
   const gridHeadRef = useRef<HTMLTableSectionElement | null>(null);
   const [rowHeight, setRowHeight] = useState(60);
