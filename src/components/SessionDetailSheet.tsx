@@ -1136,7 +1136,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
 
 
-              {/* Session notes — compact row, opens the dedicated notes dialog */}
+              {/* Session notes — inline "Add notes" link */}
               {!isGroupSession && apt.client_id && (
                 <button
                   type="button"
@@ -1145,71 +1145,50 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                     setNotesDialogMode("edit");
                     setNotesDialogOpen(true);
                   }}
-                  className="w-full flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-muted"
+                  className="flex items-center gap-2 rounded-lg px-1 py-2 text-sm font-semibold text-primary transition-colors hover:underline"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-medium text-foreground">{t("sessionNotes.title")}</span>
-                    <span className="block text-xs text-muted-foreground">{t("sd.notesSubtitle")}</span>
-                  </span>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <FileText className="h-4 w-4 shrink-0" />
+                  {t("sd.addNotes")}
                 </button>
               )}
 
-              {/* Complete session — inline one-click flow */}
+              {/* Complete session — one-click action bar */}
               {isActive && !isGroupSession && (
-                <div className="space-y-3">
-                  <Label className="text-sm font-semibold">{t("sd.completeSession")}</Label>
-                  <div role="radiogroup" aria-label={t("sd.completeSession")} className="space-y-2">
-                    {SIMPLE_COMPLETION_OPTIONS.map(opt => {
-                      const selected = paymentStatus === opt.value;
-                      return (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          role="radio"
-                          aria-checked={selected}
-                          onClick={() => setPaymentStatus(opt.value)}
-                          className={cn(
-                            "w-full flex items-start gap-3 rounded-xl border p-3 text-left transition-colors",
-                            selected ? "border-primary bg-primary/5" : "border-border bg-card hover:bg-muted",
-                          )}
-                        >
-                          <span className={cn(
-                            "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2",
-                            selected ? "border-primary" : "border-muted-foreground/40",
-                          )}>
-                            {selected && <span className="h-2 w-2 rounded-full bg-primary" />}
-                          </span>
-                          <span className="min-w-0">
-                            <span className="block text-sm font-medium text-foreground">{opt.label}</span>
-                            <span className="block text-xs text-muted-foreground">{opt.description}</span>
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <Button
-                    className="w-full"
-                    onClick={handleQuickComplete}
-                    disabled={completeAppointment.isPending || completeFromPrepayment.isPending}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    {(completeAppointment.isPending || completeFromPrepayment.isPending)
-                      ? t("calendar.saving")
-                      : t("sd.completeSession")}
-                  </Button>
+                <div className="sticky bottom-0 -mx-6 space-y-2.5 border-t border-border bg-background px-6 pb-2 pt-4">
+                  {SIMPLE_COMPLETION_OPTIONS.map((opt, i) => {
+                    const label =
+                      opt.value === "paid_now" ? t("sd.paidComplete")
+                        : opt.value === "waiting_for_payment" ? t("sd.waitingComplete")
+                          : `${opt.label} · ${t("calendar.complete")}`;
+                    const busy = completeAppointment.isPending || completeFromPrepayment.isPending;
+                    return (
+                      <Button
+                        key={opt.value}
+                        variant={i === 0 ? "default" : "outline"}
+                        className={cn(
+                          "h-12 w-full rounded-xl text-sm font-semibold",
+                          i !== 0 && "border-primary/40 text-primary hover:bg-primary/10 hover:text-primary",
+                        )}
+                        onClick={() => handleQuickComplete(opt.value)}
+                        disabled={busy}
+                      >
+                        {opt.value === "waiting_for_payment"
+                          ? <Clock className="h-4 w-4 mr-2" />
+                          : <CheckCircle className="h-4 w-4 mr-2" />}
+                        {busy ? t("calendar.saving") : label}
+                      </Button>
+                    );
+                  })}
                   <Button
                     variant="outline"
-                    className="w-full border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    className="h-12 w-full rounded-xl border-destructive/40 text-sm font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive"
                     onClick={() => setCancelOpen(true)}
                   >
                     <XCircle className="h-4 w-4 mr-2" /> {t("cancelSession.title")}
                   </Button>
                 </div>
               )}
+
 
               {isActive && isGroupSession && (
                 <div className="space-y-2">
