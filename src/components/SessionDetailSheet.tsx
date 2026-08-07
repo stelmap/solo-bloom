@@ -612,7 +612,9 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
    * Uses the currently selected radio option, records income / expected
    * payment exactly once and closes the panel without extra confirmation.
    */
-  const handleQuickComplete = async () => {
+  const handleQuickComplete = async (statusOverride?: string) => {
+    const paymentStatusChoice = statusOverride ?? paymentStatus;
+
     if (completeAppointment.isPending || completeFromPrepayment.isPending) return;
     if (!isActive) return;
     try {
