@@ -384,6 +384,31 @@ export default function CalendarPage() {
     return set;
   }, [daysOff]);
 
+  // Blocked time ranges (partial-day blocks) keyed by date string
+  const blockedRanges = useMemo(() => {
+    const map: Record<string, Array<{ start: string; end: string }>> = {};
+    for (const d of daysOff as any[]) {
+      if (d.type !== "blocked_time" || !d.custom_start_time || !d.custom_end_time) continue;
+      (map[d.date] ||= []).push({
+        start: String(d.custom_start_time).slice(0, 5),
+        end: String(d.custom_end_time).slice(0, 5),
+      });
+    }
+    return map;
+  }, [daysOff]);
+
+  const toMin = (hhmm: string) => {
+    const [h, m] = hhmm.split(":").map(Number);
+    return (h || 0) * 60 + (m || 0);
+  };
+
+  const isBlockedHour = (date: Date, hour: number) => {
+    const ranges = blockedRanges[format(date, "yyyy-MM-dd")];
+    if (!ranges || ranges.length === 0) return false;
+    const s = hour * 60, e = s + 60;
+    return ranges.some(r => toMin(r.start) < e && toMin(r.end) > s);
+  };
+
   const getDayOfWeek = (date: Date) => {
     const d = date.getDay();
     return d === 0 ? 7 : d; // 1=Mon, 7=Sun
@@ -447,6 +472,10 @@ export default function CalendarPage() {
 
   const [form, setForm] = useState({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
   const [serviceError, setServiceError] = useState(false);
+
+  // Blocked time state (no client / service / session is created)
+  const [isBlockedTime, setIsBlockedTime] = useState(false);
+  const [blockEnd, setBlockEnd] = useState("10:00");
 
   // Group session state
   const [isGroupSession, setIsGroupSession] = useState(false);
@@ -567,7 +596,65 @@ export default function CalendarPage() {
     return null;
   }, [form.date, form.time, form.service_id, services, appointments, scheduleMap, daysOffSet]);
 
+  const handleCreateBlockedTime = async () => {
+    if (!form.date || !form.time || !blockEnd) return;
+    if (blockEnd <= form.time) {
+      toast({ title: t("common.error"), description: L.blockedEnd, variant: "destructive" });
+      return;
+    }
+    // Build the list of dates: base date + recurrence occurrences
+    const dates = new Set<string>([form.date]);
+    if (isRecurring && recurDays.length > 0) {
+      const [by, bm, bd] = form.date.split("-").map(Number);
+      const base = new Date(by, bm - 1, bd);
+      const end = recurEndDate
+        ? (() => { const [y, m, d] = recurEndDate.split("-").map(Number); return new Date(y, m - 1, d); })()
+        : new Date(by, bm - 1 + 3, bd); // default horizon: 3 months
+      const cursor = new Date(base);
+      let weekIdx = 0;
+      // start from the Monday of the base week
+      const baseDow = base.getDay() === 0 ? 7 : base.getDay();
+      cursor.setDate(base.getDate() - (baseDow - 1));
+      while (cursor <= end && weekIdx < 104) {
+        if (weekIdx % Math.max(recurInterval, 1) === 0) {
+          for (const dow of recurDays) {
+            const day = new Date(cursor);
+            day.setDate(cursor.getDate() + (dow - 1));
+            if (day >= base && day <= end) dates.add(format(day, "yyyy-MM-dd"));
+          }
+        }
+        cursor.setDate(cursor.getDate() + 7);
+        weekIdx++;
+      }
+    }
+    try {
+      for (const date of Array.from(dates)) {
+        await createDayOff.mutateAsync({
+          date,
+          type: "blocked_time",
+          label: "Unavailable",
+          custom_start_time: `${form.time}:00`,
+          custom_end_time: `${blockEnd}:00`,
+          is_non_working: false,
+        });
+      }
+      setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
+      setBlockEnd("10:00");
+      setIsBlockedTime(false);
+      setIsRecurring(false);
+      setRecurInterval(1); setRecurDays([1]); setRecurEndDate("");
+      setCreateOpen(false);
+      toast({ title: L.blockedCreated });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e?.message, variant: "destructive" });
+    }
+  };
+
   const handleCreate = async () => {
+    if (isBlockedTime) {
+      await handleCreateBlockedTime();
+      return;
+    }
     // Guard against rapid double-submits (Enter+click, double-click)
     // since `isPending` flips asynchronously and won't block a second call
     // fired in the same tick.
