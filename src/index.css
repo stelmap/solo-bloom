@@ -101,11 +101,12 @@
     --sidebar-accent-foreground: 24 95% 60%;
     --sidebar-border: 222 35% 14%;
     --sidebar-ring: 24 95% 53%;
-    --state-paid: 142 60% 48%;
-    --state-unpaid: 0 72% 58%;
-    --state-confirmed: 217 91% 62%;
-    --state-cancelled-charged: 272 62% 65%;
-    --state-cancelled-free: 220 9% 62%;
+    /* Same unified palette in dark mode — status colors must not shift */
+    --state-paid: 142 71% 45%;
+    --state-unpaid: 220 13% 84%;
+    --state-confirmed: 217 91% 60%;
+    --state-cancelled-charged: 271 91% 65%;
+    --state-cancelled-free: 220 9% 46%;
     --success: 142 60% 45%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 55%;
