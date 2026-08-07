@@ -433,7 +433,7 @@ export default {
   "common.clear": "Effacer",
   "calendar.agenda": "Agenda adaptatif",
   "calendar.todaysSessions": "Séances du jour",
-  "calendar.noMoreToday": "Plus de séances aujourd"hui",
+  "calendar.noMoreToday": "Plus de séances aujourd'hui",
   "calendar.allSetToday": "Tout est prêt pour le reste de la journée.",
   "calendar.needsAttention": "Nécessite attention",
   "calendar.openSession": "Ouvrir la séance",
