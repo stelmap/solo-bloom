@@ -1964,19 +1964,29 @@ export default function CalendarPage() {
 
 
         {/* Compact weekly capacity row */}
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 px-0.5">
-          <p className="text-sm text-foreground">
-            <span className="font-bold tabular-nums">{fillRates.thisWeek.occupied} / {fillRates.thisWeek.slots}</span>{" "}
-            <span className="text-muted-foreground">{(t as any)("capacity.slots") || "slots"}</span>
-          </p>
-          <p className="text-sm text-muted-foreground tabular-nums">
-            <span className="font-semibold text-foreground">{fillRates.thisWeek.pct}%</span>{" "}
-            {(t as any)("capacity.filled") || "filled"}
-          </p>
-          <Progress
-            value={Math.min(fillRates.thisWeek.pct, 100)}
-            className={cn("h-1.5 flex-1 min-w-[140px] max-w-[560px]", fillRates.thisWeek.pct >= 100 ? "[&>div]:bg-destructive" : "")}
-          />
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 px-0.5">
+          <div className="shrink-0">
+            <p className="text-2xl font-bold tabular-nums leading-none text-foreground">
+              {fillRates.thisWeek.pct}%
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {(t as any)("capacity.fillRateThisWeek") || "Fill rate this week"}
+            </p>
+          </div>
+
+          <div className="hidden sm:block self-stretch w-px bg-border" />
+
+          <div className="flex-1 min-w-[200px] space-y-2">
+            <p className="text-sm text-foreground">
+              <span className="font-bold tabular-nums">{fillRates.thisWeek.occupied} / {fillRates.thisWeek.slots}</span>{" "}
+              <span className="text-muted-foreground">{(t as any)("capacity.slotsThisWeek") || "slots this week"}</span>
+            </p>
+            <Progress
+              value={Math.min(fillRates.thisWeek.pct, 100)}
+              className={cn("h-2 w-full max-w-[640px]", fillRates.thisWeek.pct >= 100 ? "[&>div]:bg-destructive" : "")}
+            />
+          </div>
+
           {pendingRequests.length > 0 && (
             <button
               type="button"
@@ -1989,6 +1999,7 @@ export default function CalendarPage() {
             </button>
           )}
         </div>
+
 
 
 
