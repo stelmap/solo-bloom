@@ -76,6 +76,8 @@ const NEW_COPY: Record<LangKey, {
   durationMin: string;
   modalSubtitle: string;
   sessionTypeLabel: string; individualSession: string; groupSession: string;
+  blockedTime: string; blockedStart: string; blockedEnd: string;
+  ctaBlocked: string; blockedHint: string; blockedSummary: string; blockedCreated: string;
   participants: string;
   notesPlaceholder: string; notesGroupPlaceholder: string;
   ctaIndividual: string; ctaGroup: string;
@@ -105,6 +107,9 @@ const NEW_COPY: Record<LangKey, {
     ctaIndividual: "Create session", ctaGroup: "Create group session",
     summaryWillCreate: "Will create session:",
     summaryWillCreateGroup: "Will create group session:",
+    blockedTime: "Blocked time", blockedStart: "Start time", blockedEnd: "End time",
+    ctaBlocked: "Save blocked time", blockedHint: "Choose a date and a time range to block.",
+    blockedSummary: "Will block:", blockedCreated: "Blocked time saved",
   },
   uk: {
     noClientsYet: "Ще немає клієнтів. Додайте першого клієнта, щоб створити сесію.",
@@ -130,6 +135,9 @@ const NEW_COPY: Record<LangKey, {
     ctaIndividual: "Створити сесію", ctaGroup: "Створити групову сесію",
     summaryWillCreate: "Буде створено сесію:",
     summaryWillCreateGroup: "Буде створено групову сесію:",
+    blockedTime: "Недоступний час", blockedStart: "Початок", blockedEnd: "Кінець",
+    ctaBlocked: "Зберегти недоступний час", blockedHint: "Оберіть дату та проміжок часу для блокування.",
+    blockedSummary: "Буде заблоковано:", blockedCreated: "Недоступний час збережено",
   },
   ru: {
     noClientsYet: "Пока нет клиентов. Добавьте первого клиента, чтобы создать сессию.",
@@ -155,6 +163,9 @@ const NEW_COPY: Record<LangKey, {
     ctaIndividual: "Создать сессию", ctaGroup: "Создать групповую сессию",
     summaryWillCreate: "Будет создана сессия:",
     summaryWillCreateGroup: "Будет создана групповая сессия:",
+    blockedTime: "Недоступное время", blockedStart: "Начало", blockedEnd: "Окончание",
+    ctaBlocked: "Сохранить недоступное время", blockedHint: "Выберите дату и промежуток времени для блокировки.",
+    blockedSummary: "Будет заблокировано:", blockedCreated: "Недоступное время сохранено",
   },
   fr: {
     noClientsYet: "Aucun client. Ajoutez votre premier client pour créer une séance.",
@@ -180,6 +191,9 @@ const NEW_COPY: Record<LangKey, {
     ctaIndividual: "Créer la séance", ctaGroup: "Créer la séance de groupe",
     summaryWillCreate: "Séance à créer :",
     summaryWillCreateGroup: "Séance de groupe à créer :",
+    blockedTime: "Période bloquée", blockedStart: "Heure de début", blockedEnd: "Heure de fin",
+    ctaBlocked: "Enregistrer la période bloquée", blockedHint: "Choisissez une date et une plage horaire à bloquer.",
+    blockedSummary: "Sera bloqué :", blockedCreated: "Période bloquée enregistrée",
   },
   pl: {
     noClientsYet: "Brak klientów. Dodaj pierwszego klienta, aby utworzyć sesję.",
@@ -205,6 +219,9 @@ const NEW_COPY: Record<LangKey, {
     ctaIndividual: "Utwórz sesję", ctaGroup: "Utwórz sesję grupową",
     summaryWillCreate: "Zostanie utworzona sesja:",
     summaryWillCreateGroup: "Zostanie utworzona sesja grupowa:",
+    blockedTime: "Czas zablokowany", blockedStart: "Godzina rozpoczęcia", blockedEnd: "Godzina zakończenia",
+    ctaBlocked: "Zapisz zablokowany czas", blockedHint: "Wybierz datę i zakres godzin do zablokowania.",
+    blockedSummary: "Zostanie zablokowane:", blockedCreated: "Zablokowany czas zapisany",
   },
 };
 
