@@ -1321,7 +1321,8 @@ export default function CalendarPage() {
           <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", needsOpen && "rotate-180")} />
         </button>
         {needsOpen && (
-          <div className="px-4 pb-3 space-y-2">
+          <div className="pb-3 space-y-2">
+
             {pendingRequests.length > 0 && (
               <button
                 type="button"
