@@ -1244,7 +1244,7 @@ export default function CalendarPage() {
         </DropdownMenu>
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="space-y-4 pb-4">
         <div>
           <p className="text-base font-semibold text-foreground">
             {format(agendaDate, "EEEE, d MMMM", { locale: dateLocale })}
