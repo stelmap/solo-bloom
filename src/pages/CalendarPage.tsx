@@ -1307,13 +1307,14 @@ export default function CalendarPage() {
         )}
       </div>
 
-      <div>
+      <div className="border-t border-border">
         <button
           type="button"
           onClick={() => setNeedsOpen(o => !o)}
           aria-expanded={needsOpen}
-          className="w-full flex items-center justify-between gap-2 px-4 py-3 min-h-[48px] text-left hover:bg-accent/40 transition-colors"
+          className="w-full flex items-center justify-between gap-2 py-3 min-h-[48px] text-left hover:text-foreground transition-colors"
         >
+
           <span className="text-sm font-medium text-foreground">
             {(t as any)("calendar.needsAttention") || "Needs attention"} · {attentionCount}
           </span>
