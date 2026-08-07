@@ -2269,10 +2269,11 @@ export default function CalendarPage() {
         )}
 
         {effectiveView !== "month" && (
-        <div className="flex flex-col xl:flex-row gap-4 items-start">
+        <div className="flex flex-col xl:grid xl:grid-cols-[minmax(0,1fr)_clamp(280px,20vw,360px)] gap-4 flex-1 min-h-0 items-stretch">
         <div
-          className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex flex-col flex-1 min-w-0 w-full"
-          style={{ maxHeight: "calc(100vh - 180px)", minHeight: "480px", touchAction: isMobile ? "pan-y" : undefined }}
+          className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex flex-col flex-1 min-w-0 min-h-0 w-full"
+          style={{ touchAction: isMobile ? "pan-y" : undefined }}
+
           onTouchStart={isMobile ? (e) => {
             const t = e.touches[0];
             (e.currentTarget as any)._swipe = { x: t.clientX, y: t.clientY, cancelled: false };
