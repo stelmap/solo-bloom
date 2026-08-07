@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { getSessionStateStyle } from "@/lib/sessionStatusColors";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
@@ -306,6 +307,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
 
   const statusInfo = STATUSES[apt.status] || STATUSES.scheduled;
+  const stateStyle = getSessionStateStyle(apt);
   const fmtTime = (dateStr: string) => formatScheduledTime(dateStr, use12h);
   const isActive = apt.status === "scheduled" || apt.status === "confirmed" || apt.status === "reminder_sent";
   // If a scheduled/active session is still marked "unpaid" but the client has
@@ -717,7 +719,11 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
             <SheetTitle className="flex items-center gap-2 flex-wrap">
               {isGroupSession && <Users className="h-4 w-4" />}
               <span>{isGroupSession ? (groupName || t("groups.groupSession")) : t("session.title")}</span>
-              <Badge className={cn("text-xs", statusInfo.color)}>{statusInfo.label}</Badge>
+              <Badge className={cn("text-xs gap-1.5", statusInfo.color)}>{statusInfo.label}</Badge>
+              <Badge className={cn("text-xs gap-1.5 font-medium", stateStyle.badge)}>
+                <span className={cn("h-2 w-2 rounded-full", stateStyle.dot)} />
+                {(t as any)(stateStyle.labelKey) || stateStyle.labelFallback}
+              </Badge>
               {isGroupSession && (
                 <Badge variant="outline" className="text-xs border-primary/30 text-primary"><Users className="h-3 w-3 mr-1" />{t("groups.groupSession")}</Badge>
               )}
