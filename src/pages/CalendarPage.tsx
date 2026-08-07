@@ -1355,7 +1355,7 @@ export default function CalendarPage() {
         )}
       </div>
 
-      <div className="flex items-center justify-between gap-2 p-4">
+      <div className="flex items-center justify-between gap-2 py-3 border-t border-border">
         <span className="text-sm font-medium text-foreground">{(t as any)("booking.link") || "Booking link"}</span>
         <div className="flex items-center gap-1">
           <Button
