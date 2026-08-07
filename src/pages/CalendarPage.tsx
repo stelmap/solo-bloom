@@ -1665,7 +1665,28 @@ export default function CalendarPage() {
               </PopoverContent>
             </Popover>
 
+            {/* Density toggle */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline" size="icon" className="h-10 w-10 rounded-xl hidden sm:inline-flex"
+                  aria-label={(t as any)("calendar.density") || "Row density"}
+                  aria-pressed={gridDensity === "compact"}
+                  onClick={() => setGridDensity(d => (d === "compact" ? "comfortable" : "compact"))}
+                >
+                  {gridDensity === "compact" ? <Rows3 className="h-4 w-4" /> : <Rows2 className="h-4 w-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {gridDensity === "compact"
+                  ? ((t as any)("calendar.densityComfortable") || "Comfortable rows")
+                  : ((t as any)("calendar.densityCompact") || "Compact rows")}
+                {needsInnerScroll ? ` · ${(t as any)("calendar.scrollHint") || "grid scrolls"}` : ""}
+              </TooltipContent>
+            </Tooltip>
+
             {/* Persistent Settings entry */}
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
