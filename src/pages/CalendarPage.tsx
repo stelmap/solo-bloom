@@ -2461,17 +2461,18 @@ export default function CalendarPage() {
                                 onDragEnd={handleDragEnd}
                                 onClick={(e) => { e.stopPropagation(); openSessionSheet(evt); }}
                                 className={cn(
-                                  "absolute top-0 rounded-md border p-1.5 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10 overflow-hidden",
+                                  "absolute top-0 rounded-md border px-1.5 py-1 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10 overflow-hidden flex items-center",
                                   ss.card,
                                   isActiveEvt && "cursor-grab active:cursor-grabbing",
                                   dragAptId === evt.id && "opacity-40 ring-2 ring-primary",
                                 )}
                                 style={{ height: `${heightPx}px`, left: `calc(${leftPct}% + 4px)`, width: `calc(${widthPct}% - 8px)` }}
-                                title={`${displayName} · ${(t as any)(ss.labelKey) || ss.labelFallback}`}>
+                                title={`${displayName} · ${(evt as any).services?.name ?? ""} · ${(t as any)(ss.labelKey) || ss.labelFallback}`}>
 
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-1 w-full min-w-0">
                                   {isGroupEvt && <Users className="h-3 w-3 shrink-0 opacity-70" />}
-                                  <p className="text-xs font-semibold truncate flex-1">{displayName}</p>
+                                  <p className="text-xs font-semibold truncate flex-1 min-w-0">{displayName}</p>
+                                  {(evt as any).recurring_rule_id && <Repeat className="h-2.5 w-2.5 opacity-50 shrink-0" />}
                                   {needsConfirmation && (
                                     <span className="shrink-0 h-2 w-2 rounded-full bg-warning" title={t("confirmation.pending")} />
                                   )}
@@ -2479,12 +2480,7 @@ export default function CalendarPage() {
                                     <span className="shrink-0 h-2 w-2 rounded-full bg-success" title={t("confirmation.confirmed")} />
                                   )}
                                 </div>
-                                {gridDensity !== "compact" && (
-                                  <div className="flex items-center gap-1">
-                                    <p className="text-xs opacity-70 truncate">{(evt as any).services?.name}</p>
-                                    {(evt as any).recurring_rule_id && <Repeat className="h-2.5 w-2.5 opacity-50 shrink-0" />}
-                                  </div>
-                                )}
+
 
                               </div>
                             );
