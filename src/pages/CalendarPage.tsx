@@ -1540,9 +1540,10 @@ export default function CalendarPage() {
 
   return (
 
-    <AppLayout>
-      <div className="flex flex-col gap-6">
-        <section className="space-y-6 flex-1 min-w-0" aria-label="Calendar">
+    <AppLayout fluid>
+      <div className="flex flex-col gap-4 h-full min-h-0">
+        <section className="flex flex-col gap-4 flex-1 min-w-0 min-h-0" aria-label="Calendar">
+
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Period navigation */}
