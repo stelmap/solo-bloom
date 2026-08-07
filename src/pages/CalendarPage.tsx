@@ -1977,17 +1977,6 @@ export default function CalendarPage() {
             value={Math.min(fillRates.thisWeek.pct, 100)}
             className={cn("h-1.5 flex-1 min-w-[140px] max-w-[560px]", fillRates.thisWeek.pct >= 100 ? "[&>div]:bg-destructive" : "")}
           />
-          {pendingRequests.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setInboxOpen(true)}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Inbox className="h-3.5 w-3.5 text-warning" aria-hidden="true" />
-              <span className="font-semibold text-foreground tabular-nums">{pendingRequests.length}</span>
-              {(t as any)("booking.pendingRequests") || "Pending requests"}
-            </button>
-          )}
         </div>
 
 
