@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { ClientPicker } from "@/components/ClientPicker";
 import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
-import { ChevronLeft, ChevronRight, ChevronRight as ChevronRightIcon, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon, UserPlus, Briefcase, CheckCircle2, Circle, Flag, Search, X as XIcon, AlertTriangle, CalendarDays, SlidersHorizontal, MoreHorizontal, ChevronDown, ExternalLink, Copy, PanelRightOpen } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronRight as ChevronRightIcon, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon, UserPlus, Briefcase, CheckCircle2, Circle, Flag, Search, X as XIcon, AlertTriangle, CalendarDays, SlidersHorizontal, MoreHorizontal, ChevronDown, ExternalLink, Copy, PanelRightOpen, Ban } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -76,6 +76,8 @@ const NEW_COPY: Record<LangKey, {
   durationMin: string;
   modalSubtitle: string;
   sessionTypeLabel: string; individualSession: string; groupSession: string;
+  blockedTime: string; blockedStart: string; blockedEnd: string;
+  ctaBlocked: string; blockedHint: string; blockedSummary: string; blockedCreated: string;
   participants: string;
   notesPlaceholder: string; notesGroupPlaceholder: string;
   ctaIndividual: string; ctaGroup: string;
@@ -105,6 +107,9 @@ const NEW_COPY: Record<LangKey, {
     ctaIndividual: "Create session", ctaGroup: "Create group session",
     summaryWillCreate: "Will create session:",
     summaryWillCreateGroup: "Will create group session:",
+    blockedTime: "Blocked time", blockedStart: "Start time", blockedEnd: "End time",
+    ctaBlocked: "Save blocked time", blockedHint: "Choose a date and a time range to block.",
+    blockedSummary: "Will block:", blockedCreated: "Blocked time saved",
   },
   uk: {
     noClientsYet: "Ще немає клієнтів. Додайте першого клієнта, щоб створити сесію.",
@@ -130,6 +135,9 @@ const NEW_COPY: Record<LangKey, {
     ctaIndividual: "Створити сесію", ctaGroup: "Створити групову сесію",
     summaryWillCreate: "Буде створено сесію:",
     summaryWillCreateGroup: "Буде створено групову сесію:",
+    blockedTime: "Недоступний час", blockedStart: "Початок", blockedEnd: "Кінець",
+    ctaBlocked: "Зберегти недоступний час", blockedHint: "Оберіть дату та проміжок часу для блокування.",
+    blockedSummary: "Буде заблоковано:", blockedCreated: "Недоступний час збережено",
   },
   ru: {
     noClientsYet: "Пока нет клиентов. Добавьте первого клиента, чтобы создать сессию.",
@@ -155,6 +163,9 @@ const NEW_COPY: Record<LangKey, {
     ctaIndividual: "Создать сессию", ctaGroup: "Создать групповую сессию",
     summaryWillCreate: "Будет создана сессия:",
     summaryWillCreateGroup: "Будет создана групповая сессия:",
+    blockedTime: "Недоступное время", blockedStart: "Начало", blockedEnd: "Окончание",
+    ctaBlocked: "Сохранить недоступное время", blockedHint: "Выберите дату и промежуток времени для блокировки.",
+    blockedSummary: "Будет заблокировано:", blockedCreated: "Недоступное время сохранено",
   },
   fr: {
     noClientsYet: "Aucun client. Ajoutez votre premier client pour créer une séance.",
@@ -180,6 +191,9 @@ const NEW_COPY: Record<LangKey, {
     ctaIndividual: "Créer la séance", ctaGroup: "Créer la séance de groupe",
     summaryWillCreate: "Séance à créer :",
     summaryWillCreateGroup: "Séance de groupe à créer :",
+    blockedTime: "Période bloquée", blockedStart: "Heure de début", blockedEnd: "Heure de fin",
+    ctaBlocked: "Enregistrer la période bloquée", blockedHint: "Choisissez une date et une plage horaire à bloquer.",
+    blockedSummary: "Sera bloqué :", blockedCreated: "Période bloquée enregistrée",
   },
   pl: {
     noClientsYet: "Brak klientów. Dodaj pierwszego klienta, aby utworzyć sesję.",
@@ -205,6 +219,9 @@ const NEW_COPY: Record<LangKey, {
     ctaIndividual: "Utwórz sesję", ctaGroup: "Utwórz sesję grupową",
     summaryWillCreate: "Zostanie utworzona sesja:",
     summaryWillCreateGroup: "Zostanie utworzona sesja grupowa:",
+    blockedTime: "Czas zablokowany", blockedStart: "Godzina rozpoczęcia", blockedEnd: "Godzina zakończenia",
+    ctaBlocked: "Zapisz zablokowany czas", blockedHint: "Wybierz datę i zakres godzin do zablokowania.",
+    blockedSummary: "Zostanie zablokowane:", blockedCreated: "Zablokowany czas zapisany",
   },
 };
 
@@ -367,6 +384,31 @@ export default function CalendarPage() {
     return set;
   }, [daysOff]);
 
+  // Blocked time ranges (partial-day blocks) keyed by date string
+  const blockedRanges = useMemo(() => {
+    const map: Record<string, Array<{ start: string; end: string }>> = {};
+    for (const d of daysOff as any[]) {
+      if (d.type !== "blocked_time" || !d.custom_start_time || !d.custom_end_time) continue;
+      (map[d.date] ||= []).push({
+        start: String(d.custom_start_time).slice(0, 5),
+        end: String(d.custom_end_time).slice(0, 5),
+      });
+    }
+    return map;
+  }, [daysOff]);
+
+  const toMin = (hhmm: string) => {
+    const [h, m] = hhmm.split(":").map(Number);
+    return (h || 0) * 60 + (m || 0);
+  };
+
+  const isBlockedHour = (date: Date, hour: number) => {
+    const ranges = blockedRanges[format(date, "yyyy-MM-dd")];
+    if (!ranges || ranges.length === 0) return false;
+    const s = hour * 60, e = s + 60;
+    return ranges.some(r => toMin(r.start) < e && toMin(r.end) > s);
+  };
+
   const getDayOfWeek = (date: Date) => {
     const d = date.getDay();
     return d === 0 ? 7 : d; // 1=Mon, 7=Sun
@@ -430,6 +472,10 @@ export default function CalendarPage() {
 
   const [form, setForm] = useState({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
   const [serviceError, setServiceError] = useState(false);
+
+  // Blocked time state (no client / service / session is created)
+  const [isBlockedTime, setIsBlockedTime] = useState(false);
+  const [blockEnd, setBlockEnd] = useState("10:00");
 
   // Group session state
   const [isGroupSession, setIsGroupSession] = useState(false);
@@ -550,7 +596,71 @@ export default function CalendarPage() {
     return null;
   }, [form.date, form.time, form.service_id, services, appointments, scheduleMap, daysOffSet]);
 
+  const handleCreateBlockedTime = async () => {
+    if (!form.date || !form.time || !blockEnd) return;
+    if (blockEnd <= form.time) {
+      toast({ title: t("common.error"), description: L.blockedEnd, variant: "destructive" });
+      return;
+    }
+    // Build the list of dates: base date + recurrence occurrences
+    const dates = new Set<string>([form.date]);
+    if (isRecurring && recurDays.length > 0) {
+      const [by, bm, bd] = form.date.split("-").map(Number);
+      const base = new Date(by, bm - 1, bd);
+      const end = recurEndDate
+        ? (() => { const [y, m, d] = recurEndDate.split("-").map(Number); return new Date(y, m - 1, d); })()
+        : new Date(by, bm - 1 + 3, bd); // default horizon: 3 months
+      const cursor = new Date(base);
+      let weekIdx = 0;
+      // start from the Monday of the base week
+      const baseDow = base.getDay() === 0 ? 7 : base.getDay();
+      cursor.setDate(base.getDate() - (baseDow - 1));
+      while (cursor <= end && weekIdx < 104) {
+        if (weekIdx % Math.max(recurInterval, 1) === 0) {
+          for (const dow of recurDays) {
+            const day = new Date(cursor);
+            day.setDate(cursor.getDate() + (dow - 1));
+            if (day >= base && day <= end) dates.add(format(day, "yyyy-MM-dd"));
+          }
+        }
+        cursor.setDate(cursor.getDate() + 7);
+        weekIdx++;
+      }
+    }
+    try {
+      const rows = Array.from(dates).map(date => ({
+        user_id: user!.id,
+        date,
+        type: "blocked_time",
+        label: "Unavailable",
+        custom_start_time: `${form.time}:00`,
+        custom_end_time: `${blockEnd}:00`,
+        is_non_working: false,
+      }));
+      // One row per date (days_off is unique per user+date) — upsert so an
+      // existing entry for that date is replaced by the new blocked range.
+      const { error } = await supabase
+        .from("days_off")
+        .upsert(rows as any, { onConflict: "user_id,date" });
+      if (error) throw error;
+      await qc.invalidateQueries({ queryKey: ["days-off"] });
+      setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
+      setBlockEnd("10:00");
+      setIsBlockedTime(false);
+      setIsRecurring(false);
+      setRecurInterval(1); setRecurDays([1]); setRecurEndDate("");
+      setCreateOpen(false);
+      toast({ title: L.blockedCreated });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e?.message, variant: "destructive" });
+    }
+  };
+
   const handleCreate = async () => {
+    if (isBlockedTime) {
+      await handleCreateBlockedTime();
+      return;
+    }
     // Guard against rapid double-submits (Enter+click, double-click)
     // since `isPending` flips asynchronously and won't block a second call
     // fired in the same tick.
@@ -1575,8 +1685,8 @@ export default function CalendarPage() {
                   {/* Session type — two large pills */}
                   <div
                     role="radiogroup"
-                    aria-label={L.individualSession + " / " + L.groupSession}
-                    className="grid grid-cols-2 gap-2"
+                    aria-label={L.sessionTypeLabel}
+                    className="grid grid-cols-3 gap-2"
                     onKeyDown={(e) => {
                       if (e.key === "ArrowRight" || e.key === "ArrowDown") {
                         e.preventDefault();
@@ -1590,12 +1700,12 @@ export default function CalendarPage() {
                     <button
                       type="button"
                       role="radio"
-                      aria-checked={!isGroupSession}
-                      tabIndex={!isGroupSession ? 0 : -1}
-                      onClick={() => { setIsGroupSession(false); setGroupId(""); }}
+                      aria-checked={!isGroupSession && !isBlockedTime}
+                      tabIndex={!isGroupSession && !isBlockedTime ? 0 : -1}
+                      onClick={() => { setIsGroupSession(false); setGroupId(""); setIsBlockedTime(false); }}
                       className={cn(
                         "flex items-center justify-center gap-1.5 rounded-xl border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", D.pill,
-                        !isGroupSession
+                        !isGroupSession && !isBlockedTime
                           ? "border-foreground bg-background text-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60"
                       )}
@@ -1606,13 +1716,13 @@ export default function CalendarPage() {
                     <button
                       type="button"
                       role="radio"
-                      aria-checked={isGroupSession}
-                      tabIndex={isGroupSession ? 0 : -1}
-                      onClick={() => { setIsGroupSession(true); setForm(f => ({ ...f, client_id: "" })); }}
+                      aria-checked={isGroupSession && !isBlockedTime}
+                      tabIndex={isGroupSession && !isBlockedTime ? 0 : -1}
+                      onClick={() => { setIsGroupSession(true); setIsBlockedTime(false); setForm(f => ({ ...f, client_id: "" })); }}
                       disabled={activeGroups.length === 0}
                       className={cn(
                         "flex items-center justify-center gap-1.5 rounded-xl border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", D.pill,
-                        isGroupSession
+                        isGroupSession && !isBlockedTime
                           ? "border-foreground bg-background text-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60",
                         activeGroups.length === 0 && "opacity-50 cursor-not-allowed"
@@ -1621,10 +1731,26 @@ export default function CalendarPage() {
                       <Users className="h-3.5 w-3.5" aria-hidden="true" />
                       <span>{L.groupSession}</span>
                     </button>
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={isBlockedTime}
+                      tabIndex={isBlockedTime ? 0 : -1}
+                      onClick={() => { setIsBlockedTime(true); setIsGroupSession(false); setGroupId(""); setServiceError(false); }}
+                      className={cn(
+                        "flex items-center justify-center gap-1.5 rounded-xl border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", D.pill,
+                        isBlockedTime
+                          ? "border-foreground bg-background text-foreground shadow-sm"
+                          : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60"
+                      )}
+                    >
+                      <Ban className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span>{L.blockedTime}</span>
+                    </button>
                   </div>
 
                   {/* Client / Group */}
-                  {isGroupSession ? (
+                  {isBlockedTime ? null : isGroupSession ? (
                     <div className="space-y-1">
                       <Label className="text-xs font-bold uppercase text-muted-foreground">
                         {t("groups.selectGroup")} <span className="text-primary">*</span>
@@ -1683,6 +1809,7 @@ export default function CalendarPage() {
                   )}
 
                   {/* Service */}
+                  {!isBlockedTime && (
                   <div className="space-y-1">
                     <Label htmlFor="appt-service" className="text-xs font-bold uppercase text-muted-foreground">
                       {t("calendar.service")} <span className="text-primary" aria-hidden="true">*</span>
@@ -1719,6 +1846,7 @@ export default function CalendarPage() {
                       </>
                     )}
                   </div>
+                  )}
 
                   {/* Date / Time */}
                   <DateTimePicker
@@ -1731,13 +1859,27 @@ export default function CalendarPage() {
                     timeLabel={t("common.time")}
                   />
 
-                  {createValidation && !isRecurring && (
+                  {isBlockedTime && (
+                    <div className="space-y-1">
+                      <Label htmlFor="block-end" className="text-xs font-bold uppercase text-muted-foreground">{L.blockedEnd}</Label>
+                      <Input
+                        id="block-end"
+                        type="time"
+                        value={blockEnd}
+                        onChange={e => setBlockEnd(e.target.value)}
+                        className={D.field}
+                      />
+                    </div>
+                  )}
+
+                  {!isBlockedTime && createValidation && !isRecurring && (
                     <div role="alert" className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
                       ⚠️ {createValidation}
                     </div>
                   )}
 
                   {/* Notes */}
+                  {!isBlockedTime && (
                   <div className="space-y-1">
                     <Label htmlFor="appt-notes" className="text-xs font-bold uppercase text-muted-foreground">{t("calendar.notes")}</Label>
                     <Textarea
@@ -1749,6 +1891,7 @@ export default function CalendarPage() {
                       className={cn("resize-none rounded-lg", D.notes)}
                     />
                   </div>
+                  )}
 
                   {/* Repeat session — orange highlighted toggle row */}
                   <div className={cn(
@@ -1825,12 +1968,15 @@ export default function CalendarPage() {
                   </div>
 
                   {(() => {
-                    const missingRequired = isGroupSession
+                    const missingRequired = isBlockedTime
+                      ? (!form.date || !form.time || !blockEnd || blockEnd <= form.time)
+                      : isGroupSession
                       ? (!groupId || groupMembers.length === 0 || !form.service_id || !form.date || !form.time)
                       : (!form.client_id || !form.service_id || !form.date || !form.time);
                     const disabled = createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending
+                      || createDayOff.isPending
                       || missingRequired
-                      || (!isRecurring && !isGroupSession && !!createValidation);
+                      || (!isBlockedTime && !isRecurring && !isGroupSession && !!createValidation);
 
                     const selectedService = services.find(s => s.id === form.service_id);
                     const selectedClient = clients.find(c => c.id === form.client_id);
@@ -1845,7 +1991,12 @@ export default function CalendarPage() {
                     const recurSummary = isRecurring
                       ? `${(recurInterval === 1 ? t("recurring.weekly") : recurInterval === 2 ? t("recurring.biweekly") : t("recurring.custom", { n: String(recurInterval) })).toLowerCase()} ${recurDays.map(d => t(DAY_KEYS[d - 1] as any)).join(",")}`
                       : "";
-                    const summaryParts = [
+                    const summaryParts = isBlockedTime ? [
+                      L.blockedTime,
+                      summaryDate,
+                      form.time ? `${formatTime(form.time, use12h)} – ${formatTime(blockEnd, use12h)}` : "",
+                      recurSummary,
+                    ].filter(Boolean) : [
                       isGroupSession ? selectedGroup?.name : selectedClient?.name,
                       summaryDate,
                       form.time ? formatTime(form.time, use12h) : "",
@@ -1855,6 +2006,7 @@ export default function CalendarPage() {
 
                     const ctaLabel = (createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending)
                       ? t("calendar.creating")
+                      : isBlockedTime ? L.ctaBlocked
                       : (isGroupSession ? L.ctaGroup : L.ctaIndividual);
 
                     return (
@@ -1889,7 +2041,7 @@ export default function CalendarPage() {
                           </Button>
                         </div>
                         {missingRequired && (
-                          <p className="text-[11px] text-muted-foreground text-center leading-tight" role="status">{L.disabledHint}</p>
+                          <p className="text-[11px] text-muted-foreground text-center leading-tight" role="status">{isBlockedTime ? L.blockedHint : L.disabledHint}</p>
                         )}
                       </div>
                     );
@@ -2162,7 +2314,7 @@ export default function CalendarPage() {
                       const events = getEventsForDayHour(day, hour);
                       const pendingReqs = getPendingRequestsForDayHour(day, hour);
                       const working = isHourWorking(day, hour);
-                      const dayOff = isDayOff(day);
+                      const dayOff = isDayOff(day) || isBlockedHour(day, hour);
                       const hasAny = events.length > 0 || pendingReqs.length > 0;
                       return (
                         <td key={dayIdx}

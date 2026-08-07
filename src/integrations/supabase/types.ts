@@ -3611,7 +3611,31 @@ export type Database = {
           status: string
         }[]
       }
+      public_create_booking_base: {
+        Args: {
+          p_comment: string
+          p_consent: boolean
+          p_email: string
+          p_first_name: string
+          p_ip_hash: string
+          p_last_name: string
+          p_phone: string
+          p_slot_at: string
+          p_token: string
+        }
+        Returns: {
+          request_id: string
+          requires_approval: boolean
+          status: string
+        }[]
+      }
       public_get_available_slots: {
+        Args: { p_from_date: string; p_to_date: string; p_token: string }
+        Returns: {
+          slot_at: string
+        }[]
+      }
+      public_get_available_slots_base: {
         Args: { p_from_date: string; p_to_date: string; p_token: string }
         Returns: {
           slot_at: string
