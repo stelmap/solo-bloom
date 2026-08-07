@@ -44,6 +44,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { getSessionStateStyle, SESSION_STATE_STYLES, SESSION_STATE_ORDER } from "@/lib/sessionStatusColors";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -1420,6 +1421,7 @@ export default function CalendarPage() {
           <ol className="relative space-y-4">
             {agendaSessions.map((s: any) => {
               const si = statusInfo(s.status);
+              const ss = getSessionStateStyle(s);
               const isNext = agendaNext?.id === s.id;
               return (
                 <li key={s.id} className="flex gap-3">
@@ -1437,8 +1439,9 @@ export default function CalendarPage() {
                     <p className="text-xs text-muted-foreground truncate">
                       {s.services?.name} · {s.duration_minutes} {L.durationMin}
                     </p>
-                    <span className={cn("mt-1 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium", si.color)}>
-                      {si.label}
+                    <span className={cn("mt-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium", ss.badge)}>
+                      <span className={cn("h-2 w-2 rounded-full", ss.dot)} />
+                      {(t as any)(ss.labelKey) || ss.labelFallback}
                     </span>
                     {isNext && (
                       <Button className="w-full mt-2" onClick={() => openSessionSheet(s)}>
@@ -1622,13 +1625,8 @@ export default function CalendarPage() {
               <PopoverContent align="end" className="w-64 p-3 space-y-2">
                 <Label className="text-xs text-muted-foreground">{(t as any)("calendar.stateFilter") || "State"}</Label>
                 <div className="space-y-0.5">
-                  {([
-                    ["paid", "calendar.state.paid", "Paid", "bg-state-paid"],
-                    ["unpaid", "calendar.state.unpaid", "Unpaid", "bg-state-unpaid"],
-                    ["confirmed", "calendar.state.confirmed", "Confirmed", "bg-state-confirmed"],
-                    ["cancelled_charged", "calendar.state.cancelledCharged", "Cancelled — client charged", "bg-state-cancelled-charged"],
-                    ["cancelled_free", "calendar.state.cancelledFree", "Cancelled — no charge", "bg-state-cancelled-free"],
-                  ] as const).map(([k, key, fallback, dot]) => {
+                  {SESSION_STATE_ORDER.map((k) => {
+                    const { labelKey: key, labelFallback: fallback, dot } = SESSION_STATE_STYLES[k];
                     const checked = filters.states[k];
                     return (
                       <button
@@ -1643,7 +1641,7 @@ export default function CalendarPage() {
                         )}
                       >
                         <span className={cn("h-4 w-4 shrink-0 rounded-full flex items-center justify-center", dot, !checked && "opacity-60")}>
-                          {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                          {checked && <Check className="h-3 w-3 text-background" strokeWidth={3} />}
                         </span>
                         <span className="leading-tight">{(t as any)(key) || fallback}</span>
                       </button>
@@ -2255,7 +2253,7 @@ export default function CalendarPage() {
                     </div>
                     <div className="space-y-0.5">
                       {dayApts.slice(0, 3).map((apt: any) => {
-                        const si = statusInfo(apt.status);
+                        const ss = getSessionStateStyle(apt);
                         const isGroupEvt = !!apt.group_session_id;
                         const groupName = apt.group_sessions?.groups?.name;
                         const displayName = isGroupEvt && groupName ? groupName : apt.clients?.name;
@@ -2263,8 +2261,8 @@ export default function CalendarPage() {
                           <div
                             key={apt.id}
                             onClick={(e) => { e.stopPropagation(); openSessionSheet(apt); }}
-                            className={cn("text-[10px] px-1.5 py-0.5 rounded truncate cursor-pointer hover:ring-1 hover:ring-ring/30", si.color)}
-                            title={`${fmtTime(apt.scheduled_at)} · ${displayName}`}
+                            className={cn("text-[10px] px-1.5 py-0.5 rounded truncate cursor-pointer hover:ring-1 hover:ring-ring/30 border-l-2 pl-1.5", ss.card)}
+                            title={`${fmtTime(apt.scheduled_at)} · ${displayName} · ${(t as any)(ss.labelKey) || ss.labelFallback}`}
                           >
                             <span className="font-medium">{fmtTime(apt.scheduled_at)}</span> {displayName}
                           </div>
@@ -2443,7 +2441,7 @@ export default function CalendarPage() {
                             );
                           })}
                           {events.map((evt, evtIdx) => {
-                            const si = statusInfo(evt.status);
+                            const ss = getSessionStateStyle(evt);
                             const heightPx = Math.max((evt.duration_minutes / 60) * rowHeight - 4, 20);
                             const isActiveEvt = evt.status === "scheduled" || evt.status === "confirmed" || evt.status === "reminder_sent";
                             const client = clients.find(c => c.id === evt.client_id);
@@ -2464,14 +2462,12 @@ export default function CalendarPage() {
                                 onClick={(e) => { e.stopPropagation(); openSessionSheet(evt); }}
                                 className={cn(
                                   "absolute top-0 rounded-md border p-1.5 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10 overflow-hidden",
-                                  si.color,
-                                  isGroupEvt && "border-primary/40",
-                                  needsConfirmation && "border-warning/50",
-                                  isConfirmed && "border-success/50",
+                                  ss.card,
                                   isActiveEvt && "cursor-grab active:cursor-grabbing",
                                   dragAptId === evt.id && "opacity-40 ring-2 ring-primary",
                                 )}
-                                style={{ height: `${heightPx}px`, left: `calc(${leftPct}% + 4px)`, width: `calc(${widthPct}% - 8px)` }}>
+                                style={{ height: `${heightPx}px`, left: `calc(${leftPct}% + 4px)`, width: `calc(${widthPct}% - 8px)` }}
+                                title={`${displayName} · ${(t as any)(ss.labelKey) || ss.labelFallback}`}>
 
                                 <div className="flex items-center gap-1">
                                   {isGroupEvt && <Users className="h-3 w-3 shrink-0 opacity-70" />}
