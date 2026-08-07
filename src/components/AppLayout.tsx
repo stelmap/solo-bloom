@@ -7,7 +7,7 @@ import { track } from "@/lib/analytics";
 
 const PRODUCT_ENTERED_KEY = "__product_entered_at";
 
-export function AppLayout({ children }: { children: React.ReactNode }) {
+export function AppLayout({ children, fluid = false }: { children: React.ReactNode; fluid?: boolean }) {
   useSoundReminder();
   useTaxAccrualSync();
 
@@ -23,6 +23,21 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  if (fluid) {
+    // Full-height workspace: the page itself never scrolls; inner regions do.
+    return (
+      <div className="h-[100dvh] overflow-hidden bg-background">
+        <AppSidebar />
+        <main className="lg:ml-[68px] h-[100dvh] overflow-hidden flex flex-col">
+          <DemoBanner />
+          <div className="flex-1 min-h-0 overflow-hidden w-full px-4 lg:px-6 py-3 lg:py-4 pt-16 lg:pt-4">
+            {children}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <AppSidebar />
@@ -35,3 +50,4 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+

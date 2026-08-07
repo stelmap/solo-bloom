@@ -366,6 +366,40 @@ export default function CalendarPage() {
   const displayEnd = Math.max(endHour, 22);
   const hours = Array.from({ length: displayEnd - displayStart }, (_, i) => i + displayStart);
 
+  // --- Responsive grid sizing -------------------------------------------------
+  // The time grid stretches to the available height; hour rows are sized from
+  // the measured viewport so a normal working day fits without inner scrolling.
+  const MIN_ROW_H = 44;
+  const MAX_ROW_H = 88;
+  const gridScrollRef = useRef<HTMLDivElement | null>(null);
+  const gridHeadRef = useRef<HTMLTableSectionElement | null>(null);
+  const [rowHeight, setRowHeight] = useState(60);
+
+  useEffect(() => {
+    const el = gridScrollRef.current;
+    if (!el) return;
+    const recalc = () => {
+      const headH = gridHeadRef.current?.getBoundingClientRect().height ?? 56;
+      const avail = el.clientHeight - headH;
+      const rows = hours.length || 1;
+      if (avail <= 0) return;
+      const next = Math.min(MAX_ROW_H, Math.max(MIN_ROW_H, Math.floor(avail / rows)));
+      setRowHeight(prev => (Math.abs(prev - next) >= 1 ? next : prev));
+    };
+    recalc();
+    const ro = new ResizeObserver(recalc);
+    ro.observe(el);
+    window.addEventListener("resize", recalc);
+    window.addEventListener("orientationchange", recalc);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", recalc);
+      window.removeEventListener("orientationchange", recalc);
+    };
+  }, [hours.length]);
+
+
+
   // Build schedule map: day_of_week -> { is_working, start_time, end_time }
   const scheduleMap = useMemo(() => {
     const map: Record<number, { is_working: boolean; start_time: string; end_time: string }> = {};
@@ -1506,9 +1540,10 @@ export default function CalendarPage() {
 
   return (
 
-    <AppLayout>
-      <div className="flex flex-col gap-6">
-        <section className="space-y-6 flex-1 min-w-0" aria-label="Calendar">
+    <AppLayout fluid>
+      <div className="flex flex-col gap-4 h-full min-h-0">
+        <section className="flex flex-col gap-4 flex-1 min-w-0 min-h-0" aria-label="Calendar">
+
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Period navigation */}
@@ -2145,7 +2180,8 @@ export default function CalendarPage() {
 
 
         {effectiveView === "month" && (
-          <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
+          <div className="bg-card rounded-xl border border-border overflow-auto animate-fade-in flex-1 min-h-0">
+
             <div className="grid grid-cols-7 border-b border-border bg-muted/30">
               {DAY_KEYS.map((dk) => (
                 <div key={dk} className="p-2 text-center text-xs font-medium text-muted-foreground">
@@ -2233,10 +2269,11 @@ export default function CalendarPage() {
         )}
 
         {effectiveView !== "month" && (
-        <div className="flex flex-col xl:flex-row gap-4 items-start">
+        <div className="flex flex-col xl:grid xl:grid-cols-[minmax(0,1fr)_clamp(280px,20vw,360px)] gap-4 flex-1 min-h-0 items-stretch">
         <div
-          className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex flex-col flex-1 min-w-0 w-full"
-          style={{ maxHeight: "calc(100vh - 180px)", minHeight: "480px", touchAction: isMobile ? "pan-y" : undefined }}
+          className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex flex-col flex-1 min-w-0 min-h-0 w-full"
+          style={{ touchAction: isMobile ? "pan-y" : undefined }}
+
           onTouchStart={isMobile ? (e) => {
             const t = e.touches[0];
             (e.currentTarget as any)._swipe = { x: t.clientX, y: t.clientY, cancelled: false };
@@ -2264,13 +2301,13 @@ export default function CalendarPage() {
             }
           } : undefined}
         >
-          <div className="overflow-auto flex-1 min-h-0" style={{ scrollbarGutter: "stable" }}>
+          <div ref={gridScrollRef} className="overflow-auto flex-1 min-h-0" style={{ scrollbarGutter: "stable", overscrollBehavior: "contain" }}>
             <table className="w-full border-collapse table-fixed min-w-[760px]">
               <colgroup>
                 <col className={isMobile ? "w-[56px]" : "w-[72px]"} />
                 {days.map((_, i) => <col key={i} />)}
               </colgroup>
-              <thead className="sticky top-0 z-20 bg-card">
+              <thead ref={gridHeadRef} className="sticky top-0 z-20 bg-card">
                 <tr className="border-b border-border">
                   <th className="p-3" />
                   {days.map((day, i) => {
@@ -2318,7 +2355,7 @@ export default function CalendarPage() {
               <tbody>
                 {hours.map((hour) => (
                   <tr key={hour}>
-                    <td className="h-[60px] text-right pr-3 border-b border-border align-middle">
+                    <td style={{ height: rowHeight }} className="text-right pr-3 border-b border-border align-middle">
                       <span className="text-xs text-muted-foreground font-medium">{fmtHour(hour)}</span>
                     </td>
                     {days.map((day, dayIdx) => {
@@ -2345,7 +2382,7 @@ export default function CalendarPage() {
                           onDragLeave={handleDragLeave}
                           onDrop={(e) => handleDrop(e, day, hour)}
                           className={cn(
-                            "relative border-l border-b border-border h-[60px] transition-colors",
+                            "relative border-l border-b border-border transition-colors",
                             dayOff ? "bg-destructive/5 cursor-not-allowed" : !working ? "bg-muted/20 cursor-not-allowed" : !hasAny ? "hover:bg-primary/5 cursor-pointer group/slot" : "",
                             dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && canDropOnSlot(day, hour, dragAptId) && "bg-primary/15 ring-2 ring-primary/30 ring-inset",
                             dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && !canDropOnSlot(day, hour, dragAptId) && "bg-destructive/10 ring-2 ring-destructive/30 ring-inset",
@@ -2356,7 +2393,7 @@ export default function CalendarPage() {
                             </div>
                           )}
                           {pendingReqs.map((req, idx) => {
-                            const heightPx = Math.max((req.duration_minutes / 60) * 60 - 4, 20);
+                            const heightPx = Math.max((req.duration_minutes / 60) * rowHeight - 4, 20);
                             const name = req.matched_client_name || `${req.first_name}${req.last_name ? " " + req.last_name : ""}`.trim();
                             return (
                               <div
@@ -2382,7 +2419,7 @@ export default function CalendarPage() {
                           })}
                           {events.map((evt, evtIdx) => {
                             const si = statusInfo(evt.status);
-                            const heightPx = Math.max((evt.duration_minutes / 60) * 60 - 4, 20);
+                            const heightPx = Math.max((evt.duration_minutes / 60) * rowHeight - 4, 20);
                             const isActiveEvt = evt.status === "scheduled" || evt.status === "confirmed" || evt.status === "reminder_sent";
                             const client = clients.find(c => c.id === evt.client_id);
                             const isGroupEvt = !!(evt as any).group_session_id;
@@ -2438,7 +2475,7 @@ export default function CalendarPage() {
           </div>
         </div>
 
-          <aside className="hidden xl:block w-[340px] shrink-0">
+          <aside className="hidden xl:flex xl:flex-col min-w-0 min-h-0 overflow-y-auto">
             {agendaContent}
           </aside>
 
