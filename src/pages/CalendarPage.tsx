@@ -2131,12 +2131,8 @@ export default function CalendarPage() {
                         )}>
                           {format(day, "MMM d", { locale: dateLocale })}
                         </p>
-                        {ds?.working && ds.slots > 0 && (
-                          <p className={cn(
-                            "text-[10px] tabular-nums mt-0.5",
-                            isTodayCol ? "text-primary/80" : "text-muted-foreground",
-                          )}>{ds.booked} / {ds.slots}</p>
-                        )}
+
+
 
                         {dayOffStatus && (
                           <Badge variant="outline" className="text-[9px] px-1 border-destructive/20 text-destructive absolute top-1 right-1">
