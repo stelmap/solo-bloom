@@ -51,6 +51,13 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        state: {
+          paid: "hsl(var(--state-paid))",
+          unpaid: "hsl(var(--state-unpaid))",
+          confirmed: "hsl(var(--state-confirmed))",
+          "cancelled-charged": "hsl(var(--state-cancelled-charged))",
+          "cancelled-free": "hsl(var(--state-cancelled-free))",
+        },
         success: {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
