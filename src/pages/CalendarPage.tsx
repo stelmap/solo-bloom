@@ -1220,9 +1220,8 @@ export default function CalendarPage() {
     a.group_session_id ? (a.group_sessions?.groups?.name || "") : a.clients?.name;
 
   const agendaContent = (
-    <div className="animate-fade-in">
-      <div className="flex items-center justify-between gap-2 pb-3">
-
+    <div className="bg-card rounded-xl border border-border animate-fade-in divide-y divide-border">
+      <div className="flex items-center justify-between gap-2 p-4">
         <h2 className="text-base font-semibold text-foreground">{(t as any)("calendar.agenda") || "Adaptive Agenda"}</h2>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -1244,7 +1243,7 @@ export default function CalendarPage() {
         </DropdownMenu>
       </div>
 
-      <div className="space-y-4 pb-4">
+      <div className="p-4 space-y-4">
         <div>
           <p className="text-base font-semibold text-foreground">
             {format(agendaDate, "EEEE, d MMMM", { locale: dateLocale })}
@@ -1307,22 +1306,20 @@ export default function CalendarPage() {
         )}
       </div>
 
-      <div className="border-t border-border">
+      <div>
         <button
           type="button"
           onClick={() => setNeedsOpen(o => !o)}
           aria-expanded={needsOpen}
-          className="w-full flex items-center justify-between gap-2 py-3 min-h-[48px] text-left hover:text-foreground transition-colors"
+          className="w-full flex items-center justify-between gap-2 px-4 py-3 min-h-[48px] text-left hover:bg-accent/40 transition-colors"
         >
-
           <span className="text-sm font-medium text-foreground">
             {(t as any)("calendar.needsAttention") || "Needs attention"} · {attentionCount}
           </span>
           <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", needsOpen && "rotate-180")} />
         </button>
         {needsOpen && (
-          <div className="pb-3 space-y-2">
-
+          <div className="px-4 pb-3 space-y-2">
             {pendingRequests.length > 0 && (
               <button
                 type="button"
@@ -1355,7 +1352,7 @@ export default function CalendarPage() {
         )}
       </div>
 
-      <div className="flex items-center justify-between gap-2 py-3 border-t border-border">
+      <div className="flex items-center justify-between gap-2 p-4">
         <span className="text-sm font-medium text-foreground">{(t as any)("booking.link") || "Booking link"}</span>
         <div className="flex items-center gap-1">
           <Button
@@ -1967,29 +1964,19 @@ export default function CalendarPage() {
 
 
         {/* Compact weekly capacity row */}
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 px-0.5">
-          <div className="shrink-0">
-            <p className="text-2xl font-bold tabular-nums leading-none text-foreground">
-              {fillRates.thisWeek.pct}%
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {(t as any)("capacity.fillRateThisWeek") || "Fill rate this week"}
-            </p>
-          </div>
-
-          <div className="hidden sm:block self-stretch w-px bg-border" />
-
-          <div className="flex-1 min-w-[200px] space-y-2">
-            <p className="text-sm text-foreground">
-              <span className="font-bold tabular-nums">{fillRates.thisWeek.occupied} / {fillRates.thisWeek.slots}</span>{" "}
-              <span className="text-muted-foreground">{(t as any)("capacity.slotsThisWeek") || "slots this week"}</span>
-            </p>
-            <Progress
-              value={Math.min(fillRates.thisWeek.pct, 100)}
-              className={cn("h-2 w-full max-w-[640px]", fillRates.thisWeek.pct >= 100 ? "[&>div]:bg-destructive" : "")}
-            />
-          </div>
-
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 px-0.5">
+          <p className="text-sm text-foreground">
+            <span className="font-bold tabular-nums">{fillRates.thisWeek.occupied} / {fillRates.thisWeek.slots}</span>{" "}
+            <span className="text-muted-foreground">{(t as any)("capacity.slots") || "slots"}</span>
+          </p>
+          <p className="text-sm text-muted-foreground tabular-nums">
+            <span className="font-semibold text-foreground">{fillRates.thisWeek.pct}%</span>{" "}
+            {(t as any)("capacity.filled") || "filled"}
+          </p>
+          <Progress
+            value={Math.min(fillRates.thisWeek.pct, 100)}
+            className={cn("h-1.5 flex-1 min-w-[140px] max-w-[560px]", fillRates.thisWeek.pct >= 100 ? "[&>div]:bg-destructive" : "")}
+          />
           {pendingRequests.length > 0 && (
             <button
               type="button"
@@ -2002,7 +1989,6 @@ export default function CalendarPage() {
             </button>
           )}
         </div>
-
 
 
 
@@ -2304,10 +2290,9 @@ export default function CalendarPage() {
           </div>
         </div>
 
-          <aside className="hidden xl:block w-[360px] shrink-0 self-stretch border-l border-border pl-5">
+          <aside className="hidden xl:block w-[340px] shrink-0">
             {agendaContent}
           </aside>
-
 
         </div>
         )}
