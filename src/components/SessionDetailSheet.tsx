@@ -1059,50 +1059,92 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
 
 
-              {/* Session notes */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="flex items-center gap-1.5">
-                    <FileText className="h-3.5 w-3.5" /> {t("session.notes")}
-                  </Label>
-                  {notesDirty && (
-                    <Button size="sm" variant="ghost" onClick={handleSaveNotes} disabled={updateAppointment.isPending}>
-                      <Save className="h-3.5 w-3.5 mr-1" /> {t("session.saveNotes")}
-                    </Button>
-                  )}
-                </div>
-                <Textarea
-                  placeholder={t("session.notesPlaceholder")}
-                  value={notes}
-                  onChange={(e) => { setNotes(e.target.value); setNotesDirty(true); }}
-                  className="min-h-[120px] text-sm"
-                />
-              </div>
+              {/* Session notes — compact row, opens the dedicated notes dialog */}
+              {!isGroupSession && apt.client_id && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNotesDialogAppointmentId(apt.id);
+                    setNotesDialogMode("edit");
+                    setNotesDialogOpen(true);
+                  }}
+                  className="w-full flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-muted"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-medium text-foreground">{t("sessionNotes.title")}</span>
+                    <span className="block text-xs text-muted-foreground">{t("sd.notesSubtitle")}</span>
+                  </span>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                </button>
+              )}
 
-              <Separator />
-
-              {/* Actions */}
-              {isActive && (
-                <div className="flex flex-wrap gap-2">
-                  <Button onClick={openComplete} className="flex-1">
-                    <CheckCircle className="h-4 w-4 mr-2" /> {t("calendar.complete")}
+              {/* Complete session — inline one-click flow */}
+              {isActive && !isGroupSession && (
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold">{t("sd.completeSession")}</Label>
+                  <div role="radiogroup" aria-label={t("sd.completeSession")} className="space-y-2">
+                    {SIMPLE_COMPLETION_OPTIONS.map(opt => {
+                      const selected = paymentStatus === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          role="radio"
+                          aria-checked={selected}
+                          onClick={() => setPaymentStatus(opt.value)}
+                          className={cn(
+                            "w-full flex items-start gap-3 rounded-xl border p-3 text-left transition-colors",
+                            selected ? "border-primary bg-primary/5" : "border-border bg-card hover:bg-muted",
+                          )}
+                        >
+                          <span className={cn(
+                            "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2",
+                            selected ? "border-primary" : "border-muted-foreground/40",
+                          )}>
+                            {selected && <span className="h-2 w-2 rounded-full bg-primary" />}
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block text-sm font-medium text-foreground">{opt.label}</span>
+                            <span className="block text-xs text-muted-foreground">{opt.description}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <Button
+                    className="w-full"
+                    onClick={handleQuickComplete}
+                    disabled={completeAppointment.isPending || completeFromPrepayment.isPending}
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    {(completeAppointment.isPending || completeFromPrepayment.isPending)
+                      ? t("calendar.saving")
+                      : t("sd.completeSession")}
                   </Button>
-                  {apt.status === "scheduled" && (
-                    <Button variant="outline" onClick={() => handleStatusChange("confirmed")} className="flex-1">
-                      <Clock className="h-4 w-4 mr-2" /> {t("calendar.confirm")}
-                    </Button>
-                  )}
+                  <Button
+                    variant="outline"
+                    className="w-full border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    onClick={() => setCancelOpen(true)}
+                  >
+                    <XCircle className="h-4 w-4 mr-2" /> {t("cancelSession.title")}
+                  </Button>
                 </div>
               )}
 
-              {isActive && (
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setCancelOpen(true)} className="text-destructive hover:text-destructive">
-
-                    <XCircle className="h-3.5 w-3.5 mr-1" /> {t("calendar.cancel")}
+              {isActive && isGroupSession && (
+                <div className="space-y-2">
+                  <Button onClick={openComplete} className="w-full">
+                    <CheckCircle className="h-4 w-4 mr-2" /> {t("calendar.complete")}
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => setNoShowOpen(true)} className="text-warning hover:text-warning">
-                    <Ban className="h-3.5 w-3.5 mr-1" /> {t("calendar.noShow")}
+                  <Button
+                    variant="outline"
+                    className="w-full border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    onClick={() => setCancelOpen(true)}
+                  >
+                    <XCircle className="h-4 w-4 mr-2" /> {t("cancelSession.title")}
                   </Button>
                 </div>
               )}
@@ -1134,13 +1176,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                     )}
                     {apt.status !== "cancelled" && (
                       <Button variant="outline" size="sm" onClick={() => setCancelOpen(true)} className="text-destructive hover:text-destructive">
-                        <XCircle className="h-3.5 w-3.5 mr-1" /> {t("calendar.cancel")}
-                      </Button>
-                    )}
-
-                    {apt.status !== "no-show" && (
-                      <Button variant="outline" size="sm" onClick={() => setNoShowOpen(true)} className="text-warning hover:text-warning">
-                        <Ban className="h-3.5 w-3.5 mr-1" /> {t("calendar.noShow")}
+                        <XCircle className="h-3.5 w-3.5 mr-1" /> {t("cancelSession.title")}
                       </Button>
                     )}
                     <Button variant="outline" size="sm" onClick={() => setPaymentEditOpen(true)}>
@@ -1159,6 +1195,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   <Trash2 className="h-3.5 w-3.5 mr-1" /> {t("calendar.delete")}
                 </Button>
               </div>
+
             </div>
           )}
 
