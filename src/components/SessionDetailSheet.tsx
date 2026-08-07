@@ -593,6 +593,46 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     }
   };
 
+  /**
+   * One-click completion used by the simplified Session Details panel.
+   * Uses the currently selected radio option, records income / expected
+   * payment exactly once and closes the panel without extra confirmation.
+   */
+  const handleQuickComplete = async () => {
+    if (completeAppointment.isPending || completeFromPrepayment.isPending) return;
+    if (!isActive) return;
+    try {
+      if (paymentStatus === "paid_from_prepayment") {
+        await completeFromPrepayment.mutateAsync({
+          appointmentId: apt.id, clientId: apt.client_id, price: sessionPrice,
+        });
+      } else if (paymentStatus === "already_paid") {
+        await completeAppointment.mutateAsync({
+          appointmentId: apt.id, clientId: apt.client_id,
+          price: sessionPrice, paymentMethod, paymentStatus: "already_paid",
+        });
+      } else {
+        await completeAppointment.mutateAsync({
+          appointmentId: apt.id, clientId: apt.client_id,
+          price: sessionPrice, paymentMethod, paymentStatus,
+          paymentDate: new Date().toISOString().split("T")[0],
+          amountPaid: paymentStatus === "paid_now" ? sessionPrice : undefined,
+        });
+      }
+      toast({
+        title: t("toast.appointmentCompleted"),
+        description: paymentStatus === "waiting_for_payment"
+          ? t("toast.sessionCompletedExpected")
+          : t("toast.sessionCompletedIncome", { symbol: cs, amount: sessionPrice.toFixed(2) }),
+      });
+      onOpenChange(false);
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
+
+
+
   const handleStatusChange = async (status: "confirmed" | "cancelled" | "no-show", waiveFee = false) => {
     try {
       if (notesDirty) await updateAppointment.mutateAsync({ id: apt.id, notes });
