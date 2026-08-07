@@ -1739,55 +1739,45 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
         clientId={apt?.client_id ?? null}
       />
 
-      <Dialog open={noShowOpen} onOpenChange={setNoShowOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>{t("calendar.noShow")}</DialogTitle></DialogHeader>
-          <p className="text-sm text-muted-foreground">{t("noShow.description")}</p>
-          <div className="space-y-2">
-            <Button variant="outline" className="w-full justify-start" onClick={() => handleStatusChange("no-show", false)}>
-              <DollarSign className="h-4 w-4 mr-2 text-warning" />
-              <div className="text-left">
-                <p className="text-sm font-medium">{t("noShow.charge")}</p>
-                <p className="text-xs text-muted-foreground">{cs}{Number(apt.price).toFixed(2)} {t("noShow.chargeDesc")}</p>
-              </div>
-            </Button>
-            <Button variant="outline" className="w-full justify-start" onClick={() => handleStatusChange("no-show", true)}>
-              <XCircle className="h-4 w-4 mr-2 text-muted-foreground" />
-              <div className="text-left">
-                <p className="text-sm font-medium">{t("noShow.waive")}</p>
-                <p className="text-xs text-muted-foreground">{t("noShow.waiveDesc")}</p>
-              </div>
-            </Button>
+      <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-sm rounded-xl">
+          <DialogHeader><DialogTitle>{t("cancelSession.title")}</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">{t("cancelSession.question")}</p>
+          <div role="radiogroup" aria-label={t("cancelSession.title")} className="space-y-2 pt-1">
+            <button
+              type="button"
+              role="radio"
+              aria-checked={false}
+              disabled={cancelAppointment.isPending}
+              onClick={() => handleStatusChange("cancelled", false)}
+              className="w-full flex items-start gap-3 rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-muted disabled:opacity-60"
+            >
+              <span className="mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 border-muted-foreground/40" />
+              <span className="min-w-0">
+                <span className="block text-sm font-medium text-foreground">{t("cancelSession.charge")}</span>
+                <span className="block text-xs text-muted-foreground">
+                  {t("cancelSession.chargeDesc", { amount: `${cs}${Number(apt.price).toFixed(2)}` })}
+                </span>
+              </span>
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={false}
+              disabled={cancelAppointment.isPending}
+              onClick={() => handleStatusChange("cancelled", true)}
+              className="w-full flex items-start gap-3 rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-muted disabled:opacity-60"
+            >
+              <span className="mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 border-muted-foreground/40" />
+              <span className="min-w-0">
+                <span className="block text-sm font-medium text-foreground">{t("cancelSession.noCharge")}</span>
+                <span className="block text-xs text-muted-foreground">{t("cancelSession.noChargeDesc")}</span>
+              </span>
+            </button>
           </div>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>{t("cancelSession.title")}</DialogTitle></DialogHeader>
-          <p className="text-sm text-muted-foreground">{t("cancelSession.description")}</p>
-          <div className="space-y-2">
-            <Button variant="outline" className="w-full justify-start" onClick={() => handleStatusChange("cancelled", false)}>
-              <DollarSign className="h-4 w-4 mr-2 text-warning" />
-              <div className="text-left">
-                <p className="text-sm font-medium">{t("noShow.charge")}</p>
-                <p className="text-xs text-muted-foreground">{cs}{Number(apt.price).toFixed(2)} {t("noShow.chargeDesc")}</p>
-              </div>
-            </Button>
-            <Button variant="outline" className="w-full justify-start" onClick={() => handleStatusChange("cancelled", true)}>
-              <XCircle className="h-4 w-4 mr-2 text-muted-foreground" />
-              <div className="text-left">
-                <p className="text-sm font-medium">{t("noShow.waive")}</p>
-                <p className="text-xs text-muted-foreground">{t("noShow.waiveDesc")}</p>
-              </div>
-            </Button>
-            <Button variant="ghost" className="w-full justify-start" onClick={() => setCancelOpen(false)}>
-              <X className="h-4 w-4 mr-2" />
-              <p className="text-sm font-medium">{t("common.back")}</p>
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
     </>
   );
