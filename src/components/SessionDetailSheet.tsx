@@ -257,6 +257,25 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
         { value: "waiting_for_payment", label: t("payment.waitingForPayment"), description: t("payment.waitingForPaymentDesc") },
       ];
 
+  const priceStr = `${cs}${sessionPrice.toFixed(2)}`;
+  /** Simplified one-click completion options shown directly in the view panel. */
+  const SIMPLE_COMPLETION_OPTIONS: { value: string; label: string; description: string }[] =
+    fullyCoveredByPrepayment
+      ? [PAYMENT_STATUSES[0]]
+      : [
+          ...(hasPrepayment && !isGroupSession && prepaymentCovers >= sessionPrice - 0.001
+            ? [{
+                value: "paid_from_prepayment",
+                label: t("payment.paidFromPrepayment"),
+                description: t("payment.paidFromPrepaymentDesc", { symbol: cs, amount: prepaymentRemainingAfter.toFixed(2) }),
+              }]
+            : []),
+          { value: "paid_now", label: t("payment.paid"), description: t("sd.paidDesc", { amount: priceStr }) },
+          { value: "waiting_for_payment", label: t("payment.waiting"), description: t("sd.waitingDesc", { amount: priceStr }) },
+        ];
+
+
+
   const prepaymentInsufficient =
     hasPrepayment && !isGroupSession && !fullyCoveredByPrepayment && prepaymentCovers < sessionPrice - 0.001;
 
