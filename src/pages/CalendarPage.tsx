@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { ClientPicker } from "@/components/ClientPicker";
 import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
-import { ChevronLeft, ChevronRight, ChevronRight as ChevronRightIcon, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon, UserPlus, Briefcase, CheckCircle2, Circle, Flag, Search, X as XIcon, AlertTriangle, CalendarDays, SlidersHorizontal, MoreHorizontal, ChevronDown, ExternalLink, Copy, PanelRightOpen, Ban } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronRight as ChevronRightIcon, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon, UserPlus, Briefcase, CheckCircle2, Circle, Flag, Search, X as XIcon, AlertTriangle, CalendarDays, SlidersHorizontal, MoreHorizontal, ChevronDown, ExternalLink, Copy, PanelRightOpen, Ban, Rows2, Rows3 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -369,11 +369,20 @@ export default function CalendarPage() {
   // --- Responsive grid sizing -------------------------------------------------
   // The time grid stretches to the available height; hour rows are sized from
   // the measured viewport so a normal working day fits without inner scrolling.
-  const MIN_ROW_H = 44;
-  const MAX_ROW_H = 88;
+  const [gridDensity, setGridDensity] = useState<"compact" | "comfortable">(() => {
+    if (typeof window === "undefined") return "comfortable";
+    return (localStorage.getItem("calendar.density") as "compact" | "comfortable") || "comfortable";
+  });
+  useEffect(() => {
+    try { localStorage.setItem("calendar.density", gridDensity); } catch { /* ignore */ }
+  }, [gridDensity]);
+
+  const MIN_ROW_H = gridDensity === "compact" ? 32 : 44;
+  const MAX_ROW_H = gridDensity === "compact" ? 56 : 88;
   const gridScrollRef = useRef<HTMLDivElement | null>(null);
   const gridHeadRef = useRef<HTMLTableSectionElement | null>(null);
   const [rowHeight, setRowHeight] = useState(60);
+  const [needsInnerScroll, setNeedsInnerScroll] = useState(false);
 
   useEffect(() => {
     const el = gridScrollRef.current;
@@ -385,6 +394,7 @@ export default function CalendarPage() {
       if (avail <= 0) return;
       const next = Math.min(MAX_ROW_H, Math.max(MIN_ROW_H, Math.floor(avail / rows)));
       setRowHeight(prev => (Math.abs(prev - next) >= 1 ? next : prev));
+      setNeedsInnerScroll(next * rows > avail + 1);
     };
     recalc();
     const ro = new ResizeObserver(recalc);
@@ -396,7 +406,8 @@ export default function CalendarPage() {
       window.removeEventListener("resize", recalc);
       window.removeEventListener("orientationchange", recalc);
     };
-  }, [hours.length]);
+  }, [hours.length, MIN_ROW_H, MAX_ROW_H]);
+
 
 
 
@@ -1654,7 +1665,28 @@ export default function CalendarPage() {
               </PopoverContent>
             </Popover>
 
+            {/* Density toggle */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline" size="icon" className="h-10 w-10 rounded-xl hidden sm:inline-flex"
+                  aria-label={(t as any)("calendar.density") || "Row density"}
+                  aria-pressed={gridDensity === "compact"}
+                  onClick={() => setGridDensity(d => (d === "compact" ? "comfortable" : "compact"))}
+                >
+                  {gridDensity === "compact" ? <Rows3 className="h-4 w-4" /> : <Rows2 className="h-4 w-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {gridDensity === "compact"
+                  ? ((t as any)("calendar.densityComfortable") || "Comfortable rows")
+                  : ((t as any)("calendar.densityCompact") || "Compact rows")}
+                {needsInnerScroll ? ` · ${(t as any)("calendar.scrollHint") || "grid scrolls"}` : ""}
+              </TooltipContent>
+            </Tooltip>
+
             {/* Persistent Settings entry */}
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
