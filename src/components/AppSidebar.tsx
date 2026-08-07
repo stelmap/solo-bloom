@@ -313,6 +313,19 @@ export function AppSidebar() {
         {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
 
+      {/* Persistent Settings entry — always reachable, never only inside the menu */}
+      <Link
+        to="/settings"
+        onClick={() => setMobileOpen(false)}
+        className="fixed top-4 left-16 z-50 lg:hidden p-2 rounded-lg bg-secondary text-secondary-foreground border border-sidebar-border shadow-lg"
+        aria-label="Settings"
+        title="Settings"
+      >
+        <Settings className="h-5 w-5" />
+      </Link>
+
+
+
       {/* Collapsed icon rail (desktop / tablet) */}
       <aside
         className="fixed left-0 top-0 z-30 h-full w-[68px] bg-sidebar border-r border-sidebar-border hidden lg:flex flex-col items-center py-4"
