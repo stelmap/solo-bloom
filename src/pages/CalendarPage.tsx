@@ -16,6 +16,8 @@ import {
   useCalendarDisplay, initialFilters, isFiltersActive,
   type CalendarFilters, type CalendarView,
 } from "@/hooks/useCalendarDisplay";
+import { matchesCalendarState } from "@/lib/calendarStateFilters";
+
 import {
   isUrgent, toggleUrgent, isNew, markNew, markSeen,
   isRescheduled, markRescheduled, getSessionKind,
