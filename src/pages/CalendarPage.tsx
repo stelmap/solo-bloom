@@ -366,6 +366,40 @@ export default function CalendarPage() {
   const displayEnd = Math.max(endHour, 22);
   const hours = Array.from({ length: displayEnd - displayStart }, (_, i) => i + displayStart);
 
+  // --- Responsive grid sizing -------------------------------------------------
+  // The time grid stretches to the available height; hour rows are sized from
+  // the measured viewport so a normal working day fits without inner scrolling.
+  const MIN_ROW_H = 44;
+  const MAX_ROW_H = 88;
+  const gridScrollRef = useRef<HTMLDivElement | null>(null);
+  const gridHeadRef = useRef<HTMLTableSectionElement | null>(null);
+  const [rowHeight, setRowHeight] = useState(60);
+
+  useEffect(() => {
+    const el = gridScrollRef.current;
+    if (!el) return;
+    const recalc = () => {
+      const headH = gridHeadRef.current?.getBoundingClientRect().height ?? 56;
+      const avail = el.clientHeight - headH;
+      const rows = hours.length || 1;
+      if (avail <= 0) return;
+      const next = Math.min(MAX_ROW_H, Math.max(MIN_ROW_H, Math.floor(avail / rows)));
+      setRowHeight(prev => (Math.abs(prev - next) >= 1 ? next : prev));
+    };
+    recalc();
+    const ro = new ResizeObserver(recalc);
+    ro.observe(el);
+    window.addEventListener("resize", recalc);
+    window.addEventListener("orientationchange", recalc);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", recalc);
+      window.removeEventListener("orientationchange", recalc);
+    };
+  }, [hours.length]);
+
+
+
   // Build schedule map: day_of_week -> { is_working, start_time, end_time }
   const scheduleMap = useMemo(() => {
     const map: Record<number, { is_working: boolean; start_time: string; end_time: string }> = {};
