@@ -1679,8 +1679,8 @@ export default function CalendarPage() {
                   {/* Session type — two large pills */}
                   <div
                     role="radiogroup"
-                    aria-label={L.individualSession + " / " + L.groupSession}
-                    className="grid grid-cols-2 gap-2"
+                    aria-label={L.sessionTypeLabel}
+                    className="grid grid-cols-3 gap-2"
                     onKeyDown={(e) => {
                       if (e.key === "ArrowRight" || e.key === "ArrowDown") {
                         e.preventDefault();
@@ -1694,12 +1694,12 @@ export default function CalendarPage() {
                     <button
                       type="button"
                       role="radio"
-                      aria-checked={!isGroupSession}
-                      tabIndex={!isGroupSession ? 0 : -1}
-                      onClick={() => { setIsGroupSession(false); setGroupId(""); }}
+                      aria-checked={!isGroupSession && !isBlockedTime}
+                      tabIndex={!isGroupSession && !isBlockedTime ? 0 : -1}
+                      onClick={() => { setIsGroupSession(false); setGroupId(""); setIsBlockedTime(false); }}
                       className={cn(
                         "flex items-center justify-center gap-1.5 rounded-xl border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", D.pill,
-                        !isGroupSession
+                        !isGroupSession && !isBlockedTime
                           ? "border-foreground bg-background text-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60"
                       )}
@@ -1710,13 +1710,13 @@ export default function CalendarPage() {
                     <button
                       type="button"
                       role="radio"
-                      aria-checked={isGroupSession}
-                      tabIndex={isGroupSession ? 0 : -1}
-                      onClick={() => { setIsGroupSession(true); setForm(f => ({ ...f, client_id: "" })); }}
+                      aria-checked={isGroupSession && !isBlockedTime}
+                      tabIndex={isGroupSession && !isBlockedTime ? 0 : -1}
+                      onClick={() => { setIsGroupSession(true); setIsBlockedTime(false); setForm(f => ({ ...f, client_id: "" })); }}
                       disabled={activeGroups.length === 0}
                       className={cn(
                         "flex items-center justify-center gap-1.5 rounded-xl border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", D.pill,
-                        isGroupSession
+                        isGroupSession && !isBlockedTime
                           ? "border-foreground bg-background text-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60",
                         activeGroups.length === 0 && "opacity-50 cursor-not-allowed"
@@ -1725,10 +1725,26 @@ export default function CalendarPage() {
                       <Users className="h-3.5 w-3.5" aria-hidden="true" />
                       <span>{L.groupSession}</span>
                     </button>
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={isBlockedTime}
+                      tabIndex={isBlockedTime ? 0 : -1}
+                      onClick={() => { setIsBlockedTime(true); setIsGroupSession(false); setGroupId(""); setServiceError(false); }}
+                      className={cn(
+                        "flex items-center justify-center gap-1.5 rounded-xl border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", D.pill,
+                        isBlockedTime
+                          ? "border-foreground bg-background text-foreground shadow-sm"
+                          : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60"
+                      )}
+                    >
+                      <Ban className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span>{L.blockedTime}</span>
+                    </button>
                   </div>
 
                   {/* Client / Group */}
-                  {isGroupSession ? (
+                  {isBlockedTime ? null : isGroupSession ? (
                     <div className="space-y-1">
                       <Label className="text-xs font-bold uppercase text-muted-foreground">
                         {t("groups.selectGroup")} <span className="text-primary">*</span>
@@ -1787,6 +1803,7 @@ export default function CalendarPage() {
                   )}
 
                   {/* Service */}
+                  {!isBlockedTime && (
                   <div className="space-y-1">
                     <Label htmlFor="appt-service" className="text-xs font-bold uppercase text-muted-foreground">
                       {t("calendar.service")} <span className="text-primary" aria-hidden="true">*</span>
@@ -1823,6 +1840,7 @@ export default function CalendarPage() {
                       </>
                     )}
                   </div>
+                  )}
 
                   {/* Date / Time */}
                   <DateTimePicker
@@ -1835,13 +1853,27 @@ export default function CalendarPage() {
                     timeLabel={t("common.time")}
                   />
 
-                  {createValidation && !isRecurring && (
+                  {isBlockedTime && (
+                    <div className="space-y-1">
+                      <Label htmlFor="block-end" className="text-xs font-bold uppercase text-muted-foreground">{L.blockedEnd}</Label>
+                      <Input
+                        id="block-end"
+                        type="time"
+                        value={blockEnd}
+                        onChange={e => setBlockEnd(e.target.value)}
+                        className={D.field}
+                      />
+                    </div>
+                  )}
+
+                  {!isBlockedTime && createValidation && !isRecurring && (
                     <div role="alert" className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
                       ⚠️ {createValidation}
                     </div>
                   )}
 
                   {/* Notes */}
+                  {!isBlockedTime && (
                   <div className="space-y-1">
                     <Label htmlFor="appt-notes" className="text-xs font-bold uppercase text-muted-foreground">{t("calendar.notes")}</Label>
                     <Textarea
@@ -1853,6 +1885,7 @@ export default function CalendarPage() {
                       className={cn("resize-none rounded-lg", D.notes)}
                     />
                   </div>
+                  )}
 
                   {/* Repeat session — orange highlighted toggle row */}
                   <div className={cn(
@@ -1929,12 +1962,15 @@ export default function CalendarPage() {
                   </div>
 
                   {(() => {
-                    const missingRequired = isGroupSession
+                    const missingRequired = isBlockedTime
+                      ? (!form.date || !form.time || !blockEnd || blockEnd <= form.time)
+                      : isGroupSession
                       ? (!groupId || groupMembers.length === 0 || !form.service_id || !form.date || !form.time)
                       : (!form.client_id || !form.service_id || !form.date || !form.time);
                     const disabled = createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending
+                      || createDayOff.isPending
                       || missingRequired
-                      || (!isRecurring && !isGroupSession && !!createValidation);
+                      || (!isBlockedTime && !isRecurring && !isGroupSession && !!createValidation);
 
                     const selectedService = services.find(s => s.id === form.service_id);
                     const selectedClient = clients.find(c => c.id === form.client_id);
@@ -1949,7 +1985,12 @@ export default function CalendarPage() {
                     const recurSummary = isRecurring
                       ? `${(recurInterval === 1 ? t("recurring.weekly") : recurInterval === 2 ? t("recurring.biweekly") : t("recurring.custom", { n: String(recurInterval) })).toLowerCase()} ${recurDays.map(d => t(DAY_KEYS[d - 1] as any)).join(",")}`
                       : "";
-                    const summaryParts = [
+                    const summaryParts = isBlockedTime ? [
+                      L.blockedTime,
+                      summaryDate,
+                      form.time ? `${formatTime(form.time, use12h)} – ${formatTime(blockEnd, use12h)}` : "",
+                      recurSummary,
+                    ].filter(Boolean) : [
                       isGroupSession ? selectedGroup?.name : selectedClient?.name,
                       summaryDate,
                       form.time ? formatTime(form.time, use12h) : "",
@@ -1959,6 +2000,7 @@ export default function CalendarPage() {
 
                     const ctaLabel = (createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending)
                       ? t("calendar.creating")
+                      : isBlockedTime ? L.ctaBlocked
                       : (isGroupSession ? L.ctaGroup : L.ctaIndividual);
 
                     return (
@@ -1993,7 +2035,7 @@ export default function CalendarPage() {
                           </Button>
                         </div>
                         {missingRequired && (
-                          <p className="text-[11px] text-muted-foreground text-center leading-tight" role="status">{L.disabledHint}</p>
+                          <p className="text-[11px] text-muted-foreground text-center leading-tight" role="status">{isBlockedTime ? L.blockedHint : L.disabledHint}</p>
                         )}
                       </div>
                     );
@@ -2266,7 +2308,7 @@ export default function CalendarPage() {
                       const events = getEventsForDayHour(day, hour);
                       const pendingReqs = getPendingRequestsForDayHour(day, hour);
                       const working = isHourWorking(day, hour);
-                      const dayOff = isDayOff(day);
+                      const dayOff = isDayOff(day) || isBlockedHour(day, hour);
                       const hasAny = events.length > 0 || pendingReqs.length > 0;
                       return (
                         <td key={dayIdx}
