@@ -2479,10 +2479,13 @@ export default function CalendarPage() {
                                     <span className="shrink-0 h-2 w-2 rounded-full bg-success" title={t("confirmation.confirmed")} />
                                   )}
                                 </div>
-                                <div className="flex items-center gap-1">
-                                  <p className="text-xs opacity-70 truncate">{(evt as any).services?.name}</p>
-                                  {(evt as any).recurring_rule_id && <Repeat className="h-2.5 w-2.5 opacity-50 shrink-0" />}
-                                </div>
+                                {gridDensity !== "compact" && (
+                                  <div className="flex items-center gap-1">
+                                    <p className="text-xs opacity-70 truncate">{(evt as any).services?.name}</p>
+                                    {(evt as any).recurring_rule_id && <Repeat className="h-2.5 w-2.5 opacity-50 shrink-0" />}
+                                  </div>
+                                )}
+
                               </div>
                             );
                           })}
