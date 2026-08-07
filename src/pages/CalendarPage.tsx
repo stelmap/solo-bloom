@@ -1619,50 +1619,43 @@ export default function CalendarPage() {
                 </TooltipTrigger>
                 <TooltipContent>{(t as any)("calendar.filters") || "Filters"}</TooltipContent>
               </Tooltip>
-              <PopoverContent align="end" className="w-72 space-y-4">
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    className="pl-8"
-                    placeholder={(t as any)("common.search") || "Search"}
-                    value={filters.search}
-                    onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">{(t as any)("calendar.status") || "Status"}</Label>
-                  <Select value={filters.status} onValueChange={(v) => setFilters(f => ({ ...f, status: v as CalendarFilters["status"] }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {(["all", "scheduled", "confirmed", "completed", "cancelled", "no-show"] as const).map(s => (
-                        <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">{(t as any)("calendar.stateFilter") || "State"}</Label>
+              <PopoverContent align="end" className="w-64 p-3 space-y-2">
+                <Label className="text-xs text-muted-foreground">{(t as any)("calendar.stateFilter") || "State"}</Label>
+                <div className="space-y-0.5">
                   {([
-                    ["paid", "calendar.state.paid", "Paid"],
-                    ["unpaid", "calendar.state.unpaid", "Unpaid"],
-                    ["confirmed", "calendar.state.confirmed", "Confirmed"],
-                    ["cancelled_charged", "calendar.state.cancelledCharged", "Cancelled — client charged"],
-                    ["cancelled_free", "calendar.state.cancelledFree", "Cancelled — no charge"],
-                  ] as const).map(([k, key, fallback]) => (
-                    <label key={k} className="flex items-center gap-2 text-sm cursor-pointer">
-                      <Checkbox
-                        checked={filters.states[k]}
-                        onCheckedChange={(c) => setFilters(f => ({ ...f, states: { ...f.states, [k]: !!c } }))}
-                      />
-                      {(t as any)(key) || fallback}
-                    </label>
-                  ))}
+                    ["paid", "calendar.state.paid", "Paid", "bg-state-paid"],
+                    ["unpaid", "calendar.state.unpaid", "Unpaid", "bg-state-unpaid"],
+                    ["confirmed", "calendar.state.confirmed", "Confirmed", "bg-state-confirmed"],
+                    ["cancelled_charged", "calendar.state.cancelledCharged", "Cancelled — client charged", "bg-state-cancelled-charged"],
+                    ["cancelled_free", "calendar.state.cancelledFree", "Cancelled — no charge", "bg-state-cancelled-free"],
+                  ] as const).map(([k, key, fallback, dot]) => {
+                    const checked = filters.states[k];
+                    return (
+                      <button
+                        key={k}
+                        type="button"
+                        role="checkbox"
+                        aria-checked={checked}
+                        onClick={() => setFilters(f => ({ ...f, states: { ...f.states, [k]: !f.states[k] } }))}
+                        className={cn(
+                          "w-full flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-sm transition-colors",
+                          checked ? "bg-muted font-medium" : "hover:bg-muted/50"
+                        )}
+                      >
+                        <span className={cn("h-4 w-4 shrink-0 rounded-full flex items-center justify-center", dot, !checked && "opacity-60")}>
+                          {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                        </span>
+                        <span className="leading-tight">{(t as any)(key) || fallback}</span>
+                      </button>
+                    );
+                  })}
                 </div>
 
-                <Button variant="ghost" size="sm" className="w-full" onClick={clearFilters} disabled={!filtersActive}>
+                <Button variant="ghost" size="sm" className={cn("w-full", !filtersActive && "text-muted-foreground/60")} onClick={clearFilters} disabled={!filtersActive}>
                   {(t as any)("common.clear") || "Clear"}
                 </Button>
               </PopoverContent>
+
             </Popover>
 
             {/* Density toggle */}
