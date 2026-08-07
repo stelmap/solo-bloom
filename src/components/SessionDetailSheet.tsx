@@ -618,11 +618,11 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     if (completeAppointment.isPending || completeFromPrepayment.isPending) return;
     if (!isActive) return;
     try {
-      if (paymentStatus === "paid_from_prepayment") {
+      if (paymentStatusChoice === "paid_from_prepayment") {
         await completeFromPrepayment.mutateAsync({
           appointmentId: apt.id, clientId: apt.client_id, price: sessionPrice,
         });
-      } else if (paymentStatus === "already_paid") {
+      } else if (paymentStatusChoice === "already_paid") {
         await completeAppointment.mutateAsync({
           appointmentId: apt.id, clientId: apt.client_id,
           price: sessionPrice, paymentMethod, paymentStatus: "already_paid",
@@ -630,17 +630,18 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       } else {
         await completeAppointment.mutateAsync({
           appointmentId: apt.id, clientId: apt.client_id,
-          price: sessionPrice, paymentMethod, paymentStatus,
+          price: sessionPrice, paymentMethod, paymentStatus: paymentStatusChoice,
           paymentDate: new Date().toISOString().split("T")[0],
-          amountPaid: paymentStatus === "paid_now" ? sessionPrice : undefined,
+          amountPaid: paymentStatusChoice === "paid_now" ? sessionPrice : undefined,
         });
       }
       toast({
         title: t("toast.appointmentCompleted"),
-        description: paymentStatus === "waiting_for_payment"
+        description: paymentStatusChoice === "waiting_for_payment"
           ? t("toast.sessionCompletedExpected")
           : t("toast.sessionCompletedIncome", { symbol: cs, amount: sessionPrice.toFixed(2) }),
       });
+
       onOpenChange(false);
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
