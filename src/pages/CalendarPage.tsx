@@ -2180,7 +2180,8 @@ export default function CalendarPage() {
 
 
         {effectiveView === "month" && (
-          <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
+          <div className="bg-card rounded-xl border border-border overflow-auto animate-fade-in flex-1 min-h-0">
+
             <div className="grid grid-cols-7 border-b border-border bg-muted/30">
               {DAY_KEYS.map((dk) => (
                 <div key={dk} className="p-2 text-center text-xs font-medium text-muted-foreground">
