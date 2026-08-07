@@ -2301,9 +2301,10 @@ export default function CalendarPage() {
           </div>
         </div>
 
-          <aside className="hidden xl:block w-[340px] shrink-0">
+          <aside className="hidden xl:block w-[360px] shrink-0 self-stretch border-l border-border pl-5">
             {agendaContent}
           </aside>
+
 
         </div>
         )}
