@@ -12,13 +12,22 @@ export type DisplayFlags = {
   showLegend: boolean;
 };
 
+export type CalendarStateKey =
+  | "paid"
+  | "unpaid"
+  | "confirmed"
+  | "cancelled_charged"
+  | "cancelled_free";
+
 export type CalendarFilters = {
-  types: { individual: boolean; group: boolean; pair: boolean };
+  /** Multi-select payment / lifecycle states. Empty = no constraint. */
+  states: Record<CalendarStateKey, boolean>;
   status: "all" | "scheduled" | "confirmed" | "completed" | "cancelled" | "no-show";
   urgentOnly: boolean;
   newOnly: boolean;
   search: string;
 };
+
 
 const VIEW_KEY = "calendar.view";
 const DEFAULT_VIEW_KEY = "calendar.defaultView";
