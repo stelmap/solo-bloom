@@ -1220,8 +1220,9 @@ export default function CalendarPage() {
     a.group_session_id ? (a.group_sessions?.groups?.name || "") : a.clients?.name;
 
   const agendaContent = (
-    <div className="bg-card rounded-xl border border-border animate-fade-in divide-y divide-border">
-      <div className="flex items-center justify-between gap-2 p-4">
+    <div className="animate-fade-in">
+      <div className="flex items-center justify-between gap-2 pb-3">
+
         <h2 className="text-base font-semibold text-foreground">{(t as any)("calendar.agenda") || "Adaptive Agenda"}</h2>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
