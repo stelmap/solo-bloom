@@ -628,16 +628,22 @@ export default function CalendarPage() {
       }
     }
     try {
-      for (const date of Array.from(dates)) {
-        await createDayOff.mutateAsync({
-          date,
-          type: "blocked_time",
-          label: "Unavailable",
-          custom_start_time: `${form.time}:00`,
-          custom_end_time: `${blockEnd}:00`,
-          is_non_working: false,
-        });
-      }
+      const rows = Array.from(dates).map(date => ({
+        user_id: user!.id,
+        date,
+        type: "blocked_time",
+        label: "Unavailable",
+        custom_start_time: `${form.time}:00`,
+        custom_end_time: `${blockEnd}:00`,
+        is_non_working: false,
+      }));
+      // One row per date (days_off is unique per user+date) — upsert so an
+      // existing entry for that date is replaced by the new blocked range.
+      const { error } = await supabase
+        .from("days_off")
+        .upsert(rows as any, { onConflict: "user_id,date" });
+      if (error) throw error;
+      await qc.invalidateQueries({ queryKey: ["days-off"] });
       setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
       setBlockEnd("10:00");
       setIsBlockedTime(false);
