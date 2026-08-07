@@ -12,13 +12,22 @@ export type DisplayFlags = {
   showLegend: boolean;
 };
 
+export type CalendarStateKey =
+  | "paid"
+  | "unpaid"
+  | "confirmed"
+  | "cancelled_charged"
+  | "cancelled_free";
+
 export type CalendarFilters = {
-  types: { individual: boolean; group: boolean; pair: boolean };
+  /** Multi-select payment / lifecycle states. Empty = no constraint. */
+  states: Record<CalendarStateKey, boolean>;
   status: "all" | "scheduled" | "confirmed" | "completed" | "cancelled" | "no-show";
   urgentOnly: boolean;
   newOnly: boolean;
   search: string;
 };
+
 
 const VIEW_KEY = "calendar.view";
 const DEFAULT_VIEW_KEY = "calendar.defaultView";
@@ -89,7 +98,13 @@ export function useCalendarDisplay() {
 }
 
 export const initialFilters: CalendarFilters = {
-  types: { individual: true, group: true, pair: true },
+  states: {
+    paid: false,
+    unpaid: false,
+    confirmed: false,
+    cancelled_charged: false,
+    cancelled_free: false,
+  },
   status: "all",
   urgentOnly: false,
   newOnly: false,
@@ -98,7 +113,8 @@ export const initialFilters: CalendarFilters = {
 
 export function isFiltersActive(f: CalendarFilters): boolean {
   return (
-    !f.types.individual || !f.types.group || !f.types.pair ||
+    Object.values(f.states).some(Boolean) ||
     f.status !== "all" || f.urgentOnly || f.newOnly || !!f.search.trim()
   );
 }
+

@@ -16,6 +16,8 @@ import {
   useCalendarDisplay, initialFilters, isFiltersActive,
   type CalendarFilters, type CalendarView,
 } from "@/hooks/useCalendarDisplay";
+import { matchesCalendarState } from "@/lib/calendarStateFilters";
+
 import {
   isUrgent, toggleUrgent, isNew, markNew, markSeen,
   isRescheduled, markRescheduled, getSessionKind,
@@ -938,12 +940,14 @@ export default function CalendarPage() {
     // overlapping cache updates after creation, or group-session join fan-out.
     const unique = dedupeAppointmentsById(appointments as any[]);
     const result: any[] = [];
+    const activeStates = (Object.keys(filters.states) as (keyof typeof filters.states)[])
+      .filter(k => filters.states[k]);
     for (const apt of unique) {
-      const kind = getSessionKind(apt);
-      if (!filters.types[kind]) continue;
+      if (activeStates.length && !activeStates.some(k => matchesCalendarState(apt, k))) continue;
       if (filters.status !== "all" && apt.status !== filters.status) continue;
       if (filters.urgentOnly && !isUrgent(apt.id)) continue;
       if (filters.newOnly && !isNew(apt.id, apt.created_at)) continue;
+
       if (q) {
         const name = apt.clients?.name || apt.group_sessions?.groups?.name || "";
         const svc = apt.services?.name || "";
@@ -1591,17 +1595,24 @@ export default function CalendarPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">{(t as any)("calendar.sessionType") || "Type"}</Label>
-                  {(["individual", "group", "pair"] as const).map(k => (
-                    <label key={k} className="flex items-center gap-2 text-sm capitalize cursor-pointer">
+                  <Label className="text-xs text-muted-foreground">{(t as any)("calendar.stateFilter") || "State"}</Label>
+                  {([
+                    ["paid", "calendar.state.paid", "Paid"],
+                    ["unpaid", "calendar.state.unpaid", "Unpaid"],
+                    ["confirmed", "calendar.state.confirmed", "Confirmed"],
+                    ["cancelled_charged", "calendar.state.cancelledCharged", "Cancelled — client charged"],
+                    ["cancelled_free", "calendar.state.cancelledFree", "Cancelled — no charge"],
+                  ] as const).map(([k, key, fallback]) => (
+                    <label key={k} className="flex items-center gap-2 text-sm cursor-pointer">
                       <Checkbox
-                        checked={filters.types[k]}
-                        onCheckedChange={(c) => setFilters(f => ({ ...f, types: { ...f.types, [k]: !!c } }))}
+                        checked={filters.states[k]}
+                        onCheckedChange={(c) => setFilters(f => ({ ...f, states: { ...f.states, [k]: !!c } }))}
                       />
-                      {k}
+                      {(t as any)(key) || fallback}
                     </label>
                   ))}
                 </div>
+
                 <Button variant="ghost" size="sm" className="w-full" onClick={clearFilters} disabled={!filtersActive}>
                   {(t as any)("common.clear") || "Clear"}
                 </Button>
