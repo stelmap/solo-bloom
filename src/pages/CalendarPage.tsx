@@ -369,11 +369,20 @@ export default function CalendarPage() {
   // --- Responsive grid sizing -------------------------------------------------
   // The time grid stretches to the available height; hour rows are sized from
   // the measured viewport so a normal working day fits without inner scrolling.
-  const MIN_ROW_H = 44;
-  const MAX_ROW_H = 88;
+  const [density, setDensity] = useState<"compact" | "comfortable">(() => {
+    if (typeof window === "undefined") return "comfortable";
+    return (localStorage.getItem("calendar.density") as "compact" | "comfortable") || "comfortable";
+  });
+  useEffect(() => {
+    try { localStorage.setItem("calendar.density", density); } catch { /* ignore */ }
+  }, [density]);
+
+  const MIN_ROW_H = density === "compact" ? 32 : 44;
+  const MAX_ROW_H = density === "compact" ? 56 : 88;
   const gridScrollRef = useRef<HTMLDivElement | null>(null);
   const gridHeadRef = useRef<HTMLTableSectionElement | null>(null);
   const [rowHeight, setRowHeight] = useState(60);
+  const [needsInnerScroll, setNeedsInnerScroll] = useState(false);
 
   useEffect(() => {
     const el = gridScrollRef.current;
@@ -385,6 +394,7 @@ export default function CalendarPage() {
       if (avail <= 0) return;
       const next = Math.min(MAX_ROW_H, Math.max(MIN_ROW_H, Math.floor(avail / rows)));
       setRowHeight(prev => (Math.abs(prev - next) >= 1 ? next : prev));
+      setNeedsInnerScroll(next * rows > avail + 1);
     };
     recalc();
     const ro = new ResizeObserver(recalc);
@@ -396,7 +406,8 @@ export default function CalendarPage() {
       window.removeEventListener("resize", recalc);
       window.removeEventListener("orientationchange", recalc);
     };
-  }, [hours.length]);
+  }, [hours.length, MIN_ROW_H, MAX_ROW_H]);
+
 
 
 
