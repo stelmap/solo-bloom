@@ -2301,13 +2301,13 @@ export default function CalendarPage() {
             }
           } : undefined}
         >
-          <div className="overflow-auto flex-1 min-h-0" style={{ scrollbarGutter: "stable" }}>
+          <div ref={gridScrollRef} className="overflow-auto flex-1 min-h-0" style={{ scrollbarGutter: "stable", overscrollBehavior: "contain" }}>
             <table className="w-full border-collapse table-fixed min-w-[760px]">
               <colgroup>
                 <col className={isMobile ? "w-[56px]" : "w-[72px]"} />
                 {days.map((_, i) => <col key={i} />)}
               </colgroup>
-              <thead className="sticky top-0 z-20 bg-card">
+              <thead ref={gridHeadRef} className="sticky top-0 z-20 bg-card">
                 <tr className="border-b border-border">
                   <th className="p-3" />
                   {days.map((day, i) => {
@@ -2355,7 +2355,7 @@ export default function CalendarPage() {
               <tbody>
                 {hours.map((hour) => (
                   <tr key={hour}>
-                    <td className="h-[60px] text-right pr-3 border-b border-border align-middle">
+                    <td style={{ height: rowHeight }} className="text-right pr-3 border-b border-border align-middle">
                       <span className="text-xs text-muted-foreground font-medium">{fmtHour(hour)}</span>
                     </td>
                     {days.map((day, dayIdx) => {
@@ -2382,7 +2382,7 @@ export default function CalendarPage() {
                           onDragLeave={handleDragLeave}
                           onDrop={(e) => handleDrop(e, day, hour)}
                           className={cn(
-                            "relative border-l border-b border-border h-[60px] transition-colors",
+                            "relative border-l border-b border-border transition-colors",
                             dayOff ? "bg-destructive/5 cursor-not-allowed" : !working ? "bg-muted/20 cursor-not-allowed" : !hasAny ? "hover:bg-primary/5 cursor-pointer group/slot" : "",
                             dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && canDropOnSlot(day, hour, dragAptId) && "bg-primary/15 ring-2 ring-primary/30 ring-inset",
                             dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && !canDropOnSlot(day, hour, dragAptId) && "bg-destructive/10 ring-2 ring-destructive/30 ring-inset",
@@ -2393,7 +2393,7 @@ export default function CalendarPage() {
                             </div>
                           )}
                           {pendingReqs.map((req, idx) => {
-                            const heightPx = Math.max((req.duration_minutes / 60) * 60 - 4, 20);
+                            const heightPx = Math.max((req.duration_minutes / 60) * rowHeight - 4, 20);
                             const name = req.matched_client_name || `${req.first_name}${req.last_name ? " " + req.last_name : ""}`.trim();
                             return (
                               <div
@@ -2419,7 +2419,7 @@ export default function CalendarPage() {
                           })}
                           {events.map((evt, evtIdx) => {
                             const si = statusInfo(evt.status);
-                            const heightPx = Math.max((evt.duration_minutes / 60) * 60 - 4, 20);
+                            const heightPx = Math.max((evt.duration_minutes / 60) * rowHeight - 4, 20);
                             const isActiveEvt = evt.status === "scheduled" || evt.status === "confirmed" || evt.status === "reminder_sent";
                             const client = clients.find(c => c.id === evt.client_id);
                             const isGroupEvt = !!(evt as any).group_session_id;
@@ -2475,7 +2475,7 @@ export default function CalendarPage() {
           </div>
         </div>
 
-          <aside className="hidden xl:block w-[340px] shrink-0">
+          <aside className="hidden xl:flex xl:flex-col min-w-0 min-h-0 overflow-y-auto">
             {agendaContent}
           </aside>
 
