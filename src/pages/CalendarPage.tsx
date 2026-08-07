@@ -938,12 +938,14 @@ export default function CalendarPage() {
     // overlapping cache updates after creation, or group-session join fan-out.
     const unique = dedupeAppointmentsById(appointments as any[]);
     const result: any[] = [];
+    const activeStates = (Object.keys(filters.states) as (keyof typeof filters.states)[])
+      .filter(k => filters.states[k]);
     for (const apt of unique) {
-      const kind = getSessionKind(apt);
-      if (!filters.types[kind]) continue;
+      if (activeStates.length && !activeStates.some(k => matchesCalendarState(apt, k))) continue;
       if (filters.status !== "all" && apt.status !== filters.status) continue;
       if (filters.urgentOnly && !isUrgent(apt.id)) continue;
       if (filters.newOnly && !isNew(apt.id, apt.created_at)) continue;
+
       if (q) {
         const name = apt.clients?.name || apt.group_sessions?.groups?.name || "";
         const svc = apt.services?.name || "";
