@@ -2461,7 +2461,7 @@ export default function CalendarPage() {
                                 onDragEnd={handleDragEnd}
                                 onClick={(e) => { e.stopPropagation(); openSessionSheet(evt); }}
                                 className={cn(
-                                  "absolute top-0 rounded-md border px-1.5 py-1 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10 overflow-hidden flex items-center",
+                                  "absolute top-0 rounded-md border px-1.5 py-1 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10 overflow-hidden flex flex-col justify-center",
                                   ss.card,
                                   isActiveEvt && "cursor-grab active:cursor-grabbing",
                                   dragAptId === evt.id && "opacity-40 ring-2 ring-primary",
@@ -2480,6 +2480,10 @@ export default function CalendarPage() {
                                     <span className="shrink-0 h-2 w-2 rounded-full bg-success" title={t("confirmation.confirmed")} />
                                   )}
                                 </div>
+                                {gridDensity === "comfortable" && (evt as any).services?.name && heightPx >= 34 && (
+                                  <p className="text-[11px] opacity-70 truncate w-full">{(evt as any).services.name}</p>
+                                )}
+
 
 
                               </div>
