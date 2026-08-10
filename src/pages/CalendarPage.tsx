@@ -1734,9 +1734,6 @@ export default function CalendarPage() {
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 mr-1" /> {t("calendar.newAppointment")}</Button>
               </DialogTrigger>
-              <DialogContent className={cn("max-h-[96vh] sm:max-h-[94vh] overflow-y-auto max-w-[calc(100vw-1rem)] rounded-2xl shadow-2xl p-0 mx-2 sm:mx-0", D.maxW)}>
-                <DialogHeader className={cn(D.headPad, "space-y-0 text-left")}>
-                  <DialogTitle id="new-appointment-title" className={cn(D.title, "font-bold tracking-tight leading-tight")}>{t("calendar.newAppointment")}</DialogTitle>
               <DialogContent className={cn("max-h-[92vh] overflow-visible max-w-[calc(100vw-1rem)] rounded-2xl p-0 mx-2 sm:mx-0", D.maxW)}>
                 <DialogHeader className={cn(D.headPad, "space-y-0 text-left")}>
                   <DialogTitle id="new-appointment-title" className={cn(D.title, "font-bold tracking-tight leading-tight")}>{t("calendar.newAppointment")}</DialogTitle>
