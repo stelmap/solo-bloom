@@ -1737,17 +1737,17 @@ export default function CalendarPage() {
               <DialogContent className={cn("max-h-[96vh] sm:max-h-[94vh] overflow-y-auto max-w-[calc(100vw-1rem)] rounded-2xl shadow-2xl p-0 mx-2 sm:mx-0", D.maxW)}>
                 <DialogHeader className={cn(D.headPad, "space-y-0 text-left")}>
                   <DialogTitle id="new-appointment-title" className={cn(D.title, "font-bold tracking-tight leading-tight")}>{t("calendar.newAppointment")}</DialogTitle>
-                  {D.subtitle && (
-                    <DialogDescription className="text-xs text-muted-foreground leading-tight">{L.modalSubtitle}</DialogDescription>
-                  )}
+              <DialogContent className={cn("max-h-[92vh] overflow-visible max-w-[calc(100vw-1rem)] rounded-2xl p-0 mx-2 sm:mx-0", D.maxW)}>
+                <DialogHeader className={cn(D.headPad, "space-y-0 text-left")}>
+                  <DialogTitle id="new-appointment-title" className={cn(D.title, "font-bold tracking-tight leading-tight")}>{t("calendar.newAppointment")}</DialogTitle>
                 </DialogHeader>
 
                 <form
-                  className={cn(D.pad, D.gap)}
+                  className={cn(D.pad, "space-y-2.5")}
                   onSubmit={(e) => { e.preventDefault(); handleCreate(); }}
                   aria-labelledby="new-appointment-title"
                 >
-                  {/* Session type — two large pills */}
+                  {/* Session type — segmented control */}
                   <div
                     role="radiogroup"
                     aria-label={L.sessionTypeLabel}
@@ -1769,14 +1769,14 @@ export default function CalendarPage() {
                       tabIndex={!isGroupSession && !isBlockedTime ? 0 : -1}
                       onClick={() => { setIsGroupSession(false); setGroupId(""); setIsBlockedTime(false); }}
                       className={cn(
-                        "flex items-center justify-center gap-2 rounded-lg border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", D.pill,
+                        "flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-[13px] font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         !isGroupSession && !isBlockedTime
-                          ? "border-foreground bg-card text-foreground shadow-sm"
+                          ? "border-primary-border bg-primary-soft text-primary"
                           : "border-transparent bg-transparent text-muted-foreground hover:text-foreground"
                       )}
                     >
-                      <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
-                      <span>{L.individualSession}</span>
+                      <UserPlus className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      <span className="truncate">{L.individualSession}</span>
                     </button>
                     <button
                       type="button"
@@ -1786,15 +1786,15 @@ export default function CalendarPage() {
                       onClick={() => { setIsGroupSession(true); setIsBlockedTime(false); setForm(f => ({ ...f, client_id: "" })); }}
                       disabled={activeGroups.length === 0}
                       className={cn(
-                        "flex items-center justify-center gap-2 rounded-lg border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", D.pill,
+                        "flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-[13px] font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         isGroupSession && !isBlockedTime
-                          ? "border-foreground bg-card text-foreground shadow-sm"
+                          ? "border-primary-border bg-primary-soft text-primary"
                           : "border-transparent bg-transparent text-muted-foreground hover:text-foreground",
                         activeGroups.length === 0 && "opacity-50 cursor-not-allowed"
                       )}
                     >
-                      <Users className="h-3.5 w-3.5" aria-hidden="true" />
-                      <span>{L.groupSession}</span>
+                      <Users className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      <span className="truncate">{L.groupSession}</span>
                     </button>
                     <button
                       type="button"
@@ -1803,19 +1803,20 @@ export default function CalendarPage() {
                       tabIndex={isBlockedTime ? 0 : -1}
                       onClick={() => { setIsBlockedTime(true); setIsGroupSession(false); setGroupId(""); setServiceError(false); }}
                       className={cn(
-                        "flex items-center justify-center gap-2 rounded-lg border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", D.pill,
+                        "flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-[13px] font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         isBlockedTime
-                          ? "border-foreground bg-card text-foreground shadow-sm"
+                          ? "border-primary-border bg-primary-soft text-primary"
                           : "border-transparent bg-transparent text-muted-foreground hover:text-foreground"
                       )}
                     >
-                      <Ban className="h-3.5 w-3.5" aria-hidden="true" />
-                      <span>{L.blockedTime}</span>
+                      <Ban className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      <span className="truncate">{L.blockedTime}</span>
                     </button>
                   </div>
 
                   {/* Client / Group */}
                   {isBlockedTime ? null : isGroupSession ? (
+
                     <div className="space-y-1">
                       <Label className="text-xs font-bold uppercase text-muted-foreground">
                         {t("groups.selectGroup")} <span className="text-primary">*</span>
