@@ -85,6 +85,7 @@ const NEW_COPY: Record<LangKey, {
   notesPlaceholder: string; notesGroupPlaceholder: string;
   ctaIndividual: string; ctaGroup: string;
   summaryWillCreate: string; summaryWillCreateGroup: string;
+  doesNotRepeat: string; repeatHint: string;
 }> = {
   en: {
     noClientsYet: "No clients yet. Add your first client to create a session.",
