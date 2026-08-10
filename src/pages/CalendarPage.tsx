@@ -1731,21 +1731,6 @@ export default function CalendarPage() {
                 <Button><Plus className="h-4 w-4 mr-1" /> {t("calendar.newAppointment")}</Button>
               </DialogTrigger>
               <DialogContent className={cn("max-h-[96vh] sm:max-h-[94vh] overflow-y-auto max-w-[calc(100vw-1rem)] rounded-2xl shadow-2xl p-0 mx-2 sm:mx-0", D.maxW)}>
-                {(() => {
-                  const stepClient = !!form.client_id || (isGroupSession && !!groupId);
-                  const stepService = !!form.service_id;
-                  const stepDate = !!form.date && !!form.time;
-                  const stepNotes = !!form.notes || stepDate;
-                  const steps = [stepClient, stepService, stepDate, stepNotes];
-                  return (
-                    <div className={cn("grid grid-cols-4 gap-1.5", D.headPad, "pb-0")}>
-                      {steps.map((done, i) => (
-                        <div key={i} className={cn("h-1 rounded-full transition-colors", done ? "bg-primary" : "bg-muted")} />
-                      ))}
-                    </div>
-                  );
-                })()}
-
                 <DialogHeader className={cn(D.headPad, "space-y-0 text-left")}>
                   <DialogTitle id="new-appointment-title" className={cn(D.title, "font-bold tracking-tight leading-tight")}>{t("calendar.newAppointment")}</DialogTitle>
                   {D.subtitle && (
@@ -1762,7 +1747,7 @@ export default function CalendarPage() {
                   <div
                     role="radiogroup"
                     aria-label={L.sessionTypeLabel}
-                    className="grid grid-cols-3 gap-2"
+                    className="grid grid-cols-3 gap-1 rounded-xl border border-border bg-muted/30 p-1"
                     onKeyDown={(e) => {
                       if (e.key === "ArrowRight" || e.key === "ArrowDown") {
                         e.preventDefault();
@@ -1780,10 +1765,10 @@ export default function CalendarPage() {
                       tabIndex={!isGroupSession && !isBlockedTime ? 0 : -1}
                       onClick={() => { setIsGroupSession(false); setGroupId(""); setIsBlockedTime(false); }}
                       className={cn(
-                        "flex items-center justify-center gap-1.5 rounded-xl border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", D.pill,
+                        "flex items-center justify-center gap-2 rounded-lg border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", D.pill,
                         !isGroupSession && !isBlockedTime
-                          ? "border-foreground bg-background text-foreground shadow-sm"
-                          : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60"
+                          ? "border-foreground bg-card text-foreground shadow-sm"
+                          : "border-transparent bg-transparent text-muted-foreground hover:text-foreground"
                       )}
                     >
                       <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
@@ -1797,10 +1782,10 @@ export default function CalendarPage() {
                       onClick={() => { setIsGroupSession(true); setIsBlockedTime(false); setForm(f => ({ ...f, client_id: "" })); }}
                       disabled={activeGroups.length === 0}
                       className={cn(
-                        "flex items-center justify-center gap-1.5 rounded-xl border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", D.pill,
+                        "flex items-center justify-center gap-2 rounded-lg border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", D.pill,
                         isGroupSession && !isBlockedTime
-                          ? "border-foreground bg-background text-foreground shadow-sm"
-                          : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60",
+                          ? "border-foreground bg-card text-foreground shadow-sm"
+                          : "border-transparent bg-transparent text-muted-foreground hover:text-foreground",
                         activeGroups.length === 0 && "opacity-50 cursor-not-allowed"
                       )}
                     >
@@ -1814,10 +1799,10 @@ export default function CalendarPage() {
                       tabIndex={isBlockedTime ? 0 : -1}
                       onClick={() => { setIsBlockedTime(true); setIsGroupSession(false); setGroupId(""); setServiceError(false); }}
                       className={cn(
-                        "flex items-center justify-center gap-1.5 rounded-xl border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", D.pill,
+                        "flex items-center justify-center gap-2 rounded-lg border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", D.pill,
                         isBlockedTime
-                          ? "border-foreground bg-background text-foreground shadow-sm"
-                          : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60"
+                          ? "border-foreground bg-card text-foreground shadow-sm"
+                          : "border-transparent bg-transparent text-muted-foreground hover:text-foreground"
                       )}
                     >
                       <Ban className="h-3.5 w-3.5" aria-hidden="true" />
@@ -1924,29 +1909,63 @@ export default function CalendarPage() {
                   </div>
                   )}
 
-                  {/* Date / Time */}
-                  <DateTimePicker
-                    date={form.date}
-                    time={form.time}
-                    onDateChange={v => setForm(f => ({ ...f, date: v }))}
-                    onTimeChange={v => setForm(f => ({ ...f, time: v }))}
-                    use12h={use12h}
-                    dateLabel={t("common.date")}
-                    timeLabel={t("common.time")}
-                  />
-
-                  {isBlockedTime && (
-                    <div className="space-y-1">
-                      <Label htmlFor="block-end" className="text-xs font-bold uppercase text-muted-foreground">{L.blockedEnd}</Label>
-                      <Input
-                        id="block-end"
-                        type="time"
-                        value={blockEnd}
-                        onChange={e => setBlockEnd(e.target.value)}
-                        className={D.field}
-                      />
-                    </div>
-                  )}
+                  {/* Date / Start time / End time */}
+                  {(() => {
+                    const svc = services.find(s => s.id === form.service_id);
+                    const durMin = Number(svc?.duration_minutes) || 60;
+                    let computedEnd = "";
+                    if (form.time) {
+                      const [hh, mm] = form.time.split(":").map(Number);
+                      const total = hh * 60 + mm + durMin;
+                      computedEnd = `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+                    }
+                    return (
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs font-bold uppercase text-muted-foreground">
+                            {t("common.date")} <span className="text-primary">*</span>
+                          </Label>
+                          <DatePicker date={form.date} onDateChange={v => setForm(f => ({ ...f, date: v }))} className="space-y-0" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs font-bold uppercase text-muted-foreground">
+                            {L.blockedStart} <span className="text-primary">*</span>
+                          </Label>
+                          <Popover open={startTimeOpen} onOpenChange={setStartTimeOpen}>
+                            <PopoverTrigger asChild>
+                              <Button type="button" variant="outline" className={cn("w-full justify-start font-normal rounded-xl", D.field)}>
+                                <ClockIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                                {form.time ? formatTime(form.time, use12h) : "--:--"}
+                                <ChevronDown className="ml-auto h-4 w-4 text-muted-foreground" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[180px] p-0" align="start">
+                              <TimePicker value={form.time} onChange={(v) => { setForm(f => ({ ...f, time: v })); setStartTimeOpen(false); }} use12h={use12h} />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="block-end" className="text-xs font-bold uppercase text-muted-foreground">
+                            {L.blockedEnd} {isBlockedTime && <span className="text-primary">*</span>}
+                          </Label>
+                          {isBlockedTime ? (
+                            <Input
+                              id="block-end"
+                              type="time"
+                              value={blockEnd}
+                              onChange={e => setBlockEnd(e.target.value)}
+                              className={cn("rounded-xl", D.field)}
+                            />
+                          ) : (
+                            <div className={cn("flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-3 text-sm text-muted-foreground", D.field)}>
+                              <ClockIcon className="h-4 w-4" />
+                              {computedEnd ? formatTime(computedEnd, use12h) : "--:--"}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {!isBlockedTime && createValidation && !isRecurring && (
                     <div role="alert" className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
