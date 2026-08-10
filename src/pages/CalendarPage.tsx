@@ -1819,7 +1819,7 @@ export default function CalendarPage() {
                       </Label>
                       <div className="flex gap-2">
                         <Select value={groupId} onValueChange={setGroupId}>
-                          <SelectTrigger className={cn("flex-1", D.field)}><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
+                          <SelectTrigger className={cn("flex-1 rounded-xl", D.field)}><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
                           <SelectContent>{activeGroups.map((g: any) => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
                         </Select>
                       </div>
@@ -1852,18 +1852,18 @@ export default function CalendarPage() {
                           </Button>
                         </div>
                       ) : (
-                        <div className="flex flex-col sm:flex-row gap-2">
+                        <div className="flex flex-row gap-2">
                           <ClientPicker
                             clients={activeClients}
                             value={form.client_id}
                             onChange={v => setForm(f => ({ ...f, client_id: v }))}
                             placeholder={t("calendar.selectClient")}
-                            triggerClassName={cn("flex-1", D.field)}
+                            triggerClassName={cn("flex-1 rounded-xl", D.field)}
                             onAddNew={() => setQaClientOpen(true)}
                             addNewLabel={L.addNewClient}
                           />
-                          <Button type="button" variant="outline" className={cn("px-2.5 gap-1 whitespace-nowrap shrink-0", D.field)} onClick={() => setQaClientOpen(true)}>
-                            <Plus className="h-3.5 w-3.5" /> {L.addNewClient}
+                          <Button type="button" variant="outline" size="icon" aria-label={L.addNewClient} title={L.addNewClient} className={cn("shrink-0 rounded-xl aspect-square w-auto", D.field)} onClick={() => setQaClientOpen(true)}>
+                            <Plus className="h-4 w-4" />
                           </Button>
                         </div>
                       )}
@@ -1885,21 +1885,21 @@ export default function CalendarPage() {
                       </div>
                     ) : (
                       <>
-                        <div className="flex flex-col sm:flex-row gap-2">
+                        <div className="flex flex-row gap-2">
                           <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); }}>
                             <SelectTrigger
                               id="appt-service"
                               aria-required="true"
                               aria-invalid={serviceError}
                               aria-describedby={serviceError ? "appt-service-error" : undefined}
-                              className={cn("flex-1", D.field, serviceError && "border-destructive")}
+                              className={cn("flex-1 rounded-xl", D.field, serviceError && "border-destructive")}
                             >
                               <SelectValue placeholder={t("calendar.selectService")} />
                             </SelectTrigger>
                             <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                           </Select>
-                          <Button type="button" variant="outline" className={cn("px-2.5 gap-1 whitespace-nowrap shrink-0", D.field)} onClick={() => setQaServiceOpen(true)}>
-                            <Plus className="h-3.5 w-3.5" aria-hidden="true" /> {L.addNewService}
+                          <Button type="button" variant="outline" size="icon" aria-label={L.addNewService} title={L.addNewService} className={cn("shrink-0 rounded-xl aspect-square w-auto", D.field)} onClick={() => setQaServiceOpen(true)}>
+                            <Plus className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </div>
                         {serviceError && (
