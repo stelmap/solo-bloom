@@ -6,9 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { ClientPicker } from "@/components/ClientPicker";
-import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
+import { DatePicker } from "@/components/ui/date-time-picker";
 import { TimePicker } from "@/components/ui/time-picker";
-import { ChevronLeft, ChevronRight, ChevronRight as ChevronRightIcon, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon, UserPlus, Briefcase, CheckCircle2, Circle, Flag, Search, X as XIcon, AlertTriangle, CalendarDays, SlidersHorizontal, MoreHorizontal, ChevronDown, ExternalLink, Copy, PanelRightOpen, Ban, Rows2, Rows3, Check, User, Tag, Clock as ClockIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronRight as ChevronRightIcon, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon, UserPlus, Briefcase, CheckCircle2, Circle, Flag, Search, X as XIcon, AlertTriangle, CalendarDays, SlidersHorizontal, MoreHorizontal, ChevronDown, ExternalLink, Copy, PanelRightOpen, Ban, Rows2, Rows3, Check, Clock as ClockIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
