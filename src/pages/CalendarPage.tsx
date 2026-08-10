@@ -1863,8 +1863,8 @@ export default function CalendarPage() {
                             onAddNew={() => setQaClientOpen(true)}
                             addNewLabel={L.addNewClient}
                           />
-                          <Button type="button" variant="outline" size="icon" aria-label={L.addNewClient} title={L.addNewClient} className={cn("shrink-0 rounded-xl aspect-square w-auto", D.field)} onClick={() => setQaClientOpen(true)}>
-                            <Plus className="h-4 w-4" />
+                          <Button type="button" variant="outline" size="icon" aria-label={L.addNewClient} title={L.addNewClient} className={cn("shrink-0 w-9 rounded-xl text-muted-foreground", D.field)} onClick={() => setQaClientOpen(true)}>
+                            <Plus className="h-3.5 w-3.5" />
                           </Button>
                         </div>
                       )}
