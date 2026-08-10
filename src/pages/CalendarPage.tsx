@@ -86,7 +86,7 @@ const NEW_COPY: Record<LangKey, {
   notesPlaceholder: string; notesGroupPlaceholder: string;
   ctaIndividual: string; ctaGroup: string;
   summaryWillCreate: string; summaryWillCreateGroup: string;
-  doesNotRepeat: string; repeatHint: string;
+  doesNotRepeat: string; repeatHint: string; repeatUntil: string; repeatLabel: string;
 }> = {
   en: {
     noClientsYet: "No clients yet. Add your first client to create a session.",
@@ -115,7 +115,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Blocked time", blockedStart: "Start time", blockedEnd: "End time",
     ctaBlocked: "Save blocked time", blockedHint: "Choose a date and a time range to block.",
     blockedSummary: "Will block:", blockedCreated: "Blocked time saved",
-    doesNotRepeat: "Does not repeat", repeatHint: "Leave empty to repeat without an end date.",
+    doesNotRepeat: "Does not repeat", repeatHint: "Leave empty to repeat without an end date.", repeatUntil: "Repeat until", repeatLabel: "Repeat appointment",
   },
   uk: {
     noClientsYet: "Ще немає клієнтів. Додайте першого клієнта, щоб створити сесію.",
@@ -144,7 +144,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Недоступний час", blockedStart: "Початок", blockedEnd: "Кінець",
     ctaBlocked: "Зберегти недоступний час", blockedHint: "Оберіть дату та проміжок часу для блокування.",
     blockedSummary: "Буде заблоковано:", blockedCreated: "Недоступний час збережено",
-    doesNotRepeat: "Не повторюється", repeatHint: "Залиште порожнім, щоб повторювати без дати завершення.",
+    doesNotRepeat: "Не повторюється", repeatHint: "Залиште порожнім, щоб повторювати без дати завершення.", repeatUntil: "Повторювати до", repeatLabel: "Повторювати сесію",
   },
   ru: {
     noClientsYet: "Пока нет клиентов. Добавьте первого клиента, чтобы создать сессию.",
@@ -173,7 +173,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Недоступное время", blockedStart: "Начало", blockedEnd: "Окончание",
     ctaBlocked: "Сохранить недоступное время", blockedHint: "Выберите дату и промежуток времени для блокировки.",
     blockedSummary: "Будет заблокировано:", blockedCreated: "Недоступное время сохранено",
-    doesNotRepeat: "Не повторяется", repeatHint: "Оставьте пустым, чтобы повторять без даты окончания.",
+    doesNotRepeat: "Не повторяется", repeatHint: "Оставьте пустым, чтобы повторять без даты окончания.", repeatUntil: "Повторять до", repeatLabel: "Повторять сессию",
   },
   fr: {
     noClientsYet: "Aucun client. Ajoutez votre premier client pour créer une séance.",
@@ -202,7 +202,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Période bloquée", blockedStart: "Heure de début", blockedEnd: "Heure de fin",
     ctaBlocked: "Enregistrer la période bloquée", blockedHint: "Choisissez une date et une plage horaire à bloquer.",
     blockedSummary: "Sera bloqué :", blockedCreated: "Période bloquée enregistrée",
-    doesNotRepeat: "Ne se répète pas", repeatHint: "Laissez vide pour répéter sans date de fin.",
+    doesNotRepeat: "Ne se répète pas", repeatHint: "Laissez vide pour répéter sans date de fin.", repeatUntil: "Répéter jusqu'au", repeatLabel: "Répéter le rendez-vous",
   },
   pl: {
     noClientsYet: "Brak klientów. Dodaj pierwszego klienta, aby utworzyć sesję.",
@@ -231,7 +231,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Czas zablokowany", blockedStart: "Godzina rozpoczęcia", blockedEnd: "Godzina zakończenia",
     ctaBlocked: "Zapisz zablokowany czas", blockedHint: "Wybierz datę i zakres godzin do zablokowania.",
     blockedSummary: "Zostanie zablokowane:", blockedCreated: "Zablokowany czas zapisany",
-    doesNotRepeat: "Nie powtarza się", repeatHint: "Pozostaw puste, aby powtarzać bez daty zakończenia.",
+    doesNotRepeat: "Nie powtarza się", repeatHint: "Pozostaw puste, aby powtarzać bez daty zakończenia.", repeatUntil: "Powtarzaj do", repeatLabel: "Powtarzaj wizytę",
   },
 };
 
