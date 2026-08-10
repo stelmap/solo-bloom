@@ -86,7 +86,7 @@ const NEW_COPY: Record<LangKey, {
   notesPlaceholder: string; notesGroupPlaceholder: string;
   ctaIndividual: string; ctaGroup: string;
   summaryWillCreate: string; summaryWillCreateGroup: string;
-  doesNotRepeat: string; repeatHint: string;
+  doesNotRepeat: string; repeatHint: string; repeatUntil: string; repeatLabel: string;
 }> = {
   en: {
     noClientsYet: "No clients yet. Add your first client to create a session.",
@@ -115,7 +115,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Blocked time", blockedStart: "Start time", blockedEnd: "End time",
     ctaBlocked: "Save blocked time", blockedHint: "Choose a date and a time range to block.",
     blockedSummary: "Will block:", blockedCreated: "Blocked time saved",
-    doesNotRepeat: "Does not repeat", repeatHint: "Leave empty to repeat without an end date.",
+    doesNotRepeat: "Does not repeat", repeatHint: "Leave empty to repeat without an end date.", repeatUntil: "Repeat until", repeatLabel: "Repeat appointment",
   },
   uk: {
     noClientsYet: "Ще немає клієнтів. Додайте першого клієнта, щоб створити сесію.",
@@ -144,7 +144,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Недоступний час", blockedStart: "Початок", blockedEnd: "Кінець",
     ctaBlocked: "Зберегти недоступний час", blockedHint: "Оберіть дату та проміжок часу для блокування.",
     blockedSummary: "Буде заблоковано:", blockedCreated: "Недоступний час збережено",
-    doesNotRepeat: "Не повторюється", repeatHint: "Залиште порожнім, щоб повторювати без дати завершення.",
+    doesNotRepeat: "Не повторюється", repeatHint: "Залиште порожнім, щоб повторювати без дати завершення.", repeatUntil: "Повторювати до", repeatLabel: "Повторювати сесію",
   },
   ru: {
     noClientsYet: "Пока нет клиентов. Добавьте первого клиента, чтобы создать сессию.",
@@ -173,7 +173,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Недоступное время", blockedStart: "Начало", blockedEnd: "Окончание",
     ctaBlocked: "Сохранить недоступное время", blockedHint: "Выберите дату и промежуток времени для блокировки.",
     blockedSummary: "Будет заблокировано:", blockedCreated: "Недоступное время сохранено",
-    doesNotRepeat: "Не повторяется", repeatHint: "Оставьте пустым, чтобы повторять без даты окончания.",
+    doesNotRepeat: "Не повторяется", repeatHint: "Оставьте пустым, чтобы повторять без даты окончания.", repeatUntil: "Повторять до", repeatLabel: "Повторять сессию",
   },
   fr: {
     noClientsYet: "Aucun client. Ajoutez votre premier client pour créer une séance.",
@@ -202,7 +202,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Période bloquée", blockedStart: "Heure de début", blockedEnd: "Heure de fin",
     ctaBlocked: "Enregistrer la période bloquée", blockedHint: "Choisissez une date et une plage horaire à bloquer.",
     blockedSummary: "Sera bloqué :", blockedCreated: "Période bloquée enregistrée",
-    doesNotRepeat: "Ne se répète pas", repeatHint: "Laissez vide pour répéter sans date de fin.",
+    doesNotRepeat: "Ne se répète pas", repeatHint: "Laissez vide pour répéter sans date de fin.", repeatUntil: "Répéter jusqu'au", repeatLabel: "Répéter le rendez-vous",
   },
   pl: {
     noClientsYet: "Brak klientów. Dodaj pierwszego klienta, aby utworzyć sesję.",
@@ -231,7 +231,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Czas zablokowany", blockedStart: "Godzina rozpoczęcia", blockedEnd: "Godzina zakończenia",
     ctaBlocked: "Zapisz zablokowany czas", blockedHint: "Wybierz datę i zakres godzin do zablokowania.",
     blockedSummary: "Zostanie zablokowane:", blockedCreated: "Zablokowany czas zapisany",
-    doesNotRepeat: "Nie powtarza się", repeatHint: "Pozostaw puste, aby powtarzać bez daty zakończenia.",
+    doesNotRepeat: "Nie powtarza się", repeatHint: "Pozostaw puste, aby powtarzać bez daty zakończenia.", repeatUntil: "Powtarzaj do", repeatLabel: "Powtarzaj wizytę",
   },
 };
 
@@ -532,6 +532,9 @@ export default function CalendarPage() {
   const [isBlockedTime, setIsBlockedTime] = useState(false);
   const [blockEnd, setBlockEnd] = useState("10:00");
   const [startTimeOpen, setStartTimeOpen] = useState(false);
+  const [endTimeOpen, setEndTimeOpen] = useState(false);
+  /** Manual override for the session end time (UI only — creation still uses service duration). */
+  const [endOverride, setEndOverride] = useState<string | null>(null);
 
   // Group session state
   const [isGroupSession, setIsGroupSession] = useState(false);
@@ -1731,20 +1734,17 @@ export default function CalendarPage() {
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 mr-1" /> {t("calendar.newAppointment")}</Button>
               </DialogTrigger>
-              <DialogContent className={cn("max-h-[96vh] sm:max-h-[94vh] overflow-y-auto max-w-[calc(100vw-1rem)] rounded-2xl shadow-2xl p-0 mx-2 sm:mx-0", D.maxW)}>
+              <DialogContent className={cn("max-h-[92vh] overflow-visible max-w-[calc(100vw-1rem)] rounded-2xl p-0 mx-2 sm:mx-0", D.maxW)}>
                 <DialogHeader className={cn(D.headPad, "space-y-0 text-left")}>
                   <DialogTitle id="new-appointment-title" className={cn(D.title, "font-bold tracking-tight leading-tight")}>{t("calendar.newAppointment")}</DialogTitle>
-                  {D.subtitle && (
-                    <DialogDescription className="text-xs text-muted-foreground leading-tight">{L.modalSubtitle}</DialogDescription>
-                  )}
                 </DialogHeader>
 
                 <form
-                  className={cn(D.pad, D.gap)}
+                  className={cn(D.pad, "space-y-2.5")}
                   onSubmit={(e) => { e.preventDefault(); handleCreate(); }}
                   aria-labelledby="new-appointment-title"
                 >
-                  {/* Session type — two large pills */}
+                  {/* Session type — segmented control */}
                   <div
                     role="radiogroup"
                     aria-label={L.sessionTypeLabel}
@@ -1766,14 +1766,14 @@ export default function CalendarPage() {
                       tabIndex={!isGroupSession && !isBlockedTime ? 0 : -1}
                       onClick={() => { setIsGroupSession(false); setGroupId(""); setIsBlockedTime(false); }}
                       className={cn(
-                        "flex items-center justify-center gap-2 rounded-lg border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", D.pill,
+                        "flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-[13px] font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         !isGroupSession && !isBlockedTime
-                          ? "border-foreground bg-card text-foreground shadow-sm"
+                          ? "border-primary-border bg-primary-soft text-primary"
                           : "border-transparent bg-transparent text-muted-foreground hover:text-foreground"
                       )}
                     >
-                      <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
-                      <span>{L.individualSession}</span>
+                      <UserPlus className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      <span className="truncate">{L.individualSession}</span>
                     </button>
                     <button
                       type="button"
@@ -1783,15 +1783,15 @@ export default function CalendarPage() {
                       onClick={() => { setIsGroupSession(true); setIsBlockedTime(false); setForm(f => ({ ...f, client_id: "" })); }}
                       disabled={activeGroups.length === 0}
                       className={cn(
-                        "flex items-center justify-center gap-2 rounded-lg border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", D.pill,
+                        "flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-[13px] font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         isGroupSession && !isBlockedTime
-                          ? "border-foreground bg-card text-foreground shadow-sm"
+                          ? "border-primary-border bg-primary-soft text-primary"
                           : "border-transparent bg-transparent text-muted-foreground hover:text-foreground",
                         activeGroups.length === 0 && "opacity-50 cursor-not-allowed"
                       )}
                     >
-                      <Users className="h-3.5 w-3.5" aria-hidden="true" />
-                      <span>{L.groupSession}</span>
+                      <Users className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      <span className="truncate">{L.groupSession}</span>
                     </button>
                     <button
                       type="button"
@@ -1800,19 +1800,20 @@ export default function CalendarPage() {
                       tabIndex={isBlockedTime ? 0 : -1}
                       onClick={() => { setIsBlockedTime(true); setIsGroupSession(false); setGroupId(""); setServiceError(false); }}
                       className={cn(
-                        "flex items-center justify-center gap-2 rounded-lg border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", D.pill,
+                        "flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-[13px] font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         isBlockedTime
-                          ? "border-foreground bg-card text-foreground shadow-sm"
+                          ? "border-primary-border bg-primary-soft text-primary"
                           : "border-transparent bg-transparent text-muted-foreground hover:text-foreground"
                       )}
                     >
-                      <Ban className="h-3.5 w-3.5" aria-hidden="true" />
-                      <span>{L.blockedTime}</span>
+                      <Ban className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      <span className="truncate">{L.blockedTime}</span>
                     </button>
                   </div>
 
                   {/* Client / Group */}
                   {isBlockedTime ? null : isGroupSession ? (
+
                     <div className="space-y-1">
                       <Label className="text-xs font-bold uppercase text-muted-foreground">
                         {t("groups.selectGroup")} <span className="text-primary">*</span>
@@ -1862,8 +1863,8 @@ export default function CalendarPage() {
                             onAddNew={() => setQaClientOpen(true)}
                             addNewLabel={L.addNewClient}
                           />
-                          <Button type="button" variant="outline" size="icon" aria-label={L.addNewClient} title={L.addNewClient} className={cn("shrink-0 rounded-xl aspect-square w-auto", D.field)} onClick={() => setQaClientOpen(true)}>
-                            <Plus className="h-4 w-4" />
+                          <Button type="button" variant="outline" size="icon" aria-label={L.addNewClient} title={L.addNewClient} className={cn("shrink-0 w-9 rounded-xl text-muted-foreground", D.field)} onClick={() => setQaClientOpen(true)}>
+                            <Plus className="h-3.5 w-3.5" />
                           </Button>
                         </div>
                       )}
@@ -1886,7 +1887,7 @@ export default function CalendarPage() {
                     ) : (
                       <>
                         <div className="flex flex-row gap-2">
-                          <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); }}>
+                          <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); setEndOverride(null); }}>
                             <SelectTrigger
                               id="appt-service"
                               aria-required="true"
@@ -1898,8 +1899,8 @@ export default function CalendarPage() {
                             </SelectTrigger>
                             <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                           </Select>
-                          <Button type="button" variant="outline" size="icon" aria-label={L.addNewService} title={L.addNewService} className={cn("shrink-0 rounded-xl aspect-square w-auto", D.field)} onClick={() => setQaServiceOpen(true)}>
-                            <Plus className="h-4 w-4" aria-hidden="true" />
+                          <Button type="button" variant="outline" size="icon" aria-label={L.addNewService} title={L.addNewService} className={cn("shrink-0 w-9 rounded-xl text-muted-foreground", D.field)} onClick={() => setQaServiceOpen(true)}>
+                            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                           </Button>
                         </div>
                         {serviceError && (
@@ -1920,8 +1921,9 @@ export default function CalendarPage() {
                       const total = hh * 60 + mm + durMin;
                       computedEnd = `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
                     }
+                    const endValue = isBlockedTime ? blockEnd : (endOverride ?? computedEnd);
                     return (
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-[1.3fr_1fr_1fr] gap-2">
                         <div className="space-y-1">
                           <Label className="text-xs font-bold uppercase text-muted-foreground">
                             {t("common.date")} <span className="text-primary">*</span>
@@ -1934,82 +1936,64 @@ export default function CalendarPage() {
                           </Label>
                           <Popover open={startTimeOpen} onOpenChange={setStartTimeOpen}>
                             <PopoverTrigger asChild>
-                              <Button type="button" variant="outline" className={cn("w-full justify-start font-normal rounded-xl", D.field)}>
-                                <ClockIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                              <Button type="button" variant="outline" className={cn("w-full justify-start font-normal rounded-xl px-3 text-sm", D.field)}>
+                                <ClockIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
                                 {form.time ? formatTime(form.time, use12h) : "--:--"}
-                                <ChevronDown className="ml-auto h-4 w-4 text-muted-foreground" />
+                                <ChevronDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-[180px] p-0" align="start">
-                              <TimePicker value={form.time} onChange={(v) => { setForm(f => ({ ...f, time: v })); setStartTimeOpen(false); }} use12h={use12h} />
+                              <TimePicker value={form.time} onChange={(v) => { setForm(f => ({ ...f, time: v })); setEndOverride(null); setStartTimeOpen(false); }} use12h={use12h} />
                             </PopoverContent>
                           </Popover>
                         </div>
                         <div className="space-y-1">
-                          <Label htmlFor="block-end" className="text-xs font-bold uppercase text-muted-foreground">
-                            {L.blockedEnd} {isBlockedTime && <span className="text-primary">*</span>}
+                          <Label className="text-xs font-bold uppercase text-muted-foreground">
+                            {L.blockedEnd} <span className="text-primary">*</span>
                           </Label>
-                          {isBlockedTime ? (
-                            <Input
-                              id="block-end"
-                              type="time"
-                              value={blockEnd}
-                              onChange={e => setBlockEnd(e.target.value)}
-                              className={cn("rounded-xl", D.field)}
-                            />
-                          ) : (
-                            <div className={cn("flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-3 text-sm text-muted-foreground", D.field)}>
-                              <ClockIcon className="h-4 w-4" />
-                              {computedEnd ? formatTime(computedEnd, use12h) : "--:--"}
-                            </div>
-                          )}
+                          <Popover open={endTimeOpen} onOpenChange={setEndTimeOpen}>
+                            <PopoverTrigger asChild>
+                              <Button type="button" variant="outline" className={cn("w-full justify-start font-normal rounded-xl px-3 text-sm", D.field)}>
+                                <ClockIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+                                {endValue ? formatTime(endValue, use12h) : "--:--"}
+                                <ChevronDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[180px] p-0" align="start">
+                              <TimePicker
+                                value={endValue || "10:00"}
+                                onChange={(v) => {
+                                  if (isBlockedTime) setBlockEnd(v); else setEndOverride(v);
+                                  setEndTimeOpen(false);
+                                }}
+                                use12h={use12h}
+                              />
+                            </PopoverContent>
+                          </Popover>
                         </div>
                       </div>
                     );
                   })()}
 
                   {!isBlockedTime && createValidation && !isRecurring && (
-                    <div role="alert" className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
+                    <div role="alert" className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
                       ⚠️ {createValidation}
                     </div>
                   )}
 
-                  {/* Notes */}
-                  {!isBlockedTime && (
-                  <div className="space-y-1">
-                    <Label htmlFor="appt-notes" className="text-xs font-bold uppercase text-muted-foreground">{t("calendar.notes")}</Label>
-                    <Textarea
-                      id="appt-notes"
-                      value={form.notes}
-                      onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                      placeholder={isGroupSession ? L.notesGroupPlaceholder : L.notesPlaceholder}
-                      rows={2}
-                      className={cn("resize-none rounded-lg", D.notes)}
-                    />
-                  </div>
-                  )}
 
-                  {/* Repeat session — orange highlighted toggle row */}
-                  <div className="pt-1 border-t border-border">
+                  {/* Repeat — compact single row */}
+                  <div className="border-t border-border pt-2 space-y-2">
                     <button
                       type="button"
                       role="switch"
                       aria-checked={isRecurring}
-                      aria-label={t("recurring.setup")}
+                      aria-label={L.repeatLabel}
                       onClick={() => setIsRecurring(v => !v)}
-                      className="w-full flex items-center gap-3 py-2 text-left min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl"
+                      className="w-full flex items-center gap-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl"
                     >
-                      <span aria-hidden="true" className={cn(
-                        "relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors",
-                        isRecurring ? "bg-primary" : "bg-muted"
-                      )}>
-                        <span className={cn(
-                          "inline-block h-5 w-5 rounded-full bg-background shadow transition-transform mt-0.5",
-                          isRecurring ? "translate-x-[22px]" : "translate-x-0.5"
-                        )} />
-                      </span>
-                      <span className="flex-1 font-semibold text-sm text-foreground">{t("recurring.setup")}</span>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="font-semibold text-sm text-foreground">{L.repeatLabel}</span>
+                      <span className="ml-auto text-xs text-muted-foreground truncate">
                         {isRecurring ? (() => {
                           const freqLabel = recurInterval === 1 ? t("recurring.weekly")
                             : recurInterval === 2 ? t("recurring.biweekly")
@@ -2018,9 +2002,18 @@ export default function CalendarPage() {
                           return `${freqLabel}${dayLabels ? ` · ${dayLabels}` : ""}`;
                         })() : L.doesNotRepeat}
                       </span>
+                      <span aria-hidden="true" className={cn(
+                        "relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors",
+                        isRecurring ? "bg-primary" : "bg-muted-foreground/30"
+                      )}>
+                        <span className={cn(
+                          "inline-block h-4 w-4 rounded-full bg-background shadow transition-transform mt-0.5",
+                          isRecurring ? "translate-x-[18px]" : "translate-x-0.5"
+                        )} />
+                      </span>
                     </button>
                     {isRecurring && (
-                      <div className="rounded-xl bg-muted/40 border border-border p-3 grid grid-cols-1 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)_minmax(0,1fr)] gap-3">
+                      <div className="rounded-xl bg-muted/40 border border-border p-2.5 grid grid-cols-1 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)_minmax(0,1fr)] gap-2.5">
                         <div className="space-y-1">
                           <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.intervalWeeks")}</Label>
                           <Select value={recurInterval.toString()} onValueChange={v => setRecurInterval(parseInt(v))}>
@@ -2053,13 +2046,14 @@ export default function CalendarPage() {
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.endDate")}</Label>
+                          <Label className="text-xs font-bold uppercase text-muted-foreground">{L.repeatUntil}</Label>
                           <DatePicker date={recurEndDate} onDateChange={setRecurEndDate} placeholder={t("recurring.ongoing")} className="space-y-0" />
-                          <p className="text-[11px] text-muted-foreground text-right leading-tight">{L.repeatHint}</p>
+                          <p className="text-[11px] text-muted-foreground leading-tight">{L.repeatHint}</p>
                         </div>
                       </div>
                     )}
                   </div>
+
 
                   {(() => {
                     const missingRequired = isBlockedTime
@@ -2104,41 +2098,31 @@ export default function CalendarPage() {
                       : (isGroupSession ? L.ctaGroup : L.ctaIndividual);
 
                     return (
-                      <div className="space-y-1.5 pt-0.5">
-                        <div aria-live="polite" aria-atomic="true">
-                          {!missingRequired && summaryParts.length > 0 && (
-                            <div className="rounded-lg border border-primary/40 bg-primary/10 px-2.5 py-1.5 flex items-center gap-2">
-                              <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
-                              <p className="text-xs font-medium text-foreground leading-tight">
-                                <span className="sr-only">{L.modalSubtitle}: </span>
-                                {summaryParts.join(" · ")}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setCreateOpen(false)}
-                            className={cn("flex-1 text-sm font-medium rounded-xl", D.cta)}
-                          >
-                            {L.cancel}
-                          </Button>
-                          <Button
-                            type="submit"
-                            className={cn("flex-[2] text-sm font-semibold rounded-xl", D.cta)}
-                            disabled={disabled}
-                            aria-disabled={disabled}
-                          >
-                            {ctaLabel}
-                          </Button>
-                        </div>
-                        {missingRequired && (
-                          <p className="text-[11px] text-muted-foreground text-center leading-tight" role="status">{isBlockedTime ? L.blockedHint : L.disabledHint}</p>
-                        )}
+                      <div className="border-t border-border pt-2.5 flex flex-wrap items-center justify-end gap-2">
+                        {missingRequired ? (
+                          <p className="mr-auto text-[11px] text-muted-foreground leading-tight" role="status">{isBlockedTime ? L.blockedHint : L.disabledHint}</p>
+                        ) : summaryParts.length > 0 ? (
+                          <p aria-live="polite" className="mr-auto text-[11px] text-muted-foreground leading-tight truncate max-w-[45%]">{summaryParts.join(" · ")}</p>
+                        ) : null}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setCreateOpen(false)}
+                          className={cn("min-w-[110px] text-sm font-medium rounded-xl", D.cta)}
+                        >
+                          {L.cancel}
+                        </Button>
+                        <Button
+                          type="submit"
+                          className={cn("min-w-[170px] text-sm font-semibold rounded-xl disabled:opacity-100 disabled:bg-muted disabled:text-muted-foreground", D.cta)}
+                          disabled={disabled}
+                          aria-disabled={disabled}
+                        >
+                          {ctaLabel}
+                        </Button>
                       </div>
                     );
+
                   })()}
                 </form>
 
