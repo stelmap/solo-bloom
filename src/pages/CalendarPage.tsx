@@ -2098,41 +2098,31 @@ export default function CalendarPage() {
                       : (isGroupSession ? L.ctaGroup : L.ctaIndividual);
 
                     return (
-                      <div className="space-y-1.5 pt-0.5">
-                        <div aria-live="polite" aria-atomic="true">
-                          {!missingRequired && summaryParts.length > 0 && (
-                            <div className="rounded-lg border border-primary/40 bg-primary/10 px-2.5 py-1.5 flex items-center gap-2">
-                              <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
-                              <p className="text-xs font-medium text-foreground leading-tight">
-                                <span className="sr-only">{L.modalSubtitle}: </span>
-                                {summaryParts.join(" · ")}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setCreateOpen(false)}
-                            className={cn("flex-1 text-sm font-medium rounded-xl", D.cta)}
-                          >
-                            {L.cancel}
-                          </Button>
-                          <Button
-                            type="submit"
-                            className={cn("flex-[2] text-sm font-semibold rounded-xl", D.cta)}
-                            disabled={disabled}
-                            aria-disabled={disabled}
-                          >
-                            {ctaLabel}
-                          </Button>
-                        </div>
-                        {missingRequired && (
-                          <p className="text-[11px] text-muted-foreground text-center leading-tight" role="status">{isBlockedTime ? L.blockedHint : L.disabledHint}</p>
-                        )}
+                      <div className="border-t border-border pt-2.5 flex flex-wrap items-center justify-end gap-2">
+                        {missingRequired ? (
+                          <p className="mr-auto text-[11px] text-muted-foreground leading-tight" role="status">{isBlockedTime ? L.blockedHint : L.disabledHint}</p>
+                        ) : summaryParts.length > 0 ? (
+                          <p aria-live="polite" className="mr-auto text-[11px] text-muted-foreground leading-tight truncate max-w-[45%]">{summaryParts.join(" · ")}</p>
+                        ) : null}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setCreateOpen(false)}
+                          className={cn("min-w-[110px] text-sm font-medium rounded-xl", D.cta)}
+                        >
+                          {L.cancel}
+                        </Button>
+                        <Button
+                          type="submit"
+                          className={cn("min-w-[170px] text-sm font-semibold rounded-xl disabled:opacity-100 disabled:bg-muted disabled:text-muted-foreground", D.cta)}
+                          disabled={disabled}
+                          aria-disabled={disabled}
+                        >
+                          {ctaLabel}
+                        </Button>
                       </div>
                     );
+
                   })()}
                 </form>
 
