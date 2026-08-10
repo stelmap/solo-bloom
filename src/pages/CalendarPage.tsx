@@ -531,6 +531,7 @@ export default function CalendarPage() {
   // Blocked time state (no client / service / session is created)
   const [isBlockedTime, setIsBlockedTime] = useState(false);
   const [blockEnd, setBlockEnd] = useState("10:00");
+  const [startTimeOpen, setStartTimeOpen] = useState(false);
 
   // Group session state
   const [isGroupSession, setIsGroupSession] = useState(false);
