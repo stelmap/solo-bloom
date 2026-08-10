@@ -1899,8 +1899,8 @@ export default function CalendarPage() {
                             </SelectTrigger>
                             <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                           </Select>
-                          <Button type="button" variant="outline" size="icon" aria-label={L.addNewService} title={L.addNewService} className={cn("shrink-0 rounded-xl aspect-square w-auto", D.field)} onClick={() => setQaServiceOpen(true)}>
-                            <Plus className="h-4 w-4" aria-hidden="true" />
+                          <Button type="button" variant="outline" size="icon" aria-label={L.addNewService} title={L.addNewService} className={cn("shrink-0 w-9 rounded-xl text-muted-foreground", D.field)} onClick={() => setQaServiceOpen(true)}>
+                            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                           </Button>
                         </div>
                         {serviceError && (
