@@ -1887,7 +1887,7 @@ export default function CalendarPage() {
                     ) : (
                       <>
                         <div className="flex flex-row gap-2">
-                          <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); }}>
+                          <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); setEndOverride(null); }}>
                             <SelectTrigger
                               id="appt-service"
                               aria-required="true"
