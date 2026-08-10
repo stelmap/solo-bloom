@@ -6,8 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { ClientPicker } from "@/components/ClientPicker";
-import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
-import { ChevronLeft, ChevronRight, ChevronRight as ChevronRightIcon, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon, UserPlus, Briefcase, CheckCircle2, Circle, Flag, Search, X as XIcon, AlertTriangle, CalendarDays, SlidersHorizontal, MoreHorizontal, ChevronDown, ExternalLink, Copy, PanelRightOpen, Ban, Rows2, Rows3, Check } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-time-picker";
+import { TimePicker } from "@/components/ui/time-picker";
+import { ChevronLeft, ChevronRight, ChevronRight as ChevronRightIcon, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon, UserPlus, Briefcase, CheckCircle2, Circle, Flag, Search, X as XIcon, AlertTriangle, CalendarDays, SlidersHorizontal, MoreHorizontal, ChevronDown, ExternalLink, Copy, PanelRightOpen, Ban, Rows2, Rows3, Check, Clock as ClockIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -85,6 +86,7 @@ const NEW_COPY: Record<LangKey, {
   notesPlaceholder: string; notesGroupPlaceholder: string;
   ctaIndividual: string; ctaGroup: string;
   summaryWillCreate: string; summaryWillCreateGroup: string;
+  doesNotRepeat: string; repeatHint: string;
 }> = {
   en: {
     noClientsYet: "No clients yet. Add your first client to create a session.",
@@ -113,6 +115,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Blocked time", blockedStart: "Start time", blockedEnd: "End time",
     ctaBlocked: "Save blocked time", blockedHint: "Choose a date and a time range to block.",
     blockedSummary: "Will block:", blockedCreated: "Blocked time saved",
+    doesNotRepeat: "Does not repeat", repeatHint: "Leave empty to repeat without an end date.",
   },
   uk: {
     noClientsYet: "Ще немає клієнтів. Додайте першого клієнта, щоб створити сесію.",
@@ -141,6 +144,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Недоступний час", blockedStart: "Початок", blockedEnd: "Кінець",
     ctaBlocked: "Зберегти недоступний час", blockedHint: "Оберіть дату та проміжок часу для блокування.",
     blockedSummary: "Буде заблоковано:", blockedCreated: "Недоступний час збережено",
+    doesNotRepeat: "Не повторюється", repeatHint: "Залиште порожнім, щоб повторювати без дати завершення.",
   },
   ru: {
     noClientsYet: "Пока нет клиентов. Добавьте первого клиента, чтобы создать сессию.",
@@ -169,6 +173,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Недоступное время", blockedStart: "Начало", blockedEnd: "Окончание",
     ctaBlocked: "Сохранить недоступное время", blockedHint: "Выберите дату и промежуток времени для блокировки.",
     blockedSummary: "Будет заблокировано:", blockedCreated: "Недоступное время сохранено",
+    doesNotRepeat: "Не повторяется", repeatHint: "Оставьте пустым, чтобы повторять без даты окончания.",
   },
   fr: {
     noClientsYet: "Aucun client. Ajoutez votre premier client pour créer une séance.",
@@ -197,6 +202,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Période bloquée", blockedStart: "Heure de début", blockedEnd: "Heure de fin",
     ctaBlocked: "Enregistrer la période bloquée", blockedHint: "Choisissez une date et une plage horaire à bloquer.",
     blockedSummary: "Sera bloqué :", blockedCreated: "Période bloquée enregistrée",
+    doesNotRepeat: "Ne se répète pas", repeatHint: "Laissez vide pour répéter sans date de fin.",
   },
   pl: {
     noClientsYet: "Brak klientów. Dodaj pierwszego klienta, aby utworzyć sesję.",
@@ -225,6 +231,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Czas zablokowany", blockedStart: "Godzina rozpoczęcia", blockedEnd: "Godzina zakończenia",
     ctaBlocked: "Zapisz zablokowany czas", blockedHint: "Wybierz datę i zakres godzin do zablokowania.",
     blockedSummary: "Zostanie zablokowane:", blockedCreated: "Zablokowany czas zapisany",
+    doesNotRepeat: "Nie powtarza się", repeatHint: "Pozostaw puste, aby powtarzać bez daty zakończenia.",
   },
 };
 
@@ -524,6 +531,7 @@ export default function CalendarPage() {
   // Blocked time state (no client / service / session is created)
   const [isBlockedTime, setIsBlockedTime] = useState(false);
   const [blockEnd, setBlockEnd] = useState("10:00");
+  const [startTimeOpen, setStartTimeOpen] = useState(false);
 
   // Group session state
   const [isGroupSession, setIsGroupSession] = useState(false);
@@ -1724,21 +1732,6 @@ export default function CalendarPage() {
                 <Button><Plus className="h-4 w-4 mr-1" /> {t("calendar.newAppointment")}</Button>
               </DialogTrigger>
               <DialogContent className={cn("max-h-[96vh] sm:max-h-[94vh] overflow-y-auto max-w-[calc(100vw-1rem)] rounded-2xl shadow-2xl p-0 mx-2 sm:mx-0", D.maxW)}>
-                {(() => {
-                  const stepClient = !!form.client_id || (isGroupSession && !!groupId);
-                  const stepService = !!form.service_id;
-                  const stepDate = !!form.date && !!form.time;
-                  const stepNotes = !!form.notes || stepDate;
-                  const steps = [stepClient, stepService, stepDate, stepNotes];
-                  return (
-                    <div className={cn("grid grid-cols-4 gap-1.5", D.headPad, "pb-0")}>
-                      {steps.map((done, i) => (
-                        <div key={i} className={cn("h-1 rounded-full transition-colors", done ? "bg-primary" : "bg-muted")} />
-                      ))}
-                    </div>
-                  );
-                })()}
-
                 <DialogHeader className={cn(D.headPad, "space-y-0 text-left")}>
                   <DialogTitle id="new-appointment-title" className={cn(D.title, "font-bold tracking-tight leading-tight")}>{t("calendar.newAppointment")}</DialogTitle>
                   {D.subtitle && (
@@ -1755,7 +1748,7 @@ export default function CalendarPage() {
                   <div
                     role="radiogroup"
                     aria-label={L.sessionTypeLabel}
-                    className="grid grid-cols-3 gap-2"
+                    className="grid grid-cols-3 gap-1 rounded-xl border border-border bg-muted/30 p-1"
                     onKeyDown={(e) => {
                       if (e.key === "ArrowRight" || e.key === "ArrowDown") {
                         e.preventDefault();
@@ -1773,10 +1766,10 @@ export default function CalendarPage() {
                       tabIndex={!isGroupSession && !isBlockedTime ? 0 : -1}
                       onClick={() => { setIsGroupSession(false); setGroupId(""); setIsBlockedTime(false); }}
                       className={cn(
-                        "flex items-center justify-center gap-1.5 rounded-xl border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", D.pill,
+                        "flex items-center justify-center gap-2 rounded-lg border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", D.pill,
                         !isGroupSession && !isBlockedTime
-                          ? "border-foreground bg-background text-foreground shadow-sm"
-                          : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60"
+                          ? "border-foreground bg-card text-foreground shadow-sm"
+                          : "border-transparent bg-transparent text-muted-foreground hover:text-foreground"
                       )}
                     >
                       <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
@@ -1790,10 +1783,10 @@ export default function CalendarPage() {
                       onClick={() => { setIsGroupSession(true); setIsBlockedTime(false); setForm(f => ({ ...f, client_id: "" })); }}
                       disabled={activeGroups.length === 0}
                       className={cn(
-                        "flex items-center justify-center gap-1.5 rounded-xl border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", D.pill,
+                        "flex items-center justify-center gap-2 rounded-lg border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", D.pill,
                         isGroupSession && !isBlockedTime
-                          ? "border-foreground bg-background text-foreground shadow-sm"
-                          : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60",
+                          ? "border-foreground bg-card text-foreground shadow-sm"
+                          : "border-transparent bg-transparent text-muted-foreground hover:text-foreground",
                         activeGroups.length === 0 && "opacity-50 cursor-not-allowed"
                       )}
                     >
@@ -1807,10 +1800,10 @@ export default function CalendarPage() {
                       tabIndex={isBlockedTime ? 0 : -1}
                       onClick={() => { setIsBlockedTime(true); setIsGroupSession(false); setGroupId(""); setServiceError(false); }}
                       className={cn(
-                        "flex items-center justify-center gap-1.5 rounded-xl border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", D.pill,
+                        "flex items-center justify-center gap-2 rounded-lg border-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", D.pill,
                         isBlockedTime
-                          ? "border-foreground bg-background text-foreground shadow-sm"
-                          : "border-border bg-background text-muted-foreground hover:border-muted-foreground/60"
+                          ? "border-foreground bg-card text-foreground shadow-sm"
+                          : "border-transparent bg-transparent text-muted-foreground hover:text-foreground"
                       )}
                     >
                       <Ban className="h-3.5 w-3.5" aria-hidden="true" />
@@ -1826,7 +1819,7 @@ export default function CalendarPage() {
                       </Label>
                       <div className="flex gap-2">
                         <Select value={groupId} onValueChange={setGroupId}>
-                          <SelectTrigger className={cn("flex-1", D.field)}><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
+                          <SelectTrigger className={cn("flex-1 rounded-xl", D.field)}><SelectValue placeholder={t("groups.selectGroup")} /></SelectTrigger>
                           <SelectContent>{activeGroups.map((g: any) => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
                         </Select>
                       </div>
@@ -1859,18 +1852,18 @@ export default function CalendarPage() {
                           </Button>
                         </div>
                       ) : (
-                        <div className="flex flex-col sm:flex-row gap-2">
+                        <div className="flex flex-row gap-2">
                           <ClientPicker
                             clients={activeClients}
                             value={form.client_id}
                             onChange={v => setForm(f => ({ ...f, client_id: v }))}
                             placeholder={t("calendar.selectClient")}
-                            triggerClassName={cn("flex-1", D.field)}
+                            triggerClassName={cn("flex-1 rounded-xl", D.field)}
                             onAddNew={() => setQaClientOpen(true)}
                             addNewLabel={L.addNewClient}
                           />
-                          <Button type="button" variant="outline" className={cn("px-2.5 gap-1 whitespace-nowrap shrink-0", D.field)} onClick={() => setQaClientOpen(true)}>
-                            <Plus className="h-3.5 w-3.5" /> {L.addNewClient}
+                          <Button type="button" variant="outline" size="icon" aria-label={L.addNewClient} title={L.addNewClient} className={cn("shrink-0 rounded-xl aspect-square w-auto", D.field)} onClick={() => setQaClientOpen(true)}>
+                            <Plus className="h-4 w-4" />
                           </Button>
                         </div>
                       )}
@@ -1892,21 +1885,21 @@ export default function CalendarPage() {
                       </div>
                     ) : (
                       <>
-                        <div className="flex flex-col sm:flex-row gap-2">
+                        <div className="flex flex-row gap-2">
                           <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); }}>
                             <SelectTrigger
                               id="appt-service"
                               aria-required="true"
                               aria-invalid={serviceError}
                               aria-describedby={serviceError ? "appt-service-error" : undefined}
-                              className={cn("flex-1", D.field, serviceError && "border-destructive")}
+                              className={cn("flex-1 rounded-xl", D.field, serviceError && "border-destructive")}
                             >
                               <SelectValue placeholder={t("calendar.selectService")} />
                             </SelectTrigger>
                             <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                           </Select>
-                          <Button type="button" variant="outline" className={cn("px-2.5 gap-1 whitespace-nowrap shrink-0", D.field)} onClick={() => setQaServiceOpen(true)}>
-                            <Plus className="h-3.5 w-3.5" aria-hidden="true" /> {L.addNewService}
+                          <Button type="button" variant="outline" size="icon" aria-label={L.addNewService} title={L.addNewService} className={cn("shrink-0 rounded-xl aspect-square w-auto", D.field)} onClick={() => setQaServiceOpen(true)}>
+                            <Plus className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </div>
                         {serviceError && (
@@ -1917,29 +1910,63 @@ export default function CalendarPage() {
                   </div>
                   )}
 
-                  {/* Date / Time */}
-                  <DateTimePicker
-                    date={form.date}
-                    time={form.time}
-                    onDateChange={v => setForm(f => ({ ...f, date: v }))}
-                    onTimeChange={v => setForm(f => ({ ...f, time: v }))}
-                    use12h={use12h}
-                    dateLabel={t("common.date")}
-                    timeLabel={t("common.time")}
-                  />
-
-                  {isBlockedTime && (
-                    <div className="space-y-1">
-                      <Label htmlFor="block-end" className="text-xs font-bold uppercase text-muted-foreground">{L.blockedEnd}</Label>
-                      <Input
-                        id="block-end"
-                        type="time"
-                        value={blockEnd}
-                        onChange={e => setBlockEnd(e.target.value)}
-                        className={D.field}
-                      />
-                    </div>
-                  )}
+                  {/* Date / Start time / End time */}
+                  {(() => {
+                    const svc = services.find(s => s.id === form.service_id);
+                    const durMin = Number(svc?.duration_minutes) || 60;
+                    let computedEnd = "";
+                    if (form.time) {
+                      const [hh, mm] = form.time.split(":").map(Number);
+                      const total = hh * 60 + mm + durMin;
+                      computedEnd = `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+                    }
+                    return (
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs font-bold uppercase text-muted-foreground">
+                            {t("common.date")} <span className="text-primary">*</span>
+                          </Label>
+                          <DatePicker date={form.date} onDateChange={v => setForm(f => ({ ...f, date: v }))} className="space-y-0" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs font-bold uppercase text-muted-foreground">
+                            {L.blockedStart} <span className="text-primary">*</span>
+                          </Label>
+                          <Popover open={startTimeOpen} onOpenChange={setStartTimeOpen}>
+                            <PopoverTrigger asChild>
+                              <Button type="button" variant="outline" className={cn("w-full justify-start font-normal rounded-xl", D.field)}>
+                                <ClockIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                                {form.time ? formatTime(form.time, use12h) : "--:--"}
+                                <ChevronDown className="ml-auto h-4 w-4 text-muted-foreground" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[180px] p-0" align="start">
+                              <TimePicker value={form.time} onChange={(v) => { setForm(f => ({ ...f, time: v })); setStartTimeOpen(false); }} use12h={use12h} />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="block-end" className="text-xs font-bold uppercase text-muted-foreground">
+                            {L.blockedEnd} {isBlockedTime && <span className="text-primary">*</span>}
+                          </Label>
+                          {isBlockedTime ? (
+                            <Input
+                              id="block-end"
+                              type="time"
+                              value={blockEnd}
+                              onChange={e => setBlockEnd(e.target.value)}
+                              className={cn("rounded-xl", D.field)}
+                            />
+                          ) : (
+                            <div className={cn("flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-3 text-sm text-muted-foreground", D.field)}>
+                              <ClockIcon className="h-4 w-4" />
+                              {computedEnd ? formatTime(computedEnd, use12h) : "--:--"}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {!isBlockedTime && createValidation && !isRecurring && (
                     <div role="alert" className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
@@ -1963,44 +1990,41 @@ export default function CalendarPage() {
                   )}
 
                   {/* Repeat session — orange highlighted toggle row */}
-                  <div className={cn(
-                    "rounded-xl border-2 transition-all overflow-hidden",
-                    isRecurring ? "border-primary bg-primary/10" : "border-border bg-background"
-                  )}>
+                  <div className="pt-1 border-t border-border">
                     <button
                       type="button"
                       role="switch"
                       aria-checked={isRecurring}
                       aria-label={t("recurring.setup")}
                       onClick={() => setIsRecurring(v => !v)}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 text-left min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl"
+                      className="w-full flex items-center gap-3 py-2 text-left min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl"
                     >
                       <span aria-hidden="true" className={cn(
-                        "relative inline-flex h-5 w-9 sm:h-5 sm:w-9 shrink-0 rounded-full transition-colors",
+                        "relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors",
                         isRecurring ? "bg-primary" : "bg-muted"
                       )}>
                         <span className={cn(
-                          "inline-block h-4 w-4 rounded-full bg-background shadow transition-transform mt-0.5",
-                          isRecurring ? "translate-x-[18px]" : "translate-x-0.5"
+                          "inline-block h-5 w-5 rounded-full bg-background shadow transition-transform mt-0.5",
+                          isRecurring ? "translate-x-[22px]" : "translate-x-0.5"
                         )} />
                       </span>
-                      <span className="flex-1 font-medium text-sm text-foreground">{t("recurring.setup")}</span>
-                      {isRecurring && (() => {
-                        const freqLabel = recurInterval === 1 ? t("recurring.weekly")
-                          : recurInterval === 2 ? t("recurring.biweekly")
-                          : t("recurring.custom", { n: String(recurInterval) });
-                        const dayLabels = recurDays.map(d => t(DAY_KEYS[d - 1] as any)).join(", ");
-                        return (
-                          <span className="text-xs text-muted-foreground">{freqLabel}{dayLabels ? ` · ${dayLabels}` : ""}</span>
-                        );
-                      })()}
+                      <span className="flex-1 font-semibold text-sm text-foreground">{t("recurring.setup")}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {isRecurring ? (() => {
+                          const freqLabel = recurInterval === 1 ? t("recurring.weekly")
+                            : recurInterval === 2 ? t("recurring.biweekly")
+                            : t("recurring.custom", { n: String(recurInterval) });
+                          const dayLabels = recurDays.map(d => t(DAY_KEYS[d - 1] as any)).join(", ");
+                          return `${freqLabel}${dayLabels ? ` · ${dayLabels}` : ""}`;
+                        })() : L.doesNotRepeat}
+                      </span>
                     </button>
                     {isRecurring && (
-                      <div className="px-3 pb-2 pt-0.5 space-y-2 bg-muted/30 border-t border-border/60">
-                        <div className="space-y-1 pt-2">
+                      <div className="rounded-xl bg-muted/40 border border-border p-3 grid grid-cols-1 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)_minmax(0,1fr)] gap-3">
+                        <div className="space-y-1">
                           <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.intervalWeeks")}</Label>
                           <Select value={recurInterval.toString()} onValueChange={v => setRecurInterval(parseInt(v))}>
-                            <SelectTrigger className={D.field}><SelectValue /></SelectTrigger>
+                            <SelectTrigger className={cn("rounded-xl bg-background", D.field)}><SelectValue /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="1">{t("recurring.weekly")}</SelectItem>
                               <SelectItem value="2">{t("recurring.biweekly")}</SelectItem>
@@ -2019,8 +2043,8 @@ export default function CalendarPage() {
                                 <button key={i} type="button" onClick={() => toggleRecurDay(i + 1)}
                                   aria-pressed={active}
                                   aria-label={dayName}
-                                  className={cn("h-8 sm:h-7 rounded-md text-xs font-medium transition-colors border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                                    active ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border text-foreground hover:border-muted-foreground/60"
+                                  className={cn("rounded-lg text-xs font-medium transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", D.field,
+                                    active ? "bg-primary-soft text-primary border-primary-border" : "bg-background border-border text-foreground hover:border-muted-foreground/60"
                                   )}>
                                   {dayName}
                                 </button>
@@ -2030,7 +2054,8 @@ export default function CalendarPage() {
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.endDate")}</Label>
-                          <DatePicker date={recurEndDate} onDateChange={setRecurEndDate} placeholder={t("recurring.ongoing")} />
+                          <DatePicker date={recurEndDate} onDateChange={setRecurEndDate} placeholder={t("recurring.ongoing")} className="space-y-0" />
+                          <p className="text-[11px] text-muted-foreground text-right leading-tight">{L.repeatHint}</p>
                         </div>
                       </div>
                     )}
