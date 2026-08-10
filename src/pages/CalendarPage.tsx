@@ -114,6 +114,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Blocked time", blockedStart: "Start time", blockedEnd: "End time",
     ctaBlocked: "Save blocked time", blockedHint: "Choose a date and a time range to block.",
     blockedSummary: "Will block:", blockedCreated: "Blocked time saved",
+    doesNotRepeat: "Does not repeat", repeatHint: "Leave empty to repeat without an end date.",
   },
   uk: {
     noClientsYet: "Ще немає клієнтів. Додайте першого клієнта, щоб створити сесію.",
@@ -142,6 +143,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Недоступний час", blockedStart: "Початок", blockedEnd: "Кінець",
     ctaBlocked: "Зберегти недоступний час", blockedHint: "Оберіть дату та проміжок часу для блокування.",
     blockedSummary: "Буде заблоковано:", blockedCreated: "Недоступний час збережено",
+    doesNotRepeat: "Не повторюється", repeatHint: "Залиште порожнім, щоб повторювати без дати завершення.",
   },
   ru: {
     noClientsYet: "Пока нет клиентов. Добавьте первого клиента, чтобы создать сессию.",
@@ -170,6 +172,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Недоступное время", blockedStart: "Начало", blockedEnd: "Окончание",
     ctaBlocked: "Сохранить недоступное время", blockedHint: "Выберите дату и промежуток времени для блокировки.",
     blockedSummary: "Будет заблокировано:", blockedCreated: "Недоступное время сохранено",
+    doesNotRepeat: "Не повторяется", repeatHint: "Оставьте пустым, чтобы повторять без даты окончания.",
   },
   fr: {
     noClientsYet: "Aucun client. Ajoutez votre premier client pour créer une séance.",
@@ -198,6 +201,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Période bloquée", blockedStart: "Heure de début", blockedEnd: "Heure de fin",
     ctaBlocked: "Enregistrer la période bloquée", blockedHint: "Choisissez une date et une plage horaire à bloquer.",
     blockedSummary: "Sera bloqué :", blockedCreated: "Période bloquée enregistrée",
+    doesNotRepeat: "Ne se répète pas", repeatHint: "Laissez vide pour répéter sans date de fin.",
   },
   pl: {
     noClientsYet: "Brak klientów. Dodaj pierwszego klienta, aby utworzyć sesję.",
@@ -226,6 +230,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Czas zablokowany", blockedStart: "Godzina rozpoczęcia", blockedEnd: "Godzina zakończenia",
     ctaBlocked: "Zapisz zablokowany czas", blockedHint: "Wybierz datę i zakres godzin do zablokowania.",
     blockedSummary: "Zostanie zablokowane:", blockedCreated: "Zablokowany czas zapisany",
+    doesNotRepeat: "Nie powtarza się", repeatHint: "Pozostaw puste, aby powtarzać bez daty zakończenia.",
   },
 };
 
