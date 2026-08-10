@@ -1990,44 +1990,41 @@ export default function CalendarPage() {
                   )}
 
                   {/* Repeat session — orange highlighted toggle row */}
-                  <div className={cn(
-                    "rounded-xl border-2 transition-all overflow-hidden",
-                    isRecurring ? "border-primary bg-primary/10" : "border-border bg-background"
-                  )}>
+                  <div className="pt-1 border-t border-border">
                     <button
                       type="button"
                       role="switch"
                       aria-checked={isRecurring}
                       aria-label={t("recurring.setup")}
                       onClick={() => setIsRecurring(v => !v)}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 text-left min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl"
+                      className="w-full flex items-center gap-3 py-2 text-left min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl"
                     >
                       <span aria-hidden="true" className={cn(
-                        "relative inline-flex h-5 w-9 sm:h-5 sm:w-9 shrink-0 rounded-full transition-colors",
+                        "relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors",
                         isRecurring ? "bg-primary" : "bg-muted"
                       )}>
                         <span className={cn(
-                          "inline-block h-4 w-4 rounded-full bg-background shadow transition-transform mt-0.5",
-                          isRecurring ? "translate-x-[18px]" : "translate-x-0.5"
+                          "inline-block h-5 w-5 rounded-full bg-background shadow transition-transform mt-0.5",
+                          isRecurring ? "translate-x-[22px]" : "translate-x-0.5"
                         )} />
                       </span>
-                      <span className="flex-1 font-medium text-sm text-foreground">{t("recurring.setup")}</span>
-                      {isRecurring && (() => {
-                        const freqLabel = recurInterval === 1 ? t("recurring.weekly")
-                          : recurInterval === 2 ? t("recurring.biweekly")
-                          : t("recurring.custom", { n: String(recurInterval) });
-                        const dayLabels = recurDays.map(d => t(DAY_KEYS[d - 1] as any)).join(", ");
-                        return (
-                          <span className="text-xs text-muted-foreground">{freqLabel}{dayLabels ? ` · ${dayLabels}` : ""}</span>
-                        );
-                      })()}
+                      <span className="flex-1 font-semibold text-sm text-foreground">{t("recurring.setup")}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {isRecurring ? (() => {
+                          const freqLabel = recurInterval === 1 ? t("recurring.weekly")
+                            : recurInterval === 2 ? t("recurring.biweekly")
+                            : t("recurring.custom", { n: String(recurInterval) });
+                          const dayLabels = recurDays.map(d => t(DAY_KEYS[d - 1] as any)).join(", ");
+                          return `${freqLabel}${dayLabels ? ` · ${dayLabels}` : ""}`;
+                        })() : L.doesNotRepeat}
+                      </span>
                     </button>
                     {isRecurring && (
-                      <div className="px-3 pb-2 pt-0.5 space-y-2 bg-muted/30 border-t border-border/60">
-                        <div className="space-y-1 pt-2">
+                      <div className="rounded-xl bg-muted/40 border border-border p-3 grid grid-cols-1 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)_minmax(0,1fr)] gap-3">
+                        <div className="space-y-1">
                           <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.intervalWeeks")}</Label>
                           <Select value={recurInterval.toString()} onValueChange={v => setRecurInterval(parseInt(v))}>
-                            <SelectTrigger className={D.field}><SelectValue /></SelectTrigger>
+                            <SelectTrigger className={cn("rounded-xl bg-background", D.field)}><SelectValue /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="1">{t("recurring.weekly")}</SelectItem>
                               <SelectItem value="2">{t("recurring.biweekly")}</SelectItem>
@@ -2046,8 +2043,8 @@ export default function CalendarPage() {
                                 <button key={i} type="button" onClick={() => toggleRecurDay(i + 1)}
                                   aria-pressed={active}
                                   aria-label={dayName}
-                                  className={cn("h-8 sm:h-7 rounded-md text-xs font-medium transition-colors border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                                    active ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border text-foreground hover:border-muted-foreground/60"
+                                  className={cn("rounded-lg text-xs font-medium transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", D.field,
+                                    active ? "bg-primary-soft text-primary border-primary-border" : "bg-background border-border text-foreground hover:border-muted-foreground/60"
                                   )}>
                                   {dayName}
                                 </button>
@@ -2057,7 +2054,8 @@ export default function CalendarPage() {
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.endDate")}</Label>
-                          <DatePicker date={recurEndDate} onDateChange={setRecurEndDate} placeholder={t("recurring.ongoing")} />
+                          <DatePicker date={recurEndDate} onDateChange={setRecurEndDate} placeholder={t("recurring.ongoing")} className="space-y-0" />
+                          <p className="text-[11px] text-muted-foreground text-right leading-tight">{L.repeatHint}</p>
                         </div>
                       </div>
                     )}
