@@ -1921,8 +1921,9 @@ export default function CalendarPage() {
                       const total = hh * 60 + mm + durMin;
                       computedEnd = `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
                     }
+                    const endValue = isBlockedTime ? blockEnd : (endOverride ?? computedEnd);
                     return (
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-[1.3fr_1fr_1fr] gap-2">
                         <div className="space-y-1">
                           <Label className="text-xs font-bold uppercase text-muted-foreground">
                             {t("common.date")} <span className="text-primary">*</span>
@@ -1935,60 +1936,51 @@ export default function CalendarPage() {
                           </Label>
                           <Popover open={startTimeOpen} onOpenChange={setStartTimeOpen}>
                             <PopoverTrigger asChild>
-                              <Button type="button" variant="outline" className={cn("w-full justify-start font-normal rounded-xl", D.field)}>
-                                <ClockIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                              <Button type="button" variant="outline" className={cn("w-full justify-start font-normal rounded-xl px-3 text-sm", D.field)}>
+                                <ClockIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
                                 {form.time ? formatTime(form.time, use12h) : "--:--"}
-                                <ChevronDown className="ml-auto h-4 w-4 text-muted-foreground" />
+                                <ChevronDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-[180px] p-0" align="start">
-                              <TimePicker value={form.time} onChange={(v) => { setForm(f => ({ ...f, time: v })); setStartTimeOpen(false); }} use12h={use12h} />
+                              <TimePicker value={form.time} onChange={(v) => { setForm(f => ({ ...f, time: v })); setEndOverride(null); setStartTimeOpen(false); }} use12h={use12h} />
                             </PopoverContent>
                           </Popover>
                         </div>
                         <div className="space-y-1">
-                          <Label htmlFor="block-end" className="text-xs font-bold uppercase text-muted-foreground">
-                            {L.blockedEnd} {isBlockedTime && <span className="text-primary">*</span>}
+                          <Label className="text-xs font-bold uppercase text-muted-foreground">
+                            {L.blockedEnd} <span className="text-primary">*</span>
                           </Label>
-                          {isBlockedTime ? (
-                            <Input
-                              id="block-end"
-                              type="time"
-                              value={blockEnd}
-                              onChange={e => setBlockEnd(e.target.value)}
-                              className={cn("rounded-xl", D.field)}
-                            />
-                          ) : (
-                            <div className={cn("flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-3 text-sm text-muted-foreground", D.field)}>
-                              <ClockIcon className="h-4 w-4" />
-                              {computedEnd ? formatTime(computedEnd, use12h) : "--:--"}
-                            </div>
-                          )}
+                          <Popover open={endTimeOpen} onOpenChange={setEndTimeOpen}>
+                            <PopoverTrigger asChild>
+                              <Button type="button" variant="outline" className={cn("w-full justify-start font-normal rounded-xl px-3 text-sm", D.field)}>
+                                <ClockIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+                                {endValue ? formatTime(endValue, use12h) : "--:--"}
+                                <ChevronDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[180px] p-0" align="start">
+                              <TimePicker
+                                value={endValue || "10:00"}
+                                onChange={(v) => {
+                                  if (isBlockedTime) setBlockEnd(v); else setEndOverride(v);
+                                  setEndTimeOpen(false);
+                                }}
+                                use12h={use12h}
+                              />
+                            </PopoverContent>
+                          </Popover>
                         </div>
                       </div>
                     );
                   })()}
 
                   {!isBlockedTime && createValidation && !isRecurring && (
-                    <div role="alert" className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
+                    <div role="alert" className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
                       ⚠️ {createValidation}
                     </div>
                   )}
 
-                  {/* Notes */}
-                  {!isBlockedTime && (
-                  <div className="space-y-1">
-                    <Label htmlFor="appt-notes" className="text-xs font-bold uppercase text-muted-foreground">{t("calendar.notes")}</Label>
-                    <Textarea
-                      id="appt-notes"
-                      value={form.notes}
-                      onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                      placeholder={isGroupSession ? L.notesGroupPlaceholder : L.notesPlaceholder}
-                      rows={2}
-                      className={cn("resize-none rounded-lg", D.notes)}
-                    />
-                  </div>
-                  )}
 
                   {/* Repeat session — orange highlighted toggle row */}
                   <div className="pt-1 border-t border-border">
