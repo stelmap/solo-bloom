@@ -532,6 +532,9 @@ export default function CalendarPage() {
   const [isBlockedTime, setIsBlockedTime] = useState(false);
   const [blockEnd, setBlockEnd] = useState("10:00");
   const [startTimeOpen, setStartTimeOpen] = useState(false);
+  const [endTimeOpen, setEndTimeOpen] = useState(false);
+  /** Manual override for the session end time (UI only — creation still uses service duration). */
+  const [endOverride, setEndOverride] = useState<string | null>(null);
 
   // Group session state
   const [isGroupSession, setIsGroupSession] = useState(false);
