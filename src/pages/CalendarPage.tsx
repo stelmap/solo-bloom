@@ -57,6 +57,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Inbox } from "lucide-react";
 import { BookingInboxPanel } from "@/components/BookingInboxPanel";
 import { DaysOffSection } from "@/components/settings/CalendarSections";
+import { SidebarSection } from "@/components/calendar/SidebarSection";
+import { useNeedsAttention } from "@/hooks/useNeedsAttention";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
