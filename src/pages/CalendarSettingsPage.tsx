@@ -18,7 +18,7 @@ export default function CalendarSettingsPage() {
           <h1 className="text-2xl font-bold text-foreground">{t("settings.calendarSettings")}</h1>
         </div>
 
-        <DaysOffSection />
+        
 
         <Card>
           <CardContent className="flex items-center justify-between gap-4 flex-wrap pt-6">
