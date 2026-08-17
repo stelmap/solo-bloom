@@ -341,7 +341,7 @@ export default function IncomePage() {
                             <Badge className="bg-warning/15 text-warning border-warning/30 text-xs">{t("income.pending") || "Очікує"}</Badge>
                           </td>
                           <td className="p-4 text-right">
-                            <Button size="sm" onClick={() => { setPayDialog(ep); setPayMethod(PAYMENT_METHODS[0]?.value || "cash"); setPayDate(new Date().toISOString().split("T")[0]); }}>
+                            <Button size="sm" onClick={() => { setPayDialog(ep); setPayMethod("cash"); setPayDate(new Date().toISOString().split("T")[0]); }}>
                               <CheckCircle className="h-4 w-4 mr-1" /> {t("income.markPaid")}
                             </Button>
                           </td>
