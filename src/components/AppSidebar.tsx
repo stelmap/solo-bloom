@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Calendar, Users, Scissors, DollarSign,
-  TrendingDown, Settings, Target, Menu, X, LogOut, BarChart3, UsersRound, ClipboardList,
+  TrendingDown, TrendingUp, Settings, Target, Menu, X, LogOut, BarChart3, UsersRound, ClipboardList,
   Wallet, ChevronDown, Lock, ShieldCheck, Sparkles, BadgeCheck, PanelLeftOpen, PanelLeftClose,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
