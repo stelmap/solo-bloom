@@ -697,3 +697,13 @@ function MonthlyTable({ months, onDrill, fmt, t, currentMonth }: { months: Month
     </div>
   );
 }
+
+function MiniStat({ dot, label, value }: { dot: string; label: string; value: string }) {
+  return (
+    <div className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 shadow-sm">
+      <span className={cn("h-2 w-2 rounded-full", dot)} />
+      <span className="text-sm text-muted-foreground">{label}:</span>
+      <span className="text-sm font-bold text-foreground">{value}</span>
+    </div>
+  );
+}
