@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { formatScheduledTime } from "@/lib/timeFormat";
 import { toast } from "@/hooks/use-toast";
+import { MonthDashboard } from "@/components/dashboard/MonthDashboard";
+
 import {
   Users, DollarSign,
   PlayCircle, ArrowRight, XCircle, Inbox,
