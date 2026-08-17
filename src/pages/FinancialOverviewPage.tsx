@@ -17,6 +17,8 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MonthlyDetailsModal } from "@/components/MonthlyDetailsModal";
 import { getDateLocale } from "@/lib/dateLocale";
+import { FinanceSubnav } from "@/components/finance/FinanceSubnav";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface MonthData {
   month: number;
@@ -43,6 +45,10 @@ export default function FinancialOverviewPage() {
   const [year, setYear] = useState(new Date().getFullYear());
   const [drillMonth, setDrillMonth] = useState<MonthData | null>(null);
   const [viewMode, setViewMode] = useState<"table" | "chart">("chart");
+  const [scope, setScope] = useState<"year" | "month">("year");
+  const [selMonth, setSelMonth] = useState(new Date().getMonth());
+  const [explainOpen, setExplainOpen] = useState(false);
+  const recalculatedAt = useMemo(() => new Date(), []);
 
   const { data: allIncome = [] } = useAllIncome();
   const { data: allExpenses = [] } = useAllExpenses();
@@ -288,7 +294,18 @@ export default function FinancialOverviewPage() {
   const totalForecastIncome = futureMonths.reduce((s, m) => s + m.income, 0);
   const totalForecastExpenses = futureMonths.reduce((s, m) => s + m.expenses, 0);
 
-  const chartData = monthsData.map(m => ({
+  const scopedMonths = scope === "year" ? monthsData : monthsData.filter(m => m.month === selMonth);
+  const scopeConfirmed = scopedMonths.reduce((s2, m) => s2 + m.confirmedIncome, 0);
+  const scopeExpected = scopedMonths.reduce((s2, m) => s2 + m.expectedIncome, 0);
+  const scopePlannedExpenses = scopedMonths.reduce((s2, m) => s2 + m.expenses, 0);
+  const scopeTaxes = scopedMonths.reduce((s2, m) => s2 + m.taxes, 0);
+  const scopeSessions = scopedMonths.reduce((s2, m) => s2 + m.sessions, 0);
+  const forecastNet = scopeConfirmed + scopeExpected - scopePlannedExpenses - scopeTaxes;
+  const periodEndLabel = scope === "year"
+    ? format(new Date(year, 11, 31), "d MMMM yyyy", { locale: dateLocale })
+    : format(endOfMonth(new Date(year, selMonth, 1)), "d MMMM yyyy", { locale: dateLocale });
+
+  const chartData = scopedMonths.map(m => ({
     name: m.shortLabel,
     income: m.income,
     expenses: m.expenses,
@@ -354,16 +371,62 @@ export default function FinancialOverviewPage() {
   return (
     <AppLayout>
       <div className="space-y-6">
+        <FinanceSubnav />
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("financial.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("financial.subtitle")}</p>
+            <p className="text-sm text-muted-foreground">{t("fo.subtitle")}</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="icon" onClick={() => setYear(y => y - 1)}><ChevronLeft className="h-4 w-4" /></Button>
             <span className="text-lg font-semibold text-foreground min-w-[60px] text-center">{year}</span>
             <Button variant="outline" size="icon" onClick={() => setYear(y => y + 1)}><ChevronRight className="h-4 w-4" /></Button>
+            <div className="inline-flex rounded-full bg-muted p-1 ml-2">
+              {(["month", "year"] as const).map(v => (
+                <button
+                  key={v}
+                  onClick={() => setScope(v)}
+                  className={cn(
+                    "rounded-full px-3.5 py-1 text-xs font-semibold transition-colors",
+                    scope === v ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {v === "month" ? t("fo.viewMonth") : t("fo.viewYear")}
+                </button>
+              ))}
+            </div>
+            {scope === "month" && (
+              <select
+                value={selMonth}
+                onChange={e => setSelMonth(Number(e.target.value))}
+                className="h-9 rounded-md border border-border bg-background px-2 text-sm text-foreground"
+              >
+                {monthsData.map(m => (
+                  <option key={m.month} value={m.month}>{m.label}</option>
+                ))}
+              </select>
+            )}
+          </div>
+        </div>
+
+        {/* Forecast KPIs */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <SummaryCard icon={TrendingUp} label={t("fo.confirmedIncome")} value={fmt(scopeConfirmed)} accent="text-success" />
+          <SummaryCard icon={ArrowUpRight} label={t("fo.expectedIncome")} value={fmt(scopeExpected)} accent="text-primary" dashed />
+          <SummaryCard icon={ArrowDownRight} label={t("fo.plannedExpenses")} value={fmt(scopePlannedExpenses)} accent="text-destructive" dashed />
+          <SummaryCard icon={DollarSign} label={t("fo.forecastNet")} value={fmt(forecastNet)} accent={forecastNet >= 0 ? "text-success" : "text-destructive"} dashed />
+        </div>
+
+        {/* Expected by period end */}
+        <div className="bg-card rounded-xl border border-dashed border-border p-5">
+          <h2 className="font-semibold text-foreground mb-3">{t("fo.expectedBy", { date: periodEndLabel })}</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 text-sm">
+            <div><p className="text-muted-foreground text-xs">{t("financial.forecastIncome")}</p><p className="font-bold text-foreground">{fmt(scopeConfirmed + scopeExpected)}</p></div>
+            <div><p className="text-muted-foreground text-xs">{t("fo.plannedExpenses")}</p><p className="font-bold text-foreground">{fmt(scopePlannedExpenses)}</p></div>
+            <div><p className="text-muted-foreground text-xs">{t("fo.forecastTaxes")}</p><p className="font-bold text-foreground">{fmt(scopeTaxes)}</p></div>
+            <div><p className="text-muted-foreground text-xs">{t("fo.forecastNet")}</p><p className={cn("font-bold", forecastNet >= 0 ? "text-success" : "text-destructive")}>{forecastNet < 0 ? "-" : ""}{fmt(forecastNet)}</p></div>
+            <div><p className="text-muted-foreground text-xs">{t("fo.forecastSessions")}</p><p className="font-bold text-foreground">{scopeSessions}</p></div>
           </div>
         </div>
 
@@ -428,13 +491,13 @@ export default function FinancialOverviewPage() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <MonthlyTable months={monthsData} onDrill={setDrillMonth} fmt={fmt} t={t} currentMonth={year === currentYear ? currentMonth : -1} />
+            <MonthlyTable months={scopedMonths} onDrill={setDrillMonth} fmt={fmt} t={t} currentMonth={year === currentYear ? currentMonth : -1} />
           )}
         </div>
 
         {/* Monthly cards grid (always shown) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {monthsData.map(m => (
+          {scopedMonths.map(m => (
             <button
               key={m.month}
               onClick={() => setDrillMonth(m)}
@@ -483,8 +546,31 @@ export default function FinancialOverviewPage() {
         {/* Cashflow summary */}
         <div className="bg-card rounded-xl border border-border p-5">
           <h2 className="font-semibold text-foreground mb-4">{t("financial.cashflow")}</h2>
-          <CashflowChart data={monthsData} fmt={fmt} t={t} cs={cs} />
+          <CashflowChart data={scopedMonths} fmt={fmt} t={t} cs={cs} />
         </div>
+
+        {/* Forecast explanation */}
+        <Collapsible open={explainOpen} onOpenChange={setExplainOpen}>
+          <div className="bg-card rounded-xl border border-border p-5">
+            <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 text-left">
+              <span className="font-semibold text-foreground">{t("fo.howCalculated")}</span>
+              <ChevronRight className={cn("h-4 w-4 text-muted-foreground transition-transform", explainOpen && "rotate-90")} />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-3 space-y-2 text-sm text-muted-foreground">
+              <p>{t("fo.explainSessions")}</p>
+              <p>{t("fo.explainPayments")}</p>
+              <p>{t("fo.explainExpenses")}</p>
+              <p>{t("fo.explainTaxes")}</p>
+              <p className="text-xs">{t("fo.lastRecalc", { time: format(recalculatedAt, "d MMM yyyy HH:mm", { locale: dateLocale }) })}</p>
+              <button
+                onClick={() => setDrillMonth(scopedMonths[0] ?? monthsData[currentMonth] ?? null)}
+                className="text-xs font-semibold text-primary inline-flex items-center gap-1.5 hover:opacity-80"
+              >
+                {t("fo.viewIncluded")} <Eye className="h-3.5 w-3.5" />
+              </button>
+            </CollapsibleContent>
+          </div>
+        </Collapsible>
       </div>
 
       {/* Drill-down dialog */}
