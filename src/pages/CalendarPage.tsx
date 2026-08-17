@@ -1357,6 +1357,9 @@ export default function CalendarPage() {
   }, [appointments, canDropOnSlot, toast, t]);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [daysOffListOpen, setDaysOffListOpen] = useState(false);
+  const [addDayOffOpen, setAddDayOffOpen] = useState(false);
+  const [newDayOffDate, setNewDayOffDate] = useState("");
   const [agendaOpen, setAgendaOpen] = useState(false);
   const [needsOpen, setNeedsOpen] = useState(false);
 
