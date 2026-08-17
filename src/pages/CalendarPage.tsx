@@ -1748,7 +1748,7 @@ export default function CalendarPage() {
                   <div
                     role="radiogroup"
                     aria-label={L.sessionTypeLabel}
-                    className="grid grid-cols-3 gap-1 rounded-xl border border-border bg-muted/30 p-1"
+                    className="flex w-full items-center gap-1 rounded-xl border border-border bg-muted/30 p-1"
                     onKeyDown={(e) => {
                       if (e.key === "ArrowRight" || e.key === "ArrowDown") {
                         e.preventDefault();
@@ -1766,7 +1766,7 @@ export default function CalendarPage() {
                       tabIndex={!isGroupSession && !isBlockedTime ? 0 : -1}
                       onClick={() => { setIsGroupSession(false); setGroupId(""); setIsBlockedTime(false); }}
                       className={cn(
-                        "flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-[13px] font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "flex h-9 flex-1 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-xs font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
                         !isGroupSession && !isBlockedTime
                           ? "border-primary-border bg-primary-soft text-primary"
                           : "border-transparent bg-transparent text-muted-foreground hover:text-foreground"
@@ -1783,7 +1783,7 @@ export default function CalendarPage() {
                       onClick={() => { setIsGroupSession(true); setIsBlockedTime(false); setForm(f => ({ ...f, client_id: "" })); }}
                       disabled={activeGroups.length === 0}
                       className={cn(
-                        "flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-[13px] font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "flex h-9 flex-1 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-xs font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
                         isGroupSession && !isBlockedTime
                           ? "border-primary-border bg-primary-soft text-primary"
                           : "border-transparent bg-transparent text-muted-foreground hover:text-foreground",
@@ -1800,7 +1800,7 @@ export default function CalendarPage() {
                       tabIndex={isBlockedTime ? 0 : -1}
                       onClick={() => { setIsBlockedTime(true); setIsGroupSession(false); setGroupId(""); setServiceError(false); }}
                       className={cn(
-                        "flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-[13px] font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "flex h-9 flex-1 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-xs font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
                         isBlockedTime
                           ? "border-primary-border bg-primary-soft text-primary"
                           : "border-transparent bg-transparent text-muted-foreground hover:text-foreground"
