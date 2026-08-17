@@ -24,7 +24,6 @@ import {
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
-import { useActivePaymentMethods, localizedMethodName } from "@/hooks/usePaymentMethods";
 import { useToast } from "@/hooks/use-toast";
 import {
   useUpdateAppointment, useDeleteAppointment, useCompleteAppointment,
@@ -208,13 +207,6 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     return { total, billableCount: billable.length, expectedAmount };
   }, [groupBillingData]);
 
-  const { data: activeMethods = [] } = useActivePaymentMethods();
-  const PAYMENT_METHODS = activeMethods.map(m => ({ value: m.code, label: localizedMethodName(m, t) }));
-  useEffect(() => {
-    if (PAYMENT_METHODS.length === 0) return;
-    if (!PAYMENT_METHODS.find(m => m.value === paymentMethod)) setPaymentMethod(PAYMENT_METHODS[0].value);
-    if (!PAYMENT_METHODS.find(m => m.value === groupPaymentMethod)) setGroupPaymentMethod(PAYMENT_METHODS[0].value);
-  }, [activeMethods.length]);
 
   if (!apt) return null;
 
@@ -1475,19 +1467,6 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                     <Label>{t("common.paymentDate")}</Label>
                     <DatePicker date={paymentDate} onDateChange={setPaymentDate} />
                   </div>
-                  <div className="space-y-2">
-                    <Label>{t("calendar.paymentMethod")}</Label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {PAYMENT_METHODS.map(m => (
-                        <button key={m.value} onClick={() => setPaymentMethod(m.value)}
-                          className={cn("p-3 rounded-lg border text-sm font-medium transition-colors text-center",
-                            paymentMethod === m.value ? "bg-primary/10 border-primary text-primary" : "bg-card border-border text-muted-foreground hover:bg-muted"
-                          )}>
-                          {m.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                 </>
               )}
 
@@ -1602,19 +1581,6 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
               </div>
 
               {(groupPaymentState === "paid_now" || groupPaymentState === "paid_in_advance") && (
-                <div className="space-y-2">
-                  <Label>{t("calendar.paymentMethod")}</Label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {PAYMENT_METHODS.map(m => (
-                      <button key={m.value} onClick={() => setGroupPaymentMethod(m.value)}
-                        className={cn("p-3 rounded-lg border text-sm font-medium transition-colors text-center",
-                          groupPaymentMethod === m.value ? "bg-primary/10 border-primary text-primary" : "bg-card border-border text-muted-foreground hover:bg-muted"
-                        )}>
-                        {m.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
               )}
 
               <div className={cn("rounded-lg p-4 flex items-center gap-3 border",

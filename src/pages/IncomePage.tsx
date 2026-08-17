@@ -8,7 +8,6 @@ import { Plus, Trash2, DollarSign, CheckCircle, Download, ArrowLeft } from "luci
 import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
 import { useIncome, useIncomeSum, useCreateIncome, useDeleteIncome, useExpectedPayments, useMarkExpectedPaymentPaid, useClients } from "@/hooks/useData";
-import { useActivePaymentMethods, localizedMethodName } from "@/hooks/usePaymentMethods";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
@@ -103,10 +102,6 @@ export default function IncomePage() {
   }, [expectedPayments, intervalStart, intervalEnd]);
   const pendingTotal = filteredExpected.reduce((s: number, ep: any) => s + Number(ep.amount), 0);
 
-  const { data: activeMethods = [] } = useActivePaymentMethods();
-  const PAYMENT_METHODS = activeMethods.map(m => ({ value: m.code, label: localizedMethodName(m, t) }));
-
-  const paymentLabel = (method: string) => PAYMENT_METHODS.find(m => m.value === method)?.label || method;
 
 
   const handleCreate = async () => {
@@ -183,8 +178,8 @@ export default function IncomePage() {
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => {
               downloadCSV("income.csv",
-                [t("csv.header.date"), t("csv.header.amount"), t("csv.header.source"), t("csv.header.paymentMethod"), t("csv.header.description")],
-                filtered.map((i: any) => [i.date, String(i.amount), i.source || "", i.payment_method || "", i.description || ""])
+                [t("csv.header.date"), t("csv.header.amount"), t("csv.header.source"), t("csv.header.description")],
+                filtered.map((i: any) => [i.date, String(i.amount), i.source || "", i.description || ""])
               );
             }}><Download className="h-4 w-4 mr-1" /> {t("export.csv")}</Button>
             <Dialog open={open} onOpenChange={setOpen}>
@@ -206,13 +201,6 @@ export default function IncomePage() {
                     </SelectContent>
                   </Select>
                   {!form.client_id && <p className="text-xs text-muted-foreground">{t("income.clientRequired")}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label>{t("calendar.paymentMethod")}</Label>
-                  <Select value={form.payment_method} onValueChange={v => setForm(f => ({ ...f, payment_method: v }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{PAYMENT_METHODS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
-                  </Select>
                 </div>
                 <Button onClick={handleCreate} className="w-full" disabled={!form.amount || !form.client_id}>{t("income.addIncome")}</Button>
               </div>
@@ -277,7 +265,6 @@ export default function IncomePage() {
                         <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.date")}</th>
                         <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.description")}</th>
                         <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.amount")}</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.payment")}</th>
                         <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.source")}</th>
                         <th className="p-4 w-10"></th>
                       </tr>
@@ -292,7 +279,6 @@ export default function IncomePage() {
                               : entry.description || t("income.manualEntry")}
                           </td>
                           <td className="p-4 text-sm font-semibold text-foreground">{cs}{Number(entry.amount).toFixed(2)}</td>
-                          <td className="p-4"><Badge variant="outline" className="text-xs capitalize">{paymentLabel(entry.payment_method || "cash")}</Badge></td>
                           <td className="p-4"><Badge variant={entry.source === "appointment" ? "default" : "secondary"} className="text-xs">{entry.source === "appointment" ? t("income.appointment") : t("income.manual")}</Badge></td>
                           <td className="p-4">
                             {entry.source !== "appointment" && (
@@ -384,19 +370,6 @@ export default function IncomePage() {
               <div className="space-y-2">
                 <Label>{t("common.paymentDate")}</Label>
                 <DatePicker date={payDate} onDateChange={setPayDate} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t("calendar.paymentMethod")}</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {PAYMENT_METHODS.map(m => (
-                    <button key={m.value} onClick={() => setPayMethod(m.value)}
-                      className={cn("p-3 rounded-lg border text-sm font-medium transition-colors text-center",
-                        payMethod === m.value ? "bg-primary/10 border-primary text-primary" : "bg-card border-border text-muted-foreground hover:bg-muted"
-                      )}>
-                      {m.label}
-                    </button>
-                  ))}
-                </div>
               </div>
               <Button onClick={handleMarkPaid} className="w-full" disabled={markPaid.isPending}>
                 {markPaid.isPending ? t("common.saving") : t("income.confirmPaymentReceived")}

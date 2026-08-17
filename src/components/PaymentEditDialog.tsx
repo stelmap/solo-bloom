@@ -13,7 +13,6 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
 import { useCorrectPayment } from "@/hooks/useData";
-import { useActivePaymentMethods, localizedMethodName } from "@/hooks/usePaymentMethods";
 import { formatScheduledTime } from "@/lib/timeFormat";
 
 interface PaymentEditDialogProps {
@@ -46,7 +45,7 @@ export function PaymentEditDialog({ open, onOpenChange, appointment: apt, use12h
     const incomeRow = (apt as any).income?.[0];
     const existingDate = incomeRow?.date || today;
     setPaymentDate(existingDate);
-    setPaymentMethod(incomeRow?.payment_method || "");
+    setPaymentMethod(incomeRow?.payment_method || "cash");
     setComment("");
   }, [apt?.id, open]);
 
@@ -58,11 +57,6 @@ export function PaymentEditDialog({ open, onOpenChange, appointment: apt, use12h
     apt.clients?.name || (apt as any).group_sessions?.groups?.name || (apt as any).group_name || "—";
   const serviceName = apt.services?.name || "—";
 
-  const { data: activeMethods = [] } = useActivePaymentMethods();
-  const PAYMENT_METHODS = activeMethods.map(m => ({ value: m.code, label: localizedMethodName(m, t) }));
-  useEffect(() => {
-    if (!paymentMethod && PAYMENT_METHODS.length > 0) setPaymentMethod(PAYMENT_METHODS[0].value);
-  }, [activeMethods.length, paymentMethod]);
 
   const PAYMENT_LABELS: Record<string, string> = {
     paid_now: t("payment.paid"),
@@ -139,15 +133,6 @@ export function PaymentEditDialog({ open, onOpenChange, appointment: apt, use12h
                 onDateChange={setPaymentDate}
                 label={t("paymentEdit.paymentDate") + " *"}
               />
-              <div className="space-y-2">
-                <Label>{t("paymentEdit.paymentMethod")}</Label>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {PAYMENT_METHODS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
             </>
           )}
 
