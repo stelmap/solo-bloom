@@ -7,12 +7,12 @@ import { format, startOfMonth, endOfMonth, eachMonthOfInterval, isBefore, isAfte
 import { cn } from "@/lib/utils";
 import {
   ChevronLeft, ChevronRight, TrendingUp, TrendingDown, DollarSign,
-  BarChart3, Calendar, ArrowUpRight, ArrowDownRight, Eye, X,
+  BarChart3, Calendar, ArrowUpRight, ArrowDownRight, Eye, X, Percent, Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Line, ComposedChart,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Line, ComposedChart, ReferenceLine,
 } from "recharts";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MonthlyDetailsModal } from "@/components/MonthlyDetailsModal";

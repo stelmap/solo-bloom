@@ -2204,7 +2204,7 @@ export default {
   "po.perSessionSuffix": "{amount} за сессию",
   "po.privacyNote": "Все данные приватны и зашифрованы.",
   "po.yesterday": "вчера",
-  "fo.subtitle": "Факты, обязательства и прогноз",
+  "fo.subtitle": "Прогноз, обязательства и финансовый обзор",
   "fo.viewMonth": "Месяц",
   "fo.viewYear": "Год",
   "fo.confirmedIncome": "Подтверждённый доход",
@@ -2232,6 +2232,19 @@ export default {
   "dashu.noSessionsToday": "На сегодня сессий не запланировано",
   "dashu.paidNote1": "* Полные детальные списки открываются в модуле «Финансы» (платная опция).",
   "dashu.paidNote2": "На дашборде показаны первые 5 позиций.",
+  "fo.desc.expectedIncome": "Запланированные + неоплаченные ожидаемые платежи",
+  "fo.desc.plannedExpenses": "Предстоящие расходы до конца периода",
+  "fo.desc.forecastTaxes": "Расчётные налоги за оставшийся период",
+  "fo.desc.forecastNet": "Ожидаемый результат на конец периода",
+  "fo.currentNetResult": "Текущий чистый результат",
+  "fo.actualAsOf": "Фактический результат на {date}",
+  "fo.avgMonthlyNet": "Сред. чистый за месяц",
+  "fo.avgExpectedIncome": "Сред. ожидаемый доход за месяц",
+  "fo.avgPlannedExpenses": "Сред. плановые расходы за месяц",
+  "fo.actual": "Факт",
+  "fo.legendIncome": "Ожидаемый доход (факт/прогноз)",
+  "fo.legendExpenses": "Плановые расходы и налоги (прогноз)",
+  "fo.legendNet": "Прогнозный чистый (тренд)",
 };
 
 
