@@ -1,10 +1,10 @@
 import { AppLayout } from "@/components/AppLayout";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { WorkingHoursSection, DaysOffSection, PracticeProfileSection } from "@/components/settings/CalendarSections";
-import { PublicBookingSection } from "@/components/PublicBookingSection";
+import { DaysOffSection } from "@/components/settings/CalendarSections";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight, Store } from "lucide-react";
 
 export default function CalendarSettingsPage() {
   const { t } = useLanguage();
@@ -18,19 +18,23 @@ export default function CalendarSettingsPage() {
           <h1 className="text-2xl font-bold text-foreground">{t("settings.calendarSettings")}</h1>
         </div>
 
-        <Tabs defaultValue="hours" className="space-y-4">
-          <TabsList className="flex-wrap h-auto">
-            <TabsTrigger value="hours">{t("settings.workingHours")}</TabsTrigger>
-            <TabsTrigger value="daysOff">{t("settings.daysOff")}</TabsTrigger>
-            <TabsTrigger value="booking">{t("settings.publicBooking")}</TabsTrigger>
-            <TabsTrigger value="practice">{t("settings.practiceProfile")}</TabsTrigger>
-          </TabsList>
+        <DaysOffSection />
 
-          <TabsContent value="hours"><WorkingHoursSection /></TabsContent>
-          <TabsContent value="daysOff"><DaysOffSection /></TabsContent>
-          <TabsContent value="booking"><PublicBookingSection /></TabsContent>
-          <TabsContent value="practice"><PracticeProfileSection /></TabsContent>
-        </Tabs>
+        <Card>
+          <CardContent className="flex items-center justify-between gap-4 flex-wrap pt-6">
+            <div className="flex items-start gap-3">
+              <Store className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <p className="text-sm text-muted-foreground max-w-xl">
+                {t("settings.practiceProfileDesc")}
+              </p>
+            </div>
+            <Button asChild>
+              <Link to="/settings/practice">
+                {t("settings.practiceProfile")} <ArrowRight className="w-4 h-4 ml-1" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </AppLayout>
   );

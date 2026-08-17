@@ -34,11 +34,8 @@ export function CurrencyInvoicingSection() {
   const updateProfile = useUpdateProfile();
 
   const [form, setForm] = useState({
-    currency: "EUR",
     business_country: "UA" as BusinessCountry,
-    business_id: "",
     tax_id_type: "ipn",
-    business_address: "",
     vat_mode: "none",
     vat_rate: 0,
   });
@@ -50,11 +47,8 @@ export function CurrencyInvoicingSection() {
         ? storedType
         : getDefaultTaxIdForCountry(country);
       setForm({
-        currency: (profile as any).currency || "EUR",
         business_country: country,
-        business_id: (profile as any).business_id || "",
         tax_id_type,
-        business_address: (profile as any).business_address || "",
         vat_mode: (profile as any).vat_mode || "none",
         vat_rate: Number((profile as any).vat_rate) || 0,
       });
@@ -72,23 +66,13 @@ export function CurrencyInvoicingSection() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-card rounded-xl border border-border p-6 space-y-4">
-        <h2 className="font-semibold text-foreground">{t("settings.currency")}</h2>
-        <p className="text-sm text-muted-foreground">{t("settings.currencyDesc")}</p>
-        <div className="max-w-xs space-y-2">
-          <Select value={form.currency} onValueChange={v => setForm(f => ({ ...f, currency: v }))}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="EUR">{t("currency.EUR")}</SelectItem>
-              <SelectItem value="UAH">{t("currency.UAH")}</SelectItem>
-              <SelectItem value="PLN">{t("currency.PLN")}</SelectItem>
-              <SelectItem value="USD">{t("currency.USD")}</SelectItem>
-            </SelectContent>
-          </Select>
-          {form.currency !== ((profile as any)?.currency || "EUR") && (
-            <p className="text-xs text-warning">{t("settings.currencyWarning")}</p>
-          )}
-        </div>
+      <div className="bg-card rounded-xl border border-border p-6 flex items-center justify-between gap-4 flex-wrap">
+        <p className="text-sm text-muted-foreground max-w-xl">
+          {t("settings.practiceProfileDesc")}
+        </p>
+        <Button variant="outline" asChild>
+          <Link to="/settings/practice">{t("settings.practiceProfile")}</Link>
+        </Button>
       </div>
 
       <div className="bg-card rounded-xl border border-border p-6 space-y-4">
@@ -139,28 +123,6 @@ export function CurrencyInvoicingSection() {
               ))}
             </RadioGroup>
           </div>
-          <div className="space-y-2">
-            <Label>{t("settings.taxIdNumber")}</Label>
-            <Input
-              value={form.business_id}
-              onChange={(e) => setForm((f) => ({ ...f, business_id: e.target.value }))}
-              placeholder={
-                TAX_ID_OPTIONS[form.business_country].find((o) => o.code === form.tax_id_type)
-                  ?.placeholder || ""
-              }
-            />
-            {(() => {
-              const hint = TAX_ID_OPTIONS[form.business_country].find(
-                (o) => o.code === form.tax_id_type,
-              )?.hint;
-              return hint ? (
-                <p className="text-xs text-muted-foreground">
-                  {t("settings.taxIdHint")}: {hint}
-                </p>
-              ) : null;
-            })()}
-          </div>
-          <div className="space-y-2"><Label>{t("settings.businessAddress")}</Label><Input value={form.business_address} onChange={e => setForm(f => ({ ...f, business_address: e.target.value }))} /></div>
           <div className="space-y-2">
             <Label>{t("settings.vatMode")}</Label>
             <Select value={form.vat_mode} onValueChange={v => setForm(f => ({ ...f, vat_mode: v }))}>

@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Calendar, Users, Scissors, DollarSign,
   TrendingDown, TrendingUp, Settings, Target, Menu, X, LogOut, BarChart3, UsersRound, ClipboardList,
-  Wallet, ChevronDown, Lock, ShieldCheck, Sparkles, BadgeCheck, PanelLeftOpen, PanelLeftClose,
+  Wallet, ChevronDown, Lock, ShieldCheck, Sparkles, BadgeCheck, PanelLeftOpen, PanelLeftClose, Store,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useMemo, useEffect, useRef } from "react";
@@ -13,6 +13,8 @@ import { TranslationKey } from "@/i18n/translations";
 import { useEntitlements, type FeatureCode } from "@/hooks/useEntitlements";
 import { useFreeStarterMode } from "@/hooks/useDemoWorkspace";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { usePracticeProfileStatus } from "@/hooks/usePracticeProfile";
+import { useProfile } from "@/hooks/useData";
 
 type LeafItem = { kind: "leaf"; icon: any; labelKey: TranslationKey; path: string; requires?: FeatureCode };
 type GroupItem = {
@@ -64,6 +66,14 @@ export function AppSidebar() {
   const { isFreeStarter, planCode } = useFreeStarterMode();
   const { has, loading: entLoading } = useEntitlements();
   const [isAdmin, setIsAdmin] = useState(false);
+  const { data: practiceProfile } = useProfile();
+  const practiceStatus = usePracticeProfileStatus();
+  const emblemUrl = (practiceProfile as any)?.avatar_url as string | undefined;
+  const practiceName =
+    ((practiceProfile as any)?.business_name as string) ||
+    ((practiceProfile as any)?.full_name as string) ||
+    "";
+  const practiceIncomplete = !practiceStatus.loading && !practiceStatus.complete;
 
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
@@ -256,8 +266,57 @@ export function AppSidebar() {
     </nav>
   );
 
+  const emblemLabel = practiceIncomplete
+    ? (t("practice.complete" as any) === "practice.complete" ? "Complete practice profile" : t("practice.complete" as any))
+    : practiceName || "Practice profile";
+
+  const EmblemCircle = ({ size = 40 }: { size?: number }) => (
+    <span
+      className={cn(
+        "rounded-full flex items-center justify-center overflow-hidden shrink-0 border-2",
+        practiceIncomplete
+          ? "border-dashed border-sidebar-primary text-sidebar-primary animate-pulse shadow-[0_0_12px_hsl(var(--sidebar-primary)/0.5)]"
+          : "border-sidebar-border text-sidebar-foreground/70"
+      )}
+      style={{ height: size, width: size }}
+    >
+      {emblemUrl ? (
+        <img src={emblemUrl} alt={practiceName || "Practice emblem"} className="h-full w-full object-cover" />
+      ) : (
+        <Store className="h-4 w-4" />
+      )}
+    </span>
+  );
+
+  const PracticeFooterEntry = () => (
+    <Link
+      to="/settings/practice"
+      onClick={closeAll}
+      className="flex items-center gap-3 px-1 py-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors"
+    >
+      <EmblemCircle size={44} />
+      <div className="flex-1 min-w-0">
+        <p className={cn("text-sm font-semibold truncate", practiceIncomplete ? "text-sidebar-primary" : "text-sidebar-foreground")}>
+          {practiceIncomplete ? emblemLabel : practiceName || "Practice profile"}
+        </p>
+        {practiceIncomplete ? (
+          <>
+            <p className="text-xs text-sidebar-foreground/60 truncate">Finish setup</p>
+            <p className="text-xs text-sidebar-primary flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-sidebar-primary inline-block" />
+              Required
+            </p>
+          </>
+        ) : (
+          <p className="text-xs text-sidebar-foreground/50 truncate">Practice profile</p>
+        )}
+      </div>
+    </Link>
+  );
+
   const FullFooter = () => (
-    <div className="p-4 border-t border-sidebar-border">
+    <div className="p-4 border-t border-sidebar-border space-y-2">
+      <PracticeFooterEntry />
       <div className="flex items-center gap-3">
         <div className="h-8 w-8 rounded-full bg-sidebar-primary/20 flex items-center justify-center text-sidebar-primary text-sm font-semibold shrink-0">
           {initials}
@@ -376,6 +435,19 @@ export function AppSidebar() {
         </nav>
 
         <div className="mt-2 flex flex-col items-center gap-1">
+          <Tooltip delayDuration={150}>
+            <TooltipTrigger asChild>
+              <Link
+                to="/settings/practice"
+                onClick={closeAll}
+                aria-label={emblemLabel}
+                className="h-11 w-11 flex items-center justify-center rounded-lg hover:bg-sidebar-accent/50 transition-colors"
+              >
+                <EmblemCircle size={32} />
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side="right">{emblemLabel}</TooltipContent>
+          </Tooltip>
           <Tooltip delayDuration={150}>
             <TooltipTrigger asChild>
               <button
