@@ -1693,13 +1693,13 @@ export default function CalendarPage() {
               <TooltipTrigger asChild>
                 <Button
                   variant="outline" size="icon" className="h-10 w-10 rounded-xl xl:hidden"
-                  aria-label={(t as any)("calendar.agenda") || "Adaptive Agenda"}
+                  aria-label={(t as any)("calendar.agenda") || "Today schedule"}
                   onClick={() => setAgendaOpen(true)}
                 >
                   <PanelRightOpen className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>{(t as any)("calendar.agenda") || "Adaptive Agenda"}</TooltipContent>
+              <TooltipContent>{(t as any)("calendar.agenda") || "Today schedule"}</TooltipContent>
             </Tooltip>
 
             {pendingRequests.length > 0 && (
@@ -2508,7 +2508,7 @@ export default function CalendarPage() {
       <Sheet open={agendaOpen} onOpenChange={setAgendaOpen}>
         <SheetContent side={isMobile ? "bottom" : "right"} className={cn("overflow-y-auto", isMobile ? "h-[85vh] rounded-t-2xl" : "w-full sm:max-w-md")}>
           <SheetHeader className="sr-only">
-            <SheetTitle>{(t as any)("calendar.agenda") || "Adaptive Agenda"}</SheetTitle>
+            <SheetTitle>{(t as any)("calendar.agenda") || "Today schedule"}</SheetTitle>
           </SheetHeader>
           <div className="mt-4">{agendaContent}</div>
         </SheetContent>
