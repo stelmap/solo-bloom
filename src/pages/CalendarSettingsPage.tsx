@@ -1,6 +1,5 @@
 import { AppLayout } from "@/components/AppLayout";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { DaysOffSection } from "@/components/settings/CalendarSections";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
