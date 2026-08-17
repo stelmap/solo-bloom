@@ -2055,8 +2055,6 @@ export default function CalendarPage() {
                         </div>
                         <p className="text-[11px] text-muted-foreground leading-snug">{L.repeatHint}</p>
                       </div>
-
-                      </div>
                     )}
                   </div>
 
