@@ -58,6 +58,7 @@ const IncomePage = lazyWithReload(() => import("./pages/IncomePage"));
 const ExpensesPage = lazyWithReload(() => import("./pages/ExpensesPage"));
 const BreakevenPage = lazyWithReload(() => import("./pages/BreakevenPage"));
 const FinancialOverviewPage = lazyWithReload(() => import("./pages/FinancialOverviewPage"));
+const PracticeOverviewPage = lazyWithReload(() => import("./pages/PracticeOverviewPage"));
 const PaymentAuditPage = lazyWithReload(() => import("./pages/PaymentAuditPage"));
 const SettingsPage = lazyWithReload(() => import("./pages/SettingsPage"));
 const CalendarSettingsPage = lazyWithReload(() => import("./pages/CalendarSettingsPage"));
@@ -151,7 +152,8 @@ const App = () => {
                 <Route path="/services" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
 
                 {/* Finances module — available to all plans */}
-                <Route path="/finances" element={<ProtectedRoute><FinancialOverviewPage /></ProtectedRoute>} />
+                <Route path="/finances" element={<ProtectedRoute><PracticeOverviewPage /></ProtectedRoute>} />
+                <Route path="/finances/overview" element={<ProtectedRoute><FinancialOverviewPage /></ProtectedRoute>} />
                 <Route path="/finances/income" element={<ProtectedRoute><IncomePage /></ProtectedRoute>} />
                 <Route path="/finances/expenses" element={<ProtectedRoute><ExpensesPage /></ProtectedRoute>} />
                 <Route path="/finances/breakeven" element={<ProtectedRoute><BreakevenPage /></ProtectedRoute>} />
