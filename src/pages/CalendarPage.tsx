@@ -2531,16 +2531,6 @@ export default function CalendarPage() {
         </SheetContent>
       </Sheet>
 
-      <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{t("settings.calendarSettings") || "Calendar settings"}</SheetTitle>
-          </SheetHeader>
-          <div className="mt-4 space-y-4">
-            <DaysOffSection />
-          </div>
-        </SheetContent>
-      </Sheet>
 
       {/* Add day off */}
       <Dialog open={addDayOffOpen} onOpenChange={(o) => { setAddDayOffOpen(o); if (!o) setNewDayOffDate(""); }}>
