@@ -15,7 +15,6 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
 import { useClientAppointments, useSaveIncomeConfirmation } from "@/hooks/useData";
-import { useActivePaymentMethods, localizedMethodName } from "@/hooks/usePaymentMethods";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { formatScheduledTime } from "@/lib/timeFormat";
@@ -47,7 +46,7 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
 
   const [amount, setAmount] = useState<string>("");
   const [date, setDate] = useState(today);
-  const [method, setMethod] = useState("");
+  const [method, setMethod] = useState("cash");
   const [status, setStatus] = useState<"confirmed" | "draft" | "cancelled">("confirmed");
   const [comment, setComment] = useState("");
   const [filter, setFilter] = useState<FilterKey>("unpaid");
@@ -87,7 +86,7 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
     if (isEdit && existingIncome) {
       setAmount(String(existingIncome.amount ?? ""));
       setDate(existingIncome.date ?? today);
-      setMethod(existingIncome.payment_method ?? "");
+      setMethod(existingIncome.payment_method ?? "cash");
       setStatus((existingIncome.status as any) ?? "confirmed");
       setComment(existingIncome.comment ?? "");
       (async () => {
@@ -104,7 +103,7 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
     } else {
       setAmount(prefill?.amount != null ? String(prefill.amount) : "");
       setDate(prefill?.date ?? today);
-      setMethod(prefill?.payment_method ?? "");
+      setMethod(prefill?.payment_method ?? "cash");
       setStatus("confirmed");
       setComment(prefill?.comment ?? "");
       setAllocs({});
@@ -113,11 +112,6 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
     setFilter("unpaid");
   }, [open, existingIncome?.id]);
 
-  const { data: activeMethods = [] } = useActivePaymentMethods();
-  const PAYMENT_METHODS = activeMethods.map(m => ({ value: m.code, label: localizedMethodName(m, t) }));
-  useEffect(() => {
-    if (!method && PAYMENT_METHODS.length > 0) setMethod(PAYMENT_METHODS[0].value);
-  }, [activeMethods.length, method]);
 
   const enrichedAppointments = useMemo(() => {
     const PAID = new Set(["paid_now", "paid_in_advance", "paid_from_prepayment"]);
@@ -263,15 +257,6 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
             <div className="space-y-2">
               <Label>{t("incomeConfirm.date")} *</Label>
               <DatePicker date={date} onDateChange={setDate} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t("incomeConfirm.method")}</Label>
-              <Select value={method} onValueChange={setMethod}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {PAYMENT_METHODS.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
             </div>
             <div className="space-y-2">
               <Label>{t("incomeConfirm.status")} *</Label>
