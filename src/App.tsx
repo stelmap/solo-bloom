@@ -62,6 +62,7 @@ const CostEfficiencyPage = lazyWithReload(() => import("./pages/CostEfficiencyPa
 const PracticeOverviewPage = lazyWithReload(() => import("./pages/PracticeOverviewPage"));
 const PaymentAuditPage = lazyWithReload(() => import("./pages/PaymentAuditPage"));
 const SettingsPage = lazyWithReload(() => import("./pages/SettingsPage"));
+const PracticeProfilePage = lazyWithReload(() => import("./pages/PracticeProfilePage"));
 const CalendarSettingsPage = lazyWithReload(() => import("./pages/CalendarSettingsPage"));
 const FinanceSettingsPage = lazyWithReload(() => import("./pages/FinanceSettingsPage"));
 const PrivacyPage = lazyWithReload(() => import("./pages/PrivacyPage"));
