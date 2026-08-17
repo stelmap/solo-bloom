@@ -8,7 +8,7 @@ import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { ClientPicker } from "@/components/ClientPicker";
 import { DatePicker } from "@/components/ui/date-time-picker";
 import { TimePicker } from "@/components/ui/time-picker";
-import { ChevronLeft, ChevronRight, ChevronRight as ChevronRightIcon, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon, UserPlus, Briefcase, CheckCircle2, Circle, Flag, Search, X as XIcon, AlertTriangle, CalendarDays, SlidersHorizontal, MoreHorizontal, ChevronDown, ExternalLink, Copy, PanelRightOpen, Ban, Rows2, Rows3, Check, Clock as ClockIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronRight as ChevronRightIcon, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon, UserPlus, Briefcase, CheckCircle2, Circle, Flag, Search, X as XIcon, AlertTriangle, CalendarDays, SlidersHorizontal, MoreHorizontal, ChevronDown, ExternalLink, Copy, PanelRightOpen, Ban, Rows2, Rows3, Check, User as UserIcon, Tag as TagIcon, Clock as ClockIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -261,9 +261,9 @@ export default function CalendarPage() {
   const D = {
     pad: density === "compact" ? "px-4 pt-2 pb-3 sm:px-5" : density === "cozy" ? "px-4 pt-3 pb-4 sm:px-5" : "px-5 pt-4 pb-5 sm:px-6",
     gap: density === "compact" ? "space-y-2" : density === "cozy" ? "space-y-3" : "space-y-4",
-    field: density === "compact" ? "h-8" : density === "cozy" ? "h-9" : "h-10",
+    field: density === "compact" ? "h-10" : density === "cozy" ? "h-11" : "h-12",
     pill: density === "compact" ? "h-8" : density === "cozy" ? "h-9" : "h-10",
-    cta: density === "compact" ? "h-9" : density === "cozy" ? "h-10" : "h-11",
+    cta: density === "compact" ? "h-11" : density === "cozy" ? "h-12" : "h-12",
     title: density === "compact" ? "text-base" : density === "cozy" ? "text-lg" : "text-xl",
     subtitle: density !== "compact",
     notes: density === "compact" ? "min-h-[44px]" : density === "cozy" ? "min-h-[56px]" : "min-h-[72px]",
@@ -1740,7 +1740,7 @@ export default function CalendarPage() {
                 </DialogHeader>
 
                 <form
-                  className={cn(D.pad, "space-y-2.5")}
+                  className={cn(D.pad, "space-y-3.5")}
                   onSubmit={(e) => { e.preventDefault(); handleCreate(); }}
                   aria-labelledby="new-appointment-title"
                 >
@@ -1815,7 +1815,7 @@ export default function CalendarPage() {
                   {isBlockedTime ? null : isGroupSession ? (
 
                     <div className="space-y-1">
-                      <Label className="text-xs font-bold uppercase text-muted-foreground">
+                      <Label className="text-sm font-semibold text-foreground">
                         {t("groups.selectGroup")} <span className="text-primary">*</span>
                       </Label>
                       <div className="flex gap-2">
@@ -1842,7 +1842,7 @@ export default function CalendarPage() {
                     </div>
                   ) : (
                     <div className="space-y-1">
-                      <Label className="text-xs font-bold uppercase text-muted-foreground">
+                      <Label className="text-sm font-semibold text-foreground">
                         {t("calendar.client")} <span className="text-primary">*</span>
                       </Label>
                       {activeClients.length === 0 ? (
@@ -1862,9 +1862,10 @@ export default function CalendarPage() {
                             triggerClassName={cn("flex-1 rounded-xl", D.field)}
                             onAddNew={() => setQaClientOpen(true)}
                             addNewLabel={L.addNewClient}
+                            leadingIcon={<UserIcon className="h-4 w-4" aria-hidden="true" />}
                           />
-                          <Button type="button" variant="outline" size="icon" aria-label={L.addNewClient} title={L.addNewClient} className={cn("shrink-0 w-9 rounded-xl text-muted-foreground", D.field)} onClick={() => setQaClientOpen(true)}>
-                            <Plus className="h-3.5 w-3.5" />
+                          <Button type="button" variant="outline" size="icon" aria-label={L.addNewClient} title={L.addNewClient} className={cn("shrink-0 w-12 rounded-xl text-foreground", D.field)} onClick={() => setQaClientOpen(true)}>
+                            <Plus className="h-4 w-4" />
                           </Button>
                         </div>
                       )}
@@ -1874,7 +1875,7 @@ export default function CalendarPage() {
                   {/* Service */}
                   {!isBlockedTime && (
                   <div className="space-y-1">
-                    <Label htmlFor="appt-service" className="text-xs font-bold uppercase text-muted-foreground">
+                    <Label htmlFor="appt-service" className="text-sm font-semibold text-foreground">
                       {t("calendar.service")} <span className="text-primary" aria-hidden="true">*</span>
                     </Label>
                     {services.length === 0 ? (
@@ -1895,12 +1896,13 @@ export default function CalendarPage() {
                               aria-describedby={serviceError ? "appt-service-error" : undefined}
                               className={cn("flex-1 rounded-xl", D.field, serviceError && "border-destructive")}
                             >
+                              <TagIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                               <SelectValue placeholder={t("calendar.selectService")} />
                             </SelectTrigger>
                             <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
                           </Select>
-                          <Button type="button" variant="outline" size="icon" aria-label={L.addNewService} title={L.addNewService} className={cn("shrink-0 w-9 rounded-xl text-muted-foreground", D.field)} onClick={() => setQaServiceOpen(true)}>
-                            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                          <Button type="button" variant="outline" size="icon" aria-label={L.addNewService} title={L.addNewService} className={cn("shrink-0 w-12 rounded-xl text-foreground", D.field)} onClick={() => setQaServiceOpen(true)}>
+                            <Plus className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </div>
                         {serviceError && (
@@ -1923,15 +1925,15 @@ export default function CalendarPage() {
                     }
                     const endValue = isBlockedTime ? blockEnd : (endOverride ?? computedEnd);
                     return (
-                      <div className="grid grid-cols-1 sm:grid-cols-[1.3fr_1fr_1fr] gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div className="space-y-1">
-                          <Label className="text-xs font-bold uppercase text-muted-foreground">
+                          <Label className="text-sm font-semibold text-foreground">
                             {t("common.date")} <span className="text-primary">*</span>
                           </Label>
                           <DatePicker date={form.date} onDateChange={v => setForm(f => ({ ...f, date: v }))} className="space-y-0" />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs font-bold uppercase text-muted-foreground">
+                          <Label className="text-sm font-semibold text-foreground">
                             {L.blockedStart} <span className="text-primary">*</span>
                           </Label>
                           <Popover open={startTimeOpen} onOpenChange={setStartTimeOpen}>
@@ -1948,7 +1950,7 @@ export default function CalendarPage() {
                           </Popover>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs font-bold uppercase text-muted-foreground">
+                          <Label className="text-sm font-semibold text-foreground">
                             {L.blockedEnd} <span className="text-primary">*</span>
                           </Label>
                           <Popover open={endTimeOpen} onOpenChange={setEndTimeOpen}>
@@ -2015,7 +2017,7 @@ export default function CalendarPage() {
                     {isRecurring && (
                       <div className="rounded-xl bg-muted/40 border border-border p-2.5 grid grid-cols-1 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)_minmax(0,1fr)] gap-2.5">
                         <div className="space-y-1">
-                          <Label className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.intervalWeeks")}</Label>
+                          <Label className="text-sm font-normal text-muted-foreground">{t("recurring.intervalWeeks")}</Label>
                           <Select value={recurInterval.toString()} onValueChange={v => setRecurInterval(parseInt(v))}>
                             <SelectTrigger className={cn("rounded-xl bg-background", D.field)}><SelectValue /></SelectTrigger>
                             <SelectContent>
@@ -2027,7 +2029,7 @@ export default function CalendarPage() {
                           </Select>
                         </div>
                         <div className="space-y-1">
-                          <Label id="recur-days-label" className="text-xs font-bold uppercase text-muted-foreground">{t("recurring.daysOfWeek")}</Label>
+                          <Label id="recur-days-label" className="text-sm font-normal text-muted-foreground">{t("recurring.daysOfWeek")}</Label>
                           <div role="group" aria-labelledby="recur-days-label" className="grid grid-cols-7 gap-1">
                             {DAY_KEYS.map((key, i) => {
                               const active = recurDays.includes(i + 1);
@@ -2046,7 +2048,7 @@ export default function CalendarPage() {
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs font-bold uppercase text-muted-foreground">{L.repeatUntil}</Label>
+                          <Label className="text-sm font-normal text-muted-foreground">{L.repeatUntil}</Label>
                           <DatePicker date={recurEndDate} onDateChange={setRecurEndDate} placeholder={t("recurring.ongoing")} className="space-y-0" />
                           <p className="text-[11px] text-muted-foreground leading-tight">{L.repeatHint}</p>
                         </div>
