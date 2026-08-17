@@ -1,6 +1,5 @@
 import { AppLayout } from "@/components/AppLayout";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { DaysOffSection } from "@/components/settings/CalendarSections";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -18,7 +17,7 @@ export default function CalendarSettingsPage() {
           <h1 className="text-2xl font-bold text-foreground">{t("settings.calendarSettings")}</h1>
         </div>
 
-        <DaysOffSection />
+        
 
         <Card>
           <CardContent className="flex items-center justify-between gap-4 flex-wrap pt-6">

@@ -9,6 +9,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useAppointments, useAllIncome, useProfile } from "@/hooks/useData";
 import { formatScheduledTime } from "@/lib/timeFormat";
+import { useNeedsAttention } from "@/hooks/useNeedsAttention";
 
 const PAID_STATUSES = new Set(["paid_now", "paid_in_advance", "paid_from_prepayment"]);
 
@@ -175,44 +176,11 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
   const occupancy = capacity > 0 ? Math.round((derived.totalSessions / capacity) * 100) : 0;
   const totalDebt = Number(stats?.outstandingBalance ?? 0);
 
-  const attention = [
-    {
-      key: "unpaid",
-      icon: Clock,
-      tone: "warning" as const,
-      show: derived.unpaid.length > 0,
-      title: `${t("dashm.unpaidSessions", { count: derived.unpaid.length })}*`,
-      sub: `${t("dashm.totalAmount")}: ${cs}${derived.unpaidTotal.toLocaleString()}`,
-      onClick: () => onOpenWidget("unpaid_sessions", "/finances/income?tab=pending&range=all"),
-    },
-    {
-      key: "debt",
-      icon: Receipt,
-      tone: "danger" as const,
-      show: totalDebt > 0,
-      title: `${t("ops.totalDebt")}: ${cs}${totalDebt.toLocaleString()}*`,
-      sub: t("dashm.debtSub"),
-      onClick: () => onOpenWidget("total_debt", "/finances/income?tab=pending&range=all"),
-    },
-    {
-      key: "noNext",
-      icon: CalendarDays,
-      tone: "info" as const,
-      show: isCurrentMonth && clientsWithoutNextSessionCount > 0,
-      title: `${t("dashm.clientsWithoutNext", { count: clientsWithoutNextSessionCount })}*`,
-      sub: t("dashm.clientsWithoutNextSub"),
-      onClick: () => onOpenWidget("clients_without_next_session", "/clients?filter=withoutNextSession"),
-    },
-    {
-      key: "lost",
-      icon: FileSignature,
-      tone: "muted" as const,
-      show: derived.lostIncome > 0,
-      title: `${t("ops.lostIncomeCancellations")}: ${cs}${derived.lostIncome.toLocaleString()}*`,
-      sub: t("dashm.lostSub", { count: derived.cancelled }),
-      onClick: () => onOpenWidget("lost_income", "/calendar"),
-    },
-  ].filter((a) => a.show);
+  const { items: attentionItems } = useNeedsAttention(monthKey);
+  const attention = attentionItems.map((a) => ({
+    ...a,
+    onClick: () => onOpenWidget(a.widget, a.path),
+  }));
 
   const recentUnpaid = derived.unpaid
     .slice()

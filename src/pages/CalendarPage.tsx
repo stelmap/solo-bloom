@@ -56,7 +56,8 @@ import { useBookingRequests, type BookingRequestRow } from "@/hooks/useBookingIn
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Inbox } from "lucide-react";
 import { BookingInboxPanel } from "@/components/BookingInboxPanel";
-import { DaysOffSection } from "@/components/settings/CalendarSections";
+import { SidebarSection } from "@/components/calendar/SidebarSection";
+import { useNeedsAttention } from "@/hooks/useNeedsAttention";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
@@ -1354,7 +1355,9 @@ export default function CalendarPage() {
     }
   }, [appointments, canDropOnSlot, toast, t]);
 
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [daysOffListOpen, setDaysOffListOpen] = useState(false);
+  const [addDayOffOpen, setAddDayOffOpen] = useState(false);
+  const [newDayOffDate, setNewDayOffDate] = useState("");
   const [agendaOpen, setAgendaOpen] = useState(false);
   const [needsOpen, setNeedsOpen] = useState(false);
 
@@ -1368,7 +1371,7 @@ export default function CalendarPage() {
   const bookingHandle = (bookingLink?.slug as string) || (bookingLink?.token as string) || "";
   const bookingUrl = bookingHandle && typeof window !== "undefined" ? `${window.location.origin}/book/${bookingHandle}` : "";
 
-  // ---- Adaptive Agenda data (presentation only) ----
+  // ---- Today schedule data (presentation only) ----
   const agendaDate = currentDate;
   const agendaSessions = (visibleAppointments as any[])
     .filter((a) => a.status !== "cancelled" && isSameDay(new Date(a.scheduled_at), agendaDate))
@@ -1376,78 +1379,54 @@ export default function CalendarPage() {
   const nowMs = Date.now();
   const nextIdx = agendaSessions.findIndex((a) => new Date(a.scheduled_at).getTime() >= nowMs);
   const agendaNext = nextIdx >= 0 ? agendaSessions[nextIdx] : null;
-  const attentionItems = (visibleAppointments as any[]).filter((a) => {
-    if (a.status === "cancelled" || a.status === "completed") return false;
-    if (new Date(a.scheduled_at).getTime() < nowMs) return false;
-    if (a.group_session_id) return false;
-    const c = clients.find((cl: any) => cl.id === a.client_id) as any;
-    return !!c?.confirmation_required && a.confirmation_status !== "confirmed";
-  });
-  const attentionCount = attentionItems.length + pendingRequests.length;
+
+  // Same source of truth as the Dashboard "Needs attention" widget.
+  const { items: needsAttentionItems } = useNeedsAttention();
+  const attentionCount = needsAttentionItems.length + pendingRequests.length;
+
+  const todayStr = format(new Date(), "yyyy-MM-dd");
+  const upcomingDaysOff = useMemo(
+    () =>
+      (daysOff as any[])
+        .filter((d: any) => d.date >= todayStr)
+        .sort((a: any, b: any) => String(a.date).localeCompare(String(b.date))),
+    [daysOff, todayStr],
+  );
+  const dayOffTypeLabel = (type: string) =>
+    ({
+      day_off: t("settings.dayOff"),
+      vacation: t("settings.vacation"),
+      holiday: t("settings.holiday"),
+      sick: t("settings.sickDay"),
+    } as Record<string, string>)[type] || t("settings.dayOff");
 
   const agendaName = (a: any) =>
     a.group_session_id ? (a.group_sessions?.groups?.name || "") : a.clients?.name;
 
   const agendaContent = (
     <div className="bg-card rounded-xl border border-border animate-fade-in divide-y divide-border">
-      <div className="flex items-center justify-between gap-2 p-4">
-        <h2 className="text-base font-semibold text-foreground">{(t as any)("calendar.agenda") || "Adaptive Agenda"}</h2>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-9 w-9" aria-label={(t as any)("common.actions") || "Actions"}>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
-              {t("settings.calendarSettings") || "Calendar settings"}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setInboxOpen(true)}>
-              {t("booking.inbox") || "Booking inbox"}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setCurrentDate(new Date())}>
-              {t("calendar.today") || "Today"}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      <div className="p-4 space-y-4">
-        <div>
-          <p className="text-base font-semibold text-foreground">
-            {format(agendaDate, "EEEE, d MMMM", { locale: dateLocale })}
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {(t as any)("calendar.todaysSessions") || "Today's sessions"}
-          </p>
-        </div>
-
+      {/* 1. Today schedule */}
+      <SidebarSection
+        id="today"
+        title={(t as any)("calendar.agenda") || "Today schedule"}
+        meta={`${agendaSessions.length} ${(t as any)("calendar.sessionsShort") || "sessions"}`}
+      >
         {agendaSessions.length === 0 ? (
           <p className="text-sm text-muted-foreground rounded-lg border border-dashed border-border p-4 text-center">
             {(t as any)("calendar.noUpcoming") || "No upcoming sessions"}
           </p>
         ) : (
-          <ol className="relative space-y-4">
+          <ol className="space-y-3">
             {agendaSessions.map((s: any) => {
-              const si = statusInfo(s.status);
               const ss = getSessionStateStyle(s);
               const isNext = agendaNext?.id === s.id;
               return (
                 <li key={s.id} className="flex gap-3">
-                  <div className="flex flex-col items-center pt-1 w-14 shrink-0">
-                    <span className="text-xs font-semibold text-foreground tabular-nums">{fmtTime(s.scheduled_at)}</span>
-                  </div>
-                  <span className={cn("mt-2 h-2 w-2 rounded-full shrink-0", isNext ? "bg-primary" : "bg-muted-foreground/50")} />
+                  <span className="w-12 shrink-0 pt-1 text-xs font-semibold text-foreground tabular-nums">
+                    {fmtTime(s.scheduled_at)}
+                  </span>
                   <div className={cn("flex-1 min-w-0", isNext && "rounded-xl border border-primary/30 bg-primary/[0.06] p-3 -mt-1")}>
-                    {isNext && (
-                      <span className="inline-flex items-center rounded-md bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary mb-1">
-                        {(t as any)("calendar.next") || "Next"}
-                      </span>
-                    )}
                     <p className="text-sm font-semibold text-foreground truncate">{agendaName(s)}</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {s.services?.name} · {s.duration_minutes} {L.durationMin}
-                    </p>
                     <span className={cn("mt-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium", ss.badge)}>
                       <span className={cn("h-2 w-2 rounded-full", ss.dot)} />
                       {(t as any)(ss.labelKey) || ss.labelFallback}
@@ -1461,103 +1440,110 @@ export default function CalendarPage() {
                 </li>
               );
             })}
-            <li className="flex gap-3">
-              <div className="w-14 shrink-0 pt-1 text-xs text-muted-foreground text-center">—</div>
-              <span className="mt-2 h-2 w-2 rounded-full bg-muted-foreground/40 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground">
-                  {(t as any)("calendar.noMoreToday") || "No more sessions today"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {(t as any)("calendar.allSetToday") || "You're all set for the rest of the day."}
-                </p>
-              </div>
-            </li>
           </ol>
         )}
-      </div>
+      </SidebarSection>
 
-      <div>
-        <button
-          type="button"
-          onClick={() => setNeedsOpen(o => !o)}
-          aria-expanded={needsOpen}
-          className="w-full flex items-center justify-between gap-2 px-4 py-3 min-h-[48px] text-left hover:bg-accent/40 transition-colors"
-        >
-          <span className="text-sm font-medium text-foreground">
-            {(t as any)("calendar.needsAttention") || "Needs attention"} · {attentionCount}
-          </span>
-          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", needsOpen && "rotate-180")} />
-        </button>
-        {needsOpen && (
-          <div className="px-4 pb-3 space-y-2">
-            {pendingRequests.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setInboxOpen(true)}
-                className="w-full flex items-center gap-2 rounded-lg border border-border p-2 text-left text-sm hover:bg-accent/40"
-              >
-                <Inbox className="h-4 w-4 text-warning shrink-0" />
-                <span className="truncate">{(t as any)("booking.pendingRequests") || "Pending requests"}</span>
-                <span className="ml-auto tabular-nums font-semibold">{pendingRequests.length}</span>
-              </button>
-            )}
-            {attentionItems.slice(0, 6).map((a: any) => (
-              <button
-                key={a.id}
-                type="button"
-                onClick={() => openSessionSheet(a)}
-                className="w-full flex items-center gap-2 rounded-lg border border-border p-2 text-left text-sm hover:bg-accent/40"
-              >
-                <AlertTriangle className="h-4 w-4 text-warning shrink-0" />
-                <span className="truncate">{agendaName(a)}</span>
-                <span className="ml-auto text-xs text-muted-foreground tabular-nums shrink-0">
-                  {format(new Date(a.scheduled_at), "MMM d", { locale: dateLocale })} · {fmtTime(a.scheduled_at)}
-                </span>
-              </button>
-            ))}
-            {attentionCount === 0 && (
-              <p className="text-xs text-muted-foreground">{(t as any)("calendar.allClear") || "Nothing needs attention."}</p>
-            )}
-          </div>
-        )}
-      </div>
+      {/* 2. Needs attention */}
+      <SidebarSection
+        id="attention"
+        title={(t as any)("calendar.needsAttention") || "Needs attention"}
+        meta={attentionCount > 0 ? String(attentionCount) : undefined}
+      >
+        <div className="space-y-2">
+          {pendingRequests.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setInboxOpen(true)}
+              className="w-full flex items-center gap-2 rounded-lg border border-border p-2 text-left text-sm hover:bg-accent/40"
+            >
+              <Inbox className="h-4 w-4 text-warning shrink-0" />
+              <span className="truncate">{(t as any)("booking.pendingRequests") || "Pending requests"}</span>
+              <span className="ml-auto tabular-nums font-semibold">{pendingRequests.length}</span>
+            </button>
+          )}
+          {needsAttentionItems.map((a) => (
+            <button
+              key={a.key}
+              type="button"
+              onClick={() => navigate(a.path)}
+              className="w-full flex items-start gap-2 rounded-lg border border-border p-2 text-left text-sm hover:bg-accent/40"
+            >
+              <a.icon className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+              <span className="min-w-0">
+                <span className="block truncate font-medium text-foreground">{a.title}</span>
+                <span className="block truncate text-xs text-muted-foreground">{a.sub}</span>
+              </span>
+            </button>
+          ))}
+          {attentionCount === 0 && (
+            <p className="text-xs text-muted-foreground">{(t as any)("calendar.allClear") || "Nothing needs attention."}</p>
+          )}
+        </div>
+      </SidebarSection>
 
-      <div className="flex items-center justify-between gap-2 p-4">
-        <span className="text-sm font-medium text-foreground">{(t as any)("booking.link") || "Booking link"}</span>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="outline" size="icon" className="h-9 w-9"
-            aria-label={(t as any)("booking.openLink") || "Open booking link"}
-            disabled={!bookingUrl}
-            onClick={() => bookingUrl && window.open(bookingUrl, "_blank", "noopener")}
-          >
-            <ExternalLink className="h-4 w-4" />
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-9 w-9" aria-label={(t as any)("common.actions") || "Actions"}>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                disabled={!bookingUrl}
+      {/* 3. Booking link */}
+      <SidebarSection id="booking" title={(t as any)("booking.link") || "Booking link"} defaultOpen={false}>
+        {bookingUrl ? (
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground break-all rounded-lg border border-border bg-muted/40 p-2">
+              {bookingUrl}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline" size="sm" className="flex-1"
                 onClick={() => {
-                  if (!bookingUrl) return;
                   navigator.clipboard.writeText(bookingUrl);
                   toast({ title: (t as any)("common.copied") || "Copied" });
                 }}
               >
-                <Copy className="h-4 w-4 mr-2" /> {(t as any)("common.copyLink") || "Copy link"}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
-                {t("settings.publicBooking") || "Public booking"}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <Copy className="h-4 w-4 mr-1" /> {(t as any)("common.copyLink") || "Copy link"}
+              </Button>
+              <Button
+                variant="outline" size="sm" className="flex-1"
+                onClick={() => window.open(bookingUrl, "_blank", "noopener")}
+              >
+                <ExternalLink className="h-4 w-4 mr-1" /> {(t as any)("booking.openLink") || "Open link"}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground">{(t as any)("booking.noLink") || "No booking link yet."}</p>
+        )}
+      </SidebarSection>
+
+      {/* 4. Days off */}
+      <SidebarSection
+        id="daysoff"
+        title={t("settings.daysOff") || "Days off"}
+        meta={upcomingDaysOff.length > 0 ? `${upcomingDaysOff.length} ${(t as any)("calendar.upcoming") || "upcoming"}` : undefined}
+        defaultOpen={false}
+      >
+        <div className="space-y-2">
+          {upcomingDaysOff.length === 0 ? (
+            <p className="text-xs text-muted-foreground">{(t as any)("calendar.noDaysOff") || "No upcoming days off."}</p>
+          ) : (
+            upcomingDaysOff.slice(0, 3).map((d: any) => (
+              <div key={d.id} className="flex items-center gap-2 rounded-lg border border-border p-2 text-sm">
+                <span className="font-medium text-foreground tabular-nums">
+                  {format(new Date(`${d.date}T00:00:00`), "MMM d", { locale: dateLocale })}
+                </span>
+                <span className="truncate text-xs text-muted-foreground">{d.label || dayOffTypeLabel(d.type)}</span>
+              </div>
+            ))
+          )}
+          <div className="flex gap-2 pt-1">
+            {upcomingDaysOff.length > 3 && (
+              <Button variant="outline" size="sm" className="flex-1" onClick={() => setDaysOffListOpen(true)}>
+                {(t as any)("common.viewAll") || "View all"}
+              </Button>
+            )}
+            <Button variant="outline" size="sm" className="flex-1" onClick={() => setAddDayOffOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" /> {t("settings.addDayOff") || "Add day off"}
+            </Button>
+          </div>
         </div>
-      </div>
+      </SidebarSection>
     </div>
   );
 
@@ -1705,13 +1691,13 @@ export default function CalendarPage() {
               <TooltipTrigger asChild>
                 <Button
                   variant="outline" size="icon" className="h-10 w-10 rounded-xl xl:hidden"
-                  aria-label={(t as any)("calendar.agenda") || "Adaptive Agenda"}
+                  aria-label={(t as any)("calendar.agenda") || "Today schedule"}
                   onClick={() => setAgendaOpen(true)}
                 >
                   <PanelRightOpen className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>{(t as any)("calendar.agenda") || "Adaptive Agenda"}</TooltipContent>
+              <TooltipContent>{(t as any)("calendar.agenda") || "Today schedule"}</TooltipContent>
             </Tooltip>
 
             {pendingRequests.length > 0 && (
@@ -2520,7 +2506,7 @@ export default function CalendarPage() {
       <Sheet open={agendaOpen} onOpenChange={setAgendaOpen}>
         <SheetContent side={isMobile ? "bottom" : "right"} className={cn("overflow-y-auto", isMobile ? "h-[85vh] rounded-t-2xl" : "w-full sm:max-w-md")}>
           <SheetHeader className="sr-only">
-            <SheetTitle>{(t as any)("calendar.agenda") || "Adaptive Agenda"}</SheetTitle>
+            <SheetTitle>{(t as any)("calendar.agenda") || "Today schedule"}</SheetTitle>
           </SheetHeader>
           <div className="mt-4">{agendaContent}</div>
         </SheetContent>
@@ -2543,16 +2529,62 @@ export default function CalendarPage() {
         </SheetContent>
       </Sheet>
 
-      <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{t("settings.calendarSettings") || "Calendar settings"}</SheetTitle>
-          </SheetHeader>
-          <div className="mt-4 space-y-4">
-            <DaysOffSection />
+
+      {/* Add day off */}
+      <Dialog open={addDayOffOpen} onOpenChange={(o) => { setAddDayOffOpen(o); if (!o) setNewDayOffDate(""); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("settings.addDayOff") || "Add day off"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input type="date" value={newDayOffDate} onChange={(e) => setNewDayOffDate(e.target.value)} />
+            <Button
+              className="w-full"
+              disabled={!newDayOffDate}
+              onClick={async () => {
+                if (!newDayOffDate) return;
+                setAddDayOffOpen(false);
+                await handleQuickDayOff(new Date(`${newDayOffDate}T00:00:00`));
+                setNewDayOffDate("");
+              }}
+            >
+              {t("common.save") || "Save"}
+            </Button>
           </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
+
+      {/* All upcoming days off */}
+      <Dialog open={daysOffListOpen} onOpenChange={setDaysOffListOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("settings.daysOff") || "Days off"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+            {upcomingDaysOff.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{(t as any)("calendar.noDaysOff") || "No upcoming days off."}</p>
+            ) : (
+              upcomingDaysOff.map((d: any) => (
+                <div key={d.id} className="flex items-center gap-2 rounded-lg border border-border p-2 text-sm">
+                  <span className="font-medium text-foreground tabular-nums">
+                    {format(new Date(`${d.date}T00:00:00`), "PP", { locale: dateLocale })}
+                  </span>
+                  <span className="truncate text-xs text-muted-foreground">{d.label || dayOffTypeLabel(d.type)}</span>
+                  <Button
+                    variant="ghost" size="sm" className="ml-auto text-destructive"
+                    onClick={async () => {
+                      await deleteDayOff.mutateAsync(d.id);
+                      toast({ title: t("toast.dayOffRemoved") });
+                    }}
+                  >
+                    {t("common.delete") || "Delete"}
+                  </Button>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <SessionDetailSheet
         appointment={detailApt}
