@@ -2101,7 +2101,7 @@ export default {
   "dashu.noSessionsToday": "No sessions scheduled today",
   "dashu.paidNote1": "* Full detailed lists open in the Finance module (paid option).",
   "dashu.paidNote2": "Dashboard preview shows the first 5 items.",
-} as const;  "fo.desc.expectedIncome": "Scheduled + unpaid expected payments",
+  "fo.desc.expectedIncome": "Scheduled + unpaid expected payments",
   "fo.desc.plannedExpenses": "Upcoming expenses until end of period",
   "fo.desc.forecastTaxes": "Estimated taxes for remaining period",
   "fo.desc.forecastNet": "Expected result by end of selected period",
@@ -2114,4 +2114,4 @@ export default {
   "fo.legendIncome": "Expected income (actual/forecast)",
   "fo.legendExpenses": "Planned expenses & taxes (forecast)",
   "fo.legendNet": "Forecast net (trend)",
-
+} as const;

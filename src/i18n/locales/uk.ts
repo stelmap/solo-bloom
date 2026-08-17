@@ -2101,7 +2101,7 @@ export default {
   "dashu.noSessionsToday": "На сьогодні сесій не заплановано",
   "dashu.paidNote1": "* Повні детальні списки відкриваються у модулі «Фінанси» (платна опція).",
   "dashu.paidNote2": "На дашборді показано перші 5 позицій.",
-} as const;  "fo.desc.expectedIncome": "Заплановані + неоплачені очікувані платежі",
+  "fo.desc.expectedIncome": "Заплановані + неоплачені очікувані платежі",
   "fo.desc.plannedExpenses": "Майбутні витрати до кінця періоду",
   "fo.desc.forecastTaxes": "Орієнтовні податки за решту періоду",
   "fo.desc.forecastNet": "Очікуваний результат на кінець періоду",
@@ -2114,4 +2114,4 @@ export default {
   "fo.legendIncome": "Очікуваний дохід (факт/прогноз)",
   "fo.legendExpenses": "Заплановані витрати та податки (прогноз)",
   "fo.legendNet": "Прогнозний чистий (тренд)",
-
+} as const;
