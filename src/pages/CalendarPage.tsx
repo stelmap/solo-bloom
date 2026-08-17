@@ -2015,22 +2015,28 @@ export default function CalendarPage() {
                       </span>
                     </button>
                     {isRecurring && (
-                      <div className="rounded-xl bg-muted/40 border border-border p-2.5 grid grid-cols-1 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)_minmax(0,1fr)] gap-2.5">
-                        <div className="space-y-1">
-                          <Label className="text-sm font-normal text-muted-foreground">{t("recurring.intervalWeeks")}</Label>
-                          <Select value={recurInterval.toString()} onValueChange={v => setRecurInterval(parseInt(v))}>
-                            <SelectTrigger className={cn("rounded-xl bg-background", D.field)}><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="1">{t("recurring.weekly")}</SelectItem>
-                              <SelectItem value="2">{t("recurring.biweekly")}</SelectItem>
-                              <SelectItem value="3">{t("recurring.custom", { n: "3" })}</SelectItem>
-                              <SelectItem value="4">{t("recurring.custom", { n: "4" })}</SelectItem>
-                            </SelectContent>
-                          </Select>
+                      <div className="rounded-xl bg-muted/40 border border-border p-3 space-y-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1 min-w-0">
+                            <Label className="block text-xs font-medium text-muted-foreground truncate">{t("recurring.intervalWeeks")}</Label>
+                            <Select value={recurInterval.toString()} onValueChange={v => setRecurInterval(parseInt(v))}>
+                              <SelectTrigger className="rounded-xl bg-background h-10 w-full min-w-0"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1">{t("recurring.weekly")}</SelectItem>
+                                <SelectItem value="2">{t("recurring.biweekly")}</SelectItem>
+                                <SelectItem value="3">{t("recurring.custom", { n: "3" })}</SelectItem>
+                                <SelectItem value="4">{t("recurring.custom", { n: "4" })}</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1 min-w-0">
+                            <Label className="block text-xs font-medium text-muted-foreground truncate">{L.repeatUntil}</Label>
+                            <DatePicker date={recurEndDate} onDateChange={setRecurEndDate} placeholder={t("recurring.ongoing")} className="space-y-0" />
+                          </div>
                         </div>
-                        <div className="space-y-1">
-                          <Label id="recur-days-label" className="text-sm font-normal text-muted-foreground">{t("recurring.daysOfWeek")}</Label>
-                          <div role="group" aria-labelledby="recur-days-label" className="grid grid-cols-7 gap-1">
+                        <div className="space-y-1.5 min-w-0">
+                          <Label id="recur-days-label" className="block text-xs font-medium text-muted-foreground truncate">{t("recurring.daysOfWeek")}</Label>
+                          <div role="group" aria-labelledby="recur-days-label" className="flex flex-wrap gap-1.5">
                             {DAY_KEYS.map((key, i) => {
                               const active = recurDays.includes(i + 1);
                               const dayName = t(key as any);
@@ -2038,20 +2044,16 @@ export default function CalendarPage() {
                                 <button key={i} type="button" onClick={() => toggleRecurDay(i + 1)}
                                   aria-pressed={active}
                                   aria-label={dayName}
-                                  className={cn("rounded-lg text-xs font-medium transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", D.field,
+                                  className={cn("h-9 min-w-[42px] px-2 rounded-lg text-xs font-medium leading-none transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                                     active ? "bg-primary-soft text-primary border-primary-border" : "bg-background border-border text-foreground hover:border-muted-foreground/60"
                                   )}>
-                                  {dayName}
+                                  {dayName.slice(0, 3)}
                                 </button>
                               );
                             })}
                           </div>
                         </div>
-                        <div className="space-y-1">
-                          <Label className="text-sm font-normal text-muted-foreground">{L.repeatUntil}</Label>
-                          <DatePicker date={recurEndDate} onDateChange={setRecurEndDate} placeholder={t("recurring.ongoing")} className="space-y-0" />
-                          <p className="text-[11px] text-muted-foreground leading-tight">{L.repeatHint}</p>
-                        </div>
+                        <p className="text-[11px] text-muted-foreground leading-snug">{L.repeatHint}</p>
                       </div>
                     )}
                   </div>
