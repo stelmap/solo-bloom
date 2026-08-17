@@ -564,6 +564,37 @@ export function useAppointments(range?: { from?: string; to?: string }) {
   });
 }
 
+/**
+ * All appointments for the current user, paginated past PostgREST's 1000-row cap.
+ * Only the fields needed for analytics are selected.
+ */
+export function useAllAppointmentsLite() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["appointments", "all-lite", user?.id],
+    queryFn: async () => {
+      const pageSize = 1000;
+      const all: any[] = [];
+      for (let page = 0; page < 20; page++) {
+        const { data, error } = await supabase
+          .from("appointments")
+          .select("id, scheduled_at, status, price, duration_minutes, payment_status")
+          .order("scheduled_at", { ascending: true })
+          .range(page * pageSize, page * pageSize + pageSize - 1);
+        if (error) throw error;
+        const rows = data ?? [];
+        all.push(...rows);
+        if (rows.length < pageSize) break;
+      }
+      return all;
+    },
+    enabled: !!user,
+    staleTime: STALE_MEDIUM,
+  });
+}
+
+
+
 export function useCreateAppointment() {
   const qc = useQueryClient();
   const { user } = useAuth();
