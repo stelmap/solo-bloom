@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import {
-  useAllIncome, useAllExpenses, useAppointments, useWorkingSchedule, useDaysOff, useProfile,
+  useAllIncome, useAllExpenses, useAllAppointmentsLite, useWorkingSchedule, useDaysOff, useProfile,
 } from "@/hooks/useData";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -37,7 +37,7 @@ export default function CostEfficiencyPage() {
 
   const { data: allExpenses = [] } = useAllExpenses();
   const { data: allIncome = [] } = useAllIncome();
-  const { data: allAppointments = [] } = useAppointments();
+  const { data: allAppointments = [] } = useAllAppointmentsLite();
   const { data: schedule = [] } = useWorkingSchedule();
   const { data: daysOff = [] } = useDaysOff();
   const { data: profile } = useProfile();
@@ -72,6 +72,7 @@ export default function CostEfficiencyPage() {
       fixed: 0,
       variable: 0,
       sessions: 0,
+      pastSessions: 0,
       income: 0,
     }));
     for (const e of expensesOfYear(year)) {
@@ -80,11 +81,13 @@ export default function CostEfficiencyPage() {
       rows[m].total += amt;
       if (isFixed(e)) rows[m].fixed += amt; else rows[m].variable += amt;
     }
+    const now = new Date();
     for (const a of allAppointments as any[]) {
       const d = new Date(a.scheduled_at);
       if (d.getFullYear() !== year) continue;
       if (a.status === "cancelled") continue;
       rows[d.getMonth()].sessions += 1;
+      if (d <= now) rows[d.getMonth()].pastSessions += 1;
     }
     for (const i of allIncome as any[]) {
       const d = new Date(i.session_date || i.date);
@@ -95,18 +98,31 @@ export default function CostEfficiencyPage() {
   }, [realExpenses, allAppointments, allIncome, year, monthLabels, monthLongLabels]);
 
   const scoped = scope === "year" ? months : [months[selMonth]];
-  const monthCount = Math.max(scoped.length, 1);
+  /**
+   * Months to average over: for a year in progress only the elapsed months count,
+   * otherwise a partial year understates monthly fixed costs.
+   */
+  const monthCount = useMemo(() => {
+    if (scope === "month") return 1;
+    const now = new Date();
+    if (year > now.getFullYear()) return Math.max(months.filter(m => m.total > 0).length, 1);
+    if (year === now.getFullYear()) return now.getMonth() + 1;
+    return 12;
+  }, [scope, year, months]);
 
   const totalExpenses = scoped.reduce((s, m) => s + m.total, 0);
   const fixedTotal = scoped.reduce((s, m) => s + m.fixed, 0);
   const variableTotal = scoped.reduce((s, m) => s + m.variable, 0);
   const sessions = scoped.reduce((s, m) => s + m.sessions, 0);
+  // Cost-per-session metrics must only divide by sessions that already happened,
+  // otherwise future bookings dilute costs that were incurred to date.
+  const pastSessions = scoped.reduce((s, m) => s + m.pastSessions, 0);
   const income = scoped.reduce((s, m) => s + m.income, 0);
 
   const monthlyFixed = fixedTotal / monthCount;
-  const variablePerSession = sessions > 0 ? variableTotal / sessions : 0;
-  const costPerSession = sessions > 0 ? totalExpenses / sessions : 0;
-  const avgPrice = sessions > 0 ? income / sessions : 0;
+  const variablePerSession = pastSessions > 0 ? variableTotal / pastSessions : 0;
+  const costPerSession = pastSessions > 0 ? totalExpenses / pastSessions : 0;
+  const avgPrice = pastSessions > 0 ? income / pastSessions : 0;
 
   // Previous comparable period expenses
   const prevExpenses = useMemo(() => {
@@ -145,7 +161,7 @@ export default function CostEfficiencyPage() {
   const monthsWithCost = months.filter(m => m.total > 0);
   const lowest = monthsWithCost.length ? monthsWithCost.reduce((a, b) => (b.total < a.total ? b : a)) : null;
   const highest = monthsWithCost.length ? monthsWithCost.reduce((a, b) => (b.total > a.total ? b : a)) : null;
-  const cpsValues = months.filter(m => m.sessions > 0).map(m => m.total / m.sessions);
+  const cpsValues = months.filter(m => m.pastSessions > 0).map(m => m.total / m.pastSessions);
   const cpsMin = cpsValues.length ? Math.min(...cpsValues) : 0;
   const cpsMax = cpsValues.length ? Math.max(...cpsValues) : 0;
 
@@ -157,9 +173,8 @@ export default function CostEfficiencyPage() {
   // Expense breakdown by category
   const breakdown = useMemo(() => {
     const map = new Map<string, number>();
-    for (const e of scoped.flatMap(m =>
-      expensesOfYear(year).filter(x => new Date(x.date).getMonth() === m.month),
-    )) {
+    const monthSet = new Set(scoped.map(m => m.month));
+    for (const e of expensesOfYear(year).filter(x => monthSet.has(new Date(x.date).getMonth()))) {
       const key = String(e.category || t("category.other") || "Other");
       map.set(key, (map.get(key) || 0) + Number(e.amount || 0));
     }
@@ -175,7 +190,7 @@ export default function CostEfficiencyPage() {
   const dynamicsData = months.map(m => ({
     name: m.label,
     total: Math.round(m.total),
-    cps: m.sessions > 0 ? Math.round(m.total / m.sessions) : 0,
+    cps: m.pastSessions > 0 ? Math.round(m.total / m.pastSessions) : 0,
   }));
 
   // Cost per session vs occupancy
