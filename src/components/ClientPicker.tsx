@@ -29,6 +29,8 @@ interface ClientPickerProps {
   /** Optional handler to open an "Add new client" flow from the empty / footer state. */
   onAddNew?: () => void;
   addNewLabel?: string;
+  /** Optional icon rendered at the start of the trigger. */
+  leadingIcon?: React.ReactNode;
 }
 
 /**
