@@ -22,7 +22,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useClients } from "@/hooks/useData";
-import { usePaymentMethods, localizedMethodName } from "@/hooks/usePaymentMethods";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { downloadCSV } from "@/lib/csvExport";
@@ -118,12 +117,6 @@ export default function PaymentAuditPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: clients = [] } = useClients();
-  const { data: paymentMethods = [] } = usePaymentMethods();
-  const methodLabel = (code: string) => {
-    const m = paymentMethods.find(pm => pm.code === code);
-    if (m) return localizedMethodName(m, t);
-    return code.replace(/_/g, " ");
-  };
   const { data, isLoading } = useAuditData();
 
   const [clientId, setClientId] = useState<string>(searchParams.get("client") || "all");
@@ -300,12 +293,12 @@ export default function PaymentAuditPage() {
   const buildCsv = (records: any[], filename: string) => {
     const headers = [
       t("csv.header.date"), t("csv.header.client"), t("csv.header.amount"), t("csv.header.currency"),
-      t("csv.header.paymentMethod"), t("csv.header.invoice"), t("csv.header.allocation"), t("csv.header.status"),
+      t("csv.header.invoice"), t("csv.header.allocation"), t("csv.header.status"),
       t("csv.header.source"), t("csv.header.linkedSessions"), t("csv.header.linkedDates"),
       t("csv.header.prepaidImpact"), t("csv.header.comment"), t("csv.header.created"), t("csv.header.updated"),
     ];
     const body = records.map(r => [
-      r.date, r.client_name, String(r.amount), cs, r.method,
+      r.date, r.client_name, String(r.amount), cs,
       r.invoice?.invoice_number || "", r.allocStatus, r.paymentStatus, r.source,
       String(r.allocs.length),
       r.allocs.map((a: any) => a.appointments?.scheduled_at?.split("T")[0]).filter(Boolean).join("; "),
@@ -471,7 +464,6 @@ export default function PaymentAuditPage() {
                 <TableHead className="h-11 py-0">{t("audit.col.date")}</TableHead>
                 <TableHead className="h-11 py-0">{t("audit.col.client")}</TableHead>
                 <TableHead className="h-11 py-0 text-right">{t("audit.col.amount")}</TableHead>
-                <TableHead className="h-11 py-0">{t("audit.col.method")}</TableHead>
                 <TableHead className="h-11 py-0">{t("audit.col.invoice")}</TableHead>
                 <TableHead className="h-11 py-0">{t("audit.col.allocation")}</TableHead>
                 <TableHead className="h-11 py-0">{t("audit.col.status")}</TableHead>
@@ -506,7 +498,6 @@ export default function PaymentAuditPage() {
                         ? <span className="text-amber-700">−{cs}{Number((r as any).prepayMovement || 0).toFixed(2)}</span>
                         : `${cs}${r.amount.toFixed(2)}`}
                     </TableCell>
-                    <TableCell className="py-2 align-middle text-sm">{methodLabel(r.method)}</TableCell>
                     <TableCell className="py-2 align-middle text-sm">{r.invoice?.invoice_number || <span className="text-muted-foreground">{t("audit.notGenerated")}</span>}</TableCell>
                     <TableCell className="py-2 align-middle"><Badge variant="outline" className={cn("inline-flex items-center border", ab.cls)}>{t(ab.key as any)}</Badge></TableCell>
                     <TableCell className="py-2 align-middle"><Badge variant="outline" className="inline-flex items-center capitalize">{t(`audit.pstatus.${r.paymentStatus}` as any) || r.paymentStatus}</Badge></TableCell>
@@ -574,7 +565,6 @@ export default function PaymentAuditPage() {
                   <Row label={t("audit.balanceAfter")} value={`${cs}${Number(openRow.raw?.balance_after || 0).toFixed(2)}`} />
                 </>
               )}
-              <Row label={t("audit.col.method")} value={openRow.method} />
               <Row label={t("audit.col.invoice")} value={openRow.invoice?.invoice_number || t("audit.notGenerated")} />
               <Row label={t("audit.col.status")} value={openRow.paymentStatus} />
               <Row label={t("audit.col.source")} value={t(`audit.src.${openRow.source}` as any) || openRow.source} />
