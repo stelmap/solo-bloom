@@ -2542,6 +2542,62 @@ export default function CalendarPage() {
         </SheetContent>
       </Sheet>
 
+      {/* Add day off */}
+      <Dialog open={addDayOffOpen} onOpenChange={(o) => { setAddDayOffOpen(o); if (!o) setNewDayOffDate(""); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("settings.addDayOff") || "Add day off"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input type="date" value={newDayOffDate} onChange={(e) => setNewDayOffDate(e.target.value)} />
+            <Button
+              className="w-full"
+              disabled={!newDayOffDate}
+              onClick={async () => {
+                if (!newDayOffDate) return;
+                setAddDayOffOpen(false);
+                await handleQuickDayOff(new Date(`${newDayOffDate}T00:00:00`));
+                setNewDayOffDate("");
+              }}
+            >
+              {t("common.save") || "Save"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* All upcoming days off */}
+      <Dialog open={daysOffListOpen} onOpenChange={setDaysOffListOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("settings.daysOff") || "Days off"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+            {upcomingDaysOff.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{(t as any)("calendar.noDaysOff") || "No upcoming days off."}</p>
+            ) : (
+              upcomingDaysOff.map((d: any) => (
+                <div key={d.id} className="flex items-center gap-2 rounded-lg border border-border p-2 text-sm">
+                  <span className="font-medium text-foreground tabular-nums">
+                    {format(new Date(`${d.date}T00:00:00`), "PP", { locale: dateLocale })}
+                  </span>
+                  <span className="truncate text-xs text-muted-foreground">{d.label || dayOffTypeLabel(d.type)}</span>
+                  <Button
+                    variant="ghost" size="sm" className="ml-auto text-destructive"
+                    onClick={async () => {
+                      await deleteDayOff.mutateAsync(d.id);
+                      toast({ title: t("toast.dayOffRemoved") });
+                    }}
+                  >
+                    {t("common.delete") || "Delete"}
+                  </Button>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <SessionDetailSheet
         appointment={detailApt}
         open={sessionSheetOpen}
