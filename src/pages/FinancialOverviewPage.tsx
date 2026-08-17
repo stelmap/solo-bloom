@@ -494,23 +494,16 @@ export default function FinancialOverviewPage() {
             <BridgeOp op="=" />
             <BridgeItem label={`= ${t("fo.forecastNet")}`} value={`${forecastNetTotal < 0 ? "-" : ""}${fmt(forecastNetTotal)}`} tone={forecastNetTotal >= 0 ? "text-success" : "text-destructive"} />
           </div>
-          <div className="mt-6 flex items-center justify-center gap-3">
-            <span className="h-9 w-9 rounded-full bg-muted flex items-center justify-center">
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </span>
-            <div>
-              <p className="text-sm text-muted-foreground">{t("fo.forecastSessions")}</p>
-              <p className="text-lg font-bold text-foreground">{forecastedSessions}</p>
-            </div>
-          </div>
         </div>
 
         {/* Supporting metrics */}
         <div className="flex flex-wrap gap-3">
+          <MiniStat dot="bg-muted-foreground" label={t("fo.forecastSessions")} value={String(forecastedSessions)} />
           <MiniStat dot="bg-primary" label={t("fo.avgMonthlyNet")} value={`${avgMonthlyNet < 0 ? "-" : ""}${fmt(avgMonthlyNet)}`} />
           <MiniStat dot="bg-primary" label={t("fo.avgExpectedIncome")} value={fmt(avgExpectedIncome)} />
           <MiniStat dot="bg-destructive" label={t("fo.avgPlannedExpenses")} value={fmt(avgPlannedExpenses)} />
         </div>
+
 
         {/* Yearly overview */}
         <div className="bg-card rounded-2xl border border-border shadow-sm p-6">
