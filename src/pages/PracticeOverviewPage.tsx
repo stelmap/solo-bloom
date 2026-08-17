@@ -10,7 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import {
   ArrowRight, ChevronRight, TrendingUp, TrendingDown, Wallet, Receipt,
-  Clock, CalendarDays, XCircle, Users,
+  Clock, CalendarDays, XCircle, Users, CheckCircle2, Activity, Lock as LockIcon,
 } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
