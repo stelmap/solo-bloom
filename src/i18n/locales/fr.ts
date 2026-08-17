@@ -2068,7 +2068,7 @@ export default {
   "po.vsPrev": "vs {period}",
   "po.activeSuffix": "{n} actifs",
   "po.completionRateSuffix": "{n}% de séances réalisées",
-  "po.cancellationRateSuffix": "{n}% d"annulations",
+  "po.cancellationRateSuffix": "{n}% annulations",
   "po.perSessionSuffix": "{amount} par séance",
   "po.privacyNote": "Toutes les données sont privées et chiffrées.",
   "po.yesterday": "hier",
