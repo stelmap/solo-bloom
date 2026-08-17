@@ -495,59 +495,8 @@ export default function FinancialOverviewPage() {
           )}
         </div>
 
-        {/* Monthly cards grid (always shown) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {scopedMonths.map(m => (
-            <button
-              key={m.month}
-              onClick={() => setDrillMonth(m)}
-              className={cn(
-                "text-left p-4 rounded-xl border transition-all hover:ring-2 hover:ring-ring/20",
-                m.isFuture ? "border-dashed border-border/60 bg-card/50" : "border-border bg-card",
-                year === currentYear && m.month === currentMonth && "ring-2 ring-primary/30"
-              )}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-foreground">{m.label}</span>
-                {m.isFuture && <Badge variant="outline" className="text-[10px] border-dashed">{t("financial.forecast")}</Badge>}
-              </div>
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("financial.income")}</span>
-                  <div className="text-right">
-                    <span className="text-success font-medium">{fmt(m.confirmedIncome)}</span>
-                    {m.expectedIncome > 0 && (
-                      <span className="text-muted-foreground ml-1">(+{fmt(m.expectedIncome)})</span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("financial.expenses")}</span>
-                  <span className="text-destructive font-medium">{fmt(m.expenses)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("financial.taxes")}</span>
-                  <span className="text-warning font-medium">{fmt(m.taxes)}</span>
-                </div>
-                <div className="flex justify-between border-t border-border pt-1 mt-1">
-                  <span className="text-muted-foreground font-medium">{t("financial.netResult")}</span>
-                  <span className={cn("font-semibold", m.net >= 0 ? "text-success" : "text-destructive")}>
-                    {m.net < 0 ? "-" : ""}{fmt(m.net)}
-                  </span>
-                </div>
-                {m.sessions > 0 && (
-                  <div className="text-muted-foreground mt-1">{m.sessions} {t("financial.sessions")}</div>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
 
-        {/* Cashflow summary */}
-        <div className="bg-card rounded-xl border border-border p-5">
-          <h2 className="font-semibold text-foreground mb-4">{t("financial.cashflow")}</h2>
-          <CashflowChart data={scopedMonths} fmt={fmt} t={t} cs={cs} />
-        </div>
+
 
         {/* Forecast explanation */}
         <Collapsible open={explainOpen} onOpenChange={setExplainOpen}>
