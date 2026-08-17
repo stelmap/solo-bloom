@@ -5,6 +5,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 const ITEMS = [
   { path: "/finances", labelKey: "nav.practiceOverview", end: true },
   { path: "/finances/overview", labelKey: "nav.financialOverview" },
+  { path: "/finances/cost-efficiency", labelKey: "nav.costEfficiency" },
   { path: "/finances/settings", labelKey: "nav.financeSettings" },
 ];
 
