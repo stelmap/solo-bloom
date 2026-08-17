@@ -2245,7 +2245,7 @@ export default {
   "fo.legendIncome": "Ожидаемый доход (факт/прогноз)",
   "fo.legendExpenses": "Плановые расходы и налоги (прогноз)",
   "fo.legendNet": "Прогнозный чистый (тренд)",
-};  "nav.costEfficiency": "Расходы и эффективность",
+  "nav.costEfficiency": "Расходы и эффективность",
   "ce.title": "Расходы и эффективность",
   "ce.subtitle": "Динамика расходов, контроль затрат и устойчивость",
   "ce.fixedCosts": "Постоянные расходы в месяц",
@@ -2285,4 +2285,4 @@ export default {
   "ce.insight.savings": "Возможность экономии",
   "ce.insight.savings.text": "Оптимизация маркетинговых инструментов и подписок",
   "ce.perMonth": "месяц",
-
+};
