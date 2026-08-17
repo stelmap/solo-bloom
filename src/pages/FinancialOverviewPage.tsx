@@ -368,28 +368,66 @@ export default function FinancialOverviewPage() {
     return lines;
   }, [drillMonth, activeTaxes, monthsData, year]);
 
+  // ---- Forecast-only derivations (Financial Overview = what's expected next) ----
+  const fcMonths = scopedMonths.filter(m => m.isFuture);
+  const actualMonths = scopedMonths.filter(m => !m.isFuture);
+  const expectedIncome = scopedMonths.reduce((s, m) => s + (m.isFuture ? m.income : m.expectedIncome), 0);
+  const plannedExpenses = fcMonths.reduce((s, m) => s + m.expenses, 0);
+  const forecastTaxes = fcMonths.reduce((s, m) => s + m.taxes, 0);
+  const currentNet = actualMonths.reduce((s, m) => s + m.net, 0);
+  const forecastNetTotal = currentNet + expectedIncome - plannedExpenses - forecastTaxes;
+  const forecastedSessions = scopedMonths.reduce((s, m) => s + m.sessions, 0);
+  const fcCount = Math.max(fcMonths.length, 1);
+  const avgExpectedIncome = expectedIncome / fcCount;
+  const avgPlannedExpenses = plannedExpenses / fcCount;
+  const asOfLabel = format(now, "MMM d", { locale: dateLocale });
+  const dividerLabel = scopedMonths.find(m => m.isFuture)?.shortLabel ?? null;
+  const lastActualLabel = [...scopedMonths].reverse().find(m => !m.isFuture)?.shortLabel ?? null;
+
+  const overviewData = scopedMonths.map(m => ({
+    name: m.shortLabel,
+    income: m.income,
+    outflow: m.expenses + m.taxes,
+    net: m.net,
+  }));
+
   return (
     <AppLayout>
-      <div className="space-y-6">
+      <div className="space-y-5">
         <FinanceSubnav />
+
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("financial.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("fo.subtitle")}</p>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("financial.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t("fo.subtitle")}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={() => setYear(y => y - 1)}><ChevronLeft className="h-4 w-4" /></Button>
-            <span className="text-lg font-semibold text-foreground min-w-[60px] text-center">{year}</span>
-            <Button variant="outline" size="icon" onClick={() => setYear(y => y + 1)}><ChevronRight className="h-4 w-4" /></Button>
-            <div className="inline-flex rounded-full bg-muted p-1 ml-2">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setYear(y => y - 1)}
+                className="h-9 w-9 rounded-xl border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={String(year - 1)}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <span className="text-xl font-bold text-foreground min-w-[64px] text-center">{year}</span>
+              <button
+                onClick={() => setYear(y => y + 1)}
+                className="h-9 w-9 rounded-xl border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={String(year + 1)}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="inline-flex rounded-full bg-muted p-1">
               {(["month", "year"] as const).map(v => (
                 <button
                   key={v}
                   onClick={() => setScope(v)}
                   className={cn(
-                    "rounded-full px-3.5 py-1 text-xs font-semibold transition-colors",
-                    scope === v ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                    "rounded-full px-4 py-1.5 text-sm font-semibold transition-colors",
+                    scope === v ? "bg-foreground text-background shadow-sm" : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {v === "month" ? t("fo.viewMonth") : t("fo.viewYear")}
@@ -400,7 +438,7 @@ export default function FinancialOverviewPage() {
               <select
                 value={selMonth}
                 onChange={e => setSelMonth(Number(e.target.value))}
-                className="h-9 rounded-md border border-border bg-background px-2 text-sm text-foreground"
+                className="h-9 rounded-xl border border-border bg-card px-2 text-sm text-foreground"
               >
                 {monthsData.map(m => (
                   <option key={m.month} value={m.month}>{m.label}</option>
@@ -410,97 +448,138 @@ export default function FinancialOverviewPage() {
           </div>
         </div>
 
-        {/* Forecast KPIs */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <SummaryCard icon={TrendingUp} label={t("fo.confirmedIncome")} value={fmt(scopeConfirmed)} accent="text-success" />
-          <SummaryCard icon={ArrowUpRight} label={t("fo.expectedIncome")} value={fmt(scopeExpected)} accent="text-primary" dashed />
-          <SummaryCard icon={ArrowDownRight} label={t("fo.plannedExpenses")} value={fmt(scopePlannedExpenses)} accent="text-destructive" dashed />
-          <SummaryCard icon={DollarSign} label={t("fo.forecastNet")} value={fmt(forecastNet)} accent={forecastNet >= 0 ? "text-success" : "text-destructive"} dashed />
+        {/* KPI row — forecast only */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <KpiCard
+            icon={TrendingUp}
+            tone="primary"
+            label={t("fo.expectedIncome")}
+            value={fmt(expectedIncome)}
+            hint={t("fo.desc.expectedIncome")}
+          />
+          <KpiCard
+            icon={TrendingDown}
+            tone="destructive"
+            label={t("fo.plannedExpenses")}
+            value={fmt(plannedExpenses)}
+            hint={t("fo.desc.plannedExpenses")}
+          />
+          <KpiCard
+            icon={Percent}
+            tone="destructive"
+            label={t("fo.forecastTaxes")}
+            value={fmt(forecastTaxes)}
+            hint={t("fo.desc.forecastTaxes")}
+          />
+          <KpiCard
+            icon={TrendingUp}
+            tone={forecastNetTotal >= 0 ? "success" : "destructive"}
+            label={t("fo.forecastNet")}
+            value={`${forecastNetTotal < 0 ? "-" : ""}${fmt(forecastNetTotal)}`}
+            hint={t("fo.desc.forecastNet")}
+          />
         </div>
 
-        {/* Expected by period end */}
-        <div className="bg-card rounded-xl border border-dashed border-border p-5">
-          <h2 className="font-semibold text-foreground mb-3">{t("fo.expectedBy", { date: periodEndLabel })}</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 text-sm">
-            <div><p className="text-muted-foreground text-xs">{t("financial.forecastIncome")}</p><p className="font-bold text-foreground">{fmt(scopeConfirmed + scopeExpected)}</p></div>
-            <div><p className="text-muted-foreground text-xs">{t("fo.plannedExpenses")}</p><p className="font-bold text-foreground">{fmt(scopePlannedExpenses)}</p></div>
-            <div><p className="text-muted-foreground text-xs">{t("fo.forecastTaxes")}</p><p className="font-bold text-foreground">{fmt(scopeTaxes)}</p></div>
-            <div><p className="text-muted-foreground text-xs">{t("fo.forecastNet")}</p><p className={cn("font-bold", forecastNet >= 0 ? "text-success" : "text-destructive")}>{forecastNet < 0 ? "-" : ""}{fmt(forecastNet)}</p></div>
-            <div><p className="text-muted-foreground text-xs">{t("fo.forecastSessions")}</p><p className="font-bold text-foreground">{scopeSessions}</p></div>
+        {/* Forecast bridge */}
+        <div className="bg-card rounded-2xl border border-border shadow-sm p-6">
+          <h2 className="text-base font-bold text-foreground mb-6">{t("fo.expectedBy", { date: periodEndLabel })}</h2>
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+            <BridgeItem label={t("fo.currentNetResult")} value={`${currentNet < 0 ? "-" : ""}${fmt(currentNet)}`} hint={t("fo.actualAsOf", { date: asOfLabel })} />
+            <BridgeOp op="+" />
+            <BridgeItem label={`+ ${t("fo.expectedIncome")}`} value={`+${fmt(expectedIncome)}`} tone="text-primary" />
+            <BridgeOp op="−" />
+            <BridgeItem label={`− ${t("fo.plannedExpenses")}`} value={`−${fmt(plannedExpenses)}`} tone="text-destructive" />
+            <BridgeOp op="−" />
+            <BridgeItem label={`− ${t("fo.forecastTaxes")}`} value={`−${fmt(forecastTaxes)}`} tone="text-destructive" />
+            <BridgeOp op="=" />
+            <BridgeItem label={`= ${t("fo.forecastNet")}`} value={`${forecastNetTotal < 0 ? "-" : ""}${fmt(forecastNetTotal)}`} tone={forecastNetTotal >= 0 ? "text-success" : "text-destructive"} />
+          </div>
+          <div className="mt-6 flex items-center justify-center gap-3">
+            <span className="h-9 w-9 rounded-full bg-muted flex items-center justify-center">
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </span>
+            <div>
+              <p className="text-sm text-muted-foreground">{t("fo.forecastSessions")}</p>
+              <p className="text-lg font-bold text-foreground">{forecastedSessions}</p>
+            </div>
           </div>
         </div>
 
-        {/* Summary cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <SummaryCard icon={TrendingUp} label={t("financial.totalIncome")} value={fmt(totalActualIncome)} accent="text-success" />
-          <SummaryCard icon={TrendingDown} label={t("financial.totalExpenses")} value={fmt(totalActualExpenses)} accent="text-destructive" />
-          <SummaryCard icon={DollarSign} label={t("financial.avgMonthlyNet")} value={fmt(avgMonthlyNet)} accent={avgMonthlyNet >= 0 ? "text-success" : "text-destructive"} />
-          {futureMonths.length > 0 && (
-            <SummaryCard icon={BarChart3} label={t("financial.forecastIncome")} value={fmt(totalForecastIncome)} accent="text-primary" dashed />
-          )}
+        {/* Supporting metrics */}
+        <div className="flex flex-wrap gap-3">
+          <MiniStat dot="bg-primary" label={t("fo.avgMonthlyNet")} value={`${avgMonthlyNet < 0 ? "-" : ""}${fmt(avgMonthlyNet)}`} />
+          <MiniStat dot="bg-primary" label={t("fo.avgExpectedIncome")} value={fmt(avgExpectedIncome)} />
+          <MiniStat dot="bg-destructive" label={t("fo.avgPlannedExpenses")} value={fmt(avgPlannedExpenses)} />
         </div>
 
-        {/* Averages strip */}
-        <div className="flex flex-wrap gap-4 text-sm">
-          <div className="bg-muted/50 rounded-lg px-4 py-2">
-            <span className="text-muted-foreground">{t("financial.avgIncome")}: </span>
-            <span className="font-semibold text-foreground">{fmt(avgMonthlyIncome)}</span>
-          </div>
-          <div className="bg-muted/50 rounded-lg px-4 py-2">
-            <span className="text-muted-foreground">{t("financial.avgExpenses")}: </span>
-            <span className="font-semibold text-foreground">{fmt(avgMonthlyExpenses)}</span>
-          </div>
-          <div className="bg-muted/50 rounded-lg px-4 py-2">
-            <span className="text-muted-foreground">{t("financial.totalTaxes")}: </span>
-            <span className="font-semibold text-foreground">{fmt(totalActualTaxes)}</span>
-          </div>
-        </div>
-
-        {/* Chart */}
-        <div className="bg-card rounded-xl border border-border p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-foreground">{t("financial.yearlyChart")}</h2>
-            <div className="flex gap-1">
-              <Button variant={viewMode === "chart" ? "default" : "outline"} size="sm" onClick={() => setViewMode("chart")}>
-                <BarChart3 className="h-3.5 w-3.5 mr-1" /> {t("financial.chart")}
-              </Button>
-              <Button variant={viewMode === "table" ? "default" : "outline"} size="sm" onClick={() => setViewMode("table")}>
-                <Calendar className="h-3.5 w-3.5 mr-1" /> {t("financial.table")}
-              </Button>
+        {/* Yearly overview */}
+        <div className="bg-card rounded-2xl border border-border shadow-sm p-6">
+          <div className="flex items-center justify-between mb-6 gap-3">
+            <h2 className="text-base font-bold text-foreground">{t("financial.yearlyChart")}</h2>
+            <div className="inline-flex gap-2">
+              <button
+                onClick={() => setViewMode("chart")}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-colors",
+                  viewMode === "chart" ? "bg-primary text-primary-foreground" : "border border-border bg-card text-foreground hover:bg-muted",
+                )}
+              >
+                <BarChart3 className="h-4 w-4" /> {t("financial.chart")}
+              </button>
+              <button
+                onClick={() => setViewMode("table")}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-colors",
+                  viewMode === "table" ? "bg-primary text-primary-foreground" : "border border-border bg-card text-foreground hover:bg-muted",
+                )}
+              >
+                <Calendar className="h-4 w-4" /> {t("financial.table")}
+              </button>
             </div>
           </div>
 
           {viewMode === "chart" ? (
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="name" className="text-xs fill-muted-foreground" tick={{ fontSize: 12 }} />
-                  <YAxis className="text-xs fill-muted-foreground" tick={{ fontSize: 12 }} tickFormatter={v => `${cs}${v}`} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px" }}
-                    labelStyle={{ color: "hsl(var(--foreground))" }}
-                    formatter={(value: number, name: string) => [`${cs}${value.toFixed(0)}`, name]}
-                  />
-                  <Legend />
-                  <Bar dataKey="income" name={t("financial.income")} fill="hsl(var(--success))" radius={[4, 4, 0, 0]} opacity={0.9} />
-                  <Bar dataKey="expenses" name={t("financial.expenses")} fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} opacity={0.7} />
-                  <Bar dataKey="taxes" name={t("financial.taxes")} fill="hsl(var(--warning))" radius={[4, 4, 0, 0]} opacity={0.6} />
-                  <Line type="monotone" dataKey="net" name={t("financial.netResult")} stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} />
-                </ComposedChart>
-              </ResponsiveContainer>
-            </div>
+            <>
+              <div className="flex items-center gap-2 mb-1 text-[11px] font-medium">
+                <span className="rounded-md border border-success/30 bg-success/10 px-2 py-0.5 text-success">{t("fo.actual")}</span>
+                <span className="rounded-md border border-border bg-muted px-2 py-0.5 text-muted-foreground">{t("financial.forecast")}</span>
+              </div>
+              <div className="h-[340px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={overviewData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="hsl(var(--border))" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      width={72}
+                      tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+                      tickFormatter={v => `${v < 0 ? "-" : ""}${cs}${Math.abs(Number(v)).toLocaleString("en")}`}
+                    />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px" }}
+                      labelStyle={{ color: "hsl(var(--foreground))" }}
+                      formatter={(value: number, name: string) => [`${value < 0 ? "-" : ""}${cs}${Math.abs(value).toFixed(0)}`, name]}
+                    />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: 12, paddingTop: 12 }} />
+                    {dividerLabel && lastActualLabel && (
+                      <ReferenceLine x={lastActualLabel} stroke="hsl(var(--border))" strokeWidth={1} />
+                    )}
+                    <Bar dataKey="income" name={t("fo.legendIncome")} fill="hsl(var(--success))" radius={[4, 4, 0, 0]} barSize={18} />
+                    <Bar dataKey="outflow" name={t("fo.legendExpenses")} fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} barSize={18} />
+                    <Line type="monotone" dataKey="net" name={t("fo.legendNet")} stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3, fill: "hsl(var(--card))", strokeWidth: 2 }} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+            </>
           ) : (
             <MonthlyTable months={scopedMonths} onDrill={setDrillMonth} fmt={fmt} t={t} currentMonth={year === currentYear ? currentMonth : -1} />
           )}
         </div>
 
-
-
-
         {/* Forecast explanation */}
         <Collapsible open={explainOpen} onOpenChange={setExplainOpen}>
-          <div className="bg-card rounded-xl border border-border p-5">
+          <div className="bg-card rounded-2xl border border-border shadow-sm p-5">
             <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 text-left">
               <span className="font-semibold text-foreground">{t("fo.howCalculated")}</span>
               <ChevronRight className={cn("h-4 w-4 text-muted-foreground transition-transform", explainOpen && "rotate-90")} />
@@ -536,14 +615,43 @@ export default function FinancialOverviewPage() {
   );
 }
 
-function SummaryCard({ icon: Icon, label, value, accent, dashed }: { icon: any; label: string; value: string; accent: string; dashed?: boolean }) {
+function KpiCard({ icon: Icon, label, value, hint, tone }: { icon: any; label: string; value: string; hint: string; tone: "primary" | "success" | "destructive" }) {
+  const toneMap = {
+    primary: { bg: "bg-primary/10", fg: "text-primary" },
+    success: { bg: "bg-success/10", fg: "text-success" },
+    destructive: { bg: "bg-destructive/10", fg: "text-destructive" },
+  } as const;
+  const c = toneMap[tone];
   return (
-    <div className={cn("bg-card rounded-xl border p-4", dashed ? "border-dashed" : "border-border")}>
-      <div className="flex items-center gap-2 mb-1">
-        <Icon className={cn("h-4 w-4", accent)} />
-        <span className="text-xs text-muted-foreground">{label}</span>
+    <div className="bg-card rounded-2xl border border-border shadow-sm p-5">
+      <div className="flex items-start gap-4">
+        <span className={cn("h-11 w-11 shrink-0 rounded-full flex items-center justify-center", c.bg)}>
+          <Icon className={cn("h-5 w-5", c.fg)} />
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className={cn("text-2xl font-bold mt-0.5", c.fg)}>{value}</p>
+        </div>
       </div>
-      <p className={cn("text-xl font-bold", accent)}>{value}</p>
+      <p className="text-xs text-muted-foreground mt-3">{hint}</p>
+    </div>
+  );
+}
+
+function BridgeItem({ label, value, hint, tone }: { label: string; value: string; hint?: string; tone?: string }) {
+  return (
+    <div className="flex-1 min-w-[150px] text-center">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className={cn("text-2xl font-bold mt-1", tone || "text-foreground")}>{value}</p>
+      {hint && <p className="text-xs text-muted-foreground mt-1">{hint}</p>}
+    </div>
+  );
+}
+
+function BridgeOp({ op }: { op: string }) {
+  return (
+    <div className="hidden lg:flex items-center pt-6">
+      <span className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-sm font-semibold text-muted-foreground">{op}</span>
     </div>
   );
 }
