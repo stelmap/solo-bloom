@@ -2246,5 +2246,3 @@ export default {
   "fo.legendExpenses": "Плановые расходы и налоги (прогноз)",
   "fo.legendNet": "Прогнозный чистый (тренд)",
 };
-
-

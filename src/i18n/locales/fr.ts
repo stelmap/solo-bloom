@@ -2100,7 +2100,7 @@ export default {
   "dashu.noSessionsToday": "Aucune séance prévue aujourd'hui",
   "dashu.paidNote1": "* Les listes détaillées complètes s'ouvrent dans le module Finances (option payante).",
   "dashu.paidNote2": "L'aperçu du tableau de bord affiche les 5 premiers éléments.",
-} as const;  "fo.desc.expectedIncome": "Paiements planifiés + attendus non réglés",
+  "fo.desc.expectedIncome": "Paiements planifiés + attendus non réglés",
   "fo.desc.plannedExpenses": "Dépenses à venir jusqu'à la fin de la période",
   "fo.desc.forecastTaxes": "Taxes estimées pour la période restante",
   "fo.desc.forecastNet": "Résultat attendu à la fin de la période",
@@ -2113,4 +2113,4 @@ export default {
   "fo.legendIncome": "Revenu attendu (réel/prévision)",
   "fo.legendExpenses": "Dépenses et taxes prévues (prévision)",
   "fo.legendNet": "Net prévisionnel (tendance)",
-
+} as const;
