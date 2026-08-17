@@ -1748,7 +1748,7 @@ export default function CalendarPage() {
                   <div
                     role="radiogroup"
                     aria-label={L.sessionTypeLabel}
-                    className="grid grid-cols-3 gap-1 rounded-xl border border-border bg-muted/30 p-1"
+                    className="flex w-full items-center gap-1 rounded-xl border border-border bg-muted/30 p-1"
                     onKeyDown={(e) => {
                       if (e.key === "ArrowRight" || e.key === "ArrowDown") {
                         e.preventDefault();
