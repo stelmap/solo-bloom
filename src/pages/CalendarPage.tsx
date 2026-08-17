@@ -2100,23 +2100,18 @@ export default function CalendarPage() {
                       : (isGroupSession ? L.ctaGroup : L.ctaIndividual);
 
                     return (
-                      <div className="border-t border-border pt-2.5 flex flex-wrap items-center justify-end gap-2">
-                        {missingRequired ? (
-                          <p className="mr-auto text-[11px] text-muted-foreground leading-tight" role="status">{isBlockedTime ? L.blockedHint : L.disabledHint}</p>
-                        ) : summaryParts.length > 0 ? (
-                          <p aria-live="polite" className="mr-auto text-[11px] text-muted-foreground leading-tight truncate max-w-[45%]">{summaryParts.join(" · ")}</p>
-                        ) : null}
+                      <div className="pt-1 grid grid-cols-1 sm:grid-cols-[1fr_1.4fr] gap-3">
                         <Button
                           type="button"
                           variant="outline"
                           onClick={() => setCreateOpen(false)}
-                          className={cn("min-w-[110px] text-sm font-medium rounded-xl", D.cta)}
+                          className={cn("w-full text-base font-semibold rounded-xl", D.cta)}
                         >
                           {L.cancel}
                         </Button>
                         <Button
                           type="submit"
-                          className={cn("min-w-[170px] text-sm font-semibold rounded-xl disabled:opacity-100 disabled:bg-muted disabled:text-muted-foreground", D.cta)}
+                          className={cn("w-full text-base font-semibold rounded-xl disabled:opacity-60", D.cta)}
                           disabled={disabled}
                           aria-disabled={disabled}
                         >
