@@ -539,7 +539,7 @@ export default function PracticeOverviewPage() {
               </div>
 
               <div className="border-t border-border px-5 sm:px-8 py-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                <Lock className="h-3.5 w-3.5" />
+                <LockIcon className="h-3.5 w-3.5" />
                 {t("po.privacyNote")}
               </div>
             </>
