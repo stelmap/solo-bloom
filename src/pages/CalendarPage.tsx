@@ -56,7 +56,6 @@ import { useBookingRequests, type BookingRequestRow } from "@/hooks/useBookingIn
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Inbox } from "lucide-react";
 import { BookingInboxPanel } from "@/components/BookingInboxPanel";
-import { DaysOffSection } from "@/components/settings/CalendarSections";
 import { SidebarSection } from "@/components/calendar/SidebarSection";
 import { useNeedsAttention } from "@/hooks/useNeedsAttention";
 
@@ -1356,7 +1355,6 @@ export default function CalendarPage() {
     }
   }, [appointments, canDropOnSlot, toast, t]);
 
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [daysOffListOpen, setDaysOffListOpen] = useState(false);
   const [addDayOffOpen, setAddDayOffOpen] = useState(false);
   const [newDayOffDate, setNewDayOffDate] = useState("");
