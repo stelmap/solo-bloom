@@ -9,6 +9,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useAppointments, useAllIncome, useProfile } from "@/hooks/useData";
 import { formatScheduledTime } from "@/lib/timeFormat";
+import { useNeedsAttention } from "@/hooks/useNeedsAttention";
 
 const PAID_STATUSES = new Set(["paid_now", "paid_in_advance", "paid_from_prepayment"]);
 
