@@ -11,7 +11,7 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Check, ChevronsUpDown, UserPlus } from "lucide-react";
+import { Check, ChevronDown, UserPlus } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -48,6 +48,7 @@ export function ClientPicker({
   alwaysShowSelected = true,
   onAddNew,
   addNewLabel,
+  leadingIcon,
 }: ClientPickerProps) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
@@ -92,8 +93,9 @@ export function ClientPicker({
             triggerClassName,
           )}
         >
+          {leadingIcon ? <span className="mr-2 flex shrink-0 items-center text-muted-foreground">{leadingIcon}</span> : null}
           <span className="truncate">{triggerLabel}</span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" />
         </Button>
       </PopoverTrigger>
       <PopoverContent
