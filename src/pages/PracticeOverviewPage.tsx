@@ -274,271 +274,327 @@ export default function PracticeOverviewPage() {
     try { return new Intl.DateTimeFormat(lang, { month: "long" }).format(now); } catch { return periodLabel; }
   }, [period, lang, periodLabel]);
 
+  /** Label of the comparison period, e.g. "July" or "yesterday". */
+  const prevLabel = useMemo(() => {
+    if (period === "today") return t("po.yesterday");
+    if (period !== "month") return null;
+    try {
+      return new Intl.DateTimeFormat(lang, { month: "long" })
+        .format(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+    } catch { return null; }
+  }, [period, lang]);
+
+  const therapistName = ((profile as any)?.full_name || "").split(" ")[0] || "";
+  const initials = ((profile as any)?.full_name || "")
+    .split(" ").filter(Boolean).slice(0, 2).map((w: string) => w[0]?.toUpperCase()).join("");
+
   return (
     <AppLayout>
-      <div className="space-y-5">
+      <div className="space-y-4">
         <FinanceSubnav />
 
-        {/* Header */}
-        <div className="bg-card border border-border rounded-[20px] px-5 sm:px-7 py-5 shadow-card">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground capitalize">
-                {t("po.title", { period: headerPeriod })}
-              </h1>
-              <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
-                {t("po.subtitle", { period: periodLabel, date: asOf })}
-              </p>
-            </div>
-            <div className="inline-flex rounded-full bg-muted p-1 self-start">
-              {(["today", "month", "all"] as Period[]).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setPeriod(p)}
-                  className={cn(
-                    "rounded-full px-4 py-1.5 text-sm font-semibold transition-colors",
-                    period === p ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {p === "today" ? t("po.today") : p === "month" ? t("po.month") : t("po.allTime")}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[0, 1, 2].map((i) => <Skeleton key={i} className="h-28 rounded-[20px]" />)}
-          </div>
-        ) : (
-          <>
-            {/* Section 1 — KPIs */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Kpi
-                label={t("po.totalRevenue")} value={`${cs}${revenue.toLocaleString()}`}
-                icon={TrendingUp} delta={pct(revenue, prevRevenue)} positiveIsGood
-              />
-              <Kpi
-                label={t("po.totalExpenses")} value={`${cs}${expenses.toLocaleString()}`}
-                icon={TrendingDown} delta={pct(expenses, prevExpenses)} positiveIsGood={false}
-              />
-              <Kpi
-                label={t("po.netResult")} value={`${cs}${net.toLocaleString()}`}
-                icon={Wallet} delta={pct(net, prevNet)} positiveIsGood
-              />
-            </div>
-
-            {/* Section 2 — Practice health trend */}
-            <section className="bg-card border border-border rounded-[20px] shadow-card px-5 sm:px-6 py-5">
-              <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
-                <h2 className="text-base font-semibold text-foreground">{t("po.healthTrend")}</h2>
+        <div className="bg-card border border-border rounded-[20px] shadow-card overflow-hidden">
+          {/* Header */}
+          <div className="px-5 sm:px-8 pt-6 pb-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <h1 className="text-2xl sm:text-[32px] leading-tight font-bold tracking-tight text-foreground capitalize">
+                  {t("po.title", { period: headerPeriod })}
+                </h1>
+                <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
+                  {t("po.subtitle", { period: periodLabel, date: asOf })}
+                </p>
+              </div>
+              <div className="flex items-center gap-4 shrink-0">
                 <div className="inline-flex rounded-full bg-muted p-1">
-                  {([1, 3, 6] as const).map((r) => (
+                  {(["today", "month", "all"] as Period[]).map((p) => (
                     <button
-                      key={r}
-                      onClick={() => setTrendRange(r)}
+                      key={p}
+                      onClick={() => setPeriod(p)}
                       className={cn(
-                        "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
-                        trendRange === r ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                        "rounded-full px-4 py-1.5 text-sm font-semibold transition-colors",
+                        period === p
+                          ? "bg-foreground text-background shadow-sm"
+                          : "text-muted-foreground hover:text-foreground",
                       )}
                     >
-                      {r}M
+                      {p === "today" ? t("po.today") : p === "month" ? t("po.month") : t("po.allTime")}
                     </button>
                   ))}
                 </div>
+                {therapistName && (
+                  <div className="hidden xl:flex items-center gap-2.5">
+                    <span className="text-sm text-muted-foreground whitespace-nowrap">
+                      {t("po.greeting", { name: therapistName })}
+                    </span>
+                    <span className="h-9 w-9 rounded-full bg-foreground text-background text-xs font-bold flex items-center justify-center">
+                      {initials}
+                    </span>
+                  </div>
+                )}
               </div>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={trendData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis dataKey="name" tick={{ fontSize: 12 }} className="fill-muted-foreground" />
-                    <YAxis tick={{ fontSize: 12 }} className="fill-muted-foreground" allowDecimals={false} />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }}
-                      labelStyle={{ color: "hsl(var(--foreground))" }}
-                    />
-                    <Legend wrapperStyle={{ fontSize: 12 }} />
-                    <Line type="monotone" dataKey="active" name={t("po.activeClients")} stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} />
-                    <Line type="monotone" dataKey="completed" name={t("po.completedSessions")} stroke="hsl(var(--success))" strokeWidth={2} dot={{ r: 3 }} />
-                    <Line type="monotone" dataKey="cancelled" name={t("po.cancellations")} stroke="hsl(var(--destructive))" strokeWidth={2} dot={{ r: 3 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                <Mini label={t("po.totalClients")} value={String((clients as any[]).length)} />
-                <Mini label={t("po.activeClients")} value={String(metrics.activeClients)} />
-                <Mini label={t("po.completedSessions")} value={String(metrics.completed)} />
-                <Mini label={t("po.completionRate")} value={`${metrics.completionRate}%`} />
-                <Mini label={t("po.cancellations")} value={String(metrics.cancelled)} />
-                <Mini label={t("po.cancellationRate")} value={`${metrics.cancellationRate}%`} />
-                <Mini label={t("po.sessionsConducted")} value={String(metrics.completed)} />
-                <Mini label={t("po.avgRevenuePerSession")} value={`${cs}${metrics.avgRevenuePerSession.toLocaleString()}`} />
-                <Mini
-                  label={t("po.avgTherapyDuration")}
-                  value={metrics.avgTherapyMonths > 0 ? `${metrics.avgTherapyMonths.toFixed(1)} ${t("po.monthsShort")}` : "—"}
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="px-5 sm:px-8 pb-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {[0, 1, 2].map((i) => <Skeleton key={i} className="h-28 rounded-[20px]" />)}
+            </div>
+          ) : (
+            <>
+              {/* Section 1 — KPIs */}
+              <div className="border-t border-border px-5 sm:px-8 py-6 grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border">
+                <Kpi
+                  label={t("po.totalRevenue")} value={`${cs}${revenue.toLocaleString()}`}
+                  delta={pct(revenue, prevRevenue)} positiveIsGood prevLabel={prevLabel} t={t}
+                />
+                <Kpi
+                  label={t("po.totalExpenses")} value={`${cs}${expenses.toLocaleString()}`}
+                  delta={pct(expenses, prevExpenses)} positiveIsGood={false} prevLabel={prevLabel} t={t}
+                />
+                <Kpi
+                  label={t("po.netResult")} value={`${cs}${net.toLocaleString()}`}
+                  delta={pct(net, prevNet)} positiveIsGood prevLabel={prevLabel} t={t} accent
                 />
               </div>
-            </section>
 
-            {/* Section 3 — Needs attention */}
-            <section className="bg-card border border-border rounded-[20px] shadow-card overflow-hidden">
-              <div className="px-5 py-4 border-b border-border flex items-center gap-2">
-                <h2 className="text-base font-semibold text-foreground">{t("po.needsAttention")}</h2>
-                {attention.length > 0 && (
-                  <span className="text-[11px] font-bold h-5 min-w-5 px-1.5 rounded-full bg-primary/15 text-primary inline-flex items-center justify-center">
-                    {attention.length}
-                  </span>
-                )}
-              </div>
-              {attention.length === 0 ? (
-                <p className="px-5 py-8 text-sm text-muted-foreground text-center">{t("po.noActionRequired")}</p>
-              ) : (
-                <ul className="divide-y divide-border">
-                  {attention.map((a) => (
-                    <li
-                      key={a.key}
-                      onClick={a.onClick}
-                      className="group flex items-center gap-3 px-5 py-3.5 cursor-pointer hover:bg-muted/50 transition-colors"
-                    >
-                      <div className={cn(
-                        "h-9 w-9 rounded-xl flex items-center justify-center shrink-0",
-                        a.tone === "warning" && "bg-warning/15 text-warning",
-                        a.tone === "danger" && "bg-destructive/10 text-destructive",
-                        a.tone === "info" && "bg-primary/10 text-primary",
-                        a.tone === "muted" && "bg-muted text-muted-foreground",
-                      )}>
-                        <a.icon className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground truncate">{a.label}</p>
-                        <p className="text-xs text-muted-foreground truncate">{a.sub}</p>
-                      </div>
-                      <p className="text-base font-bold tabular-nums text-foreground whitespace-nowrap">{a.value}</p>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-foreground transition-colors" />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
+              {/* Sections 2 & 3 — Trend + Needs attention */}
+              <div className="border-t border-border grid grid-cols-1 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] divide-y lg:divide-y-0 lg:divide-x divide-border">
+                <section className="px-5 sm:px-8 py-6">
+                  <div className="flex items-center justify-between gap-3 mb-4">
+                    <h2 className="text-base font-semibold text-foreground">{t("po.healthTrend")}</h2>
+                    <div className="inline-flex items-center gap-3">
+                      {([6, 3, 1] as const).map((r) => (
+                        <button
+                          key={r}
+                          onClick={() => setTrendRange(r)}
+                          className={cn(
+                            "text-xs font-semibold transition-colors pb-0.5 border-b-2",
+                            trendRange === r
+                              ? "text-foreground border-foreground"
+                              : "text-muted-foreground border-transparent hover:text-foreground",
+                          )}
+                        >
+                          {r}M
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="h-60">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={trendData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
+                        <XAxis dataKey="name" tick={{ fontSize: 12 }} className="fill-muted-foreground" axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fontSize: 12 }} className="fill-muted-foreground" allowDecimals={false} axisLine={false} tickLine={false} width={28} />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }}
+                          labelStyle={{ color: "hsl(var(--foreground))" }}
+                        />
+                        <Legend wrapperStyle={{ fontSize: 12 }} iconType="plainline" verticalAlign="top" height={28} />
+                        <Line type="monotone" dataKey="active" name={t("po.activeClients")} stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="completed" name={t("po.completedSessions")} stroke="hsl(var(--success))" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="cancelled" name={t("po.cancellations")} stroke="hsl(var(--destructive))" strokeWidth={2} dot={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <Mini
+                      icon={Users}
+                      value={String((clients as any[]).length)}
+                      label={t("po.totalClients")}
+                      sub={t("po.activeSuffix", { n: metrics.activeClients })}
+                    />
+                    <Mini
+                      icon={CheckCircle2}
+                      value={String(metrics.completed)}
+                      label={t("po.completedSessions")}
+                      sub={t("po.completionRateSuffix", { n: metrics.completionRate })}
+                    />
+                    <Mini
+                      icon={XCircle}
+                      value={String(metrics.cancelled)}
+                      label={t("po.cancellations")}
+                      sub={t("po.cancellationRateSuffix", { n: metrics.cancellationRate })}
+                    />
+                    <Mini
+                      icon={Activity}
+                      value={String(metrics.completed)}
+                      label={t("po.sessionsConducted")}
+                      sub={t("po.perSessionSuffix", { amount: `${cs}${metrics.avgRevenuePerSession.toLocaleString()}` })}
+                    />
+                  </div>
+                </section>
 
-            {/* Sections 4 & 5 — Top clients + distribution */}
-            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] gap-4 items-start">
-              <section className="bg-card border border-border rounded-[20px] shadow-card overflow-hidden">
-                <div className="px-5 sm:px-6 py-4 border-b border-border flex items-center justify-between gap-3">
-                  <h2 className="text-base font-semibold text-foreground">{t("po.topClients")}</h2>
-                  <button
-                    onClick={() => navigate("/clients")}
-                    className="text-xs font-semibold text-primary inline-flex items-center gap-1.5 hover:opacity-80"
-                  >
-                    {t("po.viewAllClients")} <ArrowRight className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-                {topClients.length === 0 ? (
-                  <p className="px-5 py-10 text-sm text-muted-foreground text-center">{t("po.noRevenue")}</p>
-                ) : (
-                  <ul className="px-5 sm:px-6 py-4 space-y-3.5">
-                    {topClients.map((c) => {
-                      const share = revenue > 0 ? Math.round((c.amount / revenue) * 100) : 0;
-                      return (
-                        <li key={c.id} onClick={() => navigate(`/clients/${c.id}`)} className="cursor-pointer group">
-                          <div className="flex items-baseline justify-between gap-3 mb-1.5">
-                            <span className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                              {c.name}
-                            </span>
-                            <span className="text-sm font-bold tabular-nums text-foreground whitespace-nowrap">
-                              {cs}{c.amount.toLocaleString()}
-                              <span className="ml-2 text-xs font-medium text-muted-foreground">{share}%</span>
-                            </span>
+                <section className="px-5 sm:px-8 py-6">
+                  <h2 className="text-base font-semibold text-foreground mb-2">{t("po.needsAttention")}</h2>
+                  {attention.length === 0 ? (
+                    <p className="py-8 text-sm text-muted-foreground text-center">{t("po.noActionRequired")}</p>
+                  ) : (
+                    <ul className="divide-y divide-border">
+                      {attention.map((a) => (
+                        <li
+                          key={a.key}
+                          onClick={a.onClick}
+                          className="group flex items-center gap-3 py-3.5 cursor-pointer"
+                        >
+                          <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            <a.icon className="h-4 w-4" />
                           </div>
-                          <div className="h-2 rounded-full bg-muted overflow-hidden">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-foreground truncate">{a.label}</p>
+                            <p className="text-xs text-muted-foreground truncate">{a.sub}</p>
+                          </div>
+                          <p className="text-base font-bold tabular-nums text-primary whitespace-nowrap">{a.value}</p>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-foreground transition-colors" />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+              </div>
+
+              {/* Sections 4 & 5 — Top clients + distribution */}
+              <div className="border-t border-border grid grid-cols-1 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] divide-y lg:divide-y-0 lg:divide-x divide-border">
+                <section className="px-5 sm:px-8 py-6">
+                  <div className="flex items-center justify-between gap-3 mb-4">
+                    <h2 className="text-base font-semibold text-foreground">{t("po.topClients")}</h2>
+                    <button
+                      onClick={() => navigate("/clients")}
+                      className="text-xs font-semibold text-muted-foreground inline-flex items-center gap-1.5 hover:text-foreground"
+                    >
+                      {t("po.viewAllClients")} <ChevronRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  {topClients.length === 0 ? (
+                    <p className="py-10 text-sm text-muted-foreground text-center">{t("po.noRevenue")}</p>
+                  ) : (
+                    <ul className="space-y-2.5">
+                      {topClients.map((c) => (
+                        <li
+                          key={c.id}
+                          onClick={() => navigate(`/clients/${c.id}`)}
+                          className="group grid grid-cols-[minmax(80px,140px)_minmax(0,1fr)_auto] items-center gap-3 cursor-pointer"
+                        >
+                          <span className="text-xs text-muted-foreground truncate text-right group-hover:text-foreground transition-colors">
+                            {c.name}
+                          </span>
+                          <div className="h-4">
                             <div
-                              className="h-full rounded-full bg-primary"
-                              style={{ width: `${Math.max(4, (c.amount / maxClientRevenue) * 100)}%` }}
+                              className="h-full rounded-sm bg-primary"
+                              style={{ width: `${Math.max(3, (c.amount / maxClientRevenue) * 100)}%` }}
                             />
                           </div>
+                          <span className="text-xs font-semibold tabular-nums text-foreground whitespace-nowrap w-16 text-right">
+                            {cs}{c.amount.toLocaleString()}
+                          </span>
                         </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </section>
-
-              <section className="bg-card border border-border rounded-[20px] shadow-card px-5 sm:px-6 py-5">
-                <h2 className="text-base font-semibold text-foreground mb-3">{t("po.incomeDistribution")}</h2>
-                {donutData.length === 0 ? (
-                  <p className="py-10 text-sm text-muted-foreground text-center">{t("po.noRevenue")}</p>
-                ) : (
-                  <>
-                    <div className="h-56">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie data={donutData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={85} paddingAngle={2}>
-                            {donutData.map((_, i) => (
-                              <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip
-                            contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }}
-                            formatter={(v: number) => `${cs}${Number(v).toLocaleString()}`}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <ul className="mt-3 space-y-2">
-                      {donutData.map((d, i) => {
-                        const share = revenue > 0 ? Math.round((d.value / revenue) * 100) : 0;
-                        return (
-                          <li key={d.name} className="flex items-center gap-2 text-xs">
-                            <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: DONUT_COLORS[i % DONUT_COLORS.length] }} />
-                            <span className="flex-1 truncate text-muted-foreground">{d.name}</span>
-                            <span className="font-semibold tabular-nums text-foreground">{cs}{d.value.toLocaleString()}</span>
-                            <span className="tabular-nums text-muted-foreground w-9 text-right">{share}%</span>
-                          </li>
-                        );
-                      })}
+                      ))}
                     </ul>
-                  </>
-                )}
-              </section>
-            </div>
-          </>
-        )}
+                  )}
+                </section>
+
+                <section className="px-5 sm:px-8 py-6">
+                  <h2 className="text-base font-semibold text-foreground mb-3">{t("po.incomeDistribution")}</h2>
+                  {donutData.length === 0 ? (
+                    <p className="py-10 text-sm text-muted-foreground text-center">{t("po.noRevenue")}</p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,150px)_minmax(0,1fr)] gap-4 items-center">
+                      <div className="h-40">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie data={donutData} dataKey="value" nameKey="name" innerRadius={40} outerRadius={68} paddingAngle={2}>
+                              {donutData.map((_, i) => (
+                                <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
+                              ))}
+                            </Pie>
+                            <Tooltip
+                              contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }}
+                              formatter={(v: number) => `${cs}${Number(v).toLocaleString()}`}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div>
+                        <ul className="divide-y divide-border">
+                          {donutData.map((d, i) => {
+                            const share = revenue > 0 ? (d.value / revenue) * 100 : 0;
+                            return (
+                              <li key={d.name} className="flex items-center gap-2 text-xs py-1.5">
+                                <span className="h-2.5 w-2.5 rounded-[3px] shrink-0" style={{ background: DONUT_COLORS[i % DONUT_COLORS.length] }} />
+                                <span className="flex-1 truncate text-foreground">{d.name}</span>
+                                <span className="tabular-nums text-muted-foreground w-12 text-right">{share.toFixed(1)}%</span>
+                                <span className="font-semibold tabular-nums text-foreground w-16 text-right">{cs}{d.value.toLocaleString()}</span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                        <div className="flex items-center justify-between pt-3 mt-1">
+                          <span className="text-sm text-muted-foreground">{t("po.totalRevenue")}</span>
+                          <span className="text-sm font-bold tabular-nums text-foreground">{cs}{revenue.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </section>
+              </div>
+
+              <div className="border-t border-border px-5 sm:px-8 py-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                <Lock className="h-3.5 w-3.5" />
+                {t("po.privacyNote")}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </AppLayout>
   );
 }
 
-function Kpi({ label, value, icon: Icon, delta, positiveIsGood }: {
-  label: string; value: string; icon: any; delta: number | null; positiveIsGood: boolean;
+function Kpi({ label, value, delta, positiveIsGood, prevLabel, t, accent }: {
+  label: string; value: string; delta: number | null; positiveIsGood: boolean;
+  prevLabel: string | null; t: (k: string, p?: any) => string; accent?: boolean;
 }) {
   const good = delta === null ? null : positiveIsGood ? delta >= 0 : delta <= 0;
+  const Arrow = delta !== null && delta < 0 ? TrendingDown : TrendingUp;
   return (
-    <div className="bg-card border border-border rounded-[20px] shadow-card px-5 py-4">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <div className="h-9 w-9 rounded-xl bg-muted flex items-center justify-center">
-          <Icon className="h-4 w-4 text-muted-foreground" />
-        </div>
-      </div>
-      <p className="mt-2 text-2xl font-bold tabular-nums text-foreground break-all">{value}</p>
+    <div className="px-2 sm:px-4 py-3 text-center">
+      <p className="text-sm text-muted-foreground">{label}</p>
       <p className={cn(
-        "mt-1 text-xs font-medium",
-        good === null && "text-muted-foreground",
-        good === true && "text-success",
-        good === false && "text-destructive",
+        "mt-1.5 text-3xl sm:text-4xl font-bold tabular-nums break-all",
+        accent ? "text-primary" : "text-foreground",
       )}>
-        {delta === null ? "—" : `${delta > 0 ? "+" : ""}${delta}%`}
+        {value}
+      </p>
+      <p className="mt-1.5 text-xs font-medium flex items-center justify-center gap-1.5">
+        {delta === null ? (
+          <span className="text-muted-foreground">—</span>
+        ) : (
+          <>
+            <span className={cn(
+              "inline-flex items-center gap-0.5 font-semibold",
+              good ? "text-success" : "text-destructive",
+            )}>
+              <Arrow className="h-3.5 w-3.5" />
+              {Math.abs(delta)}%
+            </span>
+            {prevLabel && <span className="text-muted-foreground capitalize">{t("po.vsPrev", { period: prevLabel })}</span>}
+          </>
+        )}
       </p>
     </div>
   );
 }
 
-function Mini({ label, value }: { label: string; value: string }) {
+function Mini({ icon: Icon, value, label, sub }: { icon: any; value: string; label: string; sub: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-muted/30 px-3 py-3">
-      <p className="text-lg font-bold tabular-nums text-foreground leading-none break-all">{value}</p>
-      <p className="text-[11px] text-muted-foreground mt-1.5 leading-snug">{label}</p>
+    <div>
+      <div className="flex items-center gap-1.5">
+        <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+        <span className="text-xl font-bold tabular-nums text-foreground leading-none">{value}</span>
+      </div>
+      <p className="text-[11px] text-foreground mt-1.5 leading-snug">{label}</p>
+      <p className="text-[11px] text-muted-foreground leading-snug">{sub}</p>
     </div>
   );
 }
+
