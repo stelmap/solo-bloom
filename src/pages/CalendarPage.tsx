@@ -269,7 +269,7 @@ export default function CalendarPage() {
     notes: density === "compact" ? "min-h-[44px]" : density === "cozy" ? "min-h-[56px]" : "min-h-[72px]",
     label: density === "compact" ? "space-y-1" : "space-y-1.5",
     headPad: density === "compact" ? "px-4 pt-2 pb-0 sm:px-5" : density === "cozy" ? "px-4 pt-3 pb-1 sm:px-5" : "px-5 pt-4 pb-1 sm:px-6",
-    maxW: density === "comfortable" ? "sm:max-w-[560px]" : "sm:max-w-[500px]",
+    maxW: density === "comfortable" ? "sm:max-w-[640px]" : "sm:max-w-[600px]",
   };
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -1748,7 +1748,7 @@ export default function CalendarPage() {
                   <div
                     role="radiogroup"
                     aria-label={L.sessionTypeLabel}
-                    className="flex w-full items-center gap-1 rounded-xl border border-border bg-muted/30 p-1"
+                    className="flex w-full items-stretch rounded-xl border border-border bg-background p-0 overflow-hidden"
                     onKeyDown={(e) => {
                       if (e.key === "ArrowRight" || e.key === "ArrowDown") {
                         e.preventDefault();
@@ -1766,13 +1766,13 @@ export default function CalendarPage() {
                       tabIndex={!isGroupSession && !isBlockedTime ? 0 : -1}
                       onClick={() => { setIsGroupSession(false); setGroupId(""); setIsBlockedTime(false); }}
                       className={cn(
-                        "flex h-9 flex-1 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-xs font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                        "relative flex h-12 flex-1 min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl border-2 px-2 text-sm font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
                         !isGroupSession && !isBlockedTime
-                          ? "border-primary-border bg-primary-soft text-primary"
-                          : "border-transparent bg-transparent text-muted-foreground hover:text-foreground"
+                          ? "border-foreground bg-background text-foreground font-semibold z-10"
+                          : "border-transparent bg-muted/20 text-muted-foreground hover:text-foreground"
                       )}
                     >
-                      <UserPlus className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      <UserPlus className="h-4 w-4 shrink-0" aria-hidden="true" />
                       <span className="truncate">{L.individualSession}</span>
                     </button>
                     <button
@@ -1783,14 +1783,14 @@ export default function CalendarPage() {
                       onClick={() => { setIsGroupSession(true); setIsBlockedTime(false); setForm(f => ({ ...f, client_id: "" })); }}
                       disabled={activeGroups.length === 0}
                       className={cn(
-                        "flex h-9 flex-1 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-xs font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                        "relative flex h-12 flex-1 min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl border-2 px-2 text-sm font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
                         isGroupSession && !isBlockedTime
-                          ? "border-primary-border bg-primary-soft text-primary"
-                          : "border-transparent bg-transparent text-muted-foreground hover:text-foreground",
+                          ? "border-foreground bg-background text-foreground font-semibold z-10"
+                          : "border-transparent bg-muted/20 text-muted-foreground hover:text-foreground",
                         activeGroups.length === 0 && "opacity-50 cursor-not-allowed"
                       )}
                     >
-                      <Users className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      <Users className="h-4 w-4 shrink-0" aria-hidden="true" />
                       <span className="truncate">{L.groupSession}</span>
                     </button>
                     <button
@@ -1800,13 +1800,13 @@ export default function CalendarPage() {
                       tabIndex={isBlockedTime ? 0 : -1}
                       onClick={() => { setIsBlockedTime(true); setIsGroupSession(false); setGroupId(""); setServiceError(false); }}
                       className={cn(
-                        "flex h-9 flex-1 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-xs font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                        "relative flex h-12 flex-1 min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl border-2 px-2 text-sm font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
                         isBlockedTime
-                          ? "border-primary-border bg-primary-soft text-primary"
-                          : "border-transparent bg-transparent text-muted-foreground hover:text-foreground"
+                          ? "border-foreground bg-background text-foreground font-semibold z-10"
+                          : "border-transparent bg-muted/20 text-muted-foreground hover:text-foreground"
                       )}
                     >
-                      <Ban className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      <Ban className="h-4 w-4 shrink-0" aria-hidden="true" />
                       <span className="truncate">{L.blockedTime}</span>
                     </button>
                   </div>
