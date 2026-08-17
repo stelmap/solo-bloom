@@ -37,7 +37,8 @@ const navItems: NavItem[] = [
     labelKey: "nav.finances",
     basePath: "/finances",
     children: [
-      { icon: BarChart3, labelKey: "nav.financesDashboard", path: "/finances" },
+      { icon: BarChart3, labelKey: "nav.practiceOverview", path: "/finances" },
+      { icon: TrendingUp, labelKey: "nav.financialOverview", path: "/finances/overview" },
       { icon: DollarSign, labelKey: "nav.income", path: "/finances/income" },
       { icon: TrendingDown, labelKey: "nav.expenses", path: "/finances/expenses" },
       { icon: ShieldCheck, labelKey: "nav.paymentAudit", path: "/finances/payment-audit" },
