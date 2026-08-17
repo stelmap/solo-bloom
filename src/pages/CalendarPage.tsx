@@ -57,8 +57,7 @@ import { useBookingRequests, type BookingRequestRow } from "@/hooks/useBookingIn
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Inbox } from "lucide-react";
 import { BookingInboxPanel } from "@/components/BookingInboxPanel";
-import { WorkingHoursSection, DaysOffSection, PracticeProfileSection } from "@/components/settings/CalendarSections";
-import { PublicBookingSection } from "@/components/PublicBookingSection";
+import { DaysOffSection } from "@/components/settings/CalendarSections";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
@@ -2550,18 +2549,9 @@ export default function CalendarPage() {
           <SheetHeader>
             <SheetTitle>{t("settings.calendarSettings") || "Calendar settings"}</SheetTitle>
           </SheetHeader>
-          <Tabs defaultValue="hours" className="mt-4 space-y-4">
-            <TabsList className="flex-wrap h-auto">
-              <TabsTrigger value="hours">{t("settings.workingHours")}</TabsTrigger>
-              <TabsTrigger value="daysOff">{t("settings.daysOff")}</TabsTrigger>
-              <TabsTrigger value="booking">{t("settings.publicBooking")}</TabsTrigger>
-              <TabsTrigger value="practice">{t("settings.practiceProfile")}</TabsTrigger>
-            </TabsList>
-            <TabsContent value="hours"><WorkingHoursSection /></TabsContent>
-            <TabsContent value="daysOff"><DaysOffSection /></TabsContent>
-            <TabsContent value="booking"><PublicBookingSection /></TabsContent>
-            <TabsContent value="practice"><PracticeProfileSection /></TabsContent>
-          </Tabs>
+          <div className="mt-4 space-y-4">
+            <DaysOffSection />
+          </div>
         </SheetContent>
       </Sheet>
 
