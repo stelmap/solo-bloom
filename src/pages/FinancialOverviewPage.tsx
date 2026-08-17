@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Line, ComposedChart, Area,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Line, ComposedChart,
 } from "recharts";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MonthlyDetailsModal } from "@/components/MonthlyDetailsModal";
@@ -495,59 +495,8 @@ export default function FinancialOverviewPage() {
           )}
         </div>
 
-        {/* Monthly cards grid (always shown) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {scopedMonths.map(m => (
-            <button
-              key={m.month}
-              onClick={() => setDrillMonth(m)}
-              className={cn(
-                "text-left p-4 rounded-xl border transition-all hover:ring-2 hover:ring-ring/20",
-                m.isFuture ? "border-dashed border-border/60 bg-card/50" : "border-border bg-card",
-                year === currentYear && m.month === currentMonth && "ring-2 ring-primary/30"
-              )}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-foreground">{m.label}</span>
-                {m.isFuture && <Badge variant="outline" className="text-[10px] border-dashed">{t("financial.forecast")}</Badge>}
-              </div>
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("financial.income")}</span>
-                  <div className="text-right">
-                    <span className="text-success font-medium">{fmt(m.confirmedIncome)}</span>
-                    {m.expectedIncome > 0 && (
-                      <span className="text-muted-foreground ml-1">(+{fmt(m.expectedIncome)})</span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("financial.expenses")}</span>
-                  <span className="text-destructive font-medium">{fmt(m.expenses)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("financial.taxes")}</span>
-                  <span className="text-warning font-medium">{fmt(m.taxes)}</span>
-                </div>
-                <div className="flex justify-between border-t border-border pt-1 mt-1">
-                  <span className="text-muted-foreground font-medium">{t("financial.netResult")}</span>
-                  <span className={cn("font-semibold", m.net >= 0 ? "text-success" : "text-destructive")}>
-                    {m.net < 0 ? "-" : ""}{fmt(m.net)}
-                  </span>
-                </div>
-                {m.sessions > 0 && (
-                  <div className="text-muted-foreground mt-1">{m.sessions} {t("financial.sessions")}</div>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
 
-        {/* Cashflow summary */}
-        <div className="bg-card rounded-xl border border-border p-5">
-          <h2 className="font-semibold text-foreground mb-4">{t("financial.cashflow")}</h2>
-          <CashflowChart data={scopedMonths} fmt={fmt} t={t} cs={cs} />
-        </div>
+
 
         {/* Forecast explanation */}
         <Collapsible open={explainOpen} onOpenChange={setExplainOpen}>
@@ -637,40 +586,6 @@ function MonthlyTable({ months, onDrill, fmt, t, currentMonth }: { months: Month
           ))}
         </tbody>
       </table>
-    </div>
-  );
-}
-
-function CashflowChart({ data, fmt, t, cs }: { data: MonthData[]; fmt: (n: number) => string; t: any; cs: string }) {
-  let runningBalance = 0;
-  const cashflowData = data.map(m => {
-    runningBalance += m.income - m.expenses - m.taxes;
-    return {
-      name: m.shortLabel,
-      inflow: m.income,
-      outflow: m.expenses + m.taxes,
-      balance: runningBalance,
-      isFuture: m.isFuture,
-    };
-  });
-
-  return (
-    <div className="h-64">
-      <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={cashflowData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-          <XAxis dataKey="name" className="text-xs fill-muted-foreground" tick={{ fontSize: 12 }} />
-          <YAxis className="text-xs fill-muted-foreground" tick={{ fontSize: 12 }} tickFormatter={v => `${cs}${v}`} />
-          <Tooltip
-            contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px" }}
-            formatter={(value: number, name: string) => [`${cs}${value.toFixed(0)}`, name]}
-          />
-          <Legend />
-          <Area type="monotone" dataKey="balance" name={t("financial.balance")} fill="hsl(var(--primary) / 0.1)" stroke="hsl(var(--primary))" strokeWidth={2} />
-          <Bar dataKey="inflow" name={t("financial.inflow")} fill="hsl(var(--success) / 0.6)" radius={[3, 3, 0, 0]} />
-          <Bar dataKey="outflow" name={t("financial.outflow")} fill="hsl(var(--destructive) / 0.4)" radius={[3, 3, 0, 0]} />
-        </ComposedChart>
-      </ResponsiveContainer>
     </div>
   );
 }
