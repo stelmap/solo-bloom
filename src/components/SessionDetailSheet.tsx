@@ -1580,8 +1580,6 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 </div>
               </div>
 
-              {(groupPaymentState === "paid_now" || groupPaymentState === "paid_in_advance") && (
-              )}
 
               <div className={cn("rounded-lg p-4 flex items-center gap-3 border",
                 groupPaymentState === "waiting_for_payment" ? "bg-warning/10 border-warning/20" : "bg-success/10 border-success/20"
