@@ -1,0 +1,134 @@
+CREATE OR REPLACE FUNCTION public.public_get_available_slots_base(p_token text, p_from_date date, p_to_date date)
+ RETURNS TABLE(slot_at timestamp with time zone)
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_user uuid;
+  v_active boolean;
+  v_dur int;
+  v_buffer int;
+  v_stride int;
+  v_min_notice int;
+  v_max_horizon int;
+  v_day date;
+  v_dow_pg smallint;
+  v_dow_app smallint;
+  v_rule record;
+  v_start_t time;
+  v_end_t time;
+  v_slot timestamptz;
+  v_slot_end timestamptz;
+  v_min_from timestamptz;
+  v_max_to date;
+  v_key text;
+  v_has_ws boolean;
+BEGIN
+  v_key := lower(trim(coalesce(p_token, '')));
+  SELECT bl.user_id, bl.is_active INTO v_user, v_active
+    FROM public.booking_links bl
+   WHERE bl.token = p_token OR lower(bl.slug) = v_key
+   LIMIT 1;
+
+  IF v_user IS NULL OR v_active IS NOT TRUE THEN RETURN; END IF;
+
+  SELECT COALESCE(ba.session_duration_minutes, p.default_duration, 60),
+         COALESCE(ba.buffer_minutes, 0),
+         COALESCE(ba.min_notice_hours, 24),
+         COALESCE(ba.max_horizon_days, 30)
+    INTO v_dur, v_buffer, v_min_notice, v_max_horizon
+    FROM public.profiles p
+    LEFT JOIN LATERAL (
+      SELECT session_duration_minutes, buffer_minutes, min_notice_hours, max_horizon_days
+        FROM public.booking_availability
+       WHERE user_id = v_user
+       LIMIT 1
+    ) ba ON true
+   WHERE p.user_id = v_user
+   LIMIT 1;
+
+  IF v_dur IS NULL OR v_dur <= 0 THEN v_dur := 60; END IF;
+  IF v_buffer IS NULL OR v_buffer < 0 THEN v_buffer := 0; END IF;
+  v_stride := v_dur + v_buffer;
+  IF v_stride <= 0 THEN v_stride := v_dur; END IF;
+
+  -- Does the therapist have any weekly working hours at all?
+  SELECT EXISTS (
+    SELECT 1 FROM public.working_schedule
+     WHERE user_id = v_user AND is_working = true
+  ) INTO v_has_ws;
+
+  v_min_from := now() + (v_min_notice || ' hours')::interval;
+  v_max_to := LEAST(p_to_date, (now() + (v_max_horizon || ' days')::interval)::date);
+
+  v_day := GREATEST(p_from_date, current_date);
+  WHILE v_day <= v_max_to LOOP
+    v_dow_pg := EXTRACT(DOW FROM v_day)::smallint;
+    v_dow_app := CASE WHEN v_dow_pg = 0 THEN 7 ELSE v_dow_pg END;
+
+    FOR v_rule IN
+      SELECT ws.start_time, ws.end_time
+        FROM public.working_schedule ws
+       WHERE v_has_ws
+         AND ws.user_id = v_user
+         AND ws.day_of_week = v_dow_app
+         AND ws.is_working = true
+      UNION ALL
+      SELECT ba.start_time, ba.end_time
+        FROM public.booking_availability ba
+       WHERE NOT v_has_ws
+         AND ba.user_id = v_user
+         AND ba.is_enabled = true
+         AND (CASE WHEN ba.weekday = 0 THEN 7 ELSE ba.weekday END) = v_dow_app
+    LOOP
+      BEGIN
+        v_start_t := v_rule.start_time::time;
+        v_end_t   := v_rule.end_time::time;
+      EXCEPTION WHEN others THEN
+        CONTINUE;
+      END;
+
+      IF v_end_t <= v_start_t THEN CONTINUE; END IF;
+
+      v_slot := ((v_day::text || ' ' || to_char(v_start_t, 'HH24:MI:SS'))::timestamp) AT TIME ZONE 'UTC';
+
+      LOOP
+        v_slot_end := v_slot + (v_dur || ' minutes')::interval;
+
+        EXIT WHEN ((v_slot_end AT TIME ZONE 'UTC')::time) > v_end_t;
+        EXIT WHEN ((v_slot AT TIME ZONE 'UTC')::date) <> v_day;
+
+        IF v_slot >= v_min_from
+           AND NOT EXISTS (
+             SELECT 1 FROM public.days_off d
+              WHERE d.user_id = v_user AND d.date = v_day AND d.is_non_working = true
+           )
+           AND NOT EXISTS (
+             SELECT 1 FROM public.appointments a
+              WHERE a.user_id = v_user
+                AND a.status <> 'cancelled'
+                AND tstzrange(a.scheduled_at,
+                              a.scheduled_at + (a.duration_minutes || ' minutes')::interval, '[)')
+                    && tstzrange(v_slot, v_slot_end, '[)')
+           )
+           AND NOT EXISTS (
+             SELECT 1 FROM public.session_booking_requests sbr
+              WHERE sbr.user_id = v_user
+                AND sbr.status IN ('pending','needs_linking','confirmed')
+                AND tstzrange(sbr.requested_slot_at,
+                              sbr.requested_slot_at + (sbr.duration_minutes || ' minutes')::interval, '[)')
+                    && tstzrange(v_slot, v_slot_end, '[)')
+           )
+        THEN
+          slot_at := v_slot;
+          RETURN NEXT;
+        END IF;
+
+        v_slot := v_slot + (v_stride || ' minutes')::interval;
+      END LOOP;
+    END LOOP;
+
+    v_day := v_day + 1;
+  END LOOP;
+END $function$;
