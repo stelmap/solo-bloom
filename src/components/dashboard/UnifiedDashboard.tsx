@@ -636,7 +636,48 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
           <p className="pl-5">{t("dashu.paidNote2")}</p>
         </div>
       </div>
+
+      {/* Onboarding — hidden once setup is complete */}
+      {showOnboarding && (
+        <section className="bg-card border border-border rounded-[20px] shadow-card px-5 sm:px-6 py-5">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-5">
+            <div className="flex items-center gap-3 lg:w-72 shrink-0">
+              <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                <Sparkles className="h-5 w-5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-base font-semibold text-foreground">{t("dashe.onbTitle")}</h2>
+                <p className="text-xs text-muted-foreground">{t("dashe.onbSub")}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1 min-w-0">
+              {onboardingSteps.map((s, i) => (
+                <button
+                  key={s.key}
+                  onClick={() => navigate(s.path)}
+                  className="group flex items-center gap-3 rounded-2xl border border-border px-3 py-3 text-left hover:bg-muted/50 transition-colors min-w-0"
+                >
+                  <span className={cn(
+                    "h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0",
+                    s.done ? "bg-success/15 text-success" : "bg-primary/10 text-primary",
+                  )}>
+                    {s.done ? <Check className="h-4 w-4" /> : i + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className={cn("text-sm font-semibold truncate", s.done ? "text-muted-foreground line-through" : "text-foreground")}>
+                      {s.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">{s.sub}</p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-foreground transition-colors shrink-0" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
+
   );
 }
 
