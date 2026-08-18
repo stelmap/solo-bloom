@@ -266,71 +266,88 @@ export function AppSidebar() {
     </nav>
   );
 
+  // Setup completion percentage derived from the practice profile required fields.
+  const requiredTotal = 7;
+  const setupPercent = practiceStatus.loading
+    ? 0
+    : practiceStatus.complete
+      ? 100
+      : Math.max(0, Math.min(100, Math.round(((requiredTotal - practiceStatus.missing.length) / requiredTotal) * 100)));
+
   const emblemLabel = practiceIncomplete
-    ? (t("practice.complete" as any) === "practice.complete" ? "Complete practice profile" : t("practice.complete" as any))
-    : practiceName || "Practice profile";
+    ? t("sidebar.finishSetup")
+    : user?.user_metadata?.full_name || user?.email || t("sidebar.account");
 
-  const EmblemCircle = ({ size = 40 }: { size?: number }) => (
-    <span
-      className={cn(
-        "rounded-full flex items-center justify-center overflow-hidden shrink-0 border-2",
-        practiceIncomplete
-          ? "border-dashed border-sidebar-primary text-sidebar-primary animate-pulse shadow-[0_0_12px_hsl(var(--sidebar-primary)/0.5)]"
-          : "border-sidebar-border text-sidebar-foreground/70"
-      )}
-      style={{ height: size, width: size }}
-    >
-      {emblemUrl ? (
-        <img src={emblemUrl} alt={practiceName || "Practice emblem"} className="h-full w-full object-cover" />
-      ) : (
-        <Store className="h-4 w-4" />
-      )}
-    </span>
-  );
-
-  const PracticeFooterEntry = () => (
-    <Link
-      to="/settings/practice"
-      onClick={closeAll}
-      className="flex items-center gap-3 px-1 py-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors"
-    >
-      <EmblemCircle size={44} />
-      <div className="flex-1 min-w-0">
-        <p className={cn("text-sm font-semibold truncate", practiceIncomplete ? "text-sidebar-primary" : "text-sidebar-foreground")}>
-          {practiceIncomplete ? emblemLabel : practiceName || "Practice profile"}
-        </p>
-        {practiceIncomplete ? (
-          <>
-            <p className="text-xs text-sidebar-foreground/60 truncate">Finish setup</p>
-            <p className="text-xs text-sidebar-primary flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-sidebar-primary inline-block" />
-              Required
-            </p>
-          </>
-        ) : (
-          <p className="text-xs text-sidebar-foreground/50 truncate">Practice profile</p>
+  /** Avatar with an orange progress ring when the practice setup is incomplete. */
+  const ProfileAvatar = ({ size = 44 }: { size?: number }) => {
+    const stroke = 2.5;
+    const r = size / 2 - stroke / 2;
+    const c = 2 * Math.PI * r;
+    const inner = size - stroke * 2 - 2;
+    return (
+      <span className="relative shrink-0 flex items-center justify-center" style={{ height: size, width: size }}>
+        {practiceIncomplete && (
+          <svg className="absolute inset-0 -rotate-90" width={size} height={size} aria-hidden="true">
+            <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} className="stroke-sidebar-primary/20" />
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={r}
+              fill="none"
+              strokeWidth={stroke}
+              strokeLinecap="round"
+              className="stroke-sidebar-primary transition-[stroke-dashoffset] duration-500"
+              strokeDasharray={c}
+              strokeDashoffset={c * (1 - setupPercent / 100)}
+            />
+          </svg>
         )}
-      </div>
-    </Link>
-  );
+        <span
+          className={cn(
+            "rounded-full overflow-hidden flex items-center justify-center font-semibold",
+            practiceIncomplete
+              ? "bg-sidebar-primary/15 text-sidebar-primary"
+              : "bg-sidebar-primary/20 text-sidebar-primary ring-1 ring-sidebar-border",
+          )}
+          style={{ height: inner, width: inner, fontSize: Math.max(11, Math.round(inner * 0.36)) }}
+        >
+          {emblemUrl ? (
+            <img src={emblemUrl} alt={practiceName || "Profile"} className="h-full w-full object-cover" />
+          ) : (
+            initials
+          )}
+        </span>
+      </span>
+    );
+  };
 
   const FullFooter = () => (
-    <div className="p-4 border-t border-sidebar-border space-y-2">
-      <PracticeFooterEntry />
+    <div className="p-4 border-t border-sidebar-border">
       <div className="flex items-center gap-3">
-        <div className="h-8 w-8 rounded-full bg-sidebar-primary/20 flex items-center justify-center text-sidebar-primary text-sm font-semibold shrink-0">
-          {initials}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-sidebar-foreground truncate">
-            {user?.user_metadata?.full_name || user?.email}
-          </p>
-          <p className="text-xs text-sidebar-foreground/50 truncate">{user?.email}</p>
-        </div>
+        <Link
+          to="/settings/practice"
+          onClick={closeAll}
+          aria-label={practiceIncomplete ? t("sidebar.setupProgress", { p: setupPercent }) : emblemLabel}
+          className="flex items-center gap-3 flex-1 min-w-0 rounded-lg px-1 py-1.5 -mx-1 hover:bg-sidebar-accent/50 transition-colors"
+        >
+          <ProfileAvatar size={44} />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-sidebar-foreground truncate">
+              {user?.user_metadata?.full_name || practiceName || user?.email}
+            </p>
+            <p className="text-xs text-sidebar-foreground/50 truncate">{user?.email}</p>
+            {practiceIncomplete && (
+              <p className="text-xs text-sidebar-primary flex items-center gap-1.5 truncate">
+                <span className="h-1.5 w-1.5 rounded-full bg-sidebar-primary inline-block shrink-0" />
+                {t("sidebar.finishSetup")}
+              </p>
+            )}
+          </div>
+        </Link>
         <button
           onClick={signOut}
           aria-label={t("nav.signOut")}
-          className="p-2 rounded-md hover:bg-sidebar-accent transition-colors text-sidebar-foreground/50 hover:text-sidebar-foreground"
+          className="p-2 rounded-md hover:bg-sidebar-accent transition-colors text-sidebar-foreground/50 hover:text-sidebar-foreground shrink-0"
           title={t("nav.signOut")}
         >
           <LogOut className="h-4 w-4" />
@@ -338,6 +355,7 @@ export function AppSidebar() {
       </div>
     </div>
   );
+
 
   const FullHeader = ({ onClose }: { onClose: () => void }) => (
     <div className="p-4 border-b border-sidebar-border">
