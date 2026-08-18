@@ -461,26 +461,16 @@ export function AppSidebar() {
                 aria-label={emblemLabel}
                 className="h-11 w-11 flex items-center justify-center rounded-lg hover:bg-sidebar-accent/50 transition-colors"
               >
-                <EmblemCircle size={32} />
+                <ProfileAvatar size={34} />
               </Link>
             </TooltipTrigger>
-            <TooltipContent side="right">{emblemLabel}</TooltipContent>
+            <TooltipContent side="right">
+              {practiceIncomplete
+                ? `${t("sidebar.finishSetup")} · ${setupPercent}%`
+                : user?.user_metadata?.full_name || user?.email}
+            </TooltipContent>
           </Tooltip>
-          <Tooltip delayDuration={150}>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={() => setExpanded(true)}
-                aria-label={user?.email ?? "Profile"}
-                className="h-11 w-11 flex items-center justify-center rounded-lg hover:bg-sidebar-accent/50 transition-colors"
-              >
-                <span className="h-8 w-8 rounded-full bg-sidebar-primary/20 flex items-center justify-center text-sidebar-primary text-sm font-semibold">
-                  {initials}
-                </span>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">{user?.user_metadata?.full_name || user?.email}</TooltipContent>
-          </Tooltip>
+
           <RailButton icon={LogOut} label={t("nav.signOut")} active={false} onClick={signOut} />
         </div>
       </aside>
