@@ -210,6 +210,22 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
     onClick: () => onOpenWidget(a.widget, a.path),
   }));
 
+  // Setup suggestions shown when there is nothing urgent — only incomplete steps.
+  const setupSuggestions = [
+    { key: "hours", show: !hasWorkingHours, icon: Clock, title: t("dashe.setupHours"), sub: t("dashe.setupHoursSub"), path: "/settings/practice" },
+    { key: "service", show: !hasServices, icon: Briefcase, title: t("dashe.setupService"), sub: t("dashe.setupServiceSub"), path: "/services" },
+    { key: "clients", show: !hasClients, icon: UserPlus, title: t("dashe.setupClients"), sub: t("dashe.setupClientsSub"), path: "/clients" },
+  ].filter((s) => s.show);
+
+  const onboardingSteps = [
+    { key: "client", done: hasClients, icon: Users, title: t("dashe.onbStep1"), sub: t("dashe.onbStep1Sub"), path: "/clients" },
+    { key: "service", done: hasServices, icon: Briefcase, title: t("dashe.onbStep2"), sub: t("dashe.onbStep2Sub"), path: "/services" },
+    { key: "booking", done: !!bookingHandle && hasClients, icon: Link2, title: t("dashe.onbStep3"), sub: t("dashe.onbStep3Sub"), path: "/settings/practice" },
+  ];
+  const showOnboarding = onboardingSteps.some((s) => !s.done);
+
+
+
   const recentUnpaid = derived.unpaid
     .slice()
     .sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime())
