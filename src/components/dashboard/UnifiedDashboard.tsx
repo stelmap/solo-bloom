@@ -3,15 +3,19 @@ import { useNavigate } from "react-router-dom";
 import {
   ArrowRight, ChevronLeft, ChevronRight, CalendarDays, Bell, Clock,
   Receipt, FileSignature, Users, DollarSign, Percent, BarChart3, Info, AlertCircle,
+  CheckCircle2, CalendarClock, Wallet, Briefcase, Link2, UserPlus, Check, Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
-import { useAppointments, useAllIncome, useProfile } from "@/hooks/useData";
+import { useAppointments, useAllIncome, useProfile, useClients, useServices, useWorkingSchedule } from "@/hooks/useData";
+import { useBookingLink } from "@/hooks/usePracticeProfile";
+import { toast } from "@/hooks/use-toast";
 import { formatScheduledTime } from "@/lib/timeFormat";
 import { useNeedsAttention } from "@/hooks/useNeedsAttention";
 
 const PAID_STATUSES = new Set(["paid_now", "paid_in_advance", "paid_from_prepayment"]);
+
 
 type Props = {
   stats: any;
