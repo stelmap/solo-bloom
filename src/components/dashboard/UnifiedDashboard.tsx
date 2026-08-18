@@ -507,7 +507,16 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
               </button>
             </div>
             {recentUnpaid.length === 0 ? (
-              <p className="px-5 py-8 text-sm text-muted-foreground text-center">{t("dashm.noUnpaid")}</p>
+              <div className="px-5 py-6 flex items-center gap-4">
+                <div className="h-14 w-14 rounded-2xl bg-success/10 flex items-center justify-center shrink-0">
+                  <Wallet className="h-6 w-6 text-success" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground">{t("dashe.noUnpaidTitle")}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t("dashe.noUnpaidSub")}</p>
+                </div>
+              </div>
+
             ) : (
               <>
                 <ul className="divide-y divide-border">
