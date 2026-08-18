@@ -1678,13 +1678,14 @@ export default function CalendarPage() {
               <TooltipTrigger asChild>
                 <Button
                   variant="outline" size="icon" className="h-10 w-10 rounded-xl"
-                  aria-label={t("settings.title") || "Settings"}
-                  onClick={() => navigate("/settings")}
+                  aria-label={t("settings.calendarSettings") || "Calendar settings"}
+                  onClick={() => navigate("/calendar/settings")}
                 >
                   <SettingsIcon className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>{t("settings.title") || "Settings"}</TooltipContent>
+              <TooltipContent>{t("settings.calendarSettings") || "Calendar settings"}</TooltipContent>
+
             </Tooltip>
 
             {/* Agenda drawer trigger below xl */}
