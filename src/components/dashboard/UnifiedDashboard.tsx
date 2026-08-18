@@ -270,6 +270,8 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] gap-4 items-start">
+        {/* Left column — independent height */}
+        <div className="flex flex-col gap-4 min-w-0">
         {/* Left — Today's Schedule */}
         <section className="bg-card border border-border rounded-[20px] shadow-card overflow-hidden">
           <div className="px-5 sm:px-6 py-4 flex items-center gap-3 border-b border-border">
@@ -427,6 +429,35 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
           )}
 
         </section>
+
+        <section className="bg-card border border-border rounded-[20px] shadow-card px-5 sm:px-6 py-5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-9 w-9 rounded-xl bg-muted flex items-center justify-center">
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <h2 className="text-base font-semibold text-foreground">{t("dashm.practiceThisMonth")}</h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <StatTile icon={CalendarDays} tone="info" value={String(derived.conducted)} label={t("dashm.sessions")} sub={t("dashm.ofPlanned", { count: derived.totalSessions })} />
+            <StatTile icon={Users} tone="info" value={String(derived.clientCount)} label={t("dashm.clients")} sub={t("dashm.activeShort")} />
+            <StatTile icon={Clock} tone="info" value={`${derived.hours.toFixed(1)} ${t("dashm.hoursShort")}`} label={t("dashm.therapy")} sub={t("dashm.conductedShort")} />
+            <StatTile icon={DollarSign} tone="success" value={`${cs}${income.toLocaleString()}`} label={t("dashm.income")} sub={t("dashm.received")} />
+            <StatTile icon={Percent} tone="warning" value={`${occupancy}%`} label={t("dashm.occupancy")} sub={t("dashm.thisMonthShort")} />
+          </div>
+          {derived.totalSessions === 0 && derived.clientCount === 0 && income === 0 && (
+            <p className="mt-4 text-xs text-muted-foreground text-center">{t("dashe.practiceHint")}</p>
+          )}
+        </section>
+
+
+        <div className="px-2 py-2 text-xs text-muted-foreground space-y-1">
+          <p className="inline-flex items-start gap-1.5">
+            <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+            {t("dashu.paidNote1")}
+          </p>
+          <p className="pl-5">{t("dashu.paidNote2")}</p>
+        </div>
+        </div>
 
         {/* Right — finance widgets */}
         <div className="space-y-4">
@@ -606,36 +637,6 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
         </div>
       </div>
 
-      {/* Bottom — practice summary + paid note */}
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] gap-4 items-start">
-        <section className="bg-card border border-border rounded-[20px] shadow-card px-5 sm:px-6 py-5">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-9 w-9 rounded-xl bg-muted flex items-center justify-center">
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <h2 className="text-base font-semibold text-foreground">{t("dashm.practiceThisMonth")}</h2>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            <StatTile icon={CalendarDays} tone="info" value={String(derived.conducted)} label={t("dashm.sessions")} sub={t("dashm.ofPlanned", { count: derived.totalSessions })} />
-            <StatTile icon={Users} tone="info" value={String(derived.clientCount)} label={t("dashm.clients")} sub={t("dashm.activeShort")} />
-            <StatTile icon={Clock} tone="info" value={`${derived.hours.toFixed(1)} ${t("dashm.hoursShort")}`} label={t("dashm.therapy")} sub={t("dashm.conductedShort")} />
-            <StatTile icon={DollarSign} tone="success" value={`${cs}${income.toLocaleString()}`} label={t("dashm.income")} sub={t("dashm.received")} />
-            <StatTile icon={Percent} tone="warning" value={`${occupancy}%`} label={t("dashm.occupancy")} sub={t("dashm.thisMonthShort")} />
-          </div>
-          {derived.totalSessions === 0 && derived.clientCount === 0 && income === 0 && (
-            <p className="mt-4 text-xs text-muted-foreground text-center">{t("dashe.practiceHint")}</p>
-          )}
-        </section>
-
-
-        <div className="px-2 py-2 text-xs text-muted-foreground space-y-1">
-          <p className="inline-flex items-start gap-1.5">
-            <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-            {t("dashu.paidNote1")}
-          </p>
-          <p className="pl-5">{t("dashu.paidNote2")}</p>
-        </div>
-      </div>
 
       {/* Onboarding — hidden once setup is complete */}
       {showOnboarding && (
