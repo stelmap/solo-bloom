@@ -3,15 +3,19 @@ import { useNavigate } from "react-router-dom";
 import {
   ArrowRight, ChevronLeft, ChevronRight, CalendarDays, Bell, Clock,
   Receipt, FileSignature, Users, DollarSign, Percent, BarChart3, Info, AlertCircle,
+  CheckCircle2, CalendarClock, Wallet, Briefcase, Link2, UserPlus, Check, Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
-import { useAppointments, useAllIncome, useProfile } from "@/hooks/useData";
+import { useAppointments, useAllIncome, useProfile, useClients, useServices, useWorkingSchedule } from "@/hooks/useData";
+import { useBookingLink } from "@/hooks/usePracticeProfile";
+import { toast } from "@/hooks/use-toast";
 import { formatScheduledTime } from "@/lib/timeFormat";
 import { useNeedsAttention } from "@/hooks/useNeedsAttention";
 
 const PAID_STATUSES = new Set(["paid_now", "paid_in_advance", "paid_from_prepayment"]);
+
 
 type Props = {
   stats: any;
@@ -68,6 +72,30 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
   const navigate = useNavigate();
   const { data: profile } = useProfile();
   const { data: allAppointments = [] } = useAppointments();
+  const { data: allClients = [] } = useClients();
+  const { data: services = [] } = useServices();
+  const { data: workingSchedule = [] } = useWorkingSchedule();
+  const { data: bookingLink } = useBookingLink();
+
+  // ---- Setup / empty-state flags (presentation only) ----
+  const hasClients = (allClients as any[]).length > 0;
+  const hasServices = (services as any[]).length > 0;
+  const hasWorkingHours = (workingSchedule as any[]).some((d: any) => d.is_working);
+  const bookingHandle = ((bookingLink as any)?.slug || (bookingLink as any)?.token || "") as string;
+  const bookingUrl = bookingHandle ? `${window.location.origin}/book/${bookingHandle}` : "";
+
+  const shareBookingLink = () => {
+    if (!bookingUrl) {
+      navigate("/settings/practice");
+      return;
+    }
+    navigator.clipboard?.writeText(bookingUrl).then(
+      () => toast({ title: t("dashe.linkCopied"), description: bookingUrl }),
+      () => navigate("/settings/practice"),
+    );
+  };
+
+
 
   const [monthOffset, setMonthOffset] = useState(0);
   const use12h = (profile as any)?.time_format === "12h";
@@ -182,6 +210,22 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
     onClick: () => onOpenWidget(a.widget, a.path),
   }));
 
+  // Setup suggestions shown when there is nothing urgent — only incomplete steps.
+  const setupSuggestions = [
+    { key: "hours", show: !hasWorkingHours, icon: Clock, title: t("dashe.setupHours"), sub: t("dashe.setupHoursSub"), path: "/settings/practice" },
+    { key: "service", show: !hasServices, icon: Briefcase, title: t("dashe.setupService"), sub: t("dashe.setupServiceSub"), path: "/services" },
+    { key: "clients", show: !hasClients, icon: UserPlus, title: t("dashe.setupClients"), sub: t("dashe.setupClientsSub"), path: "/clients" },
+  ].filter((s) => s.show);
+
+  const onboardingSteps = [
+    { key: "client", done: hasClients, icon: Users, title: t("dashe.onbStep1"), sub: t("dashe.onbStep1Sub"), path: "/clients" },
+    { key: "service", done: hasServices, icon: Briefcase, title: t("dashe.onbStep2"), sub: t("dashe.onbStep2Sub"), path: "/services" },
+    { key: "booking", done: !!bookingHandle && hasClients, icon: Link2, title: t("dashe.onbStep3"), sub: t("dashe.onbStep3Sub"), path: "/settings/practice" },
+  ];
+  const showOnboarding = onboardingSteps.some((s) => !s.done);
+
+
+
   const recentUnpaid = derived.unpaid
     .slice()
     .sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime())
@@ -248,8 +292,32 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
 
           <ul className="px-5 sm:px-6 pb-4">
             {todaySessions.length === 0 && (
-              <li className="py-10 text-center text-sm text-muted-foreground">{t("dashu.noSessionsToday")}</li>
+              <li className="py-8 flex flex-col items-center text-center gap-3">
+                <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <CalendarDays className="h-7 w-7 text-primary" />
+                </div>
+                <div>
+                  <p className="text-base font-bold text-foreground">{t("dashe.noSessionsTitle")}</p>
+                  <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">{t("dashe.noSessionsDesc")}</p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto mt-1">
+                  <button
+                    onClick={() => navigate("/calendar")}
+                    className="rounded-xl bg-primary text-primary-foreground px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity"
+                  >
+                    {t("dashe.openCalendar")}
+                  </button>
+                  <button
+                    onClick={shareBookingLink}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+                  >
+                    <Link2 className="h-4 w-4" />
+                    {t("dashe.shareBooking")}
+                  </button>
+                </div>
+              </li>
             )}
+
             {todaySessions.map((a) => {
               const isNext = nextSession?.id === a.id;
               const isPaid = PAID_STATUSES.has(a.payment_status);
@@ -319,13 +387,45 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
             })}
           </ul>
 
-          <div className="px-5 sm:px-6 py-4 border-t border-border flex gap-4">
-            <span className="w-14 shrink-0 text-sm text-muted-foreground">—</span>
-            <div>
-              <p className="text-sm font-semibold text-foreground">{t("dashu.noMore")}</p>
-              <p className="text-xs text-muted-foreground">{t("dashu.noMoreSub")}</p>
+          {todaySessions.length === 0 ? (
+            <div className="px-5 sm:px-6 py-3.5 border-t border-border text-xs text-muted-foreground inline-flex items-center gap-1.5">
+              <Clock className="h-3.5 w-3.5" />
+              {t("dashu.tzNote")}
             </div>
-          </div>
+          ) : todaySessions.length <= 2 ? (
+            <div className="px-5 sm:px-6 py-4 border-t border-border flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <CalendarClock className="h-4 w-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">{t("dashe.openTimeTitle")}</p>
+                <p className="text-xs text-muted-foreground">{t("dashe.openTimeSub")}</p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+                <button
+                  onClick={() => navigate("/calendar")}
+                  className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
+                >
+                  {t("dashe.openCalendar")}
+                </button>
+                <button
+                  onClick={shareBookingLink}
+                  className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
+                >
+                  {t("dashe.shareBooking")}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="px-5 sm:px-6 py-4 border-t border-border flex gap-4">
+              <span className="w-14 shrink-0 text-sm text-muted-foreground">—</span>
+              <div>
+                <p className="text-sm font-semibold text-foreground">{t("dashu.noMore")}</p>
+                <p className="text-xs text-muted-foreground">{t("dashu.noMoreSub")}</p>
+              </div>
+            </div>
+          )}
+
         </section>
 
         {/* Right — finance widgets */}
@@ -338,7 +438,36 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
               <h2 className="text-base font-semibold text-foreground">{t("dashm.needsAttention")}*</h2>
             </div>
             {attention.length === 0 ? (
-              <p className="px-5 py-8 text-sm text-muted-foreground text-center">{t("dashm.allClear")}</p>
+              <div>
+                <div className="m-4 rounded-2xl border border-success/30 bg-success/10 px-4 py-4 flex items-center gap-3">
+                  <CheckCircle2 className="h-6 w-6 text-success shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground">{t("dashe.allCaughtUp")}</p>
+                    <p className="text-xs text-muted-foreground">{t("dashe.allCaughtUpSub")}</p>
+                  </div>
+                </div>
+                {setupSuggestions.length > 0 && (
+                  <ul className="divide-y divide-border border-t border-border">
+                    {setupSuggestions.map((s) => (
+                      <li
+                        key={s.key}
+                        onClick={() => navigate(s.path)}
+                        className="group flex items-center gap-3 px-5 py-3.5 cursor-pointer hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <s.icon className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">{s.title}</p>
+                          <p className="text-xs text-muted-foreground truncate">{s.sub}</p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-foreground transition-colors" />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
             ) : (
               <ul className="divide-y divide-border">
                 {attention.map((a) => (
@@ -378,7 +507,16 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
               </button>
             </div>
             {recentUnpaid.length === 0 ? (
-              <p className="px-5 py-8 text-sm text-muted-foreground text-center">{t("dashm.noUnpaid")}</p>
+              <div className="px-5 py-6 flex items-center gap-4">
+                <div className="h-14 w-14 rounded-2xl bg-success/10 flex items-center justify-center shrink-0">
+                  <Wallet className="h-6 w-6 text-success" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground">{t("dashe.noUnpaidTitle")}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t("dashe.noUnpaidSub")}</p>
+                </div>
+              </div>
+
             ) : (
               <>
                 <ul className="divide-y divide-border">
@@ -443,12 +581,27 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
               </div>
               <p className="mt-1 text-xs text-muted-foreground text-right">{t("dashm.monthGoal")}</p>
             </div>
+            {income === 0 && expectedIncome === 0 && (
+              <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+                <p className="text-xs text-muted-foreground inline-flex items-center gap-1.5">
+                  <AlertCircle className="h-3.5 w-3.5 text-warning" />
+                  {t("dashe.noFinance")}
+                </p>
+                <button
+                  onClick={() => navigate("/finances")}
+                  className="self-start rounded-xl bg-primary text-primary-foreground px-4 py-2 text-xs font-semibold hover:opacity-90 transition-opacity"
+                >
+                  {t("dashm.openFinances")}
+                </button>
+              </div>
+            )}
             {derived.unpaidTotal > 0 && (
               <p className="mt-4 text-xs text-muted-foreground inline-flex items-center gap-1.5">
                 <AlertCircle className="h-3.5 w-3.5 text-warning" />
                 {t("dashm.pendingHint", { amount: `${cs}${derived.unpaidTotal.toLocaleString()}` })}
               </p>
             )}
+
           </section>
         </div>
       </div>
@@ -469,7 +622,11 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
             <StatTile icon={DollarSign} tone="success" value={`${cs}${income.toLocaleString()}`} label={t("dashm.income")} sub={t("dashm.received")} />
             <StatTile icon={Percent} tone="warning" value={`${occupancy}%`} label={t("dashm.occupancy")} sub={t("dashm.thisMonthShort")} />
           </div>
+          {derived.totalSessions === 0 && derived.clientCount === 0 && income === 0 && (
+            <p className="mt-4 text-xs text-muted-foreground text-center">{t("dashe.practiceHint")}</p>
+          )}
         </section>
+
 
         <div className="px-2 py-2 text-xs text-muted-foreground space-y-1">
           <p className="inline-flex items-start gap-1.5">
@@ -479,7 +636,48 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
           <p className="pl-5">{t("dashu.paidNote2")}</p>
         </div>
       </div>
+
+      {/* Onboarding — hidden once setup is complete */}
+      {showOnboarding && (
+        <section className="bg-card border border-border rounded-[20px] shadow-card px-5 sm:px-6 py-5">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-5">
+            <div className="flex items-center gap-3 lg:w-72 shrink-0">
+              <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                <Sparkles className="h-5 w-5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-base font-semibold text-foreground">{t("dashe.onbTitle")}</h2>
+                <p className="text-xs text-muted-foreground">{t("dashe.onbSub")}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1 min-w-0">
+              {onboardingSteps.map((s, i) => (
+                <button
+                  key={s.key}
+                  onClick={() => navigate(s.path)}
+                  className="group flex items-center gap-3 rounded-2xl border border-border px-3 py-3 text-left hover:bg-muted/50 transition-colors min-w-0"
+                >
+                  <span className={cn(
+                    "h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0",
+                    s.done ? "bg-success/15 text-success" : "bg-primary/10 text-primary",
+                  )}>
+                    {s.done ? <Check className="h-4 w-4" /> : i + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className={cn("text-sm font-semibold truncate", s.done ? "text-muted-foreground line-through" : "text-foreground")}>
+                      {s.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">{s.sub}</p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-foreground transition-colors shrink-0" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
+
   );
 }
 
