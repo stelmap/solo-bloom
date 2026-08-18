@@ -622,7 +622,11 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
             <StatTile icon={DollarSign} tone="success" value={`${cs}${income.toLocaleString()}`} label={t("dashm.income")} sub={t("dashm.received")} />
             <StatTile icon={Percent} tone="warning" value={`${occupancy}%`} label={t("dashm.occupancy")} sub={t("dashm.thisMonthShort")} />
           </div>
+          {derived.totalSessions === 0 && derived.clientCount === 0 && income === 0 && (
+            <p className="mt-4 text-xs text-muted-foreground text-center">{t("dashe.practiceHint")}</p>
+          )}
         </section>
+
 
         <div className="px-2 py-2 text-xs text-muted-foreground space-y-1">
           <p className="inline-flex items-start gap-1.5">
