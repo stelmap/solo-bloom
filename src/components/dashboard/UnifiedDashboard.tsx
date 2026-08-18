@@ -72,6 +72,30 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
   const navigate = useNavigate();
   const { data: profile } = useProfile();
   const { data: allAppointments = [] } = useAppointments();
+  const { data: allClients = [] } = useClients();
+  const { data: services = [] } = useServices();
+  const { data: workingSchedule = [] } = useWorkingSchedule();
+  const { data: bookingLink } = useBookingLink();
+
+  // ---- Setup / empty-state flags (presentation only) ----
+  const hasClients = (allClients as any[]).length > 0;
+  const hasServices = (services as any[]).length > 0;
+  const hasWorkingHours = (workingSchedule as any[]).some((d: any) => d.is_working);
+  const bookingHandle = ((bookingLink as any)?.slug || (bookingLink as any)?.token || "") as string;
+  const bookingUrl = bookingHandle ? `${window.location.origin}/book/${bookingHandle}` : "";
+
+  const shareBookingLink = () => {
+    if (!bookingUrl) {
+      navigate("/settings/practice");
+      return;
+    }
+    navigator.clipboard?.writeText(bookingUrl).then(
+      () => toast({ title: t("dashe.linkCopied"), description: bookingUrl }),
+      () => navigate("/settings/practice"),
+    );
+  };
+
+
 
   const [monthOffset, setMonthOffset] = useState(0);
   const use12h = (profile as any)?.time_format === "12h";
