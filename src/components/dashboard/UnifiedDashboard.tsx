@@ -276,8 +276,32 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
 
           <ul className="px-5 sm:px-6 pb-4">
             {todaySessions.length === 0 && (
-              <li className="py-10 text-center text-sm text-muted-foreground">{t("dashu.noSessionsToday")}</li>
+              <li className="py-8 flex flex-col items-center text-center gap-3">
+                <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <CalendarDays className="h-7 w-7 text-primary" />
+                </div>
+                <div>
+                  <p className="text-base font-bold text-foreground">{t("dashe.noSessionsTitle")}</p>
+                  <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">{t("dashe.noSessionsDesc")}</p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto mt-1">
+                  <button
+                    onClick={() => navigate("/calendar")}
+                    className="rounded-xl bg-primary text-primary-foreground px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity"
+                  >
+                    {t("dashe.openCalendar")}
+                  </button>
+                  <button
+                    onClick={shareBookingLink}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+                  >
+                    <Link2 className="h-4 w-4" />
+                    {t("dashe.shareBooking")}
+                  </button>
+                </div>
+              </li>
             )}
+
             {todaySessions.map((a) => {
               const isNext = nextSession?.id === a.id;
               const isPaid = PAID_STATUSES.has(a.payment_status);
