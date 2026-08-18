@@ -457,6 +457,7 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
           </p>
           <p className="pl-5">{t("dashu.paidNote2")}</p>
         </div>
+        </div>
 
         {/* Right — finance widgets */}
         <div className="space-y-4">
