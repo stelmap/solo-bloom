@@ -422,7 +422,36 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
               <h2 className="text-base font-semibold text-foreground">{t("dashm.needsAttention")}*</h2>
             </div>
             {attention.length === 0 ? (
-              <p className="px-5 py-8 text-sm text-muted-foreground text-center">{t("dashm.allClear")}</p>
+              <div>
+                <div className="m-4 rounded-2xl border border-success/30 bg-success/10 px-4 py-4 flex items-center gap-3">
+                  <CheckCircle2 className="h-6 w-6 text-success shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground">{t("dashe.allCaughtUp")}</p>
+                    <p className="text-xs text-muted-foreground">{t("dashe.allCaughtUpSub")}</p>
+                  </div>
+                </div>
+                {setupSuggestions.length > 0 && (
+                  <ul className="divide-y divide-border border-t border-border">
+                    {setupSuggestions.map((s) => (
+                      <li
+                        key={s.key}
+                        onClick={() => navigate(s.path)}
+                        className="group flex items-center gap-3 px-5 py-3.5 cursor-pointer hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <s.icon className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">{s.title}</p>
+                          <p className="text-xs text-muted-foreground truncate">{s.sub}</p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-foreground transition-colors" />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
             ) : (
               <ul className="divide-y divide-border">
                 {attention.map((a) => (
