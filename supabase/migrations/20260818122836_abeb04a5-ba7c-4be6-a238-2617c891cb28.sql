@@ -68,14 +68,14 @@ BEGIN
     v_dow_app := CASE WHEN v_dow_pg = 0 THEN 7 ELSE v_dow_pg END;
 
     FOR v_rule IN
-      SELECT ws.start_time, ws.end_time
+      SELECT ws.start_time::text AS start_time, ws.end_time::text AS end_time
         FROM public.working_schedule ws
        WHERE v_has_ws
          AND ws.user_id = v_user
          AND ws.day_of_week = v_dow_app
          AND ws.is_working = true
       UNION ALL
-      SELECT ba.start_time, ba.end_time
+      SELECT ba.start_time::text AS start_time, ba.end_time::text AS end_time
         FROM public.booking_availability ba
        WHERE NOT v_has_ws
          AND ba.user_id = v_user
