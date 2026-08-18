@@ -2537,7 +2537,21 @@ export default function CalendarPage() {
             <DialogTitle>{t("settings.addDayOff") || "Add day off"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <Input type="date" value={newDayOffDate} onChange={(e) => setNewDayOffDate(e.target.value)} />
+            <div className="rounded-xl border bg-card p-2 flex justify-center">
+              <CalendarPicker
+                mode="single"
+                locale={dateLocale}
+                weekStartsOn={1}
+                selected={newDayOffDate ? new Date(`${newDayOffDate}T00:00:00`) : undefined}
+                onSelect={(d) => setNewDayOffDate(d ? format(d, "yyyy-MM-dd") : "")}
+                className="p-0 pointer-events-auto"
+              />
+            </div>
+            {newDayOffDate && (
+              <p className="text-sm text-muted-foreground text-center">
+                {format(new Date(`${newDayOffDate}T00:00:00`), "PP", { locale: dateLocale })}
+              </p>
+            )}
             <Button
               className="w-full"
               disabled={!newDayOffDate}
@@ -2551,6 +2565,7 @@ export default function CalendarPage() {
               {t("common.save") || "Save"}
             </Button>
           </div>
+
         </DialogContent>
       </Dialog>
 
