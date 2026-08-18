@@ -53,7 +53,6 @@ BEGIN
   v_stride := v_dur + v_buffer;
   IF v_stride <= 0 THEN v_stride := v_dur; END IF;
 
-  -- Does the therapist have any weekly working hours at all?
   SELECT EXISTS (
     SELECT 1 FROM public.working_schedule
      WHERE user_id = v_user AND is_working = true
