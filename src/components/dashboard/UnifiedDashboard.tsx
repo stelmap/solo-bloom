@@ -581,12 +581,27 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
               </div>
               <p className="mt-1 text-xs text-muted-foreground text-right">{t("dashm.monthGoal")}</p>
             </div>
+            {income === 0 && expectedIncome === 0 && (
+              <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+                <p className="text-xs text-muted-foreground inline-flex items-center gap-1.5">
+                  <AlertCircle className="h-3.5 w-3.5 text-warning" />
+                  {t("dashe.noFinance")}
+                </p>
+                <button
+                  onClick={() => navigate("/finances")}
+                  className="self-start rounded-xl bg-primary text-primary-foreground px-4 py-2 text-xs font-semibold hover:opacity-90 transition-opacity"
+                >
+                  {t("dashm.openFinances")}
+                </button>
+              </div>
+            )}
             {derived.unpaidTotal > 0 && (
               <p className="mt-4 text-xs text-muted-foreground inline-flex items-center gap-1.5">
                 <AlertCircle className="h-3.5 w-3.5 text-warning" />
                 {t("dashm.pendingHint", { amount: `${cs}${derived.unpaidTotal.toLocaleString()}` })}
               </p>
             )}
+
           </section>
         </div>
       </div>
