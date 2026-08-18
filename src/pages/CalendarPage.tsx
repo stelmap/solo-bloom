@@ -38,6 +38,7 @@ import {
   useBulkCancelForDayOff, useCreateClient, useCreateService,
 } from "@/hooks/useData";
 import { useGroups, useGroupMembers, useCreateGroupSession } from "@/hooks/useGroups";
+import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
