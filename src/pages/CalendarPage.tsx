@@ -538,6 +538,49 @@ export default function CalendarPage() {
   /** Quick-select duration in minutes (null = custom / no preset matches). */
   const [durationPreset, setDurationPreset] = useState<number | null>(60);
 
+  const DURATION_PRESETS = [50, 60, 90, 120, 180];
+  const toMinutes = (t: string) => {
+    const [h, m] = (t || "").split(":").map(Number);
+    return Number.isFinite(h) && Number.isFinite(m) ? h * 60 + m : NaN;
+  };
+  const addMinutesToTime = (t: string, mins: number) => {
+    const total = toMinutes(t) + mins;
+    if (!Number.isFinite(total)) return t;
+    const clamped = Math.min(total, 23 * 60 + 45);
+    return `${String(Math.floor(clamped / 60)).padStart(2, "0")}:${String(clamped % 60).padStart(2, "0")}`;
+  };
+  const durationLabel = (mins: number) => {
+    if (mins < 60) return `${mins} ${L.durationMin}`;
+    const h = mins / 60;
+    return `${Number.isInteger(h) ? h : h.toFixed(1)} ${t("common.hoursShort") === "common.hoursShort" ? (h === 1 ? "hour" : "hours") : t("common.hoursShort")}`;
+  };
+  /** Apply a new start time, keeping the selected duration. */
+  const applyStartTime = (v: string) => {
+    setForm(f => ({ ...f, time: v }));
+    const nextEnd = durationPreset ? addMinutesToTime(v, durationPreset) : null;
+    if (nextEnd) {
+      setBlockEnd(nextEnd);
+      setEndOverride(nextEnd);
+    } else {
+      setEndOverride(null);
+    }
+  };
+  /** Apply a manually chosen end time and re-derive the duration preset. */
+  const applyEndTime = (v: string) => {
+    setBlockEnd(v);
+    setEndOverride(v);
+    const diff = toMinutes(v) - toMinutes(form.time);
+    setDurationPreset(DURATION_PRESETS.includes(diff) ? diff : null);
+  };
+  const applyDuration = (mins: number) => {
+    setDurationPreset(mins);
+    if (form.time) {
+      const nextEnd = addMinutesToTime(form.time, mins);
+      setBlockEnd(nextEnd);
+      setEndOverride(nextEnd);
+    }
+  };
+
   // Group session state
   const [isGroupSession, setIsGroupSession] = useState(false);
   const [groupId, setGroupId] = useState("");
