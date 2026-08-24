@@ -78,6 +78,7 @@ const NEW_COPY: Record<LangKey, {
   serviceName: string; serviceDuration: string; servicePrice: string;
   saveClient: string; saveService: string; cancel: string;
   durationMin: string;
+  durationTitle: string; durationHint: string; endBeforeStart: string;
   modalSubtitle: string;
   sessionTypeLabel: string; individualSession: string; groupSession: string;
   blockedTime: string; blockedStart: string; blockedEnd: string;
@@ -103,6 +104,7 @@ const NEW_COPY: Record<LangKey, {
     serviceName: "Name", serviceDuration: "Duration", servicePrice: "Price",
     saveClient: "Save client", saveService: "Save service", cancel: "Cancel",
     durationMin: "min",
+    durationTitle: "Duration", durationHint: "End time updates automatically", endBeforeStart: "End time must be later than start time.",
     modalSubtitle: "Schedule an individual or group session",
     sessionTypeLabel: "Session type",
     individualSession: "Individual session", groupSession: "Group session",
@@ -132,6 +134,7 @@ const NEW_COPY: Record<LangKey, {
     serviceName: "Назва", serviceDuration: "Тривалість", servicePrice: "Ціна",
     saveClient: "Зберегти клієнта", saveService: "Зберегти послугу", cancel: "Скасувати",
     durationMin: "хв",
+    durationTitle: "Тривалість", durationHint: "Час завершення оновлюється автоматично", endBeforeStart: "Час завершення має бути пізніше часу початку.",
     modalSubtitle: "Заплануйте індивідуальну або групову сесію",
     sessionTypeLabel: "Тип сесії",
     individualSession: "Індивідуальна сесія", groupSession: "Групова сесія",
@@ -161,6 +164,7 @@ const NEW_COPY: Record<LangKey, {
     serviceName: "Название", serviceDuration: "Длительность", servicePrice: "Цена",
     saveClient: "Сохранить клиента", saveService: "Сохранить услугу", cancel: "Отмена",
     durationMin: "мин",
+    durationTitle: "Длительность", durationHint: "Время окончания обновляется автоматически", endBeforeStart: "Время окончания должно быть позже времени начала.",
     modalSubtitle: "Запланируйте индивидуальную или групповую сессию",
     sessionTypeLabel: "Тип сессии",
     individualSession: "Индивидуальная сессия", groupSession: "Групповая сессия",
@@ -190,6 +194,7 @@ const NEW_COPY: Record<LangKey, {
     serviceName: "Nom", serviceDuration: "Durée", servicePrice: "Prix",
     saveClient: "Enregistrer", saveService: "Enregistrer", cancel: "Annuler",
     durationMin: "min",
+    durationTitle: "Durée", durationHint: "L'heure de fin est mise à jour automatiquement", endBeforeStart: "L'heure de fin doit être postérieure à l'heure de début.",
     modalSubtitle: "Planifiez une séance individuelle ou de groupe",
     sessionTypeLabel: "Type de séance",
     individualSession: "Séance individuelle", groupSession: "Séance de groupe",
@@ -219,6 +224,7 @@ const NEW_COPY: Record<LangKey, {
     serviceName: "Nazwa", serviceDuration: "Czas trwania", servicePrice: "Cena",
     saveClient: "Zapisz klienta", saveService: "Zapisz usługę", cancel: "Anuluj",
     durationMin: "min",
+    durationTitle: "Czas trwania", durationHint: "Godzina zakończenia aktualizuje się automatycznie", endBeforeStart: "Godzina zakończenia musi być późniejsza niż rozpoczęcia.",
     modalSubtitle: "Zaplanuj sesję indywidualną lub grupową",
     sessionTypeLabel: "Typ sesji",
     individualSession: "Sesja indywidualna", groupSession: "Sesja grupowa",
