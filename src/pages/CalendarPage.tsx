@@ -758,6 +758,8 @@ export default function CalendarPage() {
       await qc.invalidateQueries({ queryKey: ["days-off"] });
       setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
       setBlockEnd("10:00");
+      setDurationPreset(60);
+      setEndOverride(null);
       setIsBlockedTime(false);
       setIsRecurring(false);
       setRecurInterval(1); setRecurDays([1]); setRecurEndDate("");
@@ -2144,7 +2146,8 @@ export default function CalendarPage() {
                     const disabled = createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending
                       || createDayOff.isPending
                       || missingRequired
-                      || (!isBlockedTime && !isRecurring && !isGroupSession && !!createValidation);
+                      || (!isBlockedTime && !isRecurring && !isGroupSession && !!createValidation)
+                      || (!isBlockedTime && !!endOverride && endOverride <= form.time);
 
                     const selectedService = services.find(s => s.id === form.service_id);
                     const selectedClient = clients.find(c => c.id === form.client_id);
