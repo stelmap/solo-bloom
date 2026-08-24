@@ -2190,4 +2190,6 @@ export default {
   "ce.insight.savings": "Можливість економії",
   "ce.insight.savings.text": "Оптимізація маркетингових інструментів і підписок",
   "ce.perMonth": "місяць",
+  "booking.pendingRequests": "Запити на бронювання",
+  "booking.pendingRequestsSub": "Перегляньте та підтвердіть запити",
 } as const;

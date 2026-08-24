@@ -2190,4 +2190,6 @@ export default {
   "ce.insight.savings": "Savings opportunity",
   "ce.insight.savings.text": "Optimizing marketing tools and subscriptions",
   "ce.perMonth": "month",
+  "booking.pendingRequests": "Pending requests",
+  "booking.pendingRequestsSub": "Review and confirm booking requests",
 } as const;
