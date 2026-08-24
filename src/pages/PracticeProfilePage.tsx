@@ -257,6 +257,17 @@ export default function PracticeProfilePage() {
     if (user?.id && link === null) ensureLink.mutate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, link]);
+  // Deep-link support: /settings/practice#booking-availability
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const id = window.location.hash.replace("#", "");
+    if (!id) return;
+    const timer = window.setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, []);
+
 
   const tzOptions = useMemo(() => {
     try {
