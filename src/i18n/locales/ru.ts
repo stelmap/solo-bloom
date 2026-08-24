@@ -2321,4 +2321,6 @@ export default {
   "ce.insight.savings": "Возможность экономии",
   "ce.insight.savings.text": "Оптимизация маркетинговых инструментов и подписок",
   "ce.perMonth": "месяц",
+  "booking.pendingRequests": "Запросы на бронирование",
+  "booking.pendingRequestsSub": "Просмотрите и подтвердите запросы",
 };

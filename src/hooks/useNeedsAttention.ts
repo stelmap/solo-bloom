@@ -1,8 +1,9 @@
 import { useMemo } from "react";
-import { CalendarDays, Clock, FileSignature, Receipt, type LucideIcon } from "lucide-react";
+import { CalendarDays, Clock, FileSignature, Inbox, Receipt, type LucideIcon } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useAppointments, useClients, useDashboardStats } from "@/hooks/useData";
+import { useBookingRequests } from "@/hooks/useBookingInbox";
 
 const PAID_STATUSES = new Set(["paid_now", "paid_in_advance", "paid_from_prepayment"]);
 
@@ -40,6 +41,13 @@ export function useNeedsAttention(monthKey: string = currentMonthKey()) {
   const { data: stats } = useDashboardStats();
   const { data: allAppointments = [] } = useAppointments();
   const { data: allClients = [] } = useClients();
+  // Pending booking requests are actionable regardless of the selected month.
+  const { data: bookingRequests = [] } = useBookingRequests(null);
+
+  const pendingRequests = useMemo(
+    () => (bookingRequests as any[]).filter((r) => r.status === "pending" || r.status === "needs_linking"),
+    [bookingRequests],
+  );
 
   const isCurrentMonth = monthKey === currentMonthKey();
 
@@ -75,6 +83,16 @@ export function useNeedsAttention(monthKey: string = currentMonthKey()) {
   const totalDebt = Number((stats as any)?.outstandingBalance ?? 0);
 
   const items: AttentionItem[] = [
+    {
+      key: "pending",
+      icon: Inbox,
+      tone: "warning" as const,
+      show: pendingRequests.length > 0,
+      title: `${t("booking.pendingRequests") || "Pending requests"}: ${pendingRequests.length}`,
+      sub: t("booking.pendingRequestsSub") || "Review and confirm booking requests",
+      widget: "pending_requests",
+      path: "/booking-inbox?status=pending",
+    },
     {
       key: "unpaid",
       icon: Clock,
@@ -117,5 +135,5 @@ export function useNeedsAttention(monthKey: string = currentMonthKey()) {
     },
   ].filter((a) => a.show).map(({ show, ...rest }) => rest);
 
-  return { items, count: items.length, unpaid: derived.unpaid, unpaidTotal: derived.unpaidTotal };
+  return { items, count: items.length, pendingRequests, unpaid: derived.unpaid, unpaidTotal: derived.unpaidTotal };
 }

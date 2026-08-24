@@ -2189,4 +2189,6 @@ export default {
   "ce.insight.savings": "Opportunité d’économies",
   "ce.insight.savings.text": "Optimiser les outils marketing et les abonnements",
   "ce.perMonth": "mois",
+  "booking.pendingRequests": "Demandes en attente",
+  "booking.pendingRequestsSub": "Consultez et confirmez les demandes",
 } as const;

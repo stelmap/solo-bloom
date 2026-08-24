@@ -2189,4 +2189,6 @@ export default {
   "ce.insight.savings": "Możliwość oszczędności",
   "ce.insight.savings.text": "Optymalizacja narzędzi marketingowych i subskrypcji",
   "ce.perMonth": "miesiąc",
+  "booking.pendingRequests": "Oczekujące prośby",
+  "booking.pendingRequestsSub": "Przejrzyj i potwierdź prośby o rezerwację",
 } as const;

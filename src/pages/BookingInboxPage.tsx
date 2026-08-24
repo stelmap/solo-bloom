@@ -164,7 +164,11 @@ export default function BookingInboxPage() {
     catch { return s; }
   };
 
-  const [status, setStatus] = useState<string>("all");
+  const initialStatus = (() => {
+    if (typeof window === "undefined") return "all";
+    return new URLSearchParams(window.location.search).get("status") || "all";
+  })();
+  const [status, setStatus] = useState<string>(initialStatus);
   const { data: rows = [], isLoading, refetch, isFetching } = useBookingRequests(status);
   const { data: services = [] } = useServices();
   const { data: clients = [] } = useClients();
