@@ -208,17 +208,16 @@ export function BookingAvailabilitySection() {
       end_time: `${end}:00`,
       ...shared,
     }));
-    // Drop any extra intervals from the legacy multi-block editor, then upsert
-    // exactly one row per weekday — repeated saves never duplicate records.
+    // Replace all rows for this user: an upsert would fire the BEFORE INSERT
+    // overlap trigger against the still-existing rows and fail.
     const { error: delErr } = await supabase
       .from("booking_availability")
       .delete()
-      .eq("user_id", userId)
-      .gt("sort_order", 0);
+      .eq("user_id", userId);
     if (delErr) throw delErr;
     const { error: upErr } = await supabase
       .from("booking_availability")
-      .upsert(rows as any, { onConflict: "user_id,weekday,sort_order" });
+      .insert(rows as any);
     if (upErr) throw upErr;
     await qc.invalidateQueries({ queryKey: ["booking_availability", userId] });
     if (!opts?.silent) toast({ title: L.saved });
