@@ -28,10 +28,11 @@ export default function CalendarSettingsPage() {
               </p>
             </div>
             <Button asChild>
-              <Link to="/settings/practice">
+              <Link to="/settings/practice#booking-availability">
                 {t("settings.practiceProfile")} <ArrowRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>
+
           </CardContent>
         </Card>
       </div>

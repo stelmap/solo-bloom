@@ -13,6 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useUpdateProfile } from "@/hooks/useData";
 import { useBookingLink } from "@/hooks/usePracticeProfile";
+import { BookingAvailabilitySection } from "@/components/practice/BookingAvailabilitySection";
+
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { AppLanguage } from "@/i18n/translations";
@@ -255,6 +257,17 @@ export default function PracticeProfilePage() {
     if (user?.id && link === null) ensureLink.mutate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, link]);
+  // Deep-link support: /settings/practice#booking-availability
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const id = window.location.hash.replace("#", "");
+    if (!id) return;
+    const timer = window.setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, []);
+
 
   const tzOptions = useMemo(() => {
     try {
@@ -480,43 +493,44 @@ export default function PracticeProfilePage() {
               <Switch checked={isActive} onCheckedChange={setIsActive} />
             </div>
 
-            {isActive && (
-              <>
-                <div className="space-y-2">
-                  <Label className="font-semibold">{L.link}</Label>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Input readOnly value={url} className="flex-1 min-w-[220px] font-mono text-xs" />
-                    <Button type="button" variant="outline" size="sm" disabled={!url}
-                      onClick={() => { navigator.clipboard.writeText(url); toast({ title: L.copied }); }}>
-                      <Copy className="h-4 w-4 mr-1" />
-                    </Button>
-                    <Button type="button" variant="outline" size="sm" asChild disabled={!url}>
-                      <a href={url} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" /></a>
-                    </Button>
-                    <Button type="button" variant="ghost" size="sm" onClick={regenerate}>
-                      <RefreshCw className="h-4 w-4 mr-1" /> {L.regenerate}
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground">{L.linkDesc}</p>
-                </div>
+            <div className="space-y-2">
+              <Label className="font-semibold">{L.link}</Label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Input readOnly value={url} className="flex-1 min-w-[220px] font-mono text-xs" />
+                <Button type="button" variant="outline" size="sm" disabled={!url}
+                  onClick={() => { navigator.clipboard.writeText(url); toast({ title: L.copied }); }}>
+                  <Copy className="h-4 w-4 mr-1" />
+                </Button>
+                <Button type="button" variant="outline" size="sm" asChild disabled={!url}>
+                  <a href={url} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" /></a>
+                </Button>
+                <Button type="button" variant="ghost" size="sm" onClick={regenerate}>
+                  <RefreshCw className="h-4 w-4 mr-1" /> {L.regenerate}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">{L.linkDesc}</p>
+            </div>
 
-                <div className="space-y-2">
-                  <Label className="font-semibold">{L.mode}</Label>
-                  <RadioGroup value={mode} onValueChange={(v) => setMode(v as any)} className="grid gap-2 sm:grid-cols-2">
-                    {([["manual", L.modeManual], ["auto", L.modeAuto]] as const).map(([v, label]) => (
-                      <Label key={v} htmlFor={`mode-${v}`} className={cn(
-                        "flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors",
-                        mode === v ? "border-primary bg-primary/5" : "border-border hover:bg-accent",
-                      )}>
-                        <RadioGroupItem id={`mode-${v}`} value={v} />
-                        <span className="text-sm">{label}</span>
-                      </Label>
-                    ))}
-                  </RadioGroup>
-                </div>
-              </>
-            )}
+            <div className="space-y-2">
+              <Label className="font-semibold">{L.mode}</Label>
+              <RadioGroup value={mode} onValueChange={(v) => setMode(v as any)} className="grid gap-2 sm:grid-cols-2">
+                {([["manual", L.modeManual], ["auto", L.modeAuto]] as const).map(([v, label]) => (
+                  <Label key={v} htmlFor={`mode-${v}`} className={cn(
+                    "flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors",
+                    mode === v ? "border-primary bg-primary/5" : "border-border hover:bg-accent",
+                  )}>
+                    <RadioGroupItem id={`mode-${v}`} value={v} />
+                    <span className="text-sm">{label}</span>
+                  </Label>
+                ))}
+              </RadioGroup>
+            </div>
           </section>
+
+          <Separator />
+
+          <BookingAvailabilitySection />
+
 
           <div className="flex items-center justify-end gap-3 pt-2">
             {touched && Object.entries(form).some(([k, v]) =>
