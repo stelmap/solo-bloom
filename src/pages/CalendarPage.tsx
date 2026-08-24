@@ -1438,7 +1438,7 @@ export default function CalendarPage() {
 
   // Same source of truth as the Dashboard "Needs attention" widget.
   const { items: needsAttentionItems } = useNeedsAttention();
-  const attentionCount = needsAttentionItems.length + pendingRequests.length;
+  const attentionCount = needsAttentionItems.length;
 
   const todayStr = format(new Date(), "yyyy-MM-dd");
   const upcomingDaysOff = useMemo(
@@ -1507,22 +1507,11 @@ export default function CalendarPage() {
         meta={attentionCount > 0 ? String(attentionCount) : undefined}
       >
         <div className="space-y-2">
-          {pendingRequests.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setInboxOpen(true)}
-              className="w-full flex items-center gap-2 rounded-lg border border-border p-2 text-left text-sm hover:bg-accent/40"
-            >
-              <Inbox className="h-4 w-4 text-warning shrink-0" />
-              <span className="truncate">{(t as any)("booking.pendingRequests") || "Pending requests"}</span>
-              <span className="ml-auto tabular-nums font-semibold">{pendingRequests.length}</span>
-            </button>
-          )}
           {needsAttentionItems.map((a) => (
             <button
               key={a.key}
               type="button"
-              onClick={() => navigate(a.path)}
+              onClick={() => (a.key === "pending" ? setInboxOpen(true) : navigate(a.path))}
               className="w-full flex items-start gap-2 rounded-lg border border-border p-2 text-left text-sm hover:bg-accent/40"
             >
               <a.icon className="h-4 w-4 text-warning shrink-0 mt-0.5" />
