@@ -1952,7 +1952,7 @@ export default function CalendarPage() {
                   </div>
                   )}
 
-                  {/* Date / Start time / End time */}
+                  {/* Date / Start time / End time + Duration */}
                   {(() => {
                     const svc = services.find(s => s.id === form.service_id);
                     const durMin = Number(svc?.duration_minutes) || 60;
@@ -1963,7 +1963,9 @@ export default function CalendarPage() {
                       computedEnd = `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
                     }
                     const endValue = isBlockedTime ? blockEnd : (endOverride ?? computedEnd);
+                    const invalidRange = !!form.time && !!endValue && toMinutes(endValue) <= toMinutes(form.time);
                     return (
+                      <>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div className="space-y-1">
                           <Label className="text-sm font-semibold text-foreground">
@@ -1983,8 +1985,13 @@ export default function CalendarPage() {
                                 <ChevronDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-[180px] p-0" align="start">
-                              <TimePicker value={form.time} onChange={(v) => { setForm(f => ({ ...f, time: v })); setEndOverride(null); setStartTimeOpen(false); }} use12h={use12h} />
+                            <PopoverContent className="w-[180px] p-0 z-[60]" align="start" collisionPadding={12}>
+                              <TimePicker
+                                value={form.time}
+                                onChange={(v) => { applyStartTime(v); setStartTimeOpen(false); }}
+                                onClose={() => setStartTimeOpen(false)}
+                                use12h={use12h}
+                              />
                             </PopoverContent>
                           </Popover>
                         </div>
@@ -1994,25 +2001,55 @@ export default function CalendarPage() {
                           </Label>
                           <Popover open={endTimeOpen} onOpenChange={setEndTimeOpen}>
                             <PopoverTrigger asChild>
-                              <Button type="button" variant="outline" className={cn("w-full justify-start font-normal rounded-xl px-3 text-sm", D.field)}>
+                              <Button type="button" variant="outline" className={cn("w-full justify-start font-normal rounded-xl px-3 text-sm", D.field, invalidRange && "border-destructive")}>
                                 <ClockIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
                                 {endValue ? formatTime(endValue, use12h) : "--:--"}
                                 <ChevronDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-[180px] p-0" align="start">
+                            <PopoverContent className="w-[180px] p-0 z-[60]" align="start" collisionPadding={12}>
                               <TimePicker
                                 value={endValue || "10:00"}
-                                onChange={(v) => {
-                                  if (isBlockedTime) setBlockEnd(v); else setEndOverride(v);
-                                  setEndTimeOpen(false);
-                                }}
+                                minTime={form.time || undefined}
+                                onChange={(v) => { applyEndTime(v); setEndTimeOpen(false); }}
+                                onClose={() => setEndTimeOpen(false)}
                                 use12h={use12h}
                               />
                             </PopoverContent>
                           </Popover>
                         </div>
                       </div>
+
+                      {/* Duration quick-select */}
+                      <div className="space-y-2 border-t border-border pt-3">
+                        <Label className="text-sm font-semibold text-foreground">{L.durationTitle}</Label>
+                        <div role="group" aria-label={L.durationTitle} className="flex flex-wrap gap-2">
+                          {DURATION_PRESETS.map(mins => {
+                            const active = durationPreset === mins;
+                            return (
+                              <button
+                                key={mins}
+                                type="button"
+                                aria-pressed={active}
+                                onClick={() => applyDuration(mins)}
+                                className={cn(
+                                  "h-10 flex-1 min-w-[84px] px-3 rounded-xl text-sm font-semibold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                  active
+                                    ? "bg-primary text-primary-foreground border-primary"
+                                    : "bg-background text-foreground border-border hover:border-muted-foreground/60",
+                                )}
+                              >
+                                {durationLabel(mins)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{L.durationHint}</p>
+                        {invalidRange && (
+                          <p role="alert" className="text-xs text-destructive">{L.endBeforeStart}</p>
+                        )}
+                      </div>
+                      </>
                     );
                   })()}
 
