@@ -2315,6 +2315,9 @@ export default function CalendarPage() {
                     onClick={() => {
                       if (!working || dayOff) return;
                       setForm((f) => ({ ...f, date: dayStr, time: f.time || "09:00" }));
+                      setDurationPreset(60);
+                      setBlockEnd(addMinutesToTime(form.time || "09:00", 60));
+                      setEndOverride(null);
                       const dow = day.getDay();
                       setRecurDays([dow === 0 ? 7 : dow]);
                       setServiceError(false);
@@ -2479,6 +2482,9 @@ export default function CalendarPage() {
                             const dateStr = format(day, "yyyy-MM-dd");
                             const timeStr = `${hour.toString().padStart(2, "0")}:00`;
                             setForm(f => ({ ...f, date: dateStr, time: timeStr }));
+                            setDurationPreset(60);
+                            setBlockEnd(addMinutesToTime(timeStr, 60));
+                            setEndOverride(null);
                             // Preselect the weekday for recurrence (1=Mon..7=Sun)
                             const dow = day.getDay();
                             setRecurDays([dow === 0 ? 7 : dow]);
