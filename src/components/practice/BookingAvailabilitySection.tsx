@@ -149,7 +149,6 @@ export function BookingAvailabilitySection() {
   const [until, setUntil] = useState(DEFAULT_UNTIL);
   const [saving, setSaving] = useState(false);
   const hydrated = useRef(false);
-  const seeded = useRef(false);
 
   // Hydrate: booking_availability → working schedule → Mon–Fri 09:00–18:00
   useEffect(() => {
