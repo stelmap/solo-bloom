@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Store } from "lucide-react";
+import { WorkingHoursSection, DaysOffSection } from "@/components/settings/CalendarSections";
 
 export default function CalendarSettingsPage() {
   const { t } = useLanguage();
@@ -17,7 +18,17 @@ export default function CalendarSettingsPage() {
           <h1 className="text-2xl font-bold text-foreground">{t("settings.calendarSettings")}</h1>
         </div>
 
-        
+        <Card>
+          <CardContent className="pt-6">
+            <WorkingHoursSection />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <DaysOffSection />
+          </CardContent>
+        </Card>
 
         <Card>
           <CardContent className="flex items-center justify-between gap-4 flex-wrap pt-6">
