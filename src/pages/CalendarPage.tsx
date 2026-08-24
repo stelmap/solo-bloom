@@ -552,7 +552,9 @@ export default function CalendarPage() {
   const durationLabel = (mins: number) => {
     if (mins < 60) return `${mins} ${L.durationMin}`;
     const h = mins / 60;
-    return `${Number.isInteger(h) ? h : h.toFixed(1)} ${t("common.hoursShort") === "common.hoursShort" ? (h === 1 ? "hour" : "hours") : t("common.hoursShort")}`;
+    const HOURS: Record<string, string> = { en: "h", uk: "год", ru: "ч", pl: "godz.", fr: "h" };
+    const unit = HOURS[lang as string] ?? "h";
+    return `${Number.isInteger(h) ? h : h.toFixed(1)} ${unit}`;
   };
   /** Apply a new start time, keeping the selected duration. */
   const applyStartTime = (v: string) => {
