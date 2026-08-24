@@ -535,6 +535,8 @@ export default function CalendarPage() {
   const [endTimeOpen, setEndTimeOpen] = useState(false);
   /** Manual override for the session end time (UI only — creation still uses service duration). */
   const [endOverride, setEndOverride] = useState<string | null>(null);
+  /** Quick-select duration in minutes (null = custom / no preset matches). */
+  const [durationPreset, setDurationPreset] = useState<number | null>(60);
 
   // Group session state
   const [isGroupSession, setIsGroupSession] = useState(false);
