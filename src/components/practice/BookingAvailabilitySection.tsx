@@ -165,26 +165,22 @@ export function BookingAvailabilitySection() {
     // No availability yet — try working schedule (loaded async)
     if (workingSchedule === undefined) return;
     const working = (workingSchedule || []).filter((w: any) => w.is_working);
+    let days = DEFAULT_DAYS;
+    let start = DEFAULT_FROM;
+    let end = DEFAULT_UNTIL;
     if (working.length > 0) {
-      setSelected(Array.from(new Set(working.map((w: any) => dowToWeekday(w.day_of_week)))));
-      setFrom(norm(working[0].start_time) || DEFAULT_FROM);
-      setUntil(norm(working[0].end_time) || DEFAULT_UNTIL);
-    } else {
-      setSelected(DEFAULT_DAYS);
-      setFrom(DEFAULT_FROM);
-      setUntil(DEFAULT_UNTIL);
+      days = Array.from(new Set(working.map((w: any) => dowToWeekday(w.day_of_week))));
+      start = norm(working[0].start_time) || DEFAULT_FROM;
+      end = norm(working[0].end_time) || DEFAULT_UNTIL;
     }
+    setSelected(days);
+    setFrom(start);
+    setUntil(end);
     hydrated.current = true;
-    seeded.current = true;
+    // Persist the initialized defaults so public slots work immediately.
+    void persist(days, start, end, { silent: true }).catch(() => undefined);
   }, [availability, isLoading, workingSchedule, userId]);
 
-  // Persist the initialized defaults once so public slots work immediately.
-  useEffect(() => {
-    if (!seeded.current || !userId) return;
-    seeded.current = false;
-    void persist(selected, from, until, { silent: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated.current, userId]);
 
   const toggleDay = (wd: number) =>
     setSelected((prev) => (prev.includes(wd) ? prev.filter((d) => d !== wd) : [...prev, wd]));
