@@ -78,6 +78,7 @@ const NEW_COPY: Record<LangKey, {
   serviceName: string; serviceDuration: string; servicePrice: string;
   saveClient: string; saveService: string; cancel: string;
   durationMin: string;
+  durationTitle: string; durationHint: string; endBeforeStart: string;
   modalSubtitle: string;
   sessionTypeLabel: string; individualSession: string; groupSession: string;
   blockedTime: string; blockedStart: string; blockedEnd: string;
@@ -103,6 +104,7 @@ const NEW_COPY: Record<LangKey, {
     serviceName: "Name", serviceDuration: "Duration", servicePrice: "Price",
     saveClient: "Save client", saveService: "Save service", cancel: "Cancel",
     durationMin: "min",
+    durationTitle: "Duration", durationHint: "End time updates automatically", endBeforeStart: "End time must be later than start time.",
     modalSubtitle: "Schedule an individual or group session",
     sessionTypeLabel: "Session type",
     individualSession: "Individual session", groupSession: "Group session",
@@ -132,6 +134,7 @@ const NEW_COPY: Record<LangKey, {
     serviceName: "Назва", serviceDuration: "Тривалість", servicePrice: "Ціна",
     saveClient: "Зберегти клієнта", saveService: "Зберегти послугу", cancel: "Скасувати",
     durationMin: "хв",
+    durationTitle: "Тривалість", durationHint: "Час завершення оновлюється автоматично", endBeforeStart: "Час завершення має бути пізніше часу початку.",
     modalSubtitle: "Заплануйте індивідуальну або групову сесію",
     sessionTypeLabel: "Тип сесії",
     individualSession: "Індивідуальна сесія", groupSession: "Групова сесія",
@@ -161,6 +164,7 @@ const NEW_COPY: Record<LangKey, {
     serviceName: "Название", serviceDuration: "Длительность", servicePrice: "Цена",
     saveClient: "Сохранить клиента", saveService: "Сохранить услугу", cancel: "Отмена",
     durationMin: "мин",
+    durationTitle: "Длительность", durationHint: "Время окончания обновляется автоматически", endBeforeStart: "Время окончания должно быть позже времени начала.",
     modalSubtitle: "Запланируйте индивидуальную или групповую сессию",
     sessionTypeLabel: "Тип сессии",
     individualSession: "Индивидуальная сессия", groupSession: "Групповая сессия",
@@ -190,6 +194,7 @@ const NEW_COPY: Record<LangKey, {
     serviceName: "Nom", serviceDuration: "Durée", servicePrice: "Prix",
     saveClient: "Enregistrer", saveService: "Enregistrer", cancel: "Annuler",
     durationMin: "min",
+    durationTitle: "Durée", durationHint: "L'heure de fin est mise à jour automatiquement", endBeforeStart: "L'heure de fin doit être postérieure à l'heure de début.",
     modalSubtitle: "Planifiez une séance individuelle ou de groupe",
     sessionTypeLabel: "Type de séance",
     individualSession: "Séance individuelle", groupSession: "Séance de groupe",
@@ -219,6 +224,7 @@ const NEW_COPY: Record<LangKey, {
     serviceName: "Nazwa", serviceDuration: "Czas trwania", servicePrice: "Cena",
     saveClient: "Zapisz klienta", saveService: "Zapisz usługę", cancel: "Anuluj",
     durationMin: "min",
+    durationTitle: "Czas trwania", durationHint: "Godzina zakończenia aktualizuje się automatycznie", endBeforeStart: "Godzina zakończenia musi być późniejsza niż rozpoczęcia.",
     modalSubtitle: "Zaplanuj sesję indywidualną lub grupową",
     sessionTypeLabel: "Typ sesji",
     individualSession: "Sesja indywidualna", groupSession: "Sesja grupowa",
@@ -535,6 +541,53 @@ export default function CalendarPage() {
   const [endTimeOpen, setEndTimeOpen] = useState(false);
   /** Manual override for the session end time (UI only — creation still uses service duration). */
   const [endOverride, setEndOverride] = useState<string | null>(null);
+  /** Quick-select duration in minutes (null = custom / no preset matches). */
+  const [durationPreset, setDurationPreset] = useState<number | null>(60);
+
+  const DURATION_PRESETS = [50, 60, 90, 120, 180];
+  const toMinutes = (t: string) => {
+    const [h, m] = (t || "").split(":").map(Number);
+    return Number.isFinite(h) && Number.isFinite(m) ? h * 60 + m : NaN;
+  };
+  const addMinutesToTime = (t: string, mins: number) => {
+    const total = toMinutes(t) + mins;
+    if (!Number.isFinite(total)) return t;
+    const clamped = Math.min(total, 23 * 60 + 45);
+    return `${String(Math.floor(clamped / 60)).padStart(2, "0")}:${String(clamped % 60).padStart(2, "0")}`;
+  };
+  const durationLabel = (mins: number) => {
+    if (mins < 60) return `${mins} ${L.durationMin}`;
+    const h = mins / 60;
+    const HOURS: Record<string, string> = { en: "h", uk: "год", ru: "ч", pl: "godz.", fr: "h" };
+    const unit = HOURS[lang as string] ?? "h";
+    return `${Number.isInteger(h) ? h : h.toFixed(1)} ${unit}`;
+  };
+  /** Apply a new start time, keeping the selected duration. */
+  const applyStartTime = (v: string) => {
+    setForm(f => ({ ...f, time: v }));
+    const nextEnd = durationPreset ? addMinutesToTime(v, durationPreset) : null;
+    if (nextEnd) {
+      setBlockEnd(nextEnd);
+      setEndOverride(nextEnd);
+    } else {
+      setEndOverride(null);
+    }
+  };
+  /** Apply a manually chosen end time and re-derive the duration preset. */
+  const applyEndTime = (v: string) => {
+    setBlockEnd(v);
+    setEndOverride(v);
+    const diff = toMinutes(v) - toMinutes(form.time);
+    setDurationPreset(DURATION_PRESETS.includes(diff) ? diff : null);
+  };
+  const applyDuration = (mins: number) => {
+    setDurationPreset(mins);
+    if (form.time) {
+      const nextEnd = addMinutesToTime(form.time, mins);
+      setBlockEnd(nextEnd);
+      setEndOverride(nextEnd);
+    }
+  };
 
   // Group session state
   const [isGroupSession, setIsGroupSession] = useState(false);
@@ -705,6 +758,8 @@ export default function CalendarPage() {
       await qc.invalidateQueries({ queryKey: ["days-off"] });
       setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
       setBlockEnd("10:00");
+      setDurationPreset(60);
+      setEndOverride(null);
       setIsBlockedTime(false);
       setIsRecurring(false);
       setRecurInterval(1); setRecurDays([1]); setRecurEndDate("");
@@ -1899,7 +1954,7 @@ export default function CalendarPage() {
                   </div>
                   )}
 
-                  {/* Date / Start time / End time */}
+                  {/* Date / Start time / End time + Duration */}
                   {(() => {
                     const svc = services.find(s => s.id === form.service_id);
                     const durMin = Number(svc?.duration_minutes) || 60;
@@ -1910,7 +1965,9 @@ export default function CalendarPage() {
                       computedEnd = `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
                     }
                     const endValue = isBlockedTime ? blockEnd : (endOverride ?? computedEnd);
+                    const invalidRange = !!form.time && !!endValue && toMinutes(endValue) <= toMinutes(form.time);
                     return (
+                      <>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div className="space-y-1">
                           <Label className="text-sm font-semibold text-foreground">
@@ -1930,8 +1987,13 @@ export default function CalendarPage() {
                                 <ChevronDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-[180px] p-0" align="start">
-                              <TimePicker value={form.time} onChange={(v) => { setForm(f => ({ ...f, time: v })); setEndOverride(null); setStartTimeOpen(false); }} use12h={use12h} />
+                            <PopoverContent className="w-[180px] p-0 z-[60]" align="start" collisionPadding={12}>
+                              <TimePicker
+                                value={form.time}
+                                onChange={(v) => { applyStartTime(v); setStartTimeOpen(false); }}
+                                onClose={() => setStartTimeOpen(false)}
+                                use12h={use12h}
+                              />
                             </PopoverContent>
                           </Popover>
                         </div>
@@ -1941,25 +2003,55 @@ export default function CalendarPage() {
                           </Label>
                           <Popover open={endTimeOpen} onOpenChange={setEndTimeOpen}>
                             <PopoverTrigger asChild>
-                              <Button type="button" variant="outline" className={cn("w-full justify-start font-normal rounded-xl px-3 text-sm", D.field)}>
+                              <Button type="button" variant="outline" className={cn("w-full justify-start font-normal rounded-xl px-3 text-sm", D.field, invalidRange && "border-destructive")}>
                                 <ClockIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
                                 {endValue ? formatTime(endValue, use12h) : "--:--"}
                                 <ChevronDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-[180px] p-0" align="start">
+                            <PopoverContent className="w-[180px] p-0 z-[60]" align="start" collisionPadding={12}>
                               <TimePicker
                                 value={endValue || "10:00"}
-                                onChange={(v) => {
-                                  if (isBlockedTime) setBlockEnd(v); else setEndOverride(v);
-                                  setEndTimeOpen(false);
-                                }}
+                                minTime={form.time || undefined}
+                                onChange={(v) => { applyEndTime(v); setEndTimeOpen(false); }}
+                                onClose={() => setEndTimeOpen(false)}
                                 use12h={use12h}
                               />
                             </PopoverContent>
                           </Popover>
                         </div>
                       </div>
+
+                      {/* Duration quick-select */}
+                      <div className="space-y-2 border-t border-border pt-3">
+                        <Label className="text-sm font-semibold text-foreground">{L.durationTitle}</Label>
+                        <div role="group" aria-label={L.durationTitle} className="flex flex-wrap gap-2">
+                          {DURATION_PRESETS.map(mins => {
+                            const active = durationPreset === mins;
+                            return (
+                              <button
+                                key={mins}
+                                type="button"
+                                aria-pressed={active}
+                                onClick={() => applyDuration(mins)}
+                                className={cn(
+                                  "h-10 flex-1 min-w-[84px] px-3 rounded-xl text-sm font-semibold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                  active
+                                    ? "bg-primary text-primary-foreground border-primary"
+                                    : "bg-background text-foreground border-border hover:border-muted-foreground/60",
+                                )}
+                              >
+                                {durationLabel(mins)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{L.durationHint}</p>
+                        {invalidRange && (
+                          <p role="alert" className="text-xs text-destructive">{L.endBeforeStart}</p>
+                        )}
+                      </div>
+                      </>
                     );
                   })()}
 
@@ -2054,7 +2146,8 @@ export default function CalendarPage() {
                     const disabled = createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending
                       || createDayOff.isPending
                       || missingRequired
-                      || (!isBlockedTime && !isRecurring && !isGroupSession && !!createValidation);
+                      || (!isBlockedTime && !isRecurring && !isGroupSession && !!createValidation)
+                      || (!isBlockedTime && !!endOverride && endOverride <= form.time);
 
                     const selectedService = services.find(s => s.id === form.service_id);
                     const selectedClient = clients.find(c => c.id === form.client_id);
@@ -2225,6 +2318,9 @@ export default function CalendarPage() {
                     onClick={() => {
                       if (!working || dayOff) return;
                       setForm((f) => ({ ...f, date: dayStr, time: f.time || "09:00" }));
+                      setDurationPreset(60);
+                      setBlockEnd(addMinutesToTime(form.time || "09:00", 60));
+                      setEndOverride(null);
                       const dow = day.getDay();
                       setRecurDays([dow === 0 ? 7 : dow]);
                       setServiceError(false);
@@ -2389,6 +2485,9 @@ export default function CalendarPage() {
                             const dateStr = format(day, "yyyy-MM-dd");
                             const timeStr = `${hour.toString().padStart(2, "0")}:00`;
                             setForm(f => ({ ...f, date: dateStr, time: timeStr }));
+                            setDurationPreset(60);
+                            setBlockEnd(addMinutesToTime(timeStr, 60));
+                            setEndOverride(null);
                             // Preselect the weekday for recurrence (1=Mon..7=Sun)
                             const dow = day.getDay();
                             setRecurDays([dow === 0 ? 7 : dow]);
