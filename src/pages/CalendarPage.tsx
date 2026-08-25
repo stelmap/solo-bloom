@@ -46,6 +46,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { CALENDAR_BLOCK_BASE, CALENDAR_BLOCK_REQUEST, CALENDAR_CHIP_BASE } from "@/lib/calendarBlockStyles";
+import { CalendarEventCard } from "@/components/calendar/CalendarEventCard";
 import { getSessionStateStyle, SESSION_STATE_STYLES, SESSION_STATE_ORDER } from "@/lib/sessionStatusColors";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
@@ -2615,7 +2616,7 @@ export default function CalendarPage() {
           } : undefined}
         >
           <div ref={gridScrollRef} className="overflow-auto flex-1 min-h-0" style={{ scrollbarGutter: "stable", overscrollBehavior: "contain" }}>
-            <table className="w-full border-collapse table-fixed min-w-[760px]">
+            <table className="w-full border-collapse table-fixed min-w-[860px] lg:min-w-[980px]">
               <colgroup>
                 <col className={isMobile ? "w-[56px]" : "w-[72px]"} />
                 {days.map((_, i) => <col key={i} />)}
@@ -2658,7 +2659,7 @@ export default function CalendarPage() {
               <tbody>
                 {hours.map((hour) => (
                   <tr key={hour}>
-                    <td style={{ height: rowHeight }} className="text-right pr-3 border-b border-border align-middle">
+                    <td style={{ height: rowHeight }} className="sticky left-0 z-[5] bg-card text-right pr-3 border-b border-r border-border align-middle">
                       <span className="text-xs text-muted-foreground font-medium">{fmtHour(hour)}</span>
                     </td>
                     {days.map((day, dayIdx) => {
