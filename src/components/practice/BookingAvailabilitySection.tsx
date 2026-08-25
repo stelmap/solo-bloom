@@ -1,16 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkingSchedule } from "@/hooks/useData";
 import { dowToWeekday } from "@/lib/bookingAvailabilitySync";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
-import { CalendarDays, Check, Loader2 } from "lucide-react";
+import { CalendarDays, Check } from "lucide-react";
 
 type Lang = "en" | "uk" | "ru" | "fr" | "pl";
 const normLang = (v: unknown): Lang => {
@@ -19,68 +17,46 @@ const normLang = (v: unknown): Lang => {
 };
 
 const COPY: Record<Lang, {
-  title: string; desc: string; days: string; hours: string;
-  from: string; until: string; to: string; sync: string;
-  save: string; saving: string; saved: string;
+  days: string; from: string; until: string; to: string; sync: string;
   errOrder: string; errNoDay: string;
   short: string[]; // Sun..Sat
 }> = {
   en: {
-    title: "Booking availability",
-    desc: "Choose when clients can book through your public link. Busy times and days off are automatically excluded from your calendar.",
-    days: "Available days",
-    hours: "General booking hours",
+    days: "Availability",
     from: "Available from", until: "Available until", to: "to",
-    sync: "Your public availability is synchronized with your SoloBizz calendar. Appointments, blocked time and days marked as off are not offered to clients.",
-    save: "Save availability", saving: "Saving…", saved: "Availability saved",
+    sync: "Busy time and days off are automatically excluded from the public calendar.",
     errOrder: "“Available until” must be later than “Available from”.",
     errNoDay: "Select at least one available day.",
     short: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
   },
   uk: {
-    title: "Доступність для запису",
-    desc: "Оберіть, коли клієнти можуть записуватися через ваше публічне посилання. Зайнятий час і вихідні автоматично виключаються з календаря.",
-    days: "Доступні дні",
-    hours: "Загальні години запису",
+    days: "Доступність",
     from: "Доступно з", until: "Доступно до", to: "до",
-    sync: "Ваша публічна доступність синхронізована з календарем SoloBizz. Сесії, заблокований час і дні, позначені як вихідні, не пропонуються клієнтам.",
-    save: "Зберегти доступність", saving: "Збереження…", saved: "Доступність збережено",
+    sync: "Зайнятий час і вихідні автоматично виключаються з публічного календаря.",
     errOrder: "«Доступно до» має бути пізніше за «Доступно з».",
     errNoDay: "Оберіть щонайменше один доступний день.",
     short: ["Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
   },
   ru: {
-    title: "Доступность для записи",
-    desc: "Выберите, когда клиенты могут записываться через вашу публичную ссылку. Занятое время и выходные автоматически исключаются из календаря.",
-    days: "Доступные дни",
-    hours: "Общие часы записи",
+    days: "Доступность",
     from: "Доступно с", until: "Доступно до", to: "до",
-    sync: "Ваша публичная доступность синхронизирована с календарём SoloBizz. Сессии, заблокированное время и дни, отмеченные как выходные, не предлагаются клиентам.",
-    save: "Сохранить доступность", saving: "Сохранение…", saved: "Доступность сохранена",
+    sync: "Занятое время и выходные автоматически исключаются из публичного календаря.",
     errOrder: "«Доступно до» должно быть позже «Доступно с».",
     errNoDay: "Выберите хотя бы один доступный день.",
     short: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
   },
   fr: {
-    title: "Disponibilité de réservation",
-    desc: "Choisissez quand les clients peuvent réserver via votre lien public. Les créneaux occupés et les jours de congé sont automatiquement exclus de votre calendrier.",
-    days: "Jours disponibles",
-    hours: "Horaires généraux de réservation",
+    days: "Disponibilité",
     from: "Disponible à partir de", until: "Disponible jusqu'à", to: "à",
-    sync: "Votre disponibilité publique est synchronisée avec votre calendrier SoloBizz. Les rendez-vous, les temps bloqués et les jours de congé ne sont pas proposés aux clients.",
-    save: "Enregistrer la disponibilité", saving: "Enregistrement…", saved: "Disponibilité enregistrée",
+    sync: "Les créneaux occupés et les jours de congé sont automatiquement exclus du calendrier public.",
     errOrder: "« Disponible jusqu'à » doit être après « Disponible à partir de ».",
     errNoDay: "Sélectionnez au moins un jour disponible.",
     short: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
   },
   pl: {
-    title: "Dostępność rezerwacji",
-    desc: "Wybierz, kiedy klienci mogą rezerwować przez Twój publiczny link. Zajęte terminy i dni wolne są automatycznie wykluczane z kalendarza.",
-    days: "Dostępne dni",
-    hours: "Ogólne godziny rezerwacji",
+    days: "Dostępność",
     from: "Dostępne od", until: "Dostępne do", to: "do",
-    sync: "Twoja publiczna dostępność jest zsynchronizowana z kalendarzem SoloBizz. Wizyty, zablokowany czas i dni wolne nie są oferowane klientom.",
-    save: "Zapisz dostępność", saving: "Zapisywanie…", saved: "Dostępność zapisana",
+    sync: "Zajęty czas i dni wolne są automatycznie wykluczane z publicznego kalendarza.",
     errOrder: "„Dostępne do” musi być późniejsze niż „Dostępne od”.",
     errNoDay: "Wybierz przynajmniej jeden dostępny dzień.",
     short: ["Nd", "Pn", "Wt", "Śr", "Cz", "Pt", "So"],
@@ -107,14 +83,21 @@ const DEFAULT_DAYS = [1, 2, 3, 4, 5];
 const DEFAULT_FROM = "09:00";
 const DEFAULT_UNTIL = "18:00";
 
-function TimeSelect({ value, onChange, id }: { value: string; onChange: (v: string) => void; id?: string }) {
+export type BookingAvailabilityHandle = {
+  /** Persist current availability. Throws on validation/DB error. */
+  save: () => Promise<void>;
+  /** Current validation error message, or null. */
+  validate: () => string | null;
+};
+
+function TimeSelect({ value, onChange, id, disabled }: { value: string; onChange: (v: string) => void; id?: string; disabled?: boolean }) {
   const opts = useMemo(
     () => (value && !TIME_OPTIONS.includes(value) ? [value, ...TIME_OPTIONS] : TIME_OPTIONS),
     [value],
   );
   return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger id={id} className="font-mono"><SelectValue /></SelectTrigger>
+    <Select value={value} onValueChange={onChange} disabled={disabled}>
+      <SelectTrigger id={id} className="font-mono h-10"><SelectValue /></SelectTrigger>
       <SelectContent className="max-h-72">
         {opts.map((t) => <SelectItem key={t} value={t} className="font-mono">{t}</SelectItem>)}
       </SelectContent>
@@ -122,187 +105,187 @@ function TimeSelect({ value, onChange, id }: { value: string; onChange: (v: stri
   );
 }
 
-export function BookingAvailabilitySection() {
-  const { user } = useAuth();
-  const userId = user?.id;
-  const qc = useQueryClient();
-  const { toast } = useToast();
-  const { lang } = useLanguage();
-  const L = COPY[normLang(lang)];
+interface Props {
+  disabled?: boolean;
+  onDirtyChange?: (dirty: boolean) => void;
+}
 
-  const { data: availability, isLoading } = useQuery({
-    queryKey: ["booking_availability", userId],
-    enabled: !!userId,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("booking_availability")
-        .select("*")
-        .eq("user_id", userId!)
-        .order("weekday");
-      return data || [];
-    },
-  });
-  const { data: workingSchedule } = useWorkingSchedule();
+export const BookingAvailabilitySection = forwardRef<BookingAvailabilityHandle, Props>(
+  function BookingAvailabilitySection({ disabled, onDirtyChange }, ref) {
+    const { user } = useAuth();
+    const userId = user?.id;
+    const qc = useQueryClient();
+    const { lang } = useLanguage();
+    const L = COPY[normLang(lang)];
 
-  const [selected, setSelected] = useState<number[]>(DEFAULT_DAYS);
-  const [from, setFrom] = useState(DEFAULT_FROM);
-  const [until, setUntil] = useState(DEFAULT_UNTIL);
-  const [saving, setSaving] = useState(false);
-  const hydrated = useRef(false);
+    const { data: availability, isLoading } = useQuery({
+      queryKey: ["booking_availability", userId],
+      enabled: !!userId,
+      queryFn: async () => {
+        const { data } = await supabase
+          .from("booking_availability")
+          .select("*")
+          .eq("user_id", userId!)
+          .order("weekday");
+        return data || [];
+      },
+    });
+    const { data: workingSchedule } = useWorkingSchedule();
 
-  // Hydrate: booking_availability → working schedule → Mon–Fri 09:00–18:00
-  useEffect(() => {
-    if (hydrated.current || !userId || isLoading || !availability) return;
-    const enabled = (availability as any[]).filter((r) => r.is_enabled);
-    if (enabled.length > 0) {
-      setSelected(Array.from(new Set(enabled.map((r) => r.weekday as number))));
-      setFrom(norm(enabled[0].start_time) || DEFAULT_FROM);
-      setUntil(norm(enabled[0].end_time) || DEFAULT_UNTIL);
+    const [selected, setSelected] = useState<number[]>(DEFAULT_DAYS);
+    const [from, setFrom] = useState(DEFAULT_FROM);
+    const [until, setUntil] = useState(DEFAULT_UNTIL);
+    const hydrated = useRef(false);
+    const baseline = useRef<string>("");
+
+    const snapshot = (days: number[], s: string, e: string) =>
+      JSON.stringify({ d: [...days].sort((a, b) => a - b), s, e });
+
+    // Hydrate: booking_availability → working schedule → Mon–Fri 09:00–18:00
+    useEffect(() => {
+      if (hydrated.current || !userId || isLoading || !availability) return;
+      const enabled = (availability as any[]).filter((r) => r.is_enabled);
+      if (enabled.length > 0) {
+        const days = Array.from(new Set(enabled.map((r) => r.weekday as number)));
+        const s = norm(enabled[0].start_time) || DEFAULT_FROM;
+        const e = norm(enabled[0].end_time) || DEFAULT_UNTIL;
+        setSelected(days);
+        setFrom(s);
+        setUntil(e);
+        baseline.current = snapshot(days, s, e);
+        hydrated.current = true;
+        return;
+      }
+      // No availability yet — try working schedule (loaded async)
+      if (workingSchedule === undefined) return;
+      const working = (workingSchedule || []).filter((w: any) => w.is_working);
+      let days = DEFAULT_DAYS;
+      let start = DEFAULT_FROM;
+      let end = DEFAULT_UNTIL;
+      if (working.length > 0) {
+        days = Array.from(new Set(working.map((w: any) => dowToWeekday(w.day_of_week))));
+        start = norm(working[0].start_time) || DEFAULT_FROM;
+        end = norm(working[0].end_time) || DEFAULT_UNTIL;
+      }
+      setSelected(days);
+      setFrom(start);
+      setUntil(end);
+      baseline.current = snapshot(days, start, end);
       hydrated.current = true;
-      return;
+      // Persist the initialized defaults so public slots work immediately.
+      void persist(days, start, end).catch(() => undefined);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [availability, isLoading, workingSchedule, userId]);
+
+    const dirty = hydrated.current && baseline.current !== snapshot(selected, from, until);
+    useEffect(() => {
+      onDirtyChange?.(dirty);
+    }, [dirty, onDirtyChange]);
+
+    const toggleDay = (wd: number) =>
+      setSelected((prev) => (prev.includes(wd) ? prev.filter((d) => d !== wd) : [...prev, wd]));
+
+    const error = toMin(until) <= toMin(from)
+      ? L.errOrder
+      : selected.length === 0
+        ? L.errNoDay
+        : null;
+
+    async function persist(days: number[], start: string, end: string) {
+      if (!userId) return;
+      const base = (availability as any[])?.[0];
+      const shared = {
+        session_duration_minutes: base?.session_duration_minutes ?? 60,
+        buffer_minutes: base?.buffer_minutes ?? 10,
+        min_notice_hours: base?.min_notice_hours ?? 24,
+        max_horizon_days: base?.max_horizon_days ?? 30,
+      };
+      const rows = Array.from({ length: 7 }, (_, wd) => ({
+        user_id: userId,
+        weekday: wd,
+        sort_order: 0,
+        is_enabled: days.includes(wd),
+        start_time: `${start}:00`,
+        end_time: `${end}:00`,
+        ...shared,
+      }));
+      // Replace all rows for this user: an upsert would fire the BEFORE INSERT
+      // overlap trigger against the still-existing rows and fail.
+      const { error: delErr } = await supabase
+        .from("booking_availability")
+        .delete()
+        .eq("user_id", userId);
+      if (delErr) throw delErr;
+      const { error: upErr } = await supabase
+        .from("booking_availability")
+        .insert(rows as any);
+      if (upErr) throw upErr;
+      await qc.invalidateQueries({ queryKey: ["booking_availability", userId] });
+      baseline.current = snapshot(days, start, end);
+      onDirtyChange?.(false);
     }
-    // No availability yet — try working schedule (loaded async)
-    if (workingSchedule === undefined) return;
-    const working = (workingSchedule || []).filter((w: any) => w.is_working);
-    let days = DEFAULT_DAYS;
-    let start = DEFAULT_FROM;
-    let end = DEFAULT_UNTIL;
-    if (working.length > 0) {
-      days = Array.from(new Set(working.map((w: any) => dowToWeekday(w.day_of_week))));
-      start = norm(working[0].start_time) || DEFAULT_FROM;
-      end = norm(working[0].end_time) || DEFAULT_UNTIL;
-    }
-    setSelected(days);
-    setFrom(start);
-    setUntil(end);
-    hydrated.current = true;
-    // Persist the initialized defaults so public slots work immediately.
-    void persist(days, start, end, { silent: true }).catch(() => undefined);
-  }, [availability, isLoading, workingSchedule, userId]);
 
-
-  const toggleDay = (wd: number) =>
-    setSelected((prev) => (prev.includes(wd) ? prev.filter((d) => d !== wd) : [...prev, wd]));
-
-  const error = toMin(until) <= toMin(from)
-    ? L.errOrder
-    : selected.length === 0
-      ? L.errNoDay
-      : null;
-
-  async function persist(days: number[], start: string, end: string, opts?: { silent?: boolean }) {
-    if (!userId) return;
-    const base = (availability as any[])?.[0];
-    const shared = {
-      session_duration_minutes: base?.session_duration_minutes ?? 60,
-      buffer_minutes: base?.buffer_minutes ?? 10,
-      min_notice_hours: base?.min_notice_hours ?? 24,
-      max_horizon_days: base?.max_horizon_days ?? 30,
-    };
-    const rows = Array.from({ length: 7 }, (_, wd) => ({
-      user_id: userId,
-      weekday: wd,
-      sort_order: 0,
-      is_enabled: days.includes(wd),
-      start_time: `${start}:00`,
-      end_time: `${end}:00`,
-      ...shared,
+    useImperativeHandle(ref, () => ({
+      validate: () => error,
+      save: async () => {
+        if (error) throw new Error(error);
+        await persist(selected, from, until);
+      },
     }));
-    // Replace all rows for this user: an upsert would fire the BEFORE INSERT
-    // overlap trigger against the still-existing rows and fail.
-    const { error: delErr } = await supabase
-      .from("booking_availability")
-      .delete()
-      .eq("user_id", userId);
-    if (delErr) throw delErr;
-    const { error: upErr } = await supabase
-      .from("booking_availability")
-      .insert(rows as any);
-    if (upErr) throw upErr;
-    await qc.invalidateQueries({ queryKey: ["booking_availability", userId] });
-    if (!opts?.silent) toast({ title: L.saved });
-  }
 
-  const handleSave = async () => {
-    if (error) {
-      toast({ title: error, variant: "destructive" });
-      return;
-    }
-    setSaving(true);
-    try {
-      await persist(selected, from, until);
-    } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <section className="space-y-4" id="booking-availability">
-      <div>
-        <h2 className="font-semibold text-foreground">{L.title}</h2>
-        <p className="text-sm text-muted-foreground mt-1">{L.desc}</p>
-      </div>
-
-      <div className="space-y-2">
-        <Label className="font-semibold">{L.days}</Label>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
-          {DISPLAY_ORDER.map((wd) => {
-            const on = selected.includes(wd);
-            return (
-              <button
-                key={wd}
-                type="button"
-                aria-pressed={on}
-                onClick={() => toggleDay(wd)}
-                className={cn(
-                  "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm transition-colors",
-                  on ? "border-primary bg-primary/5 text-foreground" : "border-border hover:bg-accent text-muted-foreground",
-                )}
-              >
-                <span
+    return (
+      <div className="space-y-3" id="booking-availability">
+        <div className="space-y-2">
+          <Label className="font-semibold">{L.days}</Label>
+          <div className="flex flex-wrap gap-2">
+            {DISPLAY_ORDER.map((wd) => {
+              const on = selected.includes(wd);
+              return (
+                <button
+                  key={wd}
+                  type="button"
+                  aria-pressed={on}
+                  disabled={disabled}
+                  onClick={() => toggleDay(wd)}
                   className={cn(
-                    "h-5 w-5 shrink-0 rounded-full border flex items-center justify-center",
-                    on ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/40",
+                    "flex items-center gap-1.5 rounded-lg border px-2.5 py-2 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+                    on ? "border-primary bg-primary/5 text-foreground" : "border-border hover:bg-accent text-muted-foreground",
                   )}
                 >
-                  {on && <Check className="h-3 w-3" />}
-                </span>
-                {L.short[wd]}
-              </button>
-            );
-          })}
+                  <span
+                    className={cn(
+                      "h-4 w-4 shrink-0 rounded-full border flex items-center justify-center",
+                      on ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/40",
+                    )}
+                  >
+                    {on && <Check className="h-2.5 w-2.5" />}
+                  </span>
+                  {L.short[wd]}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      <div className="space-y-2">
-        <Label className="font-semibold">{L.hours}</Label>
-        <div className="flex flex-col sm:flex-row sm:items-end gap-3">
-          <div className="flex-1 space-y-1">
-            <Label htmlFor="bk-from" className="text-sm text-muted-foreground font-normal">{L.from}</Label>
-            <TimeSelect id="bk-from" value={from} onChange={setFrom} />
+        <div className="flex flex-col sm:flex-row sm:items-end gap-2">
+          <div className="flex-1 space-y-1.5">
+            <Label htmlFor="bk-from" className="text-xs text-muted-foreground font-normal">{L.from}</Label>
+            <TimeSelect id="bk-from" value={from} onChange={setFrom} disabled={disabled} />
           </div>
           <span className="hidden sm:block text-sm text-muted-foreground pb-2.5">{L.to}</span>
-          <div className="flex-1 space-y-1">
-            <Label htmlFor="bk-until" className="text-sm text-muted-foreground font-normal">{L.until}</Label>
-            <TimeSelect id="bk-until" value={until} onChange={setUntil} />
+          <div className="flex-1 space-y-1.5">
+            <Label htmlFor="bk-until" className="text-xs text-muted-foreground font-normal">{L.until}</Label>
+            <TimeSelect id="bk-until" value={until} onChange={setUntil} disabled={disabled} />
           </div>
         </div>
-      </div>
 
-      <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
-        <CalendarDays className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-        <p className="text-sm text-muted-foreground">{L.sync}</p>
-      </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
-
-      <div className="flex justify-end">
-        <Button type="button" onClick={handleSave} disabled={saving || !!error}>
-          {saving ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />{L.saving}</>) : L.save}
-        </Button>
+        <div className="flex items-start gap-2.5 rounded-lg border border-primary/20 bg-primary/5 p-3">
+          <CalendarDays className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+          <p className="text-xs text-muted-foreground">{L.sync}</p>
+        </div>
       </div>
-    </section>
-  );
-}
+    );
+  },
+);

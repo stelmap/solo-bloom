@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/AppLayout";
@@ -13,13 +13,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useUpdateProfile } from "@/hooks/useData";
 import { useBookingLink } from "@/hooks/usePracticeProfile";
-import { BookingAvailabilitySection } from "@/components/practice/BookingAvailabilitySection";
+import { BookingAvailabilitySection, type BookingAvailabilityHandle } from "@/components/practice/BookingAvailabilitySection";
 
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { AppLanguage } from "@/i18n/translations";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ImageIcon, Loader2, Copy, RefreshCw, ExternalLink } from "lucide-react";
+import { ArrowLeft, ImageIcon, Loader2, Copy, ExternalLink } from "lucide-react";
 
 type Lang = "en" | "uk" | "ru" | "fr" | "pl";
 const normLang = (v: unknown): Lang => {
@@ -201,6 +201,7 @@ export default function PracticeProfilePage() {
   const { data: profile } = useProfile();
   const updateProfile = useUpdateProfile();
   const { data: link } = useBookingLink();
+  const availabilityRef = useRef<BookingAvailabilityHandle>(null);
 
   const [form, setForm] = useState({
     avatar_url: "",
@@ -219,11 +220,13 @@ export default function PracticeProfilePage() {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [touched, setTouched] = useState(false);
+  const [availabilityDirty, setAvailabilityDirty] = useState(false);
+  const baseline = useRef<string>("");
 
   useEffect(() => {
     if (!profile) return;
     const p = profile as any;
-    setForm({
+    const next = {
       avatar_url: p.avatar_url || "",
       business_name: p.business_name || "",
       full_name: p.full_name || "",
@@ -234,13 +237,19 @@ export default function PracticeProfilePage() {
       currency: p.currency || "EUR",
       language: p.language || "en",
       timezone: p.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
-    });
+    };
+    setForm(next);
+    baseline.current = JSON.stringify(next);
   }, [profile, user?.email]);
 
+  const linkBaseline = useRef<string>("");
   useEffect(() => {
     if (link) {
-      setIsActive(!!(link as any).is_active);
-      setMode((((link as any).mode as any) || "manual") as "manual" | "auto");
+      const active = !!(link as any).is_active;
+      const m = (((link as any).mode as any) || "manual") as "manual" | "auto";
+      setIsActive(active);
+      setMode(m);
+      linkBaseline.current = JSON.stringify({ active, m });
     }
   }, [link]);
 
@@ -268,6 +277,20 @@ export default function PracticeProfilePage() {
     return () => window.clearTimeout(timer);
   }, []);
 
+  const formDirty = baseline.current !== "" && baseline.current !== JSON.stringify(form);
+  const linkDirty = linkBaseline.current !== "" && linkBaseline.current !== JSON.stringify({ active: isActive, m: mode });
+  const dirty = formDirty || linkDirty || availabilityDirty;
+
+  // Warn on leaving with unsaved changes
+  useEffect(() => {
+    if (!dirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [dirty]);
 
   const tzOptions = useMemo(() => {
     try {
@@ -316,20 +339,14 @@ export default function PracticeProfilePage() {
     setForm((f) => ({ ...f, avatar_url: "" }));
   };
 
-  const regenerate = async () => {
-    if (!window.confirm(L.regenerateConfirm)) return;
-    const { error } = await supabase.rpc("regenerate_booking_link_token");
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+  const handleSave = async () => {
+    if (!user?.id || saving) return;
+    setTouched(true);
+    const availError = availabilityRef.current?.validate() ?? null;
+    if (availError) {
+      toast({ title: availError, variant: "destructive" });
       return;
     }
-    toast({ title: L.regenerated });
-    qc.invalidateQueries({ queryKey: ["booking_link", user?.id] });
-  };
-
-  const handleSave = async () => {
-    if (!user?.id) return;
-    setTouched(true);
     setSaving(true);
     try {
       await updateProfile.mutateAsync({
@@ -352,6 +369,11 @@ export default function PracticeProfilePage() {
         }
       }
 
+      await availabilityRef.current?.save();
+
+      baseline.current = JSON.stringify(form);
+      linkBaseline.current = JSON.stringify({ active: isActive, m: mode });
+      setAvailabilityDirty(false);
       setLang((form.language as AppLanguage) || "en");
       qc.invalidateQueries({ queryKey: ["booking_link", user.id] });
       toast({ title: L.saved });
@@ -363,161 +385,160 @@ export default function PracticeProfilePage() {
   };
 
   const field = (key: keyof typeof form, label: string, placeholder?: string, type = "text") => (
-    <div className="space-y-2">
-      <Label className="font-semibold">{label}</Label>
+    <div className="space-y-1.5">
+      <Label className="font-semibold text-sm">{label}</Label>
       <Input
         type={type}
         value={form[key] as string}
         placeholder={placeholder}
         onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-        className={cn(missing(key) && "border-destructive")}
+        className={cn("h-10", missing(key) && "border-destructive")}
       />
     </div>
   );
 
+  const saveButton = (
+    <Button onClick={handleSave} disabled={saving || !dirty || updateProfile.isPending}>
+      {saving ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />{L.saving}</>) : L.save}
+    </Button>
+  );
+
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-4xl">
-        <div>
-          <Link to="/settings" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-2">
-            <ArrowLeft className="h-4 w-4 mr-1" /> {L.back}
-          </Link>
-          <h1 className="text-2xl font-bold text-foreground">{L.title}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">{L.subtitle}</p>
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <Link to="/settings" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-1">
+              <ArrowLeft className="h-4 w-4 mr-1" /> {L.back}
+            </Link>
+            <h1 className="text-2xl font-bold text-foreground">{L.title}</h1>
+            <p className="text-muted-foreground mt-1 text-sm">{L.subtitle}</p>
+          </div>
+          {saveButton}
         </div>
 
-        <div className="bg-card rounded-xl border border-border p-6 space-y-6">
-          {/* A. Identity */}
-          <section className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+          {/* LEFT — practice data */}
+          <div className="bg-card rounded-xl border border-border p-5 space-y-4">
             <h2 className="font-semibold text-foreground">{L.identity}</h2>
-            <div className="space-y-2">
-              <Label className="font-semibold">
-                {L.emblem} <span className="text-muted-foreground font-normal">{L.optional}</span>
-              </Label>
-              <div className="flex items-start gap-4">
-                <label className="h-28 w-40 rounded-xl border border-dashed border-border bg-muted/40 flex flex-col items-center justify-center gap-1 cursor-pointer overflow-hidden text-center">
+
+            <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-4">
+              <div className="space-y-1.5">
+                <Label className="font-semibold text-sm">
+                  {L.emblem} <span className="text-muted-foreground font-normal text-xs">{L.optional}</span>
+                </Label>
+                <label className="h-24 w-36 rounded-xl border border-dashed border-border bg-muted/40 flex flex-col items-center justify-center gap-1 cursor-pointer overflow-hidden text-center">
                   {form.avatar_url ? (
                     <img src={form.avatar_url} alt={form.business_name || "Practice emblem"} className="h-full w-full object-contain p-2" />
                   ) : uploading ? (
                     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                   ) : (
                     <>
-                      <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                      <span className="text-sm font-medium">{L.upload}</span>
-                      <span className="text-[11px] text-muted-foreground px-2">{L.uploadHint}</span>
+                      <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-xs font-medium">{L.upload}</span>
+                      <span className="text-[10px] text-muted-foreground px-2">{L.uploadHint}</span>
                     </>
                   )}
                   <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
                 </label>
                 {form.avatar_url && (
-                  <Button variant="ghost" size="sm" onClick={removeImage}>{L.remove}</Button>
+                  <Button variant="ghost" size="sm" className="w-36" onClick={removeImage}>{L.remove}</Button>
                 )}
               </div>
+              <div className="space-y-3">
+                {field("business_name", L.practiceName, L.practiceNamePh)}
+                {field("full_name", L.therapistName, L.therapistNamePh)}
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {field("business_name", L.practiceName, L.practiceNamePh)}
-              {field("full_name", L.therapistName, L.therapistNamePh)}
-            </div>
-          </section>
 
-          <Separator />
-
-          {/* B. Contact & legal */}
-          <section className="space-y-4">
-            <h2 className="font-semibold text-foreground">{L.contact}</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {field("public_email", L.email, "name@example.com", "email")}
               {field("phone", L.phone, "+380 …")}
               {field("business_id", L.taxId, L.taxIdPh)}
               {field("business_address", L.address)}
             </div>
-          </section>
 
-          <Separator />
+            <Separator />
 
-          {/* C. Regional */}
-          <section className="space-y-4">
-            <h2 className="font-semibold text-foreground">{L.regional}</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label className="font-semibold">{L.currency}</Label>
-                <Select value={form.currency} onValueChange={(v) => setForm((f) => ({ ...f, currency: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="EUR">EUR — €</SelectItem>
-                    <SelectItem value="UAH">UAH — ₴</SelectItem>
-                    <SelectItem value="PLN">PLN — zł</SelectItem>
-                    <SelectItem value="USD">USD — $</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="font-semibold">{L.language}</Label>
-                <Select value={form.language} onValueChange={(v) => setForm((f) => ({ ...f, language: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="en">🇬🇧 English</SelectItem>
-                    <SelectItem value="uk">🇺🇦 Українська</SelectItem>
-                    <SelectItem value="ru">🇷🇺 Русский</SelectItem>
-                    <SelectItem value="fr">🇫🇷 Français</SelectItem>
-                    <SelectItem value="pl">🇵🇱 Polski</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="font-semibold">{L.timezone}</Label>
-                {tzOptions.length > 0 ? (
-                  <Select value={form.timezone} onValueChange={(v) => setForm((f) => ({ ...f, timezone: v }))}>
-                    <SelectTrigger className={cn(missing("timezone") && "border-destructive")}><SelectValue /></SelectTrigger>
-                    <SelectContent className="max-h-72">
-                      {tzOptions.map((tz) => <SelectItem key={tz} value={tz}>{tz}</SelectItem>)}
+            <div className="space-y-3">
+              <h3 className="font-semibold text-foreground text-sm">{L.regional}</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="font-semibold text-sm">{L.currency}</Label>
+                  <Select value={form.currency} onValueChange={(v) => setForm((f) => ({ ...f, currency: v }))}>
+                    <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="EUR">EUR — €</SelectItem>
+                      <SelectItem value="UAH">UAH — ₴</SelectItem>
+                      <SelectItem value="PLN">PLN — zł</SelectItem>
+                      <SelectItem value="USD">USD — $</SelectItem>
                     </SelectContent>
                   </Select>
-                ) : (
-                  <Input value={form.timezone} onChange={(e) => setForm((f) => ({ ...f, timezone: e.target.value }))} />
-                )}
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="font-semibold text-sm">{L.language}</Label>
+                  <Select value={form.language} onValueChange={(v) => setForm((f) => ({ ...f, language: v }))}>
+                    <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">🇬🇧 English</SelectItem>
+                      <SelectItem value="uk">🇺🇦 Українська</SelectItem>
+                      <SelectItem value="ru">🇷🇺 Русский</SelectItem>
+                      <SelectItem value="fr">🇫🇷 Français</SelectItem>
+                      <SelectItem value="pl">🇵🇱 Polski</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="font-semibold text-sm">{L.timezone}</Label>
+                  {tzOptions.length > 0 ? (
+                    <Select value={form.timezone} onValueChange={(v) => setForm((f) => ({ ...f, timezone: v }))}>
+                      <SelectTrigger className={cn("h-10", missing("timezone") && "border-destructive")}><SelectValue /></SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {tzOptions.map((tz) => <SelectItem key={tz} value={tz}>{tz}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input className="h-10" value={form.timezone} onChange={(e) => setForm((f) => ({ ...f, timezone: e.target.value }))} />
+                  )}
+                </div>
               </div>
             </div>
-          </section>
+          </div>
 
-          <Separator />
-
-          {/* D. Public booking */}
-          <section className="space-y-4">
+          {/* RIGHT — public booking */}
+          <div className="bg-card rounded-xl border border-border p-5 space-y-4">
             <h2 className="font-semibold text-foreground">{L.booking}</h2>
-            <div className="flex items-center justify-between gap-4">
+
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <Label className="font-semibold">{L.enable}</Label>
+                <Label className="font-semibold text-sm">{L.enable}</Label>
                 <p className="text-xs text-muted-foreground mt-1">{L.enableDesc}</p>
               </div>
               <Switch checked={isActive} onCheckedChange={setIsActive} />
             </div>
 
-            <div className="space-y-2">
-              <Label className="font-semibold">{L.link}</Label>
-              <div className="flex flex-wrap items-center gap-2">
-                <Input readOnly value={url} className="flex-1 min-w-[220px] font-mono text-xs" />
-                <Button type="button" variant="outline" size="sm" disabled={!url}
+            <div className="space-y-1.5">
+              <Label className="font-semibold text-sm">{L.link}</Label>
+              <div className="flex items-center gap-2">
+                <Input readOnly value={url} className="flex-1 min-w-0 font-mono text-xs h-10" />
+                <Button type="button" variant="outline" size="icon" className="h-10 w-10 shrink-0" disabled={!url}
                   onClick={() => { navigator.clipboard.writeText(url); toast({ title: L.copied }); }}>
-                  <Copy className="h-4 w-4 mr-1" />
+                  <Copy className="h-4 w-4" />
                 </Button>
-                <Button type="button" variant="outline" size="sm" asChild disabled={!url}>
-                  <a href={url} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" /></a>
-                </Button>
-                <Button type="button" variant="ghost" size="sm" onClick={regenerate}>
-                  <RefreshCw className="h-4 w-4 mr-1" /> {L.regenerate}
+                <Button type="button" variant="outline" size="icon" className="h-10 w-10 shrink-0" asChild disabled={!url}>
+                  <a href={url} target="_blank" rel="noreferrer" aria-label={L.link}><ExternalLink className="h-4 w-4" /></a>
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground">{L.linkDesc}</p>
             </div>
 
-            <div className="space-y-2">
-              <Label className="font-semibold">{L.mode}</Label>
-              <RadioGroup value={mode} onValueChange={(v) => setMode(v as any)} className="grid gap-2 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label className="font-semibold text-sm">{L.mode}</Label>
+              <RadioGroup value={mode} onValueChange={(v) => setMode(v as any)} disabled={!isActive} className="grid gap-2">
                 {([["manual", L.modeManual], ["auto", L.modeAuto]] as const).map(([v, label]) => (
                   <Label key={v} htmlFor={`mode-${v}`} className={cn(
-                    "flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors",
+                    "flex items-center gap-3 rounded-lg border p-2.5 cursor-pointer transition-colors",
                     mode === v ? "border-primary bg-primary/5" : "border-border hover:bg-accent",
+                    !isActive && "opacity-60 cursor-not-allowed",
                   )}>
                     <RadioGroupItem id={`mode-${v}`} value={v} />
                     <span className="text-sm">{label}</span>
@@ -525,23 +546,20 @@ export default function PracticeProfilePage() {
                 ))}
               </RadioGroup>
             </div>
-          </section>
 
-          <Separator />
-
-          <BookingAvailabilitySection />
-
-
-          <div className="flex items-center justify-end gap-3 pt-2">
-            {touched && Object.entries(form).some(([k, v]) =>
-              ["business_name", "full_name", "public_email", "phone", "timezone"].includes(k) && !String(v || "").trim()
-            ) && <p className="text-xs text-destructive mr-auto">{L.incomplete}</p>}
-            <Button onClick={handleSave} disabled={saving || updateProfile.isPending}>
-              {saving ? L.saving : L.save}
-            </Button>
+            <BookingAvailabilitySection
+              ref={availabilityRef}
+              disabled={!isActive}
+              onDirtyChange={setAvailabilityDirty}
+            />
           </div>
         </div>
+
+        {touched && Object.entries(form).some(([k, v]) =>
+          ["business_name", "full_name", "public_email", "phone", "timezone"].includes(k) && !String(v || "").trim()
+        ) && <p className="text-xs text-destructive">{L.incomplete}</p>}
       </div>
     </AppLayout>
   );
 }
+
