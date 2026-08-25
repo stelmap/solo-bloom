@@ -179,16 +179,17 @@ export default function IncomePage() {
             <h1 className="text-3xl font-bold text-foreground">{IP.title}</h1>
             <p className="text-muted-foreground mt-1">{IP.subtitle}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col items-stretch sm:items-end gap-2">
+            <div className="flex gap-2">
             <Button variant="outline" onClick={() => {
               downloadCSV("income.csv",
                 [t("csv.header.date"), t("csv.header.amount"), t("csv.header.source"), t("csv.header.description")],
                 filtered.map((i: any) => [i.date, String(i.amount), i.source || "", i.description || ""])
               );
-            }}><Download className="h-4 w-4 mr-1" /> {t("export.csv")}</Button>
+            }}><Download className="h-4 w-4 mr-1" /> {IP.export}</Button>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
-                <Button><Plus className="h-4 w-4 mr-1" /> {t("income.addManual")}</Button>
+                <Button><Plus className="h-4 w-4 mr-1" /> {IP.addIncome}</Button>
               </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader><DialogTitle>{t("income.addIncome")}</DialogTitle></DialogHeader>
