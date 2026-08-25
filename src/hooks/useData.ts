@@ -1259,22 +1259,18 @@ export function useBulkCancelForDayOff() {
           }
           const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', pl: 'pl-PL', uk: 'uk-UA' };
           const emailLocale = localeMap[userLang] || 'en-US';
-          supabase.functions.invoke("send-transactional-email", {
+          supabase.functions.invoke("send-session-cancellation-email", {
             body: {
-              templateName: "session-cancellation",
-              recipientEmail: client.email,
-              idempotencyKey: `session-cancel-${id}`,
-              templateData: {
-                clientName: client.name,
-                sessionDate: scheduledDate.toLocaleDateString(emailLocale, {
-                  weekday: "long", year: "numeric", month: "long", day: "numeric",
-                }),
-                sessionTime: scheduledDate.toLocaleTimeString(emailLocale, {
-                  hour: "2-digit", minute: "2-digit",
-                }),
-                cancellationReason: reason,
-                language: userLang,
-              },
+              appointmentId: id,
+              clientName: client.name,
+              sessionDate: scheduledDate.toLocaleDateString(emailLocale, {
+                weekday: "long", year: "numeric", month: "long", day: "numeric",
+              }),
+              sessionTime: scheduledDate.toLocaleTimeString(emailLocale, {
+                hour: "2-digit", minute: "2-digit",
+              }),
+              cancellationReason: reason,
+              language: userLang,
             },
           }).catch(err => console.error("Failed to send cancellation email", err));
         }

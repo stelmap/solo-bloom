@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.45.0'
+import { sendAppEmail } from '../_shared/transactional-email-templates/send-and-log.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -127,28 +128,20 @@ Deno.serve(async (req) => {
     let emailed = false
     if (transitioned) {
       try {
-        const { error: sendErr } = await supabase.functions.invoke('send-transactional-email', {
-          body: {
-            templateName: 'domain-status-alert',
-            recipientEmail: 'o.gilevich@gmail.com',
-            idempotencyKey: `domain-alert-${target.host}-${checkedAt}`,
-            templateData: {
-              host: target.host,
-              url: target.url,
-              previous_state: previousState,
-              current_state: result.state,
-              status_code: result.status_code,
-              error: result.error,
-              latency_ms: result.latency_ms,
-              checked_at: checkedAt,
-            },
+        await sendAppEmail('domain-status-alert', 'o.gilevich@gmail.com', {
+          idempotencyKey: `domain-alert-${target.host}-${checkedAt}`,
+          templateData: {
+            host: target.host,
+            url: target.url,
+            previous_state: previousState,
+            current_state: result.state,
+            status_code: result.status_code,
+            error: result.error,
+            latency_ms: result.latency_ms,
+            checked_at: checkedAt,
           },
         })
-        if (sendErr) {
-          console.error('email send error', sendErr)
-        } else {
-          emailed = true
-        }
+        emailed = true
       } catch (e) {
         console.error('email invoke threw', e)
       }

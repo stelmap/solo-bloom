@@ -371,23 +371,19 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
         await updateAppointment.mutateAsync({ id: apt.id, confirmation_status: "pending" } as any);
       }
 
-      const { error } = await supabase.functions.invoke("send-transactional-email", {
+      const { error } = await supabase.functions.invoke("send-session-reminder-email", {
         body: {
-          templateName: "session-reminder",
-          recipientEmail: client.email,
-          idempotencyKey: `manual-reminder-${apt.id}-${Date.now()}`,
-          templateData: {
-            clientName: client.name,
-            specialistName,
-            sessionDate: scheduledDate.toLocaleDateString(emailLocale, {
-              weekday: "long", year: "numeric", month: "long", day: "numeric",
-            }),
-            sessionTime: scheduledDate.toLocaleTimeString(emailLocale, {
-              hour: "2-digit", minute: "2-digit",
-            }),
-            confirmationUrl,
-            language: lang,
-          },
+          appointmentId: apt.id,
+          clientName: client.name,
+          specialistName,
+          sessionDate: scheduledDate.toLocaleDateString(emailLocale, {
+            weekday: "long", year: "numeric", month: "long", day: "numeric",
+          }),
+          sessionTime: scheduledDate.toLocaleTimeString(emailLocale, {
+            hour: "2-digit", minute: "2-digit",
+          }),
+          confirmationUrl,
+          language: lang,
         },
       });
       if (error) throw error;

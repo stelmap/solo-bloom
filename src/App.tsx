@@ -73,7 +73,6 @@ const AdminBookingRequestsPage = lazyWithReload(() => import("./pages/AdminBooki
 const ConfirmSessionPage = lazyWithReload(() => import("./pages/ConfirmSessionPage"));
 const PublicBookingPage = lazyWithReload(() => import("./pages/PublicBookingPage"));
 const BookingInboxPage = lazyWithReload(() => import("./pages/BookingInboxPage"));
-const UnsubscribePage = lazyWithReload(() => import("./pages/UnsubscribePage"));
 const SupervisionPage = lazyWithReload(() => import("./pages/SupervisionPage"));
 const DiagnosticsPage = lazyWithReload(() => import("./pages/DiagnosticsPage"));
 const PlansPage = lazyWithReload(() => import("./pages/PlansPage"));
@@ -137,7 +136,6 @@ const App = () => {
                 <Route path="/careers" element={<CareersPage />} />
                 <Route path="/confirm-session" element={<ConfirmSessionPage />} />
                 <Route path="/book/:token" element={<PublicBookingPage />} />
-                <Route path="/unsubscribe" element={<UnsubscribePage />} />
                 <Route path="/agreement/:token" element={<PublicAgreementPage />} />
                 <Route path="/server-update" element={<ServerUpdatePage />} />
                 <Route path="/.lovable/oauth/consent" element={<OAuthConsentPage />} />

@@ -362,18 +362,14 @@ export default function PublicBookingPage() {
           info?.business_name || info?.display_name || "your specialist";
         const clientName =
           `${parsed.data.first_name}${parsed.data.last_name ? " " + parsed.data.last_name : ""}`.trim() || "Client";
-        await supabase.functions.invoke("send-transactional-email", {
+        await supabase.functions.invoke("send-booking-confirmation-email", {
           body: {
-            templateName: "booking-confirmation",
-            recipientEmail: parsed.data.email,
-            idempotencyKey: `booking-confirm-${row.request_id}`,
-            templateData: {
-              clientName,
-              specialistName,
-              sessionDate: dateFmt,
-              sessionTime: timeFmt,
-              language: lang,
-            },
+            requestId: row.request_id,
+            clientName,
+            specialistName,
+            sessionDate: dateFmt,
+            sessionTime: timeFmt,
+            language: lang,
           },
         });
       } catch (e) {

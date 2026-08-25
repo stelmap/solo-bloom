@@ -46,22 +46,17 @@ export async function sendBookingConfirmationEmail({
       "Client";
 
     const { error } = await supabase.functions.invoke(
-      "send-transactional-email",
+      "send-booking-confirmation-email",
       {
         body: {
-          templateName: "booking-confirmation",
-          recipientEmail: req.email,
-          // Stable per-request idempotency key so multiple manual confirms
-          // (refresh, double-click) never produce duplicate emails.
-          idempotencyKey: `booking-confirm-${req.id}`,
-          templateData: {
-            clientName,
-            specialistName,
-            sessionDate: dateFmt,
-            sessionTime: timeFmt,
-            serviceName,
-            language: lang,
-          },
+          // Recipient is resolved server-side from this request row.
+          requestId: req.id,
+          clientName,
+          specialistName,
+          sessionDate: dateFmt,
+          sessionTime: timeFmt,
+          serviceName,
+          language: lang,
         },
       },
     );
