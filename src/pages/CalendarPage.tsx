@@ -2497,7 +2497,8 @@ export default function CalendarPage() {
               {monthGridDays.map((day, i) => {
                 const dayStr = format(day, "yyyy-MM-dd");
                 const inMonth = isSameMonth(day, currentDate);
-                const outsidePublicBooking = publicAvailabilityWindows(day).length === 0;
+                const outsidePublicBookingGaps = publicBookingGapsForDay(day);
+                const hasOutsidePublicBooking = outsidePublicBookingGaps.length > 0;
                 const dayApts = visibleAppointments.filter(
                   (apt) => toUTCDateStr(new Date(apt.scheduled_at)) === dayStr && apt.status !== "cancelled",
                 );
@@ -2521,12 +2522,19 @@ export default function CalendarPage() {
                     className={cn(
                       "group/month-slot min-h-[110px] border-l border-b border-border p-1.5 cursor-pointer transition-colors relative",
                       !inMonth && "bg-muted/20 text-muted-foreground",
-                      outsidePublicBooking && inMonth && "bg-muted/10",
                       "hover:bg-primary/5",
                       isToday && "bg-accent",
                     )}
-                    title={outsidePublicBooking ? ((t as any)("calendar.outsidePublicBookingTooltip") || "Clients do not see this time in the public calendar. You can add your own event.") : undefined}
+                    title={hasOutsidePublicBooking ? ((t as any)("calendar.outsidePublicBookingTooltip") || "Clients do not see this time in the public calendar. You can add your own event.") : undefined}
                   >
+                    {inMonth && outsidePublicBookingGaps.map((gap, gapIdx) => (
+                      <div
+                        key={gapIdx}
+                        className="pointer-events-none absolute inset-x-0 z-0 bg-muted/15"
+                        style={{ top: `${gap.topPct}%`, height: `${gap.heightPct}%` }}
+                        aria-hidden="true"
+                      />
+                    ))}
                     <div className="flex items-center justify-between mb-1">
                       <span className={cn("text-xs font-semibold", isToday && "text-accent-foreground")}>
                         {format(day, "d")}
