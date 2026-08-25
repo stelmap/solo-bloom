@@ -764,13 +764,21 @@ export default function ClientDetailPage() {
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-muted-foreground">{t("pricing.mode")}</span>
                       <Badge variant="outline" className="text-xs">
-                        {(client as any).pricing_mode === "dynamic" ? t("pricing.dynamic") : t("pricing.fixed")}
+                        {(client as any).flexible_session_price
+                          ? t("pricing.flexible")
+                          : (client as any).pricing_mode === "dynamic"
+                            ? t("pricing.dynamic")
+                            : t("pricing.fixed")}
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-muted-foreground">{t("pricing.currentBase")}</span>
                       <span className="font-semibold text-foreground">
-                        {(client as any).base_price != null ? `${cs}${Number((client as any).base_price).toFixed(0)}` : t("pricing.notSet")}
+                        {(client as any).flexible_session_price
+                          ? t("pricing.flexibleBase")
+                          : (client as any).base_price != null
+                            ? `${cs}${Number((client as any).base_price).toFixed(0)}`
+                            : t("pricing.notSet")}
                       </span>
                     </div>
                   </div>

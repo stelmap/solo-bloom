@@ -1082,6 +1082,8 @@ export default {
   "pricing.sessionOverrideLabel": "Session override",
   "pricing.priceUpdated": "Price updated",
   "pricing.notSet": "Not set",
+  "pricing.flexible": "Flexible",
+  "pricing.flexibleBase": "Set at payment",
   "pricing.overridden": "Overridden",
   "invoice.generate": "Generate Invoice",
   "invoice.generated": "Invoice generated",

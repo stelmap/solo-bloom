@@ -1082,6 +1082,8 @@ export default {
   "pricing.sessionOverrideLabel": "Зміна за сеанс",
   "pricing.priceUpdated": "Ціну оновлено",
   "pricing.notSet": "Не встановлено",
+  "pricing.flexible": "Гнучка",
+  "pricing.flexibleBase": "За фактом оплати",
   "pricing.overridden": "Змінено",
   "invoice.generate": "Створити рахунок",
   "invoice.generated": "Рахунок створено",
