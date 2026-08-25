@@ -78,6 +78,7 @@ export default function IncomePage() {
   const { toast } = useToast();
   const { t, lang } = useLanguage();
   const IL = INCOME_FLOW_COPY[normIncomeLang(lang)];
+  const IP = INCOME_PAGE_COPY[normIncomeLang(lang)];
   const { symbol: cs } = useCurrency();
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
