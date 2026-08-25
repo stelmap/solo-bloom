@@ -395,10 +395,11 @@ export default function CalendarPage() {
   const startHour = parseInt((profile as any)?.work_hours_start || "09") || 9;
   const endHour = parseInt((profile as any)?.work_hours_end || "18") || 18;
   const use12h = (profile as any)?.time_format === "12h";
-  // Always render a full readable day range so users can scroll to later slots
-  // even when their working hours end early. Working hours are still highlighted below.
-  const displayStart = Math.min(startHour, 8);
-  const displayEnd = Math.max(endHour, 22);
+  // The internal calendar always covers the full day (00:00–24:00) so the
+  // therapist can view/create events at any hour. The grid scrolls vertically
+  // and starts near the working day (see initial-scroll effect below).
+  const displayStart = 0;
+  const displayEnd = 24;
   const hours = Array.from({ length: displayEnd - displayStart }, (_, i) => i + displayStart);
 
   // --- Responsive grid sizing -------------------------------------------------
@@ -442,6 +443,19 @@ export default function CalendarPage() {
       window.removeEventListener("orientationchange", recalc);
     };
   }, [hours.length, MIN_ROW_H, MAX_ROW_H]);
+
+  // Start the viewport at the working day (fallback 08:00) — the user can still
+  // scroll up to 00:00 and down to 24:00.
+  const didInitialScroll = useRef(false);
+  useEffect(() => {
+    const el = gridScrollRef.current;
+    if (!el || didInitialScroll.current || rowHeight <= 0) return;
+    const firstHour = Math.max(0, Math.min(startHour, 8));
+    el.scrollTop = firstHour * rowHeight;
+    didInitialScroll.current = true;
+  }, [rowHeight, startHour]);
+
+
 
 
 
@@ -620,6 +634,70 @@ export default function CalendarPage() {
     });
   };
 
+  /**
+   * Real overlap check for the create form. Returns a human-readable label of
+   * the blocking entity, or null when the interval is free.
+   * Overlap rule: newStart < existingEnd AND newEnd > existingStart
+   * (adjacent intervals never conflict). Cancelled / completed / no-show
+   * sessions and Public Booking Availability never block internal scheduling.
+   */
+  const findConflict = (
+    date: string,
+    time: string,
+    durationMinutes: number,
+    excludeId?: string,
+  ): string | null => {
+    const dur = Number(durationMinutes);
+    if (!date || !time || !Number.isFinite(dur) || dur <= 0) return null;
+    const newStart = toMin(time);
+    const newEnd = newStart + dur;
+    const fmt = (mins: number) =>
+      formatTime(`${String(Math.floor(mins / 60) % 24).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`, use12h);
+
+    const BLOCKING = new Set(["scheduled", "confirmed", "reminder_sent"]);
+    const seen = new Set<string>();
+    for (const apt of appointments as any[]) {
+      if (!apt?.id || !apt?.scheduled_at) continue;
+      if (seen.has(apt.id)) continue;
+      seen.add(apt.id);
+      if (excludeId && apt.id === excludeId) continue;
+      if (!BLOCKING.has(apt.status)) continue;
+      const d = new Date(apt.scheduled_at);
+      if (toUTCDateStr(d) !== date) continue;
+      const aptStart = d.getUTCHours() * 60 + d.getUTCMinutes();
+      const aptDur = Number(apt.duration_minutes);
+      if (!Number.isFinite(aptDur) || aptDur <= 0) continue;
+      const aptEnd = aptStart + aptDur;
+      if (newStart < aptEnd && newEnd > aptStart) {
+        const who = apt.clients?.name || apt.group_sessions?.groups?.name || "";
+        return `${t("calendar.doubleBooking")}: ${fmt(aptStart)}–${fmt(aptEnd)}${who ? ` · ${who}` : ""}`;
+      }
+    }
+
+    for (const req of pendingRequests as any[]) {
+      if (!req?.requested_slot_at) continue;
+      if (!["pending", "needs_linking"].includes(req.status)) continue;
+      const d = new Date(req.requested_slot_at);
+      if (toUTCDateStr(d) !== date) continue;
+      const rs = d.getUTCHours() * 60 + d.getUTCMinutes();
+      const re = rs + (Number(req.duration_minutes) || 60);
+      if (newStart < re && newEnd > rs) {
+        return `${t("calendar.doubleBooking")}: ${fmt(rs)}–${fmt(re)} · ${(t as any)("booking.pendingRequest") || "Booking request"}`;
+      }
+    }
+
+    for (const range of blockedRanges[date] || []) {
+      const bs = toMin(range.start);
+      const be = toMin(range.end);
+      if (newStart < be && newEnd > bs) {
+        return `${t("calendar.doubleBooking")}: ${fmt(bs)}–${fmt(be)} · ${(t as any)("calendar.blockedTime") || "Unavailable time"}`;
+      }
+    }
+    return null;
+  };
+
+
+
 
   const [createOpen, setCreateOpen] = useState(false);
   const [detailApt, setDetailApt] = useState<any>(null);
@@ -788,16 +866,18 @@ export default function CalendarPage() {
     setRecurDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d].sort());
   };
 
-  // Validation for create
+  // Validation for create — uses the actual selected interval (explicit end
+  // time, duration preset or service duration) and recalculates on any change.
   const createValidation = useMemo(() => {
     if (!form.date || !form.time) return null;
     const service = services.find(s => s.id === form.service_id);
-    const duration = service?.duration_minutes ?? 60;
-    if (form.service_id && (hasConflict(form.date, form.time, duration) || hasUnavailableBlockConflict(form.date, form.time, duration))) {
-      return t("calendar.doubleBooking");
-    }
-    return null;
-  }, [form.date, form.time, form.service_id, services, appointments, blockedRanges]);
+    const explicit = endOverride ? toMinutes(endOverride) - toMinutes(form.time) : NaN;
+    const duration = Number.isFinite(explicit) && explicit > 0
+      ? explicit
+      : (durationPreset ?? service?.duration_minutes ?? 60);
+    return findConflict(form.date, form.time, duration);
+  }, [form.date, form.time, form.service_id, endOverride, durationPreset, services, appointments, pendingRequests, blockedRanges]);
+
 
   const createAvailabilityNotice = useMemo(() => {
     if (isBlockedTime || !form.date || !form.time) return null;
