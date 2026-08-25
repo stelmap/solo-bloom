@@ -171,6 +171,8 @@ export default function PublicBookingPage() {
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [activeDay, setActiveDay] = useState<string | null>(null);
+  // Set when an auto-refresh removed the slot the visitor had selected.
+  const [slotGone, setSlotGone] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<{ requiresApproval: boolean } | null>(null);
   const [langOverride, setLangOverride] = useState<Lang | null>(null);
