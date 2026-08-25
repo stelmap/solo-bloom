@@ -562,6 +562,7 @@ export type Database = {
           confirmation_timestamp: string | null
           created_at: string
           duration_minutes: number
+          flex_price_applied: boolean
           group_session_id: string | null
           id: string
           is_demo: boolean
@@ -574,6 +575,7 @@ export type Database = {
           seed_batch_id: string | null
           seed_source: string | null
           service_id: string
+          standard_price: number | null
           status: string
           updated_at: string
           user_id: string
@@ -585,6 +587,7 @@ export type Database = {
           confirmation_timestamp?: string | null
           created_at?: string
           duration_minutes?: number
+          flex_price_applied?: boolean
           group_session_id?: string | null
           id?: string
           is_demo?: boolean
@@ -597,6 +600,7 @@ export type Database = {
           seed_batch_id?: string | null
           seed_source?: string | null
           service_id: string
+          standard_price?: number | null
           status?: string
           updated_at?: string
           user_id: string
@@ -608,6 +612,7 @@ export type Database = {
           confirmation_timestamp?: string | null
           created_at?: string
           duration_minutes?: number
+          flex_price_applied?: boolean
           group_session_id?: string | null
           id?: string
           is_demo?: boolean
@@ -620,6 +625,7 @@ export type Database = {
           seed_batch_id?: string | null
           seed_source?: string | null
           service_id?: string
+          standard_price?: number | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -1089,6 +1095,7 @@ export type Database = {
           confirmation_required: boolean
           created_at: string
           email: string | null
+          flexible_session_price: boolean
           id: string
           is_demo: boolean
           name: string
@@ -1123,6 +1130,7 @@ export type Database = {
           confirmation_required?: boolean
           created_at?: string
           email?: string | null
+          flexible_session_price?: boolean
           id?: string
           is_demo?: boolean
           name: string
@@ -1157,6 +1165,7 @@ export type Database = {
           confirmation_required?: boolean
           created_at?: string
           email?: string | null
+          flexible_session_price?: boolean
           id?: string
           is_demo?: boolean
           name?: string
@@ -1598,6 +1607,66 @@ export type Database = {
             columns: ["template_id"]
             isOneToOne: false
             referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flexible_price_audit: {
+        Row: {
+          action: string
+          actual_amount: number | null
+          appointment_id: string | null
+          client_id: string | null
+          created_at: string
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+          payment_date: string | null
+          payment_source: string | null
+          standard_price: number | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          actual_amount?: number | null
+          appointment_id?: string | null
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          payment_date?: string | null
+          payment_source?: string | null
+          standard_price?: number | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          actual_amount?: number | null
+          appointment_id?: string | null
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          payment_date?: string | null
+          payment_source?: string | null
+          standard_price?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flexible_price_audit_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flexible_price_audit_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
             referencedColumns: ["id"]
           },
         ]
