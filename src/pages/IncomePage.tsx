@@ -410,48 +410,50 @@ export default function IncomePage() {
             )}
           </TabsContent>
 
-          <TabsContent value="pending">
+          <TabsContent value="pending" className="space-y-3">
             {epLoading ? (
               <ListSkeleton variant="table" count={6} />
             ) : filteredExpected.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">{t("income.noPending")}</p>
+              <p className="text-muted-foreground text-center py-8">{IP.noPending}</p>
             ) : (
-              <div className="bg-card rounded-xl border border-warning/30 overflow-hidden animate-fade-in">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border bg-warning/5">
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.date")}</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("calendar.client")}</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.description")}</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.amount")}</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.status")}</th>
-                        <th className="p-4 w-32"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredExpected.map((ep: any) => (
-                        <tr key={ep.id} className="border-b border-border last:border-0 hover:bg-warning/5 transition-colors">
-                          <td className="p-4 text-sm text-muted-foreground whitespace-nowrap">
-                            {ep.appointments?.scheduled_at ? new Date(ep.appointments.scheduled_at).toLocaleDateString() : "—"}
-                          </td>
-                          <td className="p-4 text-sm font-medium text-foreground">{ep.clients?.name || "—"}</td>
-                          <td className="p-4 text-sm text-muted-foreground">{ep.appointments?.services?.name || "—"}</td>
-                          <td className="p-4 text-sm font-semibold text-warning whitespace-nowrap">{cs}{Number(ep.amount).toFixed(2)}</td>
-                          <td className="p-4">
-                            <Badge className="bg-warning/15 text-warning border-warning/30 text-xs">{t("income.pending") || "Очікує"}</Badge>
-                          </td>
-                          <td className="p-4 text-right">
-                            <Button size="sm" onClick={() => { setPayDialog(ep); setPayMethod("cash"); setPayDate(new Date().toISOString().split("T")[0]); }}>
-                              <CheckCircle className="h-4 w-4 mr-1" /> {t("income.markPaid")}
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              <>
+                <div className="flex items-center gap-2 text-foreground">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <span className="font-medium">{IP.waiting(filteredExpected.length)}</span>
                 </div>
-              </div>
+                <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
+                  {filteredExpected.map((ep: any) => {
+                    const name = ep.clients?.name || "—";
+                    const initials = name.split(" ").filter(Boolean).slice(0, 2).map((p: string) => p[0]?.toUpperCase()).join("");
+                    return (
+                      <div key={ep.id} className="flex items-center gap-4 p-4 border-b border-border hover:bg-muted/30 transition-colors">
+                        <span className="h-11 w-11 shrink-0 rounded-full bg-primary/10 text-primary font-semibold grid place-items-center">
+                          {initials || "—"}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-foreground truncate">{name}</p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {(ep.appointments?.services?.name || "—")}
+                            {ep.appointments?.scheduled_at && ` · ${format(new Date(ep.appointments.scheduled_at), "d MMM yyyy")}`}
+                          </p>
+                        </div>
+                        <span className="font-semibold text-foreground whitespace-nowrap">{cs}{Number(ep.amount).toFixed(2)}</span>
+                        <Button
+                          variant="outline"
+                          className="shrink-0 text-primary border-primary/40 hover:bg-primary/5"
+                          onClick={() => { setPayDialog(ep); setPayMethod("cash"); setPayDate(new Date().toISOString().split("T")[0]); }}
+                        >
+                          {IP.recordPayment}
+                        </Button>
+                      </div>
+                    );
+                  })}
+                  <div className="flex items-center justify-end gap-6 p-4 text-sm">
+                    <span className="text-muted-foreground">{IP.expectedFrom(new Set(filteredExpected.map((e: any) => e.client_id ?? e.clients?.id)).size)}</span>
+                    <span className="text-lg font-semibold text-foreground">{cs}{pendingTotal.toLocaleString()}</span>
+                  </div>
+                </div>
+              </>
             )}
           </TabsContent>
 
