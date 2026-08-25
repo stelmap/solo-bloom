@@ -45,6 +45,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { CALENDAR_BLOCK_BASE, CALENDAR_BLOCK_REQUEST, CALENDAR_CHIP_BASE } from "@/lib/calendarBlockStyles";
 import { getSessionStateStyle, SESSION_STATE_STYLES, SESSION_STATE_ORDER } from "@/lib/sessionStatusColors";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
@@ -2464,7 +2465,7 @@ export default function CalendarPage() {
                           <div
                             key={apt.id}
                             onClick={(e) => { e.stopPropagation(); openSessionSheet(apt); }}
-                            className={cn("text-[10px] px-1.5 py-0.5 rounded truncate cursor-pointer hover:ring-1 hover:ring-ring/30 border-l-2 pl-1.5", ss.card)}
+                            className={cn(CALENDAR_CHIP_BASE, "hover:ring-1 hover:ring-ring/30", ss.card)}
                             title={`${fmtTime(apt.scheduled_at)} · ${displayName} · ${(t as any)(ss.labelKey) || ss.labelFallback}`}
                           >
                             <span className="font-medium">{fmtTime(apt.scheduled_at)}</span> {displayName}
@@ -2475,7 +2476,7 @@ export default function CalendarPage() {
                         <div
                           key={req.id}
                           onClick={(e) => { e.stopPropagation(); setInboxOpen(true); }}
-                          className="text-[10px] px-1.5 py-0.5 rounded truncate cursor-pointer border border-dashed border-warning/70 bg-warning/15 text-warning-foreground"
+                          className={cn(CALENDAR_CHIP_BASE, CALENDAR_BLOCK_REQUEST)}
                           title={t("booking.pendingRequest") || "Pending request"}
                         >
                           ⏳ {req.matched_client_name || req.first_name}
@@ -2588,12 +2589,13 @@ export default function CalendarPage() {
                       const events = getEventsForDayHour(day, hour);
                       const pendingReqs = getPendingRequestsForDayHour(day, hour);
                       const working = isHourWorking(day, hour);
-                      const dayOff = isDayOff(day) || isBlockedHour(day, hour);
+                      const dayOff = isDayOff(day);
+                      const blockedHour = isBlockedHour(day, hour);
                       const hasAny = events.length > 0 || pendingReqs.length > 0;
                       return (
                         <td key={dayIdx}
                           onClick={() => {
-                            if (dayOff || !working) return;
+                            if (dayOff || blockedHour || !working) return;
                             if (hasAny) return;
                             const dateStr = format(day, "yyyy-MM-dd");
                             const timeStr = `${hour.toString().padStart(2, "0")}:00`;
@@ -2612,11 +2614,11 @@ export default function CalendarPage() {
                           onDrop={(e) => handleDrop(e, day, hour)}
                           className={cn(
                             "relative border-l border-b border-border transition-colors",
-                            dayOff ? "bg-destructive/5 cursor-not-allowed" : !working ? "bg-muted/20 cursor-not-allowed" : !hasAny ? "hover:bg-primary/5 cursor-pointer group/slot" : "",
+                            dayOff ? "bg-destructive/5 cursor-not-allowed" : !working ? "bg-muted/20 cursor-not-allowed" : blockedHour ? "cursor-not-allowed" : !hasAny ? "hover:bg-primary/5 cursor-pointer group/slot" : "",
                             dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && canDropOnSlot(day, hour, dragAptId) && "bg-primary/15 ring-2 ring-primary/30 ring-inset",
                             dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && !canDropOnSlot(day, hour, dragAptId) && "bg-destructive/10 ring-2 ring-destructive/30 ring-inset",
                           )}>
-                          {!hasAny && working && !dayOff && !dragAptId && (
+                          {!hasAny && working && !dayOff && !blockedHour && !dragAptId && (
                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/slot:opacity-100 transition-opacity pointer-events-none">
                               <Plus className="h-4 w-4 text-primary/40" />
                             </div>
@@ -2643,8 +2645,9 @@ export default function CalendarPage() {
                                 key={req.id}
                                 onClick={(e) => { e.stopPropagation(); setInboxOpen(true); }}
                                 className={cn(
-                                  "absolute inset-x-1 rounded-md border-2 border-dashed border-warning/70 bg-warning/15 text-warning-foreground p-1.5 cursor-pointer hover:ring-2 hover:ring-warning/50 transition-all z-20 overflow-hidden shadow-sm",
-                                  "animate-pulse-soft",
+                                  CALENDAR_BLOCK_BASE,
+                                  CALENDAR_BLOCK_REQUEST,
+                                  "inset-x-1 z-20 hover:ring-2 hover:ring-warning/40",
                                 )}
 
                                 style={{ top: `${idx * 4}px`, height: `${heightPx}px` }}
@@ -2681,7 +2684,8 @@ export default function CalendarPage() {
                                 onDragEnd={handleDragEnd}
                                 onClick={(e) => { e.stopPropagation(); openSessionSheet(evt); }}
                                 className={cn(
-                                  "absolute top-0 rounded-md border px-1.5 py-1 cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all z-10 overflow-hidden flex flex-col justify-center",
+                                  CALENDAR_BLOCK_BASE,
+                                  "top-0 z-10 hover:ring-2 hover:ring-ring/30 flex flex-col justify-center",
                                   ss.card,
                                   isActiveEvt && "cursor-grab active:cursor-grabbing",
                                   dragAptId === evt.id && "opacity-40 ring-2 ring-primary",
