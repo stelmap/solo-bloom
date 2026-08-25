@@ -271,6 +271,13 @@ export default function PublicBookingPage() {
     loadSlots();
   }, [loadSlots]);
 
+  // Tell the visitor as soon as their chosen time stops being available.
+  useEffect(() => {
+    if (!slotGone) return;
+    toast({ title: L.takenTitle, description: L.takenDesc, variant: "destructive" });
+    setSlotGone(false);
+  }, [slotGone, L]);
+
   // --- Auto-refresh -------------------------------------------------------
   // 1) Realtime: any new/changed pending request, appointment, unavailable
   //    time or availability rule invalidates the published slot list.
