@@ -40,11 +40,15 @@ export function FlexiblePriceCompleteDialog({
 
   useEffect(() => {
     if (!open) return;
-    setAmount("");
+    // Pre-fill with the standard service price (reference value the therapist
+    // can freely override with the amount actually received).
+    const std = Number(standardPrice || 0);
+    setAmount(std > 0 ? std.toFixed(2) : "");
     setPaymentDate(new Date().toISOString().split("T")[0]);
     setSource("new_payment");
     setTouched(false);
-  }, [open]);
+  }, [open, standardPrice]);
+
 
   const result = validateFlexibleCompletion({ amount, paymentDate, source, prepaidBalance });
   const errorMessages: Record<string, string> = {
@@ -109,15 +113,18 @@ export function FlexiblePriceCompleteDialog({
                 <RadioGroupItem value="new_payment" id="flex-src-new" />
                 <span className="text-sm">{t("flexPrice.sourceNew")}</span>
               </label>
-              <label className="flex items-center justify-between gap-3 rounded-md border border-border p-3 cursor-pointer">
-                <span className="flex items-center gap-3">
-                  <RadioGroupItem value="prepaid_balance" id="flex-src-prepaid" />
-                  <span className="text-sm">{t("flexPrice.sourcePrepaid")}</span>
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {cs}{Number(prepaidBalance || 0).toFixed(2)}
-                </span>
-              </label>
+              {Number(prepaidBalance || 0) > 0 && (
+                <label className="flex items-center justify-between gap-3 rounded-md border border-border p-3 cursor-pointer">
+                  <span className="flex items-center gap-3">
+                    <RadioGroupItem value="prepaid_balance" id="flex-src-prepaid" />
+                    <span className="text-sm">{t("flexPrice.sourcePrepaid")}</span>
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {cs}{Number(prepaidBalance || 0).toFixed(2)}
+                  </span>
+                </label>
+              )}
+
             </RadioGroup>
           </div>
         </div>

@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Plus, Trash2, DollarSign, CheckCircle, Download, ArrowLeft, Wallet, CalendarClock, Search as SearchIcon, Users, ArrowUpDown, Clock } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
-import { useIncome, useIncomeSum, useCreateIncome, useDeleteIncome, useExpectedPayments, useMarkExpectedPaymentPaid, useClients } from "@/hooks/useData";
+import { useIncome, useIncomeSum, useCreateIncome, useDeleteIncome, useExpectedPayments, useMarkExpectedPaymentPaid, useClients, useCompleteFlexiblePrice, useClientCreditBalance } from "@/hooks/useData";
+import { FlexiblePriceCompleteDialog } from "@/components/FlexiblePriceCompleteDialog";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
@@ -85,6 +87,14 @@ export default function IncomePage() {
   const [payDialog, setPayDialog] = useState<any>(null);
   const [payMethod, setPayMethod] = useState("cash");
   const [payDate, setPayDate] = useState(new Date().toISOString().split("T")[0]);
+  // Flexible-price clients: the same "actual amount received" modal used when
+  // closing a session must also open when confirming an expected payment.
+  const [flexTarget, setFlexTarget] = useState<any>(null);
+  const completeFlexible = useCompleteFlexiblePrice();
+  const { data: flexPrepaid = 0 } = useClientCreditBalance(
+    flexTarget ? (flexTarget.client_id ?? flexTarget.clients?.id) : undefined,
+  );
+
   const [form, setForm] = useState({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash", client_id: "" });
   const [search, setSearch] = useState("");
   const [clientFilter, setClientFilter] = useState("all");
@@ -170,8 +180,46 @@ export default function IncomePage() {
     }
   };
 
+  /**
+   * "Record payment" on an expected payment. Flexible-price clients get the
+   * same "actual amount received" modal as the session-closure flow, so the
+   * entered amount becomes the final session price with no debt/overpayment.
+   */
+  const openRecordPayment = (ep: any) => {
+    const clientId = ep.client_id ?? ep.clients?.id;
+    const client = (clients as any[]).find((c) => c.id === clientId);
+    if ((client as any)?.flexible_session_price && (ep.kind ?? "individual") === "individual" && ep.appointment_id) {
+      setFlexTarget(ep);
+      return;
+    }
+    setPayDialog(ep);
+    setPayMethod("cash");
+    setPayDate(new Date().toISOString().split("T")[0]);
+  };
+
+  const handleFlexibleConfirm = async ({ actualAmount, paymentDate, source }: {
+    actualAmount: number; paymentDate: string; source: "new_payment" | "prepaid_balance";
+  }) => {
+    if (!flexTarget) return;
+    try {
+      await completeFlexible.mutateAsync({
+        appointmentId: flexTarget.appointment_id,
+        clientId: flexTarget.client_id ?? flexTarget.clients?.id,
+        standardPrice: Number(flexTarget.appointments?.price ?? flexTarget.amount ?? 0),
+        actualAmount,
+        paymentDate,
+        source,
+      });
+      setFlexTarget(null);
+      toast({ title: t("toast.paymentReceived"), description: t("toast.paymentRecordedDesc", { symbol: cs, amount: actualAmount.toFixed(2) }) });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
+
   const handleMarkPaid = async () => {
     if (!payDialog) return;
+
     try {
       await markPaid.mutateAsync({
         id: payDialog.id,
@@ -430,10 +478,11 @@ export default function IncomePage() {
                         <Button
                           variant="outline"
                           className="shrink-0 text-primary border-primary/40 hover:bg-primary/5"
-                          onClick={() => { setPayDialog(ep); setPayMethod("cash"); setPayDate(new Date().toISOString().split("T")[0]); }}
+                          onClick={() => openRecordPayment(ep)}
                         >
                           {IP.recordPayment}
                         </Button>
+
                       </div>
                     );
                   })}
@@ -471,7 +520,17 @@ export default function IncomePage() {
         </DialogContent>
       </Dialog>
 
+      <FlexiblePriceCompleteDialog
+        open={!!flexTarget}
+        onOpenChange={(o) => { if (!o) setFlexTarget(null); }}
+        standardPrice={Number(flexTarget?.appointments?.price ?? flexTarget?.amount ?? 0)}
+        prepaidBalance={Number(flexPrepaid) || 0}
+        pending={completeFlexible.isPending}
+        onConfirm={handleFlexibleConfirm}
+      />
+
       <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={handleDelete}
+
         title={t("income.deleteTitle")} description={t("income.deleteDesc")} loading={deleteIncome.isPending} />
 
       {linkedPrefill && (
