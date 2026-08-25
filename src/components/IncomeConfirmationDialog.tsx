@@ -294,6 +294,153 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
     }
   };
 
+  if (!isEdit) {
+    const allocatedTotal = allocSum;
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl w-[calc(100vw-2rem)] max-h-[85vh] p-0 gap-0 flex flex-col overflow-hidden">
+          <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
+            <DialogTitle>{IL.linkTitle}</DialogTitle>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            {/* Compact, non-editable payment summary */}
+            <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-2">
+              <span className="font-semibold text-foreground">{clientName}</span>
+              <span className="text-sm">
+                <span className="font-semibold text-foreground">{cs}{numAmount.toFixed(2)}</span>{" "}
+                <span className="text-muted-foreground">{IL.amountLabel}</span>
+              </span>
+              <span className="text-sm">
+                <span className="font-medium text-foreground">{date}</span>{" "}
+                <span className="text-muted-foreground">{IL.paymentDate}</span>
+              </span>
+              {onBack && (
+                <Button variant="link" size="sm" className="ml-auto h-auto p-0" onClick={onBack}>
+                  {IL.edit}
+                </Button>
+              )}
+            </div>
+
+            {!onBack && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>{IL.amountLabel} *</Label>
+                  <Input type="number" step="0.01" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>{IL.paymentDate} *</Label>
+                  <DatePicker date={date} onDateChange={setDate} />
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative flex-1 min-w-[180px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={IL.searchSessions}
+                  className="pl-9 h-9"
+                />
+              </div>
+              <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
+                <SelectTrigger className="h-9 w-[190px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="oldest">{`${IL.sort}: ${IL.sortOldest}`}</SelectItem>
+                  <SelectItem value="newest">{`${IL.sort}: ${IL.sortNewest}`}</SelectItem>
+                  <SelectItem value="lowest">{`${IL.sort}: ${IL.sortLowest}`}</SelectItem>
+                  <SelectItem value="highest">{`${IL.sort}: ${IL.sortHighest}`}</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button type="button" variant="outline" size="sm" className="h-9" onClick={autoAllocate} disabled={!numAmount}>
+                {IL.autoAllocate}
+              </Button>
+            </div>
+
+            <div className="rounded-lg border border-border overflow-hidden">
+              <div className="grid grid-cols-[36px_1.4fr_1.4fr_repeat(3,minmax(64px,0.8fr))_112px] gap-2 px-3 py-2 bg-muted/40 text-xs font-medium text-muted-foreground">
+                <span />
+                <span>{IL.colDateTime}</span>
+                <span>{IL.colService}</span>
+                <span className="text-right">{IL.colPrice}</span>
+                <span className="text-right">{IL.colPaid}</span>
+                <span className="text-right">{IL.colRemaining}</span>
+                <span className="text-right pr-1">{IL.colAllocate}</span>
+              </div>
+              <div className="max-h-[280px] overflow-y-auto divide-y divide-border">
+                {outstandingAppointments.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">{IL.noSessions}</p>
+                ) : outstandingAppointments.map((a: any) => {
+                  const checked = allocs[a.id] !== undefined;
+                  return (
+                    <div
+                      key={a.id}
+                      className={cn(
+                        "grid grid-cols-[36px_1.4fr_1.4fr_repeat(3,minmax(64px,0.8fr))_112px] gap-2 items-center px-3 py-2 text-sm",
+                        checked && "bg-primary/5",
+                      )}
+                    >
+                      <Checkbox checked={checked} onCheckedChange={(v) => toggleApt(a, !!v)} />
+                      <span className="truncate">
+                        {format(new Date(a.scheduled_at), "MMM d, yyyy", { locale: dateLocale })}{" "}
+                        <span className="text-muted-foreground">{formatScheduledTime(a.scheduled_at, use12h)}</span>
+                      </span>
+                      <span className="truncate text-muted-foreground">{a.services?.name || "—"}</span>
+                      <span className="text-right tabular-nums">{cs}{a._price.toFixed(2)}</span>
+                      <span className="text-right tabular-nums text-muted-foreground">{cs}{a._otherPaid.toFixed(2)}</span>
+                      <span className="text-right tabular-nums font-medium">{cs}{a._remaining.toFixed(2)}</span>
+                      <Input
+                        type="number" step="0.01" min="0"
+                        disabled={!checked}
+                        className="h-8 text-sm text-right"
+                        value={allocs[a.id] ?? ""}
+                        onChange={(e) => updateAlloc(a.id, e.target.value)}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="rounded-lg bg-muted/40 grid grid-cols-3 divide-x divide-border text-center py-3">
+              <div>
+                <p className="text-xs text-muted-foreground">{IL.received}</p>
+                <p className="text-lg font-semibold text-foreground">{cs}{numAmount.toFixed(2)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">{IL.allocated}</p>
+                <p className={cn("text-lg font-semibold", allocOver ? "text-destructive" : "text-primary")}>{cs}{allocatedTotal.toFixed(2)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">{IL.unallocated}</p>
+                <p className="text-lg font-semibold text-foreground">{cs}{remainder.toFixed(2)}</p>
+              </div>
+            </div>
+            {allocOver && <p className="text-xs text-destructive">{IL.overAllocated}</p>}
+            {remainder > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {cs}{remainder.toFixed(2)} {IL.prepayment}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 px-6 py-4 border-t border-border bg-background shrink-0">
+            <Button variant="outline" onClick={() => (onBack ? onBack() : onOpenChange(false))} disabled={save.isPending}>
+              {IL.back}
+            </Button>
+            <Button onClick={handleSave} disabled={save.isPending || allocOver || !numAmount}>
+              {save.isPending ? IL.saving : IL.saveIncome}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl w-[calc(100vw-2rem)] max-h-[90vh] p-0 gap-0 flex flex-col overflow-hidden">
