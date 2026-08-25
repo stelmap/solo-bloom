@@ -330,6 +330,9 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
   // Determine if client requires confirmation
   const client = clients.find(c => c.id === apt.client_id);
+  const flexibleEnabled = !isGroupSession && !!(client as any)?.flexible_session_price;
+  const flexApplied = !!(apt as any).flex_price_applied;
+  const flexStandardPrice = Number((apt as any).standard_price ?? apt.price ?? 0);
   const clientRequiresConfirmation = !isGroupSession && client?.confirmation_required === true;
   const clientWantsEmail = !isGroupSession && ["email_only", "email_and_telegram"].includes(client?.notification_preference || "");
   const showConfirmationState = !isGroupSession && (clientRequiresConfirmation || (apt.confirmation_status && apt.confirmation_status !== "not_required"));
@@ -534,6 +537,11 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
         await updateAppointment.mutateAsync({ id: apt.id, notes });
       }
 
+      if (flexibleEnabled && (paymentStatus === "paid_now" || paymentStatus === "paid_from_prepayment")) {
+        setFlexDialogOpen(true);
+        return;
+      }
+
       if (isGroupSession && groupSessionId && groupId) {
         await completeGroupSession.mutateAsync({
           appointmentId: apt.id,
@@ -612,8 +620,13 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const handleQuickComplete = async (statusOverride?: string) => {
     const paymentStatusChoice = statusOverride ?? paymentStatus;
 
-    if (completeAppointment.isPending || completeFromPrepayment.isPending) return;
+    if (completeAppointment.isPending || completeFromPrepayment.isPending || completeFlexible.isPending) return;
     if (!isActive) return;
+    // Flexible session price: the therapist enters the amount actually received.
+    if (flexibleEnabled && (paymentStatusChoice === "paid_now" || paymentStatusChoice === "paid_from_prepayment")) {
+      setFlexDialogOpen(true);
+      return;
+    }
     try {
       if (paymentStatusChoice === "paid_from_prepayment") {
         await completeFromPrepayment.mutateAsync({
@@ -646,6 +659,30 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   };
 
 
+
+  const handleFlexibleConfirm = async ({ actualAmount, paymentDate: payDate, source }: {
+    actualAmount: number; paymentDate: string; source: "new_payment" | "prepaid_balance";
+  }) => {
+    try {
+      if (notesDirty) await updateAppointment.mutateAsync({ id: apt.id, notes });
+      await completeFlexible.mutateAsync({
+        appointmentId: apt.id,
+        clientId: apt.client_id,
+        standardPrice: sessionPrice,
+        actualAmount,
+        paymentDate: payDate,
+        source,
+      });
+      setFlexDialogOpen(false);
+      toast({
+        title: t("toast.appointmentCompleted"),
+        description: `${t("flexPrice.actualReceived")}: ${cs}${actualAmount.toFixed(2)}`,
+      });
+      onOpenChange(false);
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
 
   const handleStatusChange = async (status: "confirmed" | "cancelled" | "no-show", waiveFee = false) => {
     try {
@@ -794,12 +831,23 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   <span className="font-medium text-foreground">{apt.duration_minutes} {t("common.min")}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("calendar.price")}</span>
+                  <span className="text-muted-foreground">{flexApplied ? t("flexPrice.standardPrice") : t("calendar.price")}</span>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-foreground">{cs}{Number(apt.price).toFixed(2)}</span>
+                    <span className="font-semibold text-foreground">{cs}{(flexApplied ? flexStandardPrice : Number(apt.price)).toFixed(2)}</span>
                     {(apt as any).price_override_reason && <Badge variant="outline" className="text-[10px]">{t("pricing.overridden")}</Badge>}
                   </div>
                 </div>
+                {flexApplied && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{t("flexPrice.actualReceived")}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-foreground">{cs}{Number(apt.price).toFixed(2)}</span>
+                      {showsFlexibleLabel(flexStandardPrice, Number(apt.price)) && (
+                        <Badge variant="outline" className="text-[10px]">{t("flexPrice.applied")}</Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
                 {(apt as any).price_override_reason && (
                   <div className="bg-muted/50 rounded-md p-2">
                     <p className="text-xs text-muted-foreground italic">💰 {(apt as any).price_override_reason}</p>
@@ -1676,6 +1724,15 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       </Dialog>
 
       {/* Payment correction modal */}
+      <FlexiblePriceCompleteDialog
+        open={flexDialogOpen}
+        onOpenChange={setFlexDialogOpen}
+        standardPrice={sessionPrice}
+        prepaidBalance={Number(clientCredit) || 0}
+        pending={completeFlexible.isPending}
+        onConfirm={handleFlexibleConfirm}
+      />
+
       <PaymentEditDialog
         open={paymentEditOpen}
         onOpenChange={setPaymentEditOpen}
