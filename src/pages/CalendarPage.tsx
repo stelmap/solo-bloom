@@ -51,6 +51,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { ToastAction } from "@/components/ui/toast";
+import { UnavailableTimeBlock } from "@/components/calendar/UnavailableTimeBlock";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useBookingRequests, type BookingRequestRow } from "@/hooks/useBookingInbox";
@@ -83,6 +85,7 @@ const NEW_COPY: Record<LangKey, {
   sessionTypeLabel: string; individualSession: string; groupSession: string;
   blockedTime: string; blockedStart: string; blockedEnd: string;
   ctaBlocked: string; blockedHint: string; blockedSummary: string; blockedCreated: string;
+  timeAvailableAgain: string; blockDeleted: string; undo: string;
   participants: string;
   notesPlaceholder: string; notesGroupPlaceholder: string;
   ctaIndividual: string; ctaGroup: string;
@@ -117,6 +120,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Blocked time", blockedStart: "Start time", blockedEnd: "End time",
     ctaBlocked: "Save blocked time", blockedHint: "Choose a date and a time range to block.",
     blockedSummary: "Will block:", blockedCreated: "Blocked time saved",
+    timeAvailableAgain: "Time is available again", blockDeleted: "Blocked time deleted", undo: "Undo",
     doesNotRepeat: "Does not repeat", repeatHint: "Leave empty to repeat without an end date.", repeatUntil: "Repeat until", repeatLabel: "Repeat appointment",
   },
   uk: {
@@ -147,6 +151,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Недоступний час", blockedStart: "Початок", blockedEnd: "Кінець",
     ctaBlocked: "Зберегти недоступний час", blockedHint: "Оберіть дату та проміжок часу для блокування.",
     blockedSummary: "Буде заблоковано:", blockedCreated: "Недоступний час збережено",
+    timeAvailableAgain: "Час знову доступний", blockDeleted: "Блок видалено", undo: "Скасувати",
     doesNotRepeat: "Не повторюється", repeatHint: "Залиште порожнім, щоб повторювати без дати завершення.", repeatUntil: "Повторювати до", repeatLabel: "Повторювати сесію",
   },
   ru: {
@@ -177,6 +182,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Недоступное время", blockedStart: "Начало", blockedEnd: "Окончание",
     ctaBlocked: "Сохранить недоступное время", blockedHint: "Выберите дату и промежуток времени для блокировки.",
     blockedSummary: "Будет заблокировано:", blockedCreated: "Недоступное время сохранено",
+    timeAvailableAgain: "Время снова доступно", blockDeleted: "Блок удалён", undo: "Отменить",
     doesNotRepeat: "Не повторяется", repeatHint: "Оставьте пустым, чтобы повторять без даты окончания.", repeatUntil: "Повторять до", repeatLabel: "Повторять сессию",
   },
   fr: {
@@ -207,6 +213,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Période bloquée", blockedStart: "Heure de début", blockedEnd: "Heure de fin",
     ctaBlocked: "Enregistrer la période bloquée", blockedHint: "Choisissez une date et une plage horaire à bloquer.",
     blockedSummary: "Sera bloqué :", blockedCreated: "Période bloquée enregistrée",
+    timeAvailableAgain: "La période est de nouveau disponible", blockDeleted: "Blocage supprimé", undo: "Annuler",
     doesNotRepeat: "Ne se répète pas", repeatHint: "Laissez vide pour répéter sans date de fin.", repeatUntil: "Répéter jusqu'au", repeatLabel: "Répéter le rendez-vous",
   },
   pl: {
@@ -237,6 +244,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Czas zablokowany", blockedStart: "Godzina rozpoczęcia", blockedEnd: "Godzina zakończenia",
     ctaBlocked: "Zapisz zablokowany czas", blockedHint: "Wybierz datę i zakres godzin do zablokowania.",
     blockedSummary: "Zostanie zablokowane:", blockedCreated: "Zablokowany czas zapisany",
+    timeAvailableAgain: "Czas jest znów dostępny", blockDeleted: "Blokada usunięta", undo: "Cofnij",
     doesNotRepeat: "Nie powtarza się", repeatHint: "Pozostaw puste, aby powtarzać bez daty zakończenia.", repeatUntil: "Powtarzaj do", repeatLabel: "Powtarzaj wizytę",
   },
 };
@@ -366,6 +374,7 @@ export default function CalendarPage() {
   // Drag-and-drop state
   const [dragAptId, setDragAptId] = useState<string | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<string | null>(null);
+  const [dragBlockId, setDragBlockId] = useState<string | null>(null);
   const [recurMoveOpen, setRecurMoveOpen] = useState(false);
   const pendingMove = useRef<{ aptId: string; newDate: string; newTime: string } | null>(null);
   const submittingRef = useRef(false);
@@ -451,6 +460,21 @@ export default function CalendarPage() {
     for (const d of daysOff as any[]) {
       if (d.type !== "blocked_time" || !d.custom_start_time || !d.custom_end_time) continue;
       (map[d.date] ||= []).push({
+        start: String(d.custom_start_time).slice(0, 5),
+        end: String(d.custom_end_time).slice(0, 5),
+      });
+    }
+    return map;
+  }, [daysOff]);
+
+  // Blocked-time records (with ids) grouped by date for interactive blocks
+  const blockedBlocksByDate = useMemo(() => {
+    const map: Record<string, Array<{ id: string; date: string; start: string; end: string }>> = {};
+    for (const d of daysOff as any[]) {
+      if (d.type !== "blocked_time" || !d.custom_start_time || !d.custom_end_time) continue;
+      (map[d.date] ||= []).push({
+        id: d.id,
+        date: d.date,
         start: String(d.custom_start_time).slice(0, 5),
         end: String(d.custom_end_time).slice(0, 5),
       });
@@ -769,6 +793,85 @@ export default function CalendarPage() {
       toast({ title: t("common.error"), description: e?.message, variant: "destructive" });
     }
   };
+
+  // ---- Interactive unavailable-time blocks -----------------------------
+  const blockOverlapsAppointment = (date: string, start: string, end: string) => {
+    const s = new Date(`${date}T${start}:00Z`).getTime();
+    const e = new Date(`${date}T${end}:00Z`).getTime();
+    const BLOCKING = new Set(["scheduled", "confirmed", "reminder_sent"]);
+    return (appointments as any[]).some((apt: any) => {
+      if (!apt?.scheduled_at || !BLOCKING.has(apt.status)) return false;
+      const as = new Date(apt.scheduled_at).getTime();
+      const ae = as + (Number(apt.duration_minutes) || 60) * 60000;
+      return as < e && ae > s;
+    });
+  };
+
+  const saveBlockedBlock = async (
+    id: string,
+    next: { date: string; start: string; end: string },
+  ): Promise<boolean> => {
+    if (toMin(next.end) <= toMin(next.start)) {
+      toast({ title: t("common.error"), description: L.endBeforeStart, variant: "destructive" });
+      return false;
+    }
+    if (blockOverlapsAppointment(next.date, next.start, next.end)) {
+      toast({ title: t("calendar.moveBlocked"), description: t("calendar.doubleBooking"), variant: "destructive" });
+      return false;
+    }
+    try {
+      // days_off is unique per (user, date): drop any other blocked row on the
+      // target date so moving never creates a duplicate record.
+      const clash = (blockedBlocksByDate[next.date] || []).find(b => b.id !== id);
+      if (clash) await supabase.from("days_off").delete().eq("id", clash.id);
+      const { error } = await supabase.from("days_off").update({
+        date: next.date,
+        custom_start_time: `${next.start}:00`,
+        custom_end_time: `${next.end}:00`,
+      } as any).eq("id", id);
+      if (error) throw error;
+      await qc.invalidateQueries({ queryKey: ["days-off"] });
+      await qc.refetchQueries({ queryKey: ["days-off"], type: "active" });
+      return true;
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err?.message, variant: "destructive" });
+      return false;
+    }
+  };
+
+  const removeBlockedBlock = async (
+    block: { id: string; date: string; start: string; end: string },
+    withUndo: boolean,
+  ) => {
+    try {
+      const { error } = await supabase.from("days_off").delete().eq("id", block.id);
+      if (error) throw error;
+      await qc.invalidateQueries({ queryKey: ["days-off"] });
+      await qc.refetchQueries({ queryKey: ["days-off"], type: "active" });
+      toast({
+        title: withUndo ? L.timeAvailableAgain : L.blockDeleted,
+        action: (
+          <ToastAction altText={L.undo} onClick={async () => {
+            await supabase.from("days_off").insert({
+              user_id: user!.id,
+              date: block.date,
+              type: "blocked_time",
+              label: "Unavailable",
+              custom_start_time: `${block.start}:00`,
+              custom_end_time: `${block.end}:00`,
+              is_non_working: false,
+            } as any);
+            await qc.invalidateQueries({ queryKey: ["days-off"] });
+            await qc.refetchQueries({ queryKey: ["days-off"], type: "active" });
+          }}>{L.undo}</ToastAction>
+        ),
+      });
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err?.message, variant: "destructive" });
+    }
+  };
+
+
 
   const handleCreate = async () => {
     if (isBlockedTime) {
@@ -1299,12 +1402,16 @@ export default function CalendarPage() {
     e.preventDefault();
     const slotKey = `${format(day, "yyyy-MM-dd")}-${hour}`;
     setDragOverSlot(slotKey);
+    if (dragBlockId) {
+      e.dataTransfer.dropEffect = "move";
+      return;
+    }
     if (dragAptId && canDropOnSlot(day, hour, dragAptId)) {
       e.dataTransfer.dropEffect = "move";
     } else {
       e.dataTransfer.dropEffect = "none";
     }
-  }, [dragAptId, canDropOnSlot]);
+  }, [dragAptId, dragBlockId, canDropOnSlot]);
 
   const handleDragLeave = useCallback(() => {
     setDragOverSlot(null);
@@ -1380,12 +1487,29 @@ export default function CalendarPage() {
     }
   };
 
-  const handleDrop = useCallback((e: React.DragEvent, day: Date, hour: number) => {
+  const handleDrop = (e: React.DragEvent, day: Date, hour: number) => {
     e.preventDefault();
     setDragAptId(null);
     setDragOverSlot(null);
     const aptId = e.dataTransfer.getData("text/plain");
     if (!aptId) return;
+
+    // Moving an unavailable-time block: keep its duration, snap to the hour slot
+    if (aptId.startsWith("block:")) {
+      const id = aptId.slice(6);
+      const src = Object.values(blockedBlocksByDate).flat().find(b => b.id === id);
+      setDragBlockId(null);
+      if (!src) return;
+      const duration = toMin(src.end) - toMin(src.start);
+      const startMin = hour * 60;
+      const pad = (n: number) => `${String(Math.floor(n / 60)).padStart(2, "0")}:${String(n % 60).padStart(2, "0")}`;
+      void saveBlockedBlock(id, {
+        date: format(day, "yyyy-MM-dd"),
+        start: pad(startMin),
+        end: pad(Math.min(startMin + duration, 24 * 60 - 1)),
+      });
+      return;
+    }
 
     if (!canDropOnSlot(day, hour, aptId)) {
       const reason = isDayOff(day) ? t("calendar.dayOffBlocked")
@@ -1409,7 +1533,7 @@ export default function CalendarPage() {
     } else {
       executeMoveAppointment(aptId, newDate, newTime);
     }
-  }, [appointments, canDropOnSlot, toast, t]);
+  };
 
   const [daysOffListOpen, setDaysOffListOpen] = useState(false);
   const [addDayOffOpen, setAddDayOffOpen] = useState(false);
@@ -2497,6 +2621,20 @@ export default function CalendarPage() {
                               <Plus className="h-4 w-4 text-primary/40" />
                             </div>
                           )}
+                          {(blockedBlocksByDate[format(day, "yyyy-MM-dd")] || [])
+                            .filter(b => Math.floor(toMin(b.start) / 60) === hour)
+                            .map(b => (
+                              <UnavailableTimeBlock
+                                key={b.id}
+                                block={b}
+                                rowHeight={rowHeight}
+                                cellHour={hour}
+                                onSave={saveBlockedBlock}
+                                onUnblock={(blk) => removeBlockedBlock(blk, true)}
+                                onDelete={(blk) => removeBlockedBlock(blk, false)}
+                                onDragStateChange={(dragging) => setDragBlockId(dragging ? b.id : null)}
+                              />
+                            ))}
                           {pendingReqs.map((req, idx) => {
                             const heightPx = Math.max((req.duration_minutes / 60) * rowHeight - 4, 20);
                             const name = req.matched_client_name || `${req.first_name}${req.last_name ? " " + req.last_name : ""}`.trim();
