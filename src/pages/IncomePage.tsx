@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-time-picker";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, DollarSign, CheckCircle, Download, ArrowLeft } from "lucide-react";
+import { Plus, Trash2, DollarSign, CheckCircle, Download, ArrowLeft, Wallet, CalendarClock, Search as SearchIcon, Users, ArrowUpDown, Clock } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
 import { useIncome, useIncomeSum, useCreateIncome, useDeleteIncome, useExpectedPayments, useMarkExpectedPaymentPaid, useClients } from "@/hooks/useData";
