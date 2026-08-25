@@ -2615,8 +2615,8 @@ export default function CalendarPage() {
             }
           } : undefined}
         >
-          <div ref={gridScrollRef} className="overflow-auto flex-1 min-h-0" style={{ scrollbarGutter: "stable", overscrollBehavior: "contain" }}>
-            <table className="w-full border-collapse table-fixed min-w-[860px] lg:min-w-[980px]">
+          <div ref={gridScrollRef} className="overflow-auto flex-1 min-h-0 min-w-0 w-full" style={{ scrollbarGutter: "stable", overscrollBehavior: "contain" }}>
+            <table className="w-full border-collapse table-fixed min-w-[820px]">
               <colgroup>
                 <col className={isMobile ? "w-[56px]" : "w-[72px]"} />
                 {days.map((_, i) => <col key={i} />)}
