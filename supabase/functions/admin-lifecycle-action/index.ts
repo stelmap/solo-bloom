@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { sendAppEmail } from "../_shared/transactional-email-templates/send-and-log.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -121,24 +122,22 @@ Deno.serve(async (req) => {
       });
     };
 
-    // Call send-transactional-email via raw fetch so the admin's Authorization
-    // header (real user JWT) is forwarded unchanged. Using functions.invoke here
-    // would override Authorization with the anon publishable key (sb_publishable_*),
-    // which is NOT a JWT and fails in-code getClaims() validation.
+    // Emails go through Lovable's managed email delivery directly from this
+    // function — the recipient is always the admin-selected target user.
     const callEmailFn = async (body: Record<string, unknown>) => {
-      const res = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: authHeader,
-          apikey: anonKey,
-        },
-        body: JSON.stringify(body),
-      });
-      const text = await res.text();
-      let data: unknown = null;
-      try { data = text ? JSON.parse(text) : null; } catch { data = text; }
-      return { ok: res.ok, status: res.status, data };
+      try {
+        const result = await sendAppEmail(
+          String(body.templateName),
+          String(body.recipientEmail),
+          {
+            idempotencyKey: body.idempotencyKey as string | undefined,
+            templateData: (body.templateData ?? {}) as Record<string, unknown>,
+          },
+        );
+        return { ok: result.sent, status: result.sent ? 200 : 200, data: result };
+      } catch (e) {
+        return { ok: false, status: 500, data: { error: (e as Error).message } };
+      }
     };
 
     const sendWarning = async (langOverride?: string) => {

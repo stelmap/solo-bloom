@@ -1,10 +1,11 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { tg, normalizeLang, formatSessionDateTime } from '../_shared/telegram.ts'
+import { sendAppEmail } from '../_shared/transactional-email-templates/send-and-log.ts'
 
 /**
  * Cron-triggered edge function that runs every hour.
  * Finds sessions scheduled ~24h from now, sends reminder emails
- * via the send-transactional-email function, and updates session status.
+ * through Lovable's managed email delivery, and updates session status.
  */
 
 const corsHeaders = {
@@ -164,10 +165,8 @@ Deno.serve(async (req) => {
 
     // ---------- Email ----------
     if (wantsEmail && client.email) {
-      const { error: sendError } = await supabase.functions.invoke('send-transactional-email', {
-        body: {
-          templateName: 'session-reminder',
-          recipientEmail: client.email,
+      try {
+        await sendAppEmail('session-reminder', client.email, {
           idempotencyKey: `session-reminder-${apt.id}`,
           templateData: {
             clientName: client.name,
@@ -182,12 +181,10 @@ Deno.serve(async (req) => {
             confirmationStatus,
             language: lang,
           },
-        },
-      })
-      if (sendError) {
-        console.error('Failed to send email reminder', { appointmentId: apt.id, error: sendError })
-      } else {
+        })
         sentCount++
+      } catch (sendError) {
+        console.error('Failed to send email reminder', { appointmentId: apt.id, error: (sendError as Error).message })
       }
     }
 

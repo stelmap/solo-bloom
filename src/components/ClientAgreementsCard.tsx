@@ -612,17 +612,13 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName, maxIte
                   (prof as any)?.business_name ||
                   (prof as any)?.full_name ||
                   t("agreements.link.defaultSpecialist");
-                const { error } = await supabase.functions.invoke("send-transactional-email", {
+                const { error } = await supabase.functions.invoke("send-agreement-invitation-email", {
                   body: {
-                    templateName: "agreement-invitation",
-                    recipientEmail: clientEmail,
-                    idempotencyKey: `agreement-invite-${linkDialog.url.split("/").pop()}`,
-                    templateData: {
-                      clientName,
-                      specialistName,
-                      agreementUrl: linkDialog.url,
-                      language: (prof as any)?.language || "en",
-                    },
+                    clientId,
+                    agreementUrl: linkDialog.url,
+                    clientName,
+                    specialistName,
+                    language: (prof as any)?.language || "en",
                   },
                 });
                 if (error) throw error;

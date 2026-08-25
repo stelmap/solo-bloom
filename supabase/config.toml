@@ -3,17 +3,9 @@ project_id = "rxculneqqaziutulnocs"
 [functions]
   [functions.auth-email-hook]
     verify_jwt = false
-  [functions.process-email-queue]
-    verify_jwt = true
   [functions.check-subscription]
     verify_jwt = false
-  [functions.send-transactional-email]
-    verify_jwt = false
   [functions.preview-transactional-email]
-    verify_jwt = false
-  [functions.handle-email-unsubscribe]
-    verify_jwt = false
-  [functions.handle-email-suppression]
     verify_jwt = false
   [functions.send-session-reminders]
     verify_jwt = true
@@ -42,4 +34,16 @@ project_id = "rxculneqqaziutulnocs"
   [functions.agreement-invitation-info]
     verify_jwt = false
   [functions.admin-regression-user-deletion]
+    verify_jwt = true
+  [functions.handle-email-events]
+    verify_jwt = false
+  [functions.send-booking-confirmation-email]
+    verify_jwt = false
+  [functions.send-booking-request-notification]
+    verify_jwt = false
+  [functions.send-agreement-invitation-email]
+    verify_jwt = true
+  [functions.send-session-reminder-email]
+    verify_jwt = true
+  [functions.send-session-cancellation-email]
     verify_jwt = true

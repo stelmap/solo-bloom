@@ -1,5 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { EmailAPIError, sendLovableEmail } from "npm:@lovable.dev/email-js@0.1.0";
 import { loadInvitationByToken, invitationErrorCode, randomDigits, sha256Hex } from "../_shared/agreement-utils.ts";
 
 const corsHeaders = {
@@ -89,68 +90,43 @@ Deno.serve(async (req) => {
       .maybeSingle();
     const therapistName = profile?.business_name || profile?.full_name || "Your therapist";
 
-    // Get or create unsubscribe token (required by the email API for transactional sends)
-    const normalizedEmail = email.toLowerCase();
-    let unsubscribeToken: string | null = null;
-    const { data: existingToken } = await supabase
-      .from("email_unsubscribe_tokens")
-      .select("token, used_at")
-      .eq("email", normalizedEmail)
-      .maybeSingle();
-    if (existingToken?.token && !existingToken.used_at) {
-      unsubscribeToken = existingToken.token;
-    } else if (!existingToken) {
-      const bytes = new Uint8Array(32);
-      crypto.getRandomValues(bytes);
-      const newToken = Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
-      await supabase
-        .from("email_unsubscribe_tokens")
-        .upsert({ token: newToken, email: normalizedEmail }, { onConflict: "email", ignoreDuplicates: true });
-      const { data: stored } = await supabase
-        .from("email_unsubscribe_tokens")
-        .select("token")
-        .eq("email", normalizedEmail)
-        .maybeSingle();
-      unsubscribeToken = stored?.token ?? newToken;
-    } else {
-      unsubscribeToken = existingToken.token;
-    }
-
-    // Enqueue email through managed pipeline (same as send-transactional-email)
+    // Send through Lovable's managed email API (delivery, retries, suppression
+    // and unsubscribe are handled server-side).
     const messageId = crypto.randomUUID();
-    await supabase.from("email_send_log").insert({
-      message_id: messageId,
-      template_name: "agreement-otp",
-      recipient_email: email,
-      status: "pending",
-    });
-    const { error: qErr } = await supabase.rpc("enqueue_email", {
-      queue_name: "transactional_emails",
-      payload: {
-        message_id: messageId,
-        to: email,
-        from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
-        sender_domain: SENDER_DOMAIN,
-        subject: `Your verification code: ${code}`,
-        html: otpEmailHtml(code, therapistName),
-        text: `Your verification code is ${code}. It expires in ${OTP_TTL_MINUTES} minutes.`,
-        purpose: "transactional",
-        label: "agreement-otp",
-        idempotency_key: `agreement-otp-${messageId}`,
-        unsubscribe_token: unsubscribeToken,
-        queued_at: new Date().toISOString(),
-      },
-    });
-    if (qErr) {
-      console.error("[agreement-otp-request] enqueue failed", qErr);
+    try {
+      await sendLovableEmail(
+        {
+          to: email,
+          from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+          sender_domain: SENDER_DOMAIN,
+          subject: `Your verification code: ${code}`,
+          html: otpEmailHtml(code, therapistName),
+          text: `Your verification code is ${code}. It expires in ${OTP_TTL_MINUTES} minutes.`,
+          purpose: "transactional",
+          label: "agreement-otp",
+          idempotency_key: `agreement-otp-${messageId}`,
+        },
+        { apiKey: Deno.env.get("LOVABLE_API_KEY")!, sendUrl: Deno.env.get("LOVABLE_SEND_URL") },
+      );
       await supabase.from("email_send_log").insert({
         message_id: messageId,
         template_name: "agreement-otp",
         recipient_email: email,
-        status: "failed",
-        error_message: qErr.message,
+        status: "sent",
       });
-      return json({ error: "email_send_failed" }, 500);
+    } catch (sendErr) {
+      const suppressed = sendErr instanceof EmailAPIError && sendErr.code === "recipient_suppressed";
+      await supabase.from("email_send_log").insert({
+        message_id: messageId,
+        template_name: "agreement-otp",
+        recipient_email: email,
+        status: suppressed ? "suppressed" : "failed",
+        error_message: (sendErr as Error).message,
+      });
+      if (!suppressed) {
+        console.error("[agreement-otp-request] send failed", (sendErr as Error).message);
+        return json({ error: "email_send_failed" }, 500);
+      }
     }
 
     await supabase.from("agreement_audit_events").insert({
