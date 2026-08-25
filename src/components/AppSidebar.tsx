@@ -15,6 +15,7 @@ import { useFreeStarterMode } from "@/hooks/useDemoWorkspace";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { usePracticeProfileStatus } from "@/hooks/usePracticeProfile";
 import { useProfile } from "@/hooks/useData";
+import { useSidebarPinned } from "@/hooks/useSidebarPinned";
 
 type LeafItem = { kind: "leaf"; icon: any; labelKey: TranslationKey; path: string; requires?: FeatureCode };
 type GroupItem = {
@@ -58,8 +59,24 @@ const railItemBase =
 export function AppSidebar() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [pinned, setPinned] = useSidebarPinned();
+  const [hoverOpen, setHoverOpen] = useState(false);
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
+  // The desktop panel is visible when pinned or while hovering the rail.
+  const expanded = pinned || hoverOpen;
+
+  const clearHoverTimer = () => {
+    if (hoverTimer.current) { clearTimeout(hoverTimer.current); hoverTimer.current = null; }
+  };
+  // Short delay avoids accidental opening / flickering while moving the cursor.
+  const scheduleHover = (open: boolean) => {
+    if (pinned) return;
+    clearHoverTimer();
+    hoverTimer.current = setTimeout(() => setHoverOpen(open), open ? 220 : 260);
+  };
+  useEffect(() => () => clearHoverTimer(), []);
+  useEffect(() => { if (pinned) setHoverOpen(false); }, [pinned]);
   const { user, signOut, subscription } = useAuth();
   const { t } = useLanguage();
   const isTrial = !subscription.loading && subscription.on_trial && !subscription.subscribed;
@@ -84,7 +101,7 @@ export function AppSidebar() {
   // Escape closes the expanded overlay / mobile drawer
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { setExpanded(false); setMobileOpen(false); }
+      if (e.key === "Escape") { setHoverOpen(false); setMobileOpen(false); }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -133,7 +150,7 @@ export function AppSidebar() {
         : isTrial ? "Trial" : "Free Starter";
   const PlanIcon = planCode === "pro" || planCode === "solo" || isTrial ? BadgeCheck : Sparkles;
 
-  const closeAll = () => { setExpanded(false); setMobileOpen(false); };
+  const closeAll = () => { clearHoverTimer(); setHoverOpen(false); setMobileOpen(false); };
 
   /* ---------------- collapsed rail (icons only) ---------------- */
   const RailButton = ({
@@ -357,7 +374,10 @@ export function AppSidebar() {
   );
 
 
-  const FullHeader = ({ onClose }: { onClose: () => void }) => (
+  const FullHeader = ({
+    pinned: isPinned = true,
+    onToggle,
+  }: { pinned?: boolean; onToggle: () => void }) => (
     <div className="p-4 border-b border-sidebar-border">
       <div className="flex items-center gap-2">
         <div className="text-xl font-bold text-sidebar-foreground tracking-tight flex-1">
@@ -365,11 +385,12 @@ export function AppSidebar() {
         </div>
         <button
           type="button"
-          onClick={onClose}
-          aria-label="Collapse menu"
+          onClick={onToggle}
+          aria-label={isPinned ? t("sidebar.collapseMenu") : t("sidebar.expandMenu")}
+          title={isPinned ? t("sidebar.collapseMenu") : t("sidebar.expandMenu")}
           className="h-11 w-11 -mr-2 flex items-center justify-center rounded-lg text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors"
         >
-          <PanelLeftClose className="h-5 w-5" />
+          {isPinned ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeftOpen className="h-5 w-5" />}
         </button>
       </div>
       <p className="text-xs text-sidebar-foreground/50 mt-0.5">Business Manager</p>
@@ -406,8 +427,13 @@ export function AppSidebar() {
 
       {/* Collapsed icon rail (desktop / tablet) */}
       <aside
-        className="fixed left-0 top-0 z-30 h-full w-[68px] bg-sidebar border-r border-sidebar-border hidden lg:flex flex-col items-center py-4"
+        className={cn(
+          "fixed left-0 top-0 z-30 h-full w-[68px] bg-sidebar border-r border-sidebar-border flex-col items-center py-4",
+          pinned ? "hidden" : "hidden lg:flex"
+        )}
         aria-label="Main navigation"
+        onMouseEnter={() => scheduleHover(true)}
+        onMouseLeave={() => scheduleHover(false)}
       >
         <div className="h-9 w-9 rounded-lg bg-sidebar-primary/15 flex items-center justify-center text-sidebar-primary font-bold text-sm">
           SB
@@ -415,9 +441,9 @@ export function AppSidebar() {
         <div className="mt-3">
           <RailButton
             icon={PanelLeftOpen}
-            label="Expand menu"
+            label={t("sidebar.expandMenu")}
             active={false}
-            onClick={() => setExpanded(true)}
+            onClick={() => setPinned(true)}
           />
         </div>
 
@@ -439,7 +465,7 @@ export function AppSidebar() {
                 active={isGroupActive(item.basePath)}
                 onClick={() => {
                   setOpenGroups((m) => ({ ...m, [item.basePath]: true }));
-                  setExpanded(true);
+                  setHoverOpen(true);
                 }}
               />
             )
@@ -476,9 +502,9 @@ export function AppSidebar() {
       </aside>
 
       {/* Overlay backdrop for expanded desktop menu / mobile drawer */}
-      {(expanded || mobileOpen) && (
+      {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-sm"
+          className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-sm lg:hidden"
           onClick={closeAll}
           aria-hidden="true"
         />
@@ -488,12 +514,15 @@ export function AppSidebar() {
       <aside
         ref={panelRef}
         className={cn(
-          "fixed left-0 top-0 z-50 h-full w-[216px] bg-sidebar border-r border-sidebar-border shadow-2xl hidden lg:flex flex-col transition-transform duration-200 ease-out",
+          "fixed left-0 top-0 h-full w-[216px] bg-sidebar border-r border-sidebar-border hidden lg:flex flex-col transition-transform duration-200 ease-out",
+          pinned ? "z-30" : "z-50 shadow-2xl",
           expanded ? "translate-x-0" : "-translate-x-full pointer-events-none"
         )}
         aria-hidden={!expanded}
+        onMouseEnter={() => clearHoverTimer()}
+        onMouseLeave={() => scheduleHover(false)}
       >
-        <FullHeader onClose={() => setExpanded(false)} />
+        <FullHeader pinned={pinned} onToggle={() => setPinned(!pinned)} />
         <FullNav />
         <FullFooter />
       </aside>
@@ -506,7 +535,7 @@ export function AppSidebar() {
         )}
         aria-hidden={!mobileOpen}
       >
-        <FullHeader onClose={() => setMobileOpen(false)} />
+        <FullHeader onToggle={() => setMobileOpen(false)} />
         <FullNav />
         <FullFooter />
       </aside>
