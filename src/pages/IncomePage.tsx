@@ -92,21 +92,47 @@ export default function IncomePage() {
   const [linkedOpen, setLinkedOpen] = useState(false);
   const [linkedPrefill, setLinkedPrefill] = useState<{ clientId: string; clientName?: string; amount: number; date: string; payment_method: string; comment?: string } | null>(null);
 
-  const filtered = income; // server-side filtered
+  const q = search.trim().toLowerCase();
+  const incomeClientName = (i: any) => i.appointments?.clients?.name || i.clients?.name || "";
+
+  /** Confirmed income: server-filtered by period, then refined client-side. */
+  const filtered = useMemo(() => {
+    let list = (income as any[]).filter((i) => {
+      if (clientFilter !== "all" && i.client_id !== clientFilter && i.appointments?.clients?.id !== clientFilter) return false;
+      if (!q) return true;
+      return `${incomeClientName(i)} ${i.description || ""}`.toLowerCase().includes(q);
+    });
+    const byDate = (a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime();
+    if (sortKey === "name") list = [...list].sort((a, b) => incomeClientName(a).localeCompare(incomeClientName(b)));
+    else if (sortKey === "amount") list = [...list].sort((a, b) => Number(b.amount) - Number(a.amount));
+    else if (sortKey === "oldest") list = [...list].sort(byDate);
+    else list = [...list].sort((a, b) => byDate(b, a));
+    return list;
+  }, [income, q, clientFilter, sortKey]);
+
   const total = periodTotal;
   // Expected payments are filtered by the related session's scheduled_at so the
   // selected period applies consistently to both Confirmed Income and Expected
   // Payments. "All time" shows everything.
   const filteredExpected = useMemo(() => {
-    const list = expectedPayments as any[];
-    if (!intervalStart || !intervalEnd) return list;
-    return list.filter((ep) => {
-      const raw = ep.appointments?.scheduled_at;
-      if (!raw) return false;
-      const d = typeof raw === "string" ? parseISO(raw) : new Date(raw);
-      return isWithinInterval(d, { start: intervalStart, end: intervalEnd });
+    let list = (expectedPayments as any[]).filter((ep) => {
+      if (intervalStart && intervalEnd) {
+        const raw = ep.appointments?.scheduled_at;
+        if (!raw) return false;
+        const d = typeof raw === "string" ? parseISO(raw) : new Date(raw);
+        if (!isWithinInterval(d, { start: intervalStart, end: intervalEnd })) return false;
+      }
+      if (clientFilter !== "all" && ep.client_id !== clientFilter && ep.clients?.id !== clientFilter) return false;
+      if (!q) return true;
+      return `${ep.clients?.name || ""} ${ep.appointments?.services?.name || ""}`.toLowerCase().includes(q);
     });
-  }, [expectedPayments, intervalStart, intervalEnd]);
+    const at = (ep: any) => new Date(ep.appointments?.scheduled_at || 0).getTime();
+    if (sortKey === "name") list = [...list].sort((a, b) => (a.clients?.name || "").localeCompare(b.clients?.name || ""));
+    else if (sortKey === "amount") list = [...list].sort((a, b) => Number(b.amount) - Number(a.amount));
+    else if (sortKey === "oldest") list = [...list].sort((a, b) => at(a) - at(b));
+    else list = [...list].sort((a, b) => at(b) - at(a));
+    return list;
+  }, [expectedPayments, intervalStart, intervalEnd, q, clientFilter, sortKey]);
   const pendingTotal = filteredExpected.reduce((s: number, ep: any) => s + Number(ep.amount), 0);
 
 
