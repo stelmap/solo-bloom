@@ -1,6 +1,7 @@
 import * as React from 'npm:react@18.3.1'
 import { renderAsync } from 'npm:@react-email/components@0.0.22'
 import { EmailAPIError, sendLovableEmail } from 'npm:@lovable.dev/email-js@0.1.0'
+import { createUnsubscribeToken } from '../email-unsubscribe-token.ts'
 import { TEMPLATES } from './registry.ts'
 
 // Server-only: reads LOVABLE_API_KEY. Import from edge functions only — never
@@ -61,6 +62,10 @@ export async function sendTemplateEmail(
   const element = React.createElement(template.component, templateData)
   const html = await renderAsync(element)
   const text = await renderAsync(element, { plainText: true })
+  const idempotencyKey = options.idempotencyKey
+    ? `${options.idempotencyKey}:unsubscribe-v1`
+    : crypto.randomUUID()
+  const unsubscribeToken = await createUnsubscribeToken(apiKey, SENDER_DOMAIN, recipient, idempotencyKey)
   const subject =
     typeof template.subject === 'function'
       ? template.subject(templateData)
@@ -77,7 +82,8 @@ export async function sendTemplateEmail(
         text,
         purpose: 'transactional',
         label: templateName,
-        idempotency_key: options.idempotencyKey || crypto.randomUUID(),
+        idempotency_key: idempotencyKey,
+        unsubscribe_token: unsubscribeToken,
         reply_to: options.replyTo,
       },
       { apiKey, sendUrl: Deno.env.get('LOVABLE_SEND_URL') }
