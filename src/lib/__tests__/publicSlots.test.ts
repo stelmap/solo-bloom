@@ -59,7 +59,7 @@ describe("availability", () => {
 
   it("pending requests and unavailable-time blocks block only their interval", () => {
     const slots = availableSlots(day, [at(11, 0, 60), { start: hm(15), end: hm(16) }]).map(label);
-    expect(slots).toEqual(["09:00", "10:00", "13:00", "14:00", "16:00", "17:00"]);
+    expect(slots).toEqual(["09:00", "10:00", "12:00", "13:00", "14:00", "16:00", "17:00"]);
   });
 
   it("cancelled / rejected / no-show records never block", () => {
