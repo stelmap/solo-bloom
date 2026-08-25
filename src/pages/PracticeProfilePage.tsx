@@ -16,6 +16,7 @@ import { useBookingLink } from "@/hooks/usePracticeProfile";
 import { BookingAvailabilitySection, type BookingAvailabilityHandle } from "@/components/practice/BookingAvailabilitySection";
 
 import { useToast } from "@/hooks/use-toast";
+import { CurrencySelect } from "@/components/settings/CurrencySelect";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { AppLanguage } from "@/i18n/translations";
 import { cn } from "@/lib/utils";
@@ -211,7 +212,6 @@ export default function PracticeProfilePage() {
     phone: "",
     business_id: "",
     business_address: "",
-    currency: "EUR",
     language: "en",
     timezone: "",
   });
@@ -234,7 +234,6 @@ export default function PracticeProfilePage() {
       phone: p.phone || "",
       business_id: p.business_id || "",
       business_address: p.business_address || "",
-      currency: p.currency || "EUR",
       language: p.language || "en",
       timezone: p.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
     };
@@ -463,18 +462,7 @@ export default function PracticeProfilePage() {
             <div className="space-y-3">
               <h3 className="font-semibold text-foreground text-sm">{L.regional}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="font-semibold text-sm">{L.currency}</Label>
-                  <Select value={form.currency} onValueChange={(v) => setForm((f) => ({ ...f, currency: v }))}>
-                    <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="EUR">EUR — €</SelectItem>
-                      <SelectItem value="UAH">UAH — ₴</SelectItem>
-                      <SelectItem value="PLN">PLN — zł</SelectItem>
-                      <SelectItem value="USD">USD — $</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <CurrencySelect label={L.currency} savedLabel={L.saved} />
                 <div className="space-y-1.5">
                   <Label className="font-semibold text-sm">{L.language}</Label>
                   <Select value={form.language} onValueChange={(v) => setForm((f) => ({ ...f, language: v }))}>

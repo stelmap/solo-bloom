@@ -46,6 +46,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { CALENDAR_BLOCK_BASE, CALENDAR_BLOCK_REQUEST, CALENDAR_CHIP_BASE } from "@/lib/calendarBlockStyles";
+import { CalendarEventCard } from "@/components/calendar/CalendarEventCard";
 import { getSessionStateStyle, SESSION_STATE_STYLES, SESSION_STATE_ORDER } from "@/lib/sessionStatusColors";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
@@ -2614,15 +2615,15 @@ export default function CalendarPage() {
             }
           } : undefined}
         >
-          <div ref={gridScrollRef} className="overflow-auto flex-1 min-h-0" style={{ scrollbarGutter: "stable", overscrollBehavior: "contain" }}>
-            <table className="w-full border-collapse table-fixed min-w-[760px]">
+          <div ref={gridScrollRef} className="overflow-auto flex-1 min-h-0 min-w-0 w-full" style={{ scrollbarGutter: "stable", overscrollBehavior: "contain" }}>
+            <table className="w-full border-collapse table-fixed min-w-[820px]">
               <colgroup>
                 <col className={isMobile ? "w-[56px]" : "w-[72px]"} />
                 {days.map((_, i) => <col key={i} />)}
               </colgroup>
               <thead ref={gridHeadRef} className="sticky top-0 z-20 bg-card">
                 <tr className="border-b border-border">
-                  <th className="p-3" />
+                  <th className="p-3 sticky left-0 z-30 bg-card border-r border-border" />
                   {days.map((day, i) => {
                     const dayOffStatus = isDayOff(day);
                     const isTodayCol = isSameDay(day, new Date());
@@ -2658,7 +2659,7 @@ export default function CalendarPage() {
               <tbody>
                 {hours.map((hour) => (
                   <tr key={hour}>
-                    <td style={{ height: rowHeight }} className="text-right pr-3 border-b border-border align-middle">
+                    <td style={{ height: rowHeight }} className="sticky left-0 z-[5] bg-card text-right pr-3 border-b border-r border-border align-middle">
                       <span className="text-xs text-muted-foreground font-medium">{fmtHour(hour)}</span>
                     </td>
                     {days.map((day, dayIdx) => {
@@ -2733,26 +2734,18 @@ export default function CalendarPage() {
                             const heightPx = Math.max((req.duration_minutes / 60) * rowHeight - 4, 20);
                             const name = req.matched_client_name || `${req.first_name}${req.last_name ? " " + req.last_name : ""}`.trim();
                             return (
-                              <div
+                              <CalendarEventCard
                                 key={req.id}
+                                title={name}
+                                subtitle={req.status === "needs_linking" ? (t("booking.needsLinking") || "Needs linking") : (t("booking.pending") || "Pending")}
+                                tooltipMeta={t("booking.pendingRequest") || "Pending booking request"}
+                                leadingIcon={<Inbox className="h-3 w-3" />}
+                                toneClassName={CALENDAR_BLOCK_REQUEST}
+                                heightPx={heightPx}
                                 onClick={(e) => { e.stopPropagation(); setInboxOpen(true); }}
-                                className={cn(
-                                  CALENDAR_BLOCK_BASE,
-                                  CALENDAR_BLOCK_REQUEST,
-                                  "inset-x-1 z-20 hover:ring-2 hover:ring-warning/40",
-                                )}
-
+                                className="inset-x-1 z-20 hover:ring-2 hover:ring-warning/40"
                                 style={{ top: `${idx * 4}px`, height: `${heightPx}px` }}
-                                title={t("booking.pendingRequest") || "Pending booking request"}
-                              >
-                                <div className="flex items-center gap-1">
-                                  <Inbox className="h-3 w-3 shrink-0 opacity-70" />
-                                  <p className="text-xs font-semibold truncate flex-1">{name}</p>
-                                </div>
-                                <p className="text-[10px] opacity-70 truncate">
-                                  {req.status === "needs_linking" ? (t("booking.needsLinking") || "Needs linking") : (t("booking.pending") || "Pending")}
-                                </p>
-                              </div>
+                              />
                             );
                           })}
                           {events.map((evt, evtIdx) => {
@@ -2764,45 +2757,38 @@ export default function CalendarPage() {
                             const groupName = (evt as any).group_sessions?.groups?.name;
                             const needsConfirmation = !isGroupEvt && client?.confirmation_required && evt.confirmation_status !== "confirmed";
                             const isConfirmed = !isGroupEvt && evt.confirmation_status === "confirmed";
-                            const displayName = isGroupEvt && groupName ? groupName : (evt as any).clients?.name;
+                            const displayName = (isGroupEvt && groupName ? groupName : (evt as any).clients?.name) || "";
                             // Split slot horizontally so concurrent events don't overlap (each is visible & clickable)
                             const total = events.length;
                             const widthPct = 100 / total;
                             const leftPct = widthPct * evtIdx;
                             return (
-                              <div key={evt.id}
+                              <CalendarEventCard
+                                key={evt.id}
+                                title={displayName}
+                                subtitle={gridDensity === "comfortable" ? ((evt as any).services?.name ?? null) : null}
+                                tooltipMeta={(t as any)(ss.labelKey) || ss.labelFallback}
+                                leadingIcon={isGroupEvt ? <Users className="h-3 w-3" /> : undefined}
+                                toneClassName={ss.card}
+                                heightPx={heightPx}
+                                statusIcons={
+                                  <>
+                                    {(evt as any).recurring_rule_id && <Repeat className="h-2.5 w-2.5 opacity-50" />}
+                                    {needsConfirmation && <span className="h-2 w-2 rounded-full bg-warning" />}
+                                    {isConfirmed && <span className="h-2 w-2 rounded-full bg-success" />}
+                                  </>
+                                }
                                 draggable={isActiveEvt}
                                 onDragStart={isActiveEvt ? (e) => handleDragStart(e, evt.id) : undefined}
                                 onDragEnd={handleDragEnd}
                                 onClick={(e) => { e.stopPropagation(); openSessionSheet(evt); }}
                                 className={cn(
-                                  CALENDAR_BLOCK_BASE,
-                                  "top-0 z-10 hover:ring-2 hover:ring-ring/30 flex flex-col justify-center",
-                                  ss.card,
+                                  "top-0 z-10 hover:ring-2 hover:ring-ring/30",
                                   isActiveEvt && "cursor-grab active:cursor-grabbing",
                                   dragAptId === evt.id && "opacity-40 ring-2 ring-primary",
                                 )}
                                 style={{ height: `${heightPx}px`, left: `calc(${leftPct}% + 4px)`, width: `calc(${widthPct}% - 8px)` }}
-                                title={`${displayName} · ${(evt as any).services?.name ?? ""} · ${(t as any)(ss.labelKey) || ss.labelFallback}`}>
-
-                                <div className="flex items-center gap-1 w-full min-w-0">
-                                  {isGroupEvt && <Users className="h-3 w-3 shrink-0 opacity-70" />}
-                                  <p className="text-xs font-semibold truncate flex-1 min-w-0">{displayName}</p>
-                                  {(evt as any).recurring_rule_id && <Repeat className="h-2.5 w-2.5 opacity-50 shrink-0" />}
-                                  {needsConfirmation && (
-                                    <span className="shrink-0 h-2 w-2 rounded-full bg-warning" title={t("confirmation.pending")} />
-                                  )}
-                                  {isConfirmed && (
-                                    <span className="shrink-0 h-2 w-2 rounded-full bg-success" title={t("confirmation.confirmed")} />
-                                  )}
-                                </div>
-                                {gridDensity === "comfortable" && (evt as any).services?.name && heightPx >= 34 && (
-                                  <p className="text-[11px] opacity-70 truncate w-full">{(evt as any).services.name}</p>
-                                )}
-
-
-
-                              </div>
+                              />
                             );
                           })}
                         </td>

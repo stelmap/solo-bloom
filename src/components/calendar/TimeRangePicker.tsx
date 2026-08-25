@@ -93,9 +93,9 @@ export function TimeRangePicker({ start, end, onChange, lang = "en", use12h = fa
     const value = which === "start" ? start : end;
     const list = which === "start" ? options : endOptions;
     return (
-      <div className="space-y-1">
-        <Label className="text-xs">{which === "start" ? C.start : C.end}</Label>
-        <div className="flex items-center gap-1">
+      <div className="space-y-1 min-w-0">
+        <Label className="text-xs whitespace-nowrap">{which === "start" ? C.start : C.end}</Label>
+        <div className="flex min-w-0 items-center gap-1">
           <Button
             type="button" variant="outline" size="icon"
             className="h-9 w-9 shrink-0"
@@ -105,7 +105,7 @@ export function TimeRangePicker({ start, end, onChange, lang = "en", use12h = fa
             <Minus className="h-3.5 w-3.5" />
           </Button>
           <Select value={value} onValueChange={which === "start" ? setStart : setEnd}>
-            <SelectTrigger className="h-9 flex-1 tabular-nums">
+            <SelectTrigger className="h-9 min-w-0 flex-1 px-2 tabular-nums">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="max-h-64">
@@ -129,7 +129,7 @@ export function TimeRangePicker({ start, end, onChange, lang = "en", use12h = fa
 
   return (
     <div className={cn("space-y-3", className)}>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 min-w-0">
         <Field which="start" />
         <Field which="end" />
       </div>
@@ -148,6 +148,9 @@ export function TimeRangePicker({ start, end, onChange, lang = "en", use12h = fa
             {m >= 60 ? `${m / 60} ${C.hour}` : `${m} ${C.minutes}`}
           </Button>
         ))}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
         <Button
           type="button"
           size="sm"

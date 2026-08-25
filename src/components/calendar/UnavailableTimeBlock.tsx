@@ -186,7 +186,15 @@ export function UnavailableTimeBlock({
           />
         </div>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-72 p-3 space-y-3" onClick={(e) => e.stopPropagation()}>
+      <PopoverContent
+        align="start"
+        side="right"
+        sideOffset={8}
+        collisionPadding={12}
+        avoidCollisions
+        className="w-[min(20rem,calc(100vw-2rem))] max-h-[min(32rem,calc(100dvh-6rem))] overflow-y-auto overscroll-contain p-3 space-y-3"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center gap-2">
           <Ban className="h-4 w-4 text-destructive" />
           <p className="font-semibold text-sm">{C.title}</p>
@@ -208,7 +216,7 @@ export function UnavailableTimeBlock({
                     {draft.date ? format(parseISO(draft.date), "d MMM yyyy") : C.date}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent align="start" className="w-auto p-0 z-50 bg-popover">
+                <PopoverContent align="start" collisionPadding={12} className="w-auto max-w-[calc(100vw-2rem)] p-0 z-50 bg-popover">
                   <Calendar
                     mode="single"
                     selected={draft.date ? parseISO(draft.date) : undefined}

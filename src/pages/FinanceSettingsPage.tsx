@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useProfile, useUpdateProfile } from "@/hooks/useData";
 import { useToast } from "@/hooks/use-toast";
+import { CurrencySelect } from "@/components/settings/CurrencySelect";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, Info, Loader2, PenLine, Receipt } from "lucide-react";
@@ -207,7 +208,6 @@ const COPY: Record<Lang, Record<string, string>> = {
 };
 
 const EMPTY = {
-  currency: "EUR",
   income_recognition_method: "payment_date",
   business_country: "UA" as BusinessCountry,
   business_name: "",
@@ -233,7 +233,6 @@ export default function FinanceSettingsPage() {
     const p = profile as any;
     const country = (p.business_country as BusinessCountry) || "UA";
     const next = {
-      currency: p.currency || "EUR",
       income_recognition_method: p.income_recognition_method || "payment_date",
       business_country: country,
       business_name: p.business_name || "",
@@ -284,18 +283,7 @@ export default function FinanceSettingsPage() {
                 <h2 className="font-semibold text-foreground">{L.currency}</h2>
                 <p className="text-sm text-muted-foreground mt-1">{L.currencyDesc}</p>
               </div>
-              <div className="space-y-1.5">
-                <Label className="font-semibold text-sm">{L.currencyLabel}</Label>
-                <Select value={form.currency} onValueChange={(v) => setForm((f) => ({ ...f, currency: v }))}>
-                  <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="EUR">EUR — €</SelectItem>
-                    <SelectItem value="UAH">UAH — ₴</SelectItem>
-                    <SelectItem value="PLN">PLN — zł</SelectItem>
-                    <SelectItem value="USD">USD — $</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <CurrencySelect label={L.currencyLabel} savedLabel={L.saved} />
             </div>
 
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
