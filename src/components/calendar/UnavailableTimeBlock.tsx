@@ -3,7 +3,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Ban, Trash2, CalendarCheck } from "lucide-react";
+import { Ban, Trash2, CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { format, parseISO } from "date-fns";
+import { CALENDAR_BLOCK_BASE, CALENDAR_BLOCK_UNAVAILABLE } from "@/lib/calendarBlockStyles";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { TimeRangePicker } from "@/components/calendar/TimeRangePicker";
@@ -66,13 +69,14 @@ interface Props {
   /** Hour of the cell this block is rendered in */
   cellHour: number;
   onSave: (id: string, next: { date: string; start: string; end: string }) => Promise<boolean>;
-  onUnblock: (block: BlockedBlock) => void;
+  /** @deprecated the popover no longer exposes a separate "make available" action */
+  onUnblock?: (block: BlockedBlock) => void;
   onDelete: (block: BlockedBlock) => void;
   onDragStateChange?: (dragging: boolean) => void;
 }
 
 export function UnavailableTimeBlock({
-  block, rowHeight, cellHour, onSave, onUnblock, onDelete, onDragStateChange,
+  block, rowHeight, cellHour, onSave, onDelete, onDragStateChange,
 }: Props) {
   const { lang } = useLanguage();
   const C = COPY[lang as string] || COPY.en;
@@ -80,6 +84,7 @@ export function UnavailableTimeBlock({
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(block);
   const [error, setError] = useState<string | null>(null);
+  const [dateOpen, setDateOpen] = useState(false);
   const [resize, setResize] = useState<null | { edge: "top" | "bottom"; start: string; end: string }>(null);
   const resizeRef = useRef<{ edge: "top" | "bottom"; originY: number; start: number; end: number } | null>(null);
 
@@ -155,11 +160,10 @@ export function UnavailableTimeBlock({
           role="button"
           tabIndex={0}
           className={cn(
-            "group/blk absolute left-1 right-1 z-[15] rounded-md border px-1.5 py-0.5 overflow-hidden",
-            "bg-destructive/10 border-destructive/25 text-destructive cursor-pointer",
-            "hover:bg-destructive/15 hover:border-destructive/40 transition-colors",
-            "cursor-grab active:cursor-grabbing",
-            open && "ring-2 ring-destructive/50 border-destructive/60",
+            CALENDAR_BLOCK_BASE,
+            CALENDAR_BLOCK_UNAVAILABLE,
+            "group/blk left-1 right-1 z-[15] cursor-grab active:cursor-grabbing",
+            open && "ring-2 ring-destructive/40",
           )}
           style={{ top: `${top}px`, height: `${height}px` }}
         >
@@ -190,14 +194,30 @@ export function UnavailableTimeBlock({
 
         {!editing ? (
           <div className="text-sm text-muted-foreground">
-            <p>{block.date}</p>
+            <p>{block.date ? format(parseISO(block.date), "d MMM yyyy") : ""}</p>
             <p className="font-medium text-foreground">{block.start} – {block.end}</p>
           </div>
         ) : (
           <div className="space-y-2">
             <div className="space-y-1">
               <Label className="text-xs">{C.date}</Label>
-              <Input type="date" value={draft.date} onChange={(e) => setDraft(d => ({ ...d, date: e.target.value }))} className="h-9" />
+              <Popover open={dateOpen} onOpenChange={setDateOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="h-9 w-full justify-start font-normal">
+                    <CalendarIcon className="h-4 w-4 mr-2 text-muted-foreground" />
+                    {draft.date ? format(parseISO(draft.date), "d MMM yyyy") : C.date}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-auto p-0 z-50 bg-popover">
+                  <Calendar
+                    mode="single"
+                    selected={draft.date ? parseISO(draft.date) : undefined}
+                    onSelect={(d) => { if (d) { setDraft(prev => ({ ...prev, date: format(d, "yyyy-MM-dd") })); setDateOpen(false); } }}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <TimeRangePicker
               start={draft.start}
@@ -221,9 +241,6 @@ export function UnavailableTimeBlock({
               <Button size="sm" variant="ghost" className="flex-1" onClick={() => { setEditing(false); setDraft(block); setError(null); }}>{C.cancel}</Button>
             </div>
           )}
-          <Button variant="outline" size="sm" className="justify-start" onClick={() => { setOpen(false); onUnblock(block); }}>
-            <CalendarCheck className="h-4 w-4 mr-2" /> {C.makeAvailable}
-          </Button>
           <Button variant="ghost" size="sm" className="justify-start text-destructive hover:text-destructive" onClick={() => { setOpen(false); onDelete(block); }}>
             <Trash2 className="h-4 w-4 mr-2" /> {C.deleteBlock}
           </Button>
