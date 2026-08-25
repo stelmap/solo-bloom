@@ -19,7 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { AppLanguage } from "@/i18n/translations";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ImageIcon, Loader2, Copy, RefreshCw, ExternalLink } from "lucide-react";
+import { ArrowLeft, ImageIcon, Loader2, Copy, ExternalLink } from "lucide-react";
 
 type Lang = "en" | "uk" | "ru" | "fr" | "pl";
 const normLang = (v: unknown): Lang => {
