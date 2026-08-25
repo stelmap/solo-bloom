@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-time-picker";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, DollarSign, CheckCircle, Download, ArrowLeft } from "lucide-react";
+import { Plus, Trash2, DollarSign, CheckCircle, Download, ArrowLeft, Wallet, CalendarClock, Search as SearchIcon, Users, ArrowUpDown, Clock } from "lucide-react";
 import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
 import { useIncome, useIncomeSum, useCreateIncome, useDeleteIncome, useExpectedPayments, useMarkExpectedPaymentPaid, useClients } from "@/hooks/useData";
@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { IncomeConfirmationDialog } from "@/components/IncomeConfirmationDialog";
+import { ClientCombobox } from "@/components/income/ClientCombobox";
+import { INCOME_FLOW_COPY, INCOME_PAGE_COPY, normIncomeLang } from "@/lib/incomeFlowCopy";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useMemo, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -74,7 +76,9 @@ export default function IncomePage() {
   const deleteIncome = useDeleteIncome();
   const markPaid = useMarkExpectedPaymentPaid();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const IL = INCOME_FLOW_COPY[normIncomeLang(lang)];
+  const IP = INCOME_PAGE_COPY[normIncomeLang(lang)];
   const { symbol: cs } = useCurrency();
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -82,24 +86,53 @@ export default function IncomePage() {
   const [payMethod, setPayMethod] = useState("cash");
   const [payDate, setPayDate] = useState(new Date().toISOString().split("T")[0]);
   const [form, setForm] = useState({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash", client_id: "" });
+  const [search, setSearch] = useState("");
+  const [clientFilter, setClientFilter] = useState("all");
+  const [sortKey, setSortKey] = useState("name");
   const [linkedOpen, setLinkedOpen] = useState(false);
   const [linkedPrefill, setLinkedPrefill] = useState<{ clientId: string; clientName?: string; amount: number; date: string; payment_method: string; comment?: string } | null>(null);
 
-  const filtered = income; // server-side filtered
+  const q = search.trim().toLowerCase();
+  const incomeClientName = (i: any) => i.appointments?.clients?.name || i.clients?.name || "";
+
+  /** Confirmed income: server-filtered by period, then refined client-side. */
+  const filtered = useMemo(() => {
+    let list = (income as any[]).filter((i) => {
+      if (clientFilter !== "all" && i.client_id !== clientFilter && i.appointments?.clients?.id !== clientFilter) return false;
+      if (!q) return true;
+      return `${incomeClientName(i)} ${i.description || ""}`.toLowerCase().includes(q);
+    });
+    const byDate = (a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime();
+    if (sortKey === "name") list = [...list].sort((a, b) => incomeClientName(a).localeCompare(incomeClientName(b)));
+    else if (sortKey === "amount") list = [...list].sort((a, b) => Number(b.amount) - Number(a.amount));
+    else if (sortKey === "oldest") list = [...list].sort(byDate);
+    else list = [...list].sort((a, b) => byDate(b, a));
+    return list;
+  }, [income, q, clientFilter, sortKey]);
+
   const total = periodTotal;
   // Expected payments are filtered by the related session's scheduled_at so the
   // selected period applies consistently to both Confirmed Income and Expected
   // Payments. "All time" shows everything.
   const filteredExpected = useMemo(() => {
-    const list = expectedPayments as any[];
-    if (!intervalStart || !intervalEnd) return list;
-    return list.filter((ep) => {
-      const raw = ep.appointments?.scheduled_at;
-      if (!raw) return false;
-      const d = typeof raw === "string" ? parseISO(raw) : new Date(raw);
-      return isWithinInterval(d, { start: intervalStart, end: intervalEnd });
+    let list = (expectedPayments as any[]).filter((ep) => {
+      if (intervalStart && intervalEnd) {
+        const raw = ep.appointments?.scheduled_at;
+        if (!raw) return false;
+        const d = typeof raw === "string" ? parseISO(raw) : new Date(raw);
+        if (!isWithinInterval(d, { start: intervalStart, end: intervalEnd })) return false;
+      }
+      if (clientFilter !== "all" && ep.client_id !== clientFilter && ep.clients?.id !== clientFilter) return false;
+      if (!q) return true;
+      return `${ep.clients?.name || ""} ${ep.appointments?.services?.name || ""}`.toLowerCase().includes(q);
     });
-  }, [expectedPayments, intervalStart, intervalEnd]);
+    const at = (ep: any) => new Date(ep.appointments?.scheduled_at || 0).getTime();
+    if (sortKey === "name") list = [...list].sort((a, b) => (a.clients?.name || "").localeCompare(b.clients?.name || ""));
+    else if (sortKey === "amount") list = [...list].sort((a, b) => Number(b.amount) - Number(a.amount));
+    else if (sortKey === "oldest") list = [...list].sort((a, b) => at(a) - at(b));
+    else list = [...list].sort((a, b) => at(b) - at(a));
+    return list;
+  }, [expectedPayments, intervalStart, intervalEnd, q, clientFilter, sortKey]);
   const pendingTotal = filteredExpected.reduce((s: number, ep: any) => s + Number(ep.amount), 0);
 
 
@@ -170,51 +203,143 @@ export default function IncomePage() {
             <ArrowLeft className="h-4 w-4 mr-1" /> {t("common.backToDashboard")}
           </Button>
         )}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("income.title")}</h1>
-            <p className="text-muted-foreground mt-1">{t("income.subtitle")}</p>
+            <h1 className="text-3xl font-bold text-foreground">{IP.title}</h1>
+            <p className="text-muted-foreground mt-1">{IP.subtitle}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col items-stretch sm:items-end gap-2">
+            <div className="flex gap-2">
             <Button variant="outline" onClick={() => {
               downloadCSV("income.csv",
                 [t("csv.header.date"), t("csv.header.amount"), t("csv.header.source"), t("csv.header.description")],
                 filtered.map((i: any) => [i.date, String(i.amount), i.source || "", i.description || ""])
               );
-            }}><Download className="h-4 w-4 mr-1" /> {t("export.csv")}</Button>
+            }}><Download className="h-4 w-4 mr-1" /> {IP.export}</Button>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
-                <Button><Plus className="h-4 w-4 mr-1" /> {t("income.addManual")}</Button>
+                <Button><Plus className="h-4 w-4 mr-1" /> {IP.addIncome}</Button>
               </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-md">
               <DialogHeader><DialogTitle>{t("income.addIncome")}</DialogTitle></DialogHeader>
               <div className="space-y-4">
-                <div className="space-y-2"><Label>{t("common.amount")} *</Label><Input type="number" step="0.01" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} /></div>
-                <div className="space-y-2"><Label>{t("common.date")}</Label><DatePicker date={form.date} onDateChange={(d) => setForm(f => ({ ...f, date: d }))} /></div>
-                <div className="space-y-2"><Label>{t("common.description")}</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
                 <div className="space-y-2">
                   <Label>{t("income.paidBy")} *</Label>
-                  <Select value={form.client_id} onValueChange={v => setForm(f => ({ ...f, client_id: v }))}>
-                    <SelectTrigger><SelectValue placeholder={t("income.selectClient")} /></SelectTrigger>
-                    <SelectContent>
-                      {(clients as any[]).filter((c: any) => c.status !== "archived").map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  {!form.client_id && <p className="text-xs text-muted-foreground">{t("income.clientRequired")}</p>}
+                  <ClientCombobox
+                    clients={clients as any[]}
+                    value={form.client_id}
+                    onChange={(id) => setForm((f) => ({ ...f, client_id: id }))}
+                    placeholder={IL.selectOrSearch}
+                    searchPlaceholder={IL.searchClients}
+                    emptyLabel={IL.noClients}
+                  />
                 </div>
-                <Button onClick={handleCreate} className="w-full" disabled={!form.amount || !form.client_id}>{t("income.addIncome")}</Button>
+                <div className="space-y-2">
+                  <Label>{t("common.amount")} ({cs}) *</Label>
+                  <Input type="number" step="0.01" min="0" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t("common.date")} *</Label>
+                  <DatePicker date={form.date} onDateChange={(d) => setForm(f => ({ ...f, date: d }))} />
+                </div>
+                <Button onClick={handleCreate} className="w-full" disabled={!form.client_id || !(form.amount > 0) || !form.date}>
+                  {IL.continue}
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
+            </div>
+            <p className="text-sm text-muted-foreground sm:text-right">{IP.addIncomeHint}</p>
           </div>
         </div>
 
-        {/* Date range filter — horizontally scrollable on mobile, wraps on larger screens */}
+        {/* Summary cards double as the tab switcher */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 rounded-xl border border-border bg-card overflow-hidden animate-fade-in">
+          <button
+            type="button"
+            onClick={() => setActiveTab("income")}
+            className={cn(
+              "flex items-center gap-4 p-5 text-left transition-colors border-b-2",
+              activeTab === "income" ? "bg-primary/5 border-primary" : "border-transparent hover:bg-muted/40",
+            )}
+          >
+            <span className={cn("h-12 w-12 rounded-full grid place-items-center shrink-0", activeTab === "income" ? "bg-primary/10" : "bg-muted")}>
+              <Wallet className={cn("h-5 w-5", activeTab === "income" ? "text-primary" : "text-muted-foreground")} />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-foreground">{IP.confirmedIncome}</span>
+              <span className={cn("block text-2xl font-bold mt-0.5", activeTab === "income" ? "text-primary" : "text-foreground")}>
+                {cs}{total.toLocaleString()}
+              </span>
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("pending")}
+            className={cn(
+              "flex items-center gap-4 p-5 text-left transition-colors border-b-2 sm:border-l border-border",
+              activeTab === "pending" ? "bg-primary/5 border-b-primary" : "border-b-transparent hover:bg-muted/40",
+            )}
+          >
+            <span className={cn("h-12 w-12 rounded-full grid place-items-center shrink-0", activeTab === "pending" ? "bg-primary/10" : "bg-muted")}>
+              <CalendarClock className={cn("h-5 w-5", activeTab === "pending" ? "text-primary" : "text-muted-foreground")} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-medium text-foreground">{IP.expectedPayments}</span>
+              <span className={cn("block text-2xl font-bold mt-0.5", activeTab === "pending" ? "text-primary" : "text-foreground")}>
+                {cs}{pendingTotal.toLocaleString()}
+              </span>
+            </span>
+            {filteredExpected.length > 0 && (
+              <span className="ml-auto shrink-0 h-8 min-w-8 px-2 rounded-full bg-primary/10 text-primary text-sm font-medium grid place-items-center">
+                {filteredExpected.length}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Filter bar */}
+        <div className="rounded-xl border border-border bg-card p-3 flex flex-col lg:flex-row gap-3">
+          <div className="relative flex-1">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={IP.searchClient} className="pl-9" />
+          </div>
+          <Select value={clientFilter} onValueChange={setClientFilter}>
+            <SelectTrigger className="lg:w-56">
+              <div className="flex items-center gap-2 truncate">
+                <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+                <SelectValue />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{IP.allClients}</SelectItem>
+              {(clients as any[]).map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={sortKey} onValueChange={setSortKey}>
+            <SelectTrigger className="lg:w-56">
+              <div className="flex items-center gap-2 truncate">
+                <ArrowUpDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                <SelectValue />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name">{`${IL.sort}: ${IP.sortClientName}`}</SelectItem>
+              <SelectItem value="newest">{`${IL.sort}: ${IP.sortDateNewest}`}</SelectItem>
+              <SelectItem value="oldest">{`${IL.sort}: ${IP.sortDateOldest}`}</SelectItem>
+              <SelectItem value="amount">{`${IL.sort}: ${IP.sortAmount}`}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Date range filter */}
         <div className="flex gap-2 overflow-x-auto sm:flex-wrap -mx-1 px-1 pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {(["today", "week", "month", "quarter", "all"] as const).map(range => {
             const key = range === "all" ? "allTime" : range === "month" ? "thisMonth" : range === "week" ? "thisWeek" : range === "quarter" ? "thisQuarter" : "today";
             return (
-              <Button key={range} variant={dateRange === range ? "default" : "outline"} size="sm"
+              <Button key={range} variant={dateRange === range ? "secondary" : "ghost"} size="sm"
                 className="shrink-0"
                 onClick={() => setDateRange(range)}>
                 {t(`filter.${key}` as any)}
@@ -223,32 +348,8 @@ export default function IncomePage() {
           })}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-            <p className="text-sm text-muted-foreground">{t("income.confirmedIncome")}</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{cs}{total.toLocaleString()}</p>
-          </div>
-          <div className="bg-card rounded-xl border border-warning/30 p-5 animate-fade-in">
-            <p className="text-sm text-warning">{t("income.pendingPayments")}</p>
-            <p className="text-2xl font-bold text-warning mt-1">{cs}{pendingTotal.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("income.awaitingPayment", { count: filteredExpected.length })}</p>
-          </div>
-          <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-            <p className="text-sm text-muted-foreground">{t("finance.expectedIncome")}</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{cs}{(total + pendingTotal).toLocaleString()}</p>
-          </div>
-        </div>
-
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="income">{t("income.confirmedIncome")}</TabsTrigger>
-            <TabsTrigger value="pending">
-              {t("income.expectedPayments")}
-              {filteredExpected.length > 0 && (
-                <Badge className="ml-2 bg-warning/20 text-warning text-xs">{filteredExpected.length}</Badge>
-              )}
-            </TabsTrigger>
-          </TabsList>
+
 
           <TabsContent value="income">
             {isLoading ? (
@@ -309,48 +410,50 @@ export default function IncomePage() {
             )}
           </TabsContent>
 
-          <TabsContent value="pending">
+          <TabsContent value="pending" className="space-y-3">
             {epLoading ? (
               <ListSkeleton variant="table" count={6} />
             ) : filteredExpected.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">{t("income.noPending")}</p>
+              <p className="text-muted-foreground text-center py-8">{IP.noPending}</p>
             ) : (
-              <div className="bg-card rounded-xl border border-warning/30 overflow-hidden animate-fade-in">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border bg-warning/5">
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.date")}</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("calendar.client")}</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.description")}</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.amount")}</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.status")}</th>
-                        <th className="p-4 w-32"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredExpected.map((ep: any) => (
-                        <tr key={ep.id} className="border-b border-border last:border-0 hover:bg-warning/5 transition-colors">
-                          <td className="p-4 text-sm text-muted-foreground whitespace-nowrap">
-                            {ep.appointments?.scheduled_at ? new Date(ep.appointments.scheduled_at).toLocaleDateString() : "—"}
-                          </td>
-                          <td className="p-4 text-sm font-medium text-foreground">{ep.clients?.name || "—"}</td>
-                          <td className="p-4 text-sm text-muted-foreground">{ep.appointments?.services?.name || "—"}</td>
-                          <td className="p-4 text-sm font-semibold text-warning whitespace-nowrap">{cs}{Number(ep.amount).toFixed(2)}</td>
-                          <td className="p-4">
-                            <Badge className="bg-warning/15 text-warning border-warning/30 text-xs">{t("income.pending") || "Очікує"}</Badge>
-                          </td>
-                          <td className="p-4 text-right">
-                            <Button size="sm" onClick={() => { setPayDialog(ep); setPayMethod("cash"); setPayDate(new Date().toISOString().split("T")[0]); }}>
-                              <CheckCircle className="h-4 w-4 mr-1" /> {t("income.markPaid")}
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              <>
+                <div className="flex items-center gap-2 text-foreground">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <span className="font-medium">{IP.waiting(filteredExpected.length)}</span>
                 </div>
-              </div>
+                <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
+                  {filteredExpected.map((ep: any) => {
+                    const name = ep.clients?.name || "—";
+                    const initials = name.split(" ").filter(Boolean).slice(0, 2).map((p: string) => p[0]?.toUpperCase()).join("");
+                    return (
+                      <div key={ep.id} className="flex items-center gap-4 p-4 border-b border-border hover:bg-muted/30 transition-colors">
+                        <span className="h-11 w-11 shrink-0 rounded-full bg-primary/10 text-primary font-semibold grid place-items-center">
+                          {initials || "—"}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-foreground truncate">{name}</p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {(ep.appointments?.services?.name || "—")}
+                            {ep.appointments?.scheduled_at && ` · ${format(new Date(ep.appointments.scheduled_at), "d MMM yyyy")}`}
+                          </p>
+                        </div>
+                        <span className="font-semibold text-foreground whitespace-nowrap">{cs}{Number(ep.amount).toFixed(2)}</span>
+                        <Button
+                          variant="outline"
+                          className="shrink-0 text-primary border-primary/40 hover:bg-primary/5"
+                          onClick={() => { setPayDialog(ep); setPayMethod("cash"); setPayDate(new Date().toISOString().split("T")[0]); }}
+                        >
+                          {IP.recordPayment}
+                        </Button>
+                      </div>
+                    );
+                  })}
+                  <div className="flex items-center justify-end gap-6 p-4 text-sm">
+                    <span className="text-muted-foreground">{IP.expectedFrom(new Set(filteredExpected.map((e: any) => e.client_id ?? e.clients?.id)).size)}</span>
+                    <span className="text-lg font-semibold text-foreground">{cs}{pendingTotal.toLocaleString()}</span>
+                  </div>
+                </div>
+              </>
             )}
           </TabsContent>
 
@@ -400,6 +503,7 @@ export default function IncomePage() {
             payment_method: linkedPrefill.payment_method,
             comment: linkedPrefill.comment,
           }}
+          onBack={() => { setLinkedOpen(false); setOpen(true); }}
         />
       )}
     </AppLayout>

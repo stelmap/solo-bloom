@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Ban, Trash2, CalendarCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { TimeRangePicker } from "@/components/calendar/TimeRangePicker";
 
 export type BlockedBlock = { id: string; date: string; start: string; end: string };
 
@@ -198,16 +199,13 @@ export function UnavailableTimeBlock({
               <Label className="text-xs">{C.date}</Label>
               <Input type="date" value={draft.date} onChange={(e) => setDraft(d => ({ ...d, date: e.target.value }))} className="h-9" />
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label className="text-xs">{C.start}</Label>
-                <Input type="time" step={900} value={draft.start} onChange={(e) => setDraft(d => ({ ...d, start: e.target.value }))} className="h-9" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">{C.end}</Label>
-                <Input type="time" step={900} value={draft.end} onChange={(e) => setDraft(d => ({ ...d, end: e.target.value }))} className="h-9" />
-              </div>
-            </div>
+            <TimeRangePicker
+              start={draft.start}
+              end={draft.end}
+              lang={lang}
+              onChange={({ start, end }) => setDraft(d => ({ ...d, start, end }))}
+            />
+
             {error && <p className="text-xs text-destructive">{error}</p>}
           </div>
         )}
