@@ -373,6 +373,7 @@ export default function CalendarPage() {
   // Drag-and-drop state
   const [dragAptId, setDragAptId] = useState<string | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<string | null>(null);
+  const [dragBlockId, setDragBlockId] = useState<string | null>(null);
   const [recurMoveOpen, setRecurMoveOpen] = useState(false);
   const pendingMove = useRef<{ aptId: string; newDate: string; newTime: string } | null>(null);
   const submittingRef = useRef(false);
@@ -1400,12 +1401,16 @@ export default function CalendarPage() {
     e.preventDefault();
     const slotKey = `${format(day, "yyyy-MM-dd")}-${hour}`;
     setDragOverSlot(slotKey);
+    if (dragBlockId) {
+      e.dataTransfer.dropEffect = "move";
+      return;
+    }
     if (dragAptId && canDropOnSlot(day, hour, dragAptId)) {
       e.dataTransfer.dropEffect = "move";
     } else {
       e.dataTransfer.dropEffect = "none";
     }
-  }, [dragAptId, canDropOnSlot]);
+  }, [dragAptId, dragBlockId, canDropOnSlot]);
 
   const handleDragLeave = useCallback(() => {
     setDragOverSlot(null);
@@ -1481,12 +1486,29 @@ export default function CalendarPage() {
     }
   };
 
-  const handleDrop = useCallback((e: React.DragEvent, day: Date, hour: number) => {
+  const handleDrop = (e: React.DragEvent, day: Date, hour: number) => {
     e.preventDefault();
     setDragAptId(null);
     setDragOverSlot(null);
     const aptId = e.dataTransfer.getData("text/plain");
     if (!aptId) return;
+
+    // Moving an unavailable-time block: keep its duration, snap to the hour slot
+    if (aptId.startsWith("block:")) {
+      const id = aptId.slice(6);
+      const src = Object.values(blockedBlocksByDate).flat().find(b => b.id === id);
+      setDragBlockId(null);
+      if (!src) return;
+      const duration = toMin(src.end) - toMin(src.start);
+      const startMin = hour * 60;
+      const pad = (n: number) => `${String(Math.floor(n / 60)).padStart(2, "0")}:${String(n % 60).padStart(2, "0")}`;
+      void saveBlockedBlock(id, {
+        date: format(day, "yyyy-MM-dd"),
+        start: pad(startMin),
+        end: pad(Math.min(startMin + duration, 24 * 60 - 1)),
+      });
+      return;
+    }
 
     if (!canDropOnSlot(day, hour, aptId)) {
       const reason = isDayOff(day) ? t("calendar.dayOffBlocked")
@@ -1510,7 +1532,7 @@ export default function CalendarPage() {
     } else {
       executeMoveAppointment(aptId, newDate, newTime);
     }
-  }, [appointments, canDropOnSlot, toast, t]);
+  };
 
   const [daysOffListOpen, setDaysOffListOpen] = useState(false);
   const [addDayOffOpen, setAddDayOffOpen] = useState(false);
