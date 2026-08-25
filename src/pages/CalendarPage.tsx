@@ -553,13 +553,6 @@ export default function CalendarPage() {
     return !windows.some((window) => startMinutes >= window.start && endMinutes <= window.end);
   }, [publicAvailabilityWindows]);
 
-  const isOutsidePublicBookingHour = useCallback((date: Date, hour: number) => {
-    const slotStart = hour * 60;
-    const slotEnd = slotStart + 60;
-    const windows = publicAvailabilityWindows(date);
-    return !windows.some((window) => slotStart < window.end && slotEnd > window.start);
-  }, [publicAvailabilityWindows]);
-
   const publicBookingGapsForHour = useCallback((date: Date, hour: number): PublicAvailabilityGap[] => {
     const hourStart = hour * 60;
     const hourEnd = hourStart + 60;
