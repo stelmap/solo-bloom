@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Ban, Trash2, CalendarCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { TimeRangePicker } from "@/components/calendar/TimeRangePicker";
 
 export type BlockedBlock = { id: string; date: string; start: string; end: string };
 
@@ -201,7 +202,7 @@ export function UnavailableTimeBlock({
             <TimeRangePicker
               start={draft.start}
               end={draft.end}
-              lang={language}
+              lang={lang}
               onChange={({ start, end }) => setDraft(d => ({ ...d, start, end }))}
             />
 
