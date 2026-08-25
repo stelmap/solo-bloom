@@ -219,15 +219,98 @@ export default function IncomePage() {
               </div>
             </DialogContent>
           </Dialog>
+            </div>
+            <p className="text-sm text-muted-foreground sm:text-right">{IP.addIncomeHint}</p>
           </div>
         </div>
 
-        {/* Date range filter — horizontally scrollable on mobile, wraps on larger screens */}
+        {/* Summary cards double as the tab switcher */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 rounded-xl border border-border bg-card overflow-hidden animate-fade-in">
+          <button
+            type="button"
+            onClick={() => setActiveTab("income")}
+            className={cn(
+              "flex items-center gap-4 p-5 text-left transition-colors border-b-2",
+              activeTab === "income" ? "bg-primary/5 border-primary" : "border-transparent hover:bg-muted/40",
+            )}
+          >
+            <span className={cn("h-12 w-12 rounded-full grid place-items-center shrink-0", activeTab === "income" ? "bg-primary/10" : "bg-muted")}>
+              <Wallet className={cn("h-5 w-5", activeTab === "income" ? "text-primary" : "text-muted-foreground")} />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-foreground">{IP.confirmedIncome}</span>
+              <span className={cn("block text-2xl font-bold mt-0.5", activeTab === "income" ? "text-primary" : "text-foreground")}>
+                {cs}{total.toLocaleString()}
+              </span>
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("pending")}
+            className={cn(
+              "flex items-center gap-4 p-5 text-left transition-colors border-b-2 sm:border-l border-border",
+              activeTab === "pending" ? "bg-primary/5 border-b-primary" : "border-b-transparent hover:bg-muted/40",
+            )}
+          >
+            <span className={cn("h-12 w-12 rounded-full grid place-items-center shrink-0", activeTab === "pending" ? "bg-primary/10" : "bg-muted")}>
+              <CalendarClock className={cn("h-5 w-5", activeTab === "pending" ? "text-primary" : "text-muted-foreground")} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-medium text-foreground">{IP.expectedPayments}</span>
+              <span className={cn("block text-2xl font-bold mt-0.5", activeTab === "pending" ? "text-primary" : "text-foreground")}>
+                {cs}{pendingTotal.toLocaleString()}
+              </span>
+            </span>
+            {filteredExpected.length > 0 && (
+              <span className="ml-auto shrink-0 h-8 min-w-8 px-2 rounded-full bg-primary/10 text-primary text-sm font-medium grid place-items-center">
+                {filteredExpected.length}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Filter bar */}
+        <div className="rounded-xl border border-border bg-card p-3 flex flex-col lg:flex-row gap-3">
+          <div className="relative flex-1">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={IP.searchClient} className="pl-9" />
+          </div>
+          <Select value={clientFilter} onValueChange={setClientFilter}>
+            <SelectTrigger className="lg:w-56">
+              <div className="flex items-center gap-2 truncate">
+                <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+                <SelectValue />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{IP.allClients}</SelectItem>
+              {(clients as any[]).map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={sortKey} onValueChange={setSortKey}>
+            <SelectTrigger className="lg:w-56">
+              <div className="flex items-center gap-2 truncate">
+                <ArrowUpDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                <SelectValue />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name">{`${IL.sort}: ${IP.sortClientName}`}</SelectItem>
+              <SelectItem value="newest">{`${IL.sort}: ${IP.sortDateNewest}`}</SelectItem>
+              <SelectItem value="oldest">{`${IL.sort}: ${IP.sortDateOldest}`}</SelectItem>
+              <SelectItem value="amount">{`${IL.sort}: ${IP.sortAmount}`}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Date range filter */}
         <div className="flex gap-2 overflow-x-auto sm:flex-wrap -mx-1 px-1 pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {(["today", "week", "month", "quarter", "all"] as const).map(range => {
             const key = range === "all" ? "allTime" : range === "month" ? "thisMonth" : range === "week" ? "thisWeek" : range === "quarter" ? "thisQuarter" : "today";
             return (
-              <Button key={range} variant={dateRange === range ? "default" : "outline"} size="sm"
+              <Button key={range} variant={dateRange === range ? "secondary" : "ghost"} size="sm"
                 className="shrink-0"
                 onClick={() => setDateRange(range)}>
                 {t(`filter.${key}` as any)}
@@ -236,32 +319,8 @@ export default function IncomePage() {
           })}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-            <p className="text-sm text-muted-foreground">{t("income.confirmedIncome")}</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{cs}{total.toLocaleString()}</p>
-          </div>
-          <div className="bg-card rounded-xl border border-warning/30 p-5 animate-fade-in">
-            <p className="text-sm text-warning">{t("income.pendingPayments")}</p>
-            <p className="text-2xl font-bold text-warning mt-1">{cs}{pendingTotal.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("income.awaitingPayment", { count: filteredExpected.length })}</p>
-          </div>
-          <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-            <p className="text-sm text-muted-foreground">{t("finance.expectedIncome")}</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{cs}{(total + pendingTotal).toLocaleString()}</p>
-          </div>
-        </div>
-
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="income">{t("income.confirmedIncome")}</TabsTrigger>
-            <TabsTrigger value="pending">
-              {t("income.expectedPayments")}
-              {filteredExpected.length > 0 && (
-                <Badge className="ml-2 bg-warning/20 text-warning text-xs">{filteredExpected.length}</Badge>
-              )}
-            </TabsTrigger>
-          </TabsList>
+
 
           <TabsContent value="income">
             {isLoading ? (
