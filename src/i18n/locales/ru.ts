@@ -1208,6 +1208,8 @@ export default {
   "pricing.sessionOverrideLabel": "Изменение цены сеанса",
   "pricing.priceUpdated": "Цена обновлена",
   "pricing.notSet": "Не задана",
+  "pricing.flexible": "Гибкая",
+  "pricing.flexibleBase": "По факту оплаты",
   "pricing.overridden": "Изменена",
 
   // Invoice

@@ -1095,6 +1095,8 @@ export default {
   "pricing.sessionOverrideLabel": "Modification par séance",
   "pricing.priceUpdated": "Prix mis à jour",
   "pricing.notSet": "Non défini",
+  "pricing.flexible": "Flexible",
+  "pricing.flexibleBase": "Défini au paiement",
   "pricing.overridden": "Modifié",
   "invoice.generate": "Générer la facture",
   "invoice.generated": "Facture générée",

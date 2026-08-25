@@ -1095,6 +1095,8 @@ export default {
   "pricing.sessionOverrideLabel": "Nadpisanie sesji",
   "pricing.priceUpdated": "Cena zaktualizowana",
   "pricing.notSet": "Nie ustawiono",
+  "pricing.flexible": "Elastyczna",
+  "pricing.flexibleBase": "Ustalana przy płatności",
   "pricing.overridden": "Nadpisana",
   "invoice.generate": "Wygeneruj fakturę",
   "invoice.generated": "Faktura wygenerowana",
