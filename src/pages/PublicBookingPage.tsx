@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
@@ -171,6 +171,8 @@ export default function PublicBookingPage() {
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [activeDay, setActiveDay] = useState<string | null>(null);
+  // Set when an auto-refresh removed the slot the visitor had selected.
+  const [slotGone, setSlotGone] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<{ requiresApproval: boolean } | null>(null);
   const [langOverride, setLangOverride] = useState<Lang | null>(null);
@@ -228,24 +230,88 @@ export default function PublicBookingPage() {
     };
   }, [token]);
 
-  // Load next 14 days of slots
+  /**
+   * Load the next 14 days of slots. Kept in a ref-stable callback so the same
+   * fetch can be re-run by the auto-refresh triggers below (interval, tab
+   * focus, and realtime signals) — clients must never act on a stale list.
+   */
+  const loadSlots = useCallback(
+    async (opts?: { silent?: boolean }) => {
+      if (!info || !token) return;
+      if (!opts?.silent) setSlotsLoading(true);
+      const from = new Date();
+      const to = new Date();
+      to.setDate(to.getDate() + 14);
+      const { data, error } = await supabase.rpc("public_get_available_slots", {
+        p_token: token,
+        p_from_date: fmtDate(from),
+        p_to_date: fmtDate(to),
+      });
+      if (error) {
+        if (!opts?.silent) setError(error.message);
+      } else {
+        const next = ((data as any[]) || []).map((r) => r.slot_at).slice(0, 200);
+        setSlots((prev) => (prev.length === next.length && prev.every((s, i) => s === next[i]) ? prev : next));
+        // If the visitor had picked a slot that has since been taken or
+        // blocked, drop the selection and tell them right away.
+        setSelectedSlot((cur) => {
+          if (cur && !next.includes(cur)) {
+            setSlotGone(true);
+            return null;
+          }
+          return cur;
+        });
+      }
+      if (!opts?.silent) setSlotsLoading(false);
+    },
+    [info, token],
+  );
+
+  useEffect(() => {
+    loadSlots();
+  }, [loadSlots]);
+
+  // Tell the visitor as soon as their chosen time stops being available.
+  useEffect(() => {
+    if (!slotGone) return;
+    toast({ title: L.takenTitle, description: L.takenDesc, variant: "destructive" });
+    setSlotGone(false);
+  }, [slotGone, L]);
+
+  // --- Auto-refresh -------------------------------------------------------
+  // 1) Realtime: any new/changed pending request, appointment, unavailable
+  //    time or availability rule invalidates the published slot list.
+  // 2) Polling every 45s as a safety net (realtime may be unavailable to
+  //    anonymous visitors depending on row access).
+  // 3) On tab focus / visibility change, so a page left open never submits
+  //    against a list built minutes ago.
   useEffect(() => {
     if (!info || !token) return;
-    setSlotsLoading(true);
-    const from = new Date();
-    const to = new Date();
-    to.setDate(to.getDate() + 14);
-    supabase
-      .rpc("public_get_available_slots", { p_token: token, p_from_date: fmtDate(from), p_to_date: fmtDate(to) })
-      .then(({ data, error }) => {
-        if (error) {
-          setError(error.message);
-        } else {
-          setSlots(((data as any[]) || []).map((r) => r.slot_at).slice(0, 200));
-        }
-        setSlotsLoading(false);
-      });
-  }, [info, token]);
+    const refresh = () => loadSlots({ silent: true });
+
+    const channel = supabase
+      .channel(`public-booking-${token}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "session_booking_requests" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "appointments" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "days_off" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "booking_availability" }, refresh)
+      .subscribe();
+
+    const interval = window.setInterval(refresh, 45_000);
+    const onFocus = () => refresh();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      supabase.removeChannel(channel);
+      window.clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [info, token, loadSlots]);
 
   // Display label for the practitioner's working timezone (informational only).
   const tzLabel = info?.timezone || "UTC";
