@@ -334,19 +334,8 @@ export default function IncomePage() {
           </Select>
         </div>
 
-        {/* Date range filter */}
-        <div className="flex gap-2 overflow-x-auto sm:flex-wrap -mx-1 px-1 pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          {(["today", "week", "month", "quarter", "all"] as const).map(range => {
-            const key = range === "all" ? "allTime" : range === "month" ? "thisMonth" : range === "week" ? "thisWeek" : range === "quarter" ? "thisQuarter" : "today";
-            return (
-              <Button key={range} variant={dateRange === range ? "secondary" : "ghost"} size="sm"
-                className="shrink-0"
-                onClick={() => setDateRange(range)}>
-                {t(`filter.${key}` as any)}
-              </Button>
-            );
-          })}
-        </div>
+
+
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
 
