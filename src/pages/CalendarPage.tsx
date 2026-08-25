@@ -553,30 +553,37 @@ export default function CalendarPage() {
     return !windows.some((window) => startMinutes >= window.start && endMinutes <= window.end);
   }, [publicAvailabilityWindows]);
 
-  const publicBookingGapsForHour = useCallback((date: Date, hour: number): PublicAvailabilityGap[] => {
-    const hourStart = hour * 60;
-    const hourEnd = hourStart + 60;
+  const publicBookingGapsForRange = useCallback((date: Date, rangeStart: number, rangeEnd: number): PublicAvailabilityGap[] => {
     const windows = publicAvailabilityWindows(date)
       .map((window) => ({
-        start: Math.max(window.start, hourStart),
-        end: Math.min(window.end, hourEnd),
+        start: Math.max(window.start, rangeStart),
+        end: Math.min(window.end, rangeEnd),
       }))
       .filter((window) => window.end > window.start)
       .sort((a, b) => a.start - b.start);
 
     const gaps: Array<{ start: number; end: number }> = [];
-    let cursor = hourStart;
+    let cursor = rangeStart;
     for (const window of windows) {
       if (window.start > cursor) gaps.push({ start: cursor, end: window.start });
       cursor = Math.max(cursor, window.end);
     }
-    if (cursor < hourEnd) gaps.push({ start: cursor, end: hourEnd });
+    if (cursor < rangeEnd) gaps.push({ start: cursor, end: rangeEnd });
+    const total = Math.max(1, rangeEnd - rangeStart);
 
     return gaps.map((gap) => ({
-      topPct: ((gap.start - hourStart) / 60) * 100,
-      heightPct: ((gap.end - gap.start) / 60) * 100,
+      topPct: ((gap.start - rangeStart) / total) * 100,
+      heightPct: ((gap.end - gap.start) / total) * 100,
     }));
   }, [publicAvailabilityWindows]);
+
+  const publicBookingGapsForHour = useCallback((date: Date, hour: number): PublicAvailabilityGap[] => {
+    return publicBookingGapsForRange(date, hour * 60, hour * 60 + 60);
+  }, [publicBookingGapsForRange]);
+
+  const publicBookingGapsForDay = useCallback((date: Date): PublicAvailabilityGap[] => {
+    return publicBookingGapsForRange(date, 0, 24 * 60);
+  }, [publicBookingGapsForRange]);
 
   const hasUnavailableBlockConflict = (date: string, time: string, durationMinutes: number) => {
     const ranges = blockedRanges[date];
