@@ -929,24 +929,161 @@ export function useCompleteFromPrepayment() {
   });
 }
 
+// Complete a session for a client with "Flexible session price" enabled.
+// The therapist enters the amount actually received; that amount fully settles
+// the session — no debt, no prepayment/credit, no cross-session allocation.
+export function useCompleteFlexiblePrice() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  const { isDemoMode } = useDemoMode();
+  return useMutation({
+    mutationFn: async ({
+      appointmentId, clientId, standardPrice, actualAmount, paymentDate, source,
+    }: {
+      appointmentId: string;
+      clientId: string;
+      standardPrice: number;
+      actualAmount: number;
+      paymentDate: string;
+      source: "new_payment" | "prepaid_balance";
+    }) => {
+      const amount = Math.round(Number(actualAmount) * 100) / 100;
+      if (!(amount > 0)) throw new Error("invalid_amount");
+
+      const { data: aptData } = await supabase
+        .from("appointments").select("scheduled_at, standard_price, price")
+        .eq("id", appointmentId).single();
+      const sessionDate = aptData?.scheduled_at
+        ? new Date(aptData.scheduled_at).toISOString().split("T")[0]
+        : paymentDate;
+      const stdPrice = Number(
+        (aptData as any)?.standard_price ?? standardPrice ?? aptData?.price ?? 0,
+      );
+
+      // Clean any prior financial records for THIS session only.
+      await supabase.from("income_session_allocations").delete().eq("appointment_id", appointmentId);
+      await supabase.from("income").delete().eq("appointment_id", appointmentId);
+      await supabase.from("expected_payments").delete().eq("appointment_id", appointmentId);
+
+      // The session's settled value becomes the actual amount, while the
+      // standard service price is preserved separately.
+      const { error: aptErr } = await supabase
+        .from("appointments")
+        .update({
+          status: "completed",
+          price: amount,
+          standard_price: stdPrice,
+          flex_price_applied: true,
+          payment_status: source === "prepaid_balance" ? "paid_from_prepayment" : "paid_now",
+        } as any)
+        .eq("id", appointmentId);
+      if (aptErr) throw aptErr;
+
+      if (source === "new_payment") {
+        const { data: inc, error: incErr } = await (supabase as any).from("income").insert({
+          user_id: user!.id,
+          appointment_id: appointmentId,
+          client_id: clientId,
+          amount,
+          date: paymentDate,
+          session_date: sessionDate,
+          source: "appointment",
+          status: "confirmed",
+          ...(isDemoMode ? { is_demo: true } : {}),
+        } as any).select("id").single();
+        if (incErr) throw incErr;
+        const { error: allocErr } = await (supabase as any).from("income_session_allocations").insert({
+          user_id: user!.id,
+          income_id: inc.id,
+          appointment_id: appointmentId,
+          allocated_amount: amount,
+          from_prepayment: false,
+        } as any);
+        if (allocErr) throw allocErr;
+      } else {
+        const { error: rpcErr } = await (supabase as any).rpc(
+          "withdraw_from_prepayment_for_appointment",
+          { p_appointment_id: appointmentId, p_client_id: clientId, p_max_amount: amount },
+        );
+        if (rpcErr) throw rpcErr;
+      }
+
+      // Force the final status (recalc could downgrade a back-dated payment).
+      await supabase.from("appointments").update({
+        payment_status: source === "prepaid_balance" ? "paid_from_prepayment" : "paid_now",
+      } as any).eq("id", appointmentId);
+
+      await (supabase as any).from("flexible_price_audit").insert({
+        user_id: user!.id,
+        client_id: clientId,
+        appointment_id: appointmentId,
+        action: "session_completed",
+        standard_price: stdPrice,
+        actual_amount: amount,
+        payment_source: source,
+        payment_date: paymentDate,
+        new_value: { status: "completed", price: amount, flex_price_applied: true },
+      } as any);
+    },
+    onSuccess: () => {
+      track("session_completed", { payment_status: "flexible_price" });
+      [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+      ["client-credit-balance", "client-debt", "expected-payments", "client-allocations", "appointment-allocations", "payment-audit"]
+        .forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+    },
+  });
+}
+
 // Reopen a finalized appointment back to scheduled, clearing income/expected/allocations
 export function useReopenAppointment() {
   const qc = useQueryClient();
+  const { user } = useAuth();
   return useMutation({
     mutationFn: async ({ id }: { id: string }) => {
+      const { data: prior } = await supabase
+        .from("appointments")
+        .select("client_id, price, standard_price, flex_price_applied")
+        .eq("id", id)
+        .maybeSingle();
+
       await supabase.from("income_session_allocations").delete().eq("appointment_id", id);
       await supabase.from("income").delete().eq("appointment_id", id);
       await supabase.from("expected_payments").delete().eq("appointment_id", id);
+
+      const wasFlexible = !!(prior as any)?.flex_price_applied;
+      const restoredPrice = wasFlexible
+        ? Number((prior as any)?.standard_price ?? (prior as any)?.price ?? 0)
+        : undefined;
+
       const { error } = await supabase.from("appointments").update({
         status: "scheduled",
         payment_status: "not_applicable",
         cancellation_reason: null,
+        ...(wasFlexible ? { price: restoredPrice, flex_price_applied: false, standard_price: null } : {}),
       } as any).eq("id", id);
       if (error) throw error;
+
+      if (wasFlexible && user) {
+        await (supabase as any).from("flexible_price_audit").insert({
+          user_id: user.id,
+          client_id: (prior as any)?.client_id ?? null,
+          appointment_id: id,
+          action: "session_reopened",
+          standard_price: restoredPrice,
+          actual_amount: Number((prior as any)?.price ?? 0),
+          old_value: { status: "completed", price: Number((prior as any)?.price ?? 0) },
+          new_value: { status: "scheduled", price: restoredPrice },
+        } as any);
+      }
     },
-    onSuccess: () => { track("session_reopened"); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => {
+      track("session_reopened");
+      [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+      ["client-credit-balance", "client-debt", "expected-payments"].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+    },
   });
 }
+
 
 // Cancel/no-show
 export function useCancelAppointment() {
