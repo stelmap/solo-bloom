@@ -2711,7 +2711,7 @@ export default function CalendarPage() {
                             </Tooltip>
                           )}
                           {!hasAny && !dragAptId && !dragBlockId && (
-                            <div className="absolute inset-0 z-[1] flex items-center justify-center opacity-0 group-hover/slot:opacity-100 transition-opacity pointer-events-none">
+                            <div className="absolute inset-0 z-[3] flex items-center justify-center opacity-0 group-hover/slot:opacity-100 transition-opacity pointer-events-none">
                               <Plus className="h-4 w-4 text-primary/40" />
                             </div>
                           )}
