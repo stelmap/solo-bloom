@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { IncomeConfirmationDialog } from "@/components/IncomeConfirmationDialog";
 import { ClientCombobox } from "@/components/income/ClientCombobox";
-import { INCOME_FLOW_COPY, normIncomeLang } from "@/lib/incomeFlowCopy";
+import { INCOME_FLOW_COPY, INCOME_PAGE_COPY, normIncomeLang } from "@/lib/incomeFlowCopy";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useMemo, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
