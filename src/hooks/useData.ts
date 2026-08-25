@@ -111,12 +111,30 @@ export function useCreateClient() {
 
 export function useUpdateClient() {
   const qc = useQueryClient();
+  const { user } = useAuth();
   const assertCanWrite = useDemoWriteGuard();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; phone?: string; email?: string; notes?: string; telegram?: string; notification_preference?: string; confirmation_required?: boolean; pricing_mode?: string; base_price?: number | null; communication_language?: string | null }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; name?: string; phone?: string; email?: string; notes?: string; telegram?: string; notification_preference?: string; confirmation_required?: boolean; pricing_mode?: string; base_price?: number | null; communication_language?: string | null; flexible_session_price?: boolean }) => {
       assertCanWrite();
+      let priorFlexible: boolean | undefined;
+      if (typeof (updates as any).flexible_session_price === "boolean") {
+        const { data: prior } = await supabase
+          .from("clients").select("flexible_session_price").eq("id", id).maybeSingle();
+        priorFlexible = !!(prior as any)?.flexible_session_price;
+      }
       const { error } = await supabase.from("clients").update(updates as any).eq("id", id);
       if (error) throw error;
+
+      const next = (updates as any).flexible_session_price;
+      if (typeof next === "boolean" && priorFlexible !== next && user) {
+        await (supabase as any).from("flexible_price_audit").insert({
+          user_id: user.id,
+          client_id: id,
+          action: next ? "flexible_price_enabled" : "flexible_price_disabled",
+          old_value: { flexible_session_price: priorFlexible },
+          new_value: { flexible_session_price: next },
+        } as any);
+      }
     },
     onSuccess: (_, vars) => {
       track("client_updated");
