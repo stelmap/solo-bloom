@@ -31,12 +31,15 @@ import {
   useDeleteRecurringAppointments, useEditRecurringAppointments,
   useProfile, useCreatePriceChange, useReopenAppointment,
   useClientCreditBalance, useCompleteFromPrepayment, useClientDebt, useAppointmentAllocations,
+  useCompleteFlexiblePrice,
 
 } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useGroupAttendance, useUpdateAttendance, useGroup, useGroupMembers, useCompleteGroupSession, useGroupSessionPayments } from "@/hooks/useGroups";
 import { PaymentEditDialog } from "@/components/PaymentEditDialog";
+import { FlexiblePriceCompleteDialog } from "@/components/FlexiblePriceCompleteDialog";
+import { showsFlexibleLabel } from "@/lib/flexiblePrice";
 import { SessionNotesDialog } from "@/components/SessionNotesDialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -71,6 +74,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const deleteRecurring = useDeleteRecurringAppointments();
   const editRecurring = useEditRecurringAppointments();
   const reopenAppointment = useReopenAppointment();
+  const completeFlexible = useCompleteFlexiblePrice();
+  const [flexDialogOpen, setFlexDialogOpen] = useState(false);
   const { data: clientCredit = 0 } = useClientCreditBalance(apt?.client_id);
   const { data: existingAllocations = [] } = useAppointmentAllocations(apt?.id);
   const { data: clientDebtData } = useClientDebt(apt?.client_id);
