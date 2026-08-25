@@ -9,6 +9,8 @@ export default {
   "nav.expenses": "Расходы",
   "nav.breakeven": "Безубыточность",
   "nav.settings": "Настройки",
+  "sidebar.expandMenu": "Развернуть меню",
+  "sidebar.collapseMenu": "Свернуть меню",
   "sidebar.finishSetup": "Завершить настройку",
   "sidebar.account": "Аккаунт",
   "sidebar.setupProgress": "Профиль заполнен на {p}%",

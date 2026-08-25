@@ -8,6 +8,8 @@ export default {
   "nav.expenses": "Dépenses",
   "nav.breakeven": "Seuil de rentabilité",
   "nav.settings": "Paramètres",
+  "sidebar.expandMenu": "Développer le menu",
+  "sidebar.collapseMenu": "Réduire le menu",
   "sidebar.finishSetup": "Terminer la configuration",
   "sidebar.account": "Compte",
   "sidebar.setupProgress": "Profil complété à {p}%",

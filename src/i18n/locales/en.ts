@@ -8,6 +8,8 @@ export default {
   "nav.expenses": "Expenses",
   "nav.breakeven": "Break-even",
   "nav.settings": "Settings",
+  "sidebar.expandMenu": "Expand menu",
+  "sidebar.collapseMenu": "Collapse menu",
   "sidebar.finishSetup": "Finish setup",
   "sidebar.account": "Account",
   "sidebar.setupProgress": "Profile setup {p}% complete",

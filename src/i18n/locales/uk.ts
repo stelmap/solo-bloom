@@ -8,6 +8,8 @@ export default {
   "nav.expenses": "Витрати",
   "nav.breakeven": "Беззбитковість",
   "nav.settings": "Налаштування",
+  "sidebar.expandMenu": "Розгорнути меню",
+  "sidebar.collapseMenu": "Згорнути меню",
   "sidebar.finishSetup": "Завершити налаштування",
   "sidebar.account": "Обліковий запис",
   "sidebar.setupProgress": "Профіль заповнено на {p}%",
