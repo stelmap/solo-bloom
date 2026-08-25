@@ -205,3 +205,128 @@ export const INCOME_FLOW_COPY: Record<IncomeFlowLang, IncomeFlowCopy> = {
     prepayment: "zostanie zapisane jako przedpłata klienta",
   },
 };
+
+/** Copy for the redesigned Income page header, summary tabs and filter bar. */
+export interface IncomePageCopy {
+  title: string;
+  subtitle: string;
+  export: string;
+  addIncome: string;
+  addIncomeHint: string;
+  confirmedIncome: string;
+  expectedPayments: string;
+  searchClient: string;
+  allClients: string;
+  sortClientName: string;
+  sortDateNewest: string;
+  sortDateOldest: string;
+  sortAmount: string;
+  waiting: (n: number) => string;
+  expectedFrom: (n: number) => string;
+  recordPayment: string;
+  noIncome: string;
+  noPending: string;
+}
+
+export const INCOME_PAGE_COPY: Record<IncomeFlowLang, IncomePageCopy> = {
+  en: {
+    title: "Income",
+    subtitle: "See what you've received and what clients still need to pay",
+    export: "Export",
+    addIncome: "Add income",
+    addIncomeHint: "Use Add income for payments not linked to a session.",
+    confirmedIncome: "Confirmed income",
+    expectedPayments: "Expected payments",
+    searchClient: "Search client",
+    allClients: "All clients",
+    sortClientName: "Client name",
+    sortDateNewest: "Newest first",
+    sortDateOldest: "Oldest first",
+    sortAmount: "Amount",
+    waiting: (n) => `${n} ${n === 1 ? "payment is" : "payments are"} waiting to be recorded`,
+    expectedFrom: (n) => `Expected from ${n} ${n === 1 ? "client" : "clients"}`,
+    recordPayment: "Record payment",
+    noIncome: "No income for this period",
+    noPending: "No expected payments",
+  },
+  uk: {
+    title: "Дохід",
+    subtitle: "Перегляньте, що отримано і що клієнти ще мають сплатити",
+    export: "Експорт",
+    addIncome: "Додати дохід",
+    addIncomeHint: "Використовуйте «Додати дохід» для оплат, не пов'язаних із сесією.",
+    confirmedIncome: "Підтверджений дохід",
+    expectedPayments: "Очікувані оплати",
+    searchClient: "Пошук клієнта",
+    allClients: "Усі клієнти",
+    sortClientName: "Ім'я клієнта",
+    sortDateNewest: "Спочатку новіші",
+    sortDateOldest: "Спочатку старіші",
+    sortAmount: "Сума",
+    waiting: (n) => `${n} оплат(и) очікують на внесення`,
+    expectedFrom: (n) => `Очікується від ${n} клієнт(ів)`,
+    recordPayment: "Внести оплату",
+    noIncome: "Немає доходу за цей період",
+    noPending: "Немає очікуваних оплат",
+  },
+  ru: {
+    title: "Доход",
+    subtitle: "Смотрите, что получено и что клиенты ещё должны оплатить",
+    export: "Экспорт",
+    addIncome: "Добавить доход",
+    addIncomeHint: "Используйте «Добавить доход» для оплат, не связанных с сессией.",
+    confirmedIncome: "Подтверждённый доход",
+    expectedPayments: "Ожидаемые оплаты",
+    searchClient: "Поиск клиента",
+    allClients: "Все клиенты",
+    sortClientName: "Имя клиента",
+    sortDateNewest: "Сначала новые",
+    sortDateOldest: "Сначала старые",
+    sortAmount: "Сумма",
+    waiting: (n) => `${n} оплат(ы) ожидают внесения`,
+    expectedFrom: (n) => `Ожидается от ${n} клиент(ов)`,
+    recordPayment: "Внести оплату",
+    noIncome: "Нет дохода за этот период",
+    noPending: "Нет ожидаемых оплат",
+  },
+  fr: {
+    title: "Revenus",
+    subtitle: "Voyez ce que vous avez reçu et ce que les clients doivent encore payer",
+    export: "Exporter",
+    addIncome: "Ajouter un revenu",
+    addIncomeHint: "Utilisez « Ajouter un revenu » pour les paiements sans séance liée.",
+    confirmedIncome: "Revenus confirmés",
+    expectedPayments: "Paiements attendus",
+    searchClient: "Rechercher un client",
+    allClients: "Tous les clients",
+    sortClientName: "Nom du client",
+    sortDateNewest: "Plus récents d'abord",
+    sortDateOldest: "Plus anciens d'abord",
+    sortAmount: "Montant",
+    waiting: (n) => `${n} paiement(s) en attente d'enregistrement`,
+    expectedFrom: (n) => `Attendu de ${n} client(s)`,
+    recordPayment: "Enregistrer le paiement",
+    noIncome: "Aucun revenu pour cette période",
+    noPending: "Aucun paiement attendu",
+  },
+  pl: {
+    title: "Przychód",
+    subtitle: "Zobacz, co otrzymano i co klienci muszą jeszcze zapłacić",
+    export: "Eksport",
+    addIncome: "Dodaj przychód",
+    addIncomeHint: "Użyj „Dodaj przychód” dla płatności niepowiązanych z sesją.",
+    confirmedIncome: "Potwierdzony przychód",
+    expectedPayments: "Oczekiwane płatności",
+    searchClient: "Szukaj klienta",
+    allClients: "Wszyscy klienci",
+    sortClientName: "Nazwa klienta",
+    sortDateNewest: "Najnowsze najpierw",
+    sortDateOldest: "Najstarsze najpierw",
+    sortAmount: "Kwota",
+    waiting: (n) => `${n} płatność/płatności czeka na zapisanie`,
+    expectedFrom: (n) => `Oczekiwane od ${n} klient(ów)`,
+    recordPayment: "Zapisz płatność",
+    noIncome: "Brak przychodu w tym okresie",
+    noPending: "Brak oczekiwanych płatności",
+  },
+};
