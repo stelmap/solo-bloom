@@ -497,13 +497,6 @@ export default function CalendarPage() {
     return (h || 0) * 60 + (m || 0);
   };
 
-  const isBlockedHour = (date: Date, hour: number) => {
-    const ranges = blockedRanges[format(date, "yyyy-MM-dd")];
-    if (!ranges || ranges.length === 0) return false;
-    const s = hour * 60, e = s + 60;
-    return ranges.some(r => toMin(r.start) < e && toMin(r.end) > s);
-  };
-
   const getDayOfWeek = (date: Date) => {
     const d = date.getDay();
     return d === 0 ? 7 : d; // 1=Mon, 7=Sun
@@ -519,18 +512,6 @@ export default function CalendarPage() {
     const dow = getDayOfWeek(date);
     if (scheduleMap[dow] !== undefined) return scheduleMap[dow].is_working;
     return dow <= 5; // Default Mon-Fri
-  };
-
-  const isHourWorking = (date: Date, hour: number) => {
-    if (!isDayWorking(date)) return false;
-    const dow = getDayOfWeek(date);
-    const sched = scheduleMap[dow];
-    if (sched) {
-      const sh = parseInt(sched.start_time);
-      const eh = parseInt(sched.end_time);
-      return hour >= sh && hour < eh;
-    }
-    return hour >= startHour && hour < endHour;
   };
 
   const publicAvailabilityWindows = useCallback((date: Date): PublicAvailabilityWindow[] => {
