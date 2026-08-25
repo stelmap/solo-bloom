@@ -194,7 +194,7 @@ export function UnavailableTimeBlock({
 
         {!editing ? (
           <div className="text-sm text-muted-foreground">
-            <p>{block.date}</p>
+            <p>{block.date ? format(parseISO(block.date), "d MMM yyyy") : ""}</p>
             <p className="font-medium text-foreground">{block.start} – {block.end}</p>
           </div>
         ) : (
