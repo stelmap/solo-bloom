@@ -785,6 +785,85 @@ export default function CalendarPage() {
     }
   };
 
+  // ---- Interactive unavailable-time blocks -----------------------------
+  const blockOverlapsAppointment = (date: string, start: string, end: string) => {
+    const s = new Date(`${date}T${start}:00Z`).getTime();
+    const e = new Date(`${date}T${end}:00Z`).getTime();
+    const BLOCKING = new Set(["scheduled", "confirmed", "reminder_sent"]);
+    return (appointments as any[]).some((apt: any) => {
+      if (!apt?.scheduled_at || !BLOCKING.has(apt.status)) return false;
+      const as = new Date(apt.scheduled_at).getTime();
+      const ae = as + (Number(apt.duration_minutes) || 60) * 60000;
+      return as < e && ae > s;
+    });
+  };
+
+  const saveBlockedBlock = async (
+    id: string,
+    next: { date: string; start: string; end: string },
+  ): Promise<boolean> => {
+    if (toMin(next.end) <= toMin(next.start)) {
+      toast({ title: t("common.error"), description: L.endBeforeStart, variant: "destructive" });
+      return false;
+    }
+    if (blockOverlapsAppointment(next.date, next.start, next.end)) {
+      toast({ title: t("calendar.moveBlocked"), description: t("calendar.doubleBooking"), variant: "destructive" });
+      return false;
+    }
+    try {
+      // days_off is unique per (user, date): drop any other blocked row on the
+      // target date so moving never creates a duplicate record.
+      const clash = (blockedBlocksByDate[next.date] || []).find(b => b.id !== id);
+      if (clash) await supabase.from("days_off").delete().eq("id", clash.id);
+      const { error } = await supabase.from("days_off").update({
+        date: next.date,
+        custom_start_time: `${next.start}:00`,
+        custom_end_time: `${next.end}:00`,
+      } as any).eq("id", id);
+      if (error) throw error;
+      await qc.invalidateQueries({ queryKey: ["days-off"] });
+      await qc.refetchQueries({ queryKey: ["days-off"], type: "active" });
+      return true;
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err?.message, variant: "destructive" });
+      return false;
+    }
+  };
+
+  const removeBlockedBlock = async (
+    block: { id: string; date: string; start: string; end: string },
+    withUndo: boolean,
+  ) => {
+    try {
+      const { error } = await supabase.from("days_off").delete().eq("id", block.id);
+      if (error) throw error;
+      await qc.invalidateQueries({ queryKey: ["days-off"] });
+      await qc.refetchQueries({ queryKey: ["days-off"], type: "active" });
+      toast({
+        title: withUndo ? L.timeAvailableAgain : L.blockDeleted,
+        action: (
+          <ToastAction altText={L.undo} onClick={async () => {
+            await supabase.from("days_off").insert({
+              user_id: user!.id,
+              date: block.date,
+              type: "blocked_time",
+              label: "Unavailable",
+              custom_start_time: `${block.start}:00`,
+              custom_end_time: `${block.end}:00`,
+              is_non_working: false,
+            } as any);
+            await qc.invalidateQueries({ queryKey: ["days-off"] });
+            await qc.refetchQueries({ queryKey: ["days-off"], type: "active" });
+          }}>{L.undo}</ToastAction>
+        ),
+      });
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err?.message, variant: "destructive" });
+    }
+  };
+
+
+
   const handleCreate = async () => {
     if (isBlockedTime) {
       await handleCreateBlockedTime();
