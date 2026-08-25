@@ -2620,6 +2620,20 @@ export default function CalendarPage() {
                               <Plus className="h-4 w-4 text-primary/40" />
                             </div>
                           )}
+                          {(blockedBlocksByDate[format(day, "yyyy-MM-dd")] || [])
+                            .filter(b => Math.floor(toMin(b.start) / 60) === hour)
+                            .map(b => (
+                              <UnavailableTimeBlock
+                                key={b.id}
+                                block={b}
+                                rowHeight={rowHeight}
+                                cellHour={hour}
+                                onSave={saveBlockedBlock}
+                                onUnblock={(blk) => removeBlockedBlock(blk, true)}
+                                onDelete={(blk) => removeBlockedBlock(blk, false)}
+                                onDragStateChange={(dragging) => setDragBlockId(dragging ? b.id : null)}
+                              />
+                            ))}
                           {pendingReqs.map((req, idx) => {
                             const heightPx = Math.max((req.duration_minutes / 60) * rowHeight - 4, 20);
                             const name = req.matched_client_name || `${req.first_name}${req.last_name ? " " + req.last_name : ""}`.trim();
