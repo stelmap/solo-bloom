@@ -411,6 +411,7 @@ export default function IncomePage() {
             payment_method: linkedPrefill.payment_method,
             comment: linkedPrefill.comment,
           }}
+          onBack={() => { setLinkedOpen(false); setOpen(true); }}
         />
       )}
     </AppLayout>
