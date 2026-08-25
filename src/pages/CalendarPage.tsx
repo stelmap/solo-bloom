@@ -51,6 +51,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { ToastAction } from "@/components/ui/toast";
+import { UnavailableTimeBlock } from "@/components/calendar/UnavailableTimeBlock";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useBookingRequests, type BookingRequestRow } from "@/hooks/useBookingInbox";
@@ -117,6 +119,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Blocked time", blockedStart: "Start time", blockedEnd: "End time",
     ctaBlocked: "Save blocked time", blockedHint: "Choose a date and a time range to block.",
     blockedSummary: "Will block:", blockedCreated: "Blocked time saved",
+    timeAvailableAgain: "Time is available again", blockDeleted: "Blocked time deleted", undo: "Undo",
     doesNotRepeat: "Does not repeat", repeatHint: "Leave empty to repeat without an end date.", repeatUntil: "Repeat until", repeatLabel: "Repeat appointment",
   },
   uk: {
@@ -147,6 +150,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Недоступний час", blockedStart: "Початок", blockedEnd: "Кінець",
     ctaBlocked: "Зберегти недоступний час", blockedHint: "Оберіть дату та проміжок часу для блокування.",
     blockedSummary: "Буде заблоковано:", blockedCreated: "Недоступний час збережено",
+    timeAvailableAgain: "Час знову доступний", blockDeleted: "Блок видалено", undo: "Скасувати",
     doesNotRepeat: "Не повторюється", repeatHint: "Залиште порожнім, щоб повторювати без дати завершення.", repeatUntil: "Повторювати до", repeatLabel: "Повторювати сесію",
   },
   ru: {
@@ -177,6 +181,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Недоступное время", blockedStart: "Начало", blockedEnd: "Окончание",
     ctaBlocked: "Сохранить недоступное время", blockedHint: "Выберите дату и промежуток времени для блокировки.",
     blockedSummary: "Будет заблокировано:", blockedCreated: "Недоступное время сохранено",
+    timeAvailableAgain: "Время снова доступно", blockDeleted: "Блок удалён", undo: "Отменить",
     doesNotRepeat: "Не повторяется", repeatHint: "Оставьте пустым, чтобы повторять без даты окончания.", repeatUntil: "Повторять до", repeatLabel: "Повторять сессию",
   },
   fr: {
@@ -207,6 +212,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Période bloquée", blockedStart: "Heure de début", blockedEnd: "Heure de fin",
     ctaBlocked: "Enregistrer la période bloquée", blockedHint: "Choisissez une date et une plage horaire à bloquer.",
     blockedSummary: "Sera bloqué :", blockedCreated: "Période bloquée enregistrée",
+    timeAvailableAgain: "La période est de nouveau disponible", blockDeleted: "Blocage supprimé", undo: "Annuler",
     doesNotRepeat: "Ne se répète pas", repeatHint: "Laissez vide pour répéter sans date de fin.", repeatUntil: "Répéter jusqu'au", repeatLabel: "Répéter le rendez-vous",
   },
   pl: {
@@ -237,6 +243,7 @@ const NEW_COPY: Record<LangKey, {
     blockedTime: "Czas zablokowany", blockedStart: "Godzina rozpoczęcia", blockedEnd: "Godzina zakończenia",
     ctaBlocked: "Zapisz zablokowany czas", blockedHint: "Wybierz datę i zakres godzin do zablokowania.",
     blockedSummary: "Zostanie zablokowane:", blockedCreated: "Zablokowany czas zapisany",
+    timeAvailableAgain: "Czas jest znów dostępny", blockDeleted: "Blokada usunięta", undo: "Cofnij",
     doesNotRepeat: "Nie powtarza się", repeatHint: "Pozostaw puste, aby powtarzać bez daty zakończenia.", repeatUntil: "Powtarzaj do", repeatLabel: "Powtarzaj wizytę",
   },
 };
