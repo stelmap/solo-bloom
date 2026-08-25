@@ -2703,7 +2703,7 @@ export default function CalendarPage() {
                           {hasOutsidePublicBooking && !hasAny && (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <div className="absolute inset-0 z-0" aria-label={(t as any)("calendar.outsidePublicBookingLegend") || "Outside online booking hours"} />
+                                <div className="absolute inset-0 z-[2]" aria-label={(t as any)("calendar.outsidePublicBookingLegend") || "Outside online booking hours"} />
                               </TooltipTrigger>
                               <TooltipContent className="max-w-64 text-xs">
                                 {(t as any)("calendar.outsidePublicBookingTooltip") || "Clients do not see this time in the public calendar. You can add your own event."}
