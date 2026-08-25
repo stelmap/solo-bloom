@@ -2476,7 +2476,7 @@ export default function CalendarPage() {
             className={cn("h-1.5 flex-1 min-w-[140px] max-w-[560px]", fillRates.thisWeek.pct >= 100 ? "[&>div]:bg-destructive" : "")}
           />
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="h-3 w-3 rounded-sm border border-border bg-muted/15" aria-hidden="true" />
+            <span className="h-3 w-3 rounded-sm border border-border calendar-public-unavailable-swatch" aria-hidden="true" />
             <span>{(t as any)("calendar.outsidePublicBookingLegend") || "Outside online booking hours"}</span>
           </div>
         </div>
@@ -2530,7 +2530,7 @@ export default function CalendarPage() {
                     {inMonth && outsidePublicBookingGaps.map((gap, gapIdx) => (
                       <div
                         key={gapIdx}
-                        className="pointer-events-none absolute inset-x-0 z-0 bg-muted/15"
+                        className="pointer-events-none absolute inset-x-0 z-0 calendar-public-unavailable-band"
                         style={{ top: `${gap.topPct}%`, height: `${gap.heightPct}%` }}
                         aria-hidden="true"
                       />
@@ -2695,7 +2695,7 @@ export default function CalendarPage() {
                           {outsidePublicBookingGaps.map((gap, gapIdx) => (
                             <div
                               key={gapIdx}
-                              className="pointer-events-none absolute inset-x-0 z-0 bg-muted/15"
+                              className="pointer-events-none absolute inset-x-0 z-0 calendar-public-unavailable-band"
                               style={{ top: `${gap.topPct}%`, height: `${gap.heightPct}%` }}
                               aria-hidden="true"
                             />

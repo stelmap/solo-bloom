@@ -60,6 +60,9 @@
     --warning: 38 92% 50%;
     --warning-foreground: 222 47% 11%;
 
+    --calendar-public-unavailable-bg: 220 14% 90%;
+    --calendar-public-unavailable-line: 220 9% 62%;
+
     --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
     --gradient-primary: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(21 90% 48%) 100%);
@@ -111,6 +114,8 @@
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 55%;
     --warning-foreground: 222 47% 11%;
+    --calendar-public-unavailable-bg: 222 35% 18%;
+    --calendar-public-unavailable-line: 220 10% 48%;
   }
 }
 
@@ -165,5 +170,25 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+  .calendar-public-unavailable-band {
+    background-color: hsl(var(--calendar-public-unavailable-bg) / 0.76);
+    background-image: repeating-linear-gradient(
+      135deg,
+      hsl(var(--calendar-public-unavailable-line) / 0.42) 0,
+      hsl(var(--calendar-public-unavailable-line) / 0.42) 1px,
+      transparent 1px,
+      transparent 8px
+    );
+  }
+  .calendar-public-unavailable-swatch {
+    background-color: hsl(var(--calendar-public-unavailable-bg) / 0.9);
+    background-image: repeating-linear-gradient(
+      135deg,
+      hsl(var(--calendar-public-unavailable-line) / 0.55) 0,
+      hsl(var(--calendar-public-unavailable-line) / 0.55) 1px,
+      transparent 1px,
+      transparent 6px
+    );
   }
 }

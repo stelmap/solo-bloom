@@ -2,6 +2,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { EmailAPIError, sendLovableEmail } from "npm:@lovable.dev/email-js@0.1.0";
 import { loadInvitationByToken, invitationErrorCode, randomDigits, sha256Hex } from "../_shared/agreement-utils.ts";
+import { createUnsubscribeToken } from "../_shared/email-unsubscribe-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -93,6 +94,8 @@ Deno.serve(async (req) => {
     // Send through Lovable's managed email API (delivery, retries, suppression
     // and unsubscribe are handled server-side).
     const messageId = crypto.randomUUID();
+    const apiKey = Deno.env.get("LOVABLE_API_KEY")!;
+    const idempotencyKey = `agreement-otp-${messageId}:unsubscribe-v1`;
     try {
       await sendLovableEmail(
         {
@@ -104,9 +107,10 @@ Deno.serve(async (req) => {
           text: `Your verification code is ${code}. It expires in ${OTP_TTL_MINUTES} minutes.`,
           purpose: "transactional",
           label: "agreement-otp",
-          idempotency_key: `agreement-otp-${messageId}`,
+          idempotency_key: idempotencyKey,
+          unsubscribe_token: await createUnsubscribeToken(apiKey, SENDER_DOMAIN, email, idempotencyKey),
         },
-        { apiKey: Deno.env.get("LOVABLE_API_KEY")!, sendUrl: Deno.env.get("LOVABLE_SEND_URL") },
+        { apiKey, sendUrl: Deno.env.get("LOVABLE_SEND_URL") },
       );
       await supabase.from("email_send_log").insert({
         message_id: messageId,
