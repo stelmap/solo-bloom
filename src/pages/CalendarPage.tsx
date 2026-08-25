@@ -2623,7 +2623,7 @@ export default function CalendarPage() {
               </colgroup>
               <thead ref={gridHeadRef} className="sticky top-0 z-20 bg-card">
                 <tr className="border-b border-border">
-                  <th className="p-3" />
+                  <th className="p-3 sticky left-0 z-30 bg-card border-r border-border" />
                   {days.map((day, i) => {
                     const dayOffStatus = isDayOff(day);
                     const isTodayCol = isSameDay(day, new Date());
