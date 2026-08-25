@@ -2520,7 +2520,7 @@ export default function CalendarPage() {
                       setCreateOpen(true);
                     }}
                     className={cn(
-                      "group/month-slot min-h-[110px] border-l border-b border-border p-1.5 cursor-pointer transition-colors relative",
+                      "group/month-slot min-h-[110px] border-l border-b border-border p-1.5 cursor-pointer transition-colors relative overflow-hidden",
                       !inMonth && "bg-muted/20 text-muted-foreground",
                       "hover:bg-primary/5",
                       isToday && "bg-accent",
@@ -2535,13 +2535,13 @@ export default function CalendarPage() {
                         aria-hidden="true"
                       />
                     ))}
-                    <div className="flex items-center justify-between mb-1">
+                    <div className="relative z-10 flex items-center justify-between mb-1">
                       <span className={cn("text-xs font-semibold", isToday && "text-accent-foreground")}>
                         {format(day, "d")}
                       </span>
                       <Plus className="h-3.5 w-3.5 text-primary/40 opacity-0 group-hover/month-slot:opacity-100 transition-opacity" />
                     </div>
-                    <div className="space-y-0.5">
+                    <div className="relative z-10 space-y-0.5">
                       {dayApts.slice(0, 3).map((apt: any) => {
                         const ss = getSessionStateStyle(apt);
                         const isGroupEvt = !!apt.group_session_id;
