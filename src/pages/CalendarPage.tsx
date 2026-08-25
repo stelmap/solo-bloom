@@ -67,9 +67,15 @@ const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sa
 
 type LangKey = "en" | "uk" | "ru" | "fr" | "pl";
 type BookingAvailabilityRule = {
+  weekday?: number | null;
+  is_enabled?: boolean | null;
+  start_time?: string | null;
+  end_time?: string | null;
   session_duration_minutes?: number | null;
   buffer_minutes?: number | null;
 };
+
+type PublicAvailabilityWindow = { start: number; end: number };
 
 const NEW_COPY: Record<LangKey, {
   noClientsYet: string; addNewClient: string; noServicesYet: string; addNewService: string;
@@ -321,13 +327,17 @@ export default function CalendarPage() {
   const { data: profile } = useProfile();
   const { data: workingSchedule = [] } = useWorkingSchedule();
   const { data: daysOff = [] } = useDaysOff();
+  const { user } = useAuth();
   const { data: bookingAvailability = [] } = useQuery({
-    queryKey: ["booking-availability-rules"],
+    queryKey: ["booking-availability-rules", user?.id],
+    enabled: !!user?.id,
     queryFn: async () => {
+      if (!user?.id) return [];
       const { data } = await supabase
         .from("booking_availability")
-        .select("session_duration_minutes, buffer_minutes")
-        .limit(1);
+        .select("weekday, is_enabled, start_time, end_time, session_duration_minutes, buffer_minutes")
+        .eq("user_id", user.id)
+        .order("weekday");
       return data || [];
     },
   });
@@ -352,7 +362,6 @@ export default function CalendarPage() {
   // subscription. Row-level RLS on appointments/session_booking_requests
   // already filters payloads to the owner, but topic scoping prevents another
   // user from even subscribing to this user's channel.
-  const { user } = useAuth();
   useEffect(() => {
     if (!user?.id) return;
     const channel = supabase
@@ -522,6 +531,59 @@ export default function CalendarPage() {
       return hour >= sh && hour < eh;
     }
     return hour >= startHour && hour < endHour;
+  };
+
+  const publicAvailabilityWindows = useCallback((date: Date): PublicAvailabilityWindow[] => {
+    if (isDayOff(date)) return [];
+
+    const rules = bookingAvailability as BookingAvailabilityRule[];
+    const hasRules = rules.some((rule) => rule.is_enabled === true);
+    if (hasRules) {
+      const weekday = date.getDay(); // booking_availability.weekday: 0=Sun..6=Sat
+      return rules
+        .filter((rule) => rule.is_enabled === true && rule.weekday === weekday)
+        .map((rule) => ({
+          start: toMin(String(rule.start_time || "09:00").slice(0, 5)),
+          end: toMin(String(rule.end_time || "18:00").slice(0, 5)),
+        }))
+        .filter((window) => window.end > window.start);
+    }
+
+    const dow = getDayOfWeek(date);
+    const sched = scheduleMap[dow];
+    if (sched) {
+      if (!sched.is_working) return [];
+      return [{
+        start: toMin(String(sched.start_time || "09:00").slice(0, 5)),
+        end: toMin(String(sched.end_time || "18:00").slice(0, 5)),
+      }].filter((window) => window.end > window.start);
+    }
+
+    if (dow > 5) return [];
+    return [{ start: startHour * 60, end: endHour * 60 }].filter((window) => window.end > window.start);
+  }, [bookingAvailability, daysOffSet, scheduleMap, startHour, endHour]);
+
+  const isOutsidePublicBookingRange = useCallback((date: Date, start: string, durationMinutes: number) => {
+    const startMinutes = toMin(start);
+    const endMinutes = startMinutes + durationMinutes;
+    if (!Number.isFinite(startMinutes) || !Number.isFinite(endMinutes) || endMinutes <= startMinutes) return false;
+    const windows = publicAvailabilityWindows(date);
+    return !windows.some((window) => startMinutes >= window.start && endMinutes <= window.end);
+  }, [publicAvailabilityWindows]);
+
+  const isOutsidePublicBookingHour = useCallback((date: Date, hour: number) => {
+    const slotStart = hour * 60;
+    const slotEnd = slotStart + 60;
+    const windows = publicAvailabilityWindows(date);
+    return !windows.some((window) => slotStart < window.end && slotEnd > window.start);
+  }, [publicAvailabilityWindows]);
+
+  const hasUnavailableBlockConflict = (date: string, time: string, durationMinutes: number) => {
+    const ranges = blockedRanges[date];
+    if (!ranges || ranges.length === 0) return false;
+    const start = toMin(time);
+    const end = start + durationMinutes;
+    return ranges.some((range) => toMin(range.start) < end && toMin(range.end) > start);
   };
 
   const hasConflict = (date: string, time: string, durationMinutes: number, excludeId?: string) => {
@@ -721,17 +783,22 @@ export default function CalendarPage() {
   // Validation for create
   const createValidation = useMemo(() => {
     if (!form.date || !form.time) return null;
-    const date = new Date(form.date);
-    if (isDayOff(date)) return t("calendar.dayOffBlocked");
-    if (!isDayWorking(date)) return t("calendar.outsideHours");
-    const hour = parseInt(form.time);
-    if (!isHourWorking(date, hour)) return t("calendar.outsideHours");
     const service = services.find(s => s.id === form.service_id);
-    if (form.service_id && hasConflict(form.date, form.time, service?.duration_minutes ?? 60)) {
+    const duration = service?.duration_minutes ?? 60;
+    if (form.service_id && (hasConflict(form.date, form.time, duration) || hasUnavailableBlockConflict(form.date, form.time, duration))) {
       return t("calendar.doubleBooking");
     }
     return null;
-  }, [form.date, form.time, form.service_id, services, appointments, scheduleMap, daysOffSet]);
+  }, [form.date, form.time, form.service_id, services, appointments, blockedRanges]);
+
+  const createAvailabilityNotice = useMemo(() => {
+    if (isBlockedTime || !form.date || !form.time) return null;
+    const service = services.find(s => s.id === form.service_id);
+    const duration = service?.duration_minutes ?? durationPreset ?? 60;
+    return isOutsidePublicBookingRange(new Date(`${form.date}T00:00:00`), form.time, duration)
+      ? ((t as any)("calendar.outsidePublicBookingInfo") || "This time is not shown as available in your public calendar.")
+      : null;
+  }, [isBlockedTime, form.date, form.time, form.service_id, services, durationPreset, isOutsidePublicBookingRange, t]);
 
   const handleCreateBlockedTime = async () => {
     if (!form.date || !form.time || !blockEnd) return;
@@ -1381,17 +1448,15 @@ export default function CalendarPage() {
 
   // Drag-and-drop handlers
   const canDropOnSlot = useCallback((day: Date, hour: number, aptId: string) => {
-    if (isDayOff(day)) return false;
-    if (!isHourWorking(day, hour)) return false;
     const slotTime = new Date(day);
     slotTime.setHours(hour, 0, 0, 0);
     if (isBefore(slotTime, new Date())) return false;
     const dateStr = format(day, "yyyy-MM-dd");
     const timeStr = `${hour.toString().padStart(2, "0")}:00`;
     const apt = appointments.find(a => a.id === aptId);
-    if (apt && hasConflict(dateStr, timeStr, apt.duration_minutes, aptId)) return false;
+    if (apt && (hasConflict(dateStr, timeStr, apt.duration_minutes, aptId) || hasUnavailableBlockConflict(dateStr, timeStr, apt.duration_minutes))) return false;
     return true;
-  }, [appointments, scheduleMap, daysOffSet]);
+  }, [appointments, blockedRanges]);
 
   const handleDragStart = useCallback((e: React.DragEvent, aptId: string) => {
     e.dataTransfer.setData("text/plain", aptId);
@@ -1513,9 +1578,7 @@ export default function CalendarPage() {
     }
 
     if (!canDropOnSlot(day, hour, aptId)) {
-      const reason = isDayOff(day) ? t("calendar.dayOffBlocked")
-        : !isHourWorking(day, hour) ? t("calendar.outsideHours")
-        : (() => {
+      const reason = (() => {
             const slotTime = new Date(day);
             slotTime.setHours(hour, 0, 0, 0);
             return isBefore(slotTime, new Date()) ? t("calendar.movePastBlocked") : t("calendar.doubleBooking");
@@ -2175,6 +2238,12 @@ export default function CalendarPage() {
                     </div>
                   )}
 
+                  {!isBlockedTime && !createValidation && createAvailabilityNotice && !isRecurring && (
+                    <div className="rounded-lg border border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+                      {createAvailabilityNotice}
+                    </div>
+                  )}
+
 
                   {/* Repeat — compact single row */}
                   <div className="border-t border-border pt-2 space-y-2">
@@ -2260,7 +2329,7 @@ export default function CalendarPage() {
                     const disabled = createAppointment.isPending || createRecurringRule.isPending || createGroupSession.isPending
                       || createDayOff.isPending
                       || missingRequired
-                      || (!isBlockedTime && !isRecurring && !isGroupSession && !!createValidation)
+                      || (!isBlockedTime && !isRecurring && !!createValidation)
                       || (!isBlockedTime && !!endOverride && endOverride <= form.time);
 
                     const selectedService = services.find(s => s.id === form.service_id);
@@ -2399,6 +2468,10 @@ export default function CalendarPage() {
             value={Math.min(fillRates.thisWeek.pct, 100)}
             className={cn("h-1.5 flex-1 min-w-[140px] max-w-[560px]", fillRates.thisWeek.pct >= 100 ? "[&>div]:bg-destructive" : "")}
           />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="h-3 w-3 rounded-sm border border-border bg-muted/15" aria-hidden="true" />
+            <span>{(t as any)("calendar.outsidePublicBookingLegend") || "Outside online booking hours"}</span>
+          </div>
         </div>
 
 
@@ -2417,8 +2490,7 @@ export default function CalendarPage() {
               {monthGridDays.map((day, i) => {
                 const dayStr = format(day, "yyyy-MM-dd");
                 const inMonth = isSameMonth(day, currentDate);
-                const dayOff = isDayOff(day);
-                const working = isDayWorking(day);
+                const outsidePublicBooking = publicAvailabilityWindows(day).length === 0;
                 const dayApts = visibleAppointments.filter(
                   (apt) => toUTCDateStr(new Date(apt.scheduled_at)) === dayStr && apt.status !== "cancelled",
                 );
@@ -2430,7 +2502,6 @@ export default function CalendarPage() {
                   <div
                     key={i}
                     onClick={() => {
-                      if (!working || dayOff) return;
                       setForm((f) => ({ ...f, date: dayStr, time: f.time || "09:00" }));
                       setDurationPreset(60);
                       setBlockEnd(addMinutesToTime(form.time || "09:00", 60));
@@ -2441,19 +2512,19 @@ export default function CalendarPage() {
                       setCreateOpen(true);
                     }}
                     className={cn(
-                      "min-h-[110px] border-l border-b border-border p-1.5 cursor-pointer transition-colors",
+                      "group/month-slot min-h-[110px] border-l border-b border-border p-1.5 cursor-pointer transition-colors relative",
                       !inMonth && "bg-muted/20 text-muted-foreground",
-                      dayOff && "bg-destructive/5",
-                      !working && inMonth && !dayOff && "bg-muted/10",
-                      working && !dayOff && "hover:bg-primary/5",
+                      outsidePublicBooking && inMonth && "bg-muted/10",
+                      "hover:bg-primary/5",
                       isToday && "bg-accent",
                     )}
+                    title={outsidePublicBooking ? ((t as any)("calendar.outsidePublicBookingTooltip") || "Clients do not see this time in the public calendar. You can add your own event.") : undefined}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className={cn("text-xs font-semibold", isToday && "text-accent-foreground", dayOff && "text-destructive")}>
+                      <span className={cn("text-xs font-semibold", isToday && "text-accent-foreground")}>
                         {format(day, "d")}
                       </span>
-                      {dayOff && <CalendarOff className="h-3 w-3 text-destructive" />}
+                      <Plus className="h-3.5 w-3.5 text-primary/40 opacity-0 group-hover/month-slot:opacity-100 transition-opacity" />
                     </div>
                     <div className="space-y-0.5">
                       {dayApts.slice(0, 3).map((apt: any) => {
@@ -2539,14 +2610,12 @@ export default function CalendarPage() {
                   <th className="p-3" />
                   {days.map((day, i) => {
                     const dayOffStatus = isDayOff(day);
-                    const working = isDayWorking(day);
                     const isTodayCol = isSameDay(day, new Date());
                     const ds = periodCapacity.dayStats[i];
                     return (
                       <th key={i} className={cn(
                         "px-2 py-2.5 text-center border-l border-border relative group font-normal",
                         isTodayCol ? "bg-primary/[0.06]" : "",
-                        dayOffStatus ? "bg-destructive/5" : !working ? "bg-muted/30" : "",
                       )}>
                         <p className={cn(
                           "text-[11px] uppercase tracking-wide",
@@ -2554,18 +2623,10 @@ export default function CalendarPage() {
                         )}>{format(day, "EEE", { locale: dateLocale })}</p>
                         <p className={cn(
                           "text-base font-semibold mt-0.5",
-                          isTodayCol ? "text-primary" : dayOffStatus ? "text-destructive" : "text-foreground",
+                          isTodayCol ? "text-primary" : "text-foreground",
                         )}>
                           {format(day, "MMM d", { locale: dateLocale })}
                         </p>
-
-
-
-                        {dayOffStatus && (
-                          <Badge variant="outline" className="text-[9px] px-1 border-destructive/20 text-destructive absolute top-1 right-1">
-                            <CalendarOff className="h-2.5 w-2.5" />
-                          </Badge>
-                        )}
 
                         <button
                           onClick={() => handleQuickDayOff(day)}
@@ -2588,14 +2649,11 @@ export default function CalendarPage() {
                     {days.map((day, dayIdx) => {
                       const events = getEventsForDayHour(day, hour);
                       const pendingReqs = getPendingRequestsForDayHour(day, hour);
-                      const working = isHourWorking(day, hour);
-                      const dayOff = isDayOff(day);
-                      const blockedHour = isBlockedHour(day, hour);
+                      const outsidePublicBooking = isOutsidePublicBookingHour(day, hour);
                       const hasAny = events.length > 0 || pendingReqs.length > 0;
                       return (
                         <td key={dayIdx}
                           onClick={() => {
-                            if (dayOff || blockedHour || !working) return;
                             if (hasAny) return;
                             const dateStr = format(day, "yyyy-MM-dd");
                             const timeStr = `${hour.toString().padStart(2, "0")}:00`;
@@ -2614,12 +2672,23 @@ export default function CalendarPage() {
                           onDrop={(e) => handleDrop(e, day, hour)}
                           className={cn(
                             "relative border-l border-b border-border transition-colors",
-                            dayOff ? "bg-destructive/5 cursor-not-allowed" : !working ? "bg-muted/20 cursor-not-allowed" : blockedHour ? "cursor-not-allowed" : !hasAny ? "hover:bg-primary/5 cursor-pointer group/slot" : "",
+                            outsidePublicBooking && "bg-muted/10",
+                            !hasAny && "hover:bg-primary/5 cursor-pointer group/slot",
                             dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && canDropOnSlot(day, hour, dragAptId) && "bg-primary/15 ring-2 ring-primary/30 ring-inset",
                             dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && !canDropOnSlot(day, hour, dragAptId) && "bg-destructive/10 ring-2 ring-destructive/30 ring-inset",
                           )}>
-                          {!hasAny && working && !dayOff && !blockedHour && !dragAptId && (
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/slot:opacity-100 transition-opacity pointer-events-none">
+                          {outsidePublicBooking && !hasAny && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="absolute inset-0 z-0" aria-label={(t as any)("calendar.outsidePublicBookingLegend") || "Outside online booking hours"} />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-64 text-xs">
+                                {(t as any)("calendar.outsidePublicBookingTooltip") || "Clients do not see this time in the public calendar. You can add your own event."}
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                          {!hasAny && !dragAptId && !dragBlockId && (
+                            <div className="absolute inset-0 z-[1] flex items-center justify-center opacity-0 group-hover/slot:opacity-100 transition-opacity pointer-events-none">
                               <Plus className="h-4 w-4 text-primary/40" />
                             </div>
                           )}
