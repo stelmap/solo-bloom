@@ -16,6 +16,7 @@ import { useBookingLink } from "@/hooks/usePracticeProfile";
 import { BookingAvailabilitySection, type BookingAvailabilityHandle } from "@/components/practice/BookingAvailabilitySection";
 
 import { useToast } from "@/hooks/use-toast";
+import { CurrencySelect } from "@/components/settings/CurrencySelect";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { AppLanguage } from "@/i18n/translations";
 import { cn } from "@/lib/utils";

@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useProfile, useUpdateProfile } from "@/hooks/useData";
 import { useToast } from "@/hooks/use-toast";
+import { CurrencySelect } from "@/components/settings/CurrencySelect";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, Info, Loader2, PenLine, Receipt } from "lucide-react";
