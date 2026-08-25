@@ -76,6 +76,7 @@ type BookingAvailabilityRule = {
 };
 
 type PublicAvailabilityWindow = { start: number; end: number };
+type PublicAvailabilityGap = { topPct: number; heightPct: number };
 
 const NEW_COPY: Record<LangKey, {
   noClientsYet: string; addNewClient: string; noServicesYet: string; addNewService: string;
@@ -497,13 +498,6 @@ export default function CalendarPage() {
     return (h || 0) * 60 + (m || 0);
   };
 
-  const isBlockedHour = (date: Date, hour: number) => {
-    const ranges = blockedRanges[format(date, "yyyy-MM-dd")];
-    if (!ranges || ranges.length === 0) return false;
-    const s = hour * 60, e = s + 60;
-    return ranges.some(r => toMin(r.start) < e && toMin(r.end) > s);
-  };
-
   const getDayOfWeek = (date: Date) => {
     const d = date.getDay();
     return d === 0 ? 7 : d; // 1=Mon, 7=Sun
@@ -519,18 +513,6 @@ export default function CalendarPage() {
     const dow = getDayOfWeek(date);
     if (scheduleMap[dow] !== undefined) return scheduleMap[dow].is_working;
     return dow <= 5; // Default Mon-Fri
-  };
-
-  const isHourWorking = (date: Date, hour: number) => {
-    if (!isDayWorking(date)) return false;
-    const dow = getDayOfWeek(date);
-    const sched = scheduleMap[dow];
-    if (sched) {
-      const sh = parseInt(sched.start_time);
-      const eh = parseInt(sched.end_time);
-      return hour >= sh && hour < eh;
-    }
-    return hour >= startHour && hour < endHour;
   };
 
   const publicAvailabilityWindows = useCallback((date: Date): PublicAvailabilityWindow[] => {
@@ -571,12 +553,37 @@ export default function CalendarPage() {
     return !windows.some((window) => startMinutes >= window.start && endMinutes <= window.end);
   }, [publicAvailabilityWindows]);
 
-  const isOutsidePublicBookingHour = useCallback((date: Date, hour: number) => {
-    const slotStart = hour * 60;
-    const slotEnd = slotStart + 60;
-    const windows = publicAvailabilityWindows(date);
-    return !windows.some((window) => slotStart < window.end && slotEnd > window.start);
+  const publicBookingGapsForRange = useCallback((date: Date, rangeStart: number, rangeEnd: number): PublicAvailabilityGap[] => {
+    const windows = publicAvailabilityWindows(date)
+      .map((window) => ({
+        start: Math.max(window.start, rangeStart),
+        end: Math.min(window.end, rangeEnd),
+      }))
+      .filter((window) => window.end > window.start)
+      .sort((a, b) => a.start - b.start);
+
+    const gaps: Array<{ start: number; end: number }> = [];
+    let cursor = rangeStart;
+    for (const window of windows) {
+      if (window.start > cursor) gaps.push({ start: cursor, end: window.start });
+      cursor = Math.max(cursor, window.end);
+    }
+    if (cursor < rangeEnd) gaps.push({ start: cursor, end: rangeEnd });
+    const total = Math.max(1, rangeEnd - rangeStart);
+
+    return gaps.map((gap) => ({
+      topPct: ((gap.start - rangeStart) / total) * 100,
+      heightPct: ((gap.end - gap.start) / total) * 100,
+    }));
   }, [publicAvailabilityWindows]);
+
+  const publicBookingGapsForHour = useCallback((date: Date, hour: number): PublicAvailabilityGap[] => {
+    return publicBookingGapsForRange(date, hour * 60, hour * 60 + 60);
+  }, [publicBookingGapsForRange]);
+
+  const publicBookingGapsForDay = useCallback((date: Date): PublicAvailabilityGap[] => {
+    return publicBookingGapsForRange(date, 0, 24 * 60);
+  }, [publicBookingGapsForRange]);
 
   const hasUnavailableBlockConflict = (date: string, time: string, durationMinutes: number) => {
     const ranges = blockedRanges[date];
@@ -2490,7 +2497,8 @@ export default function CalendarPage() {
               {monthGridDays.map((day, i) => {
                 const dayStr = format(day, "yyyy-MM-dd");
                 const inMonth = isSameMonth(day, currentDate);
-                const outsidePublicBooking = publicAvailabilityWindows(day).length === 0;
+                const outsidePublicBookingGaps = publicBookingGapsForDay(day);
+                const hasOutsidePublicBooking = outsidePublicBookingGaps.length > 0;
                 const dayApts = visibleAppointments.filter(
                   (apt) => toUTCDateStr(new Date(apt.scheduled_at)) === dayStr && apt.status !== "cancelled",
                 );
@@ -2512,21 +2520,28 @@ export default function CalendarPage() {
                       setCreateOpen(true);
                     }}
                     className={cn(
-                      "group/month-slot min-h-[110px] border-l border-b border-border p-1.5 cursor-pointer transition-colors relative",
+                      "group/month-slot min-h-[110px] border-l border-b border-border p-1.5 cursor-pointer transition-colors relative overflow-hidden",
                       !inMonth && "bg-muted/20 text-muted-foreground",
-                      outsidePublicBooking && inMonth && "bg-muted/10",
                       "hover:bg-primary/5",
                       isToday && "bg-accent",
                     )}
-                    title={outsidePublicBooking ? ((t as any)("calendar.outsidePublicBookingTooltip") || "Clients do not see this time in the public calendar. You can add your own event.") : undefined}
+                    title={hasOutsidePublicBooking ? ((t as any)("calendar.outsidePublicBookingTooltip") || "Clients do not see this time in the public calendar. You can add your own event.") : undefined}
                   >
-                    <div className="flex items-center justify-between mb-1">
+                    {inMonth && outsidePublicBookingGaps.map((gap, gapIdx) => (
+                      <div
+                        key={gapIdx}
+                        className="pointer-events-none absolute inset-x-0 z-0 bg-muted/15"
+                        style={{ top: `${gap.topPct}%`, height: `${gap.heightPct}%` }}
+                        aria-hidden="true"
+                      />
+                    ))}
+                    <div className="relative z-10 flex items-center justify-between mb-1">
                       <span className={cn("text-xs font-semibold", isToday && "text-accent-foreground")}>
                         {format(day, "d")}
                       </span>
                       <Plus className="h-3.5 w-3.5 text-primary/40 opacity-0 group-hover/month-slot:opacity-100 transition-opacity" />
                     </div>
-                    <div className="space-y-0.5">
+                    <div className="relative z-10 space-y-0.5">
                       {dayApts.slice(0, 3).map((apt: any) => {
                         const ss = getSessionStateStyle(apt);
                         const isGroupEvt = !!apt.group_session_id;
@@ -2649,7 +2664,8 @@ export default function CalendarPage() {
                     {days.map((day, dayIdx) => {
                       const events = getEventsForDayHour(day, hour);
                       const pendingReqs = getPendingRequestsForDayHour(day, hour);
-                      const outsidePublicBooking = isOutsidePublicBookingHour(day, hour);
+                      const outsidePublicBookingGaps = publicBookingGapsForHour(day, hour);
+                      const hasOutsidePublicBooking = outsidePublicBookingGaps.length > 0;
                       const hasAny = events.length > 0 || pendingReqs.length > 0;
                       return (
                         <td key={dayIdx}
@@ -2672,15 +2688,22 @@ export default function CalendarPage() {
                           onDrop={(e) => handleDrop(e, day, hour)}
                           className={cn(
                             "relative border-l border-b border-border transition-colors",
-                            outsidePublicBooking && "bg-muted/10",
                             !hasAny && "hover:bg-primary/5 cursor-pointer group/slot",
                             dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && canDropOnSlot(day, hour, dragAptId) && "bg-primary/15 ring-2 ring-primary/30 ring-inset",
                             dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && !canDropOnSlot(day, hour, dragAptId) && "bg-destructive/10 ring-2 ring-destructive/30 ring-inset",
                           )}>
-                          {outsidePublicBooking && !hasAny && (
+                          {outsidePublicBookingGaps.map((gap, gapIdx) => (
+                            <div
+                              key={gapIdx}
+                              className="pointer-events-none absolute inset-x-0 z-0 bg-muted/15"
+                              style={{ top: `${gap.topPct}%`, height: `${gap.heightPct}%` }}
+                              aria-hidden="true"
+                            />
+                          ))}
+                          {hasOutsidePublicBooking && !hasAny && (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <div className="absolute inset-0 z-0" aria-label={(t as any)("calendar.outsidePublicBookingLegend") || "Outside online booking hours"} />
+                                <div className="absolute inset-0 z-[2]" aria-label={(t as any)("calendar.outsidePublicBookingLegend") || "Outside online booking hours"} />
                               </TooltipTrigger>
                               <TooltipContent className="max-w-64 text-xs">
                                 {(t as any)("calendar.outsidePublicBookingTooltip") || "Clients do not see this time in the public calendar. You can add your own event."}
@@ -2688,7 +2711,7 @@ export default function CalendarPage() {
                             </Tooltip>
                           )}
                           {!hasAny && !dragAptId && !dragBlockId && (
-                            <div className="absolute inset-0 z-[1] flex items-center justify-center opacity-0 group-hover/slot:opacity-100 transition-opacity pointer-events-none">
+                            <div className="absolute inset-0 z-[3] flex items-center justify-center opacity-0 group-hover/slot:opacity-100 transition-opacity pointer-events-none">
                               <Plus className="h-4 w-4 text-primary/40" />
                             </div>
                           )}
