@@ -76,6 +76,7 @@ type BookingAvailabilityRule = {
 };
 
 type PublicAvailabilityWindow = { start: number; end: number };
+type PublicAvailabilityGap = { topPct: number; heightPct: number };
 
 const NEW_COPY: Record<LangKey, {
   noClientsYet: string; addNewClient: string; noServicesYet: string; addNewService: string;
@@ -557,6 +558,31 @@ export default function CalendarPage() {
     const slotEnd = slotStart + 60;
     const windows = publicAvailabilityWindows(date);
     return !windows.some((window) => slotStart < window.end && slotEnd > window.start);
+  }, [publicAvailabilityWindows]);
+
+  const publicBookingGapsForHour = useCallback((date: Date, hour: number): PublicAvailabilityGap[] => {
+    const hourStart = hour * 60;
+    const hourEnd = hourStart + 60;
+    const windows = publicAvailabilityWindows(date)
+      .map((window) => ({
+        start: Math.max(window.start, hourStart),
+        end: Math.min(window.end, hourEnd),
+      }))
+      .filter((window) => window.end > window.start)
+      .sort((a, b) => a.start - b.start);
+
+    const gaps: Array<{ start: number; end: number }> = [];
+    let cursor = hourStart;
+    for (const window of windows) {
+      if (window.start > cursor) gaps.push({ start: cursor, end: window.start });
+      cursor = Math.max(cursor, window.end);
+    }
+    if (cursor < hourEnd) gaps.push({ start: cursor, end: hourEnd });
+
+    return gaps.map((gap) => ({
+      topPct: ((gap.start - hourStart) / 60) * 100,
+      heightPct: ((gap.end - gap.start) / 60) * 100,
+    }));
   }, [publicAvailabilityWindows]);
 
   const hasUnavailableBlockConflict = (date: string, time: string, durationMinutes: number) => {
