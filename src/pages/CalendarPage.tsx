@@ -85,6 +85,7 @@ const NEW_COPY: Record<LangKey, {
   sessionTypeLabel: string; individualSession: string; groupSession: string;
   blockedTime: string; blockedStart: string; blockedEnd: string;
   ctaBlocked: string; blockedHint: string; blockedSummary: string; blockedCreated: string;
+  timeAvailableAgain: string; blockDeleted: string; undo: string;
   participants: string;
   notesPlaceholder: string; notesGroupPlaceholder: string;
   ctaIndividual: string; ctaGroup: string;
