@@ -2656,7 +2656,8 @@ export default function CalendarPage() {
                     {days.map((day, dayIdx) => {
                       const events = getEventsForDayHour(day, hour);
                       const pendingReqs = getPendingRequestsForDayHour(day, hour);
-                      const outsidePublicBooking = isOutsidePublicBookingHour(day, hour);
+                      const outsidePublicBookingGaps = publicBookingGapsForHour(day, hour);
+                      const hasOutsidePublicBooking = outsidePublicBookingGaps.length > 0;
                       const hasAny = events.length > 0 || pendingReqs.length > 0;
                       return (
                         <td key={dayIdx}
@@ -2679,12 +2680,19 @@ export default function CalendarPage() {
                           onDrop={(e) => handleDrop(e, day, hour)}
                           className={cn(
                             "relative border-l border-b border-border transition-colors",
-                            outsidePublicBooking && "bg-muted/10",
                             !hasAny && "hover:bg-primary/5 cursor-pointer group/slot",
                             dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && canDropOnSlot(day, hour, dragAptId) && "bg-primary/15 ring-2 ring-primary/30 ring-inset",
                             dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && !canDropOnSlot(day, hour, dragAptId) && "bg-destructive/10 ring-2 ring-destructive/30 ring-inset",
                           )}>
-                          {outsidePublicBooking && !hasAny && (
+                          {outsidePublicBookingGaps.map((gap, gapIdx) => (
+                            <div
+                              key={gapIdx}
+                              className="pointer-events-none absolute inset-x-0 z-0 bg-muted/15"
+                              style={{ top: `${gap.topPct}%`, height: `${gap.heightPct}%` }}
+                              aria-hidden="true"
+                            />
+                          ))}
+                          {hasOutsidePublicBooking && !hasAny && (
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <div className="absolute inset-0 z-0" aria-label={(t as any)("calendar.outsidePublicBookingLegend") || "Outside online booking hours"} />
