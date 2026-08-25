@@ -458,6 +458,21 @@ export default function CalendarPage() {
     return map;
   }, [daysOff]);
 
+  // Blocked-time records (with ids) grouped by date for interactive blocks
+  const blockedBlocksByDate = useMemo(() => {
+    const map: Record<string, Array<{ id: string; date: string; start: string; end: string }>> = {};
+    for (const d of daysOff as any[]) {
+      if (d.type !== "blocked_time" || !d.custom_start_time || !d.custom_end_time) continue;
+      (map[d.date] ||= []).push({
+        id: d.id,
+        date: d.date,
+        start: String(d.custom_start_time).slice(0, 5),
+        end: String(d.custom_end_time).slice(0, 5),
+      });
+    }
+    return map;
+  }, [daysOff]);
+
   const toMin = (hhmm: string) => {
     const [h, m] = hhmm.split(":").map(Number);
     return (h || 0) * 60 + (m || 0);
