@@ -20,6 +20,8 @@ import { cn } from "@/lib/utils";
 import { formatScheduledTime } from "@/lib/timeFormat";
 import { AlertTriangle } from "lucide-react";
 import { matchesFilter, type FilterKey as BucketFilterKey } from "@/lib/incomeAppointmentFilters";
+import { INCOME_FLOW_COPY, normIncomeLang } from "@/lib/incomeFlowCopy";
+import { Search } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -29,17 +31,23 @@ interface Props {
   use12h?: boolean;
   existingIncome?: any | null;
   prefill?: { amount?: number; date?: string; payment_method?: string; comment?: string } | null;
+  /** Step 1 of the add-income wizard — shown as a "Back"/"Edit" action. */
+  onBack?: () => void;
 }
 
 type FilterKey = BucketFilterKey;
+type SortKey = "oldest" | "newest" | "lowest" | "highest";
 
-export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientName, use12h = false, existingIncome, prefill }: Props) {
-  const { t } = useLanguage();
+export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientName, use12h = false, existingIncome, prefill, onBack }: Props) {
+  const { t, lang } = useLanguage();
+  const IL = INCOME_FLOW_COPY[normIncomeLang(lang)];
   const dateLocale = useDateLocale();
   const { symbol: cs } = useCurrency();
   const { toast } = useToast();
   const save = useSaveIncomeConfirmation();
   const { data: appointments = [] } = useClientAppointments(clientId);
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<SortKey>("oldest");
 
   const today = new Date().toISOString().split("T")[0];
   const isEdit = !!existingIncome?.id;
@@ -152,6 +160,44 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
       );
   }, [enrichedAppointments, filter]);
 
+  /**
+   * Simplified flow: only sessions that still owe money (unpaid or partially
+   * paid), searchable and sortable. Fully paid and non-billable cancellations
+   * never show up.
+   */
+  const outstandingAppointments = useMemo(() => {
+    const now = new Date();
+    const q = query.trim().toLowerCase();
+    const list = enrichedAppointments.filter((a: any) => {
+      const input = {
+        status: a.status,
+        payment_status: a.payment_status,
+        scheduled_at: a.scheduled_at,
+        price: a._price,
+        remaining: a._remaining,
+        otherPaid: a._otherPaid,
+      };
+      if (!(matchesFilter(input, "unpaid", now) || matchesFilter(input, "partial", now))) return false;
+      if (a._remaining <= 0 && !allocs[a.id]) return false;
+      if (!q) return true;
+      const haystack = [
+        a.services?.name || "",
+        format(new Date(a.scheduled_at), "PPP p", { locale: dateLocale }),
+        format(new Date(a.scheduled_at), "yyyy-MM-dd"),
+        String(a._price),
+        String(a._remaining),
+      ].join(" ").toLowerCase();
+      return haystack.includes(q);
+    });
+    const byDate = (a: any, b: any) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime();
+    switch (sort) {
+      case "newest": return [...list].sort((a, b) => byDate(b, a));
+      case "lowest": return [...list].sort((a, b) => a._remaining - b._remaining || byDate(a, b));
+      case "highest": return [...list].sort((a, b) => b._remaining - a._remaining || byDate(a, b));
+      default: return [...list].sort(byDate);
+    }
+  }, [enrichedAppointments, query, sort, dateLocale, allocs]);
+
   const allocSum = useMemo(() => Object.values(allocs).reduce((s, v) => s + (Number(v) || 0), 0), [allocs]);
   const numAmount = Number(amount) || 0;
   const remainder = Math.max(numAmount - allocSum, 0);
@@ -184,7 +230,12 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
   const autoAllocate = () => {
     let leftover = numAmount;
     const next: Record<string, string> = {};
-    for (const a of filteredAppointments) {
+    const source = isEdit
+      ? filteredAppointments
+      : [...outstandingAppointments].sort(
+          (a: any, b: any) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime(),
+        );
+    for (const a of source) {
       if (leftover <= 0) break;
       if (a._remaining <= 0) continue;
       const take = Math.min(a._remaining, leftover);
@@ -193,6 +244,7 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
     }
     setAllocs(next);
   };
+
 
   const handleSave = async () => {
     if (!numAmount) {
@@ -215,7 +267,9 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
         return;
       }
     }
-    if (isUnlinked && !confirmUnlinked) {
+    // In the simplified add flow an unlinked payment is a valid prepayment,
+    // so only the edit dialog keeps the extra confirmation step.
+    if (isEdit && isUnlinked && !confirmUnlinked) {
       toast({ title: t("incomeConfirm.unlinkedWarning"), variant: "destructive" });
       setConfirmUnlinked(true);
       return;

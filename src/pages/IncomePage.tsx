@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { IncomeConfirmationDialog } from "@/components/IncomeConfirmationDialog";
+import { ClientCombobox } from "@/components/income/ClientCombobox";
+import { INCOME_FLOW_COPY, normIncomeLang } from "@/lib/incomeFlowCopy";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useMemo, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -74,7 +76,8 @@ export default function IncomePage() {
   const deleteIncome = useDeleteIncome();
   const markPaid = useMarkExpectedPaymentPaid();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const IL = INCOME_FLOW_COPY[normIncomeLang(lang)];
   const { symbol: cs } = useCurrency();
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -186,23 +189,31 @@ export default function IncomePage() {
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 mr-1" /> {t("income.addManual")}</Button>
               </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-md">
               <DialogHeader><DialogTitle>{t("income.addIncome")}</DialogTitle></DialogHeader>
               <div className="space-y-4">
-                <div className="space-y-2"><Label>{t("common.amount")} *</Label><Input type="number" step="0.01" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} /></div>
-                <div className="space-y-2"><Label>{t("common.date")}</Label><DatePicker date={form.date} onDateChange={(d) => setForm(f => ({ ...f, date: d }))} /></div>
-                <div className="space-y-2"><Label>{t("common.description")}</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
                 <div className="space-y-2">
                   <Label>{t("income.paidBy")} *</Label>
-                  <Select value={form.client_id} onValueChange={v => setForm(f => ({ ...f, client_id: v }))}>
-                    <SelectTrigger><SelectValue placeholder={t("income.selectClient")} /></SelectTrigger>
-                    <SelectContent>
-                      {(clients as any[]).filter((c: any) => c.status !== "archived").map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  {!form.client_id && <p className="text-xs text-muted-foreground">{t("income.clientRequired")}</p>}
+                  <ClientCombobox
+                    clients={clients as any[]}
+                    value={form.client_id}
+                    onChange={(id) => setForm((f) => ({ ...f, client_id: id }))}
+                    placeholder={IL.selectOrSearch}
+                    searchPlaceholder={IL.searchClients}
+                    emptyLabel={IL.noClients}
+                  />
                 </div>
-                <Button onClick={handleCreate} className="w-full" disabled={!form.amount || !form.client_id}>{t("income.addIncome")}</Button>
+                <div className="space-y-2">
+                  <Label>{t("common.amount")} ({cs}) *</Label>
+                  <Input type="number" step="0.01" min="0" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t("common.date")} *</Label>
+                  <DatePicker date={form.date} onDateChange={(d) => setForm(f => ({ ...f, date: d }))} />
+                </div>
+                <Button onClick={handleCreate} className="w-full" disabled={!form.client_id || !(form.amount > 0) || !form.date}>
+                  {IL.continue}
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
