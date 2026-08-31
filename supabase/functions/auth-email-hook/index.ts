@@ -7,6 +7,8 @@ import { MagicLinkEmail } from '../_shared/email-templates/magic-link.tsx'
 import { RecoveryEmail } from '../_shared/email-templates/recovery.tsx'
 import { EmailChangeEmail } from '../_shared/email-templates/email-change.tsx'
 import { ReauthenticationEmail } from '../_shared/email-templates/reauthentication.tsx'
+import { createClient } from 'npm:@supabase/supabase-js@2'
+import { getSubject, normalizeLang, type Lang } from '../_shared/email-templates/i18n.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -120,6 +122,25 @@ async function handlePreview(req: Request): Promise<Response> {
   })
 }
 
+// Language resolution: auth emails must be written in the language the user
+// chose in their profile (uk / ru / pl / fr / en). Falls back to English when
+// the profile cannot be read — auth emails are load-bearing and must send.
+const admin = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+)
+
+async function resolveLang(email?: string | null): Promise<Lang> {
+  if (!email) return 'en'
+  try {
+    const { data, error } = await admin.rpc('get_auth_email_language', { _email: email })
+    if (error) return 'en'
+    return normalizeLang(data)
+  } catch (_e) {
+    return 'en'
+  }
+}
+
 // The SDK handler owns verification, dispatch, and retry semantics; this file
 // owns only the email decisions: subjects, templates, and per-type props.
 const handler = createAuthEmailHandler({
@@ -128,56 +149,77 @@ const handler = createAuthEmailHandler({
   senderDomain: SENDER_DOMAIN,
   sendUrl: Deno.env.get('LOVABLE_SEND_URL'),
   emails: {
-    signup: {
-      subject: 'Confirm your email',
-      render: (data) =>
-        React.createElement(SignupEmail, {
+    signup: async (data) => {
+      const language = await resolveLang(data.email)
+      return {
+        subject: getSubject('signup', language),
+        element: React.createElement(SignupEmail, {
           siteName: SITE_NAME,
           siteUrl: SITE_URL,
           recipient: data.email,
           confirmationUrl: data.url,
+          language,
         }),
+      }
     },
-    invite: {
-      subject: "You've been invited",
-      render: (data) =>
-        React.createElement(InviteEmail, {
+    invite: async (data) => {
+      const language = await resolveLang(data.email)
+      return {
+        subject: getSubject('invite', language),
+        element: React.createElement(InviteEmail, {
           siteName: SITE_NAME,
           siteUrl: SITE_URL,
           confirmationUrl: data.url,
+          language,
         }),
+      }
     },
-    magiclink: {
-      subject: 'Your login link',
-      render: (data) =>
-        React.createElement(MagicLinkEmail, {
+    magiclink: async (data) => {
+      const language = await resolveLang(data.email)
+      return {
+        subject: getSubject('magiclink', language),
+        element: React.createElement(MagicLinkEmail, {
           siteName: SITE_NAME,
           confirmationUrl: data.url,
+          language,
         }),
+      }
     },
-    recovery: {
-      subject: 'Reset your password',
-      render: (data) =>
-        React.createElement(RecoveryEmail, {
+    recovery: async (data) => {
+      const language = await resolveLang(data.email)
+      return {
+        subject: getSubject('recovery', language),
+        element: React.createElement(RecoveryEmail, {
           siteName: SITE_NAME,
           confirmationUrl: data.url,
+          token: data.token ?? undefined,
+          language,
         }),
+      }
     },
-    email_change: {
-      subject: 'Confirm your new email',
-      render: (data) =>
-        React.createElement(EmailChangeEmail, {
+    email_change: async (data) => {
+      const language = await resolveLang(data.old_email ?? data.email)
+      return {
+        subject: getSubject('email_change', language),
+        element: React.createElement(EmailChangeEmail, {
           siteName: SITE_NAME,
           oldEmail: data.old_email ?? '',
           email: data.email,
           newEmail: data.new_email ?? '',
           confirmationUrl: data.url,
+          language,
         }),
+      }
     },
-    reauthentication: {
-      subject: 'Your verification code',
-      render: (data) =>
-        React.createElement(ReauthenticationEmail, { token: data.token ?? '' }),
+    reauthentication: async (data) => {
+      const language = await resolveLang(data.email)
+      return {
+        subject: getSubject('reauthentication', language),
+        element: React.createElement(ReauthenticationEmail, {
+          token: data.token ?? '',
+          language,
+        }),
+      }
     },
   },
 })
