@@ -6,13 +6,14 @@
  * a full block.
  */
 
-export type Lang = 'en' | 'uk' | 'pl' | 'fr'
+export type Lang = 'en' | 'uk' | 'ru' | 'pl' | 'fr'
 
 export function normalizeLang(value: unknown): Lang {
-  if (value === 'uk' || value === 'pl' || value === 'en' || value === 'fr') return value
+  if (value === 'uk' || value === 'ru' || value === 'pl' || value === 'en' || value === 'fr') return value
   if (typeof value === 'string') {
     const lower = value.toLowerCase()
     if (lower.startsWith('uk') || lower === 'ua') return 'uk'
+    if (lower.startsWith('ru')) return 'ru'
     if (lower.startsWith('pl')) return 'pl'
     if (lower.startsWith('fr')) return 'fr'
   }
@@ -495,7 +496,7 @@ const fr: LangStrings = {
   },
 }
 
-const STRINGS: Record<Lang, LangStrings> = { en, uk, pl, fr }
+const STRINGS: Record<Lang, LangStrings> = { en, uk, ru, pl, fr }
 
 export function getStrings(lang: Lang | string | undefined | null): LangStrings {
   return STRINGS[normalizeLang(lang)]
