@@ -3605,6 +3605,7 @@ export type Database = {
             Args: { p_session_date: string; p_user_id: string }
             Returns: string
           }
+      get_auth_email_language: { Args: { _email: string }; Returns: string }
       get_session_confirmation: {
         Args: { p_token: string }
         Returns: {
