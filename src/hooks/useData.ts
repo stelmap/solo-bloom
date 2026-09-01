@@ -762,7 +762,7 @@ export function useCompleteAppointment() {
           ...(isDemoMode ? { is_demo: true } : {}),
         } as any);
 
-        await (supabase as any).rpc("recalc_appointment_payment_status", { p_appointment_id: appointmentId });
+        await (supabase as any).rpc("recalc_my_appointment_payment_status", { p_appointment_id: appointmentId });
         return;
       }
 
@@ -806,7 +806,7 @@ export function useCompleteAppointment() {
         }
 
         // Final status recalc (consume RPC already runs it, but rerun in case stillOwed changed nothing on row).
-        await (supabase as any).rpc("recalc_appointment_payment_status", { p_appointment_id: appointmentId });
+        await (supabase as any).rpc("recalc_my_appointment_payment_status", { p_appointment_id: appointmentId });
         return;
       }
 
@@ -846,20 +846,9 @@ export function useCompleteAppointment() {
         );
         incomeId = (incRow as any)?.id ?? null;
 
-        // 1) Close oldest debts of this client first (FIFO).
-        if (clientId && incomeId) {
-          const { data: leftoverRpc, error: debtErr } = await (supabase as any).rpc("apply_payment_to_client_debts", {
-            p_user_id: user!.id,
-            p_client_id: clientId,
-            p_income_id: incomeId,
-            p_amount: received,
-          });
-          if (debtErr) throw debtErr;
-          leftover = Number(leftoverRpc ?? 0);
-        }
-
-        // 2) Apply leftover to current session.
-        if (leftover > 0 && incomeId) {
+        // 1) The session being closed is paid FIRST — the therapist just marked
+        //    THIS session as paid, so it must never stay "awaiting payment".
+        if (incomeId) {
           const allocateToCurrent = Math.min(leftover, priceNum);
           if (allocateToCurrent > 0) {
             await (supabase as any).from("income_session_allocations").insert({
@@ -872,6 +861,19 @@ export function useCompleteAppointment() {
             leftover -= allocateToCurrent;
           }
         }
+
+        // 2) Only the remainder closes older outstanding debts (FIFO).
+        if (leftover > 0.001 && clientId && incomeId) {
+          const { data: leftoverRpc, error: debtErr } = await (supabase as any).rpc("apply_payment_to_client_debts", {
+            p_user_id: user!.id,
+            p_client_id: clientId,
+            p_income_id: incomeId,
+            p_amount: leftover,
+          });
+          if (debtErr) throw debtErr;
+          leftover = Number(leftoverRpc ?? 0);
+        }
+
 
         // 3) Anything still left -> prepayment credit.
         if (leftover > 0.001 && clientId && incomeId) {
@@ -901,7 +903,7 @@ export function useCompleteAppointment() {
       }
 
       // 5) Recalc payment_status for this appointment from allocations.
-      await (supabase as any).rpc("recalc_appointment_payment_status", { p_appointment_id: appointmentId });
+      await (supabase as any).rpc("recalc_my_appointment_payment_status", { p_appointment_id: appointmentId });
     },
     onSuccess: (_d, vars) => {
       track("session_completed", { payment_status: vars.paymentStatus });
@@ -3436,7 +3438,7 @@ export interface SaveIncomeConfirmationInput {
 async function recalcAppointments(appointmentIds: string[]) {
   const unique = Array.from(new Set(appointmentIds.filter(Boolean)));
   for (const id of unique) {
-    await (supabase as any).rpc("recalc_appointment_payment_status", { p_appointment_id: id });
+    await (supabase as any).rpc("recalc_my_appointment_payment_status", { p_appointment_id: id });
   }
 }
 

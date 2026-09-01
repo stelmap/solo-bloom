@@ -13,3 +13,6 @@
 
 ## Other
 - [x] BETA label next to SoloBizz in the sidebar
+
+- [x] Session payment: allocate payment to the closed session first, then older debts
+- [x] Group session closing flow/UI matches single-session one-click bar

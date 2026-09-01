@@ -609,11 +609,45 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   };
 
   /**
+   * One-click completion for GROUP sessions — mirrors the single-session
+   * action bar: same labels, same immediate save, same toast.
+   */
+  const handleGroupQuickComplete = async (state: string) => {
+    if (completeGroupSession.isPending) return;
+    if (!isActive || !groupSessionId || !groupId) return;
+    try {
+      await completeGroupSession.mutateAsync({
+        appointmentId: apt.id,
+        groupId,
+        groupSessionId,
+        participants: groupBillingData.map(p => ({
+          clientId: p.clientId,
+          attendanceStatus: p.attendanceStatus,
+          billable: p.billable,
+          amount: p.amount,
+        })),
+        paymentState: state,
+        paymentMethod: groupPaymentMethod,
+      });
+      toast({
+        title: t("toast.appointmentCompleted"),
+        description: state === "waiting_for_payment"
+          ? t("toast.sessionCompletedExpected")
+          : t("toast.sessionCompletedIncome", { symbol: cs, amount: groupBillingSummary.expectedAmount.toFixed(2) }),
+      });
+      onOpenChange(false);
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
+
+  /**
    * One-click completion used by the simplified Session Details panel.
    * Uses the currently selected radio option, records income / expected
    * payment exactly once and closes the panel without extra confirmation.
    */
   const handleQuickComplete = async (statusOverride?: string) => {
+
     const paymentStatusChoice = statusOverride ?? paymentStatus;
 
     if (completeAppointment.isPending || completeFromPrepayment.isPending || completeFlexible.isPending) return;
@@ -1235,19 +1269,44 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
 
               {isActive && isGroupSession && (
-                <div className="space-y-2">
-                  <Button onClick={openComplete} className="w-full">
-                    <CheckCircle className="h-4 w-4 mr-2" /> {t("calendar.complete")}
+                <div className="sticky bottom-0 -mx-6 space-y-2.5 border-t border-border bg-background px-6 pb-2 pt-4">
+                  {[
+                    { value: "paid_now", label: t("sd.paidComplete"), icon: "check" as const },
+                    { value: "waiting_for_payment", label: t("sd.waitingComplete"), icon: "clock" as const },
+                  ].map((opt, i) => (
+                    <Button
+                      key={opt.value}
+                      variant={i === 0 ? "default" : "outline"}
+                      className={cn(
+                        "h-12 w-full rounded-xl text-sm font-semibold",
+                        i !== 0 && "border-primary/40 text-primary hover:bg-primary/10 hover:text-primary",
+                      )}
+                      onClick={() => handleGroupQuickComplete(opt.value)}
+                      disabled={completeGroupSession.isPending}
+                    >
+                      {opt.icon === "clock"
+                        ? <Clock className="h-4 w-4 mr-2" />
+                        : <CheckCircle className="h-4 w-4 mr-2" />}
+                      {completeGroupSession.isPending ? t("calendar.saving") : opt.label}
+                    </Button>
+                  ))}
+                  <Button
+                    variant="ghost"
+                    className="h-10 w-full rounded-xl text-sm font-medium text-muted-foreground"
+                    onClick={openComplete}
+                  >
+                    <Users className="h-4 w-4 mr-2" /> {t("groups.participantBilling")}
                   </Button>
                   <Button
                     variant="outline"
-                    className="w-full border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    className="h-12 w-full rounded-xl border-destructive/40 text-sm font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive"
                     onClick={() => setCancelOpen(true)}
                   >
                     <XCircle className="h-4 w-4 mr-2" /> {t("cancelSession.title")}
                   </Button>
                 </div>
               )}
+
 
               {!isActive && (
                 <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3">
