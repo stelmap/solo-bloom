@@ -347,6 +347,10 @@ export default function PlansPage() {
     track("tariff_selected", baseProps);
     track("checkout_started", baseProps);
     track("stripe_checkout_opened", baseProps);
+    if (campaignEligible && isCampaignPlan(selectedPlan.code)) {
+      track("support_ukraine_plan_selected", { ...campaignEventProps, ...baseProps });
+      track("support_ukraine_checkout_started", { ...campaignEventProps, ...baseProps });
+    }
 
     // Persist a durable funnel event so admin analytics can show "Visited Stripe".
     // Fire-and-forget — never block the checkout flow on this insert.
