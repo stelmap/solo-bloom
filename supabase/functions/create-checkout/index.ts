@@ -113,7 +113,19 @@ serve(async (req) => {
         return { data: [] as Array<{ id: string }> };
       });
 
-    const [priceResult, customers] = await Promise.all([priceLookupPromise, customerLookupPromise]);
+    // "Support Ukrainian Psychotherapists": eligibility is re-validated server-side
+    // from the practice profile; the client-sent promo code is only a fallback.
+    const profileLookupPromise = supabaseAdmin
+      .from("profiles")
+      .select("language, business_country")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const [priceResult, customers, profileResult] = await Promise.all([
+      priceLookupPromise,
+      customerLookupPromise,
+      profileLookupPromise,
+    ]);
     const { data: priceRow, error: priceError } = priceResult;
 
     const priceId = (priceRow as any)?.stripe_price_id as string | undefined;
@@ -122,6 +134,18 @@ serve(async (req) => {
       return json({ error: "This plan is currently unavailable. Please refresh and choose a plan again." }, 400);
     }
     log("Active price resolved", { planCode, billingPeriod, priceId, withTrial });
+
+    const profile = (profileResult as any)?.data as { language?: string; business_country?: string } | null;
+    const country = String(profile?.business_country ?? "").trim().toLowerCase();
+    const profileLang = String(profile?.language ?? "").trim().toLowerCase();
+    const promoCodeSent = String((body as any).promoCode ?? "").trim().toUpperCase();
+    const campaignPlan = planCode === "solo" || planCode === "pro";
+    const campaignEligible =
+      campaignPlan &&
+      (["ua", "ukr", "ukraine", "україна", "украина"].includes(country) ||
+        profileLang === "uk" ||
+        promoCodeSent === SUPPORT_UA_COUPON);
+    log("Support Ukraine eligibility", { campaignEligible, country, profileLang });
 
     // NOTE: skipping `stripe.prices.retrieve` validation and the active-subscription pre-check
     // on purpose — each adds ~200–500ms and is not required to create a Checkout Session.
