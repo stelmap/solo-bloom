@@ -973,7 +973,7 @@ function LandingNav() {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border/50">of
+    <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border/50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <Link to="/" className="text-xl font-bold text-foreground tracking-tight">
           Solo<span className="text-primary">Bizz</span>
