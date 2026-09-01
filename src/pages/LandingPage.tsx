@@ -1293,6 +1293,8 @@ type PlanRow = {
 function PricingSection() {
   const { t, lang } = useLandingLang();
   const [cycle, setCycle] = useState<Cycle>("monthly");
+  const { eligible: campaignEligible } = useSupportUkraine(lang);
+
 
   const fmt = (n: number): string => {
     if (n === 0) return "€0";
