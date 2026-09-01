@@ -1472,9 +1472,16 @@ function PricingSection() {
                 <h3 className="text-2xl font-semibold text-foreground">{p.name}</h3>
                 <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed min-h-[3rem]">{p.desc}</p>
 
-                <div className="flex items-baseline gap-1 mb-2">
-                  <span className="text-5xl font-bold text-foreground">{fmt(priceNum)}</span>
-                  <span className="text-muted-foreground text-base">{perLabel[cycle]}</span>
+                <div className="mb-2">
+                  <SupportUkrainePrice
+                    lang={lang}
+                    standardPrice={priceNum}
+                    cycle={cycle}
+                    perLabel={perLabel[cycle]}
+                    eligible={campaignEligible}
+                    isFree={isFree}
+                    currencyFormat={fmt}
+                  />
                 </div>
 
                 <p
@@ -1485,7 +1492,11 @@ function PricingSection() {
                   {microMain}
                 </p>
                 <p className="text-xs text-muted-foreground mb-5 min-h-[1rem]">
-                  {subMicro || "\u00A0"}
+                  {isFree && campaignEligible
+                    ? campaignText(lang, "freeStarterNote")
+                    : campaignEligible && !isFree
+                      ? "\u00A0"
+                      : subMicro || "\u00A0"}
                 </p>
 
                 <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-muted/60 border border-border mb-6">
