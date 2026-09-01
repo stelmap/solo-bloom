@@ -617,18 +617,31 @@ export default function PlansPage() {
                         {displayDesc}
                       </p>
 
-                      <div className="flex items-baseline gap-1 mb-2">
-                        <span className="text-5xl font-bold text-foreground">
-                          {price ? formatPrice(price.price, price.currency) : "—"}
-                        </span>
-                        <span className="text-muted-foreground text-base">/ {periodSuffix[period]}</span>
+                      <div className="mb-2">
+                        {price ? (
+                          <SupportUkrainePrice
+                            lang={lang}
+                            standardPrice={Number(price.price)}
+                            cycle={period}
+                            perLabel={`/ ${periodSuffix[period]}`}
+                            eligible={campaignEligible && isCampaignPlan(plan.code)}
+                            currencyFormat={(n) => formatPrice(n, price.currency)}
+                          />
+                        ) : (
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-5xl font-bold text-foreground">—</span>
+                            <span className="text-muted-foreground text-base">/ {periodSuffix[period]}</span>
+                          </div>
+                        )}
                       </div>
 
                       <p className="text-sm mb-1 text-muted-foreground">{billedLabel}</p>
                       <p className="text-xs text-muted-foreground mb-5 min-h-[1rem]">
-                        {equivPerMonth !== null && price
-                          ? `≈ ${formatPrice(Number(equivPerMonth.toFixed(2)), price.currency)} / ${periodSuffix["monthly"]}`
-                          : "\u00A0"}
+                        {campaignEligible && isCampaignPlan(plan.code)
+                          ? "\u00A0"
+                          : equivPerMonth !== null && price
+                            ? `≈ ${formatPrice(Number(equivPerMonth.toFixed(2)), price.currency)} / ${periodSuffix["monthly"]}`
+                            : "\u00A0"}
                       </p>
 
                       {pill && (
