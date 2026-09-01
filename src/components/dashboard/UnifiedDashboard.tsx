@@ -568,7 +568,9 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-foreground truncate">
-                          {a.clients?.name ?? a.group_sessions?.groups?.name ?? "—"}
+                          {(a.group_session_id
+                            ? a.group_sessions?.groups?.name ?? a.clients?.name
+                            : a.clients?.name ?? a.group_sessions?.groups?.name) ?? "—"}
                         </p>
                         <p className="text-xs text-muted-foreground truncate">
                           {a.services?.name ?? "—"} ·{" "}
