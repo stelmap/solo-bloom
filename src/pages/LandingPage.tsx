@@ -1385,10 +1385,21 @@ function PricingSection() {
     },
   ];
 
+  const scrollToPricing = () => {
+    document.getElementById("pricing-plans")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <BillingCycleContext.Provider value={cycle}>
+    <SupportUkraineBanner
+      lang={lang}
+      eligible={campaignEligible}
+      onPrimaryCta={scrollToPricing}
+      className="pt-16 pb-4 bg-orange-50/60"
+      eventProps={{ source_page: "/#pricing" }}
+    />
     <section id="pricing" className="py-20 px-4 sm:px-6 bg-orange-50/60">
-      <div className="max-w-6xl mx-auto">
+      <div id="pricing-plans" className="max-w-6xl mx-auto">
         <div className="text-center mb-10">
           <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-4">{t("pricingEyebrow")}</p>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">{t("pricingTitle")}</h2>
