@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.client_prepaid_balance(uuid, uuid, uuid) FROM authenticated;
