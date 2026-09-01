@@ -7,6 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useSupportUkraine } from "@/hooks/useSupportUkraine";
+import { campaignPrice, campaignText, formatEuro, isCampaignPlan } from "@/lib/supportUkraine";
 import {
   AlertDialog,
   AlertDialogAction,
