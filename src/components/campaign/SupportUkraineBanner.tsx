@@ -3,7 +3,7 @@ import { ArrowRight, Check, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
 import { campaignText } from "@/lib/supportUkraine";
-import bannerImage from "@/assets/support-ukraine-banner.png";
+import bannerAsset from "@/assets/support-ukraine-banner.png.asset.json";
 
 interface Props {
   lang: string;
