@@ -1,19 +1,19 @@
 import { Bell, Users } from "lucide-react";
 import type { AppLanguage } from "@/i18n/translations";
 import { lt } from "@/lib/landingRedesignCopy";
-import calendarAsset from "@/assets/landing-calendar.png.asset.json";
-import clientAsset from "@/assets/landing-client.png.asset.json";
-import financesAsset from "@/assets/landing-finances.png.asset.json";
+import calendarAsset from "@/assets/landing-calendar.png";
+import clientAsset from "@/assets/landing-client.png";
+import financesAsset from "@/assets/landing-finances.png";
 
 /** Stacked real product screens shown next to the hero copy. */
 export function HeroProductShowcase({ lang }: { lang: AppLanguage }) {
   return (
     <div className="relative mx-auto w-full max-w-[620px]">
       <div className="pointer-events-none absolute left-[8%] top-0 hidden w-[46%] overflow-hidden rounded-xl border border-border bg-card opacity-90 shadow-lg lg:block">
-        <img src={clientAsset.url} alt={lt(lang, "altClient")} loading="lazy" className="block w-full" />
+        <img src={clientAsset} alt={lt(lang, "altClient")} loading="lazy" className="block w-full" />
       </div>
       <div className="pointer-events-none absolute right-0 top-0 hidden w-[42%] overflow-hidden rounded-xl border border-border bg-card opacity-90 shadow-lg lg:block">
-        <img src={financesAsset.url} alt={lt(lang, "altFinance")} loading="lazy" className="block w-full" />
+        <img src={financesAsset} alt={lt(lang, "altFinance")} loading="lazy" className="block w-full" />
       </div>
 
       <div className="relative z-10 overflow-hidden rounded-2xl border border-border bg-card shadow-2xl lg:mt-24">
@@ -23,7 +23,7 @@ export function HeroProductShowcase({ lang }: { lang: AppLanguage }) {
           <span className="h-1.5 w-1.5 rounded-full bg-success" />
         </div>
         <img
-          src={calendarAsset.url}
+          src={calendarAsset}
           alt={lt(lang, "altCalendar")}
           width={1440}
           height={900}

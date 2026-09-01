@@ -4,10 +4,10 @@ import type { AppLanguage } from "@/i18n/translations";
 import { lt, type LandingCopyKey } from "@/lib/landingRedesignCopy";
 import { track } from "@/lib/analytics";
 import { landingEventProps } from "@/lib/landingCampaign";
-import calendarAsset from "@/assets/landing-calendar.png.asset.json";
-import dashboardAsset from "@/assets/landing-dashboard.png.asset.json";
-import clientAsset from "@/assets/landing-client.png.asset.json";
-import financesAsset from "@/assets/landing-finances.png.asset.json";
+import calendarAsset from "@/assets/landing-calendar.png";
+import dashboardAsset from "@/assets/landing-dashboard.png";
+import clientAsset from "@/assets/landing-client.png";
+import financesAsset from "@/assets/landing-finances.png";
 
 interface Slide {
   id: string;
@@ -19,10 +19,10 @@ interface Slide {
 }
 
 const SLIDES: Slide[] = [
-  { id: "calendar", label: "tabCalendar", title: "tabCalendarTitle", body: "tabCalendarBody", alt: "altCalendar", image: calendarAsset.url },
-  { id: "today", label: "tabToday", title: "tabTodayTitle", body: "tabTodayBody", alt: "altDashboard", image: dashboardAsset.url },
-  { id: "clients", label: "tabClients", title: "tabClientsTitle", body: "tabClientsBody", alt: "altClient", image: clientAsset.url },
-  { id: "finance", label: "tabFinance", title: "tabFinanceTitle", body: "tabFinanceBody", alt: "altFinance", image: financesAsset.url },
+  { id: "calendar", label: "tabCalendar", title: "tabCalendarTitle", body: "tabCalendarBody", alt: "altCalendar", image: calendarAsset },
+  { id: "today", label: "tabToday", title: "tabTodayTitle", body: "tabTodayBody", alt: "altDashboard", image: dashboardAsset },
+  { id: "clients", label: "tabClients", title: "tabClientsTitle", body: "tabClientsBody", alt: "altClient", image: clientAsset },
+  { id: "finance", label: "tabFinance", title: "tabFinanceTitle", body: "tabFinanceBody", alt: "altFinance", image: financesAsset },
 ];
 
 /** Interactive product tour with accessible tablist semantics + keyboard nav. */
