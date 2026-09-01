@@ -422,10 +422,10 @@ const C = {
 
   proName: { en: "Pro Practice", fr: "Pro Practice", uk: "Pro Practice", pl: "Pro Practice" },
   proDesc: {
-    en: "All SoloBizz features included. Advanced practice management — more active clients, group sessions, supervision and full financial control.",
-    fr: "Toutes les fonctionnalités SoloBizz incluses. Gestion avancée de pratique — plus de clients actifs, séances de groupe, supervision et contrôle financier complet.",
-    uk: "Усі функції SoloBizz включено. Розширене керування практикою — більше активних клієнтів, групові сесії, супервізія та повний фінансовий контроль.",
-    pl: "Wszystkie funkcje SoloBizz w komplecie. Zaawansowane zarządzanie praktyką — więcej aktywnych klientów, sesje grupowe, superwizja i pełna kontrola finansowa.",
+    en: "Advanced practice management — more active clients, group sessions, supervision and full financial control.",
+    fr: "Gestion avancée de pratique — plus de clients actifs, séances de groupe, supervision et contrôle financier complet.",
+    uk: "Розширене керування практикою — більше активних клієнтів, групові сесії, супервізія та повний фінансовий контроль.",
+    pl: "Zaawansowane zarządzanie praktyką — więcej aktywnych klientów, sesje grupowe, superwizja i pełna kontrola finansowa.",
   },
   proIntro: {
     en: "All SoloBizz features included.",
