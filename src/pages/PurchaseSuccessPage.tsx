@@ -35,6 +35,7 @@ export default function PurchaseSuccessPage() {
         await refreshSubscription({ force: true });
         qc.invalidateQueries();
         toast.success("Your plan is active.");
+        track("stripe_checkout_completed", {});
         if (readStoredPromoCode()) {
           track("support_ukraine_subscription_completed", {});
           storePromoCode(null);

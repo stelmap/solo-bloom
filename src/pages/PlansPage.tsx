@@ -86,6 +86,14 @@ export default function PlansPage() {
 
   useEffect(() => {
     track("pricing_page_viewed", { surface: "in_app_plans" });
+    try {
+      if (new URLSearchParams(window.location.search).get("checkout") === "cancel") {
+        track("stripe_checkout_cancelled", { surface: "in_app_plans", locale: lang });
+      }
+    } catch {
+      /* ignore */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const isPaid = subscription.subscribed || subscription.on_trial;
@@ -347,6 +355,7 @@ export default function PlansPage() {
     track("tariff_selected", baseProps);
     track("checkout_started", baseProps);
     track("stripe_checkout_opened", baseProps);
+    track("stripe_checkout_started", { ...baseProps, locale: lang, campaign_applied: campaignEligible });
     if (campaignEligible && isCampaignPlan(selectedPlan.code)) {
       track("support_ukraine_plan_selected", { ...campaignEventProps, ...baseProps });
       track("support_ukraine_checkout_started", { ...campaignEventProps, ...baseProps });
