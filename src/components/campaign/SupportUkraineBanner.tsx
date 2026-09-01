@@ -116,7 +116,7 @@ export function SupportUkraineBanner({
 
           <div className="order-2">
             <img
-              src={bannerImage}
+              src={bannerAsset.url}
               alt={campaignText(lang, "bannerImageAlt")}
               loading="lazy"
               className="w-full h-auto rounded-2xl"
