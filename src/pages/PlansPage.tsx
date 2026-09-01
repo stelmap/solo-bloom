@@ -13,6 +13,10 @@ import { useHasDemoData } from "@/hooks/useDemoWorkspace";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { track } from "@/lib/analytics";
+import { campaignText, isCampaignPlan, SUPPORT_UA_PROMO_CODE } from "@/lib/supportUkraine";
+import { useSupportUkraine } from "@/hooks/useSupportUkraine";
+import { SupportUkrainePrice } from "@/components/campaign/SupportUkrainePrice";
+import { SupportUkrainePromoInput } from "@/components/campaign/SupportUkrainePromoInput";
 
 type Plan = {
   id: string;
