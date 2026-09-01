@@ -3739,6 +3739,10 @@ export type Database = {
         Args: { p_appointment_id: string }
         Returns: undefined
       }
+      recalc_my_appointment_payment_status: {
+        Args: { p_appointment_id: string }
+        Returns: undefined
+      }
       record_user_activity: { Args: never; Returns: Json }
       regenerate_booking_link_token: { Args: never; Returns: string }
       seed_demo_workspace: { Args: { p_user_id: string }; Returns: Json }
