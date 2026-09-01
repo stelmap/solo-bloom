@@ -1301,8 +1301,11 @@ export default function CalendarPage() {
     }
   };
 
-  const toUTCDateStr = (d: Date) =>
-    `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+  // Function declaration (hoisted): findConflict() above calls this during the
+  // first render, before this point in the component body would be reached.
+  function toUTCDateStr(d: Date) {
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+  }
 
   // Apply user filters before the calendar reads events
   const visibleAppointments = useMemo(() => {
