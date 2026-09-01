@@ -1010,40 +1010,41 @@ function LandingNav() {
 // ── Hero ──────────────────────────────────────────────────────────────
 
 function HeroSection() {
-  const { t } = useLandingLang();
+  const { t, lang } = useLandingLang();
   const accent = t("heroTitleAccent");
   return (
-    <section className="pt-28 pb-10 sm:pt-32 sm:pb-16 px-4 sm:px-6">
-      <div className="max-w-6xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-10 leading-normal">
-          <Sparkles className="h-3.5 w-3.5 shrink-0" />
-          <span className="leading-normal">{t("heroBadge")}</span>
-        </div>
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground tracking-tight leading-[1.1] mb-8 max-w-5xl mx-auto">
-          <span className="block">{t("heroTitlePrefix")}</span>
-          {accent && <span className="block text-primary mt-2">{accent}</span>}
-        </h1>
-        <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto mb-6 leading-relaxed">
-          {t("heroSub")}
-        </p>
-        <div className="flex flex-col items-center gap-8">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+    <section className="px-4 pb-10 pt-10 sm:px-6 sm:pb-16 sm:pt-14">
+      <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[minmax(0,46%)_minmax(0,54%)]">
+        <div className="text-center lg:text-left">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium leading-normal text-primary">
+            <Sparkles className="h-3.5 w-3.5 shrink-0" />
+            <span className="leading-normal">{t("heroBadge")}</span>
+          </div>
+          <h1 className="mb-6 text-3xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+            <span className="block">{t("heroTitlePrefix")}</span>
+            {accent && <span className="mt-2 block text-primary">{accent}</span>}
+          </h1>
+          <p className="mb-6 text-base leading-relaxed text-muted-foreground sm:text-lg">
+            {t("heroSub")}
+          </p>
+          <div className="flex flex-col items-center gap-4 sm:flex-row lg:justify-start">
             <PrimaryCta label={t("heroCta")} source="/" cta="hero" />
             <a
               href="#pricing"
-              className="inline-flex items-center justify-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-4 h-12"
+              className="inline-flex h-12 items-center justify-center px-4 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               {t("heroSecondary")}
             </a>
           </div>
-          <p className="text-sm text-muted-foreground">{t("heroSubCta")}</p>
-          <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs sm:text-sm text-muted-foreground mt-4">
+          <p className="mt-5 text-sm text-muted-foreground">{t("heroSubCta")}</p>
+          <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 text-xs text-muted-foreground sm:text-sm lg:justify-start">
             <li className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-success" /> {t("trustData")}</li>
             <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /> {t("trustGdpr")}</li>
             <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /> {t("trustStripe")}</li>
             <li className="inline-flex items-center gap-1.5"><MessageCircle className="h-4 w-4 text-success" /> {t("trustSupport")}</li>
           </ul>
         </div>
+        <HeroProductShowcase lang={lang} />
       </div>
     </section>
   );
