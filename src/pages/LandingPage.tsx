@@ -384,10 +384,10 @@ const C = {
     pl: "Dane Twoich klientów są chronione. Nie widzimy i nie wykorzystujemy informacji o klientach.",
   },
   soloDesc: {
-    en: "All SoloBizz features included. Affordable plan for a small solo practice — manage clients, sessions and payments without chaos.",
-    fr: "Toutes les fonctionnalités SoloBizz incluses. Formule abordable pour une petite pratique solo — gérez clients, séances et paiements sans chaos.",
-    uk: "Усі функції SoloBizz включено. Доступний план для невеликої соло-практики — ведення клієнтів, сесій та оплат без хаосу.",
-    pl: "Wszystkie funkcje SoloBizz w komplecie. Przystępny plan dla małej praktyki solo — klienci, sesje i płatności bez chaosu.",
+    en: "Affordable plan for a small solo practice — manage clients, sessions and payments without chaos.",
+    fr: "Formule abordable pour une petite pratique solo — gérez clients, séances et paiements sans chaos.",
+    uk: "Доступний план для невеликої соло-практики — ведення клієнтів, сесій та оплат без хаосу.",
+    pl: "Przystępny plan dla małej praktyki solo — klienci, sesje i płatności bez chaosu.",
   },
   soloIntro: {
     en: "All SoloBizz features included.",
