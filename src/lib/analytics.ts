@@ -189,7 +189,17 @@ export type AnalyticsEvent =
   | "payment_succeeded"
   | "payment_failed"
   | "subscription_cancelled"
-  | "scroll_depth";
+  | "scroll_depth"
+  // Support Ukrainian Psychotherapists campaign
+  | "support_ukraine_banner_viewed"
+  | "support_ukraine_cta_clicked"
+  | "support_ukraine_discount_auto_applied"
+  | "support_ukraine_promo_entered"
+  | "support_ukraine_promo_applied"
+  | "support_ukraine_promo_failed"
+  | "support_ukraine_plan_selected"
+  | "support_ukraine_checkout_started"
+  | "support_ukraine_subscription_completed";
 
 // Events we persist to Supabase user_activity_events for the admin dashboard.
 const PERSISTED_EVENTS = new Set<AnalyticsEvent>([
