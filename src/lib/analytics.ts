@@ -199,7 +199,17 @@ export type AnalyticsEvent =
   | "support_ukraine_promo_failed"
   | "support_ukraine_plan_selected"
   | "support_ukraine_checkout_started"
-  | "support_ukraine_subscription_completed";
+  | "support_ukraine_subscription_completed"
+  // Landing page redesign funnel
+  | "promo_banner_view"
+  | "promo_banner_close"
+  | "promo_activate_click"
+  | "hero_primary_cta_click"
+  | "hero_product_tab_click"
+  | "pricing_plan_select"
+  | "stripe_checkout_started"
+  | "stripe_checkout_completed"
+  | "stripe_checkout_cancelled";
 
 // Events we persist to Supabase user_activity_events for the admin dashboard.
 const PERSISTED_EVENTS = new Set<AnalyticsEvent>([
