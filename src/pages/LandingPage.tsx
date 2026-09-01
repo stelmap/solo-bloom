@@ -14,6 +14,18 @@ import { campaignText } from "@/lib/supportUkraine";
 import { useSupportUkraine } from "@/hooks/useSupportUkraine";
 import { SupportUkraineBanner } from "@/components/campaign/SupportUkraineBanner";
 import { SupportUkrainePrice } from "@/components/campaign/SupportUkrainePrice";
+import { PromoTopBar } from "@/components/landing/PromoTopBar";
+import { HeroProductShowcase } from "@/components/landing/HeroProductShowcase";
+import { OutcomeStrip } from "@/components/landing/OutcomeStrip";
+import { ProductTour } from "@/components/landing/ProductTour";
+import { WorkflowSection } from "@/components/landing/WorkflowSection";
+import { lt } from "@/lib/landingRedesignCopy";
+import {
+  authUrlForOffer,
+  landingEventProps,
+  storePendingOffer,
+  isCampaignActive,
+} from "@/lib/landingCampaign";
 import {
   ArrowRight, CheckCircle2, AlertTriangle, AlertCircle, TrendingUp,
   Calendar as CalendarIcon, Users, Sparkles, ShieldCheck,
