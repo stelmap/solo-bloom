@@ -1,15 +1,15 @@
 # Roadmap
 
-## Support Ukrainian Psychotherapists campaign
-- [x] Stripe coupon + promotion code `SUPPORT_UA_PSYCHOTHERAPY_50`
-- [x] `promotions` row for the campaign code
-- [x] Shared campaign lib (`src/lib/supportUkraine.ts`) + eligibility hook
-- [x] Campaign banner, price block, promo input components
+## Support Ukrainian Psychotherapists campaign (50% off Solo & Pro)
+- [x] Campaign source of truth (`src/lib/supportUkraine.ts`) + eligibility hook
 - [x] Analytics events
-- [ ] Landing page: banner + discounted pricing cards
-- [ ] Plans page: discounted cards, promo input, checkout payload
-- [ ] Checkout function: apply coupon once (no stacking)
-- [ ] Billing settings: campaign status block
+- [x] Banner, price display, promo input components
+- [x] Landing page banner + discounted pricing
+- [x] Plans page pricing, promo panel, checkout hint, tracking
+- [x] Server-side eligibility + coupon applied once in `create-checkout` (no stacking)
+- [x] Billing settings campaign block (status, plan, discounted renewal, notice)
+- [x] Conversion tracking on purchase success
+- [x] Stripe coupon + promotion code (live), `promotions` row registered
 
 ## Other
-- [x] Add BETA label next to SoloBizz in the left sidebar
+- [x] BETA label next to SoloBizz in the sidebar
