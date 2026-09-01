@@ -323,7 +323,11 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
             {todaySessions.map((a) => {
               const isNext = nextSession?.id === a.id;
               const isPaid = PAID_STATUSES.has(a.payment_status);
-              const name = a.clients?.name ?? a.group_sessions?.groups?.name ?? "—";
+              // Group sessions must show the group name (as the calendar does),
+              // not the first participant that happens to be joined on the row.
+              const name = (a.group_session_id
+                ? a.group_sessions?.groups?.name ?? a.clients?.name
+                : a.clients?.name ?? a.group_sessions?.groups?.name) ?? "—";
               const meta = `${a.services?.name ?? "—"} · ${a.duration_minutes ?? 60} ${t("common.min")}`;
               return (
                 <li key={a.id} className="flex gap-4">
