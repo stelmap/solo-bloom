@@ -1813,21 +1813,23 @@ export default function CalendarPage() {
             <p className="text-xs text-muted-foreground break-all rounded-lg border border-border bg-muted/40 p-2">
               {bookingUrl}
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
-                variant="outline" size="sm" className="flex-1"
+                variant="outline" size="sm" className="flex-1 min-w-[8rem] justify-center px-2"
                 onClick={() => {
                   navigator.clipboard.writeText(bookingUrl);
                   toast({ title: (t as any)("common.copied") || "Copied" });
                 }}
               >
-                <Copy className="h-4 w-4 mr-1" /> {(t as any)("common.copyLink") || "Copy link"}
+                <Copy className="h-4 w-4 mr-1 shrink-0" />
+                <span className="truncate">{(t as any)("common.copyLink") || "Copy link"}</span>
               </Button>
               <Button
-                variant="outline" size="sm" className="flex-1"
+                variant="outline" size="sm" className="flex-1 min-w-[8rem] justify-center px-2"
                 onClick={() => window.open(bookingUrl, "_blank", "noopener")}
               >
-                <ExternalLink className="h-4 w-4 mr-1" /> {(t as any)("booking.openLink") || "Open link"}
+                <ExternalLink className="h-4 w-4 mr-1 shrink-0" />
+                <span className="truncate">{(t as any)("booking.openLink") || "Open link"}</span>
               </Button>
             </div>
           </div>
