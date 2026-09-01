@@ -19,6 +19,8 @@ const normLang = (v: unknown): Lang => {
 const COPY: Record<Lang, {
   days: string; from: string; until: string; to: string; sync: string;
   errOrder: string; errNoDay: string;
+  notice: string; noticeHint: string; horizon: string; horizonHint: string;
+  noNotice: string; hours: (n: number) => string; days_: (n: number) => string;
   short: string[]; // Sun..Sat
 }> = {
   en: {
@@ -27,6 +29,9 @@ const COPY: Record<Lang, {
     sync: "Busy time and days off are automatically excluded from the public calendar.",
     errOrder: "“Available until” must be later than “Available from”.",
     errNoDay: "Select at least one available day.",
+    notice: "Minimum notice", noticeHint: "Slots sooner than this are hidden from the public link.",
+    horizon: "Booking horizon", horizonHint: "How far ahead clients can book.",
+    noNotice: "No minimum", hours: (n) => `${n} h`, days_: (n) => `${n} days`,
     short: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
   },
   uk: {
@@ -35,6 +40,9 @@ const COPY: Record<Lang, {
     sync: "Зайнятий час і вихідні автоматично виключаються з публічного календаря.",
     errOrder: "«Доступно до» має бути пізніше за «Доступно з».",
     errNoDay: "Оберіть щонайменше один доступний день.",
+    notice: "Мінімальний час до запису", noticeHint: "Слоти раніше цього часу не показуються в публічному посиланні.",
+    horizon: "Горизонт запису", horizonHint: "Наскільки наперед клієнти можуть записатися.",
+    noNotice: "Без обмеження", hours: (n) => `${n} год`, days_: (n) => `${n} дн.`,
     short: ["Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
   },
   ru: {
@@ -43,6 +51,9 @@ const COPY: Record<Lang, {
     sync: "Занятое время и выходные автоматически исключаются из публичного календаря.",
     errOrder: "«Доступно до» должно быть позже «Доступно с».",
     errNoDay: "Выберите хотя бы один доступный день.",
+    notice: "Минимальное время до записи", noticeHint: "Слоты раньше этого времени не показываются в публичной ссылке.",
+    horizon: "Горизонт записи", horizonHint: "Насколько заранее клиенты могут записаться.",
+    noNotice: "Без ограничения", hours: (n) => `${n} ч`, days_: (n) => `${n} дн.`,
     short: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
   },
   fr: {
@@ -51,6 +62,9 @@ const COPY: Record<Lang, {
     sync: "Les créneaux occupés et les jours de congé sont automatiquement exclus du calendrier public.",
     errOrder: "« Disponible jusqu'à » doit être après « Disponible à partir de ».",
     errNoDay: "Sélectionnez au moins un jour disponible.",
+    notice: "Préavis minimum", noticeHint: "Les créneaux plus proches sont masqués du lien public.",
+    horizon: "Horizon de réservation", horizonHint: "Jusqu'à quand les clients peuvent réserver.",
+    noNotice: "Aucun", hours: (n) => `${n} h`, days_: (n) => `${n} jours`,
     short: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
   },
   pl: {
@@ -59,9 +73,16 @@ const COPY: Record<Lang, {
     sync: "Zajęty czas i dni wolne są automatycznie wykluczane z publicznego kalendarza.",
     errOrder: "„Dostępne do” musi być późniejsze niż „Dostępne od”.",
     errNoDay: "Wybierz przynajmniej jeden dostępny dzień.",
+    notice: "Minimalne wyprzedzenie", noticeHint: "Wcześniejsze terminy są ukryte w publicznym linku.",
+    horizon: "Horyzont rezerwacji", horizonHint: "Jak daleko w przód klienci mogą rezerwować.",
+    noNotice: "Brak", hours: (n) => `${n} h`, days_: (n) => `${n} dni`,
     short: ["Nd", "Pn", "Wt", "Śr", "Cz", "Pt", "So"],
   },
 };
+
+const NOTICE_OPTIONS = [0, 1, 2, 3, 6, 12, 24, 48, 72];
+const HORIZON_OPTIONS = [7, 14, 30, 60, 90, 180];
+
 
 const TIME_OPTIONS = (() => {
   const arr: string[] = [];
@@ -135,16 +156,21 @@ export const BookingAvailabilitySection = forwardRef<BookingAvailabilityHandle, 
     const [selected, setSelected] = useState<number[]>(DEFAULT_DAYS);
     const [from, setFrom] = useState(DEFAULT_FROM);
     const [until, setUntil] = useState(DEFAULT_UNTIL);
+    const [notice, setNotice] = useState(24);
+    const [horizon, setHorizon] = useState(30);
     const hydrated = useRef(false);
     const baseline = useRef<string>("");
 
-    const snapshot = (days: number[], s: string, e: string) =>
-      JSON.stringify({ d: [...days].sort((a, b) => a - b), s, e });
+    const snapshot = (days: number[], s: string, e: string, n: number, h: number) =>
+      JSON.stringify({ d: [...days].sort((a, b) => a - b), s, e, n, h });
 
     // Hydrate: booking_availability → working schedule → Mon–Fri 09:00–18:00
     useEffect(() => {
       if (hydrated.current || !userId || isLoading || !availability) return;
-      const enabled = (availability as any[]).filter((r) => r.is_enabled);
+      const rows = availability as any[];
+      const enabled = rows.filter((r) => r.is_enabled);
+      const n = Number(rows[0]?.min_notice_hours ?? 24);
+      const h = Number(rows[0]?.max_horizon_days ?? 30);
       if (enabled.length > 0) {
         const days = Array.from(new Set(enabled.map((r) => r.weekday as number)));
         const s = norm(enabled[0].start_time) || DEFAULT_FROM;
@@ -152,7 +178,9 @@ export const BookingAvailabilitySection = forwardRef<BookingAvailabilityHandle, 
         setSelected(days);
         setFrom(s);
         setUntil(e);
-        baseline.current = snapshot(days, s, e);
+        setNotice(n);
+        setHorizon(h);
+        baseline.current = snapshot(days, s, e, n, h);
         hydrated.current = true;
         return;
       }
@@ -170,14 +198,16 @@ export const BookingAvailabilitySection = forwardRef<BookingAvailabilityHandle, 
       setSelected(days);
       setFrom(start);
       setUntil(end);
-      baseline.current = snapshot(days, start, end);
+      setNotice(n);
+      setHorizon(h);
+      baseline.current = snapshot(days, start, end, n, h);
       hydrated.current = true;
       // Persist the initialized defaults so public slots work immediately.
-      void persist(days, start, end).catch(() => undefined);
+      void persist(days, start, end, n, h).catch(() => undefined);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [availability, isLoading, workingSchedule, userId]);
 
-    const dirty = hydrated.current && baseline.current !== snapshot(selected, from, until);
+    const dirty = hydrated.current && baseline.current !== snapshot(selected, from, until, notice, horizon);
     useEffect(() => {
       onDirtyChange?.(dirty);
     }, [dirty, onDirtyChange]);
@@ -191,14 +221,14 @@ export const BookingAvailabilitySection = forwardRef<BookingAvailabilityHandle, 
         ? L.errNoDay
         : null;
 
-    async function persist(days: number[], start: string, end: string) {
+    async function persist(days: number[], start: string, end: string, noticeHours: number, horizonDays: number) {
       if (!userId) return;
       const base = (availability as any[])?.[0];
       const shared = {
         session_duration_minutes: base?.session_duration_minutes ?? 60,
         buffer_minutes: base?.buffer_minutes ?? 10,
-        min_notice_hours: base?.min_notice_hours ?? 24,
-        max_horizon_days: base?.max_horizon_days ?? 30,
+        min_notice_hours: noticeHours,
+        max_horizon_days: horizonDays,
       };
       const rows = Array.from({ length: 7 }, (_, wd) => ({
         user_id: userId,
@@ -221,15 +251,16 @@ export const BookingAvailabilitySection = forwardRef<BookingAvailabilityHandle, 
         .insert(rows as any);
       if (upErr) throw upErr;
       await qc.invalidateQueries({ queryKey: ["booking_availability", userId] });
-      baseline.current = snapshot(days, start, end);
+      baseline.current = snapshot(days, start, end, noticeHours, horizonDays);
       onDirtyChange?.(false);
     }
+
 
     useImperativeHandle(ref, () => ({
       validate: () => error,
       save: async () => {
         if (error) throw new Error(error);
-        await persist(selected, from, until);
+        await persist(selected, from, until, notice, horizon);
       },
     }));
 
@@ -276,6 +307,33 @@ export const BookingAvailabilitySection = forwardRef<BookingAvailabilityHandle, 
           <div className="flex-1 space-y-1.5">
             <Label htmlFor="bk-until" className="text-xs text-muted-foreground font-normal">{L.until}</Label>
             <TimeSelect id="bk-until" value={until} onChange={setUntil} disabled={disabled} />
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex-1 space-y-1.5">
+            <Label htmlFor="bk-notice" className="text-xs text-muted-foreground font-normal">{L.notice}</Label>
+            <Select value={String(notice)} onValueChange={(v) => setNotice(Number(v))} disabled={disabled}>
+              <SelectTrigger id="bk-notice" className="h-10"><SelectValue /></SelectTrigger>
+              <SelectContent className="max-h-72">
+                {(NOTICE_OPTIONS.includes(notice) ? NOTICE_OPTIONS : [notice, ...NOTICE_OPTIONS]).map((n) => (
+                  <SelectItem key={n} value={String(n)}>{n === 0 ? L.noNotice : L.hours(n)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[11px] text-muted-foreground">{L.noticeHint}</p>
+          </div>
+          <div className="flex-1 space-y-1.5">
+            <Label htmlFor="bk-horizon" className="text-xs text-muted-foreground font-normal">{L.horizon}</Label>
+            <Select value={String(horizon)} onValueChange={(v) => setHorizon(Number(v))} disabled={disabled}>
+              <SelectTrigger id="bk-horizon" className="h-10"><SelectValue /></SelectTrigger>
+              <SelectContent className="max-h-72">
+                {(HORIZON_OPTIONS.includes(horizon) ? HORIZON_OPTIONS : [horizon, ...HORIZON_OPTIONS]).map((d) => (
+                  <SelectItem key={d} value={String(d)}>{L.days_(d)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[11px] text-muted-foreground">{L.horizonHint}</p>
           </div>
         </div>
 
