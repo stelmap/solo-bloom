@@ -7,6 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useSupportUkraine } from "@/hooks/useSupportUkraine";
+import { campaignPrice, campaignText, formatEuro, isCampaignPlan } from "@/lib/supportUkraine";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,6 +55,8 @@ type ResolvedPlan = {
   planName: string | null;
   planCode: string | null;
   billingPeriod: BillingPeriod | null;
+  price?: number | null;
+  currency?: string | null;
 };
 
 export function SubscriptionSection() {
@@ -64,6 +68,7 @@ export function SubscriptionSection() {
   const [refreshing, setRefreshing] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [resolved, setResolved] = useState<ResolvedPlan>({ planName: null, planCode: null, billingPeriod: null });
+  const { eligible: campaignEligible } = useSupportUkraine();
 
   const dateLocale = lang === "fr" ? frLocale : lang === "uk" ? ukLocale : undefined;
   const fmtDate = (d: string) => format(new Date(d), "d MMM yyyy", { locale: dateLocale });
@@ -79,7 +84,7 @@ export function SubscriptionSection() {
 
       const { data } = await supabase
         .from("plan_prices")
-        .select("billing_period, plans(name, code)")
+        .select("billing_period, price, currency, plans(name, code)")
         .eq("stripe_price_id", priceId)
         .maybeSingle();
 
@@ -90,6 +95,8 @@ export function SubscriptionSection() {
           planName: (data as any).plans?.name ?? null,
           planCode: (data as any).plans?.code ?? null,
           billingPeriod: (data.billing_period as BillingPeriod) ?? null,
+          price: (data as any).price != null ? Number((data as any).price) : null,
+          currency: (data as any).currency ?? "EUR",
         });
         return;
       }
@@ -300,6 +307,28 @@ export function SubscriptionSection() {
                 </Field>
               </dl>
             </div>
+
+            {/* Support Ukrainian Psychotherapists campaign */}
+            {campaignEligible && isCampaignPlan(resolved.planCode) && (
+              <div className="rounded-xl border border-[hsl(214_85%_52%)]/25 bg-[hsl(47_95%_96%)] dark:bg-muted/30 p-5">
+                <p className="text-sm font-semibold text-foreground mb-3">
+                  {campaignText(lang, "campaignName")}
+                </p>
+                <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+                  <Field label={campaignText(lang, "billingDiscountLabel")}>−50%</Field>
+                  <Field label={campaignText(lang, "billingStatusLabel")}>
+                    {campaignText(lang, "billingStatusActive")}
+                  </Field>
+                  <Field label={campaignText(lang, "billingAppliedToLabel")}>{planLabel}</Field>
+                  <Field label={campaignText(lang, "billingNextPaymentLabel")} muted={!resolved.price}>
+                    {resolved.price
+                      ? `${formatEuro(campaignPrice(resolved.price))}${dateValue ? ` — ${dateValue}` : ""}`
+                      : dateValue}
+                  </Field>
+                </dl>
+                <p className="mt-3 text-xs text-muted-foreground">{campaignText(lang, "renewalNotice")}</p>
+              </div>
+            )}
 
             {/* Plan summary */}
             <div className="rounded-xl border border-border/60 bg-muted/30 p-5">

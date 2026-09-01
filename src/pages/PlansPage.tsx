@@ -13,6 +13,10 @@ import { useHasDemoData } from "@/hooks/useDemoWorkspace";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { track } from "@/lib/analytics";
+import { campaignText, isCampaignPlan, SUPPORT_UA_PROMO_CODE } from "@/lib/supportUkraine";
+import { useSupportUkraine } from "@/hooks/useSupportUkraine";
+import { SupportUkrainePrice } from "@/components/campaign/SupportUkrainePrice";
+import { SupportUkrainePromoInput } from "@/components/campaign/SupportUkrainePromoInput";
 
 type Plan = {
   id: string;
@@ -65,6 +69,11 @@ export default function PlansPage() {
   const { t, lang } = useLanguage();
   const qc = useQueryClient();
   const { data: hasDemoData } = useHasDemoData();
+  const {
+    eligible: campaignEligible,
+    applyPromoCode,
+    baseEventProps: campaignEventProps,
+  } = useSupportUkraine();
   const [loading, setLoading] = useState(true);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [prices, setPrices] = useState<PlanPrice[]>([]);
@@ -338,6 +347,10 @@ export default function PlansPage() {
     track("tariff_selected", baseProps);
     track("checkout_started", baseProps);
     track("stripe_checkout_opened", baseProps);
+    if (campaignEligible && isCampaignPlan(selectedPlan.code)) {
+      track("support_ukraine_plan_selected", { ...campaignEventProps, ...baseProps });
+      track("support_ukraine_checkout_started", { ...campaignEventProps, ...baseProps });
+    }
 
     // Persist a durable funnel event so admin analytics can show "Visited Stripe".
     // Fire-and-forget — never block the checkout flow on this insert.
@@ -365,7 +378,15 @@ export default function PlansPage() {
 
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { planCode: selectedPlan.code, billingPeriod: period, withTrial: false, locale: lang },
+        body: {
+          planCode: selectedPlan.code,
+          billingPeriod: period,
+          withTrial: false,
+          locale: lang,
+          // The backend re-validates eligibility; this is only a hint so the
+          // coupon is pre-applied for users who entered the promo code.
+          promoCode: campaignEligible ? SUPPORT_UA_PROMO_CODE : null,
+        },
       });
       const durationMs = Date.now() - startedAt;
       if (error) {
@@ -617,18 +638,31 @@ export default function PlansPage() {
                         {displayDesc}
                       </p>
 
-                      <div className="flex items-baseline gap-1 mb-2">
-                        <span className="text-5xl font-bold text-foreground">
-                          {price ? formatPrice(price.price, price.currency) : "—"}
-                        </span>
-                        <span className="text-muted-foreground text-base">/ {periodSuffix[period]}</span>
+                      <div className="mb-2">
+                        {price ? (
+                          <SupportUkrainePrice
+                            lang={lang}
+                            standardPrice={Number(price.price)}
+                            cycle={period}
+                            perLabel={`/ ${periodSuffix[period]}`}
+                            eligible={campaignEligible && isCampaignPlan(plan.code)}
+                            currencyFormat={(n) => formatPrice(n, price.currency)}
+                          />
+                        ) : (
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-5xl font-bold text-foreground">—</span>
+                            <span className="text-muted-foreground text-base">/ {periodSuffix[period]}</span>
+                          </div>
+                        )}
                       </div>
 
                       <p className="text-sm mb-1 text-muted-foreground">{billedLabel}</p>
                       <p className="text-xs text-muted-foreground mb-5 min-h-[1rem]">
-                        {equivPerMonth !== null && price
-                          ? `≈ ${formatPrice(Number(equivPerMonth.toFixed(2)), price.currency)} / ${periodSuffix["monthly"]}`
-                          : "\u00A0"}
+                        {campaignEligible && isCampaignPlan(plan.code)
+                          ? "\u00A0"
+                          : equivPerMonth !== null && price
+                            ? `≈ ${formatPrice(Number(equivPerMonth.toFixed(2)), price.currency)} / ${periodSuffix["monthly"]}`
+                            : "\u00A0"}
                       </p>
 
                       {pill && (
@@ -675,6 +709,25 @@ export default function PlansPage() {
 
               </div>
             )}
+
+            {/* Support Ukrainian Psychotherapists — eligibility / promo code */}
+            <div className="mt-10 max-w-xl mx-auto p-5 rounded-2xl border border-border bg-card">
+              <p className="text-sm font-semibold text-foreground mb-1">
+                {campaignText(lang, "campaignName")}
+              </p>
+              <p className="text-sm text-muted-foreground mb-4">
+                {campaignText(lang, "bannerDiscount")}
+              </p>
+              <SupportUkrainePromoInput
+                lang={lang}
+                eligible={campaignEligible}
+                planCode={orderedPlans[0]?.code ?? "solo"}
+                onApply={applyPromoCode}
+              />
+              {campaignEligible && (
+                <p className="mt-3 text-xs text-muted-foreground">{campaignText(lang, "renewalNotice")}</p>
+              )}
+            </div>
 
             {/* Landing-aligned footer copy */}
             <div className="mt-12 text-center max-w-3xl mx-auto space-y-2">

@@ -10,6 +10,10 @@ import {
 import { getStoredLang, setPreLoginLang } from "@/i18n/LanguageContext";
 import type { Language, AppLanguage } from "@/i18n/translations";
 import { track } from "@/lib/analytics";
+import { campaignText } from "@/lib/supportUkraine";
+import { useSupportUkraine } from "@/hooks/useSupportUkraine";
+import { SupportUkraineBanner } from "@/components/campaign/SupportUkraineBanner";
+import { SupportUkrainePrice } from "@/components/campaign/SupportUkrainePrice";
 import {
   ArrowRight, CheckCircle2, AlertTriangle, AlertCircle, TrendingUp,
   Calendar as CalendarIcon, Users, Sparkles, ShieldCheck,
@@ -1293,6 +1297,8 @@ type PlanRow = {
 function PricingSection() {
   const { t, lang } = useLandingLang();
   const [cycle, setCycle] = useState<Cycle>("monthly");
+  const { eligible: campaignEligible } = useSupportUkraine(lang);
+
 
   const fmt = (n: number): string => {
     if (n === 0) return "€0";
@@ -1379,10 +1385,21 @@ function PricingSection() {
     },
   ];
 
+  const scrollToPricing = () => {
+    document.getElementById("pricing-plans")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <BillingCycleContext.Provider value={cycle}>
+    <SupportUkraineBanner
+      lang={lang}
+      eligible={campaignEligible}
+      onPrimaryCta={scrollToPricing}
+      className="pt-16 pb-4 bg-orange-50/60"
+      eventProps={{ source_page: "/#pricing" }}
+    />
     <section id="pricing" className="py-20 px-4 sm:px-6 bg-orange-50/60">
-      <div className="max-w-6xl mx-auto">
+      <div id="pricing-plans" className="max-w-6xl mx-auto">
         <div className="text-center mb-10">
           <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-4">{t("pricingEyebrow")}</p>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">{t("pricingTitle")}</h2>
@@ -1472,9 +1489,16 @@ function PricingSection() {
                 <h3 className="text-2xl font-semibold text-foreground">{p.name}</h3>
                 <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed min-h-[3rem]">{p.desc}</p>
 
-                <div className="flex items-baseline gap-1 mb-2">
-                  <span className="text-5xl font-bold text-foreground">{fmt(priceNum)}</span>
-                  <span className="text-muted-foreground text-base">{perLabel[cycle]}</span>
+                <div className="mb-2">
+                  <SupportUkrainePrice
+                    lang={lang}
+                    standardPrice={priceNum}
+                    cycle={cycle}
+                    perLabel={perLabel[cycle]}
+                    eligible={campaignEligible}
+                    isFree={isFree}
+                    currencyFormat={fmt}
+                  />
                 </div>
 
                 <p
@@ -1485,7 +1509,11 @@ function PricingSection() {
                   {microMain}
                 </p>
                 <p className="text-xs text-muted-foreground mb-5 min-h-[1rem]">
-                  {subMicro || "\u00A0"}
+                  {isFree && campaignEligible
+                    ? campaignText(lang, "freeStarterNote")
+                    : campaignEligible && !isFree
+                      ? "\u00A0"
+                      : subMicro || "\u00A0"}
                 </p>
 
                 <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-muted/60 border border-border mb-6">

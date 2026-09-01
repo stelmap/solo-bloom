@@ -380,8 +380,13 @@ export function AppSidebar() {
   }: { pinned?: boolean; onToggle: () => void }) => (
     <div className="p-4 border-b border-sidebar-border">
       <div className="flex items-center gap-2">
-        <div className="text-xl font-bold text-sidebar-foreground tracking-tight flex-1">
-          Solo<span className="text-sidebar-primary">Bizz</span>
+        <div className="text-xl font-bold text-sidebar-foreground tracking-tight flex-1 flex items-baseline gap-1.5">
+          <span>
+            Solo<span className="text-sidebar-primary">Bizz</span>
+          </span>
+          <span className="px-1.5 py-0.5 rounded-md bg-sidebar-primary/15 text-sidebar-primary text-[10px] font-semibold uppercase tracking-wider">
+            Beta
+          </span>
         </div>
         <button
           type="button"
