@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { track } from "@/lib/analytics";
+import { getStoredPromoCode, clearStoredPromoCode } from "@/lib/supportUkraine";
 
 /**
  * Post-checkout redirect. The legacy "Your workspace is ready" intermediate
@@ -33,6 +35,10 @@ export default function PurchaseSuccessPage() {
         await refreshSubscription({ force: true });
         qc.invalidateQueries();
         toast.success("Your plan is active.");
+        if (getStoredPromoCode()) {
+          track("support_ukraine_subscription_completed", {});
+          clearStoredPromoCode();
+        }
       } catch (e) {
         console.error("Plan activation refresh failed:", e);
       } finally {
