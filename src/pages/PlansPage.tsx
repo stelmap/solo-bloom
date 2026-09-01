@@ -374,7 +374,15 @@ export default function PlansPage() {
 
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { planCode: selectedPlan.code, billingPeriod: period, withTrial: false, locale: lang },
+        body: {
+          planCode: selectedPlan.code,
+          billingPeriod: period,
+          withTrial: false,
+          locale: lang,
+          // The backend re-validates eligibility; this is only a hint so the
+          // coupon is pre-applied for users who entered the promo code.
+          promoCode: campaignEligible ? SUPPORT_UA_PROMO_CODE : null,
+        },
       });
       const durationMs = Date.now() - startedAt;
       if (error) {
