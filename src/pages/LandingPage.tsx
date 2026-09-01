@@ -2389,6 +2389,4 @@ function LandingShell() {
     </div>
   );
 }
-  );
-}
 
