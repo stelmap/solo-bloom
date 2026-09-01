@@ -19,6 +19,8 @@ const normLang = (v: unknown): Lang => {
 const COPY: Record<Lang, {
   days: string; from: string; until: string; to: string; sync: string;
   errOrder: string; errNoDay: string;
+  notice: string; noticeHint: string; horizon: string; horizonHint: string;
+  noNotice: string; hours: (n: number) => string; days_: (n: number) => string;
   short: string[]; // Sun..Sat
 }> = {
   en: {
@@ -27,6 +29,9 @@ const COPY: Record<Lang, {
     sync: "Busy time and days off are automatically excluded from the public calendar.",
     errOrder: "“Available until” must be later than “Available from”.",
     errNoDay: "Select at least one available day.",
+    notice: "Minimum notice", noticeHint: "Slots sooner than this are hidden from the public link.",
+    horizon: "Booking horizon", horizonHint: "How far ahead clients can book.",
+    noNotice: "No minimum", hours: (n) => `${n} h`, days_: (n) => `${n} days`,
     short: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
   },
   uk: {
@@ -35,6 +40,9 @@ const COPY: Record<Lang, {
     sync: "Зайнятий час і вихідні автоматично виключаються з публічного календаря.",
     errOrder: "«Доступно до» має бути пізніше за «Доступно з».",
     errNoDay: "Оберіть щонайменше один доступний день.",
+    notice: "Мінімальний час до запису", noticeHint: "Слоти раніше цього часу не показуються в публічному посиланні.",
+    horizon: "Горизонт запису", horizonHint: "Наскільки наперед клієнти можуть записатися.",
+    noNotice: "Без обмеження", hours: (n) => `${n} год`, days_: (n) => `${n} дн.`,
     short: ["Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
   },
   ru: {
@@ -43,6 +51,9 @@ const COPY: Record<Lang, {
     sync: "Занятое время и выходные автоматически исключаются из публичного календаря.",
     errOrder: "«Доступно до» должно быть позже «Доступно с».",
     errNoDay: "Выберите хотя бы один доступный день.",
+    notice: "Минимальное время до записи", noticeHint: "Слоты раньше этого времени не показываются в публичной ссылке.",
+    horizon: "Горизонт записи", horizonHint: "Насколько заранее клиенты могут записаться.",
+    noNotice: "Без ограничения", hours: (n) => `${n} ч`, days_: (n) => `${n} дн.`,
     short: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
   },
   fr: {
@@ -51,6 +62,9 @@ const COPY: Record<Lang, {
     sync: "Les créneaux occupés et les jours de congé sont automatiquement exclus du calendrier public.",
     errOrder: "« Disponible jusqu'à » doit être après « Disponible à partir de ».",
     errNoDay: "Sélectionnez au moins un jour disponible.",
+    notice: "Préavis minimum", noticeHint: "Les créneaux plus proches sont masqués du lien public.",
+    horizon: "Horizon de réservation", horizonHint: "Jusqu'à quand les clients peuvent réserver.",
+    noNotice: "Aucun", hours: (n) => `${n} h`, days_: (n) => `${n} jours`,
     short: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
   },
   pl: {
@@ -59,9 +73,16 @@ const COPY: Record<Lang, {
     sync: "Zajęty czas i dni wolne są automatycznie wykluczane z publicznego kalendarza.",
     errOrder: "„Dostępne do” musi być późniejsze niż „Dostępne od”.",
     errNoDay: "Wybierz przynajmniej jeden dostępny dzień.",
+    notice: "Minimalne wyprzedzenie", noticeHint: "Wcześniejsze terminy są ukryte w publicznym linku.",
+    horizon: "Horyzont rezerwacji", horizonHint: "Jak daleko w przód klienci mogą rezerwować.",
+    noNotice: "Brak", hours: (n) => `${n} h`, days_: (n) => `${n} dni`,
     short: ["Nd", "Pn", "Wt", "Śr", "Cz", "Pt", "So"],
   },
 };
+
+const NOTICE_OPTIONS = [0, 1, 2, 3, 6, 12, 24, 48, 72];
+const HORIZON_OPTIONS = [7, 14, 30, 60, 90, 180];
+
 
 const TIME_OPTIONS = (() => {
   const arr: string[] = [];
