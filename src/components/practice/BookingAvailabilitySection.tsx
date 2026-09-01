@@ -310,6 +310,33 @@ export const BookingAvailabilitySection = forwardRef<BookingAvailabilityHandle, 
           </div>
         </div>
 
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex-1 space-y-1.5">
+            <Label htmlFor="bk-notice" className="text-xs text-muted-foreground font-normal">{L.notice}</Label>
+            <Select value={String(notice)} onValueChange={(v) => setNotice(Number(v))} disabled={disabled}>
+              <SelectTrigger id="bk-notice" className="h-10"><SelectValue /></SelectTrigger>
+              <SelectContent className="max-h-72">
+                {(NOTICE_OPTIONS.includes(notice) ? NOTICE_OPTIONS : [notice, ...NOTICE_OPTIONS]).map((n) => (
+                  <SelectItem key={n} value={String(n)}>{n === 0 ? L.noNotice : L.hours(n)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[11px] text-muted-foreground">{L.noticeHint}</p>
+          </div>
+          <div className="flex-1 space-y-1.5">
+            <Label htmlFor="bk-horizon" className="text-xs text-muted-foreground font-normal">{L.horizon}</Label>
+            <Select value={String(horizon)} onValueChange={(v) => setHorizon(Number(v))} disabled={disabled}>
+              <SelectTrigger id="bk-horizon" className="h-10"><SelectValue /></SelectTrigger>
+              <SelectContent className="max-h-72">
+                {(HORIZON_OPTIONS.includes(horizon) ? HORIZON_OPTIONS : [horizon, ...HORIZON_OPTIONS]).map((d) => (
+                  <SelectItem key={d} value={String(d)}>{L.days_(d)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[11px] text-muted-foreground">{L.horizonHint}</p>
+          </div>
+        </div>
+
         {error && <p className="text-sm text-destructive">{error}</p>}
 
         <div className="flex items-start gap-2.5 rounded-lg border border-primary/20 bg-primary/5 p-3">
