@@ -689,6 +689,25 @@ export default function PlansPage() {
               </div>
             )}
 
+            {/* Support Ukrainian Psychotherapists — eligibility / promo code */}
+            <div className="mt-10 max-w-xl mx-auto p-5 rounded-2xl border border-border bg-card">
+              <p className="text-sm font-semibold text-foreground mb-1">
+                {campaignText(lang, "campaignName")}
+              </p>
+              <p className="text-sm text-muted-foreground mb-4">
+                {campaignText(lang, "bannerDiscount")}
+              </p>
+              <SupportUkrainePromoInput
+                lang={lang}
+                eligible={campaignEligible}
+                planCode={orderedPlans[0]?.code ?? "solo"}
+                onApply={applyPromoCode}
+              />
+              {campaignEligible && (
+                <p className="mt-3 text-xs text-muted-foreground">{campaignText(lang, "renewalNotice")}</p>
+              )}
+            </div>
+
             {/* Landing-aligned footer copy */}
             <div className="mt-12 text-center max-w-3xl mx-auto space-y-2">
               <p className="text-base text-muted-foreground">{tr(COPY.footer1)}</p>
