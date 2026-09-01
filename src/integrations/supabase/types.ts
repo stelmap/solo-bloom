@@ -3559,6 +3559,14 @@ export type Database = {
         }[]
       }
       cleanup_demo_workspace: { Args: { p_user_id: string }; Returns: Json }
+      client_prepaid_balance: {
+        Args: {
+          p_client_id: string
+          p_exclude_appointment_id?: string
+          p_user_id: string
+        }
+        Returns: number
+      }
       confirm_booking_request: {
         Args: { p_client_id?: string; p_id: string; p_service_id?: string }
         Returns: string
