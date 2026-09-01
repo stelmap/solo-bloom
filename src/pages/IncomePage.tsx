@@ -137,7 +137,7 @@ export default function IncomePage() {
     else if (sortKey === "oldest") list = [...list].sort((a, b) => at(a) - at(b));
     else list = [...list].sort((a, b) => at(b) - at(a));
     return list;
-  }, [expectedPayments, intervalStart, intervalEnd, q, clientFilter, sortKey]);
+  }, [expectedPayments, q, clientFilter, sortKey]);
   const pendingTotal = filteredExpected.reduce((s: number, ep: any) => s + Number(ep.amount), 0);
 
 
