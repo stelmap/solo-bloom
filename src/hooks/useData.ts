@@ -762,7 +762,7 @@ export function useCompleteAppointment() {
           ...(isDemoMode ? { is_demo: true } : {}),
         } as any);
 
-        await (supabase as any).rpc("recalc_appointment_payment_status", { p_appointment_id: appointmentId });
+        await (supabase as any).rpc("recalc_my_appointment_payment_status", { p_appointment_id: appointmentId });
         return;
       }
 
@@ -806,7 +806,7 @@ export function useCompleteAppointment() {
         }
 
         // Final status recalc (consume RPC already runs it, but rerun in case stillOwed changed nothing on row).
-        await (supabase as any).rpc("recalc_appointment_payment_status", { p_appointment_id: appointmentId });
+        await (supabase as any).rpc("recalc_my_appointment_payment_status", { p_appointment_id: appointmentId });
         return;
       }
 
@@ -901,7 +901,7 @@ export function useCompleteAppointment() {
       }
 
       // 5) Recalc payment_status for this appointment from allocations.
-      await (supabase as any).rpc("recalc_appointment_payment_status", { p_appointment_id: appointmentId });
+      await (supabase as any).rpc("recalc_my_appointment_payment_status", { p_appointment_id: appointmentId });
     },
     onSuccess: (_d, vars) => {
       track("session_completed", { payment_status: vars.paymentStatus });
@@ -3436,7 +3436,7 @@ export interface SaveIncomeConfirmationInput {
 async function recalcAppointments(appointmentIds: string[]) {
   const unique = Array.from(new Set(appointmentIds.filter(Boolean)));
   for (const id of unique) {
-    await (supabase as any).rpc("recalc_appointment_payment_status", { p_appointment_id: id });
+    await (supabase as any).rpc("recalc_my_appointment_payment_status", { p_appointment_id: id });
   }
 }
 
