@@ -69,6 +69,11 @@ export default function PlansPage() {
   const { t, lang } = useLanguage();
   const qc = useQueryClient();
   const { data: hasDemoData } = useHasDemoData();
+  const {
+    eligible: campaignEligible,
+    applyPromoCode,
+    baseEventProps: campaignEventProps,
+  } = useSupportUkraine();
   const [loading, setLoading] = useState(true);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [prices, setPrices] = useState<PlanPrice[]>([]);
