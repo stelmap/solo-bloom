@@ -609,11 +609,45 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   };
 
   /**
+   * One-click completion for GROUP sessions — mirrors the single-session
+   * action bar: same labels, same immediate save, same toast.
+   */
+  const handleGroupQuickComplete = async (state: string) => {
+    if (completeGroupSession.isPending) return;
+    if (!isActive || !groupSessionId || !groupId) return;
+    try {
+      await completeGroupSession.mutateAsync({
+        appointmentId: apt.id,
+        groupId,
+        groupSessionId,
+        participants: groupBillingData.map(p => ({
+          clientId: p.clientId,
+          attendanceStatus: p.attendanceStatus,
+          billable: p.billable,
+          amount: p.amount,
+        })),
+        paymentState: state,
+        paymentMethod: groupPaymentMethod,
+      });
+      toast({
+        title: t("toast.appointmentCompleted"),
+        description: state === "waiting_for_payment"
+          ? t("toast.sessionCompletedExpected")
+          : t("toast.sessionCompletedIncome", { symbol: cs, amount: groupBillingSummary.expectedAmount.toFixed(2) }),
+      });
+      onOpenChange(false);
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    }
+  };
+
+  /**
    * One-click completion used by the simplified Session Details panel.
    * Uses the currently selected radio option, records income / expected
    * payment exactly once and closes the panel without extra confirmation.
    */
   const handleQuickComplete = async (statusOverride?: string) => {
+
     const paymentStatusChoice = statusOverride ?? paymentStatus;
 
     if (completeAppointment.isPending || completeFromPrepayment.isPending || completeFlexible.isPending) return;
