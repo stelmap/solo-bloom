@@ -8,6 +8,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const SUPPORT_UA_COUPON = "SUPPORT_UA_PSYCHOTHERAPY_50";
+
 const VALID_PLAN_CODES = new Set(["solo", "pro"]);
 const VALID_BILLING_PERIODS = new Set(["monthly", "quarterly", "yearly"]);
 
@@ -177,6 +179,7 @@ serve(async (req) => {
       user_id: user.id,
       plan_code: planCode,
       billing_period: billingPeriod,
+      ...(campaignEligible ? { campaign: SUPPORT_UA_COUPON } : {}),
     };
 
     const session = await stripe.checkout.sessions.create({
@@ -193,7 +196,11 @@ serve(async (req) => {
         metadata: sessionMetadata,
         ...(withTrial ? { trial_period_days: 7 } : {}),
       },
-      allow_promotion_codes: true,
+      // The campaign discount is applied exactly once: when it is auto-applied
+      // we disable manual promotion codes so a second 50% cannot be stacked.
+      ...(campaignEligible
+        ? { discounts: [{ coupon: SUPPORT_UA_COUPON }] }
+        : { allow_promotion_codes: true }),
       success_url: `${origin}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/plans?checkout=cancel`,
     });
