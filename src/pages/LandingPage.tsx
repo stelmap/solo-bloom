@@ -2352,24 +2352,43 @@ export default function LandingPage() {
           ],
         })}</script>
       </Helmet>
-      <div className="min-h-screen bg-background">
-        <LandingNav />
-        <main>
-          <HeroSection />
-          <StatsSection />
-          <PainSection />
-          <WhatChangesSection />
-          <FeaturesSection />
-          <TestimonialsSection />
-          <PricingSection />
-
-          <FaqSection />
-          <FinalCTA />
-          <AboutContactsSection />
-        </main>
-        <LandingFooter />
-      </div>
+      <LandingShell />
     </LandingLangProvider>
+  );
+}
+
+/** Inner shell: has access to the landing language context. */
+function LandingShell() {
+  const { lang } = useLandingLang();
+
+  const activateOffer = useCallback(() => {
+    storePendingOffer(null);
+    document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
+  return (
+    <div className="min-h-screen overflow-x-hidden bg-background">
+      {isCampaignActive() && <PromoTopBar lang={lang} onActivate={activateOffer} />}
+      <LandingNav />
+      <main>
+        <HeroSection />
+        <OutcomeStrip lang={lang} />
+        <ProductTour lang={lang} />
+        <WorkflowSection lang={lang} />
+        <StatsSection />
+        <PainSection />
+        <WhatChangesSection />
+        <FeaturesSection />
+        <TestimonialsSection />
+        <PricingSection />
+        <FaqSection />
+        <FinalCTA />
+        <AboutContactsSection />
+      </main>
+      <LandingFooter />
+    </div>
+  );
+}
   );
 }
 
