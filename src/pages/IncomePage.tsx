@@ -121,17 +121,12 @@ export default function IncomePage() {
   }, [income, q, clientFilter, sortKey]);
 
   const total = periodTotal;
-  // Expected payments are filtered by the related session's scheduled_at so the
-  // selected period applies consistently to both Confirmed Income and Expected
-  // Payments. "All time" shows everything.
+  // Expected payments are NOT limited by a period: the date-range control was
+  // removed from the UI, so an implicit "current month" filter would silently
+  // hide older outstanding debts. Debt is always shown in full.
   const filteredExpected = useMemo(() => {
     let list = (expectedPayments as any[]).filter((ep) => {
-      if (intervalStart && intervalEnd) {
-        const raw = ep.appointments?.scheduled_at;
-        if (!raw) return false;
-        const d = typeof raw === "string" ? parseISO(raw) : new Date(raw);
-        if (!isWithinInterval(d, { start: intervalStart, end: intervalEnd })) return false;
-      }
+
       if (clientFilter !== "all" && ep.client_id !== clientFilter && ep.clients?.id !== clientFilter) return false;
       if (!q) return true;
       return `${ep.clients?.name || ""} ${ep.appointments?.services?.name || ""}`.toLowerCase().includes(q);
