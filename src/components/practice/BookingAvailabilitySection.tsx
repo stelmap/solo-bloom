@@ -156,16 +156,21 @@ export const BookingAvailabilitySection = forwardRef<BookingAvailabilityHandle, 
     const [selected, setSelected] = useState<number[]>(DEFAULT_DAYS);
     const [from, setFrom] = useState(DEFAULT_FROM);
     const [until, setUntil] = useState(DEFAULT_UNTIL);
+    const [notice, setNotice] = useState(24);
+    const [horizon, setHorizon] = useState(30);
     const hydrated = useRef(false);
     const baseline = useRef<string>("");
 
-    const snapshot = (days: number[], s: string, e: string) =>
-      JSON.stringify({ d: [...days].sort((a, b) => a - b), s, e });
+    const snapshot = (days: number[], s: string, e: string, n: number, h: number) =>
+      JSON.stringify({ d: [...days].sort((a, b) => a - b), s, e, n, h });
 
     // Hydrate: booking_availability → working schedule → Mon–Fri 09:00–18:00
     useEffect(() => {
       if (hydrated.current || !userId || isLoading || !availability) return;
-      const enabled = (availability as any[]).filter((r) => r.is_enabled);
+      const rows = availability as any[];
+      const enabled = rows.filter((r) => r.is_enabled);
+      const n = Number(rows[0]?.min_notice_hours ?? 24);
+      const h = Number(rows[0]?.max_horizon_days ?? 30);
       if (enabled.length > 0) {
         const days = Array.from(new Set(enabled.map((r) => r.weekday as number)));
         const s = norm(enabled[0].start_time) || DEFAULT_FROM;
@@ -173,7 +178,9 @@ export const BookingAvailabilitySection = forwardRef<BookingAvailabilityHandle, 
         setSelected(days);
         setFrom(s);
         setUntil(e);
-        baseline.current = snapshot(days, s, e);
+        setNotice(n);
+        setHorizon(h);
+        baseline.current = snapshot(days, s, e, n, h);
         hydrated.current = true;
         return;
       }
@@ -191,14 +198,16 @@ export const BookingAvailabilitySection = forwardRef<BookingAvailabilityHandle, 
       setSelected(days);
       setFrom(start);
       setUntil(end);
-      baseline.current = snapshot(days, start, end);
+      setNotice(n);
+      setHorizon(h);
+      baseline.current = snapshot(days, start, end, n, h);
       hydrated.current = true;
       // Persist the initialized defaults so public slots work immediately.
-      void persist(days, start, end).catch(() => undefined);
+      void persist(days, start, end, n, h).catch(() => undefined);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [availability, isLoading, workingSchedule, userId]);
 
-    const dirty = hydrated.current && baseline.current !== snapshot(selected, from, until);
+    const dirty = hydrated.current && baseline.current !== snapshot(selected, from, until, notice, horizon);
     useEffect(() => {
       onDirtyChange?.(dirty);
     }, [dirty, onDirtyChange]);
@@ -212,14 +221,14 @@ export const BookingAvailabilitySection = forwardRef<BookingAvailabilityHandle, 
         ? L.errNoDay
         : null;
 
-    async function persist(days: number[], start: string, end: string) {
+    async function persist(days: number[], start: string, end: string, noticeHours: number, horizonDays: number) {
       if (!userId) return;
       const base = (availability as any[])?.[0];
       const shared = {
         session_duration_minutes: base?.session_duration_minutes ?? 60,
         buffer_minutes: base?.buffer_minutes ?? 10,
-        min_notice_hours: base?.min_notice_hours ?? 24,
-        max_horizon_days: base?.max_horizon_days ?? 30,
+        min_notice_hours: noticeHours,
+        max_horizon_days: horizonDays,
       };
       const rows = Array.from({ length: 7 }, (_, wd) => ({
         user_id: userId,
@@ -242,9 +251,10 @@ export const BookingAvailabilitySection = forwardRef<BookingAvailabilityHandle, 
         .insert(rows as any);
       if (upErr) throw upErr;
       await qc.invalidateQueries({ queryKey: ["booking_availability", userId] });
-      baseline.current = snapshot(days, start, end);
+      baseline.current = snapshot(days, start, end, noticeHours, horizonDays);
       onDirtyChange?.(false);
     }
+
 
     useImperativeHandle(ref, () => ({
       validate: () => error,
