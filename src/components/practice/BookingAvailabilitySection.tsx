@@ -260,7 +260,7 @@ export const BookingAvailabilitySection = forwardRef<BookingAvailabilityHandle, 
       validate: () => error,
       save: async () => {
         if (error) throw new Error(error);
-        await persist(selected, from, until);
+        await persist(selected, from, until, notice, horizon);
       },
     }));
 
