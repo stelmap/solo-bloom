@@ -942,9 +942,13 @@ function PrimaryCta({
   return (
     <Link
       to="/auth?mode=signup"
-      onClick={() =>
-        track("cta_clicked", { source_page: source, cta, lang, billing_cycle, ...extra })
-      }
+      onClick={() => {
+        track("cta_clicked", { source_page: source, cta, lang, billing_cycle, ...extra });
+        track("registration_started", landingEventProps({ locale: lang, source_page: source, cta }));
+        if (cta === "hero") {
+          track("hero_primary_cta_click", landingEventProps({ locale: lang, source_page: source }));
+        }
+      }}
     >
       <Button
         size={size}
