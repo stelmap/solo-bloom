@@ -1556,16 +1556,31 @@ function PricingSection() {
                 </ul>
 
                 <Link
-                  to={ctaHref}
-                  onClick={() =>
+                  to={
+                    isFree || !campaignEligible
+                      ? ctaHref
+                      : authUrlForOffer({ planCode: p.id, returnTo: "/plans" })
+                  }
+                  onClick={() => {
                     track("cta_clicked", {
                       source_page: `/#pricing-${p.id}`,
                       cta: p.ctaTracking,
                       plan_type: p.id,
                       billing_cycle: cycle,
                       lang,
-                    })
-                  }
+                    });
+                    track(
+                      "pricing_plan_select",
+                      landingEventProps({
+                        locale: lang,
+                        source_page: "/#pricing",
+                        plan_type: p.id,
+                        billing_cycle: cycle,
+                        campaign_applied: !isFree && campaignEligible,
+                      }),
+                    );
+                    if (!isFree && campaignEligible) storePendingOffer(p.id);
+                  }}
                   className="block mt-auto"
                 >
                   <Button
