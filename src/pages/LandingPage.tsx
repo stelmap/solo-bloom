@@ -1010,44 +1010,47 @@ function LandingNav() {
 
 function HeroSection() {
   const { t, lang } = useLandingLang();
-  const accent = t("heroTitleAccent");
+  const [slide, setSlide] = useState(0);
+  const active = HERO_SLIDES[slide];
   return (
     <section className="px-4 pb-10 pt-10 sm:px-6 sm:pb-16 sm:pt-14">
-      <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[minmax(0,46%)_minmax(0,54%)]">
-        <div className="text-center lg:text-left">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium leading-normal text-primary">
+      <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-[minmax(340px,0.78fr)_minmax(0,1.22fr)] lg:gap-[clamp(32px,4.5vw,76px)]">
+        <div className="min-w-0 text-center lg:text-left">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium leading-normal text-primary">
             <Sparkles className="h-3.5 w-3.5 shrink-0" />
-            <span className="leading-normal">{t("heroBadge")}</span>
+            <span className="leading-normal">{lt(lang, active.label)}</span>
           </div>
-          <h1 className="mb-6 text-3xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-            <span className="block">{t("heroTitlePrefix")}</span>
-            {accent && <span className="mt-2 block text-primary">{accent}</span>}
-          </h1>
-          <p className="mb-6 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            {t("heroSub")}
-          </p>
+          <div key={slide} className="hero-slide-text">
+            <h1 className="mb-5 text-3xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+              <span className="block">{lt(lang, active.title)}</span>
+              {active.title2 && <span className="mt-2 block text-primary">{lt(lang, active.title2)}</span>}
+            </h1>
+            <p className="mb-6 text-base leading-relaxed text-muted-foreground sm:text-lg">
+              {lt(lang, active.body)}
+            </p>
+          </div>
           <div className="flex flex-col items-center gap-4 sm:flex-row lg:justify-start">
             <PrimaryCta label={t("heroCta")} source="/" cta="hero" />
             <a
-              href="#pricing"
+              href="#product-tour"
               className="inline-flex h-12 items-center justify-center px-4 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               {t("heroSecondary")}
             </a>
           </div>
           <p className="mt-5 text-sm text-muted-foreground">{t("heroSubCta")}</p>
-          <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 text-xs text-muted-foreground sm:text-sm lg:justify-start">
-            <li className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-success" /> {t("trustData")}</li>
-            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /> {t("trustGdpr")}</li>
-            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /> {t("trustStripe")}</li>
-            <li className="inline-flex items-center gap-1.5"><MessageCircle className="h-4 w-4 text-success" /> {t("trustSupport")}</li>
+          <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground lg:justify-start">
+            <li className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-success" /> {t("trustData")}</li>
+            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-success" /> {t("trustGdpr")}</li>
+            <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-success" /> {t("trustStripe")}</li>
           </ul>
         </div>
-        <HeroProductShowcase lang={lang} />
+        <HeroCarousel lang={lang} index={slide} onSelect={setSlide} />
       </div>
     </section>
   );
 }
+
 
 
 
