@@ -11,6 +11,7 @@ import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { getStoredLang } from "@/i18n/LanguageContext";
 import { track } from "@/lib/analytics";
+import { getFreshAccessToken } from "@/lib/checkoutAuth";
 import { getPostAuthRedirect } from "@/lib/authRedirect";
 import { PublicFooter } from "@/components/PublicFooter";
 import { SeoHead } from "@/components/SeoHead";
@@ -118,7 +119,15 @@ export default function AuthPage() {
     setCheckoutRedirecting(true);
     try {
       track("checkout_started", { plan_type: plan });
+      const accessToken = await getFreshAccessToken();
+      if (!accessToken) {
+        setCheckoutRedirecting(false);
+        checkoutTriggeredRef.current = false;
+        setCheckoutError(t("auth.signInRequired"));
+        return;
+      }
       const { data, error } = await supabase.functions.invoke("create-checkout", {
+        headers: { Authorization: `Bearer ${accessToken}` },
         body: { ...selection, withTrial: false },
       });
       if (error) {
