@@ -7,8 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useSupportUkraine } from "@/hooks/useSupportUkraine";
-import { campaignPrice, campaignText, formatEuro, isCampaignPlan } from "@/lib/supportUkraine";
+import { campaignText, formatEuro, isCampaignPlan } from "@/lib/supportUkraine";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -68,7 +67,6 @@ export function SubscriptionSection() {
   const [refreshing, setRefreshing] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [resolved, setResolved] = useState<ResolvedPlan>({ planName: null, planCode: null, billingPeriod: null });
-  const { eligible: campaignEligible } = useSupportUkraine();
 
   const dateLocale = lang === "fr" ? frLocale : lang === "uk" ? ukLocale : undefined;
   const fmtDate = (d: string) => format(new Date(d), "d MMM yyyy", { locale: dateLocale });
