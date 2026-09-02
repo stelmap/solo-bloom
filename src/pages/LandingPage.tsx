@@ -1021,11 +1021,11 @@ function HeroSection() {
             <span className="leading-normal">{lt(lang, active.label)}</span>
           </div>
           <div key={slide} className="hero-slide-text">
-            <h1 className="mb-5 font-bold tracking-tight text-foreground [font-size:clamp(28px,2.4vw,44px)] [line-height:1.05]">
+            <h1 className="mb-5 font-bold tracking-tight text-foreground [font-size:clamp(24px,2vw,38px)] [line-height:1.08]">
               <span className="block">{lt(lang, active.title)}</span>
               {active.title2 && <span className="mt-2 block text-primary">{lt(lang, active.title2)}</span>}
             </h1>
-            <p className="mb-6 text-sm leading-relaxed text-muted-foreground sm:text-base">
+            <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
               {lt(lang, active.body)}
             </p>
           </div>
