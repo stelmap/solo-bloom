@@ -4,11 +4,11 @@ import type { AppLanguage } from "@/i18n/translations";
 import { lt, type LandingCopyKey } from "@/lib/landingRedesignCopy";
 import { track } from "@/lib/analytics";
 import { landingEventProps } from "@/lib/landingCampaign";
-import overviewAsset from "@/assets/hero-overview.png.asset.json";
-import todayAsset from "@/assets/hero-today.png.asset.json";
-import calendarAsset from "@/assets/hero-calendar.png.asset.json";
-import clientAsset from "@/assets/hero-client.png.asset.json";
-import bookingAsset from "@/assets/hero-booking.png.asset.json";
+import overviewAsset from "@/assets/hero-overview.png";
+import todayAsset from "@/assets/hero-today.png";
+import calendarAsset from "@/assets/hero-calendar.png";
+import clientAsset from "@/assets/hero-client.png";
+import bookingAsset from "@/assets/hero-booking.png";
 
 export interface HeroSlide {
   id: string;
@@ -32,14 +32,14 @@ export const HERO_SLIDES: HeroSlide[] = [
     title2: "heroOverviewTitle2",
     body: "heroOverviewBody",
     alt: "altOverviewComposition",
-    image: todayAsset.url,
+    image: todayAsset,
     composition: true,
   },
-  { id: "today", tab: "heroTabToday", label: "heroTabToday", title: "heroTodayTitle", body: "heroTodayBody", alt: "altDashboard", image: todayAsset.url },
-  { id: "calendar", tab: "heroTabCalendar", label: "heroTabCalendar", title: "heroCalendarTitle", body: "heroCalendarBody", alt: "altCalendar", image: calendarAsset.url },
-  { id: "clients", tab: "heroTabClients", label: "heroTabClients", title: "heroClientsTitle", body: "heroClientsBody", alt: "altClient", image: clientAsset.url },
-  { id: "finance", tab: "heroTabFinance", label: "heroTabFinance", title: "heroFinanceTitle", body: "heroFinanceBody", alt: "altFinance", image: overviewAsset.url },
-  { id: "booking", tab: "heroTabBooking", label: "heroTabBooking", title: "heroBookingTitle", body: "heroBookingBody", alt: "altBooking", image: bookingAsset.url, contain: true },
+  { id: "today", tab: "heroTabToday", label: "heroTabToday", title: "heroTodayTitle", body: "heroTodayBody", alt: "altDashboard", image: todayAsset },
+  { id: "calendar", tab: "heroTabCalendar", label: "heroTabCalendar", title: "heroCalendarTitle", body: "heroCalendarBody", alt: "altCalendar", image: calendarAsset },
+  { id: "clients", tab: "heroTabClients", label: "heroTabClients", title: "heroClientsTitle", body: "heroClientsBody", alt: "altClient", image: clientAsset },
+  { id: "finance", tab: "heroTabFinance", label: "heroTabFinance", title: "heroFinanceTitle", body: "heroFinanceBody", alt: "altFinance", image: overviewAsset },
+  { id: "booking", tab: "heroTabBooking", label: "heroTabBooking", title: "heroBookingTitle", body: "heroBookingBody", alt: "altBooking", image: bookingAsset, contain: true },
 ];
 
 /** Right-hand product carousel of the hero: tabs, screenshot, arrows, dots. */
@@ -130,10 +130,10 @@ export function HeroCarousel({
           {active.composition && (
             <>
               <div className="pointer-events-none absolute bottom-3 left-3 hidden w-[30%] overflow-hidden rounded-lg border border-border bg-card shadow-lg sm:block">
-                <img src={calendarAsset.url} alt={lt(lang, "altCalendar")} loading="lazy" className="block w-full" />
+                <img src={calendarAsset} alt={lt(lang, "altCalendar")} loading="lazy" className="block w-full" />
               </div>
               <div className="pointer-events-none absolute bottom-3 right-3 hidden w-[26%] overflow-hidden rounded-lg border border-border bg-card shadow-lg sm:block">
-                <img src={clientAsset.url} alt={lt(lang, "altClient")} loading="lazy" className="block w-full" />
+                <img src={clientAsset} alt={lt(lang, "altClient")} loading="lazy" className="block w-full" />
               </div>
               <div className="pointer-events-none absolute left-3 top-3 rounded-full bg-secondary/90 px-3 py-1 text-xs font-semibold text-secondary-foreground shadow">
                 SoloBizz
