@@ -126,7 +126,7 @@ export function HeroCarousel({
               src={active.image}
               alt={lt(lang, active.alt)}
               loading={index === 0 ? "eager" : "lazy"}
-              className={`hero-slide-media block h-full w-full ${active.contain ? "object-contain" : "object-cover object-top"}`}
+              className="hero-slide-media block h-full w-full object-contain"
             />
             {active.composition && (
               <div className="pointer-events-none absolute left-3 top-3 rounded-full bg-secondary/90 px-3 py-1 text-xs font-semibold text-secondary-foreground shadow">
