@@ -14,7 +14,7 @@ import { campaignText } from "@/lib/supportUkraine";
 import { useSupportUkraine } from "@/hooks/useSupportUkraine";
 import { SupportUkrainePrice } from "@/components/campaign/SupportUkrainePrice";
 import { PromoTopBar } from "@/components/landing/PromoTopBar";
-import { HeroProductShowcase } from "@/components/landing/HeroProductShowcase";
+import { HeroCarousel, HERO_SLIDES } from "@/components/landing/HeroCarousel";
 import { OutcomeStrip } from "@/components/landing/OutcomeStrip";
 import { ProductTour } from "@/components/landing/ProductTour";
 import { WorkflowSection } from "@/components/landing/WorkflowSection";
