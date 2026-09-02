@@ -1171,13 +1171,6 @@ function PricingSection() {
 
   return (
     <BillingCycleContext.Provider value={cycle}>
-    <SupportUkraineBanner
-      lang={lang}
-      eligible={campaignEligible}
-      onPrimaryCta={scrollToPricing}
-      className="pt-16 pb-4 bg-orange-50/60"
-      eventProps={{ source_page: "/#pricing" }}
-    />
     <section id="pricing" className="py-20 px-4 sm:px-6 bg-orange-50/60">
       <div id="pricing-plans" className="max-w-6xl mx-auto">
         <div className="text-center mb-10">
