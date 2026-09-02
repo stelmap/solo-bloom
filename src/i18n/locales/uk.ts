@@ -1062,6 +1062,7 @@ export default {
   "groups.sessionCompleted": "Груповий сеанс завершено",
   "groups.paymentMismatch": "Увага: Сума оплати не збігається з очікуваною сумою",
   "groups.sessionSummary": "Підсумок сеансу",
+  "groups.participantsNotLoaded": "Учасники ще завантажуються. Зачекайте мить і спробуйте ще раз.",
   "groups.participantBilling": "Оплата учасників",
   "common.minutes": "хв",
   "common.status": "Статус",

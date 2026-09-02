@@ -1062,6 +1062,7 @@ export default {
   "groups.sessionCompleted": "Group session completed",
   "groups.paymentMismatch": "Warning: Payment amount does not match expected billable total",
   "groups.sessionSummary": "Session Summary",
+  "groups.participantsNotLoaded": "Participants are still loading. Please wait a moment and try again.",
   "groups.participantBilling": "Participant Billing",
   "common.minutes": "min",
   "common.status": "Status",

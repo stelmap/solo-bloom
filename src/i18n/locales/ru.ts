@@ -1188,6 +1188,7 @@ export default {
   "groups.sessionCompleted": "Групповой сеанс завершён",
   "groups.paymentMismatch": "Внимание: сумма оплаты не совпадает с ожидаемой платной суммой",
   "groups.sessionSummary": "Итог сеанса",
+  "groups.participantsNotLoaded": "Участники ещё загружаются. Подождите немного и повторите попытку.",
   "groups.participantBilling": "Оплата участников",
 
   // Pricing

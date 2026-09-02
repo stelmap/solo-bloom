@@ -1075,6 +1075,7 @@ export default {
   "groups.sessionCompleted": "Sesja grupowa zakończona",
   "groups.paymentMismatch": "Ostrzeżenie: Kwota płatności nie odpowiada oczekiwanej sumie do zapłaty",
   "groups.sessionSummary": "Podsumowanie sesji",
+  "groups.participantsNotLoaded": "Uczestnicy wciąż się ładują. Poczekaj chwilę i spróbuj ponownie.",
   "groups.participantBilling": "Rozliczenia uczestników",
   "common.minutes": "min",
   "common.status": "Status",

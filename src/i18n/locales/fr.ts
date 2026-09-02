@@ -1075,6 +1075,7 @@ export default {
   "groups.sessionCompleted": "Séance de groupe terminée",
   "groups.paymentMismatch": "Attention : Le montant du paiement ne correspond pas au total facturable attendu",
   "groups.sessionSummary": "Résumé de la séance",
+  "groups.participantsNotLoaded": "Les participants sont en cours de chargement. Patientez un instant et réessayez.",
   "groups.participantBilling": "Facturation des participants",
   "common.minutes": "min",
   "common.status": "Statut",
