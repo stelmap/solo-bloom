@@ -9,6 +9,7 @@ import todayAsset from "@/assets/hero-today.png";
 import calendarAsset from "@/assets/hero-calendar.png";
 import clientAsset from "@/assets/hero-client.png";
 import bookingAsset from "@/assets/hero-booking.png";
+import overviewDashboardAsset from "@/assets/hero-overview-dashboard.png.asset.json";
 
 export interface HeroSlide {
   id: string;
@@ -32,7 +33,7 @@ export const HERO_SLIDES: HeroSlide[] = [
     title2: "heroOverviewTitle2",
     body: "heroOverviewBody",
     alt: "altOverviewComposition",
-    image: todayAsset,
+    image: overviewDashboardAsset.url,
     composition: true,
   },
   { id: "today", tab: "heroTabToday", label: "heroTabToday", title: "heroTodayTitle", body: "heroTodayBody", alt: "altDashboard", image: todayAsset },
@@ -80,7 +81,7 @@ export function HeroCarousel({
   };
 
   return (
-    <div className="mx-auto w-full min-w-0 px-5 sm:px-6 lg:w-[95%] lg:px-0">
+    <div className="mx-auto w-full min-w-0 px-5 sm:px-6 lg:w-[85%] lg:px-0">
       <div
         role="tablist"
         aria-label={lt(lang, "heroCarouselLabel")}
