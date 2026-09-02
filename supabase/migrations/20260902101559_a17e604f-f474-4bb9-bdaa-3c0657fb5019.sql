@@ -1,0 +1,1 @@
+ALTER TABLE public.subscription_cache ADD COLUMN IF NOT EXISTS discount_percent numeric;
