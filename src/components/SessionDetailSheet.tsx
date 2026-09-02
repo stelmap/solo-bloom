@@ -122,8 +122,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     ? ((apt as any).group_sessions?.id || apt.group_session_id)
     : undefined;
   const groupId = (apt as any)?.group_sessions?.group_id || undefined;
-  const { data: groupAttendance = [] } = useGroupAttendance(groupSessionId);
-  const { data: groupData } = useGroup(groupId);
+  const { data: groupAttendance = [], isLoading: groupAttendanceLoading } = useGroupAttendance(groupSessionId);
+  const { data: groupData, isLoading: groupDataLoading } = useGroup(groupId);
   const { data: groupMembers = [] } = useGroupMembers(groupId);
   const { data: existingPayments = [] } = useGroupSessionPayments(groupSessionId);
   const updateAttendance = useUpdateAttendance();
@@ -615,6 +615,14 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const handleGroupQuickComplete = async (state: string) => {
     if (completeGroupSession.isPending) return;
     if (!isActive || !groupSessionId || !groupId) return;
+    if (groupAttendanceLoading || groupDataLoading || groupBillingData.length === 0) {
+      toast({
+        title: t("common.error"),
+        description: t("groups.participantsNotLoaded"),
+        variant: "destructive",
+      });
+      return;
+    }
     try {
       await completeGroupSession.mutateAsync({
         appointmentId: apt.id,
@@ -1282,7 +1290,12 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                         i !== 0 && "border-primary/40 text-primary hover:bg-primary/10 hover:text-primary",
                       )}
                       onClick={() => handleGroupQuickComplete(opt.value)}
-                      disabled={completeGroupSession.isPending}
+                      disabled={
+                        completeGroupSession.isPending ||
+                        groupAttendanceLoading ||
+                        groupDataLoading ||
+                        groupBillingData.length === 0
+                      }
                     >
                       {opt.icon === "clock"
                         ? <Clock className="h-4 w-4 mr-2" />

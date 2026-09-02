@@ -7,8 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useSupportUkraine } from "@/hooks/useSupportUkraine";
-import { campaignPrice, campaignText, formatEuro, isCampaignPlan } from "@/lib/supportUkraine";
+import { campaignText, formatEuro, isCampaignPlan } from "@/lib/supportUkraine";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -68,7 +67,6 @@ export function SubscriptionSection() {
   const [refreshing, setRefreshing] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [resolved, setResolved] = useState<ResolvedPlan>({ planName: null, planCode: null, billingPeriod: null });
-  const { eligible: campaignEligible } = useSupportUkraine();
 
   const dateLocale = lang === "fr" ? frLocale : lang === "uk" ? ukLocale : undefined;
   const fmtDate = (d: string) => format(new Date(d), "d MMM yyyy", { locale: dateLocale });
@@ -309,20 +307,20 @@ export function SubscriptionSection() {
             </div>
 
             {/* Support Ukrainian Psychotherapists campaign */}
-            {campaignEligible && isCampaignPlan(resolved.planCode) && (
+            {subscription.discount_percent != null && subscription.discount_percent > 0 && isCampaignPlan(resolved.planCode) && (
               <div className="rounded-xl border border-[hsl(214_85%_52%)]/25 bg-[hsl(47_95%_96%)] dark:bg-muted/30 p-5">
                 <p className="text-sm font-semibold text-foreground mb-3">
                   {campaignText(lang, "campaignName")}
                 </p>
                 <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
-                  <Field label={campaignText(lang, "billingDiscountLabel")}>−50%</Field>
+                  <Field label={campaignText(lang, "billingDiscountLabel")}>{`−${Math.round(subscription.discount_percent ?? 0)}%`}</Field>
                   <Field label={campaignText(lang, "billingStatusLabel")}>
                     {campaignText(lang, "billingStatusActive")}
                   </Field>
                   <Field label={campaignText(lang, "billingAppliedToLabel")}>{planLabel}</Field>
                   <Field label={campaignText(lang, "billingNextPaymentLabel")} muted={!resolved.price}>
                     {resolved.price
-                      ? `${formatEuro(campaignPrice(resolved.price))}${dateValue ? ` — ${dateValue}` : ""}`
+                      ? `${formatEuro(resolved.price * (1 - (subscription.discount_percent ?? 0) / 100))}${dateValue ? ` — ${dateValue}` : ""}`
                       : dateValue}
                   </Field>
                 </dl>

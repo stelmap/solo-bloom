@@ -2859,6 +2859,7 @@ export type Database = {
           cancel_at_period_end: boolean
           checked_at: string
           created_at: string
+          discount_percent: number | null
           id: string
           on_trial: boolean
           price_id: string | null
@@ -2872,6 +2873,7 @@ export type Database = {
           cancel_at_period_end?: boolean
           checked_at?: string
           created_at?: string
+          discount_percent?: number | null
           id?: string
           on_trial?: boolean
           price_id?: string | null
@@ -2885,6 +2887,7 @@ export type Database = {
           cancel_at_period_end?: boolean
           checked_at?: string
           created_at?: string
+          discount_percent?: number | null
           id?: string
           on_trial?: boolean
           price_id?: string | null

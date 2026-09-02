@@ -16,3 +16,9 @@
 
 - [x] Session payment: allocate payment to the closed session first, then older debts
 - [x] Group session closing flow/UI matches single-session one-click bar
+
+## Hero slider (landing)
+- [x] Arrows overlaid on left/right edges of the screenshot (no arrow row below)
+- [x] Remove small preview thumbnails from the overview slide
+- [x] Tabs, arrows, dots and counter drive one shared slide state
+- [x] Fluid hero layout (no fixed px), aspect-ratio screenshot, no horizontal scroll

@@ -10,6 +10,7 @@ export interface SubscriptionStatus {
   trial_end: string | null;
   price_id: string | null;
   cancel_at_period_end: boolean;
+  discount_percent: number | null;
   loading: boolean;
 }
 
@@ -33,6 +34,7 @@ const defaultSubscription: SubscriptionStatus = {
   trial_end: null,
   price_id: null,
   cancel_at_period_end: false,
+  discount_percent: null,
   loading: true,
 };
 
@@ -115,6 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           trial_end: data.trial_end ?? null,
           price_id: data.price_id ?? null,
           cancel_at_period_end: data.cancel_at_period_end ?? false,
+          discount_percent: typeof data.discount_percent === "number" ? data.discount_percent : null,
           loading: false,
         });
         return;

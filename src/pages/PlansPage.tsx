@@ -13,6 +13,7 @@ import { useHasDemoData } from "@/hooks/useDemoWorkspace";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { track } from "@/lib/analytics";
+import { getFreshAccessToken } from "@/lib/checkoutAuth";
 import { campaignText, isCampaignPlan, SUPPORT_UA_PROMO_CODE } from "@/lib/supportUkraine";
 import { useSupportUkraine } from "@/hooks/useSupportUkraine";
 import { SupportUkrainePrice } from "@/components/campaign/SupportUkrainePrice";
@@ -386,7 +387,14 @@ export default function PlansPage() {
     const slowTimer = window.setTimeout(() => setSlowCheckout(true), 5000);
 
     try {
+      const accessToken = await getFreshAccessToken();
+      if (!accessToken) {
+        window.clearTimeout(slowTimer);
+        navigate(`/auth?plan=${selectedPlan.code}`);
+        return;
+      }
       const { data, error } = await supabase.functions.invoke("create-checkout", {
+        headers: { Authorization: `Bearer ${accessToken}` },
         body: {
           planCode: selectedPlan.code,
           billingPeriod: period,

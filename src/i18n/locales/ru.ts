@@ -702,6 +702,7 @@ export default {
   "auth.registerDesc": "Создайте аккаунт Solo.Bizz с помощью email и пароля.",
   "auth.createAccountButton": "Создать аккаунт",
   "auth.registerHere": "Зарегистрироваться здесь",
+  "auth.signInRequired": "Пожалуйста, войдите снова, чтобы продолжить оплату.",
   "auth.emailRequired": "Электронная почта обязательна.",
   "auth.passwordRequired": "Пароль обязателен.",
   "auth.invalidEmail": "Неверный формат электронной почты.",
@@ -1188,6 +1189,7 @@ export default {
   "groups.sessionCompleted": "Групповой сеанс завершён",
   "groups.paymentMismatch": "Внимание: сумма оплаты не совпадает с ожидаемой платной суммой",
   "groups.sessionSummary": "Итог сеанса",
+  "groups.participantsNotLoaded": "Участники ещё загружаются. Подождите немного и повторите попытку.",
   "groups.participantBilling": "Оплата участников",
 
   // Pricing

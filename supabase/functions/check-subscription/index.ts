@@ -196,6 +196,7 @@ serve(async (req) => {
               trial_end: cached.trial_end,
               price_id: cached.price_id,
               cancel_at_period_end: cached.cancel_at_period_end,
+              discount_percent: cached.discount_percent ?? null,
             }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
           );
@@ -209,7 +210,7 @@ serve(async (req) => {
 
     if (customers.data.length === 0) {
       logStep("No Stripe customer found");
-      const result = { subscribed: false, on_trial: false, subscription_end: null, trial_end: null, price_id: null, cancel_at_period_end: false };
+      const result = { subscribed: false, on_trial: false, subscription_end: null, trial_end: null, price_id: null, cancel_at_period_end: false, discount_percent: null as number | null };
       // Update cache
       await supabaseAdmin.from("subscription_cache").upsert({
         user_id: userId,
@@ -226,14 +227,14 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found customer", { customerId });
 
-    const activeSubs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
-    const trialingSubs = await stripe.subscriptions.list({ customer: customerId, status: "trialing", limit: 1 });
+    const activeSubs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1, expand: ["data.discounts"] });
+    const trialingSubs = await stripe.subscriptions.list({ customer: customerId, status: "trialing", limit: 1, expand: ["data.discounts"] });
     const subscription = activeSubs.data[0] || trialingSubs.data[0];
 
     let result;
     if (!subscription) {
       logStep("No active or trialing subscription");
-      result = { subscribed: false, on_trial: false, subscription_end: null, trial_end: null, price_id: null, cancel_at_period_end: false };
+      result = { subscribed: false, on_trial: false, subscription_end: null, trial_end: null, price_id: null, cancel_at_period_end: false, discount_percent: null as number | null };
     } else {
       const onTrial = subscription.status === "trialing";
 
@@ -249,6 +250,19 @@ serve(async (req) => {
       }
 
       const priceId = subscription.items.data[0]?.price?.id || null;
+
+      // Real discount currently attached to the subscription (if any). The UI
+      // must never claim a discount that Stripe is not actually applying.
+      let discountPercent: number | null = null;
+      const rawDiscounts: any[] = (subscription as any).discounts
+        ?? ((subscription as any).discount ? [(subscription as any).discount] : []);
+      for (const d of rawDiscounts) {
+        const pct = typeof d === "object" ? d?.coupon?.percent_off : null;
+        if (typeof pct === "number" && pct > 0) {
+          discountPercent = pct;
+          break;
+        }
+      }
 
       logStep("Subscription found", {
         status: subscription.status,
@@ -267,6 +281,7 @@ serve(async (req) => {
         trial_end: trialEnd,
         price_id: priceId,
         cancel_at_period_end: subscription.cancel_at_period_end,
+        discount_percent: discountPercent,
       };
     }
 
