@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public._gdpr_decrypt(bytea) TO authenticated;
