@@ -702,6 +702,7 @@ export default {
   "auth.registerDesc": "Создайте аккаунт Solo.Bizz с помощью email и пароля.",
   "auth.createAccountButton": "Создать аккаунт",
   "auth.registerHere": "Зарегистрироваться здесь",
+  "auth.signInRequired": "Пожалуйста, войдите снова, чтобы продолжить оплату.",
   "auth.emailRequired": "Электронная почта обязательна.",
   "auth.passwordRequired": "Пароль обязателен.",
   "auth.invalidEmail": "Неверный формат электронной почты.",

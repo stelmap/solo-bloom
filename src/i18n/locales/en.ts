@@ -530,6 +530,7 @@ export default {
   "auth.registerDesc": "Create your Solo .Bizz account with email and password.",
   "auth.createAccountButton": "Create account",
   "auth.registerHere": "Register here",
+  "auth.signInRequired": "Please sign in again to continue to checkout.",
   "auth.emailRequired": "Email is required.",
   "auth.passwordRequired": "Password is required.",
   "auth.invalidEmail": "Invalid email format.",

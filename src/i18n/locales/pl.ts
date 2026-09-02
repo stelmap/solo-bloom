@@ -543,6 +543,7 @@ export default {
   "auth.registerDesc": "Utwórz swoje konto SoloBizz za pomocą adresu e-mail i hasła.",
   "auth.createAccountButton": "Utwórz konto",
   "auth.registerHere": "Zarejestruj się tutaj",
+  "auth.signInRequired": "Zaloguj się ponownie, aby przejść do płatności.",
   "auth.emailRequired": "Adres e-mail jest wymagany.",
   "auth.passwordRequired": "Hasło jest wymagane.",
   "auth.invalidEmail": "Nieprawidłowy format adresu e-mail.",

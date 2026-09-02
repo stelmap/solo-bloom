@@ -530,6 +530,7 @@ export default {
   "auth.registerDesc": "Створіть обліковий запис Solo .Bizz за допомогою email і пароля.",
   "auth.createAccountButton": "Створити акаунт",
   "auth.registerHere": "Зареєструватися тут",
+  "auth.signInRequired": "Будь ласка, увійдіть знову, щоб продовжити оплату.",
   "auth.emailRequired": "Email обов’язковий.",
   "auth.passwordRequired": "Пароль обов’язковий.",
   "auth.invalidEmail": "Невірний формат email.",
