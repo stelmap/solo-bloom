@@ -16,7 +16,7 @@ import { SupportUkrainePrice } from "@/components/campaign/SupportUkrainePrice";
 import { PromoTopBar } from "@/components/landing/PromoTopBar";
 import { HeroCarousel, HERO_SLIDES } from "@/components/landing/HeroCarousel";
 import { OutcomeStrip } from "@/components/landing/OutcomeStrip";
-import { ProductTour } from "@/components/landing/ProductTour";
+
 import { WorkflowSection } from "@/components/landing/WorkflowSection";
 import { lt } from "@/lib/landingRedesignCopy";
 import {
@@ -1032,7 +1032,7 @@ function HeroSection() {
           <div className="flex flex-col items-center gap-3 sm:flex-row sm:flex-wrap lg:justify-start">
             <PrimaryCta label={t("heroCta")} source="/" cta="hero" />
             <a
-              href="#product-tour"
+              href="#workflow"
               className="inline-flex h-12 items-center justify-center px-4 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               {t("heroSecondary")}
@@ -2127,7 +2127,7 @@ function LandingShell() {
       <main>
         <HeroSection />
         <OutcomeStrip lang={lang} />
-        <ProductTour lang={lang} />
+        
         <WorkflowSection lang={lang} />
         <TestimonialsSection />
         <PricingSection />
