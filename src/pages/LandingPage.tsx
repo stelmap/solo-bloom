@@ -12,7 +12,6 @@ import type { Language, AppLanguage } from "@/i18n/translations";
 import { track } from "@/lib/analytics";
 import { campaignText } from "@/lib/supportUkraine";
 import { useSupportUkraine } from "@/hooks/useSupportUkraine";
-import { SupportUkraineBanner } from "@/components/campaign/SupportUkraineBanner";
 import { SupportUkrainePrice } from "@/components/campaign/SupportUkrainePrice";
 import { PromoTopBar } from "@/components/landing/PromoTopBar";
 import { HeroProductShowcase } from "@/components/landing/HeroProductShowcase";
