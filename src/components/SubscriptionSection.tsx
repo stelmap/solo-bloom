@@ -309,20 +309,20 @@ export function SubscriptionSection() {
             </div>
 
             {/* Support Ukrainian Psychotherapists campaign */}
-            {campaignEligible && isCampaignPlan(resolved.planCode) && (
+            {subscription.discount_percent != null && subscription.discount_percent > 0 && isCampaignPlan(resolved.planCode) && (
               <div className="rounded-xl border border-[hsl(214_85%_52%)]/25 bg-[hsl(47_95%_96%)] dark:bg-muted/30 p-5">
                 <p className="text-sm font-semibold text-foreground mb-3">
                   {campaignText(lang, "campaignName")}
                 </p>
                 <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
-                  <Field label={campaignText(lang, "billingDiscountLabel")}>−50%</Field>
+                  <Field label={campaignText(lang, "billingDiscountLabel")}>{`−${Math.round(subscription.discount_percent ?? 0)}%`}</Field>
                   <Field label={campaignText(lang, "billingStatusLabel")}>
                     {campaignText(lang, "billingStatusActive")}
                   </Field>
                   <Field label={campaignText(lang, "billingAppliedToLabel")}>{planLabel}</Field>
                   <Field label={campaignText(lang, "billingNextPaymentLabel")} muted={!resolved.price}>
                     {resolved.price
-                      ? `${formatEuro(campaignPrice(resolved.price))}${dateValue ? ` — ${dateValue}` : ""}`
+                      ? `${formatEuro(resolved.price * (1 - (subscription.discount_percent ?? 0) / 100))}${dateValue ? ` — ${dateValue}` : ""}`
                       : dateValue}
                   </Field>
                 </dl>
