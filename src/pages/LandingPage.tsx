@@ -1164,10 +1164,6 @@ function PricingSection() {
     },
   ];
 
-  const scrollToPricing = () => {
-    document.getElementById("pricing-plans")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
   return (
     <BillingCycleContext.Provider value={cycle}>
     <section id="pricing" className="py-20 px-4 sm:px-6 bg-orange-50/60">
