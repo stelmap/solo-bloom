@@ -1029,7 +1029,7 @@ function HeroSection() {
               {lt(lang, active.body)}
             </p>
           </div>
-          <div className="flex flex-col items-center gap-4 sm:flex-row lg:justify-start">
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:flex-wrap lg:justify-start">
             <PrimaryCta label={t("heroCta")} source="/" cta="hero" />
             <a
               href="#product-tour"
