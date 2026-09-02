@@ -9,7 +9,7 @@ import todayAsset from "@/assets/hero-today.png";
 import calendarAsset from "@/assets/hero-calendar.png";
 import clientAsset from "@/assets/hero-client.png";
 import bookingAsset from "@/assets/hero-booking.png";
-import overviewDashboardAsset from "@/assets/hero-overview-dashboard.png.asset.json";
+import overviewDashboardAsset from "@/assets/hero-overview-dashboard.png";
 
 export interface HeroSlide {
   id: string;
@@ -33,7 +33,7 @@ export const HERO_SLIDES: HeroSlide[] = [
     title2: "heroOverviewTitle2",
     body: "heroOverviewBody",
     alt: "altOverviewComposition",
-    image: overviewDashboardAsset.url,
+    image: overviewDashboardAsset,
     composition: true,
   },
   { id: "today", tab: "heroTabToday", label: "heroTabToday", title: "heroTodayTitle", body: "heroTodayBody", alt: "altDashboard", image: todayAsset },
