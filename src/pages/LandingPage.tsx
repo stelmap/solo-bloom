@@ -1013,15 +1013,15 @@ function HeroSection() {
   const [slide, setSlide] = useState(0);
   const active = HERO_SLIDES[slide];
   return (
-    <section className="px-4 pb-10 pt-10 sm:px-6 sm:pb-16 sm:pt-14">
-      <div className="mx-auto grid w-full max-w-[min(1560px,96vw)] items-center gap-[clamp(24px,3vw,48px)] lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-[clamp(32px,4.5vw,76px)]">
+    <section className="w-full pb-10 pt-10 [padding-inline:clamp(24px,4vw,72px)] sm:pb-16 sm:pt-14">
+      <div className="grid w-full items-center gap-[clamp(24px,3vw,48px)] lg:grid-cols-[minmax(260px,1fr)_minmax(0,2.1fr)] lg:gap-[clamp(28px,3.5vw,56px)] xl:grid-cols-[minmax(260px,1fr)_minmax(0,3fr)]">
         <div className="min-w-0 text-center lg:text-left">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium leading-normal text-primary">
             <Sparkles className="h-3.5 w-3.5 shrink-0" />
             <span className="leading-normal">{lt(lang, active.label)}</span>
           </div>
           <div key={slide} className="hero-slide-text">
-            <h1 className="mb-5 text-3xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+            <h1 className="mb-5 font-bold tracking-tight text-foreground [font-size:clamp(32px,3.2vw,58px)] [line-height:1.02]">
               <span className="block">{lt(lang, active.title)}</span>
               {active.title2 && <span className="mt-2 block text-primary">{lt(lang, active.title2)}</span>}
             </h1>
