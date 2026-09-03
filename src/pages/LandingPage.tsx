@@ -1820,11 +1820,11 @@ function TestimonialsSection() {
   const pages = Math.max(1, Math.ceil(cards.length + 1));
 
   return (
-    <section className="bg-muted/40 py-20 sm:py-24" style={{ paddingInline: "clamp(16px, 2vw, 40px)" }}>
-      <div className="mx-auto" style={{ width: "min(96vw, 1800px)", maxWidth: "100%" }}>
+    <section className="bg-muted/40 py-16 sm:py-20" style={{ paddingInline: "clamp(16px, 4vw, 64px)" }}>
+      <div className="mx-auto w-full" style={{ width: "min(92vw, 1720px)", maxWidth: "100%" }}>
         <div className="mb-10 text-center">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary">{c.eyebrow}</p>
-          <h2 className="text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">{c.title}</h2>
+          <p className="text-xs font-bold uppercase tracking-[0.08em] text-primary">{c.eyebrow}</p>
+          <h2 className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">{c.title}</h2>
         </div>
 
         <div className="relative">
@@ -1855,7 +1855,7 @@ function TestimonialsSection() {
             <div
               data-slide
               className="flex shrink-0 snap-start flex-col justify-center rounded-2xl bg-secondary text-secondary-foreground shadow-sm"
-              style={{ padding: "clamp(20px, 1.8vw, 32px)", width: "clamp(240px, 82vw, 320px)" }}
+              style={{ padding: "clamp(20px, 1.8vw, 32px)", width: "clamp(230px, 78vw, 300px)" }}
             >
               <div className="text-5xl font-bold leading-none">300+</div>
               <p className="mt-3 text-base font-medium leading-snug opacity-95">{c.summaryLead}</p>
@@ -1871,7 +1871,7 @@ function TestimonialsSection() {
                 key={i}
                 data-slide
                 className="flex shrink-0 snap-start flex-col rounded-2xl border border-border bg-card shadow-sm"
-                style={{ padding: "clamp(20px, 1.6vw, 28px)", width: "clamp(260px, 82vw, 360px)" }}
+                style={{ padding: "clamp(20px, 1.6vw, 28px)", width: "clamp(250px, 78vw, 330px)" }}
               >
                 <div className="mb-4 tracking-widest text-secondary">★★★★★</div>
                 <p className="flex-1 font-serif text-base italic leading-relaxed text-foreground/90">{card.text}</p>
