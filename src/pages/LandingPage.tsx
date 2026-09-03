@@ -1171,14 +1171,9 @@ function PricingSection() {
     <section id="pricing" className="py-20 px-4 sm:px-6 bg-orange-50/60">
       <div id="pricing-plans" className="max-w-6xl mx-auto">
         <div className="text-center mb-10">
-          <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-4">{t("pricingEyebrow")}</p>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">{t("pricingTitle")}</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("pricingSub")}</p>
-          <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700">
-            <Check className="h-4 w-4 shrink-0" />
-            <span className="text-sm font-medium">{t("pricingAllFeaturesBadge")}</span>
-          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">{t("pricingTitle")}</h2>
         </div>
+
 
         {/* Billing cycle switcher */}
         <div className="flex justify-center mb-10">
