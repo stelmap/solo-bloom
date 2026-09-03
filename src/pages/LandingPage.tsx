@@ -15,7 +15,6 @@ import { useSupportUkraine } from "@/hooks/useSupportUkraine";
 import { SupportUkrainePrice } from "@/components/campaign/SupportUkrainePrice";
 import { PromoTopBar } from "@/components/landing/PromoTopBar";
 import { HeroCarousel, HERO_SLIDES } from "@/components/landing/HeroCarousel";
-import { OutcomeStrip } from "@/components/landing/OutcomeStrip";
 
 import { WorkflowSection } from "@/components/landing/WorkflowSection";
 import { lt } from "@/lib/landingRedesignCopy";
@@ -2126,7 +2125,6 @@ function LandingShell() {
       <LandingNav />
       <main>
         <HeroSection />
-        <OutcomeStrip lang={lang} />
         
         <WorkflowSection lang={lang} />
         <TestimonialsSection />
