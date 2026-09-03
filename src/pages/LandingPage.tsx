@@ -1,4 +1,4 @@
-import { useState, useCallback, createContext, useContext, useEffect, type ReactNode } from "react";
+import { useState, useCallback, useRef, createContext, useContext, useEffect, type ReactNode } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { BookingDialog } from "@/components/BookingDialog";
@@ -25,7 +25,7 @@ import {
   isCampaignActive,
 } from "@/lib/landingCampaign";
 import {
-  ArrowRight, CheckCircle2, AlertTriangle, AlertCircle, TrendingUp,
+  ArrowRight, ChevronLeft, ChevronRight, CheckCircle2, AlertTriangle, AlertCircle, TrendingUp,
   Calendar as CalendarIcon, Users, Sparkles, ShieldCheck,
   X, Check, HeartHandshake, Presentation, BookOpen, Clock, Timer,
   Quote, MessageCircle, Mail, Phone, MapPin, Send,
