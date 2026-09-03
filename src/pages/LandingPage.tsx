@@ -297,7 +297,7 @@ const C = {
 
   // Pricing
   pricingEyebrow: { en: "Pricing", fr: "Tarifs", uk: "Ціни", pl: "Cennik" },
-  pricingTitle: { en: "Your full practice, organised from day one.", fr: "Toute votre pratique, organisée dès le premier jour.", uk: "Ваша повна практика, організована з першого дня.", pl: "Cała Twoja praktyka uporządkowana od pierwszego dnia." },
+  pricingTitle: { en: "Choose the plan that fits you", fr: "Choisissez le forfait qui vous convient", uk: "Оберіть план, який підходить саме вам", pl: "Wybierz plan odpowiedni dla Ciebie" },
   pricingSub: {
     en: "All core features are included in every plan. The only difference is the number of active clients. No hidden limits.",
     fr: "Toutes les fonctionnalités principales sont incluses dans chaque forfait. La seule différence — le nombre de clients actifs. Aucune limite cachée.",
