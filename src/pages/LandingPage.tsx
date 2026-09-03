@@ -297,7 +297,7 @@ const C = {
 
   // Pricing
   pricingEyebrow: { en: "Pricing", fr: "Tarifs", uk: "Ціни", pl: "Cennik" },
-  pricingTitle: { en: "Your full practice, organised from day one.", fr: "Toute votre pratique, organisée dès le premier jour.", uk: "Ваша повна практика, організована з першого дня.", pl: "Cała Twoja praktyka uporządkowana od pierwszego dnia." },
+  pricingTitle: { en: "Choose the plan that fits you", fr: "Choisissez le forfait qui vous convient", uk: "Оберіть план, який підходить саме вам", pl: "Wybierz plan odpowiedni dla Ciebie" },
   pricingSub: {
     en: "All core features are included in every plan. The only difference is the number of active clients. No hidden limits.",
     fr: "Toutes les fonctionnalités principales sont incluses dans chaque forfait. La seule différence — le nombre de clients actifs. Aucune limite cachée.",
@@ -763,7 +763,7 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
 
   // Pricing
   pricingEyebrow: "Цены",
-  pricingTitle: "Ваша полноценная практика, организованная с первого дня.",
+  pricingTitle: "Выберите план, который подходит именно вам",
   pricingSub: "Все основные функции включены в каждый план. Единственная разница — количество активных клиентов. Никаких скрытых ограничений.",
   pricingAllFeaturesBadge: "Все функции доступны с первого дня — на любом плане",
   pricingCompare: "По сравнению с аналогами: SimplePractice стоит €46–73/мес, TherapyNotes — €64/мес. SoloBizz предлагает полный набор инструментов для управления частной практикой за €12/мес — без страховых модулей и лишних функций, которые частному терапевту никогда не понадобятся.",
@@ -1171,14 +1171,9 @@ function PricingSection() {
     <section id="pricing" className="py-20 px-4 sm:px-6 bg-orange-50/60">
       <div id="pricing-plans" className="max-w-6xl mx-auto">
         <div className="text-center mb-10">
-          <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-4">{t("pricingEyebrow")}</p>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">{t("pricingTitle")}</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("pricingSub")}</p>
-          <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700">
-            <Check className="h-4 w-4 shrink-0" />
-            <span className="text-sm font-medium">{t("pricingAllFeaturesBadge")}</span>
-          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">{t("pricingTitle")}</h2>
         </div>
+
 
         {/* Billing cycle switcher */}
         <div className="flex justify-center mb-10">
