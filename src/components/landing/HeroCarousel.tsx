@@ -129,12 +129,6 @@ export function HeroCarousel({
               loading={index === 0 ? "eager" : "lazy"}
               className="hero-slide-media block h-full w-full object-contain"
             />
-            {active.composition && (
-              <div className="pointer-events-none absolute left-3 top-3 rounded-full bg-secondary/90 px-3 py-1 text-xs font-semibold text-secondary-foreground shadow">
-                SoloBizz
-                <span className="ml-2 hidden font-normal opacity-80 md:inline">{lt(lang, "heroOverviewCaption")}</span>
-              </div>
-            )}
           </div>
         </div>
 
