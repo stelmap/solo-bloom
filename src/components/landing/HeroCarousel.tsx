@@ -137,7 +137,7 @@ export function HeroCarousel({
           type="button"
           aria-label={lt(lang, "heroPrev")}
           onClick={() => select(index - 1)}
-          className="absolute left-0 top-1/2 z-10 inline-flex h-10 w-10 -translate-x-1/3 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-md transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-11 sm:w-11 sm:-translate-x-1/2"
+          className="absolute left-1 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-md transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-11 sm:w-11 sm:left-2"
         >
           <ChevronLeft className="h-5 w-5" />
         </button>

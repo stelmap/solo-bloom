@@ -56,6 +56,10 @@ const C = {
   navFaq: { en: "FAQ", fr: "FAQ", uk: "Питання", pl: "FAQ" },
   navLogin: { en: "Log in", fr: "Connexion", uk: "Увійти", pl: "Zaloguj się" },
   navTry: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
+  navOpenApp: { en: "Go to SoloBizz →", fr: "Aller à SoloBizz →", uk: "Перейти в SoloBizz →", pl: "Przejdź do SoloBizz →" },
+  heroCtaPrimary: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
+  heroCtaPricing: { en: "See pricing", fr: "Voir les tarifs", uk: "Подивитися ціни", pl: "Zobacz cennik" },
+  heroCtaNote: { en: "No card · Setup in 5 minutes", fr: "Sans carte · Configuration en 5 minutes", uk: "Без картки · Налаштування за 5 хвилин", pl: "Bez karty · Konfiguracja w 5 minut" },
 
   // Hero
   heroBadge: { en: "For psychologists, psychotherapists, supervisors and educators", fr: "Pour psychologues, psychothérapeutes, superviseurs et formateurs", uk: "ПОЧНІТЬ СЬОГОДНІ — БЕЗКОШТОВНО, БЕЗ КАРТКИ", pl: "Dla psychologów, psychoterapeutów, superwizorów i edukatorów" },
