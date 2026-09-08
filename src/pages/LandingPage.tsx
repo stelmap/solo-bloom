@@ -56,6 +56,10 @@ const C = {
   navFaq: { en: "FAQ", fr: "FAQ", uk: "Питання", pl: "FAQ" },
   navLogin: { en: "Log in", fr: "Connexion", uk: "Увійти", pl: "Zaloguj się" },
   navTry: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
+  navOpenApp: { en: "Go to SoloBizz →", fr: "Aller à SoloBizz →", uk: "Перейти в SoloBizz →", pl: "Przejdź do SoloBizz →" },
+  heroCtaPrimary: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
+  heroCtaPricing: { en: "See pricing", fr: "Voir les tarifs", uk: "Подивитися ціни", pl: "Zobacz cennik" },
+  heroCtaNote: { en: "No card · Setup in 5 minutes", fr: "Sans carte · Configuration en 5 minutes", uk: "Без картки · Налаштування за 5 хвилин", pl: "Bez karty · Konfiguracja w 5 minut" },
 
   // Hero
   heroBadge: { en: "For psychologists, psychotherapists, supervisors and educators", fr: "Pour psychologues, psychothérapeutes, superviseurs et formateurs", uk: "ПОЧНІТЬ СЬОГОДНІ — БЕЗКОШТОВНО, БЕЗ КАРТКИ", pl: "Dla psychologów, psychoterapeutów, superwizorów i edukatorów" },
@@ -634,6 +638,10 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   navFaq: "Вопросы",
   navLogin: "Войти",
   navTry: "Начать бесплатно",
+  navOpenApp: "Перейти в SoloBizz →",
+  heroCtaPrimary: "Начать бесплатно",
+  heroCtaPricing: "Посмотреть цены",
+  heroCtaNote: "Без карты · Настройка за 5 минут",
 
   // Hero
   heroBadge: "Для психологов, психотерапевтов, супервизоров и преподавателей",
@@ -992,11 +1000,12 @@ function LandingNav() {
           >
             {lang === "en" ? "🇬🇧 EN" : lang === "fr" ? "🇫🇷 FR" : lang === "pl" ? "🇵🇱 PL" : lang === "ru" ? "🇷🇺 RU" : "🇺🇦 UA"}
           </button>
-          <Link to="/auth" className="hidden sm:block">
-            <Button variant="ghost" size="sm">{t("navLogin")}</Button>
-          </Link>
-          <Link to="/auth" onClick={() => track("cta_clicked", { source_page: "/", cta: "nav", lang })}>
-            <Button size="sm">{t("navTry")}</Button>
+          <Link
+            to="/auth"
+            onClick={() => track("cta_clicked", { source_page: "/", cta: "nav", lang })}
+            className="whitespace-nowrap text-sm font-semibold text-secondary hover:underline underline-offset-4 transition-colors"
+          >
+            {t("navOpenApp")}
           </Link>
         </div>
       </div>
@@ -1013,7 +1022,7 @@ function HeroSection() {
   const active = HERO_SLIDES[slide];
   return (
     <section className="w-full pb-10 pt-10 [padding-inline:clamp(24px,4vw,72px)] sm:pb-16 sm:pt-14">
-      <div className="grid w-full items-center gap-[clamp(24px,3vw,48px)] lg:grid-cols-[minmax(230px,0.9fr)_minmax(0,2.6fr)] lg:gap-[clamp(24px,2.5vw,44px)] xl:grid-cols-[minmax(240px,1fr)_minmax(0,3.6fr)]">
+      <div className="grid w-full items-center gap-[clamp(24px,3vw,48px)] lg:grid-cols-[minmax(320px,1fr)_minmax(0,3fr)] lg:gap-[clamp(40px,3.5vw,64px)] xl:grid-cols-[minmax(340px,1fr)_minmax(0,3.2fr)]">
         <div className="min-w-0 text-center lg:text-left">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium leading-normal text-primary">
             <Sparkles className="h-3.5 w-3.5 shrink-0" />
@@ -1028,16 +1037,20 @@ function HeroSection() {
               {lt(lang, active.body)}
             </p>
           </div>
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:flex-wrap lg:justify-start">
-            <PrimaryCta label={t("heroCta")} source="/" cta="hero" />
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center lg:flex-nowrap lg:justify-start">
+            <PrimaryCta label={t("heroCtaPrimary")} source="/" cta="hero" className="w-full sm:w-auto !h-11 !px-5 !text-sm" />
             <a
-              href="#workflow"
-              className="inline-flex h-12 items-center justify-center px-4 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              href="#pricing"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="inline-flex h-11 w-full items-center justify-center whitespace-nowrap rounded-xl border border-secondary/40 bg-card px-5 text-sm font-semibold text-secondary transition-colors hover:bg-secondary/5 sm:w-auto"
             >
-              {t("heroSecondary")}
+              {t("heroCtaPricing")}
             </a>
           </div>
-          <p className="mt-5 text-sm text-muted-foreground">{t("heroSubCta")}</p>
+          <p className="mt-4 text-xs text-muted-foreground lg:text-left">{t("heroCtaNote")}</p>
           <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground lg:justify-start">
             <li className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-success" /> {t("trustData")}</li>
             <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-success" /> {t("trustGdpr")}</li>
