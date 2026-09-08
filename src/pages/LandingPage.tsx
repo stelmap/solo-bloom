@@ -1022,7 +1022,7 @@ function HeroSection() {
   const active = HERO_SLIDES[slide];
   return (
     <section className="w-full pb-10 pt-10 [padding-inline:clamp(24px,4vw,72px)] sm:pb-16 sm:pt-14">
-      <div className="grid w-full items-center gap-[clamp(24px,3vw,48px)] lg:grid-cols-[minmax(250px,0.95fr)_minmax(0,2.6fr)] lg:gap-[clamp(40px,3.5vw,64px)] xl:grid-cols-[minmax(260px,1fr)_minmax(0,3.2fr)]">
+      <div className="grid w-full items-center gap-[clamp(24px,3vw,48px)] lg:grid-cols-[minmax(320px,1fr)_minmax(0,3fr)] lg:gap-[clamp(40px,3.5vw,64px)] xl:grid-cols-[minmax(340px,1fr)_minmax(0,3.2fr)]">
         <div className="min-w-0 text-center lg:text-left">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium leading-normal text-primary">
             <Sparkles className="h-3.5 w-3.5 shrink-0" />
@@ -1037,15 +1037,15 @@ function HeroSection() {
               {lt(lang, active.body)}
             </p>
           </div>
-          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center lg:justify-start">
-            <PrimaryCta label={t("heroCtaPrimary")} source="/" cta="hero" className="w-full sm:w-auto !px-6" />
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center lg:flex-nowrap lg:justify-start">
+            <PrimaryCta label={t("heroCtaPrimary")} source="/" cta="hero" className="w-full sm:w-auto !h-11 !px-5 !text-sm" />
             <a
               href="#pricing"
               onClick={(e) => {
                 e.preventDefault();
                 document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
-              className="inline-flex h-12 w-full items-center justify-center whitespace-nowrap rounded-xl border border-secondary/40 bg-card px-6 text-base font-semibold text-secondary transition-colors hover:bg-secondary/5 sm:w-auto"
+              className="inline-flex h-11 w-full items-center justify-center whitespace-nowrap rounded-xl border border-secondary/40 bg-card px-5 text-sm font-semibold text-secondary transition-colors hover:bg-secondary/5 sm:w-auto"
             >
               {t("heroCtaPricing")}
             </a>
