@@ -18,6 +18,7 @@ import { HeroCarousel, HERO_SLIDES } from "@/components/landing/HeroCarousel";
 
 import { WorkflowSection } from "@/components/landing/WorkflowSection";
 import { OutcomeStrip } from "@/components/landing/OutcomeStrip";
+import { TrustSection } from "@/components/landing/TrustSection";
 import { lt } from "@/lib/landingRedesignCopy";
 import {
   authUrlForOffer,
@@ -2003,7 +2004,14 @@ function LandingShell() {
         <HeroSection />
         <OutcomeStrip lang={lang} />
         <WorkflowSection lang={lang} />
-        <TestimonialsSection />
+        <TrustSection
+          lang={lang}
+          onCtaClick={() => {
+            track("cta_clicked", { source_page: "/", cta: "trust", lang });
+            track("registration_started", landingEventProps({ locale: lang, source_page: "/", cta: "trust" }));
+          }}
+        />
+
         <PricingSection />
         <FaqSection />
         <FinalCTA />
