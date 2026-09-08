@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, createContext, useContext, useEffect, type ReactNode } from "react";
+import { useState, useCallback, createContext, useContext, useEffect, type ReactNode } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { BookingDialog } from "@/components/BookingDialog";
@@ -18,6 +18,7 @@ import { HeroCarousel, HERO_SLIDES } from "@/components/landing/HeroCarousel";
 
 import { WorkflowSection } from "@/components/landing/WorkflowSection";
 import { OutcomeStrip } from "@/components/landing/OutcomeStrip";
+import { TrustSection } from "@/components/landing/TrustSection";
 import { lt } from "@/lib/landingRedesignCopy";
 import {
   authUrlForOffer,
@@ -26,7 +27,7 @@ import {
   isCampaignActive,
 } from "@/lib/landingCampaign";
 import {
-  ArrowRight, ChevronLeft, ChevronRight, CheckCircle2, AlertTriangle, AlertCircle, TrendingUp,
+  ArrowRight, CheckCircle2, AlertTriangle, AlertCircle, TrendingUp,
   Calendar as CalendarIcon, Users, Sparkles, ShieldCheck,
   X, Check, HeartHandshake, Presentation, BookOpen, Clock, Timer,
   Quote, MessageCircle, Mail, Phone, MapPin, Send,
@@ -1690,243 +1691,8 @@ function FinalCTA() {
   );
 }
 
-// ── Testimonials ──────────────────────────────────────────────────────
+// ── Testimonials replaced by TrustSection (src/components/landing/TrustSection.tsx)
 
-type TestimonialCard = { initials: string; name: string; role: string; color: string; text: string };
-
-function TestimonialsSection() {
-  const { lang } = useLandingLang();
-  const scrollerRef = useRef<HTMLDivElement | null>(null);
-  const [atStart, setAtStart] = useState(true);
-  const [atEnd, setAtEnd] = useState(false);
-  const [page, setPage] = useState(0);
-
-  const copy = {
-    uk: {
-      eyebrow: "ВІД КЛІЄНТІВ, ЯКІ ВЖЕ З SOLOBIZZ",
-      title: "Нам довіряють 300+ клієнтів",
-      summaryLead: "клієнтів ведуть практику з SoloBizz",
-      summaryFoot: "на основі відгуків клієнтів",
-      prev: "Попередній відгук",
-      next: "Наступний відгук",
-      cards: [
-        { initials: "ОЛ", name: "Олена Л.", role: "Психолог · Solo Practice", color: "bg-emerald-100 text-emerald-700",
-          text: "«SoloBizz — це моя щоденна опора в роботі з клієнтами. Усі записи, оплати та нотатки в одному місці. Економлю час і нерви, а клієнти задоволені зручністю сервісу.»" },
-        { initials: "МК", name: "Мар'яна К.", role: "Подолог · Pro Practice", color: "bg-violet-100 text-violet-700",
-          text: "«Як подологу, мені важливо вести облік процедур і нагадувань. SoloBizz допомагає тримати все під контролем і автоматизувати запис. Мої клієнти отримують турботу, а я — більше часу для розвитку.»" },
-        { initials: "АВ", name: "Анна В.", role: "Косметолог · Solo Practice", color: "bg-rose-100 text-rose-700",
-          text: "«SoloBizz значно спростив мою роботу. Онлайн-запис, нагадування та історія візитів — усе працює безвідмовно. Клієнти відзначають зручність, а я можу зосередитись на якості послуг.»" },
-        { initials: "ДП", name: "Дмитро П.", role: "Викладач · Free Starter", color: "bg-orange-100 text-orange-700",
-          text: "«Викладаю онлайн і офлайн, і SoloBizz став незамінним інструментом. Розклад, оплати та комунікація з учнями тепер в одному сервісі. Навіть технічні моменти стали простими й зрозумілими.»" },
-      ],
-    },
-    en: {
-      eyebrow: "FROM CLIENTS ALREADY ON SOLOBIZZ",
-      title: "Trusted by 300+ clients",
-      summaryLead: "professionals run their practice with SoloBizz",
-      summaryFoot: "based on client reviews",
-      prev: "Previous review",
-      next: "Next review",
-      cards: [
-        { initials: "OL", name: "Olena L.", role: "Psychologist · Solo Practice", color: "bg-emerald-100 text-emerald-700",
-          text: "“SoloBizz is my daily support in client work. Bookings, payments and notes live in one place. I save time and nerves, and clients love how easy it is.”" },
-        { initials: "MK", name: "Mariana K.", role: "Podologist · Pro Practice", color: "bg-violet-100 text-violet-700",
-          text: "“As a podologist I need a clear record of procedures and reminders. SoloBizz keeps everything under control and automates booking, so I have more time to grow.”" },
-        { initials: "AV", name: "Anna V.", role: "Cosmetologist · Solo Practice", color: "bg-rose-100 text-rose-700",
-          text: "“SoloBizz made my work much simpler. Online booking, reminders and visit history just work. Clients notice the convenience and I focus on service quality.”" },
-        { initials: "DP", name: "Dmytro P.", role: "Teacher · Free Starter", color: "bg-orange-100 text-orange-700",
-          text: "“I teach online and offline, and SoloBizz became essential. Schedule, payments and communication with students are now in one service.”" },
-      ],
-    },
-    fr: {
-      eyebrow: "DES CLIENTS DÉJÀ SUR SOLOBIZZ",
-      title: "300+ clients nous font confiance",
-      summaryLead: "professionnels gèrent leur activité avec SoloBizz",
-      summaryFoot: "sur la base des avis clients",
-      prev: "Avis précédent",
-      next: "Avis suivant",
-      cards: [
-        { initials: "OL", name: "Olena L.", role: "Psychologue · Solo Practice", color: "bg-emerald-100 text-emerald-700",
-          text: "« SoloBizz est mon appui quotidien. Rendez-vous, paiements et notes au même endroit. Je gagne du temps et mes clients apprécient. »" },
-        { initials: "MK", name: "Mariana K.", role: "Podologue · Pro Practice", color: "bg-violet-100 text-violet-700",
-          text: "« Le suivi des soins et des rappels est essentiel. SoloBizz automatise la prise de rendez-vous et garde tout sous contrôle. »" },
-        { initials: "AV", name: "Anna V.", role: "Esthéticienne · Solo Practice", color: "bg-rose-100 text-rose-700",
-          text: "« Réservation en ligne, rappels et historique des visites : tout fonctionne. Je me concentre sur la qualité de mes prestations. »" },
-        { initials: "DP", name: "Dmytro P.", role: "Enseignant · Free Starter", color: "bg-orange-100 text-orange-700",
-          text: "« Planning, paiements et communication avec mes élèves sont enfin réunis dans un seul service. »" },
-      ],
-    },
-    pl: {
-      eyebrow: "OD KLIENTÓW, KTÓRZY JUŻ SĄ Z SOLOBIZZ",
-      title: "Zaufało nam 300+ klientów",
-      summaryLead: "specjalistów prowadzi praktykę z SoloBizz",
-      summaryFoot: "na podstawie opinii klientów",
-      prev: "Poprzednia opinia",
-      next: "Następna opinia",
-      cards: [
-        { initials: "OL", name: "Olena L.", role: "Psycholożka · Solo Practice", color: "bg-emerald-100 text-emerald-700",
-          text: "„SoloBizz to moje codzienne wsparcie. Wizyty, płatności i notatki w jednym miejscu. Oszczędzam czas, a klienci cenią wygodę.”" },
-        { initials: "MK", name: "Mariana K.", role: "Podolog · Pro Practice", color: "bg-violet-100 text-violet-700",
-          text: "„Ważna jest dla mnie ewidencja zabiegów i przypomnień. SoloBizz automatyzuje rezerwacje i trzyma wszystko pod kontrolą.”" },
-        { initials: "AV", name: "Anna W.", role: "Kosmetolożka · Solo Practice", color: "bg-rose-100 text-rose-700",
-          text: "„Rezerwacja online, przypomnienia i historia wizyt działają bezbłędnie. Mogę skupić się na jakości usług.”" },
-        { initials: "DP", name: "Dmytro P.", role: "Wykładowca · Free Starter", color: "bg-orange-100 text-orange-700",
-          text: "„Harmonogram, płatności i komunikacja z uczniami są teraz w jednym serwisie.”" },
-      ],
-    },
-    ru: {
-      eyebrow: "ОТ КЛИЕНТОВ, КОТОРЫЕ УЖЕ С SOLOBIZZ",
-      title: "Нам доверяют 300+ клиентов",
-      summaryLead: "специалистов ведут практику с SoloBizz",
-      summaryFoot: "на основе отзывов клиентов",
-      prev: "Предыдущий отзыв",
-      next: "Следующий отзыв",
-      cards: [
-        { initials: "ЕЛ", name: "Елена Л.", role: "Психолог · Solo Practice", color: "bg-emerald-100 text-emerald-700",
-          text: "«SoloBizz — моя ежедневная опора в работе с клиентами. Записи, оплаты и заметки в одном месте. Экономлю время и нервы.»" },
-        { initials: "МК", name: "Марьяна К.", role: "Подолог · Pro Practice", color: "bg-violet-100 text-violet-700",
-          text: "«Мне важно вести учёт процедур и напоминаний. SoloBizz помогает держать всё под контролем и автоматизировать запись.»" },
-        { initials: "АВ", name: "Анна В.", role: "Косметолог · Solo Practice", color: "bg-rose-100 text-rose-700",
-          text: "«Онлайн-запись, напоминания и история визитов работают безотказно. Я могу сосредоточиться на качестве услуг.»" },
-        { initials: "ДП", name: "Дмитрий П.", role: "Преподаватель · Free Starter", color: "bg-orange-100 text-orange-700",
-          text: "«Расписание, оплаты и общение с учениками теперь в одном сервисе.»" },
-      ],
-    },
-  } as const;
-
-  const c = (copy as any)[lang] ?? copy.en;
-  const cards: TestimonialCard[] = c.cards;
-
-  const syncEdges = useCallback(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    setAtStart(el.scrollLeft <= 4);
-    setAtEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth - 4);
-    const step = el.clientWidth || 1;
-    setPage(Math.round(el.scrollLeft / step));
-  }, []);
-
-  useEffect(() => {
-    syncEdges();
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.addEventListener("scroll", syncEdges, { passive: true });
-    window.addEventListener("resize", syncEdges);
-    return () => {
-      el.removeEventListener("scroll", syncEdges);
-      window.removeEventListener("resize", syncEdges);
-    };
-  }, [syncEdges]);
-
-  const scrollBy = (dir: 1 | -1) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const first = el.querySelector<HTMLElement>("[data-slide]");
-    const amount = first ? first.offsetWidth + 24 : el.clientWidth * 0.8;
-    el.scrollBy({ left: dir * amount, behavior: "smooth" });
-  };
-
-  const pages = Math.max(1, Math.ceil(cards.length + 1));
-
-  return (
-    <section className="bg-muted/40 py-16 sm:py-20" style={{ paddingInline: "clamp(16px, 4vw, 64px)" }}>
-      <div className="mx-auto w-full" style={{ width: "min(92vw, 1720px)", maxWidth: "100%" }}>
-        <div className="mb-10 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.08em] text-primary">{c.eyebrow}</p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">{c.title}</h2>
-        </div>
-
-        <div className="relative">
-          <button
-            type="button"
-            aria-label={c.prev}
-            onClick={() => scrollBy(-1)}
-            disabled={atStart}
-            className="absolute left-0 top-1/2 z-10 hidden h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-md transition-opacity hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-0 sm:inline-flex"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            aria-label={c.next}
-            onClick={() => scrollBy(1)}
-            disabled={atEnd}
-            className="absolute right-0 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-md transition-opacity hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-0 sm:inline-flex"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
-
-          <div
-            ref={scrollerRef}
-            className="invisible-scrollbar flex snap-x snap-mandatory overflow-x-auto scroll-smooth pb-2 motion-reduce:scroll-auto"
-            style={{ gap: "clamp(16px, 1.4vw, 24px)" }}
-          >
-            <div
-              data-slide
-              className="flex shrink-0 snap-start flex-col justify-center rounded-2xl bg-secondary text-secondary-foreground shadow-sm"
-              style={{ padding: "clamp(20px, 1.8vw, 32px)", width: "clamp(230px, 78vw, 300px)" }}
-            >
-              <div className="text-5xl font-bold leading-none">300+</div>
-              <p className="mt-3 text-base font-medium leading-snug opacity-95">{c.summaryLead}</p>
-              <div className="mt-5 flex items-center gap-3">
-                <span className="tracking-widest text-warning">★★★★★</span>
-                <span className="text-lg font-semibold">4.9/5</span>
-              </div>
-              <p className="mt-3 text-sm opacity-80">{c.summaryFoot}</p>
-            </div>
-
-            {cards.map((card, i) => (
-              <div
-                key={i}
-                data-slide
-                className="flex shrink-0 snap-start flex-col rounded-2xl border border-border bg-card shadow-sm"
-                style={{ padding: "clamp(20px, 1.6vw, 28px)", width: "clamp(250px, 78vw, 330px)" }}
-              >
-                <div className="mb-4 tracking-widest text-secondary">★★★★★</div>
-                <p className="flex-1 font-serif text-base italic leading-relaxed text-foreground/90">{card.text}</p>
-                <div className="mt-6 flex items-center gap-3 border-t border-border pt-5">
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${card.color}`}>
-                    {card.initials}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-semibold text-foreground">{card.name}</div>
-                    <div className="truncate text-xs text-muted-foreground">{card.role}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-6 flex items-center justify-center gap-4 sm:hidden">
-          <button
-            type="button"
-            aria-label={c.prev}
-            onClick={() => scrollBy(-1)}
-            disabled={atStart}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-sm disabled:opacity-40"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <div className="flex items-center gap-1.5" aria-hidden="true">
-            {Array.from({ length: pages }).map((_, i) => (
-              <span key={i} className={`h-1.5 rounded-full transition-all ${i === page ? "w-6 bg-primary" : "w-2.5 bg-border"}`} />
-            ))}
-          </div>
-          <button
-            type="button"
-            aria-label={c.next}
-            onClick={() => scrollBy(1)}
-            disabled={atEnd}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-sm disabled:opacity-40"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 // ── About / Contacts / Footer ─────────────────────────────────────────
 
@@ -2238,7 +2004,14 @@ function LandingShell() {
         <HeroSection />
         <OutcomeStrip lang={lang} />
         <WorkflowSection lang={lang} />
-        <TestimonialsSection />
+        <TrustSection
+          lang={lang}
+          onCtaClick={() => {
+            track("cta_clicked", { source_page: "/", cta: "trust", lang });
+            track("registration_started", landingEventProps({ locale: lang, source_page: "/", cta: "trust" }));
+          }}
+        />
+
         <PricingSection />
         <FaqSection />
         <FinalCTA />
