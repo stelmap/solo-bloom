@@ -17,6 +17,7 @@ import { PromoTopBar } from "@/components/landing/PromoTopBar";
 import { HeroCarousel, HERO_SLIDES } from "@/components/landing/HeroCarousel";
 
 import { WorkflowSection } from "@/components/landing/WorkflowSection";
+import { OutcomeStrip } from "@/components/landing/OutcomeStrip";
 import { lt } from "@/lib/landingRedesignCopy";
 import {
   authUrlForOffer,
@@ -2235,7 +2236,7 @@ function LandingShell() {
       <LandingNav />
       <main>
         <HeroSection />
-        
+        <OutcomeStrip lang={lang} />
         <WorkflowSection lang={lang} />
         <TestimonialsSection />
         <PricingSection />
