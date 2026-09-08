@@ -996,11 +996,12 @@ function LandingNav() {
           >
             {lang === "en" ? "🇬🇧 EN" : lang === "fr" ? "🇫🇷 FR" : lang === "pl" ? "🇵🇱 PL" : lang === "ru" ? "🇷🇺 RU" : "🇺🇦 UA"}
           </button>
-          <Link to="/auth" className="hidden sm:block">
-            <Button variant="ghost" size="sm">{t("navLogin")}</Button>
-          </Link>
-          <Link to="/auth" onClick={() => track("cta_clicked", { source_page: "/", cta: "nav", lang })}>
-            <Button size="sm">{t("navTry")}</Button>
+          <Link
+            to="/auth"
+            onClick={() => track("cta_clicked", { source_page: "/", cta: "nav", lang })}
+            className="whitespace-nowrap text-sm font-semibold text-secondary hover:underline underline-offset-4 transition-colors"
+          >
+            {t("navOpenApp")}
           </Link>
         </div>
       </div>
@@ -1032,16 +1033,20 @@ function HeroSection() {
               {lt(lang, active.body)}
             </p>
           </div>
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:flex-wrap lg:justify-start">
-            <PrimaryCta label={t("heroCta")} source="/" cta="hero" />
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center lg:justify-start">
+            <PrimaryCta label={t("heroCtaPrimary")} source="/" cta="hero" className="w-full sm:w-auto !px-6" />
             <a
-              href="#workflow"
-              className="inline-flex h-12 items-center justify-center px-4 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              href="#pricing"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="inline-flex h-12 w-full items-center justify-center whitespace-nowrap rounded-xl border border-secondary/40 bg-card px-6 text-base font-semibold text-secondary transition-colors hover:bg-secondary/5 sm:w-auto"
             >
-              {t("heroSecondary")}
+              {t("heroCtaPricing")}
             </a>
           </div>
-          <p className="mt-5 text-sm text-muted-foreground">{t("heroSubCta")}</p>
+          <p className="mt-4 text-xs text-muted-foreground lg:text-left">{t("heroCtaNote")}</p>
           <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground lg:justify-start">
             <li className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-success" /> {t("trustData")}</li>
             <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-success" /> {t("trustGdpr")}</li>
