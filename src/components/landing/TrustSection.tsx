@@ -303,12 +303,12 @@ export function TrustSection({
         </div>
 
         {/* CTA */}
-        <div className="mt-8 flex flex-col items-start justify-between gap-6 rounded-2xl border border-primary/20 bg-primary/5 p-7 sm:p-9 md:flex-row md:items-center">
-          <div>
+        <div className="mt-8 flex flex-col items-center gap-6 rounded-2xl border border-primary/20 bg-primary/5 p-7 text-center sm:p-9 md:flex-row md:items-center md:justify-between md:gap-10 md:text-left">
+          <div className="md:max-w-xl">
             <h3 className="text-xl font-bold text-foreground sm:text-2xl">{c.ctaTitle}</h3>
             <p className="mt-2 text-sm text-muted-foreground sm:text-base">{c.ctaText}</p>
           </div>
-          <div className="w-full md:w-auto">
+          <div className="flex w-full flex-col items-center gap-2 md:w-auto md:shrink-0">
             <Link
               to="/auth?mode=signup"
               aria-disabled={submitting}
@@ -332,9 +332,10 @@ export function TrustSection({
                 {submitting ? null : <ArrowRight className="h-4 w-4" />}
               </Button>
             </Link>
-            <p className="mt-2 text-center text-xs text-muted-foreground md:text-right">{c.ctaNote}</p>
+            <p className="text-xs text-muted-foreground">{c.ctaNote}</p>
           </div>
         </div>
+
       </div>
     </section>
   );
