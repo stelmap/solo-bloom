@@ -477,8 +477,8 @@ export default function PrivacyPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <SeoHead
         path="/privacy"
-        title="Privacy Policy — Solo Bizz"
-        description="How Solo Bizz collects, uses, stores and protects personal data for psychologists, therapists, coaches and tutors using our practice management tool."
+        title="Privacy Policy — SoloBizz"
+        description="How SoloBizz collects, uses, stores and protects personal data for psychologists, therapists, coaches and tutors using our practice management tool."
       />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8">

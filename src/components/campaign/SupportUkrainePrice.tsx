@@ -58,7 +58,14 @@ export function SupportUkrainePrice({
       </div>
 
       {applies && (
-        <p className="mt-1.5 text-xs font-medium text-primary">{campaignText(lang, "campaignName")}</p>
+        <>
+          <p className="mt-1.5 text-xs font-semibold text-primary">
+            {campaignText(lang, "cardCampaignLabel")}
+          </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {campaignText(lang, "cardCampaignNote")}
+          </p>
+        </>
       )}
 
       {equivalent && (

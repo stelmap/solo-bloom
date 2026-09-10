@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ChevronLeft, ChevronRight, Loader2, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { AppLanguage } from "@/i18n/translations";
 import psychologistImg from "@/assets/trust-psychologist.jpg";
 import teacherImg from "@/assets/trust-teacher.jpg";
@@ -16,6 +17,9 @@ type Copy = {
   summaryLead: string;
   summaryFoot: string;
   verified: string;
+  verifiedHint: string;
+  ratingValue: string;
+  ratingSource: string;
   prev: string;
   next: string;
   cards: { name: string; role: string; text: string; alt: string }[];
@@ -36,6 +40,9 @@ const COPY: Record<string, Copy> = {
     summaryLead: "спеціалістів уже ведуть свою практику з SoloBizz",
     summaryFoot: "на основі відгуків користувачів",
     verified: "Підтверджений користувач",
+    verifiedHint: "Відгук залишив користувач із підтвердженим акаунтом SoloBizz.",
+    ratingValue: "4,9/5",
+    ratingSource: "на основі відгуків користувачів SoloBizz",
     prev: "Попередній відгук",
     next: "Наступний відгук",
     cards: [
@@ -73,6 +80,9 @@ const COPY: Record<string, Copy> = {
     summaryLead: "professionals already run their practice with SoloBizz",
     summaryFoot: "based on user reviews",
     verified: "Verified user",
+    verifiedHint: "The review was left by a user with a confirmed SoloBizz account.",
+    ratingValue: "4.9/5",
+    ratingSource: "based on SoloBizz user feedback",
     prev: "Previous review",
     next: "Next review",
     cards: [
@@ -94,6 +104,9 @@ const COPY: Record<string, Copy> = {
     summaryLead: "specjalistów prowadzi już praktykę z SoloBizz",
     summaryFoot: "na podstawie opinii użytkowników",
     verified: "Zweryfikowany użytkownik",
+    verifiedHint: "Opinię wystawił użytkownik z potwierdzonym kontem SoloBizz.",
+    ratingValue: "4,9/5",
+    ratingSource: "na podstawie opinii użytkowników SoloBizz",
     prev: "Poprzednia opinia",
     next: "Następna opinia",
     cards: [
@@ -115,6 +128,9 @@ const COPY: Record<string, Copy> = {
     summaryLead: "professionnels gèrent déjà leur activité avec SoloBizz",
     summaryFoot: "sur la base des avis utilisateurs",
     verified: "Utilisateur vérifié",
+    verifiedHint: "L’avis a été laissé par un utilisateur au compte SoloBizz confirmé.",
+    ratingValue: "4,9/5",
+    ratingSource: "sur la base des avis des utilisateurs SoloBizz",
     prev: "Avis précédent",
     next: "Avis suivant",
     cards: [
@@ -136,6 +152,9 @@ const COPY: Record<string, Copy> = {
     summaryLead: "специалистов уже ведут свою практику с SoloBizz",
     summaryFoot: "на основе отзывов пользователей",
     verified: "Подтверждённый пользователь",
+    verifiedHint: "Отзыв оставил пользователь с подтверждённым аккаунтом SoloBizz.",
+    ratingValue: "4,9/5",
+    ratingSource: "на основе отзывов пользователей SoloBizz",
     prev: "Предыдущий отзыв",
     next: "Следующий отзыв",
     cards: [
@@ -224,19 +243,34 @@ export function TrustSection({
           </ul>
         </header>
 
+        {/* Social-proof summary */}
+        <div className="mx-auto mt-10 flex max-w-3xl flex-col items-center gap-6 rounded-2xl border border-border bg-card px-6 py-6 text-center sm:flex-row sm:justify-center sm:gap-12">
+          <div>
+            <div className="text-4xl font-bold text-foreground sm:text-5xl">300+</div>
+            <p className="mt-1 max-w-xs text-sm text-muted-foreground">{c.summaryLead}</p>
+          </div>
+          <div className="hidden h-14 w-px bg-border sm:block" aria-hidden="true" />
+          <div>
+            <div className="flex items-center justify-center gap-2">
+              <Stars className="text-primary" />
+              <span className="text-2xl font-bold text-foreground">{c.ratingValue}</span>
+            </div>
+            <p className="mt-1 max-w-xs text-sm text-muted-foreground">{c.ratingSource}</p>
+          </div>
+        </div>
+
         <div className="relative mt-10">
           {/* Reviews carousel */}
           <div className="relative min-w-0">
             <div
               ref={scrollerRef}
-              className="invisible-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-2 motion-reduce:scroll-auto"
+              className="invisible-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto overflow-y-hidden scroll-smooth pb-2 motion-reduce:scroll-auto"
             >
               {c.cards.map((card, i) => (
                 <article
                   key={card.name}
                   data-slide
-                  className="flex shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
-                  style={{ width: "clamp(260px, 84vw, 340px)" }}
+                  className="flex w-full shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm sm:w-[calc((100%-20px)/2)] lg:w-[calc((100%-40px)/3)]"
                 >
                   <img
                     src={IMAGES[i]}
@@ -245,7 +279,7 @@ export function TrustSection({
                     height={600}
                     loading="lazy"
                     decoding="async"
-                    className="h-44 w-full object-cover"
+                    className="aspect-[16/9] w-full object-cover"
                   />
                   <div className="flex flex-1 flex-col p-6">
                     <Stars className="mb-3 text-primary" />
@@ -253,10 +287,14 @@ export function TrustSection({
                     <div className="mt-5 border-t border-border pt-4">
                       <div className="text-sm font-semibold text-foreground">{card.name}</div>
                       <div className="text-xs text-muted-foreground">{card.role}</div>
-                      <div className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600">
+                      <span
+                        className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700"
+                        title={c.verifiedHint}
+                      >
                         <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
                         {c.verified}
-                      </div>
+                        <span className="sr-only"> — {c.verifiedHint}</span>
+                      </span>
                     </div>
                   </div>
                 </article>
@@ -309,17 +347,15 @@ export function TrustSection({
                 setSubmitting(true);
                 onCtaClick?.();
               }}
-              className="block w-full md:w-auto"
+              className={cn(
+                buttonVariants({ size: "lg" }),
+                "h-12 w-full gap-2 rounded-xl px-8 text-base font-semibold shadow-lg shadow-primary/25 md:w-auto",
+                submitting && "pointer-events-none opacity-70",
+              )}
             >
-              <Button
-                size="lg"
-                disabled={submitting}
-                className="h-12 w-full gap-2 rounded-xl px-8 text-base font-semibold shadow-lg shadow-primary/25 md:w-auto"
-              >
-                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                {c.ctaButton}
-                {submitting ? null : <ArrowRight className="h-4 w-4" />}
-              </Button>
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {c.ctaButton}
+              {submitting ? null : <ArrowRight className="h-4 w-4" />}
             </Link>
             <p className="text-xs text-muted-foreground">{c.ctaNote}</p>
           </div>

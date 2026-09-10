@@ -102,8 +102,8 @@ export default function OAuthConsentPage() {
         <div className="space-y-2">
           <h1 className="text-xl font-semibold text-foreground">Connect {clientName}</h1>
           <p className="text-sm text-muted-foreground">
-            {clientName} is requesting access to your Solo Bizz account. If you approve, it will be able to use
-            Solo Bizz tools as you — reading your clients, appointments, and finances.
+            {clientName} is requesting access to your SoloBizz account. If you approve, it will be able to use
+            SoloBizz tools as you — reading your clients, appointments, and finances.
           </p>
         </div>
         <div className="flex gap-2 justify-end">

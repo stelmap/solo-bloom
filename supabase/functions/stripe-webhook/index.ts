@@ -59,7 +59,7 @@ serve(async (req) => {
       case "customer.subscription.created":
       case "customer.subscription.updated":
       case "invoice.paid": {
-        // Prefer linking by Solo.Bizz user_id (set on session/subscription)
+        // Prefer linking by SoloBizz user_id (set on session/subscription)
         // over email matching, which is unreliable when the buyer pays with
         // a different address than their account email.
         let userId = await extractUserIdFromEvent(stripe, event);

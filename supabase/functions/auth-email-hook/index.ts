@@ -17,7 +17,7 @@ const corsHeaders = {
 }
 
 // Configuration
-const SITE_NAME = "Solo .Bizz"
+const SITE_NAME = "SoloBizz"
 const SENDER_DOMAIN = "notify.one-bizz.com"
 const ROOT_DOMAIN = "one-bizz.com"
 const FROM_DOMAIN = "notify.one-bizz.com"

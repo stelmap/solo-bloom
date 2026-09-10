@@ -3,10 +3,17 @@ import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { BookingDialog } from "@/components/BookingDialog";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { getStoredLang, setPreLoginLang } from "@/i18n/LanguageContext";
 import type { Language, AppLanguage } from "@/i18n/translations";
 import { track } from "@/lib/analytics";
@@ -32,7 +39,7 @@ import {
   X, Check, HeartHandshake, Presentation, BookOpen, Clock, Timer,
   Quote, MessageCircle, Mail, Phone, MapPin, Send,
   Contact, Link2, Bell, CreditCard, ReceiptText, BarChart3,
-  ClipboardCheck, Calculator, MessagesSquare, Route,
+  ClipboardCheck, Calculator, MessagesSquare, Route, ChevronDown,
 } from "lucide-react";
 
 // ── Configurable external links (replace as needed) ───────────────────
@@ -177,7 +184,7 @@ const C = {
   painBottom: {
     en: "This isn't a productivity problem. It's the absence of a system built for private practice. SoloBizz is that system.",
     fr: "Ce n'est pas un problème de productivité. C'est l'absence d'un système conçu pour la pratique privée. SoloBizz est ce système.",
-    uk: "Це не проблема продуктивності. Це відсутність системи, створеної для приватної практики. Solo Bizz — це та система.",
+    uk: "Це не проблема продуктивності. Це відсутність системи, створеної для приватної практики. SoloBizz — це та система.",
     pl: "To nie jest problem produktywności. To brak systemu stworzonego dla prywatnej praktyki. SoloBizz to ten system.",
   },
   painCta: { en: "See how SoloBizz works", fr: "Voir comment SoloBizz fonctionne", uk: "Дивись, як це працює в SoloBizz", pl: "Zobacz, jak działa SoloBizz" },
@@ -371,9 +378,9 @@ const C = {
   },
   freeBadgeForever: { en: "Free forever", fr: "Gratuit pour toujours", uk: "Безкоштовно назавжди", pl: "Za darmo na zawsze" },
   freeF1: { en: "Up to 5 active clients", fr: "Jusqu'à 5 clients actifs", uk: "До 5 активних клієнтів", pl: "Do 5 aktywnych klientów" },
-  freeF2: { en: "All SoloBizz features included", fr: "Toutes les fonctionnalités SoloBizz incluses", uk: "Усі функції SoloBizz включено", pl: "Wszystkie funkcje SoloBizz w komplecie" },
+  freeF2: { en: "Core SoloBizz functionality included", fr: "Fonctionnalités SoloBizz essentielles incluses", uk: "Базовий функціонал SoloBizz включено", pl: "Podstawowa funkcjonalność SoloBizz w zestawie" },
   freeF3: { en: "Calendar, clients, payments, reminders", fr: "Calendrier, clients, paiements, rappels", uk: "Календар, клієнти, оплати, нагадування", pl: "Kalendarz, klienci, płatności, przypomnienia" },
-  freeF4: { en: "Financial analytics & reports", fr: "Analytique financière et rapports", uk: "Фінансова аналітика та звіти", pl: "Analityka finansowa i raporty" },
+  freeF4: { en: "Basic income overview (full financial reports on paid plans)", fr: "Aperçu des revenus de base (rapports complets sur les offres payantes)", uk: "Базовий огляд доходу (повні фінансові звіти — у платних тарифах)", pl: "Podstawowy przegląd przychodów (pełne raporty w planach płatnych)" },
   freeF5: { en: "Forever free, no card required", fr: "Gratuit pour toujours, sans carte", uk: "Назавжди безкоштовно, без картки", pl: "Za darmo na zawsze, bez karty" },
   freeCta: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
   freeMicro: {
@@ -417,9 +424,12 @@ const C = {
   },
   soloF1: { en: "Up to 20 active clients", fr: "Jusqu'à 20 clients actifs", uk: "До 20 активних клієнтів", pl: "Do 20 aktywnych klientów" },
   soloF2: { en: "Everything in Free Starter", fr: "Tout ce qu'inclut Free Starter", uk: "Усе, що є у Free Starter", pl: "Wszystko z Free Starter" },
-  soloF3: { en: "Calendar, clients, payments, reminders", fr: "Calendrier, clients, paiements, rappels", uk: "Календар, клієнти, оплати, нагадування", pl: "Kalendarz, klienci, płatności, przypomnienia" },
+  soloF3: { en: "Clients, payments, debts and reminders", fr: "Clients, paiements, dettes et rappels", uk: "Клієнти, оплати, борги та нагадування", pl: "Klienci, płatności, długi i przypomnienia" },
   soloF4: { en: "Financial analytics & reports", fr: "Analytique financière et rapports", uk: "Фінансова аналітика та звіти", pl: "Analityka finansowa i raporty" },
   soloF5: { en: "Cancel anytime", fr: "Annulation à tout moment", uk: "Скасування будь-коли", pl: "Anulowanie w dowolnej chwili" },
+  soloF6: { en: "Calendar and online booking", fr: "Calendrier et réservation en ligne", uk: "Календар та онлайн-запис", pl: "Kalendarz i rezerwacja online" },
+  soloF7: { en: "Client document management*", fr: "Gestion des documents clients*", uk: "Керування документами клієнтів*", pl: "Zarządzanie dokumentami klientów*" },
+  soloF8: { en: "Informed consent document available", fr: "Document de consentement éclairé disponible", uk: "Доступна поінформована згода", pl: "Dostępny dokument świadomej zgody" },
   soloCta: { en: "Choose Solo Practice", fr: "Choisir Solo Practice", uk: "Обрати Solo Practice", pl: "Wybierz Solo Practice" },
   soloBadge: {
     en: "Best for practice",
@@ -457,7 +467,11 @@ const C = {
   proF2: { en: "Everything in Solo Practice", fr: "Tout ce qu'inclut Solo Practice", uk: "Усе, що є у Solo Practice", pl: "Wszystko z Solo Practice" },
   proF3: { en: "Priority support", fr: "Support prioritaire", uk: "Пріоритетна підтримка", pl: "Wsparcie priorytetowe" },
   proF4: { en: "Custom onboarding consultations", fr: "Consultations d'onboarding personnalisées", uk: "Індивідуальні консультації з налаштування", pl: "Indywidualne konsultacje wdrożeniowe" },
-  proF5: { en: "For scaling practices & teams", fr: "Pour les pratiques et équipes en croissance", uk: "Для практик і команд, що масштабуються", pl: "Dla rozwijających się praktyk i zespołów" },
+  proF5: { en: "All Solo Practice functionality", fr: "Toutes les fonctionnalités Solo Practice", uk: "Увесь функціонал Solo Practice", pl: "Cała funkcjonalność Solo Practice" },
+  proF6: { en: "Group sessions and supervision", fr: "Séances de groupe et supervision", uk: "Групові сесії та супервізія", pl: "Sesje grupowe i superwizja" },
+  proF7: { en: "Advanced financial control, invoices and printing", fr: "Contrôle financier avancé, factures et impression", uk: "Розширений фінансовий контроль, рахунки та друк", pl: "Zaawansowana kontrola finansów, faktury i druk" },
+  proF8: { en: "Client document management*", fr: "Gestion des documents clients*", uk: "Керування документами клієнтів*", pl: "Zarządzanie dokumentami klientów*" },
+  docsNote: { en: "*Client document management is in development. Informed consent is already available.", fr: "*La gestion des documents clients est en développement. Le consentement éclairé est déjà disponible.", uk: "*Керування документами клієнтів у розробці. Поінформована згода вже доступна.", pl: "*Zarządzanie dokumentami klientów jest w budowie. Świadoma zgoda jest już dostępna." },
   proCta: { en: "Choose Pro Practice", fr: "Choisir Pro Practice", uk: "Обрати Pro Practice", pl: "Wybierz Pro Practice" },
   proBadge: {
     en: "For a growing practice",
@@ -478,10 +492,10 @@ const C = {
     pl: "Wybierz plan na podstawie liczby aktywnych klientów — a nie brakujących funkcji.",
   },
   pricingFooter2: {
-    en: "SoloBizz gives every therapist a complete practice management system from the very first session.",
-    fr: "SoloBizz offre à chaque thérapeute un système complet de gestion de pratique dès la première séance.",
-    uk: "SoloBizz дає кожному терапевту повну систему управління практикою з першої сесії.",
-    pl: "SoloBizz daje każdemu terapeucie kompletny system zarządzania praktyką już od pierwszej sesji.",
+    en: "SoloBizz gives every independent professional a complete practice management system from the very first session.",
+    fr: "SoloBizz offre à chaque professionnel indépendant un système complet de gestion de pratique dès la première séance.",
+    uk: "SoloBizz дає кожному незалежному спеціалісту повну систему управління практикою з першої сесії.",
+    pl: "SoloBizz daje każdemu niezależnemu specjaliście kompletny system zarządzania praktyką już od pierwszej sesji.",
   },
 
   roiTilesTitle: {
@@ -622,13 +636,31 @@ const LandingLangContext = createContext<{
   lang: AppLanguage;
   t: (key: CopyKey) => string;
   toggle: () => void;
-}>({ lang: "en", t: (k) => k as string, toggle: () => {} });
+  select: (next: AppLanguage) => void;
+}>({ lang: "en", t: (k) => k as string, toggle: () => {}, select: () => {} });
 
 function useLandingLang() {
   return useContext(LandingLangContext);
 }
 
 const LANG_CYCLE: AppLanguage[] = ["en", "fr", "uk", "ru", "pl"];
+
+/** Language options offered in the header dropdown. */
+const LANG_OPTIONS: { code: AppLanguage; native: string; short: string; flag: string }[] = [
+  { code: "uk", native: "Українська", short: "UA", flag: "🇺🇦" },
+  { code: "en", native: "English", short: "EN", flag: "🇬🇧" },
+  { code: "pl", native: "Polski", short: "PL", flag: "🇵🇱" },
+  { code: "fr", native: "Français", short: "FR", flag: "🇫🇷" },
+  { code: "ru", native: "Русский", short: "RU", flag: "🇷🇺" },
+];
+
+const SELECT_LANGUAGE_LABEL: Record<AppLanguage, string> = {
+  uk: "Вибрати мову",
+  en: "Select language",
+  pl: "Wybierz język",
+  fr: "Choisir la langue",
+  ru: "Выбрать язык",
+};
 
 // Russian overrides for the most-visible landing copy. Any key missing here
 // falls back to English so the page never shows a broken string.
@@ -805,9 +837,9 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   freeDesc: "Для тех, кто только начинает или ведёт небольшую частную практику.",
   freeBadgeForever: "Бесплатно навсегда",
   freeF1: "До 5 активных клиентов",
-  freeF2: "Все функции SoloBizz включены",
+  freeF2: "Базовый функционал SoloBizz включён",
   freeF3: "Календарь, клиенты, оплаты, напоминания",
-  freeF4: "Финансовая аналитика и отчёты",
+  freeF4: "Базовый обзор дохода (полные финансовые отчёты — в платных тарифах)",
   freeF5: "Навсегда бесплатно, без карты",
   freeCta: "Начать бесплатно",
   freeMicro: "Без банковской карты.",
@@ -821,9 +853,12 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   soloIntro: "Все функции SoloBizz включены.",
   soloF1: "До 20 активных клиентов",
   soloF2: "Всё из Free Starter",
-  soloF3: "Календарь, клиенты, оплаты, напоминания",
+  soloF3: "Клиенты, оплаты, долги и напоминания",
   soloF4: "Финансовая аналитика и отчёты",
   soloF5: "Отмена в любой момент",
+  soloF6: "Календарь и онлайн-запись",
+  soloF7: "Управление документами клиентов*",
+  soloF8: "Доступно информированное согласие",
   soloCta: "Выбрать Solo Practice",
   soloBadge: "Лучший выбор для практики",
   soloPill: "Больший лимит активных клиентов",
@@ -837,13 +872,17 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   proF2: "Всё из Solo Practice",
   proF3: "Приоритетная поддержка",
   proF4: "Индивидуальные консультации по настройке",
-  proF5: "Для растущих практик и команд",
+  proF5: "Весь функционал Solo Practice",
+  proF6: "Групповые сессии и супервизия",
+  proF7: "Расширенный финансовый контроль, счета и печать",
+  proF8: "Управление документами клиентов*",
+  docsNote: "*Управление документами клиентов в разработке. Информированное согласие уже доступно.",
   proCta: "Выбрать Pro Practice",
   proBadge: "Для растущей практики",
   proPill: "Неограниченное число клиентов",
 
   pricingFooter1: "Выбирайте план по количеству активных клиентов — а не по отсутствующим функциям.",
-  pricingFooter2: "SoloBizz даёт каждому терапевту полноценную систему управления практикой с самой первой сессии.",
+  pricingFooter2: "SoloBizz даёт каждому независимому специалисту полноценную систему управления практикой с самой первой сессии.",
 
   // ROI tiles
   roiTilesTitle: "Сколько может стоить ручная админ-работа",
@@ -900,6 +939,10 @@ export function LandingLangProvider({ children }: { children: React.ReactNode })
       window.removeEventListener("storage", sync);
     };
   }, []);
+  const select = useCallback((next: AppLanguage) => {
+    setPreLoginLang(next);
+    setLang(next);
+  }, []);
   const toggle = useCallback(() => {
     setLang((prev) => {
       const idx = LANG_CYCLE.indexOf(prev);
@@ -921,7 +964,7 @@ export function LandingLangProvider({ children }: { children: React.ReactNode })
     [lang]
   );
   return (
-    <LandingLangContext.Provider value={{ lang, t, toggle }}>
+    <LandingLangContext.Provider value={{ lang, t, toggle, select }}>
       {children}
     </LandingLangContext.Provider>
   );
@@ -957,13 +1000,9 @@ function PrimaryCta({
           track("hero_primary_cta_click", landingEventProps({ locale: lang, source_page: source }));
         }
       }}
+      className={`${buttonVariants({ size })} h-12 px-8 text-base font-semibold rounded-xl gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow ${className}`}
     >
-      <Button
-        size={size}
-        className={`h-12 px-8 text-base font-semibold rounded-xl gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow ${className}`}
-      >
-        {label} <ArrowRight className="h-4 w-4" />
-      </Button>
+      {label} <ArrowRight className="h-4 w-4" />
     </Link>
   );
 }
@@ -972,7 +1011,8 @@ function PrimaryCta({
 // ── Nav ───────────────────────────────────────────────────────────────
 
 function LandingNav() {
-  const { lang, t, toggle } = useLandingLang();
+  const { lang, t, select } = useLandingLang();
+  const current = LANG_OPTIONS.find((o) => o.code === lang) ?? LANG_OPTIONS[1];
   const links = [
     { label: t("navAudience"), href: "#features" },
     { label: t("navHow"), href: "#comparison" },
@@ -994,14 +1034,30 @@ function LandingNav() {
           ))}
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={toggle}
-            className="px-2.5 py-1 rounded-md border border-border text-sm font-medium text-foreground hover:bg-accent transition-colors"
-            aria-label="Switch language"
-            title={`Language: ${lang.toUpperCase()}`}
-          >
-            {lang === "en" ? "🇬🇧 EN" : lang === "fr" ? "🇫🇷 FR" : lang === "pl" ? "🇵🇱 PL" : lang === "ru" ? "🇷🇺 RU" : "🇺🇦 UA"}
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                aria-label={SELECT_LANGUAGE_LABEL[lang] ?? "Select language"}
+                className="inline-flex min-h-[36px] items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-sm font-medium text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <span aria-hidden="true">{current.flag}</span>
+                {current.short}
+                <ChevronDown className="h-3.5 w-3.5 opacity-70" aria-hidden="true" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[11rem]">
+              <DropdownMenuRadioGroup value={lang} onValueChange={(v) => select(v as AppLanguage)}>
+                {LANG_OPTIONS.map((o) => (
+                  <DropdownMenuRadioItem key={o.code} value={o.code} className="gap-2">
+                    <span aria-hidden="true">{o.flag}</span>
+                    <span>{o.native}</span>
+                    <span className="ml-auto text-xs text-muted-foreground">{o.short}</span>
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Link
             to="/auth"
             onClick={() => track("cta_clicked", { source_page: "/", cta: "nav", lang })}
@@ -1023,7 +1079,7 @@ function HeroSection() {
   const [slide, setSlide] = useState(0);
   const active = HERO_SLIDES[slide];
   return (
-    <section className="w-full pb-10 pt-10 [padding-inline:clamp(24px,4vw,72px)] sm:pb-16 sm:pt-14">
+    <section className="w-full [padding-block-end:clamp(20px,3vh,44px)] [padding-block-start:clamp(20px,3vh,40px)] [padding-inline:clamp(24px,4vw,72px)]">
       <div className="grid w-full items-center gap-[clamp(24px,3vw,48px)] lg:grid-cols-[minmax(320px,1fr)_minmax(0,3fr)] lg:gap-[clamp(40px,3.5vw,64px)] xl:grid-cols-[minmax(340px,1fr)_minmax(0,3.2fr)]">
         <div className="min-w-0 text-center lg:text-left">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium leading-normal text-primary">
@@ -1156,8 +1212,8 @@ function PricingSection() {
       id: "solo",
       name: t("soloName"),
       desc: t("soloDesc"),
-      pill: t("soloPill"),
-      bullets: [t("soloF1"), t("soloF3"), t("soloF4"), t("mfaSecurity"), t("soloF5")],
+      pill: t("soloF1"),
+      bullets: [t("soloF6"), t("soloF3"), t("soloF4"), t("soloF7"), t("soloF8"), t("mfaSecurity"), t("soloF5")],
       cta: t("soloCta"),
       ctaHrefBase: "/auth?plan=solo",
       ctaTracking: "upgrade_plan_selected",
@@ -1170,8 +1226,8 @@ function PricingSection() {
       id: "pro",
       name: t("proName"),
       desc: t("proDesc"),
-      pill: t("proPill"),
-      bullets: [t("proF1"), t("proF3"), t("proF4"), t("proF5"), t("mfaSecurity")],
+      pill: t("proF1"),
+      bullets: [t("proF5"), t("proF6"), t("proF7"), t("proF8"), t("proF3"), t("proF4"), t("mfaSecurity")],
       cta: t("proCta"),
       ctaHrefBase: "/auth?plan=pro",
       ctaTracking: "upgrade_plan_selected",
@@ -1344,19 +1400,16 @@ function PricingSection() {
                     );
                     if (!isFree && campaignEligible) storePendingOffer(p.id);
                   }}
-                  className="block mt-auto"
+                  className={`${buttonVariants({ variant: "default" })} mt-auto w-full h-12 px-8 text-base font-semibold rounded-xl gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow`}
                 >
-                  <Button
-                    className="w-full h-12 px-8 text-base font-semibold rounded-xl gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow"
-                    variant="default"
-                  >
-                    {p.cta} <ArrowRight className="h-4 w-4" />
-                  </Button>
+                  {p.cta} <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
             );
           })}
         </div>
+
+        <p className="mt-6 text-center text-xs text-muted-foreground">{t("docsNote")}</p>
 
         <div className="mt-12 text-center max-w-3xl mx-auto space-y-2">
           <p className="text-base text-muted-foreground">{t("pricingFooter1")}</p>
@@ -1663,15 +1716,14 @@ function FinalCTA() {
             <a
               href={`mailto:${CONTACT_EMAIL}`}
               onClick={() => track("cta_clicked", { source_page: "/#final", cta: "email_us", lang })}
+              className={`${buttonVariants({ size: "lg" })} h-12 px-8 text-base font-semibold rounded-xl gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow`}
             >
-              <Button size="lg" className="h-12 px-8 text-base font-semibold rounded-xl gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow">
-                <Mail className="h-4 w-4" />
-                {lang === "uk" ? "Написати нам"
-                  : lang === "fr" ? "Nous écrire"
-                  : lang === "pl" ? "Napisz do nas"
-                  : lang === "ru" ? "Написать нам"
-                  : "Email us"}
-              </Button>
+              <Mail className="h-4 w-4" />
+              {lang === "uk" ? "Написати нам"
+                : lang === "fr" ? "Nous écrire"
+                : lang === "pl" ? "Napisz do nas"
+                : lang === "ru" ? "Написать нам"
+                : "Email us"}
             </a>
           </div>
           <p className="text-xs text-secondary-foreground/90 mt-5">
@@ -1703,10 +1755,10 @@ function AboutContactsSection() {
     aboutTitle: pick({ en: "About us", uk: "Про нас", fr: "À propos", pl: "O nas", ru: "О нас" }),
     aboutP1: pick({
       en: "SoloBizz is a system for psychologists, psychotherapists, supervisors, teachers and solo professionals who want to manage clients, sessions, payments and see real financial results — without chaos, Excel or manual tracking.",
-      uk: "Solo Bizz — це система для психологів, психотерапевтів, супервізорів, викладачів і приватних спеціалістів, які хочуть вести клієнтів, записи, оплати та бачити фінансовий результат без хаосу, Excel і ручного обліку.",
+      uk: "SoloBizz — це система для психологів, психотерапевтів, супервізорів, викладачів і приватних спеціалістів, які хочуть вести клієнтів, записи, оплати та бачити фінансовий результат без хаосу, Excel і ручного обліку.",
       fr: "SoloBizz est un système pour psychologues, psychothérapeutes, superviseurs, enseignants et professionnels en solo qui veulent gérer clients, séances, paiements et voir leurs résultats financiers — sans chaos, Excel ou suivi manuel.",
       pl: "SoloBizz to system dla psychologów, psychoterapeutów, superwizorów, nauczycieli i solowych specjalistów, którzy chcą zarządzać klientami, sesjami i płatnościami oraz widzieć realny wynik finansowy — bez chaosu, Excela i ręcznej ewidencji.",
-      ru: "Solo Bizz — это система для психологов, психотерапевтов, супервизоров, преподавателей и частных специалистов, которые хотят вести клиентов, записи, оплаты и видеть финансовый результат без хаоса, Excel и ручного учёта.",
+      ru: "SoloBizz — это система для психологов, психотерапевтов, супервизоров, преподавателей и частных специалистов, которые хотят вести клиентов, записи, оплаты и видеть финансовый результат без хаоса, Excel и ручного учёта.",
     }),
     aboutP2: pick({
       en: "We're building a tool that turns a private practice into a more systematic, clear and manageable business.",
@@ -1894,41 +1946,41 @@ function LandingFooter() {
 
 const SEO_META: Record<AppLanguage, { title: string; description: string; ogTitle: string; ogDesc: string; ogLocale: string; htmlLang: string }> = {
   en: {
-    title: "Solo Bizz — CRM for psychologists, coaches & solo practices",
+    title: "SoloBizz — CRM for psychologists, coaches & solo practices",
     description: "SoloBizz helps psychologists, therapists, coaches and tutors manage clients, sessions, payments and income — all in one calm, simple workspace.",
-    ogTitle: "Solo Bizz — Run your solo practice without the chaos",
+    ogTitle: "SoloBizz — Run your solo practice without the chaos",
     ogDesc: "Clients, sessions, payments and income in one place. Built for psychologists, therapists, coaches and tutors.",
     ogLocale: "en_US",
     htmlLang: "en",
   },
   uk: {
-    title: "Solo Bizz — CRM для психологів, коучів і приватної практики",
+    title: "SoloBizz — CRM для психологів, коучів і приватної практики",
     description: "SoloBizz допомагає психологам, терапевтам, коучам і репетиторам вести клієнтів, сесії, оплати та дохід — в одному простому робочому просторі.",
-    ogTitle: "Solo Bizz — Керуйте приватною практикою без хаосу",
+    ogTitle: "SoloBizz — Керуйте приватною практикою без хаосу",
     ogDesc: "Клієнти, сесії, оплати та дохід в одному місці. Створено для психологів, терапевтів, коучів і репетиторів.",
     ogLocale: "uk_UA",
     htmlLang: "uk",
   },
   fr: {
-    title: "Solo Bizz — CRM pour psychologues, coachs et pratiques solo",
+    title: "SoloBizz — CRM pour psychologues, coachs et pratiques solo",
     description: "SoloBizz aide les psychologues, thérapeutes, coachs et tuteurs à gérer clients, séances, paiements et revenus — dans un espace simple et apaisé.",
-    ogTitle: "Solo Bizz — Gérez votre pratique solo sans le chaos",
+    ogTitle: "SoloBizz — Gérez votre pratique solo sans le chaos",
     ogDesc: "Clients, séances, paiements et revenus en un seul endroit. Conçu pour psychologues, thérapeutes, coachs et tuteurs.",
     ogLocale: "fr_FR",
     htmlLang: "fr",
   },
   pl: {
-    title: "Solo Bizz — CRM dla psychologów, coachów i praktyki solo",
+    title: "SoloBizz — CRM dla psychologów, coachów i praktyki solo",
     description: "SoloBizz pomaga psychologom, terapeutom, coachom i korepetytorom zarządzać klientami, sesjami, płatnościami i dochodem — w jednym prostym miejscu.",
-    ogTitle: "Solo Bizz — Prowadź praktykę solo bez chaosu",
+    ogTitle: "SoloBizz — Prowadź praktykę solo bez chaosu",
     ogDesc: "Klienci, sesje, płatności i dochód w jednym miejscu. Stworzone dla psychologów, terapeutów, coachów i korepetytorów.",
     ogLocale: "pl_PL",
     htmlLang: "pl",
   },
   ru: {
-    title: "Solo Bizz — CRM для психологов, коучей и частной практики",
+    title: "SoloBizz — CRM для психологов, коучей и частной практики",
     description: "SoloBizz помогает психологам, терапевтам, коучам и репетиторам вести клиентов, сеансы, оплаты и доход — в одном простом рабочем пространстве.",
-    ogTitle: "Solo Bizz — Управляйте частной практикой без хаоса",
+    ogTitle: "SoloBizz — Управляйте частной практикой без хаоса",
     ogDesc: "Клиенты, сеансы, оплаты и доход в одном месте. Создано для психологов, терапевтов, коучей и репетиторов.",
     ogLocale: "ru_RU",
     htmlLang: "ru",

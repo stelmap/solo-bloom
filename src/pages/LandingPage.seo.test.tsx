@@ -45,16 +45,16 @@ describe("LandingSEO localized meta tags", () => {
     });
 
     expect(document.title).toBe(
-      "Solo Bizz — CRM for psychologists, coaches & solo practices"
+      "SoloBizz — CRM for psychologists, coaches & solo practices"
     );
     expect(document.documentElement.lang).toBe("en");
     expect(getMeta('meta[name="description"]')).toMatch(/psychologists, therapists, coaches and tutors/);
     expect(getMeta('meta[property="og:title"]')).toBe(
-      "Solo Bizz — Run your solo practice without the chaos"
+      "SoloBizz — Run your solo practice without the chaos"
     );
     expect(getMeta('meta[property="og:locale"]')).toBe("en_US");
     expect(getMeta('meta[name="twitter:title"]')).toBe(
-      "Solo Bizz — Run your solo practice without the chaos"
+      "SoloBizz — Run your solo practice without the chaos"
     );
   });
 
@@ -69,12 +69,12 @@ describe("LandingSEO localized meta tags", () => {
     });
 
     expect(document.title).toBe(
-      "Solo Bizz — CRM для психологів, коучів і приватної практики"
+      "SoloBizz — CRM для психологів, коучів і приватної практики"
     );
     expect(document.documentElement.lang).toBe("uk");
     expect(getMeta('meta[name="description"]')).toMatch(/психологам, терапевтам/);
     expect(getMeta('meta[property="og:title"]')).toBe(
-      "Solo Bizz — Керуйте приватною практикою без хаосу"
+      "SoloBizz — Керуйте приватною практикою без хаосу"
     );
     expect(getMeta('meta[property="og:locale"]')).toBe("uk_UA");
     expect(getMeta('meta[name="twitter:description"]')).toMatch(/Клієнти, сесії/);

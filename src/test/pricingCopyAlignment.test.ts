@@ -43,10 +43,10 @@ const PAIRS: Array<[landingKey: string, i18nKey: string]> = [
   // Free Starter bullets reused on /plans
   ["freeF1", "plans.bulletClientsFree"],
   ["freeF3", "plans.bulletCoreModules"],
-  ["freeF4", "plans.bulletAnalytics"],
+  ["freeF4", "plans.bulletFreeIncome"],
   // Solo Practice bullets
   ["soloF1", "plans.bulletClientsSolo"],
-  ["soloF3", "plans.bulletCoreModules"],
+  ["soloF3", "plans.bulletSoloCore"],
   ["soloF4", "plans.bulletAnalytics"],
   ["soloF5", "plans.bulletCancelAnytime"],
   // Pro Practice bullets
