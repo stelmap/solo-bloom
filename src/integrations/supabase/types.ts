@@ -2664,6 +2664,131 @@ export type Database = {
         }
         Relationships: []
       }
+      review_status_history: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          from_status:
+            | Database["public"]["Enums"]["review_moderation_status"]
+            | null
+          id: string
+          note: string | null
+          review_id: string
+          to_status:
+            | Database["public"]["Enums"]["review_moderation_status"]
+            | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          from_status?:
+            | Database["public"]["Enums"]["review_moderation_status"]
+            | null
+          id?: string
+          note?: string | null
+          review_id: string
+          to_status?:
+            | Database["public"]["Enums"]["review_moderation_status"]
+            | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          from_status?:
+            | Database["public"]["Enums"]["review_moderation_status"]
+            | null
+          id?: string
+          note?: string | null
+          review_id?: string
+          to_status?:
+            | Database["public"]["Enums"]["review_moderation_status"]
+            | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_status_history_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          admin_reply: string | null
+          admin_reply_at: string | null
+          body: string
+          body_hash: string | null
+          consent: boolean
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          ip_hash: string | null
+          language: string | null
+          moderation_status: Database["public"]["Enums"]["review_moderation_status"]
+          plan: string | null
+          profession: string
+          published_at: string | null
+          rating: number
+          updated_at: string
+          verification_checked_at: string | null
+          verification_status: Database["public"]["Enums"]["review_verification_status"]
+          verified_records_count: number
+          verified_user_id: string | null
+        }
+        Insert: {
+          admin_reply?: string | null
+          admin_reply_at?: string | null
+          body: string
+          body_hash?: string | null
+          consent?: boolean
+          created_at?: string
+          display_name: string
+          email: string
+          id?: string
+          ip_hash?: string | null
+          language?: string | null
+          moderation_status?: Database["public"]["Enums"]["review_moderation_status"]
+          plan?: string | null
+          profession: string
+          published_at?: string | null
+          rating: number
+          updated_at?: string
+          verification_checked_at?: string | null
+          verification_status?: Database["public"]["Enums"]["review_verification_status"]
+          verified_records_count?: number
+          verified_user_id?: string | null
+        }
+        Update: {
+          admin_reply?: string | null
+          admin_reply_at?: string | null
+          body?: string
+          body_hash?: string | null
+          consent?: boolean
+          created_at?: string
+          display_name?: string
+          email?: string
+          id?: string
+          ip_hash?: string | null
+          language?: string | null
+          moderation_status?: Database["public"]["Enums"]["review_moderation_status"]
+          plan?: string | null
+          profession?: string
+          published_at?: string | null
+          rating?: number
+          updated_at?: string
+          verification_checked_at?: string | null
+          verification_status?: Database["public"]["Enums"]["review_verification_status"]
+          verified_records_count?: number
+          verified_user_id?: string | null
+        }
+        Relationships: []
+      }
       services: {
         Row: {
           created_at: string
@@ -3513,6 +3638,93 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      admin_list_review_history: {
+        Args: { p_review_id: string }
+        Returns: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          from_status:
+            | Database["public"]["Enums"]["review_moderation_status"]
+            | null
+          id: string
+          note: string | null
+          review_id: string
+          to_status:
+            | Database["public"]["Enums"]["review_moderation_status"]
+            | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "review_status_history"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      admin_list_reviews: {
+        Args: never
+        Returns: {
+          admin_reply: string | null
+          admin_reply_at: string | null
+          body: string
+          body_hash: string | null
+          consent: boolean
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          ip_hash: string | null
+          language: string | null
+          moderation_status: Database["public"]["Enums"]["review_moderation_status"]
+          plan: string | null
+          profession: string
+          published_at: string | null
+          rating: number
+          updated_at: string
+          verification_checked_at: string | null
+          verification_status: Database["public"]["Enums"]["review_verification_status"]
+          verified_records_count: number
+          verified_user_id: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "reviews"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      admin_set_review_reply: {
+        Args: { p_reply: string; p_review_id: string }
+        Returns: {
+          admin_reply: string | null
+          admin_reply_at: string | null
+          body: string
+          body_hash: string | null
+          consent: boolean
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          ip_hash: string | null
+          language: string | null
+          moderation_status: Database["public"]["Enums"]["review_moderation_status"]
+          plan: string | null
+          profession: string
+          published_at: string | null
+          rating: number
+          updated_at: string
+          verification_checked_at: string | null
+          verification_status: Database["public"]["Enums"]["review_verification_status"]
+          verified_records_count: number
+          verified_user_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "reviews"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_update_booking_request_status: {
         Args: { p_id: string; p_status: string }
         Returns: {
@@ -3529,6 +3741,38 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "booking_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_review: {
+        Args: { p_action: string; p_note?: string; p_review_id: string }
+        Returns: {
+          admin_reply: string | null
+          admin_reply_at: string | null
+          body: string
+          body_hash: string | null
+          consent: boolean
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          ip_hash: string | null
+          language: string | null
+          moderation_status: Database["public"]["Enums"]["review_moderation_status"]
+          plan: string | null
+          profession: string
+          published_at: string | null
+          rating: number
+          updated_at: string
+          verification_checked_at: string | null
+          verification_status: Database["public"]["Enums"]["review_verification_status"]
+          verified_records_count: number
+          verified_user_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "reviews"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -3788,6 +4032,17 @@ export type Database = {
         | "expired"
       agreement_version_status: "draft" | "active" | "archived"
       app_role: "admin" | "user"
+      review_moderation_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "hidden"
+        | "deleted"
+        | "spam"
+      review_verification_status:
+        | "verified"
+        | "not_verified"
+        | "verification_failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3926,6 +4181,19 @@ export const Constants = {
       ],
       agreement_version_status: ["draft", "active", "archived"],
       app_role: ["admin", "user"],
+      review_moderation_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "hidden",
+        "deleted",
+        "spam",
+      ],
+      review_verification_status: [
+        "verified",
+        "not_verified",
+        "verification_failed",
+      ],
     },
   },
 } as const
