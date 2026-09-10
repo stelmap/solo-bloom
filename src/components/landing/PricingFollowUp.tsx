@@ -3,7 +3,8 @@ import { ArrowRight, CheckCircle2, Headphones, ShieldCheck, SlidersHorizontal, T
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { buttonVariants } from "@/components/ui/button";
 import type { AppLanguage } from "@/i18n/translations";
-import { track, landingEventProps } from "@/lib/analytics";
+import { track } from "@/lib/analytics";
+import { landingEventProps } from "@/lib/landingCampaign";
 
 type L = Partial<Record<AppLanguage, string>> & { en: string };
 const p = (lang: AppLanguage, m: L) => m[lang] ?? m.en;
