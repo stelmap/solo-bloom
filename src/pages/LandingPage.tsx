@@ -1016,6 +1016,9 @@ function PrimaryCta({
 function LandingNav() {
   const { lang, t, select } = useLandingLang();
   const [aboutOpen, setAboutOpen] = useState(false);
+  // Scroll offset captured at click time so the overlay can restore it on close.
+  const aboutScrollY = useRef(0);
+
   const current = LANG_OPTIONS.find((o) => o.code === lang) ?? LANG_OPTIONS[1];
   const links = [
     { label: t("navAudience"), href: "#features" },
@@ -1026,7 +1029,7 @@ function LandingNav() {
 
   return (
     <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border/50">
-      <AboutOverlay open={aboutOpen} onClose={() => setAboutOpen(false)} />
+      <AboutOverlay open={aboutOpen} scrollY={aboutScrollY.current} onClose={() => setAboutOpen(false)} />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <button
           type="button"
