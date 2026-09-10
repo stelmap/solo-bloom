@@ -134,6 +134,7 @@ export function AppSidebar() {
     const items = [
       { icon: ShieldCheck, label: "Booking requests", path: "/admin/booking-requests" },
       { icon: ShieldCheck, label: "Users", path: "/admin/users" },
+      { icon: ShieldCheck, label: "Reviews", path: "/admin/reviews" },
     ];
     if (user?.email?.toLowerCase() === "o.gilevich@gmail.com") {
       items.push(
