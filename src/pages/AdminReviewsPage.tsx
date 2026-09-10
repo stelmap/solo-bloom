@@ -455,7 +455,6 @@ export default function AdminReviewsPage() {
               Видалити
             </AlertDialogAction>
           </AlertDialogFooter>
-        </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
