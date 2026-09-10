@@ -1435,48 +1435,18 @@ const YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@olga.stelmakh";
 const FAQ_EMAIL = "info@solobizz.com";
 
 
-// ── Final CTA ─────────────────────────────────────────────────────────
+// ── Contact / book a call ─────────────────────────────────────────────
 
-function FinalCTA() {
+function ContactCallSection() {
   const { t, lang } = useLandingLang();
   return (
-    <section className="py-24 px-4 sm:px-6 bg-secondary">
+    <section className="py-20 px-4 sm:px-6 bg-background">
       <div className="max-w-3xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8 leading-normal">
-          <Sparkles className="h-3.5 w-3.5 shrink-0" />
-          <span className="leading-normal">{t("heroBadge")}</span>
-        </div>
-        <h2 className="text-3xl sm:text-5xl font-bold text-secondary-foreground leading-[1.15] mb-6 tracking-tight">
-          {t("heroTitle")}
-        </h2>
-        <p className="text-lg text-secondary-foreground/80 max-w-2xl mx-auto mb-10 leading-relaxed">
-          {lang === "uk"
-            ? "Приєднайтесь до 300+ психологів, психотерапевтів і супервізорів, які замінили розрізнені таблиці та забуті рахунки однією чіткою системою. Безкоштовно для початку. Налаштування за 5 хвилин."
-            : lang === "fr"
-            ? "Rejoignez plus de 300 psychologues, psychothérapeutes et superviseurs qui ont remplacé les tableurs éparpillés et les factures oubliées par un système clair. Gratuit pour commencer. Configuration en 5 minutes."
-            : lang === "pl"
-            ? "Dołącz do 300+ psychologów, psychoterapeutów i superwizorów, którzy zastąpili rozproszone arkusze i zapomniane faktury jednym przejrzystym systemem. Za darmo na start. Konfiguracja w 5 minut."
-            : lang === "ru"
-            ? "Присоединяйтесь к 300+ психологам, психотерапевтам и супервизорам, которые заменили разрозненные таблицы и забытые счета одной понятной системой. Бесплатно для старта. Настройка за 5 минут."
-            : "Join 300+ psychologists, psychotherapists and supervisors who replaced scattered spreadsheets and forgotten invoices with one clear system. Free to start. Setup in 5 minutes."}
-        </p>
-        <div className="flex items-center justify-center">
-          <PrimaryCta label={t("heroCta")} source="/" cta="final" />
-        </div>
-        <p className="text-sm text-secondary-foreground/70 mt-6">{t("heroSubCta")}</p>
-        <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs sm:text-sm text-secondary-foreground/80 mt-6">
-          <li className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-success" /> {t("trustData")}</li>
-          <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /> {t("trustGdpr")}</li>
-          <li className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /> {t("trustStripe")}</li>
-          <li className="inline-flex items-center gap-1.5"><MessageCircle className="h-4 w-4 text-success" /> {t("trustSupport")}</li>
-        </ul>
-
-
-        <div id="contact" className="mt-14 max-w-2xl mx-auto rounded-2xl border border-sidebar-border bg-accent/30 p-6 sm:p-10 text-center">
-          <h3 className="text-2xl sm:text-3xl font-bold text-secondary-foreground mb-3">
+        <div id="contact" className="max-w-2xl mx-auto rounded-2xl border border-border bg-muted/40 p-6 sm:p-10 text-center">
+          <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
             {t("doubtTitle")}
           </h3>
-          <p className="text-base text-secondary-foreground/80 mb-3">
+          <p className="text-base text-muted-foreground mb-3">
             {lang === "uk"
               ? "Запишіться на коротку розмову, і ми покажемо, як SoloBizz може спростити вашу роботу, упорядкувати записи, оплати та допомогти краще бачити фінансову картину вашої практики."
               : lang === "ru"
