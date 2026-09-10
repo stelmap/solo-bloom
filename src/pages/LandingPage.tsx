@@ -492,10 +492,10 @@ const C = {
     pl: "Wybierz plan na podstawie liczby aktywnych klientów — a nie brakujących funkcji.",
   },
   pricingFooter2: {
-    en: "SoloBizz gives every therapist a complete practice management system from the very first session.",
-    fr: "SoloBizz offre à chaque thérapeute un système complet de gestion de pratique dès la première séance.",
-    uk: "SoloBizz дає кожному терапевту повну систему управління практикою з першої сесії.",
-    pl: "SoloBizz daje każdemu terapeucie kompletny system zarządzania praktyką już od pierwszej sesji.",
+    en: "SoloBizz gives every independent professional a complete practice management system from the very first session.",
+    fr: "SoloBizz offre à chaque professionnel indépendant un système complet de gestion de pratique dès la première séance.",
+    uk: "SoloBizz дає кожному незалежному спеціалісту повну систему управління практикою з першої сесії.",
+    pl: "SoloBizz daje każdemu niezależnemu specjaliście kompletny system zarządzania praktyką już od pierwszej sesji.",
   },
 
   roiTilesTitle: {
@@ -882,7 +882,7 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   proPill: "Неограниченное число клиентов",
 
   pricingFooter1: "Выбирайте план по количеству активных клиентов — а не по отсутствующим функциям.",
-  pricingFooter2: "SoloBizz даёт каждому терапевту полноценную систему управления практикой с самой первой сессии.",
+  pricingFooter2: "SoloBizz даёт каждому независимому специалисту полноценную систему управления практикой с самой первой сессии.",
 
   // ROI tiles
   roiTilesTitle: "Сколько может стоить ручная админ-работа",
