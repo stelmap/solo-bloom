@@ -1,3 +1,4 @@
+import { BrandName } from "@/components/BrandName";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Calendar, Users, Scissors, DollarSign,
@@ -383,7 +384,7 @@ export function AppSidebar() {
       <div className="flex items-center gap-2">
         <div className="text-xl font-bold text-sidebar-foreground tracking-tight flex-1 flex items-baseline gap-1.5">
           <span>
-            Solo<span className="text-sidebar-primary">Bizz</span>
+            <BrandName accentClassName="text-sidebar-primary" />
           </span>
           <span className="px-1.5 py-0.5 rounded-md bg-sidebar-primary/15 text-sidebar-primary text-[10px] font-semibold uppercase tracking-wider">
             Beta

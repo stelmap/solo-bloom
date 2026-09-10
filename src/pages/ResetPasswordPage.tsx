@@ -1,3 +1,4 @@
+import { BrandName } from "@/components/BrandName";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -112,7 +113,7 @@ export default function ResetPasswordPage() {
         <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold text-foreground">
-            Solo<span className="text-primary">Bizz</span> — {t("auth.pageTitleReset")}
+            <BrandName /> — {t("auth.pageTitleReset")}
           </h1>
         </div>
 

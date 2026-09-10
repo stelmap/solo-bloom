@@ -1,3 +1,4 @@
+import { BrandName } from "@/components/BrandName";
 import { useState, useCallback, createContext, useContext, useEffect, type ReactNode } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
@@ -1025,7 +1026,7 @@ function LandingNav() {
     <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border/50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <Link to="/" className="text-xl font-bold text-foreground tracking-tight">
-          Solo<span className="text-primary">Bizz</span>
+          <BrandName />
         </Link>
         <div className="hidden md:flex items-center gap-8">
           {links.map((l) => (
