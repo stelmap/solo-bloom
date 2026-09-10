@@ -1,4 +1,6 @@
-import { useState, useCallback, createContext, useContext, useEffect, type ReactNode } from "react";
+import { BrandName } from "@/components/BrandName";
+import { AboutOverlay } from "@/components/landing/AboutOverlay";
+import { useState, useRef, useCallback, createContext, useContext, useEffect, type ReactNode } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { BookingDialog } from "@/components/BookingDialog";
@@ -66,7 +68,7 @@ const C = {
   navFaq: { en: "FAQ", fr: "FAQ", uk: "Питання", pl: "FAQ" },
   navLogin: { en: "Log in", fr: "Connexion", uk: "Увійти", pl: "Zaloguj się" },
   navTry: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
-  navOpenApp: { en: "Go to SoloBizz →", fr: "Aller à SoloBizz →", uk: "Перейти в SoloBizz →", pl: "Przejdź do SoloBizz →" },
+  navOpenApp: { en: "Go to Solo .Bizz →", fr: "Aller à Solo .Bizz →", uk: "Перейти в Solo .Bizz →", pl: "Przejdź do Solo .Bizz →" },
   heroCtaPrimary: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
   heroCtaPricing: { en: "See pricing", fr: "Voir les tarifs", uk: "Подивитися ціни", pl: "Zobacz cennik" },
   heroCtaNote: { en: "No card · Setup in 5 minutes", fr: "Sans carte · Configuration en 5 minutes", uk: "Без картки · Налаштування за 5 хвилин", pl: "Bez karty · Konfiguracja w 5 minut" },
@@ -92,10 +94,10 @@ const C = {
     pl: "W jednym miejscu.",
   },
   heroSub: {
-    en: "SoloBizz manages your clients, calendar, bookings, payments, invoices and financial reports — automatically. So you spend your time on clients, not spreadsheets.",
-    fr: "SoloBizz gère vos clients, agenda, réservations, paiements, factures et rapports financiers — automatiquement. Vous consacrez votre temps aux clients, pas aux tableurs.",
-    uk: "SoloBizz керує клієнтами, календарем, записами, оплатами, рахунками та фінансовими звітами — автоматично. Ви витрачаєте час на клієнтів, а не на таблиці.",
-    pl: "SoloBizz prowadzi klientów, kalendarz, zapisy, płatności, faktury i raporty finansowe — automatycznie. Czas poświęcasz klientom, a nie arkuszom.",
+    en: "Solo .Bizz manages your clients, calendar, bookings, payments, invoices and financial reports — automatically. So you spend your time on clients, not spreadsheets.",
+    fr: "Solo .Bizz gère vos clients, agenda, réservations, paiements, factures et rapports financiers — automatiquement. Vous consacrez votre temps aux clients, pas aux tableurs.",
+    uk: "Solo .Bizz керує клієнтами, календарем, записами, оплатами, рахунками та фінансовими звітами — автоматично. Ви витрачаєте час на клієнтів, а не на таблиці.",
+    pl: "Solo .Bizz prowadzi klientów, kalendarz, zapisy, płatności, faktury i raporty finansowe — automatycznie. Czas poświęcasz klientom, a nie arkuszom.",
   },
   heroCta: { en: "Start free — no card needed", fr: "Commencer gratuitement — sans carte", uk: "Почати безкоштовно — займає 5 хвилин →", pl: "Zacznij za darmo — bez karty" },
   heroSecondary: { en: "See pricing", fr: "Voir les tarifs", uk: "Подивитись ціни", pl: "Zobacz cennik" },
@@ -108,11 +110,11 @@ const C = {
   heroSocialProof: {
     en: "Join 100+ psychologists, psychotherapists and supervisors already working in our system.",
     fr: "Rejoignez 100+ psychologues, psychothérapeutes et superviseurs qui travaillent déjà dans notre système.",
-    uk: "SoloBizz керує клієнтами, календарем, записами, оплатами, рахунками та фінансовими звітами — автоматично. Ви витрачаєте час на клієнтів, а не на таблиці.",
+    uk: "Solo .Bizz керує клієнтами, календарем, записами, оплатами, рахунками та фінансовими звітами — автоматично. Ви витрачаєте час на клієнтів, а не на таблиці.",
     pl: "Dołącz do 100+ psychologów, psychoterapeutów i superwizorów, którzy już pracują w naszym systemie.",
   },
   // Stats
-  statsTherapists: { en: "therapists already use SoloBizz", fr: "thérapeutes utilisent déjà SoloBizz", uk: "терапевтів вже користуються SoloBizz", pl: "terapeutów już korzysta z SoloBizz" },
+  statsTherapists: { en: "therapists already use Solo .Bizz", fr: "thérapeutes utilisent déjà Solo .Bizz", uk: "терапевтів вже користуються Solo .Bizz", pl: "terapeutów już korzysta z Solo .Bizz" },
   statsTime: { en: "of admin time saved every week", fr: "de temps admin économisé chaque semaine", uk: "адмін-часу заощаджується щотижня", pl: "czasu administracyjnego oszczędzane co tydzień" },
   statsSetup: { en: "average practice setup time", fr: "temps moyen d'installation de la pratique", uk: "середній час налаштування практики", pl: "średni czas konfiguracji praktyki" },
   statsTimeNum: { en: "4–8 hrs", fr: "4–8 h", uk: "4–8 год", pl: "4–8 godz." },
@@ -120,10 +122,10 @@ const C = {
   setupAssist: { en: "Want a fast start? Leave a request — and we'll help set up your practice.", fr: "Vous voulez démarrer vite ? Laissez une demande — nous vous aidons à configurer votre pratique.", uk: "Хочете швидкий старт? Залиште заявку — і ми допоможемо налаштувати практику.", pl: "Chcesz szybki start? Zostaw zgłoszenie — pomożemy skonfigurować praktykę." },
 
   heroRoi: {
-    en: "With 20+ clients, manual admin can take 4–8+ hours a week. SoloBizz helps you win that time back.",
-    fr: "Avec 20+ clients, l'admin manuelle peut prendre 4 à 8+ heures par semaine. SoloBizz vous aide à récupérer ce temps.",
-    uk: "Коли у вас 20+ клієнтів, ручна адмінка може забирати 4–8+ годин на тиждень. SoloBizz допомагає повернути цей час назад.",
-    pl: "Przy 20+ klientach ręczna administracja może zajmować 4–8+ godzin tygodniowo. SoloBizz pomaga odzyskać ten czas.",
+    en: "With 20+ clients, manual admin can take 4–8+ hours a week. Solo .Bizz helps you win that time back.",
+    fr: "Avec 20+ clients, l'admin manuelle peut prendre 4 à 8+ heures par semaine. Solo .Bizz vous aide à récupérer ce temps.",
+    uk: "Коли у вас 20+ клієнтів, ручна адмінка може забирати 4–8+ годин на тиждень. Solo .Bizz допомагає повернути цей час назад.",
+    pl: "Przy 20+ klientach ręczna administracja może zajmować 4–8+ godzin tygodniowo. Solo .Bizz pomaga odzyskać ten czas.",
   },
   trustData: { en: "Client data is protected", fr: "Données clients protégées", uk: "Дані клієнтів приватні", pl: "Dane klientów chronione" },
   trustStripe: { en: "Secure Stripe payments", fr: "Paiements sécurisés via Stripe", uk: "Без картки для Free", pl: "Bezpieczne płatności przez Stripe" },
@@ -183,19 +185,19 @@ const C = {
     pl: "Zbyt dużo czasu idzie na rutynę, a pełnego obrazu praktyki wciąż nie widać.",
   },
   painBottom: {
-    en: "This isn't a productivity problem. It's the absence of a system built for private practice. SoloBizz is that system.",
-    fr: "Ce n'est pas un problème de productivité. C'est l'absence d'un système conçu pour la pratique privée. SoloBizz est ce système.",
-    uk: "Це не проблема продуктивності. Це відсутність системи, створеної для приватної практики. SoloBizz — це та система.",
-    pl: "To nie jest problem produktywności. To brak systemu stworzonego dla prywatnej praktyki. SoloBizz to ten system.",
+    en: "This isn't a productivity problem. It's the absence of a system built for private practice. Solo .Bizz is that system.",
+    fr: "Ce n'est pas un problème de productivité. C'est l'absence d'un système conçu pour la pratique privée. Solo .Bizz est ce système.",
+    uk: "Це не проблема продуктивності. Це відсутність системи, створеної для приватної практики. Solo .Bizz — це та система.",
+    pl: "To nie jest problem produktywności. To brak systemu stworzonego dla prywatnej praktyki. Solo .Bizz to ten system.",
   },
-  painCta: { en: "See how SoloBizz works", fr: "Voir comment SoloBizz fonctionne", uk: "Дивись, як це працює в SoloBizz", pl: "Zobacz, jak działa SoloBizz" },
+  painCta: { en: "See how Solo .Bizz works", fr: "Voir comment Solo .Bizz fonctionne", uk: "Дивись, як це працює в Solo .Bizz", pl: "Zobacz, jak działa Solo .Bizz" },
 
   // What Changes
   whatChangesEyebrow: { en: "WHAT CHANGES", fr: "CE QUI CHANGE", uk: "ЩО ЗМІНЮЄТЬСЯ", pl: "CO SIĘ ZMIENIA" },
   whatChangesHeadline: { en: "The same Monday. A completely different start to the day.", fr: "Le même lundi. Un tout autre début de journée.", uk: "Той самий понеділок. Зовсім інший початок дня.", pl: "Ten sam poniedziałek. Zupełnie inny początek dnia." },
   whatChangesSub: { en: "See how one tool replaces the morning chaos with clarity and control.", fr: "Découvrez comment un seul outil remplace le chaos matinal par la clarté et le contrôle.", uk: "Подивіться, як один інструмент замінює ранковий хаос на ясність і контроль.", pl: "Zobacz, jak jedno narzędzie zastępuje poranny chaos przejrzystością i kontrolą." },
-  whatChangesWithoutTitle: { en: "Monday without SoloBizz", fr: "Lundi sans SoloBizz", uk: "Понеділок без SoloBizz", pl: "Poniedziałek bez SoloBizz" },
-  whatChangesWithTitle: { en: "Monday with SoloBizz", fr: "Lundi avec SoloBizz", uk: "Понеділок з SoloBizz", pl: "Poniedziałek z SoloBizz" },
+  whatChangesWithoutTitle: { en: "Monday without Solo .Bizz", fr: "Lundi sans Solo .Bizz", uk: "Понеділок без Solo .Bizz", pl: "Poniedziałek bez Solo .Bizz" },
+  whatChangesWithTitle: { en: "Monday with Solo .Bizz", fr: "Lundi avec Solo .Bizz", uk: "Понеділок з Solo .Bizz", pl: "Poniedziałek z Solo .Bizz" },
   whatChangesWithout1: { en: "You open 5 different apps to remember who's coming today.", fr: "Vous ouvrez 5 applications différentes pour vous rappeler qui vient aujourd'hui.", uk: "Відкриваєте 5 різних додатків, щоб згадати, хто сьогодні на прийомі.", pl: "Otwierasz 5 różnych aplikacji, żeby przypomnieć sobie, kto dziś przychodzi." },
   whatChangesWithout2: { en: "You check payments manually — and worry about missing something.", fr: "Vous vérifiez les paiements manuellement — et craignez d'oublier quelque chose.", uk: "Перевіряєте оплати вручну — і боїтеся щось упустити.", pl: "Sprawdzasz płatności ręcznie — i boisz się, że coś przeoczysz." },
   whatChangesWithout3: { en: "You spend 30+ minutes sending reminders to clients.", fr: "Vous passez 30+ minutes à envoyer des rappels aux clients.", uk: "Тратите 30+ хвилин на розсилку нагадувань клієнтам.", pl: "Spędzasz 30+ minut na wysyłaniu przypomnień klientom." },
@@ -232,7 +234,7 @@ const C = {
   feat8Title: { en: "Client notes", fr: "Notes clients", uk: "Нотатки клієнта", pl: "Notatki klienta" },
   feat8Desc: { en: "Structured notes linked to every client journey.", fr: "Notes structurées liées à chaque parcours client.", uk: "Структуровані нотатки, прив'язані до кожного клієнтського шляху.", pl: "Uporządkowane notatki powiązane z każdą ścieżką klienta." },
   feat9Title: { en: "Data protection", fr: "Protection des données", uk: "Захист даних", pl: "Ochrona danych" },
-  feat9Desc: { en: "Client data is fully private. SoloBizz has no access to it. The system follows a GDPR-compliant approach.", fr: "Les données clients sont entièrement privées. SoloBizz n'y a pas accès. Le système suit une approche conforme au RGPD.", uk: "Дані клієнтів повністю приватні. SoloBizz не має до них доступу. Система підтримує GDPR-compliant підхід.", pl: "Dane klientów są w pełni prywatne. SoloBizz nie ma do nich dostępu. System jest zgodny z RODO." },
+  feat9Desc: { en: "Client data is fully private. Solo .Bizz has no access to it. The system follows a GDPR-compliant approach.", fr: "Les données clients sont entièrement privées. Solo .Bizz n'y a pas accès. Le système suit une approche conforme au RGPD.", uk: "Дані клієнтів повністю приватні. Solo .Bizz не має до них доступу. Система підтримує GDPR-compliant підхід.", pl: "Dane klientów są w pełni prywatne. Solo .Bizz nie ma do nich dostępu. System jest zgodny z RODO." },
   feat10Title: { en: "Session cost calculator", fr: "Calcul du coût des séances", uk: "Розрахунок вартості сесії", pl: "Wyliczanie kosztu sesji" },
   feat10Desc: { en: "Understand the real cost of one session and the financial state of your practice.", fr: "Comprenez le coût réel d'une séance et l'état financier de votre pratique.", uk: "Зрозумійте реальну вартість однієї сесії та фінансовий стан практики.", pl: "Zrozum rzeczywisty koszt jednej sesji i stan finansowy swojej praktyki." },
   feat11Title: { en: "Supervision tracking", fr: "Suivi des supervisions", uk: "Відстеження супервізій", pl: "Śledzenie superwizji" },
@@ -244,7 +246,7 @@ const C = {
   whatChangesSummaryHighlight: { en: "what truly matters", fr: "ce qui compte vraiment", uk: "що справді важливо", pl: "co naprawdę się liczy" },
   whatChangesCta: { en: "Start free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
   whatChangesCtaNote: { en: "No card required. You can start in a few minutes.", fr: "Sans carte. Vous pouvez commencer en quelques minutes.", uk: "Без картки. Можна почати за кілька хвилин.", pl: "Bez karty. Możesz zacząć w kilka minut." },
-  featCta: { en: "Try SoloBizz for free", fr: "Essayer SoloBizz gratuitement", uk: "Спробувати SoloBizz безкоштовно", pl: "Wypróbuj SoloBizz za darmo" },
+  featCta: { en: "Try Solo .Bizz for free", fr: "Essayer Solo .Bizz gratuitement", uk: "Спробувати Solo .Bizz безкоштовно", pl: "Wypróbuj Solo .Bizz za darmo" },
   featCtaNote: { en: "All key features available from day one.", fr: "Toutes les fonctionnalités clés disponibles dès le premier jour.", uk: "Усі ключові функції доступні з першого дня.", pl: "Wszystkie kluczowe funkcje dostępne od pierwszego dnia." },
 
 
@@ -264,10 +266,10 @@ const C = {
 
   // Comparison
   cmpTitle: {
-    en: "Excel, notebooks and chaos — or SoloBizz",
-    fr: "Excel, carnets et chaos — ou SoloBizz",
-    uk: "Excel, блокноти й хаос — або SoloBizz",
-    pl: "Excel, notesy i chaos — albo SoloBizz",
+    en: "Excel, notebooks and chaos — or Solo .Bizz",
+    fr: "Excel, carnets et chaos — ou Solo .Bizz",
+    uk: "Excel, блокноти й хаос — або Solo .Bizz",
+    pl: "Excel, notesy i chaos — albo Solo .Bizz",
   },
   cmpSub: {
     en: "Compare manual tracking with a system that automatically shows you bookings, payments, debts, income and profit.",
@@ -276,7 +278,7 @@ const C = {
     pl: "Porównaj ręczną ewidencję z systemem, który automatycznie pokazuje rezerwacje, płatności, długi, dochód i zysk.",
   },
   cmpManual: { en: "Manual tracking", fr: "Suivi manuel", uk: "Ручний облік", pl: "Ręczna ewidencja" },
-  cmpSolo: { en: "SoloBizz", fr: "SoloBizz", uk: "SoloBizz", pl: "SoloBizz" },
+  cmpSolo: { en: "Solo .Bizz", fr: "Solo .Bizz", uk: "Solo .Bizz", pl: "Solo .Bizz" },
   cmpM1: { en: "Records scattered across places", fr: "Données éparpillées partout", uk: "Записи в різних місцях", pl: "Zapisy rozproszone w różnych miejscach" },
   cmpM2: { en: "Payments must be checked manually", fr: "Paiements à vérifier manuellement", uk: "Оплати треба перевіряти вручну", pl: "Płatności trzeba sprawdzać ręcznie" },
   cmpM3: { en: "Easy to forget debts", fr: "Facile d'oublier les impayés", uk: "Борги легко забути", pl: "Łatwo zapomnieć o długach" },
@@ -325,10 +327,10 @@ const C = {
     pl: "Wszystkie funkcje dostępne od pierwszego dnia — w każdym planie",
   },
   pricingCompare: {
-    en: "Compared to alternatives: SimplePractice costs €46–73/mo, TherapyNotes — €64/mo. SoloBizz offers the full toolkit for managing a private practice at €12/mo — without insurance modules and extra features a private therapist will never need.",
-    fr: "Par rapport aux alternatives : SimplePractice coûte €46–73/mois, TherapyNotes — €64/mois. SoloBizz propose la boîte à outils complète pour gérer une pratique privée à €12/mois — sans modules d'assurance ni fonctionnalités superflues dont un thérapeute privé n'aura jamais besoin.",
-    uk: "Порівняно з аналогами: SimplePractice коштує €46–73/міс, TherapyNotes — €64/міс. SoloBizz пропонує повний набір інструментів для управління практикою за €12/міс — без страхових модулів та зайвих функцій, які ніколи не знадобляться приватному терапевту.",
-    pl: "W porównaniu z alternatywami: SimplePractice kosztuje €46–73/mies, TherapyNotes — €64/mies. SoloBizz oferuje pełny zestaw narzędzi do prowadzenia praktyki za €12/mies — bez modułów ubezpieczeniowych i zbędnych funkcji, których prywatny terapeuta nigdy nie potrzebuje.",
+    en: "Compared to alternatives: SimplePractice costs €46–73/mo, TherapyNotes — €64/mo. Solo .Bizz offers the full toolkit for managing a private practice at €12/mo — without insurance modules and extra features a private therapist will never need.",
+    fr: "Par rapport aux alternatives : SimplePractice coûte €46–73/mois, TherapyNotes — €64/mois. Solo .Bizz propose la boîte à outils complète pour gérer une pratique privée à €12/mois — sans modules d'assurance ni fonctionnalités superflues dont un thérapeute privé n'aura jamais besoin.",
+    uk: "Порівняно з аналогами: SimplePractice коштує €46–73/міс, TherapyNotes — €64/міс. Solo .Bizz пропонує повний набір інструментів для управління практикою за €12/міс — без страхових модулів та зайвих функцій, які ніколи не знадобляться приватному терапевту.",
+    pl: "W porównaniu z alternatywami: SimplePractice kosztuje €46–73/mies, TherapyNotes — €64/mies. Solo .Bizz oferuje pełny zestaw narzędzi do prowadzenia praktyki za €12/mies — bez modułów ubezpieczeniowych i zbędnych funkcji, których prywatny terapeuta nigdy nie potrzebuje.",
   },
 
   monthly: { en: "Monthly", fr: "Mensuel", uk: "Щомісяця", pl: "Miesięcznie" },
@@ -379,7 +381,7 @@ const C = {
   },
   freeBadgeForever: { en: "Free forever", fr: "Gratuit pour toujours", uk: "Безкоштовно назавжди", pl: "Za darmo na zawsze" },
   freeF1: { en: "Up to 5 active clients", fr: "Jusqu'à 5 clients actifs", uk: "До 5 активних клієнтів", pl: "Do 5 aktywnych klientów" },
-  freeF2: { en: "Core SoloBizz functionality included", fr: "Fonctionnalités SoloBizz essentielles incluses", uk: "Базовий функціонал SoloBizz включено", pl: "Podstawowa funkcjonalność SoloBizz w zestawie" },
+  freeF2: { en: "Core Solo .Bizz functionality included", fr: "Fonctionnalités Solo .Bizz essentielles incluses", uk: "Базовий функціонал Solo .Bizz включено", pl: "Podstawowa funkcjonalność Solo .Bizz w zestawie" },
   freeF3: { en: "Calendar, clients, payments, reminders", fr: "Calendrier, clients, paiements, rappels", uk: "Календар, клієнти, оплати, нагадування", pl: "Kalendarz, klienci, płatności, przypomnienia" },
   freeF4: { en: "Basic income overview (full financial reports on paid plans)", fr: "Aperçu des revenus de base (rapports complets sur les offres payantes)", uk: "Базовий огляд доходу (повні фінансові звіти — у платних тарифах)", pl: "Podstawowy przegląd przychodów (pełne raporty w planach płatnych)" },
   freeF5: { en: "Forever free, no card required", fr: "Gratuit pour toujours, sans carte", uk: "Назавжди безкоштовно, без картки", pl: "Za darmo na zawsze, bez karty" },
@@ -400,10 +402,10 @@ const C = {
     pl: "Dane Twoich klientów — w pełni prywatne",
   },
   privacyLong: {
-    en: "Your client data stays private. SoloBizz does not read, analyze or use information about your clients. Client data is protected, and only the practice owner has access.",
-    fr: "Les données de vos clients restent privées. SoloBizz ne consulte, n'analyse ni n'utilise les informations de vos clients. Les données sont protégées et seul le propriétaire de la pratique y a accès.",
-    uk: "Ваші клієнтські дані залишаються приватними. SoloBizz не переглядає, не аналізує і не використовує інформацію про ваших клієнтів. Дані клієнтів захищені, а доступ до них має лише власник практики.",
-    pl: "Twoje dane klientów pozostają prywatne. SoloBizz nie przegląda, nie analizuje i nie wykorzystuje informacji o Twoich klientach. Dane są chronione, a dostęp ma tylko właściciel praktyki.",
+    en: "Your client data stays private. Solo .Bizz does not read, analyze or use information about your clients. Client data is protected, and only the practice owner has access.",
+    fr: "Les données de vos clients restent privées. Solo .Bizz ne consulte, n'analyse ni n'utilise les informations de vos clients. Les données sont protégées et seul le propriétaire de la pratique y a accès.",
+    uk: "Ваші клієнтські дані залишаються приватними. Solo .Bizz не переглядає, не аналізує і не використовує інформацію про ваших клієнтів. Дані клієнтів захищені, а доступ до них має лише власник практики.",
+    pl: "Twoje dane klientów pozostają prywatne. Solo .Bizz nie przegląda, nie analizuje i nie wykorzystuje informacji o Twoich klientach. Dane są chronione, a dostęp ma tylko właściciel praktyki.",
   },
   privacyShort: {
     en: "Your clients' data is protected. We don't see or use client information.",
@@ -418,10 +420,10 @@ const C = {
     pl: "Przystępny plan dla małej praktyki solo — klienci, sesje i płatności bez chaosu.",
   },
   soloIntro: {
-    en: "All SoloBizz features included.",
-    fr: "Toutes les fonctionnalités SoloBizz incluses.",
-    uk: "Усі функції SoloBizz включено.",
-    pl: "Wszystkie funkcje SoloBizz w komplecie.",
+    en: "All Solo .Bizz features included.",
+    fr: "Toutes les fonctionnalités Solo .Bizz incluses.",
+    uk: "Усі функції Solo .Bizz включено.",
+    pl: "Wszystkie funkcje Solo .Bizz w komplecie.",
   },
   soloF1: { en: "Up to 20 active clients", fr: "Jusqu'à 20 clients actifs", uk: "До 20 активних клієнтів", pl: "Do 20 aktywnych klientów" },
   soloF2: { en: "Everything in Free Starter", fr: "Tout ce qu'inclut Free Starter", uk: "Усе, що є у Free Starter", pl: "Wszystko z Free Starter" },
@@ -459,10 +461,10 @@ const C = {
     pl: "Zaawansowane zarządzanie praktyką — więcej aktywnych klientów, sesje grupowe, superwizja i pełna kontrola finansowa.",
   },
   proIntro: {
-    en: "All SoloBizz features included.",
-    fr: "Toutes les fonctionnalités SoloBizz incluses.",
-    uk: "Усі функції SoloBizz включені.",
-    pl: "Wszystkie funkcje SoloBizz w komplecie.",
+    en: "All Solo .Bizz features included.",
+    fr: "Toutes les fonctionnalités Solo .Bizz incluses.",
+    uk: "Усі функції Solo .Bizz включені.",
+    pl: "Wszystkie funkcje Solo .Bizz w komplecie.",
   },
   proF1: { en: "Unlimited active clients", fr: "Clients actifs illimités", uk: "Необмежена кількість клієнтів", pl: "Nieograniczona liczba klientów" },
   proF2: { en: "Everything in Solo Practice", fr: "Tout ce qu'inclut Solo Practice", uk: "Усе, що є у Solo Practice", pl: "Wszystko z Solo Practice" },
@@ -493,10 +495,10 @@ const C = {
     pl: "Wybierz plan na podstawie liczby aktywnych klientów — a nie brakujących funkcji.",
   },
   pricingFooter2: {
-    en: "SoloBizz gives every independent professional a complete practice management system from the very first session.",
-    fr: "SoloBizz offre à chaque professionnel indépendant un système complet de gestion de pratique dès la première séance.",
-    uk: "SoloBizz дає кожному незалежному спеціалісту повну систему управління практикою з першої сесії.",
-    pl: "SoloBizz daje każdemu niezależnemu specjaliście kompletny system zarządzania praktyką już od pierwszej sesji.",
+    en: "Solo .Bizz gives every independent professional a complete practice management system from the very first session.",
+    fr: "Solo .Bizz offre à chaque professionnel indépendant un système complet de gestion de pratique dès la première séance.",
+    uk: "Solo .Bizz дає кожному незалежному спеціалісту повну систему управління практикою з першої сесії.",
+    pl: "Solo .Bizz daje każdemu niezależnemu specjaliście kompletny system zarządzania praktyką już od pierwszej sesji.",
   },
 
   roiTilesTitle: {
@@ -529,16 +531,16 @@ const C = {
 
   // FAQ extra (time saving)
   faq7Q: {
-    en: "How much time can SoloBizz save?",
-    fr: "Combien de temps SoloBizz peut-il faire gagner ?",
-    uk: "Скільки часу SoloBizz може зекономити?",
-    pl: "Ile czasu może zaoszczędzić SoloBizz?",
+    en: "How much time can Solo .Bizz save?",
+    fr: "Combien de temps Solo .Bizz peut-il faire gagner ?",
+    uk: "Скільки часу Solo .Bizz може зекономити?",
+    pl: "Ile czasu może zaoszczędzić Solo .Bizz?",
   },
   faq7A: {
-    en: "If you keep clients, sessions, payments and debts manually, admin work can take several hours a week — especially with 20+ clients in your practice. SoloBizz brings these processes into one place: calendar, clients, payments, debts and a financial overview.",
-    fr: "Si vous gérez clients, séances, paiements et créances à la main, l'admin peut prendre plusieurs heures par semaine — surtout avec 20+ clients. SoloBizz regroupe ces processus au même endroit : calendrier, clients, paiements, créances et vue financière.",
-    uk: "Якщо вести клієнтів, сесії, оплати й борги вручну, адміністративна робота може забирати кілька годин на тиждень, особливо коли у практиці вже 20+ клієнтів. SoloBizz допомагає зібрати ці процеси в одному місці: календар, клієнти, оплати, борги й фінансовий огляд.",
-    pl: "Jeśli klientów, sesje, płatności i długi prowadzisz ręcznie, administracja może zajmować kilka godzin w tygodniu — zwłaszcza gdy masz 20+ klientów. SoloBizz łączy te procesy w jednym miejscu: kalendarz, klienci, płatności, długi i przegląd finansowy.",
+    en: "If you keep clients, sessions, payments and debts manually, admin work can take several hours a week — especially with 20+ clients in your practice. Solo .Bizz brings these processes into one place: calendar, clients, payments, debts and a financial overview.",
+    fr: "Si vous gérez clients, séances, paiements et créances à la main, l'admin peut prendre plusieurs heures par semaine — surtout avec 20+ clients. Solo .Bizz regroupe ces processus au même endroit : calendrier, clients, paiements, créances et vue financière.",
+    uk: "Якщо вести клієнтів, сесії, оплати й борги вручну, адміністративна робота може забирати кілька годин на тиждень, особливо коли у практиці вже 20+ клієнтів. Solo .Bizz допомагає зібрати ці процеси в одному місці: календар, клієнти, оплати, борги й фінансовий огляд.",
+    pl: "Jeśli klientów, sesje, płatności i długi prowadzisz ręcznie, administracja może zajmować kilka godzin w tygodniu — zwłaszcza gdy masz 20+ klientów. Solo .Bizz łączy te procesy w jednym miejscu: kalendarz, klienci, płatności, długi i przegląd finansowy.",
   },
 
   // Pricing value microcopy
@@ -559,19 +561,19 @@ const C = {
   // FAQ
   faqEyebrow: { en: "Questions before you start", fr: "Questions avant de commencer", uk: "Питання перед початком", pl: "Pytania przed startem" },
   faqTitle: { en: "Answers to the main questions", fr: "Réponses aux questions principales", uk: "Відповіді на головні питання", pl: "Odpowiedzi na główne pytania" },
-  faq1Q: { en: "Is it hard to start using SoloBizz?", fr: "Est-ce compliqué de démarrer avec SoloBizz ?", uk: "Чи складно почати користуватись SoloBizz?", pl: "Czy trudno zacząć korzystać z SoloBizz?" },
+  faq1Q: { en: "Is it hard to start using Solo .Bizz?", fr: "Est-ce compliqué de démarrer avec Solo .Bizz ?", uk: "Чи складно почати користуватись Solo .Bizz?", pl: "Czy trudno zacząć korzystać z Solo .Bizz?" },
   faq1A: {
-    en: "No. Sign up with the Free Starter plan and start using SoloBizz right away — no setup required.",
+    en: "No. Sign up with the Free Starter plan and start using Solo .Bizz right away — no setup required.",
     fr: "Non. Inscrivez-vous avec le plan Free Starter et commencez tout de suite — sans configuration.",
     uk: "Ні. Зареєструйтеся з планом Free Starter і почніть користуватись одразу — без складних налаштувань.",
     pl: "Nie. Zarejestruj się z planem Free Starter i zacznij od razu — bez konfiguracji.",
   },
   faq2Q: { en: "Will it work if I work alone?", fr: "Est-ce adapté si je travaille seul·e ?", uk: "Чи підійде система, якщо я працюю сама?", pl: "Czy nada się, jeśli pracuję sam(a)?" },
   faq2A: {
-    en: "Yes. SoloBizz is built exactly for solo practices where one person manages clients, sessions, payments and finances.",
-    fr: "Oui. SoloBizz est conçu pour les pratiques solo où une seule personne gère clients, séances, paiements et finances.",
-    uk: "Так. SoloBizz створений саме для приватних практик, де одна людина веде клієнтів, сесії, оплати й фінанси.",
-    pl: "Tak. SoloBizz powstał właśnie dla solowych praktyk, gdzie jedna osoba prowadzi klientów, sesje, płatności i finanse.",
+    en: "Yes. Solo .Bizz is built exactly for solo practices where one person manages clients, sessions, payments and finances.",
+    fr: "Oui. Solo .Bizz est conçu pour les pratiques solo où une seule personne gère clients, séances, paiements et finances.",
+    uk: "Так. Solo .Bizz створений саме для приватних практик, де одна людина веде клієнтів, сесії, оплати й фінанси.",
+    pl: "Tak. Solo .Bizz powstał właśnie dla solowych praktyk, gdzie jedna osoba prowadzi klientów, sesje, płatności i finanse.",
   },
   faq3Q: { en: "Can I run group sessions or supervisions?", fr: "Puis-je gérer des séances de groupe ou des supervisions ?", uk: "Чи можна вести групові сесії або супервізії?", pl: "Czy mogę prowadzić sesje grupowe lub superwizje?" },
   faq3A: {
@@ -587,7 +589,7 @@ const C = {
     uk: "Так. Система підходить для спеціалістів, які працюють з учнями, заняттями, оплатами та прогресом навчання.",
     pl: "Tak. System pasuje dla osób pracujących z uczniami, zajęciami, płatnościami i postępami nauki.",
   },
-  faq5Q: { en: "Is SoloBizz really free?", fr: "SoloBizz est-il vraiment gratuit ?", uk: "Чи справді SoloBizz безкоштовний?", pl: "Czy SoloBizz jest naprawdę darmowy?" },
+  faq5Q: { en: "Is Solo .Bizz really free?", fr: "Solo .Bizz est-il vraiment gratuit ?", uk: "Чи справді Solo .Bizz безкоштовний?", pl: "Czy Solo .Bizz jest naprawdę darmowy?" },
   faq5A: {
     en: "Yes. The Free Starter plan is permanently free for up to 5 active clients, with no time limit.",
     fr: "Oui. Le plan Free Starter est gratuit en permanence jusqu'à 5 clients actifs, sans limite de temps.",
@@ -613,18 +615,18 @@ const C = {
   finalTitle1: { en: "You can keep working in chaos.", fr: "Vous pouvez continuer dans le chaos.", uk: "Можна й далі працювати в хаосі.", pl: "Możesz dalej pracować w chaosie." },
   finalTitle2: { en: "Or take control today.", fr: "Ou prendre le contrôle aujourd'hui.", uk: "Або взяти контроль уже сьогодні.", pl: "Albo przejąć kontrolę już dziś." },
   finalDesc: {
-    en: "SoloBizz helps you see clients, bookings, payments, income and profit in one clear system.",
-    fr: "SoloBizz vous montre clients, RDV, paiements, revenus et bénéfice dans un système clair.",
-    uk: "SoloBizz допомагає бачити клієнтів, записи, оплати, дохід і прибуток в одній зрозумілій системі.",
-    pl: "SoloBizz pomaga widzieć klientów, zapisy, płatności, dochód i zysk w jednym czytelnym systemie.",
+    en: "Solo .Bizz helps you see clients, bookings, payments, income and profit in one clear system.",
+    fr: "Solo .Bizz vous montre clients, RDV, paiements, revenus et bénéfice dans un système clair.",
+    uk: "Solo .Bizz допомагає бачити клієнтів, записи, оплати, дохід і прибуток в одній зрозумілій системі.",
+    pl: "Solo .Bizz pomaga widzieć klientów, zapisy, płatności, dochód i zysk w jednym czytelnym systemie.",
   },
   finalCta: { en: "Try it now", fr: "Essayer maintenant", uk: "Спробувати зараз", pl: "Wypróbuj teraz" },
   doubtTitle: { en: "Still in doubt?", fr: "Encore des doutes ?", uk: "Залишились сумніви?", pl: "Masz wątpliwości?" },
   doubtText: {
-    en: "Book a short call and we'll show how SoloBizz can simplify your work and reveal where profit gets lost.",
-    fr: "Réservez un court échange : nous vous montrerons comment SoloBizz simplifie votre travail et révèle les pertes de bénéfice.",
-    uk: "Запишіться на коротку розмову, і ми покажемо, як SoloBizz може спростити вашу роботу та показати, де губиться прибуток.",
-    pl: "Zarezerwuj krótką rozmowę — pokażemy, jak SoloBizz uprości pracę i odsłoni, gdzie znika zysk.",
+    en: "Book a short call and we'll show how Solo .Bizz can simplify your work and reveal where profit gets lost.",
+    fr: "Réservez un court échange : nous vous montrerons comment Solo .Bizz simplifie votre travail et révèle les pertes de bénéfice.",
+    uk: "Запишіться на коротку розмову, і ми покажемо, як Solo .Bizz може спростити вашу роботу та показати, де губиться прибуток.",
+    pl: "Zarezerwuj krótką rozmowę — pokażemy, jak Solo .Bizz uprości pracę i odsłoni, gdzie znika zysk.",
   },
   doubtCta: { en: "Talk to us", fr: "Discuter", uk: "Поспілкуватися", pl: "Porozmawiaj" },
 } satisfies Record<string, Copy>;
@@ -673,7 +675,7 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   navFaq: "Вопросы",
   navLogin: "Войти",
   navTry: "Начать бесплатно",
-  navOpenApp: "Перейти в SoloBizz →",
+  navOpenApp: "Перейти в Solo .Bizz →",
   heroCtaPrimary: "Начать бесплатно",
   heroCtaPricing: "Посмотреть цены",
   heroCtaNote: "Без карты · Настройка за 5 минут",
@@ -683,15 +685,15 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   heroTitle: "Вся ваша частная практика. В одном месте.",
   heroTitlePrefix: "Вся ваша частная практика.",
   heroTitleAccent: "В одном месте.",
-  heroSub: "SoloBizz ведёт клиентов, календарь, записи, оплаты, счета и финансовые отчёты — автоматически. Вы тратите время на клиентов, а не на таблицы.",
+  heroSub: "Solo .Bizz ведёт клиентов, календарь, записи, оплаты, счета и финансовые отчёты — автоматически. Вы тратите время на клиентов, а не на таблицы.",
   heroCta: "Начать бесплатно — карта не нужна",
   heroSecondary: "Посмотреть цены",
   heroSubCta: "Free Starter: бесплатно навсегда, до 5 активных клиентов. Без банковской карты.",
   heroSocialProof: "Присоединяйтесь к 100+ психологам, психотерапевтам и супервизорам, которые уже работают в нашей системе.",
-  heroRoi: "При 20+ клиентах ручная админ-работа может занимать 4–8+ часов в неделю. SoloBizz помогает вернуть это время.",
+  heroRoi: "При 20+ клиентах ручная админ-работа может занимать 4–8+ часов в неделю. Solo .Bizz помогает вернуть это время.",
 
   // Stats
-  statsTherapists: "терапевтов уже используют SoloBizz",
+  statsTherapists: "терапевтов уже используют Solo .Bizz",
   statsTime: "админ-времени экономится каждую неделю",
   statsSetup: "среднее время настройки практики",
   statsTimeNum: "4–8 ч",
@@ -721,15 +723,15 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   pain4: "Вы можете терять клиентов, потому что не успеваете ответить вовремя.",
   pain5: "Сложно понять, какую стоимость сеанса установить, чтобы практика была прибыльной.",
   pain6: "Слишком много времени уходит на рутину, а целостной картины практики всё равно не видно.",
-  painBottom: "Это не проблема продуктивности. Это отсутствие системы, созданной для частной практики. SoloBizz — это такая система.",
-  painCta: "Посмотрите, как работает SoloBizz",
+  painBottom: "Это не проблема продуктивности. Это отсутствие системы, созданной для частной практики. Solo .Bizz — это такая система.",
+  painCta: "Посмотрите, как работает Solo .Bizz",
 
   // What Changes
   whatChangesEyebrow: "ЧТО МЕНЯЕТСЯ",
   whatChangesHeadline: "Тот же понедельник. Совсем другое начало дня.",
   whatChangesSub: "Посмотрите, как один инструмент заменяет утренний хаос ясностью и контролем.",
-  whatChangesWithoutTitle: "Понедельник без SoloBizz",
-  whatChangesWithTitle: "Понедельник с SoloBizz",
+  whatChangesWithoutTitle: "Понедельник без Solo .Bizz",
+  whatChangesWithTitle: "Понедельник с Solo .Bizz",
   whatChangesWithout1: "Открываете 5 разных приложений, чтобы вспомнить, кто сегодня на приёме.",
   whatChangesWithout2: "Проверяете оплаты вручную — и боитесь что-то упустить.",
   whatChangesWithout3: "Тратите 30+ минут на рассылку напоминаний клиентам.",
@@ -768,14 +770,14 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   feat8Title: "Заметки клиента",
   feat8Desc: "Структурированные заметки, привязанные к каждому клиентскому пути.",
   feat9Title: "Защита данных",
-  feat9Desc: "Данные клиентов полностью приватны. SoloBizz не имеет к ним доступа. Система соответствует требованиям GDPR.",
+  feat9Desc: "Данные клиентов полностью приватны. Solo .Bizz не имеет к ним доступа. Система соответствует требованиям GDPR.",
   feat10Title: "Расчёт стоимости сеанса",
   feat10Desc: "Поймите реальную стоимость одного сеанса и финансовое состояние практики.",
   feat11Title: "Учёт супервизий",
   feat11Desc: "Создавайте и ведите записи супервизий как часть вашей профессиональной работы.",
   feat12Title: "Полный путь клиента",
   feat12Desc: "От первого контакта до завершения терапии — в одной системе.",
-  featCta: "Попробовать SoloBizz бесплатно",
+  featCta: "Попробовать Solo .Bizz бесплатно",
   featCtaNote: "Все ключевые функции доступны с первого дня.",
 
   // Demo
@@ -783,10 +785,10 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   demoText: "Живой предпросмотр клиентов, сеансов, оплат и дохода — создан для частной практики.",
 
   // Comparison
-  cmpTitle: "Excel, блокноты и хаос — или SoloBizz",
+  cmpTitle: "Excel, блокноты и хаос — или Solo .Bizz",
   cmpSub: "Сравните ручной учёт с системой, которая автоматически показывает записи, оплаты, долги, доход и прибыль.",
   cmpManual: "Ручной учёт",
-  cmpSolo: "SoloBizz",
+  cmpSolo: "Solo .Bizz",
   cmpM1: "Записи разбросаны по разным местам",
   cmpM2: "Оплаты нужно проверять вручную",
   cmpM3: "Легко забыть о долгах",
@@ -809,7 +811,7 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   pricingTitle: "Выберите план, который подходит именно вам",
   pricingSub: "Все основные функции включены в каждый план. Единственная разница — количество активных клиентов. Никаких скрытых ограничений.",
   pricingAllFeaturesBadge: "Все функции доступны с первого дня — на любом плане",
-  pricingCompare: "По сравнению с аналогами: SimplePractice стоит €46–73/мес, TherapyNotes — €64/мес. SoloBizz предлагает полный набор инструментов для управления частной практикой за €12/мес — без страховых модулей и лишних функций, которые частному терапевту никогда не понадобятся.",
+  pricingCompare: "По сравнению с аналогами: SimplePractice стоит €46–73/мес, TherapyNotes — €64/мес. Solo .Bizz предлагает полный набор инструментов для управления частной практикой за €12/мес — без страховых модулей и лишних функций, которые частному терапевту никогда не понадобятся.",
 
   monthly: "Ежемесячно",
   quarterly: "Ежеквартально",
@@ -838,7 +840,7 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   freeDesc: "Для тех, кто только начинает или ведёт небольшую частную практику.",
   freeBadgeForever: "Бесплатно навсегда",
   freeF1: "До 5 активных клиентов",
-  freeF2: "Базовый функционал SoloBizz включён",
+  freeF2: "Базовый функционал Solo .Bizz включён",
   freeF3: "Календарь, клиенты, оплаты, напоминания",
   freeF4: "Базовый обзор дохода (полные финансовые отчёты — в платных тарифах)",
   freeF5: "Навсегда бесплатно, без карты",
@@ -848,10 +850,10 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   // Solo Practice
   soloName: "Solo Practice",
   privacyTitle: "Данные ваших клиентов — полностью приватны",
-  privacyLong: "Данные ваших клиентов остаются приватными. SoloBizz не просматривает, не анализирует и не использует информацию о ваших клиентах. Данные защищены, и доступ к ним есть только у владельца практики.",
+  privacyLong: "Данные ваших клиентов остаются приватными. Solo .Bizz не просматривает, не анализирует и не использует информацию о ваших клиентах. Данные защищены, и доступ к ним есть только у владельца практики.",
   privacyShort: "Данные ваших клиентов защищены. Мы не видим и не используем клиентскую информацию.",
   soloDesc: "Для небольшой практики — ведите клиентов, сеансы и оплаты без хаоса.",
-  soloIntro: "Все функции SoloBizz включены.",
+  soloIntro: "Все функции Solo .Bizz включены.",
   soloF1: "До 20 активных клиентов",
   soloF2: "Всё из Free Starter",
   soloF3: "Клиенты, оплаты, долги и напоминания",
@@ -868,7 +870,7 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   // Pro Practice
   proName: "Pro Practice",
   proDesc: "Для большой клиентской базы и приоритетной поддержки.",
-  proIntro: "Все функции SoloBizz включены.",
+  proIntro: "Все функции Solo .Bizz включены.",
   proF1: "Неограниченное число клиентов",
   proF2: "Всё из Solo Practice",
   proF3: "Приоритетная поддержка",
@@ -883,7 +885,7 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   proPill: "Неограниченное число клиентов",
 
   pricingFooter1: "Выбирайте план по количеству активных клиентов — а не по отсутствующим функциям.",
-  pricingFooter2: "SoloBizz даёт каждому независимому специалисту полноценную систему управления практикой с самой первой сессии.",
+  pricingFooter2: "Solo .Bizz даёт каждому независимому специалисту полноценную систему управления практикой с самой первой сессии.",
 
   // ROI tiles
   roiTilesTitle: "Сколько может стоить ручная админ-работа",
@@ -901,30 +903,30 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   // FAQ
   faqEyebrow: "Вопросы перед началом",
   faqTitle: "Ответы на главные вопросы",
-  faq1Q: "Сложно ли начать пользоваться SoloBizz?",
-  faq1A: "Нет. Зарегистрируйтесь на плане Free Starter и начните пользоваться SoloBizz сразу — без сложных настроек.",
+  faq1Q: "Сложно ли начать пользоваться Solo .Bizz?",
+  faq1A: "Нет. Зарегистрируйтесь на плане Free Starter и начните пользоваться Solo .Bizz сразу — без сложных настроек.",
   faq2Q: "Подойдёт ли система, если я работаю один?",
-  faq2A: "Да. SoloBizz создан именно для частных практик, где один человек ведёт клиентов, сеансы, оплаты и финансы.",
+  faq2A: "Да. Solo .Bizz создан именно для частных практик, где один человек ведёт клиентов, сеансы, оплаты и финансы.",
   faq3Q: "Можно ли вести групповые сеансы или супервизии?",
   faq3A: "Да. Система поддерживает индивидуальные и групповые сеансы, контроль посещаемости и оплат.",
   faq4Q: "Можно ли использовать систему для преподавания или репетиторства?",
   faq4A: "Да. Система подходит специалистам, которые работают с учениками, занятиями, оплатами и учебным прогрессом.",
-  faq5Q: "SoloBizz действительно бесплатный?",
+  faq5Q: "Solo .Bizz действительно бесплатный?",
   faq5A: "Да. План Free Starter бесплатен навсегда для до 5 активных клиентов, без ограничения по времени.",
   faq6Q: "Нужна ли банковская карта, чтобы начать?",
   faq6A: "Нет. Для плана Free Starter карта не требуется.",
-  faq7Q: "Сколько времени может сэкономить SoloBizz?",
-  faq7A: "Если вы ведёте клиентов, сеансы, оплаты и долги вручную, админ-работа может занимать несколько часов в неделю — особенно когда в практике уже 20+ клиентов. SoloBizz собирает эти процессы в одном месте: календарь, клиенты, оплаты, долги и финансовый обзор.",
+  faq7Q: "Сколько времени может сэкономить Solo .Bizz?",
+  faq7A: "Если вы ведёте клиентов, сеансы, оплаты и долги вручную, админ-работа может занимать несколько часов в неделю — особенно когда в практике уже 20+ клиентов. Solo .Bizz собирает эти процессы в одном месте: календарь, клиенты, оплаты, долги и финансовый обзор.",
   faq8Q: "Все ли планы включают календарь и запись клиентов?",
   faq8A: "Да — каждый план, включая Free Starter, содержит полный календарь, планирование сеансов и публичную ссылку для записи. Клиенты могут бронировать напрямую на всех планах. Единственная разница между планами — количество активных клиентов, которыми вы можете управлять одновременно, а не доступные функции.",
 
   // Final CTA
   finalTitle1: "Можно и дальше работать в хаосе.",
   finalTitle2: "Или взять контроль уже сегодня.",
-  finalDesc: "SoloBizz помогает видеть клиентов, записи, оплаты, доход и прибыль в одной понятной системе.",
+  finalDesc: "Solo .Bizz помогает видеть клиентов, записи, оплаты, доход и прибыль в одной понятной системе.",
   finalCta: "Попробовать сейчас",
   doubtTitle: "Остались сомнения?",
-  doubtText: "Запишитесь на короткий разговор, и мы покажем, как SoloBizz может упростить вашу работу и выявить, где теряется прибыль.",
+  doubtText: "Запишитесь на короткий разговор, и мы покажем, как Solo .Bizz может упростить вашу работу и выявить, где теряется прибыль.",
   doubtCta: "Связаться с нами",
 };
 
@@ -1013,6 +1015,10 @@ function PrimaryCta({
 
 function LandingNav() {
   const { lang, t, select } = useLandingLang();
+  const [aboutOpen, setAboutOpen] = useState(false);
+  // Scroll offset captured at click time so the overlay can restore it on close.
+  const aboutScrollY = useRef(0);
+
   const current = LANG_OPTIONS.find((o) => o.code === lang) ?? LANG_OPTIONS[1];
   const links = [
     { label: t("navAudience"), href: "#features" },
@@ -1023,10 +1029,22 @@ function LandingNav() {
 
   return (
     <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border/50">
+      <AboutOverlay open={aboutOpen} scrollY={aboutScrollY.current} onClose={() => setAboutOpen(false)} />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold text-foreground tracking-tight">
-          Solo<span className="text-primary">Bizz</span>
-        </Link>
+        <button
+          type="button"
+          onClick={() => {
+            aboutScrollY.current = window.scrollY;
+            setAboutOpen(true);
+          }}
+
+          aria-haspopup="dialog"
+          aria-expanded={aboutOpen}
+          className="text-xl font-bold text-foreground tracking-tight rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          <BrandName />
+        </button>
+
         <div className="hidden md:flex items-center gap-8">
           {links.map((l) => (
             <a key={l.href} href={l.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -1449,9 +1467,9 @@ function ContactCallSection() {
           </h3>
           <p className="text-base text-muted-foreground mb-3">
             {lang === "uk"
-              ? "Запишіться на коротку розмову, і ми покажемо, як SoloBizz може спростити вашу роботу, упорядкувати записи, оплати та допомогти краще бачити фінансову картину вашої практики."
+              ? "Запишіться на коротку розмову, і ми покажемо, як Solo .Bizz може спростити вашу роботу, упорядкувати записи, оплати та допомогти краще бачити фінансову картину вашої практики."
               : lang === "ru"
-              ? "Запишитесь на короткий разговор — мы покажем, как SoloBizz может упростить вашу работу, упорядочить записи, оплаты и помочь лучше видеть финансовую картину вашей практики."
+              ? "Запишитесь на короткий разговор — мы покажем, как Solo .Bizz может упростить вашу работу, упорядочить записи, оплаты и помочь лучше видеть финансовую картину вашей практики."
               : t("doubtText")}
           </p>
           <p className="text-sm text-muted-foreground mb-6">
@@ -1517,11 +1535,11 @@ function AboutContactsSection() {
   const T = {
     aboutTitle: pick({ en: "About us", uk: "Про нас", fr: "À propos", pl: "O nas", ru: "О нас" }),
     aboutP1: pick({
-      en: "SoloBizz is a system for psychologists, psychotherapists, supervisors, teachers and solo professionals who want to manage clients, sessions, payments and see real financial results — without chaos, Excel or manual tracking.",
-      uk: "SoloBizz — це система для психологів, психотерапевтів, супервізорів, викладачів і приватних спеціалістів, які хочуть вести клієнтів, записи, оплати та бачити фінансовий результат без хаосу, Excel і ручного обліку.",
-      fr: "SoloBizz est un système pour psychologues, psychothérapeutes, superviseurs, enseignants et professionnels en solo qui veulent gérer clients, séances, paiements et voir leurs résultats financiers — sans chaos, Excel ou suivi manuel.",
-      pl: "SoloBizz to system dla psychologów, psychoterapeutów, superwizorów, nauczycieli i solowych specjalistów, którzy chcą zarządzać klientami, sesjami i płatnościami oraz widzieć realny wynik finansowy — bez chaosu, Excela i ręcznej ewidencji.",
-      ru: "SoloBizz — это система для психологов, психотерапевтов, супервизоров, преподавателей и частных специалистов, которые хотят вести клиентов, записи, оплаты и видеть финансовый результат без хаоса, Excel и ручного учёта.",
+      en: "Solo .Bizz is a system for psychologists, psychotherapists, supervisors, teachers and solo professionals who want to manage clients, sessions, payments and see real financial results — without chaos, Excel or manual tracking.",
+      uk: "Solo .Bizz — це система для психологів, психотерапевтів, супервізорів, викладачів і приватних спеціалістів, які хочуть вести клієнтів, записи, оплати та бачити фінансовий результат без хаосу, Excel і ручного обліку.",
+      fr: "Solo .Bizz est un système pour psychologues, psychothérapeutes, superviseurs, enseignants et professionnels en solo qui veulent gérer clients, séances, paiements et voir leurs résultats financiers — sans chaos, Excel ou suivi manuel.",
+      pl: "Solo .Bizz to system dla psychologów, psychoterapeutów, superwizorów, nauczycieli i solowych specjalistów, którzy chcą zarządzać klientami, sesjami i płatnościami oraz widzieć realny wynik finansowy — bez chaosu, Excela i ręcznej ewidencji.",
+      ru: "Solo .Bizz — это система для психологов, психотерапевтов, супервизоров, преподавателей и частных специалистов, которые хотят вести клиентов, записи, оплаты и видеть финансовый результат без хаоса, Excel и ручного учёта.",
     }),
     aboutP2: pick({
       en: "We're building a tool that turns a private practice into a more systematic, clear and manageable business.",
@@ -1645,7 +1663,7 @@ function LandingFooter() {
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="text-xl font-bold text-foreground mb-2">SoloBizz</div>
+            <div className="text-xl font-bold text-foreground mb-2"><BrandName /></div>
             <p className="text-sm text-muted-foreground leading-relaxed mb-3">{T.tagline}</p>
             <p className="text-sm text-muted-foreground flex items-start gap-2">
               <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
@@ -1683,7 +1701,7 @@ function LandingFooter() {
 
         <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} SoloBizz. {T.rights}
+            © {new Date().getFullYear()} Solo .Bizz. {T.rights}
           </p>
           <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             <Link to="/terms" className="text-xs text-muted-foreground hover:text-foreground">{T.terms}</Link>
@@ -1709,41 +1727,41 @@ function LandingFooter() {
 
 const SEO_META: Record<AppLanguage, { title: string; description: string; ogTitle: string; ogDesc: string; ogLocale: string; htmlLang: string }> = {
   en: {
-    title: "SoloBizz — CRM for psychologists, coaches & solo practices",
-    description: "SoloBizz helps psychologists, therapists, coaches and tutors manage clients, sessions, payments and income — all in one calm, simple workspace.",
-    ogTitle: "SoloBizz — Run your solo practice without the chaos",
+    title: "Solo .Bizz — CRM for psychologists, coaches & solo practices",
+    description: "Solo .Bizz helps psychologists, therapists, coaches and tutors manage clients, sessions, payments and income — all in one calm, simple workspace.",
+    ogTitle: "Solo .Bizz — Run your solo practice without the chaos",
     ogDesc: "Clients, sessions, payments and income in one place. Built for psychologists, therapists, coaches and tutors.",
     ogLocale: "en_US",
     htmlLang: "en",
   },
   uk: {
-    title: "SoloBizz — CRM для психологів, коучів і приватної практики",
-    description: "SoloBizz допомагає психологам, терапевтам, коучам і репетиторам вести клієнтів, сесії, оплати та дохід — в одному простому робочому просторі.",
-    ogTitle: "SoloBizz — Керуйте приватною практикою без хаосу",
+    title: "Solo .Bizz — CRM для психологів, коучів і приватної практики",
+    description: "Solo .Bizz допомагає психологам, терапевтам, коучам і репетиторам вести клієнтів, сесії, оплати та дохід — в одному простому робочому просторі.",
+    ogTitle: "Solo .Bizz — Керуйте приватною практикою без хаосу",
     ogDesc: "Клієнти, сесії, оплати та дохід в одному місці. Створено для психологів, терапевтів, коучів і репетиторів.",
     ogLocale: "uk_UA",
     htmlLang: "uk",
   },
   fr: {
-    title: "SoloBizz — CRM pour psychologues, coachs et pratiques solo",
-    description: "SoloBizz aide les psychologues, thérapeutes, coachs et tuteurs à gérer clients, séances, paiements et revenus — dans un espace simple et apaisé.",
-    ogTitle: "SoloBizz — Gérez votre pratique solo sans le chaos",
+    title: "Solo .Bizz — CRM pour psychologues, coachs et pratiques solo",
+    description: "Solo .Bizz aide les psychologues, thérapeutes, coachs et tuteurs à gérer clients, séances, paiements et revenus — dans un espace simple et apaisé.",
+    ogTitle: "Solo .Bizz — Gérez votre pratique solo sans le chaos",
     ogDesc: "Clients, séances, paiements et revenus en un seul endroit. Conçu pour psychologues, thérapeutes, coachs et tuteurs.",
     ogLocale: "fr_FR",
     htmlLang: "fr",
   },
   pl: {
-    title: "SoloBizz — CRM dla psychologów, coachów i praktyki solo",
-    description: "SoloBizz pomaga psychologom, terapeutom, coachom i korepetytorom zarządzać klientami, sesjami, płatnościami i dochodem — w jednym prostym miejscu.",
-    ogTitle: "SoloBizz — Prowadź praktykę solo bez chaosu",
+    title: "Solo .Bizz — CRM dla psychologów, coachów i praktyki solo",
+    description: "Solo .Bizz pomaga psychologom, terapeutom, coachom i korepetytorom zarządzać klientami, sesjami, płatnościami i dochodem — w jednym prostym miejscu.",
+    ogTitle: "Solo .Bizz — Prowadź praktykę solo bez chaosu",
     ogDesc: "Klienci, sesje, płatności i dochód w jednym miejscu. Stworzone dla psychologów, terapeutów, coachów i korepetytorów.",
     ogLocale: "pl_PL",
     htmlLang: "pl",
   },
   ru: {
-    title: "SoloBizz — CRM для психологов, коучей и частной практики",
-    description: "SoloBizz помогает психологам, терапевтам, коучам и репетиторам вести клиентов, сеансы, оплаты и доход — в одном простом рабочем пространстве.",
-    ogTitle: "SoloBizz — Управляйте частной практикой без хаоса",
+    title: "Solo .Bizz — CRM для психологов, коучей и частной практики",
+    description: "Solo .Bizz помогает психологам, терапевтам, коучам и репетиторам вести клиентов, сеансы, оплаты и доход — в одном простом рабочем пространстве.",
+    ogTitle: "Solo .Bizz — Управляйте частной практикой без хаоса",
     ogDesc: "Клиенты, сеансы, оплаты и доход в одном месте. Создано для психологов, терапевтов, коучей и репетиторов.",
     ogLocale: "ru_RU",
     htmlLang: "ru",
@@ -1788,11 +1806,11 @@ export default function LandingPage() {
           "@context": "https://schema.org",
           "@type": "FAQPage",
           mainEntity: [
-            { "@type": "Question", name: "Is it hard to start using SoloBizz?", acceptedAnswer: { "@type": "Answer", text: "No. You can sign up and add your first client in under a minute. No setup, no training required." } },
-            { "@type": "Question", name: "Will it work if I work alone?", acceptedAnswer: { "@type": "Answer", text: "Yes. SoloBizz is built specifically for solo practitioners — psychologists, therapists, coaches and tutors." } },
+            { "@type": "Question", name: "Is it hard to start using Solo .Bizz?", acceptedAnswer: { "@type": "Answer", text: "No. You can sign up and add your first client in under a minute. No setup, no training required." } },
+            { "@type": "Question", name: "Will it work if I work alone?", acceptedAnswer: { "@type": "Answer", text: "Yes. Solo .Bizz is built specifically for solo practitioners — psychologists, therapists, coaches and tutors." } },
             { "@type": "Question", name: "Can I run group sessions or supervisions?", acceptedAnswer: { "@type": "Answer", text: "Yes. You can manage individual sessions, group sessions and supervisions in one place." } },
-            { "@type": "Question", name: "Can I use it for teaching or tutoring?", acceptedAnswer: { "@type": "Answer", text: "Yes. Tutors and teachers use SoloBizz to track lessons, payments and student progress." } },
-            { "@type": "Question", name: "Is there free access?", acceptedAnswer: { "@type": "Answer", text: "Yes. SoloBizz has a permanent Free Starter plan for up to 5 active clients — no credit card required." } },
+            { "@type": "Question", name: "Can I use it for teaching or tutoring?", acceptedAnswer: { "@type": "Answer", text: "Yes. Tutors and teachers use Solo .Bizz to track lessons, payments and student progress." } },
+            { "@type": "Question", name: "Is there free access?", acceptedAnswer: { "@type": "Answer", text: "Yes. Solo .Bizz has a permanent Free Starter plan for up to 5 active clients — no credit card required." } },
             { "@type": "Question", name: "Do I need a credit card to start?", acceptedAnswer: { "@type": "Answer", text: "No credit card is needed for the Free Starter plan." } },
           ],
         })}</script>

@@ -8,8 +8,8 @@ export default function CookiePolicyPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <SeoHead
         path="/cookie-policy"
-        title="Cookie Policy — SoloBizz"
-        description="How SoloBizz uses essential cookies and analytics for authentication, security and basic service functionality. No advertising or tracking sale."
+        title="Cookie Policy — Solo .Bizz"
+        description="How Solo .Bizz uses essential cookies and analytics for authentication, security and basic service functionality. No advertising or tracking sale."
       />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8">
@@ -25,8 +25,8 @@ export default function CookiePolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-foreground">2. How SoloBizz Uses Cookies</h2>
-            <p className="text-muted-foreground leading-relaxed">SoloBizz uses essential cookies and similar technologies for authentication, security, session management, and basic service functionality.</p>
+            <h2 className="text-xl font-semibold text-foreground">2. How Solo .Bizz Uses Cookies</h2>
+            <p className="text-muted-foreground leading-relaxed">Solo .Bizz uses essential cookies and similar technologies for authentication, security, session management, and basic service functionality.</p>
           </section>
 
           <section>

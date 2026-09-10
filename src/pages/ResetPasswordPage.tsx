@@ -1,3 +1,4 @@
+import { BrandName } from "@/components/BrandName";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -104,15 +105,15 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen flex flex-col bg-background">
       <SeoHead
         path="/reset-password"
-        title="Reset your SoloBizz password"
-        description="Set a new password for your SoloBizz account."
+        title="Reset your Solo .Bizz password"
+        description="Set a new password for your Solo .Bizz account."
         noindex
       />
       <div className="flex flex-1 items-center justify-center p-6">
         <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold text-foreground">
-            Solo<span className="text-primary">Bizz</span> — {t("auth.pageTitleReset")}
+            <BrandName /> — {t("auth.pageTitleReset")}
           </h1>
         </div>
 

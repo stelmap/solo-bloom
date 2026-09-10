@@ -19,9 +19,9 @@ interface MfaFactor {
   status: string;
 }
 
-const ISSUER = "SoloBizz";
+const ISSUER = "Solo .Bizz";
 
-/** Force the otpauth URI to use the SoloBizz issuer + the user's email as the
+/** Force the otpauth URI to use the Solo .Bizz issuer + the user's email as the
  *  account label, regardless of what Supabase returned. Keeps the secret. */
 function buildOtpAuthUri(rawUri: string, email: string | null): string {
   try {

@@ -225,7 +225,7 @@ export default function AdminReviewsPage() {
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold sm:text-3xl">Відгуки</h1>
-            <p className="text-sm text-muted-foreground">Модерація відгуків користувачів SoloBizz.</p>
+            <p className="text-sm text-muted-foreground">Модерація відгуків користувачів Solo .Bizz.</p>
           </div>
           <Button variant="outline" onClick={() => void load()} disabled={busy} className="gap-2">
             <RefreshCw className={`h-4 w-4 ${busy ? "animate-spin" : ""}`} /> Оновити
@@ -383,7 +383,7 @@ export default function AdminReviewsPage() {
                 </dl>
 
                 <div className="space-y-2">
-                  <Label htmlFor="admin-reply">Відповідь SoloBizz</Label>
+                  <Label htmlFor="admin-reply">Відповідь Solo .Bizz</Label>
                   <Textarea id="admin-reply" rows={3} value={reply} onChange={(e) => setReply(e.target.value)} />
                   <Button size="sm" variant="outline" onClick={() => void saveReply()} disabled={acting}>
                     Зберегти відповідь

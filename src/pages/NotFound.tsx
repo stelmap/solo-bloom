@@ -35,8 +35,8 @@ const NotFound = () => {
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background via-background to-muted/40 px-4 py-12">
       <SeoHead
-        title="Page not found — SoloBizz"
-        description="That page doesn't exist. Head back to SoloBizz and we'll get you on track."
+        title="Page not found — Solo .Bizz"
+        description="That page doesn't exist. Head back to Solo .Bizz and we'll get you on track."
         path="/404"
         noindex
       />
@@ -71,7 +71,7 @@ const NotFound = () => {
               Looks like you're on the old address
             </p>
             <p className="text-sm text-foreground mb-3">
-              SoloBizz lives at{" "}
+              Solo .Bizz lives at{" "}
               <span className="font-mono font-medium">{CANONICAL_HOST}</span>. Continue
               there to find what you were looking for.
             </p>

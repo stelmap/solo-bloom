@@ -1,3 +1,4 @@
+import { BrandName } from "@/components/BrandName";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -103,14 +104,14 @@ export default function ConfirmSessionPage() {
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 flex items-center justify-center p-4">
       <SeoHead
         path="/confirm-session"
-        title="Confirm your session — SoloBizz"
-        description="Confirm your upcoming session booked through SoloBizz."
+        title="Confirm your session — Solo .Bizz"
+        description="Confirm your upcoming session booked through Solo .Bizz."
         noindex
       />
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-foreground">
-            Solo<span className="text-primary">.Biz</span>
+            <BrandName />
           </h1>
         </div>
 

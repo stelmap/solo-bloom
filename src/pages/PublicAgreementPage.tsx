@@ -474,7 +474,7 @@ export default function PublicAgreementPage() {
       <Shell>
         <div className="space-y-6">
           <div className="flex items-center gap-2 text-xs text-muted-foreground justify-center">
-            <ShieldCheck className="h-3.5 w-3.5 text-primary" /> SoloBizz
+            <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Solo .Bizz
           </div>
           <div className="text-center space-y-3">
             <div className="mx-auto h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">

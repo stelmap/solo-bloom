@@ -207,7 +207,7 @@ export function SubscriptionSection() {
 
   // ============ ACTIVE SUBSCRIPTION VIEW ============
   if (subscription.subscribed) {
-    const planLabel = resolved.planName ?? "SoloBizz";
+    const planLabel = resolved.planName ?? "Solo .Bizz";
     const billingLabel = resolved.billingPeriod
       ? t(`sub.${resolved.billingPeriod}`)
       : t("sub.awaitingPaymentData");

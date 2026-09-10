@@ -1,3 +1,4 @@
+import { BrandName } from "@/components/BrandName";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
@@ -337,19 +338,19 @@ export default function AuthPage() {
     <div className="min-h-screen flex relative">
       <SeoHead
         path="/auth"
-        title="Sign in or create your SoloBizz account"
-        description="Sign in to your SoloBizz workspace or create a free account to manage clients, sessions, payments and income for your solo practice."
+        title="Sign in or create your Solo .Bizz account"
+        description="Sign in to your Solo .Bizz workspace or create a free account to manage clients, sessions, payments and income for your solo practice."
       />
       <Link to="/" className="absolute top-4 left-4 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sidebar-background/80 hover:bg-sidebar-background text-sm font-medium text-sidebar-foreground hover:text-sidebar-primary-foreground transition-colors">
         <ArrowLeft className="h-4 w-4" />
         Main page
       </Link>
 
-      <h1 className="sr-only">SoloBizz — {t("auth.pageTitle")}</h1>
+      <h1 className="sr-only">Solo .Bizz — {t("auth.pageTitle")}</h1>
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 relative overflow-hidden" style={{ backgroundColor: "#071A2F" }}>
         <div className="absolute inset-0 bg-gradient-to-br from-[#071A2F] via-[#071A2F] to-[#040F1F]" />
         <div className="relative z-10 max-w-md space-y-6 text-center">
-          <div className="text-4xl font-bold text-white tracking-tight" aria-hidden="true">Solo<span className="text-primary">Bizz</span> — {t("auth.pageTitle")}</div>
+          <div className="text-4xl font-bold text-white tracking-tight" aria-hidden="true"><BrandName /> — {t("auth.pageTitle")}</div>
           <p className="text-white/90 text-lg leading-relaxed">{t("auth.heroText")}</p>
         </div>
       </div>
@@ -358,7 +359,7 @@ export default function AuthPage() {
         <div className="flex flex-1 items-center justify-center p-6">
           <div className="w-full max-w-sm space-y-6">
             <div className="text-center space-y-2 lg:hidden">
-              <div className="text-2xl font-bold text-foreground" aria-hidden="true">Solo<span className="text-primary">Bizz</span> — {t("auth.pageTitle")}</div>
+              <div className="text-2xl font-bold text-foreground" aria-hidden="true"><BrandName /> — {t("auth.pageTitle")}</div>
             </div>
             {sent ? (
               mode === "forgot" ? (

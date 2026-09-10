@@ -37,7 +37,7 @@ const PAIRS: Array<[landingKey: string, i18nKey: string]> = [
   // Plan descriptions
   ["soloDesc", "plans.soloDesc"],
   ["proDesc", "plans.proDesc"],
-  // "All SoloBizz features included." intro
+  // "All Solo .Bizz features included." intro
   ["soloIntro", "plans.allIncludedIntro"],
   ["proIntro", "plans.allIncludedIntro"],
   // Free Starter bullets reused on /plans
