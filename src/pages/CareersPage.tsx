@@ -1,3 +1,4 @@
+import { BrandName } from "@/components/BrandName";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Briefcase, ArrowLeft, Mail } from "lucide-react";
