@@ -147,11 +147,11 @@ export const SUPPORT_UA_COPY = {
     ru: "Ваша практика остаётся с вами",
   },
   bannerDescription: {
-    en: "We understand how important it is to maintain continuity of care and access to essential practice information. Even if paper records are lost or damaged, your key client, session, payment and scheduling information can remain accessible online in SoloBizz.",
-    uk: "Ми знаємо, наскільки важливо зараз зберігати безперервність роботи та доступ до необхідної інформації. Навіть якщо паперові записи буде втрачено або пошкоджено, основні дані про клієнтів, сесії, оплату та розклад залишатимуться доступними онлайн у SoloBizz.",
-    pl: "Wiemy, jak ważne jest zachowanie ciągłości pracy i dostępu do niezbędnych informacji. Nawet jeśli papierowe zapiski zostaną utracone lub zniszczone, kluczowe dane o klientach, sesjach, płatnościach i grafiku pozostaną dostępne online w SoloBizz.",
-    fr: "Nous savons combien il est important de maintenir la continuité du suivi et l'accès aux informations essentielles. Même si les dossiers papier sont perdus ou endommagés, vos données clés sur les clients, les séances, les paiements et l'agenda restent accessibles en ligne dans SoloBizz.",
-    ru: "Мы понимаем, насколько важно сохранять непрерывность работы и доступ к необходимой информации. Даже если бумажные записи будут утрачены или повреждены, основные данные о клиентах, сессиях, оплатах и расписании останутся доступными онлайн в SoloBizz.",
+    en: "We understand how important it is to maintain continuity of care and access to essential practice information. Even if paper records are lost or damaged, your key client, session, payment and scheduling information can remain accessible online in Solo .Bizz.",
+    uk: "Ми знаємо, наскільки важливо зараз зберігати безперервність роботи та доступ до необхідної інформації. Навіть якщо паперові записи буде втрачено або пошкоджено, основні дані про клієнтів, сесії, оплату та розклад залишатимуться доступними онлайн у Solo .Bizz.",
+    pl: "Wiemy, jak ważne jest zachowanie ciągłości pracy i dostępu do niezbędnych informacji. Nawet jeśli papierowe zapiski zostaną utracone lub zniszczone, kluczowe dane o klientach, sesjach, płatnościach i grafiku pozostaną dostępne online w Solo .Bizz.",
+    fr: "Nous savons combien il est important de maintenir la continuité du suivi et l'accès aux informations essentielles. Même si les dossiers papier sont perdus ou endommagés, vos données clés sur les clients, les séances, les paiements et l'agenda restent accessibles en ligne dans Solo .Bizz.",
+    ru: "Мы понимаем, насколько важно сохранять непрерывность работы и доступ к необходимой информации. Даже если бумажные записи будут утрачены или повреждены, основные данные о клиентах, сессиях, оплатах и расписании останутся доступными онлайн в Solo .Bizz.",
   },
   bannerDiscount: {
     en: "Psychologists and psychotherapists connected with Ukraine can receive 50% off Solo Practice and Pro Practice.",

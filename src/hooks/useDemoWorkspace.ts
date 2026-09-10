@@ -7,7 +7,7 @@ import { translations, type Language } from "@/i18n/translations";
 /**
  * Free Starter Mode
  * -----------------
- * Unpaid users get full access to SoloBiz with a soft cap of 5 active clients.
+ * Unpaid users get full access to Solo .Bizz with a soft cap of 5 active clients.
  * The legacy "demo mode" (read-only seeded workspace) has been retired:
  *   - `useDemoMode().isDemoMode` is now always `false` so the old `!isDemoMode &&`
  *     UI gates render their controls again.

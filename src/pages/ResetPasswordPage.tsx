@@ -104,8 +104,8 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen flex flex-col bg-background">
       <SeoHead
         path="/reset-password"
-        title="Reset your SoloBizz password"
-        description="Set a new password for your SoloBizz account."
+        title="Reset your Solo .Bizz password"
+        description="Set a new password for your Solo .Bizz account."
         noindex
       />
       <div className="flex flex-1 items-center justify-center p-6">

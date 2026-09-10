@@ -22,8 +22,8 @@ export default function ServerUpdatePage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background via-background to-muted/40 px-4 py-12">
       <SeoHead
-        title="SoloBizz is moving — continue at www.solo-bizz.com"
-        description="This SoloBizz address is being updated. The app is live at www.solo-bizz.com — you'll be redirected automatically."
+        title="Solo .Bizz is moving — continue at www.solo-bizz.com"
+        description="This Solo .Bizz address is being updated. The app is live at www.solo-bizz.com — you'll be redirected automatically."
         path="/server-update"
         noindex
       />
@@ -32,7 +32,7 @@ export default function ServerUpdatePage() {
         <link rel="canonical" href="https://www.solo-bizz.com/" />
         <meta property="og:url" content="https://www.solo-bizz.com/" />
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="SoloBizz" />
+        <meta property="og:site_name" content="Solo .Bizz" />
         <meta name="twitter:card" content="summary" />
       </Helmet>
       <div className="w-full max-w-md text-center space-y-8">
@@ -42,7 +42,7 @@ export default function ServerUpdatePage() {
 
         <div className="space-y-3">
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
-            We're updating SoloBizz
+            We're updating Solo .Bizz
           </h1>
           <p className="text-muted-foreground leading-relaxed">
             This address is being refreshed. The app is live and ready for you at our

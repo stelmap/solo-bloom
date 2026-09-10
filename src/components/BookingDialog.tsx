@@ -21,7 +21,7 @@ const COPY: Record<Lang, {
 }> = {
   uk: {
     title: "Поспілкуватися",
-    desc: "Залиште заявку — ми зв'яжемося з вами та покажемо, як SoloBizz може спростити вашу роботу.",
+    desc: "Залиште заявку — ми зв'яжемося з вами та покажемо, як Solo .Bizz може спростити вашу роботу.",
     name: "Ім'я", email: "Email", phone: "Телефон (необов'язково)",
     message: "Що вас цікавить? (необов'язково)",
     submit: "Надіслати заявку", sending: "Надсилаємо…",
@@ -31,7 +31,7 @@ const COPY: Record<Lang, {
   },
   en: {
     title: "Talk to us",
-    desc: "Leave a request — we'll get in touch and show how SoloBizz can simplify your work.",
+    desc: "Leave a request — we'll get in touch and show how Solo .Bizz can simplify your work.",
     name: "Name", email: "Email", phone: "Phone (optional)",
     message: "What are you interested in? (optional)",
     submit: "Send request", sending: "Sending…",
@@ -41,7 +41,7 @@ const COPY: Record<Lang, {
   },
   fr: {
     title: "Discuter",
-    desc: "Laissez une demande — nous reviendrons vers vous et vous montrerons comment SoloBizz peut simplifier votre travail.",
+    desc: "Laissez une demande — nous reviendrons vers vous et vous montrerons comment Solo .Bizz peut simplifier votre travail.",
     name: "Nom", email: "Email", phone: "Téléphone (optionnel)",
     message: "Qu'est-ce qui vous intéresse ? (optionnel)",
     submit: "Envoyer la demande", sending: "Envoi…",
@@ -51,7 +51,7 @@ const COPY: Record<Lang, {
   },
   pl: {
     title: "Porozmawiaj",
-    desc: "Zostaw zgłoszenie — odezwiemy się i pokażemy, jak SoloBizz może uprościć Twoją pracę.",
+    desc: "Zostaw zgłoszenie — odezwiemy się i pokażemy, jak Solo .Bizz może uprościć Twoją pracę.",
     name: "Imię", email: "Email", phone: "Telefon (opcjonalnie)",
     message: "Co Cię interesuje? (opcjonalnie)",
     submit: "Wyślij zgłoszenie", sending: "Wysyłanie…",
@@ -61,7 +61,7 @@ const COPY: Record<Lang, {
   },
   ru: {
     title: "Связаться с нами",
-    desc: "Оставьте заявку — мы свяжемся с вами и покажем, как SoloBizz упростит вашу работу.",
+    desc: "Оставьте заявку — мы свяжемся с вами и покажем, как Solo .Bizz упростит вашу работу.",
     name: "Имя", email: "Email", phone: "Телефон (необязательно)",
     message: "Что вас интересует? (необязательно)",
     submit: "Отправить заявку", sending: "Отправляем…",

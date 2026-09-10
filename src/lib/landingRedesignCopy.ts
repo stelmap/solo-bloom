@@ -78,11 +78,11 @@ export const LANDING_COPY = {
     ru: "ОДНА СИСТЕМА ДЛЯ ВСЕЙ ПРАКТИКИ",
   },
   tourTitle: {
-    en: "See how SoloBizz works for you",
-    uk: "Подивіться, як SoloBizz працює для вас",
-    pl: "Zobacz, jak SoloBizz pracuje dla Ciebie",
-    fr: "Découvrez comment SoloBizz travaille pour vous",
-    ru: "Посмотрите, как SoloBizz работает для вас",
+    en: "See how Solo .Bizz works for you",
+    uk: "Подивіться, як Solo .Bizz працює для вас",
+    pl: "Zobacz, jak Solo .Bizz pracuje dla Ciebie",
+    fr: "Découvrez comment Solo .Bizz travaille pour vous",
+    ru: "Посмотрите, как Solo .Bizz работает для вас",
   },
   tourText: {
     en: "Pick a scenario and see the real product screen.",
@@ -172,10 +172,10 @@ export const LANDING_COPY = {
     fr: "Rappels automatiques et suivi des paiements",
     ru: "Автоматические напоминания и контроль оплат",
   },
-  altCalendar: { en: "SoloBizz calendar", uk: "Календар SoloBizz", pl: "Kalendarz SoloBizz", fr: "Agenda SoloBizz", ru: "Календарь SoloBizz" },
-  altClient: { en: "SoloBizz client card", uk: "Картка клієнта SoloBizz", pl: "Karta klienta SoloBizz", fr: "Fiche client SoloBizz", ru: "Карточка клиента SoloBizz" },
-  altFinance: { en: "SoloBizz financial analytics", uk: "Фінансова аналітика SoloBizz", pl: "Analityka finansowa SoloBizz", fr: "Analytique financière SoloBizz", ru: "Финансовая аналитика SoloBizz" },
-  altDashboard: { en: "SoloBizz today dashboard", uk: "Панель «Сьогодні» SoloBizz", pl: "Pulpit „Dziś” SoloBizz", fr: "Tableau de bord SoloBizz", ru: "Панель «Сегодня» SoloBizz" },
+  altCalendar: { en: "Solo .Bizz calendar", uk: "Календар Solo .Bizz", pl: "Kalendarz Solo .Bizz", fr: "Agenda Solo .Bizz", ru: "Календарь Solo .Bizz" },
+  altClient: { en: "Solo .Bizz client card", uk: "Картка клієнта Solo .Bizz", pl: "Karta klienta Solo .Bizz", fr: "Fiche client Solo .Bizz", ru: "Карточка клиента Solo .Bizz" },
+  altFinance: { en: "Solo .Bizz financial analytics", uk: "Фінансова аналітика Solo .Bizz", pl: "Analityka finansowa Solo .Bizz", fr: "Analytique financière Solo .Bizz", ru: "Финансовая аналитика Solo .Bizz" },
+  altDashboard: { en: "Solo .Bizz today dashboard", uk: "Панель «Сьогодні» Solo .Bizz", pl: "Pulpit „Dziś” Solo .Bizz", fr: "Tableau de bord Solo .Bizz", ru: "Панель «Сегодня» Solo .Bizz" },
 
   // Hero carousel (six slides)
   heroTabOverview: { en: "Overview", uk: "Огляд", pl: "Przegląd", fr: "Aperçu", ru: "Обзор" },
@@ -186,11 +186,11 @@ export const LANDING_COPY = {
   heroTabBooking: { en: "Online booking", uk: "Онлайн-запис", pl: "Zapisy online", fr: "Réservation en ligne", ru: "Онлайн-запись" },
 
   heroOverviewLabel: {
-    en: "SoloBizz for private practice",
-    uk: "SoloBizz для приватної практики",
-    pl: "SoloBizz dla prywatnej praktyki",
-    fr: "SoloBizz pour la pratique privée",
-    ru: "SoloBizz для частной практики",
+    en: "Solo .Bizz for private practice",
+    uk: "Solo .Bizz для приватної практики",
+    pl: "Solo .Bizz dla prywatnej praktyki",
+    fr: "Solo .Bizz pour la pratique privée",
+    ru: "Solo .Bizz для частной практики",
   },
   heroOverviewTitle1: {
     en: "Less admin work.",
@@ -207,11 +207,11 @@ export const LANDING_COPY = {
     ru: "Больше времени для клиентов.",
   },
   heroOverviewBody: {
-    en: "Calendar, online booking, clients, payments and finances — all in sync. SoloBizz automates the routine so you can focus on what really matters.",
-    uk: "Календар, онлайн-запис, клієнти, оплати та фінанси — усе синхронізовано. SoloBizz автоматизує рутину, щоб ви могли зосередитися на тому, що справді важливо.",
-    pl: "Kalendarz, zapisy online, klienci, płatności i finanse — wszystko zsynchronizowane. SoloBizz automatyzuje rutynę, byś mógł skupić się na tym, co ważne.",
-    fr: "Agenda, réservation en ligne, clients, paiements et finances — tout est synchronisé. SoloBizz automatise la routine pour que vous vous concentriez sur l'essentiel.",
-    ru: "Календарь, онлайн-запись, клиенты, оплаты и финансы — всё синхронизировано. SoloBizz автоматизирует рутину, чтобы вы могли сосредоточиться на главном.",
+    en: "Calendar, online booking, clients, payments and finances — all in sync. Solo .Bizz automates the routine so you can focus on what really matters.",
+    uk: "Календар, онлайн-запис, клієнти, оплати та фінанси — усе синхронізовано. Solo .Bizz автоматизує рутину, щоб ви могли зосередитися на тому, що справді важливо.",
+    pl: "Kalendarz, zapisy online, klienci, płatności i finanse — wszystko zsynchronizowane. Solo .Bizz automatyzuje rutynę, byś mógł skupić się na tym, co ważne.",
+    fr: "Agenda, réservation en ligne, clients, paiements et finances — tout est synchronisé. Solo .Bizz automatise la routine pour que vous vous concentriez sur l'essentiel.",
+    ru: "Календарь, онлайн-запись, клиенты, оплаты и финансы — всё синхронизировано. Solo .Bizz автоматизирует рутину, чтобы вы могли сосредоточиться на главном.",
   },
   heroOverviewCaption: {
     en: "Your private practice — in one system",
@@ -294,9 +294,9 @@ export const LANDING_COPY = {
 
   heroPrev: { en: "Previous slide", uk: "Попередній слайд", pl: "Poprzedni slajd", fr: "Diapositive précédente", ru: "Предыдущий слайд" },
   heroNext: { en: "Next slide", uk: "Наступний слайд", pl: "Następny slajd", fr: "Diapositive suivante", ru: "Следующий слайд" },
-  heroCarouselLabel: { en: "SoloBizz product tour", uk: "Тур продуктом SoloBizz", pl: "Prezentacja produktu SoloBizz", fr: "Visite du produit SoloBizz", ru: "Тур по продукту SoloBizz" },
-  altBooking: { en: "SoloBizz online booking page", uk: "Сторінка онлайн-запису SoloBizz", pl: "Strona zapisów online SoloBizz", fr: "Page de réservation en ligne SoloBizz", ru: "Страница онлайн-записи SoloBizz" },
-  altOverviewComposition: { en: "SoloBizz product overview", uk: "Огляд продукту SoloBizz", pl: "Przegląd produktu SoloBizz", fr: "Aperçu du produit SoloBizz", ru: "Обзор продукта SoloBizz" },
+  heroCarouselLabel: { en: "Solo .Bizz product tour", uk: "Тур продуктом Solo .Bizz", pl: "Prezentacja produktu Solo .Bizz", fr: "Visite du produit Solo .Bizz", ru: "Тур по продукту Solo .Bizz" },
+  altBooking: { en: "Solo .Bizz online booking page", uk: "Сторінка онлайн-запису Solo .Bizz", pl: "Strona zapisów online Solo .Bizz", fr: "Page de réservation en ligne Solo .Bizz", ru: "Страница онлайн-записи Solo .Bizz" },
+  altOverviewComposition: { en: "Solo .Bizz product overview", uk: "Огляд продукту Solo .Bizz", pl: "Przegląd produktu Solo .Bizz", fr: "Aperçu du produit Solo .Bizz", ru: "Обзор продукта Solo .Bizz" },
 } satisfies Record<string, Localized>;
 
 export type LandingCopyKey = keyof typeof LANDING_COPY;

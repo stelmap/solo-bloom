@@ -512,11 +512,11 @@ export default function AdminUsersPage() {
                 )}
               </div>
               <p className="text-destructive">
-                This will permanently delete this SoloBizz account and all data owned by this user,
+                This will permanently delete this Solo .Bizz account and all data owned by this user,
                 including clients, sessions, documents, financial records and uploaded files.
               </p>
               <p className="text-muted-foreground">
-                Data belonging to other SoloBizz users will not be affected. This action cannot be undone.
+                Data belonging to other Solo .Bizz users will not be affected. This action cannot be undone.
               </p>
               <div className="space-y-1">
                 <p>Type <span className="font-medium">{dialogUser.email}</span> to confirm.</p>

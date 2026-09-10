@@ -96,11 +96,11 @@ const FAQ: { q: L; a: L }[] = [
       ru: "Что делать, если нужной функции ещё нет?",
     },
     a: {
-      en: "Write to us and tell us what's missing. We collect user suggestions and take them into account when planning the development of SoloBizz.",
-      uk: "Напишіть нам і розкажіть, якої функції вам бракує. Ми збираємо пропозиції користувачів і враховуємо їх під час планування розвитку SoloBizz.",
-      pl: "Napisz do nas i powiedz, czego brakuje. Zbieramy sugestie użytkowników i uwzględniamy je w planach rozwoju SoloBizz.",
-      fr: "Écrivez-nous pour nous dire ce qui manque. Nous recueillons les suggestions et en tenons compte dans la feuille de route de SoloBizz.",
-      ru: "Напишите нам и расскажите, какой функции вам не хватает. Мы собираем предложения пользователей и учитываем их при планировании развития SoloBizz.",
+      en: "Write to us and tell us what's missing. We collect user suggestions and take them into account when planning the development of Solo .Bizz.",
+      uk: "Напишіть нам і розкажіть, якої функції вам бракує. Ми збираємо пропозиції користувачів і враховуємо їх під час планування розвитку Solo .Bizz.",
+      pl: "Napisz do nas i powiedz, czego brakuje. Zbieramy sugestie użytkowników i uwzględniamy je w planach rozwoju Solo .Bizz.",
+      fr: "Écrivez-nous pour nous dire ce qui manque. Nous recueillons les suggestions et en tenons compte dans la feuille de route de Solo .Bizz.",
+      ru: "Напишите нам и расскажите, какой функции вам не хватает. Мы собираем предложения пользователей и учитываем их при планировании развития Solo .Bizz.",
     },
   },
   {
@@ -128,11 +128,11 @@ const FAQ: { q: L; a: L }[] = [
       ru: "Где получить консультацию по настройке системы?",
     },
     a: {
-      en: "Contact the SoloBizz team through the contact form. We'll help you set up the system or arrange a demo of its features.",
-      uk: "Зв'яжіться з командою SoloBizz через форму зворотного зв'язку. Ми допоможемо налаштувати систему або організуємо демонстрацію її можливостей.",
-      pl: "Skontaktuj się z zespołem SoloBizz przez formularz kontaktowy. Pomożemy skonfigurować system lub pokażemy demo.",
-      fr: "Contactez l'équipe SoloBizz via le formulaire de contact. Nous vous aiderons à configurer le système ou organiserons une démo.",
-      ru: "Свяжитесь с командой SoloBizz через форму обратной связи. Мы поможем настроить систему или организуем демонстрацию её возможностей.",
+      en: "Contact the Solo .Bizz team through the contact form. We'll help you set up the system or arrange a demo of its features.",
+      uk: "Зв'яжіться з командою Solo .Bizz через форму зворотного зв'язку. Ми допоможемо налаштувати систему або організуємо демонстрацію її можливостей.",
+      pl: "Skontaktuj się z zespołem Solo .Bizz przez formularz kontaktowy. Pomożemy skonfigurować system lub pokażemy demo.",
+      fr: "Contactez l'équipe Solo .Bizz via le formulaire de contact. Nous vous aiderons à configurer le système ou organiserons une démo.",
+      ru: "Свяжитесь с командой Solo .Bizz через форму обратной связи. Мы поможем настроить систему или организуем демонстрацию её возможностей.",
     },
   },
 ];
