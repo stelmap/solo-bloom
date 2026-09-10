@@ -224,18 +224,7 @@ export function TrustSection({
           </ul>
         </header>
 
-        <div className="relative mt-10 grid gap-5 lg:grid-cols-[minmax(260px,320px)_1fr] lg:items-stretch">
-          {/* Trust summary card */}
-          <div className="flex flex-col justify-center rounded-2xl bg-secondary p-7 text-secondary-foreground shadow-sm sm:p-8">
-            <div className="text-5xl font-bold leading-none">300+</div>
-            <p className="mt-3 text-base font-medium leading-snug opacity-95">{c.summaryLead}</p>
-            <div className="mt-5 flex items-center gap-3">
-              <Stars className="text-primary" />
-              <span className="text-lg font-semibold">4.9/5</span>
-            </div>
-            <p className="mt-3 text-sm opacity-80">{c.summaryFoot}</p>
-          </div>
-
+        <div className="relative mt-10">
           {/* Reviews carousel */}
           <div className="relative min-w-0">
             <div
