@@ -1014,6 +1014,7 @@ function PrimaryCta({
 
 function LandingNav() {
   const { lang, t, select } = useLandingLang();
+  const [aboutOpen, setAboutOpen] = useState(false);
   const current = LANG_OPTIONS.find((o) => o.code === lang) ?? LANG_OPTIONS[1];
   const links = [
     { label: t("navAudience"), href: "#features" },
@@ -1024,10 +1025,18 @@ function LandingNav() {
 
   return (
     <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border/50">
+      <AboutOverlay open={aboutOpen} onClose={() => setAboutOpen(false)} />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold text-foreground tracking-tight">
+        <button
+          type="button"
+          onClick={() => setAboutOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={aboutOpen}
+          className="text-xl font-bold text-foreground tracking-tight rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
           <BrandName />
-        </Link>
+        </button>
+
         <div className="hidden md:flex items-center gap-8">
           {links.map((l) => (
             <a key={l.href} href={l.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
