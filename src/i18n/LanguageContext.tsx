@@ -12,13 +12,26 @@ function normalizeLang(value: string | null | undefined): AppLanguage | null {
   return null;
 }
 
+/**
+ * Language is chosen from the visitor's browser preferences only — never from
+ * IP or region. The first supported entry in navigator.languages wins;
+ * English is the fallback. Russian is therefore only used when the browser
+ * itself asks for Russian (or the visitor picks it explicitly).
+ */
 function getBrowserLang(): AppLanguage {
   try {
-    const browserLang = navigator.language.toLowerCase();
-    if (browserLang.startsWith("uk")) return "uk";
-    if (browserLang.startsWith("ru")) return "ru";
-    if (browserLang.startsWith("fr")) return "fr";
-    if (browserLang.startsWith("pl")) return "pl";
+    const candidates = [
+      ...(Array.isArray(navigator.languages) ? navigator.languages : []),
+      navigator.language,
+    ].filter(Boolean);
+    for (const raw of candidates) {
+      const tag = String(raw).toLowerCase();
+      if (tag.startsWith("uk")) return "uk";
+      if (tag.startsWith("pl")) return "pl";
+      if (tag.startsWith("fr")) return "fr";
+      if (tag.startsWith("ru")) return "ru";
+      if (tag.startsWith("en")) return "en";
+    }
   } catch {}
   return "en";
 }
@@ -164,6 +177,13 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       updateProfile.mutate({ language: preLoginLang });
     }
   }, [profile, profileLang, preLoginLang, updateProfile]);
+
+  // Keep <html lang> in sync so assistive tech announces the right language.
+  useEffect(() => {
+    try {
+      document.documentElement.lang = lang;
+    } catch {}
+  }, [lang]);
 
   const t = useCallback(
     (key: TranslationKey, params?: Record<string, string | number>): string =>

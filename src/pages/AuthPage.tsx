@@ -337,8 +337,8 @@ export default function AuthPage() {
     <div className="min-h-screen flex relative">
       <SeoHead
         path="/auth"
-        title="Sign in or create your Solo Bizz account"
-        description="Sign in to your Solo Bizz workspace or create a free account to manage clients, sessions, payments and income for your solo practice."
+        title="Sign in or create your SoloBizz account"
+        description="Sign in to your SoloBizz workspace or create a free account to manage clients, sessions, payments and income for your solo practice."
       />
       <Link to="/" className="absolute top-4 left-4 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sidebar-background/80 hover:bg-sidebar-background text-sm font-medium text-sidebar-foreground hover:text-sidebar-primary-foreground transition-colors">
         <ArrowLeft className="h-4 w-4" />

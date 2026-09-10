@@ -460,8 +460,8 @@ export default function TermsPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <SeoHead
         path="/terms"
-        title="Terms & Conditions — Solo Bizz"
-        description="Terms governing use of Solo Bizz, including the Free Starter plan, Solo Practice and Pro Practice subscriptions, billing, refunds and acceptable use."
+        title="Terms & Conditions — SoloBizz"
+        description="Terms governing use of SoloBizz, including the Free Starter plan, Solo Practice and Pro Practice subscriptions, billing, refunds and acceptable use."
       />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8">

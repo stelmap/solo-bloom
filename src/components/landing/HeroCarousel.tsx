@@ -43,7 +43,7 @@ export const HERO_SLIDES: HeroSlide[] = [
   { id: "booking", tab: "heroTabBooking", label: "heroTabBooking", title: "heroBookingTitle", body: "heroBookingBody", alt: "altBooking", image: bookingAsset, contain: true },
 ];
 
-/** Right-hand product carousel of the hero: tabs, screenshot, arrows, dots. */
+/** Right-hand product carousel of the hero: tabs, screenshot, arrows, counter. */
 export function HeroCarousel({
   lang,
   index,
@@ -54,29 +54,61 @@ export function HeroCarousel({
   onSelect: (next: number) => void;
 }) {
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const [animKey, setAnimKey] = useState(0);
-  const active = HERO_SLIDES[index];
+  // Index actually painted in the frame — only advances once its image is ready.
+  const [shown, setShown] = useState(index);
+  const [ready, setReady] = useState<Record<string, boolean>>({ [HERO_SLIDES[0].image]: false });
+  const last = HERO_SLIDES.length - 1;
 
-  useEffect(() => setAnimKey((k) => k + 1), [index]);
+  // Preload every screenshot right after the first render.
+  useEffect(() => {
+    let cancelled = false;
+    const markReady = (src: string) =>
+      !cancelled && setReady((prev) => (prev[src] ? prev : { ...prev, [src]: true }));
+    HERO_SLIDES.forEach((s) => {
+      const img = new Image();
+      img.decoding = "async";
+      img.onload = () => markReady(s.image);
+      img.onerror = () => markReady(s.image);
+      img.src = s.image;
+      if (img.complete) markReady(s.image);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Swap the visible screenshot only when the requested one has finished loading.
+  useEffect(() => {
+    if (index === shown) return;
+    if (ready[HERO_SLIDES[index].image]) setShown(index);
+  }, [index, shown, ready]);
+
+  const active = HERO_SLIDES[shown];
+  const loading = index !== shown;
 
   const select = useCallback(
     (next: number, focus = false) => {
-      const total = HERO_SLIDES.length;
-      const i = (next + total) % total;
-      onSelect(i);
-      track("hero_product_tab_click", landingEventProps({ locale: lang, source_page: "/", tab: HERO_SLIDES[i].id }));
-      if (focus) tabRefs.current[i]?.focus();
+      if (next < 0 || next > last) return;
+      onSelect(next);
+      track("hero_product_tab_click", landingEventProps({ locale: lang, source_page: "/", tab: HERO_SLIDES[next].id }));
+      if (focus) tabRefs.current[next]?.focus();
     },
-    [lang, onSelect],
+    [lang, onSelect, last],
   );
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowRight") {
       e.preventDefault();
-      select(index + 1, true);
+      select(Math.min(index + 1, last), true);
     } else if (e.key === "ArrowLeft") {
       e.preventDefault();
-      select(index - 1, true);
+      select(Math.max(index - 1, 0), true);
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      select(0, true);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      select(last, true);
     }
   };
 
@@ -112,8 +144,10 @@ export function HeroCarousel({
       <div className="relative w-full min-w-0">
         <div
           role="tabpanel"
-          id={`hero-panel-${active.id}`}
-          aria-labelledby={`hero-tab-${active.id}`}
+          id={`hero-panel-${HERO_SLIDES[index].id}`}
+          aria-labelledby={`hero-tab-${HERO_SLIDES[index].id}`}
+          aria-busy={loading}
+          aria-live="polite"
           className="relative w-full overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
         >
           <div className="flex h-6 items-center gap-1.5 border-b border-border pl-3">
@@ -123,12 +157,17 @@ export function HeroCarousel({
           </div>
           <div className="relative aspect-video w-full min-w-0 overflow-hidden bg-muted/40">
             <img
-              key={animKey}
               src={active.image}
               alt={lt(lang, active.alt)}
-              loading={index === 0 ? "eager" : "lazy"}
+              loading="eager"
+              decoding="async"
               className="hero-slide-media block h-full w-full object-contain"
             />
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-card/70 backdrop-blur-[1px] motion-safe:animate-pulse">
+                <span className="h-2/3 w-4/5 rounded-xl bg-muted" />
+              </div>
+            )}
           </div>
         </div>
 
@@ -137,7 +176,8 @@ export function HeroCarousel({
           type="button"
           aria-label={lt(lang, "heroPrev")}
           onClick={() => select(index - 1)}
-          className="absolute left-1 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-md transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-11 sm:w-11 sm:left-2"
+          disabled={index === 0}
+          className="absolute left-1 top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-md transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40 sm:left-2"
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
@@ -145,24 +185,20 @@ export function HeroCarousel({
           type="button"
           aria-label={lt(lang, "heroNext")}
           onClick={() => select(index + 1)}
-          className="absolute right-0 top-1/2 z-10 inline-flex h-10 w-10 translate-x-1/3 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-md transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-11 sm:w-11 sm:translate-x-1/2"
+          disabled={index === last}
+          className="absolute right-1 top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-md transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40 sm:right-2"
         >
           <ChevronRight className="h-5 w-5" />
         </button>
       </div>
 
+      {/* Non-interactive progress indicator + counter */}
       <div className="mt-4 flex items-center justify-center gap-4">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" aria-hidden="true">
           {HERO_SLIDES.map((s, i) => (
-            <button
+            <span
               key={s.id}
-              type="button"
-              aria-label={lt(lang, s.tab)}
-              aria-current={i === index}
-              onClick={() => select(i)}
-              className={`h-1.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                i === index ? "w-6 bg-primary" : "w-2.5 bg-border hover:bg-muted-foreground/40"
-              }`}
+              className={`h-1.5 rounded-full transition-all ${i === index ? "w-6 bg-primary" : "w-2.5 bg-border"}`}
             />
           ))}
         </div>

@@ -5,7 +5,7 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = "Solo.Bizz"
+const SITE_NAME = "SoloBizz"
 
 // Normalize ALL-CAPS or lower-case names into Title Case so the header
 // doesn't shout (e.g. "OLGA STELMAKH" -> "Olga Stelmakh").
@@ -334,7 +334,7 @@ export const template = {
 } satisfies TemplateEntry
 
 // ----- styles -----
-// Cyrillic-safe font stack — matches the Solo.Bizz product UI and falls back to
+// Cyrillic-safe font stack — matches the SoloBizz product UI and falls back to
 // system fonts that fully cover Cyrillic glyphs so the reminder doesn't render
 // in a mismatched fallback typeface in Gmail / Outlook.
 const FONT_STACK = "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"

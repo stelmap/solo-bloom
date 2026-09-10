@@ -100,6 +100,9 @@ export function readStoredPromoCode(): string | null {
   }
 }
 
+/** Fired whenever the stored promo code changes, so live UI re-evaluates eligibility. */
+export const SUPPORT_UA_PROMO_EVENT = "solobizz.support_ua_promo_change";
+
 export function storePromoCode(code: string | null): void {
   if (typeof window === "undefined") return;
   try {
@@ -107,6 +110,13 @@ export function storePromoCode(code: string | null): void {
     else window.localStorage.removeItem(SUPPORT_UA_STORAGE_KEY);
   } catch {
     /* storage unavailable — ignore */
+  }
+  try {
+    window.dispatchEvent(
+      new CustomEvent(SUPPORT_UA_PROMO_EVENT, { detail: code ? normalizePromoCode(code) : null }),
+    );
+  } catch {
+    /* ignore */
   }
 }
 
@@ -186,6 +196,20 @@ export const SUPPORT_UA_COPY = {
     ru: "Терапевт работает онлайн, данные практики надёжно хранятся в облаке",
   },
   badgeShort: { en: "−50%", uk: "−50%", pl: "−50%", fr: "−50 %", ru: "−50%" },
+  cardCampaignLabel: {
+    en: "Support Ukraine Psychotherapy",
+    uk: "Support Ukraine Psychotherapy",
+    pl: "Support Ukraine Psychotherapy",
+    fr: "Support Ukraine Psychotherapy",
+    ru: "Support Ukraine Psychotherapy",
+  },
+  cardCampaignNote: {
+    en: "50% support discount for Ukrainian psychotherapists.",
+    uk: "Знижка 50% на підтримку українських психотерапевтів.",
+    pl: "50% zniżki wspierającej ukraińskich psychoterapeutów.",
+    fr: "Remise de soutien de 50 % pour les psychothérapeutes ukrainiens.",
+    ru: "Скидка 50% в поддержку украинских психотерапевтов.",
+  },
   badgeCampaign: {
     en: "Support Ukraine −50%",
     uk: "Підтримка України −50%",

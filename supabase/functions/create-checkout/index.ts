@@ -157,7 +157,7 @@ serve(async (req) => {
     if (customerId) {
       log("Found existing customer", { customerId });
     } else {
-      // Create the customer up-front so we can attach Solo.Bizz user metadata
+      // Create the customer up-front so we can attach SoloBizz user metadata
       // (used by webhook to link the Stripe customer to the internal user_id).
       try {
         const created = await stripe.customers.create({

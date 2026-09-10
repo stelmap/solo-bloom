@@ -4,6 +4,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { track } from "@/lib/analytics";
 import {
   SUPPORT_UA_PROMO_CODE,
+  SUPPORT_UA_PROMO_EVENT,
   campaignText,
   normalizePromoCode,
   readStoredPromoCode,
@@ -27,6 +28,17 @@ export function useSupportUkraine(langOverride?: string) {
   const { lang: appLang } = useLanguage();
   const lang = langOverride ?? appLang;
   const [promoCode, setPromoCode] = useState<string | null>(() => readStoredPromoCode());
+
+  // Keep eligibility live when the promo code is stored elsewhere (promo bar, banner, another tab).
+  useEffect(() => {
+    const sync = () => setPromoCode(readStoredPromoCode());
+    window.addEventListener(SUPPORT_UA_PROMO_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(SUPPORT_UA_PROMO_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
 
   const country = (profile as any)?.business_country as string | undefined;
   const practiceLanguage = ((profile as any)?.language as string | undefined) ?? lang;
