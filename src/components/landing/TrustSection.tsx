@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, ChevronLeft, ChevronRight, Loader2, ShieldCheck } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Loader2, MessageSquare, ShieldCheck } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { ReviewDialog } from "@/components/landing/ReviewDialog";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { AppLanguage } from "@/i18n/translations";
@@ -27,6 +29,29 @@ type Copy = {
   ctaText: string;
   ctaButton: string;
   ctaNote: string;
+  reviewCtaTitle: string;
+  reviewCtaText: string;
+  reviewCtaButton: string;
+  replyLabel: string;
+};
+
+type DbReview = {
+  id: string;
+  display_name: string;
+  profession: string;
+  plan: string | null;
+  rating: number;
+  body: string;
+  verification_status: string;
+  published_at: string | null;
+  created_at: string;
+  admin_reply: string | null;
+};
+
+const PLAN_LABEL: Record<string, string> = {
+  free_starter: "Free Starter",
+  solo_practice: "Solo Practice",
+  pro_practice: "Pro Practice",
 };
 
 const IMAGES = [psychologistImg, teacherImg, consultantImg, beautyImg];
@@ -71,6 +96,10 @@ const COPY: Record<string, Copy> = {
     ctaText: "Почніть безкоштовно за 5 хвилин",
     ctaButton: "Почати безкоштовно",
     ctaNote: "Банківська картка не потрібна",
+    reviewCtaTitle: "Вже користуєтесь SoloBizz?",
+    reviewCtaText: "Поділіться своїм досвідом — ваш відгук допоможе іншим фахівцям.",
+    reviewCtaButton: "Залишити відгук",
+    replyLabel: "Відповідь SoloBizz",
   },
   en: {
     eyebrow: "FROM PEOPLE ALREADY ON SOLOBIZZ",
@@ -95,6 +124,10 @@ const COPY: Record<string, Copy> = {
     ctaText: "Start free in 5 minutes",
     ctaButton: "Start for free",
     ctaNote: "No credit card required",
+    reviewCtaTitle: "Already using SoloBizz?",
+    reviewCtaText: "Share your experience — your review will help other professionals.",
+    reviewCtaButton: "Leave a review",
+    replyLabel: "SoloBizz reply",
   },
   pl: {
     eyebrow: "OD OSÓB, KTÓRE JUŻ SĄ Z SOLOBIZZ",
@@ -119,6 +152,10 @@ const COPY: Record<string, Copy> = {
     ctaText: "Zacznij za darmo w 5 minut",
     ctaButton: "Zacznij za darmo",
     ctaNote: "Karta płatnicza nie jest potrzebna",
+    reviewCtaTitle: "Korzystasz już z SoloBizz?",
+    reviewCtaText: "Podziel się doświadczeniem — Twoja opinia pomoże innym specjalistom.",
+    reviewCtaButton: "Zostaw opinię",
+    replyLabel: "Odpowiedź SoloBizz",
   },
   fr: {
     eyebrow: "DE CEUX QUI SONT DÉJÀ SUR SOLOBIZZ",
@@ -143,6 +180,10 @@ const COPY: Record<string, Copy> = {
     ctaText: "Commencez gratuitement en 5 minutes",
     ctaButton: "Commencer gratuitement",
     ctaNote: "Aucune carte bancaire requise",
+    reviewCtaTitle: "Vous utilisez déjà SoloBizz ?",
+    reviewCtaText: "Partagez votre expérience — votre avis aidera d’autres professionnels.",
+    reviewCtaButton: "Laisser un avis",
+    replyLabel: "Réponse SoloBizz",
   },
   ru: {
     eyebrow: "ОТ ЛЮДЕЙ, КОТОРЫЕ УЖЕ С SOLOBIZZ",
@@ -167,13 +208,19 @@ const COPY: Record<string, Copy> = {
     ctaText: "Начните бесплатно за 5 минут",
     ctaButton: "Начать бесплатно",
     ctaNote: "Банковская карта не нужна",
+    reviewCtaTitle: "Уже пользуетесь SoloBizz?",
+    reviewCtaText: "Поделитесь своим опытом — ваш отзыв поможет другим специалистам.",
+    reviewCtaButton: "Оставить отзыв",
+    replyLabel: "Ответ SoloBizz",
   },
 };
 
-function Stars({ className = "" }: { className?: string }) {
+function Stars({ className = "", value = 5 }: { className?: string; value?: number }) {
+  const filled = Math.max(0, Math.min(5, Math.round(value)));
   return (
-    <span className={`tracking-widest ${className}`} aria-label="5/5">
-      ★★★★★
+    <span className={`tracking-widest ${className}`} aria-label={`${filled}/5`}>
+      {"★".repeat(filled)}
+      <span className="text-muted-foreground/30">{"★".repeat(5 - filled)}</span>
     </span>
   );
 }
@@ -191,6 +238,26 @@ export function TrustSection({
   const [atEnd, setAtEnd] = useState(false);
   const [page, setPage] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [reviews, setReviews] = useState<DbReview[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    supabase
+      .from("reviews")
+      .select("id, display_name, profession, plan, rating, body, verification_status, published_at, created_at, admin_reply")
+      .eq("moderation_status", "approved")
+      .order("published_at", { ascending: false })
+      .limit(24)
+      .then(({ data }) => {
+        if (!cancelled && data) setReviews(data as DbReview[]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const slideCount = c.cards.length + reviews.length;
 
   const syncEdges = useCallback(() => {
     const el = scrollerRef.current;
@@ -243,22 +310,6 @@ export function TrustSection({
           </ul>
         </header>
 
-        {/* Social-proof summary */}
-        <div className="mx-auto mt-10 flex max-w-3xl flex-col items-center gap-6 rounded-2xl border border-border bg-card px-6 py-6 text-center sm:flex-row sm:justify-center sm:gap-12">
-          <div>
-            <div className="text-4xl font-bold text-foreground sm:text-5xl">300+</div>
-            <p className="mt-1 max-w-xs text-sm text-muted-foreground">{c.summaryLead}</p>
-          </div>
-          <div className="hidden h-14 w-px bg-border sm:block" aria-hidden="true" />
-          <div>
-            <div className="flex items-center justify-center gap-2">
-              <Stars className="text-primary" />
-              <span className="text-2xl font-bold text-foreground">{c.ratingValue}</span>
-            </div>
-            <p className="mt-1 max-w-xs text-sm text-muted-foreground">{c.ratingSource}</p>
-          </div>
-        </div>
-
         <div className="relative mt-10">
           {/* Reviews carousel */}
           <div className="relative min-w-0">
@@ -299,11 +350,53 @@ export function TrustSection({
                   </div>
                 </article>
               ))}
+
+              {reviews.map((r) => (
+                <article
+                  key={r.id}
+                  data-slide
+                  className="flex w-full shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm sm:w-[calc((100%-20px)/2)] lg:w-[calc((100%-40px)/3)]"
+                >
+                  <div className="flex flex-1 flex-col p-6">
+                    <Stars className="mb-3 text-primary" value={r.rating} />
+                    <p className="flex-1 whitespace-pre-line text-sm leading-relaxed text-foreground/90">{r.body}</p>
+                    {r.admin_reply ? (
+                      <div className="mt-4 rounded-xl bg-muted/60 p-4">
+                        <div className="text-xs font-semibold text-foreground">{c.replyLabel}</div>
+                        <p className="mt-1 whitespace-pre-line text-xs leading-relaxed text-muted-foreground">{r.admin_reply}</p>
+                      </div>
+                    ) : null}
+                    <div className="mt-5 border-t border-border pt-4">
+                      <div className="text-sm font-semibold text-foreground">{r.display_name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {r.profession}
+                        {r.plan && PLAN_LABEL[r.plan] ? ` · ${PLAN_LABEL[r.plan]}` : ""}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(r.published_at ?? r.created_at).toLocaleDateString(
+                          lang === "uk" ? "uk-UA" : (lang as string),
+                          { year: "numeric", month: "long" },
+                        )}
+                      </div>
+                      {r.verification_status === "verified_user" ? (
+                        <span
+                          className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700"
+                          title={c.verifiedHint}
+                        >
+                          <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                          {c.verified}
+                          <span className="sr-only"> — {c.verifiedHint}</span>
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                </article>
+              ))}
             </div>
 
             <div className="mt-4 flex items-center justify-center gap-4 lg:justify-end">
               <div className="flex items-center gap-1.5 lg:hidden" aria-hidden="true">
-                {c.cards.map((_, i) => (
+                {Array.from({ length: slideCount }).map((_, i) => (
                   <span key={i} className={`h-1.5 rounded-full transition-all ${i === page ? "w-6 bg-primary" : "w-2.5 bg-border"}`} />
                 ))}
               </div>
@@ -328,6 +421,25 @@ export function TrustSection({
             </div>
           </div>
         </div>
+
+        {/* Leave a review CTA */}
+        <div className="mt-8 flex flex-col items-center gap-5 rounded-2xl border border-primary/20 bg-primary/[0.04] p-6 text-center sm:p-8 md:flex-row md:items-center md:justify-between md:gap-10 md:text-left">
+          <div className="md:max-w-xl">
+            <h3 className="text-lg font-bold text-foreground sm:text-xl">{c.reviewCtaTitle}</h3>
+            <p className="mt-2 text-sm text-muted-foreground">{c.reviewCtaText}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setReviewOpen(true)}
+            className="inline-flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-primary bg-background px-6 text-sm font-semibold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:w-auto"
+          >
+            <MessageSquare className="h-4 w-4" aria-hidden="true" />
+            {c.reviewCtaButton}
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+
+        <ReviewDialog open={reviewOpen} onOpenChange={setReviewOpen} lang={lang as string} />
 
         {/* CTA */}
         <div className="mt-8 flex flex-col items-center gap-6 rounded-2xl border border-primary/20 bg-primary/5 p-7 text-center sm:p-9 md:flex-row md:items-center md:justify-between md:gap-10 md:text-left">

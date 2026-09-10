@@ -47,3 +47,7 @@ project_id = "rxculneqqaziutulnocs"
     verify_jwt = true
   [functions.send-session-cancellation-email]
     verify_jwt = true
+  [functions.submit-review]
+    verify_jwt = false
+  [functions.notify-review-status]
+    verify_jwt = true
