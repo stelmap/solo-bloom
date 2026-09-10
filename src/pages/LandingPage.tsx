@@ -25,6 +25,7 @@ import { HeroCarousel, HERO_SLIDES } from "@/components/landing/HeroCarousel";
 
 import { WorkflowSection } from "@/components/landing/WorkflowSection";
 import { OutcomeStrip } from "@/components/landing/OutcomeStrip";
+import { PricingFollowUp } from "@/components/landing/PricingFollowUp";
 import { TrustSection } from "@/components/landing/TrustSection";
 import { lt } from "@/lib/landingRedesignCopy";
 import {
@@ -1453,7 +1454,7 @@ function ContactCallSection() {
               ? "Запишитесь на короткий разговор — мы покажем, как SoloBizz может упростить вашу работу, упорядочить записи, оплаты и помочь лучше видеть финансовую картину вашей практики."
               : t("doubtText")}
           </p>
-          <p className="text-sm text-secondary-foreground/70 mb-6">
+          <p className="text-sm text-muted-foreground mb-6">
             {lang === "uk"
               ? "Після короткої розмови ви зрозумієте, як система може підійти саме під ваш формат роботи."
               : lang === "ru"
@@ -1488,7 +1489,7 @@ function ContactCallSection() {
                 : "Email us"}
             </a>
           </div>
-          <p className="text-xs text-secondary-foreground/90 mt-5">
+          <p className="text-xs text-muted-foreground mt-5">
             {lang === "uk"
               ? "Можете залишити заявку або написати на email — ми відповімо зручним для вас способом."
               : lang === "fr"
@@ -1827,8 +1828,8 @@ function LandingShell() {
         />
 
         <PricingSection />
-        <FaqSection />
-        <FinalCTA />
+        <PricingFollowUp lang={lang} />
+        <ContactCallSection />
         <AboutContactsSection />
       </main>
       <LandingFooter />
