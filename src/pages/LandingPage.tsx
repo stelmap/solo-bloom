@@ -1,4 +1,5 @@
 import { BrandName } from "@/components/BrandName";
+import { AboutOverlay } from "@/components/landing/AboutOverlay";
 import { useState, useCallback, createContext, useContext, useEffect, type ReactNode } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
@@ -1655,7 +1656,7 @@ function LandingFooter() {
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="text-xl font-bold text-foreground mb-2">Solo .Bizz</div>
+            <div className="text-xl font-bold text-foreground mb-2"><BrandName /></div>
             <p className="text-sm text-muted-foreground leading-relaxed mb-3">{T.tagline}</p>
             <p className="text-sm text-muted-foreground flex items-start gap-2">
               <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />

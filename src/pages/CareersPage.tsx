@@ -45,7 +45,7 @@ export default function CareersPage() {
       />
       <header className="border-b border-border px-4 sm:px-6 h-16 flex items-center">
         <div className="max-w-5xl mx-auto w-full flex items-center justify-between">
-          <Link to="/" className="text-lg font-bold text-foreground">Solo .Bizz</Link>
+          <Link to="/" className="text-lg font-bold text-foreground"><BrandName /></Link>
           <Link to="/" className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
             <ArrowLeft className="h-4 w-4" /> {t.back}
           </Link>
