@@ -1033,7 +1033,11 @@ function LandingNav() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <button
           type="button"
-          onClick={() => setAboutOpen(true)}
+          onClick={() => {
+            aboutScrollY.current = window.scrollY;
+            setAboutOpen(true);
+          }}
+
           aria-haspopup="dialog"
           aria-expanded={aboutOpen}
           className="text-xl font-bold text-foreground tracking-tight rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"

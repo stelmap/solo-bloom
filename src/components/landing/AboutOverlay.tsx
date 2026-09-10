@@ -8,7 +8,15 @@ import { BrandName } from "@/components/BrandName";
  * landing page. The page underneath keeps its scroll position: we only lock
  * body scrolling while the overlay is open.
  */
-export function AboutOverlay({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function AboutOverlay({
+  open,
+  onClose,
+  scrollY = 0,
+}: {
+  open: boolean;
+  onClose: () => void;
+  scrollY?: number;
+}) {
   const closeRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
@@ -18,7 +26,6 @@ export function AboutOverlay({ open, onClose }: { open: boolean; onClose: () => 
     };
     document.addEventListener("keydown", onKey);
     // Freeze the page behind the overlay and restore the exact scroll on close.
-    const scrollY = window.scrollY;
     const prev = {
       position: document.body.style.position,
       top: document.body.style.top,
@@ -38,7 +45,8 @@ export function AboutOverlay({ open, onClose }: { open: boolean; onClose: () => 
       document.body.style.overflow = prev.overflow;
       window.scrollTo(0, scrollY);
     };
-  }, [open, onClose]);
+  }, [open, onClose, scrollY]);
+
 
 
   if (!open) return null;
