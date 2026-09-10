@@ -17,10 +17,19 @@ export async function syncBookingAvailabilityFromSchedule(
   userId: string,
   schedule: ScheduleDay[],
 ) {
-  const { data: existing } = await supabase
+  // Make sure the session is still valid and belongs to this user, otherwise
+  // row-level security would silently reject the writes below.
+  const { data: auth, error: authError } = await supabase.auth.getUser();
+  if (authError) throw authError;
+  if (!auth?.user || auth.user.id !== userId) {
+    throw new Error("SESSION_EXPIRED");
+  }
+
+  const { data: existing, error: readError } = await supabase
     .from("booking_availability")
     .select("*")
     .eq("user_id", userId);
+  if (readError) throw readError;
 
   const first = (existing && (existing as any[])[0]) as any | undefined;
   const shared = {
@@ -29,9 +38,6 @@ export async function syncBookingAvailabilityFromSchedule(
     min_notice_hours: first?.min_notice_hours ?? 24,
     max_horizon_days: first?.max_horizon_days ?? 30,
   };
-
-  // Replace all rows for this user with one row per weekday from the schedule
-  await supabase.from("booking_availability").delete().eq("user_id", userId);
 
   const rows = schedule.map((day) => ({
     user_id: userId,
@@ -42,8 +48,24 @@ export async function syncBookingAvailabilityFromSchedule(
     sort_order: 0,
     ...shared,
   }));
+
+  // Insert the new rows FIRST, so a rejected insert can never leave the user
+  // with zero availability. Only once they exist do we drop the old rows.
   if (rows.length > 0) {
-    await supabase.from("booking_availability").insert(rows as any);
+    const { error: insertError } = await supabase
+      .from("booking_availability")
+      .insert(rows as any);
+    if (insertError) throw insertError;
+  }
+
+  const staleIds = ((existing as any[]) ?? []).map((r) => r.id).filter(Boolean);
+  if (staleIds.length > 0) {
+    const { error: deleteError } = await supabase
+      .from("booking_availability")
+      .delete()
+      .eq("user_id", userId)
+      .in("id", staleIds);
+    if (deleteError) throw deleteError;
   }
 }
 
