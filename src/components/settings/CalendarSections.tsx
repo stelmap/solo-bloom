@@ -104,7 +104,7 @@ export function WorkingHoursSection() {
         upsertSchedule.mutateAsync(schedule),
       ]);
       if (user && getInheritFlag(user.id)) {
-        try { await syncBookingAvailabilityFromSchedule(user.id, schedule); } catch {}
+        await syncBookingAvailabilityFromSchedule(user.id, schedule);
       }
       setSavedAt(Date.now());
       toast({ title: t("settings.saved") });
