@@ -10,6 +10,7 @@ import {
   useSetOnboardingState,
   type OnboardingStepKey,
 } from "@/hooks/useOnboardingJourney";
+import { useAppointments } from "@/hooks/useData";
 
 /** Deep links for each guided step. */
 const STEP_TARGET: Record<OnboardingStepKey, string> = {
