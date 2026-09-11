@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Cookie, ShieldCheck, X } from "lucide-react";
 import { getStoredLang } from "@/i18n/LanguageContext";
-import type { Language } from "@/i18n/translations";
+import type { AppLanguage } from "@/i18n/translations";
 import { getConsent, setConsent, onConsentChange } from "@/lib/consent";
 
-type Copy = Record<Language, string>;
+type Copy = Record<AppLanguage, string>;
 
 const T = {
   title: {
@@ -15,49 +15,69 @@ const T = {
     fr: "Nous respectons votre vie privée",
     uk: "Ми поважаємо вашу приватність",
     pl: "Szanujemy Twoją prywatność",
+    ru: "Мы уважаем вашу приватность",
   } as Copy,
   body: {
     en: "We use only the cookies strictly necessary to run Solo .Bizz. With your consent we may also use analytics and marketing cookies to improve the product. You can change your choice anytime.",
     fr: "Nous utilisons uniquement les cookies strictement nécessaires au fonctionnement de Solo .Bizz. Avec votre consentement, nous pouvons aussi utiliser des cookies d'analyse et de marketing pour améliorer le produit. Vous pouvez modifier votre choix à tout moment.",
     uk: "Ми використовуємо лише cookies, необхідні для роботи Solo .Bizz. За вашою згодою — також аналітичні та маркетингові, щоб покращувати продукт. Ви можете змінити вибір у будь-який момент.",
     pl: "Używamy wyłącznie plików cookie niezbędnych do działania Solo .Bizz. Za Twoją zgodą możemy też używać analitycznych i marketingowych, aby ulepszać produkt. Możesz zmienić wybór w dowolnej chwili.",
+    ru: "Мы используем только cookie, необходимые для работы Solo .Bizz. С вашего согласия — также аналитические и маркетинговые, чтобы улучшать продукт. Вы можете изменить выбор в любой момент.",
   } as Copy,
-  acceptAll: { en: "Accept all", fr: "Tout accepter", uk: "Прийняти всі", pl: "Akceptuj wszystkie" } as Copy,
-  rejectAll: { en: "Reject non-essential", fr: "Refuser non essentiels", uk: "Лише необхідні", pl: "Tylko niezbędne" } as Copy,
-  customize: { en: "Customize", fr: "Personnaliser", uk: "Налаштувати", pl: "Dostosuj" } as Copy,
-  save: { en: "Save preferences", fr: "Enregistrer", uk: "Зберегти вибір", pl: "Zapisz wybór" } as Copy,
-  necessary: { en: "Strictly necessary", fr: "Strictement nécessaires", uk: "Необхідні", pl: "Niezbędne" } as Copy,
+  acceptAll: { en: "Accept all", fr: "Tout accepter", uk: "Прийняти всі", pl: "Akceptuj wszystkie", ru: "Принять все" } as Copy,
+  rejectAll: { en: "Reject all", fr: "Tout refuser", uk: "Відхилити всі", pl: "Odrzuć wszystkie", ru: "Отклонить все" } as Copy,
+  customize: { en: "Manage preferences", fr: "Gérer les préférences", uk: "Налаштувати", pl: "Zarządzaj preferencjami", ru: "Настроить" } as Copy,
+  save: { en: "Save preferences", fr: "Enregistrer", uk: "Зберегти вибір", pl: "Zapisz wybór", ru: "Сохранить выбор" } as Copy,
+  necessary: { en: "Strictly necessary", fr: "Strictement nécessaires", uk: "Необхідні", pl: "Niezbędne", ru: "Необходимые" } as Copy,
   necessaryDesc: {
     en: "Required for sign-in, language and security. Always on.",
     fr: "Requis pour la connexion, la langue et la sécurité. Toujours actifs.",
     uk: "Потрібні для входу, мови та безпеки. Завжди увімкнено.",
     pl: "Wymagane do logowania, języka i bezpieczeństwa. Zawsze włączone.",
+    ru: "Нужны для входа, языка и безопасности. Всегда включены.",
   } as Copy,
-  analytics: { en: "Analytics", fr: "Analyse", uk: "Аналітика", pl: "Analityczne" } as Copy,
+  analytics: { en: "Analytics", fr: "Analyse", uk: "Аналітика", pl: "Analityczne", ru: "Аналитика" } as Copy,
   analyticsDesc: {
-    en: "Helps us understand how the site is used (Plerdy heatmaps).",
-    fr: "Nous aide à comprendre l'utilisation du site (heatmaps Plerdy).",
-    uk: "Допомагає зрозуміти, як використовується сайт (теплові карти Plerdy).",
-    pl: "Pomaga zrozumieć, jak używana jest strona (mapy ciepła Plerdy).",
+    en: "Helps us understand how the site and product are used (PostHog, Plerdy heatmaps).",
+    fr: "Nous aide à comprendre l'utilisation du site et du produit (PostHog, heatmaps Plerdy).",
+    uk: "Допомагає зрозуміти, як використовується сайт і продукт (PostHog, теплові карти Plerdy).",
+    pl: "Pomaga zrozumieć, jak używane są strona i produkt (PostHog, mapy ciepła Plerdy).",
+    ru: "Помогает понять, как используются сайт и продукт (PostHog, тепловые карты Plerdy).",
   } as Copy,
-  marketing: { en: "Marketing", fr: "Marketing", uk: "Маркетинг", pl: "Marketing" } as Copy,
+  marketing: { en: "Marketing", fr: "Marketing", uk: "Маркетинг", pl: "Marketing", ru: "Маркетинг" } as Copy,
   marketingDesc: {
     en: "Used to measure ad performance (Meta Pixel).",
     fr: "Sert à mesurer la performance publicitaire (Meta Pixel).",
     uk: "Для вимірювання ефективності реклами (Meta Pixel).",
     pl: "Do pomiaru skuteczności reklam (Meta Pixel).",
+    ru: "Для измерения эффективности рекламы (Meta Pixel).",
   } as Copy,
-  privacyLink: { en: "Privacy policy", fr: "Politique de confidentialité", uk: "Політика конфіденційності", pl: "Polityka prywatności" } as Copy,
-  cookiesLink: { en: "Cookie policy", fr: "Politique cookies", uk: "Політика cookies", pl: "Polityka cookies" } as Copy,
+  privacyLink: {
+    en: "Privacy policy",
+    fr: "Politique de confidentialité",
+    uk: "Політика конфіденційності",
+    pl: "Polityka prywatności",
+    ru: "Политика конфиденциальности",
+  } as Copy,
+  cookiesLink: {
+    en: "Cookie policy",
+    fr: "Politique cookies",
+    uk: "Політика cookies",
+    pl: "Polityka cookies",
+    ru: "Политика cookie",
+  } as Copy,
 };
+
 
 export function CookieConsent() {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [analytics, setAnalytics] = useState(false);
   const [marketing, setMarketing] = useState(false);
-  const coerce = (l: string): Language => (l === "en" || l === "uk" || l === "fr" || l === "pl" ? l : "en") as Language;
-  const [lang, setLang] = useState<Language>(coerce(getStoredLang()));
+  const coerce = (l: string): AppLanguage =>
+    l === "en" || l === "uk" || l === "fr" || l === "pl" || l === "ru" ? (l as AppLanguage) : "en";
+  const [lang, setLang] = useState<AppLanguage>(coerce(getStoredLang()));
+
 
   useEffect(() => {
     setOpen(getConsent() === null);
@@ -148,9 +168,17 @@ export function CookieConsent() {
               </div>
             )}
 
-            <div className="mt-3 flex flex-wrap gap-2">
+            {/* Accept and reject are presented with equal visual weight; managing
+                preferences is available at the same level. */}
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <Button size="sm" onClick={acceptAll}>
+                {tr("acceptAll")}
+              </Button>
+              <Button size="sm" onClick={rejectAll} variant="secondary">
+                {tr("rejectAll")}
+              </Button>
               {expanded ? (
-                <Button size="sm" onClick={saveCustom}>
+                <Button size="sm" variant="outline" onClick={saveCustom}>
                   {tr("save")}
                 </Button>
               ) : (
@@ -158,13 +186,8 @@ export function CookieConsent() {
                   {tr("customize")}
                 </Button>
               )}
-              <Button size="sm" variant="ghost" onClick={rejectAll}>
-                {tr("rejectAll")}
-              </Button>
-              <Button size="sm" onClick={acceptAll} className="ml-auto">
-                {tr("acceptAll")}
-              </Button>
             </div>
+
           </div>
           <button
             type="button"
