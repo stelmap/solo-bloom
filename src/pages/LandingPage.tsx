@@ -1081,9 +1081,9 @@ function LandingNav() {
           <Link
             to="/auth"
             onClick={() => track("cta_clicked", { source_page: "/", cta: "nav", lang })}
-            className="whitespace-nowrap text-sm font-semibold text-secondary hover:underline underline-offset-4 transition-colors"
+            className="inline-flex min-h-[40px] items-center whitespace-nowrap rounded-xl bg-secondary px-5 py-2 text-sm font-semibold text-secondary-foreground shadow-sm transition-colors hover:bg-secondary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
-            <BrandText text={t("navOpenApp")} />
+            <BrandText text={t("navOpenApp")} brandClassName="font-semibold text-secondary-foreground" />
           </Link>
         </div>
       </div>
