@@ -8,11 +8,11 @@ type Localized = Partial<Record<AppLanguage, string>> & { en: string };
 
 export const LANDING_COPY = {
   promoBarText: {
-    en: "Support Ukrainian psychotherapists — 50% off",
-    uk: "Підтримка українських психотерапевтів — знижка 50%",
-    pl: "Wsparcie ukraińskich psychoterapeutów — 50% zniżki",
-    fr: "Soutien aux psychothérapeutes ukrainiens — −50 %",
-    ru: "Поддержка украинских психотерапевтов — скидка 50%",
+    en: "Support Ukrainian sole practitioners — 50% off",
+    uk: "Підтримка українських приватних фахівців — знижка 50%",
+    pl: "Wsparcie ukraińskich specjalistów — 50% zniżki",
+    fr: "Soutien aux indépendants ukrainiens — −50 %",
+    ru: "Поддержка украинских частных специалистов — скидка 50%",
   },
   promoBarCta: {
     en: "Activate discount",
