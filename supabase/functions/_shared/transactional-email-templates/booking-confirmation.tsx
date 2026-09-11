@@ -5,7 +5,7 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = 'SoloBizz'
+const SITE_NAME = 'Solo .Bizz'
 
 // Normalize ALL-CAPS names into Title Case so the header doesn't shout.
 function titleCaseName(name?: string) {

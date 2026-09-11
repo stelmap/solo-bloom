@@ -5,7 +5,7 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = 'SoloBizz'
+const SITE_NAME = 'Solo .Bizz'
 
 interface ReviewData {
   display_name?: string
@@ -59,7 +59,7 @@ export const template: TemplateEntry = {
     profession: 'Психолог',
     plan: 'Solo Practice',
     rating: 5,
-    body: 'SoloBizz допомагає мені тримати всю практику в одному місці.',
+    body: 'Solo .Bizz допомагає мені тримати всю практику в одному місці.',
     verification_status: 'verified',
     records_count: 42,
     language: 'uk',

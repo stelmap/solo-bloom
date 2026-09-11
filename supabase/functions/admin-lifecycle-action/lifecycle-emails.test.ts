@@ -34,41 +34,41 @@ const CASES = [
   {
     profileLanguage: "en",
     expected: "en",
-    warningSubject: "Your SoloBizz account is scheduled for deletion",
-    warningDistinctive: ["scheduled for deletion", "Login to SoloBizz"],
-    finalSubject: "Your SoloBizz account has been deleted",
+    warningSubject: "Your Solo .Bizz account is scheduled for deletion",
+    warningDistinctive: ["scheduled for deletion", "Login to Solo .Bizz"],
+    finalSubject: "Your Solo .Bizz account has been deleted",
     finalDistinctive: ["permanently deleted", "create a new account"],
   },
   {
     profileLanguage: "uk",
     expected: "uk",
-    warningSubject: "Ваш акаунт SoloBizz заплановано до видалення",
-    warningDistinctive: ["заплановано до видалення", "Увійти до SoloBizz"],
-    finalSubject: "Ваш акаунт SoloBizz було видалено",
+    warningSubject: "Ваш акаунт Solo .Bizz заплановано до видалення",
+    warningDistinctive: ["заплановано до видалення", "Увійти до Solo .Bizz"],
+    finalSubject: "Ваш акаунт Solo .Bizz було видалено",
     finalDistinctive: ["було остаточно видалено", "створити новий акаунт"],
   },
   {
     profileLanguage: "ru",
     expected: "ru",
-    warningSubject: "Ваш аккаунт SoloBizz запланирован к удалению",
-    warningDistinctive: ["запланирован к удалению", "Войти в SoloBizz"],
-    finalSubject: "Ваш аккаунт SoloBizz был удалён",
+    warningSubject: "Ваш аккаунт Solo .Bizz запланирован к удалению",
+    warningDistinctive: ["запланирован к удалению", "Войти в Solo .Bizz"],
+    finalSubject: "Ваш аккаунт Solo .Bizz был удалён",
     finalDistinctive: ["был окончательно удалён", "создать новый аккаунт"],
   },
   {
     profileLanguage: "pl",
     expected: "pl",
-    warningSubject: "Twoje konto SoloBizz zostało zaplanowane do usunięcia",
-    warningDistinctive: ["zaplanowane do usunięcia", "Zaloguj się do SoloBizz"],
-    finalSubject: "Twoje konto SoloBizz zostało usunięte",
+    warningSubject: "Twoje konto Solo .Bizz zostało zaplanowane do usunięcia",
+    warningDistinctive: ["zaplanowane do usunięcia", "Zaloguj się do Solo .Bizz"],
+    finalSubject: "Twoje konto Solo .Bizz zostało usunięte",
     finalDistinctive: ["trwale usunięte", "utworzyć nowe konto"],
   },
   {
     profileLanguage: "fr",
     expected: "fr",
-    warningSubject: "Votre compte SoloBizz est programmé pour suppression",
-    warningDistinctive: ["programmé pour suppression", "Se connecter à SoloBizz"],
-    finalSubject: "Votre compte SoloBizz a été supprimé",
+    warningSubject: "Votre compte Solo .Bizz est programmé pour suppression",
+    warningDistinctive: ["programmé pour suppression", "Se connecter à Solo .Bizz"],
+    finalSubject: "Votre compte Solo .Bizz a été supprimé",
     finalDistinctive: ["définitivement supprimé", "créer un nouveau compte"],
   },
 ] as const;
@@ -119,8 +119,8 @@ for (const c of CASES) {
 Deno.test("lifecycle emails: unsupported profile.language falls back to English (admin-lifecycle-action contract)", () => {
   for (const bad of [null, undefined, "", "xx", "de", "zh", "es", "it", "  ", 123, {}, []]) {
     assertEquals(adminLifecycleNormalize(bad), "en", `bad input ${JSON.stringify(bad)} should fall back to en`);
-    assertEquals(WARNING_STRINGS[normalizeLang(bad)].subject, "Your SoloBizz account is scheduled for deletion");
-    assertEquals(FINAL_STRINGS[normalizeLang(bad)].subject, "Your SoloBizz account has been deleted");
+    assertEquals(WARNING_STRINGS[normalizeLang(bad)].subject, "Your Solo .Bizz account is scheduled for deletion");
+    assertEquals(FINAL_STRINGS[normalizeLang(bad)].subject, "Your Solo .Bizz account has been deleted");
   }
 });
 
