@@ -1779,7 +1779,10 @@ function LandingShell() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background">
-      {isCampaignActive() && <PromoTopBar lang={lang} onActivate={activateOffer} />}
+      {isCampaignActive() && (
+        <PromoTopBar lang={lang} onActivate={activateOffer} onContact={() => setContactOpen(true)} />
+      )}
+      <ContactRequestDialog open={contactOpen} onOpenChange={setContactOpen} lang={lang} />
       <LandingNav />
       <main>
         <HeroSection />
