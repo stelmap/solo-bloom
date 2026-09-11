@@ -9,6 +9,7 @@ import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
 import { useIncome, useIncomeSum, useCreateIncome, useDeleteIncome, useExpectedPayments, useMarkExpectedPaymentPaid, useClients, useCompleteFlexiblePrice, useClientCreditBalance } from "@/hooks/useData";
 import { FlexiblePriceCompleteDialog } from "@/components/FlexiblePriceCompleteDialog";
+import { useOnboardingJourney, useSetOnboardingState } from "@/hooks/useOnboardingJourney";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
