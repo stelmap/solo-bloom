@@ -76,6 +76,7 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
   const { data: services = [] } = useServices();
   const { data: workingSchedule = [] } = useWorkingSchedule();
   const { data: bookingLink } = useBookingLink();
+  const { complete: profileComplete, loading: onboardingLoading } = usePracticeProfileStatus();
 
   // ---- Setup / empty-state flags (presentation only) ----
   const hasClients = (allClients as any[]).length > 0;
