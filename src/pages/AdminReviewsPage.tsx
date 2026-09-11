@@ -462,17 +462,53 @@ export default function AdminReviewsPage() {
               </div>
 
               <DialogFooter className="flex-wrap gap-2 sm:justify-start">
+                {selected.verification_status === "verified_user" ? (
+                  <Button size="sm" variant="outline" disabled={acting} onClick={() => void setVerification(selected, false)}>
+                    Зняти підтвердження автора
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="outline" className="gap-1" disabled={acting} onClick={() => void setVerification(selected, true)}>
+                    <ShieldCheck className="h-3.5 w-3.5" /> Підтвердити автора
+                  </Button>
+                )}
                 <Button size="sm" disabled={acting} onClick={() => void act(selected, "approve", true)}>
                   Схвалити та опублікувати
                 </Button>
-                <Button size="sm" variant="outline" disabled={acting} onClick={() => void act(selected, "reject", true)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={acting}
+                  onClick={() => setConfirmAction({
+                    review: selected, action: "reject", notify: true,
+                    title: "Відхилити відгук?",
+                    description: "Відгук не буде опубліковано, автор отримає повідомлення. Запис залишиться в історії модерації.",
+                  })}
+                >
                   Відхилити та повідомити
                 </Button>
-                <Button size="sm" variant="outline" disabled={acting} onClick={() => void act(selected, "reject")}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={acting}
+                  onClick={() => setConfirmAction({
+                    review: selected, action: "reject",
+                    title: "Відхилити відгук?",
+                    description: "Відгук не буде опубліковано. Запис залишиться в історії модерації.",
+                  })}
+                >
                   Відхилити без листа
                 </Button>
-                <Button size="sm" variant="outline" disabled={acting} onClick={() => void act(selected, "hide")}>
-                  Приховати із сайту
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={acting}
+                  onClick={() => setConfirmAction({
+                    review: selected, action: "hide",
+                    title: "Зняти з публікації?",
+                    description: "Відгук одразу зникне з публічного сайту, але залишиться в історії модерації.",
+                  })}
+                >
+                  Зняти з публікації
                 </Button>
                 <Button size="sm" variant="outline" disabled={acting} onClick={() => void act(selected, "restore")}>
                   Повернути на сайт
