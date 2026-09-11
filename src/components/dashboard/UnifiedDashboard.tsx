@@ -221,13 +221,9 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
   // Onboarding progress — every step is derived from persisted workspace data,
   // so it survives refresh, re-login and other devices. Steps are independent:
   // finishing one never marks another as done.
-  const realAppointments = (allAppointments as any[]).filter(
-    (a) => a.status !== "cancelled" || PAID_STATUSES.has(a.payment_status) || a.payment_status === "waiting_for_payment",
-  );
   const hasAppointment = (allAppointments as any[]).length > 0;
   const hasCompletedSession = (allAppointments as any[]).some((a) => a.status === "completed");
   const hasRecordedPayment = (allAppointments as any[]).some((a) => PAID_STATUSES.has(a.payment_status));
-  void realAppointments;
 
   const onboardingSteps = [
     { key: "profile", done: profileComplete, icon: Briefcase, title: t("dashe.onbProfile"), sub: t("dashe.onbProfileSub"), path: "/settings/practice" },
