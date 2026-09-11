@@ -1256,6 +1256,24 @@ export default function CalendarPage() {
     next.delete("new");
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
+  // Setup guide: jump to the day of a session the user should open themselves.
+  // The guide never opens or changes the session for them.
+  const focusAppointmentId = searchParams.get("focusAppointmentId");
+  const handledFocusRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!focusAppointmentId) return;
+    if (handledFocusRef.current === focusAppointmentId) return;
+    const apt = (appointments as any[]).find((a) => a.id === focusAppointmentId);
+    if (!apt) return;
+    handledFocusRef.current = focusAppointmentId;
+    setCurrentDate(new Date(apt.scheduled_at));
+    toast({ title: t("onbj.focusHint") });
+    const next = new URLSearchParams(searchParams);
+    next.delete("focusAppointmentId");
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusAppointmentId, appointments]);
+
   const handledDeepLinkRef = useRef<string | null>(null);
   useEffect(() => {
     if (!deepLinkAppointmentId) return;
