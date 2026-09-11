@@ -160,20 +160,32 @@ export function AboutOverlay({
             Від IT до психології. Від хаосу в записах до власного продукту.
           </p>
 
-          <ol className="mt-10 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          <ol className="mt-10 grid grid-cols-1 items-start gap-x-[clamp(1rem,2.5vw,2.5rem)] gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {steps.map((step, i) => (
-              <li key={step.title} className="flex flex-col">
-                <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-muted text-primary">
-                  <step.icon className="h-6 w-6" />
-                </span>
+              <li key={step.title} className="flex min-w-0 flex-col">
+                {/* Icon row: the dashed connector runs behind the circles */}
+                <div className="relative flex h-[clamp(3rem,4.5vw,3.75rem)] items-center">
+                  <span
+                    aria-hidden
+                    className={`pointer-events-none absolute top-1/2 hidden border-t border-dashed border-border xl:block ${
+                      i === 0 ? "left-1/2" : "-left-[clamp(1rem,2.5vw,2.5rem)]"
+                    } ${i === steps.length - 1 ? "right-1/2" : "-right-[clamp(1rem,2.5vw,2.5rem)]"}`}
+                  />
+                  <span className="relative inline-flex aspect-square h-full items-center justify-center rounded-full bg-muted text-primary">
+                    <step.icon className="h-[45%] w-[45%]" />
+                  </span>
+                </div>
                 <span className="mt-4 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
                   {i + 1}
                 </span>
-                <h3 className="mt-4 text-base font-semibold leading-snug text-foreground">{step.title}</h3>
+                <h3 className="mt-4 text-[clamp(0.95rem,1.05vw,1.125rem)] font-semibold leading-snug text-foreground text-balance">
+                  {step.title}
+                </h3>
                 <div className="mt-2 space-y-2 text-sm leading-relaxed text-muted-foreground">{step.body}</div>
               </li>
             ))}
           </ol>
+
 
         </section>
 
