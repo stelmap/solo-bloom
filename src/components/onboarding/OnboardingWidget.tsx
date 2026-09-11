@@ -181,7 +181,7 @@ export function OnboardingWidget() {
                           <Button
                             size="sm"
                             variant={isCurrent ? "default" : "outline"}
-                            onClick={() => navigate(STEP_TARGET[key])}
+                            onClick={() => navigate(targetFor(key))}
                           >
                             {t(`onbj.s${n}c`)}
                             <ArrowRight className="ml-1 h-3.5 w-3.5" />
