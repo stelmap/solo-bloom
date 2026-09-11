@@ -227,7 +227,6 @@ function Stars({ className = "", value = 5 }: { className?: string; value?: numb
 
 export function TrustSection({
   lang,
-  onCtaClick,
 }: {
   lang: AppLanguage | string;
   onCtaClick?: () => void;
@@ -237,7 +236,6 @@ export function TrustSection({
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
   const [page, setPage] = useState(0);
-  const [submitting, setSubmitting] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [reviews, setReviews] = useState<DbReview[]>([]);
 
