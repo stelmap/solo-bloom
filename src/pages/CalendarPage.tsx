@@ -2041,6 +2041,29 @@ export default function CalendarPage() {
 
             </Tooltip>
 
+            {/* Incoming requests — always accessible, highlighted when new ones exist */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline" size="icon"
+                  className={cn(
+                    "h-10 w-10 rounded-xl relative",
+                    pendingRequests.length > 0 && "border-warning/50 text-warning",
+                  )}
+                  aria-label={t("booking.inbox")}
+                  onClick={() => setInboxOpen(true)}
+                >
+                  <Inbox className="h-4 w-4" />
+                  {pendingRequests.length > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-warning text-warning-foreground text-[10px] font-bold flex items-center justify-center">
+                      {pendingRequests.length}
+                    </span>
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t("booking.inbox")}</TooltipContent>
+            </Tooltip>
+
             {/* Agenda drawer trigger below xl */}
             <Tooltip>
               <TooltipTrigger asChild>
@@ -2054,20 +2077,6 @@ export default function CalendarPage() {
               </TooltipTrigger>
               <TooltipContent>{(t as any)("calendar.agenda") || "Today schedule"}</TooltipContent>
             </Tooltip>
-
-            {pendingRequests.length > 0 && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl relative" aria-label="Booking inbox" onClick={() => setInboxOpen(true)}>
-                    <Inbox className="h-4 w-4" />
-                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
-                      {pendingRequests.length}
-                    </span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t("booking.inbox") || "Booking inbox"}</TooltipContent>
-              </Tooltip>
-            )}
 
             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
               <DialogTrigger asChild>
