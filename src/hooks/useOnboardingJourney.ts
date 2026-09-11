@@ -109,7 +109,8 @@ export function useOnboardingJourney() {
       sessionCount += 1;
       if (a.status === "completed") {
         if (PAID_STATUSES.has(a.payment_status)) hasPaid = true;
-        else if (OUTSTANDING_STATUSES.has(a.payment_status)) hasUnpaid = true;
+        // An outstanding session must actually owe money.
+        else if (OUTSTANDING_STATUSES.has(a.payment_status) && Number(a.price ?? 0) > 0) hasUnpaid = true;
       }
       if (OPEN_STATUSES.has(String(a.status))) open.push(a);
     }
@@ -125,13 +126,15 @@ export function useOnboardingJourney() {
     sessions: flags.sessionCount >= 2,
     paid: flags.hasPaid,
     unpaid: flags.hasUnpaid,
-    // Observational steps need BOTH the underlying data and a real page visit.
+    // Observational steps need BOTH the underlying data and a real page visit,
+    // regardless of whether the visit started from the wizard.
     payment: flags.hasPaid && !!state.viewed?.payment,
     debt: flags.hasUnpaid && !!state.viewed?.debt,
     day: !!state.viewed?.day,
     finance: !!state.viewed?.finance,
     expense: (expenses as any[]).length > 0,
   };
+
 
   const completedCount = ONBOARDING_STEP_KEYS.filter((k) => done[k]).length;
   const total = ONBOARDING_STEP_KEYS.length;
