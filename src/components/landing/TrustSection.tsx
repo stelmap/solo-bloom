@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight, MessageSquare, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ReviewDialog } from "@/components/landing/ReviewDialog";
-import { cn } from "@/lib/utils";
 import type { AppLanguage } from "@/i18n/translations";
 import psychologistImg from "@/assets/trust-psychologist.jpg";
 import teacherImg from "@/assets/trust-teacher.jpg";
