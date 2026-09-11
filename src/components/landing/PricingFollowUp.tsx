@@ -219,16 +219,16 @@ export function PricingFollowUp({ lang }: { lang: AppLanguage }) {
       </section>
 
       {/* 2 — FAQ */}
-      <section id="faq" className="px-4 py-20 sm:px-6 bg-muted/40">
-        <div className="mx-auto max-w-6xl">
+      <section id="faq" className="landing-section bg-muted/40">
+        <div className="page-container">
           <div className="text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">{p(lang, COPY.faqEyebrow)}</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            <h2 className="landing-h2 mt-3 font-bold tracking-tight text-foreground">
               {p(lang, COPY.faqTitle)}
             </h2>
           </div>
 
-          <div className="mt-10 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
+          <div className="mt-10 grid grid-cols-1 gap-[clamp(12px,1.4vw,24px)] lg:grid-cols-2">
             {columns.map((col, ci) => (
               <Accordion key={ci} type="multiple" className="space-y-4">
                 {col.map((item, i) => (
