@@ -63,9 +63,9 @@ type Copy = Record<Language, string>;
 const C = {
   // Nav
   navAudience: { en: "What's included", fr: "Ce qui est inclus", uk: "Що включено", pl: "Co jest w zestawie" },
-  navHow: { en: "Comparison", fr: "Comparaison", uk: "Порівняння", pl: "Porównanie" },
+  navReviews: { en: "Reviews", fr: "Avis", uk: "Відгуки", pl: "Opinie" },
   navPricing: { en: "Pricing", fr: "Tarifs", uk: "Ціни", pl: "Cennik" },
-  navFaq: { en: "FAQ", fr: "FAQ", uk: "Питання", pl: "FAQ" },
+  navFaq: { en: "Questions & answers", fr: "Questions et réponses", uk: "Питання та відповіді", pl: "Pytania i odpowiedzi" },
   navLogin: { en: "Log in", fr: "Connexion", uk: "Увійти", pl: "Zaloguj się" },
   navTry: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
   navOpenApp: { en: "Go to Solo .Bizz →", fr: "Aller à Solo .Bizz →", uk: "Перейти в Solo .Bizz →", pl: "Przejdź do Solo .Bizz →" },
@@ -670,9 +670,9 @@ const SELECT_LANGUAGE_LABEL: Record<AppLanguage, string> = {
 const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   // Nav
   navAudience: "Что включено",
-  navHow: "Сравнение",
+  navReviews: "Отзывы",
   navPricing: "Цены",
-  navFaq: "Вопросы",
+  navFaq: "Вопросы и ответы",
   navLogin: "Войти",
   navTry: "Начать бесплатно",
   navOpenApp: "Перейти в Solo .Bizz →",
@@ -1021,8 +1021,8 @@ function LandingNav() {
 
   const current = LANG_OPTIONS.find((o) => o.code === lang) ?? LANG_OPTIONS[1];
   const links = [
-    { label: t("navAudience"), href: "#features" },
-    { label: t("navHow"), href: "#comparison" },
+    { label: t("navAudience"), href: "#workflow" },
+    { label: t("navReviews"), href: "#reviews" },
     { label: t("navPricing"), href: "#pricing" },
     { label: t("navFaq"), href: "#faq" },
   ];
