@@ -252,10 +252,7 @@ export function PricingFollowUp({ lang }: { lang: AppLanguage }) {
       <section className="px-0 pb-0 pt-0">
         <div className="rounded-b-[2.5rem] bg-gradient-to-b from-secondary to-secondary/95 px-4 py-16 sm:px-6 sm:py-20">
           <div className="mx-auto max-w-3xl text-center">
-            <span className="inline-flex items-center gap-2 rounded-full bg-primary/15 px-4 py-1.5 text-xs font-medium text-primary sm:text-sm">
-              {p(lang, COPY.ctaBadge)}
-            </span>
-            <h2 className="mt-6 text-3xl font-bold leading-tight tracking-tight text-secondary-foreground sm:text-4xl">
+            <h2 className="text-3xl font-bold leading-tight tracking-tight text-secondary-foreground sm:text-4xl">
               {p(lang, COPY.ctaTitle)}
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-secondary-foreground/80">
