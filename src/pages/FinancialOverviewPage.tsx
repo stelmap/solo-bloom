@@ -19,6 +19,7 @@ import { MonthlyDetailsModal } from "@/components/MonthlyDetailsModal";
 import { getDateLocale } from "@/lib/dateLocale";
 import { FinanceSubnav } from "@/components/finance/FinanceSubnav";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useSetOnboardingState } from "@/hooks/useOnboardingJourney";
 
 interface MonthData {
   month: number;
@@ -38,6 +39,8 @@ interface MonthData {
 
 export default function FinancialOverviewPage() {
   useEffect(() => { import("@/lib/analytics").then(({ track }) => track("finances_opened")); }, []);
+  const { markViewed } = useSetOnboardingState();
+  useEffect(() => { markViewed("finance"); }, [markViewed]);
   const { t, lang } = useLanguage();
   const dateLocale = useMemo(() => getDateLocale(lang), [lang]);
   const capitalize = (v: string) => (v ? v.charAt(0).toLocaleUpperCase(lang) + v.slice(1) : v);
