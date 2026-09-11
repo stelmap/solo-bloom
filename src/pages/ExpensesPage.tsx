@@ -271,7 +271,7 @@ export default function ExpensesPage() {
                     <SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c}>{catLabel(c)}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2"><Label>{t("common.amount")} *</Label><Input type="number" step="0.01" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} /></div>
+                <div className="space-y-2"><Label>{t("common.amount")} *</Label><Input type="number" step="0.01" placeholder={t("expenses.amountPlaceholder")} value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} /></div>
 
                 <div className="space-y-2">
                   <Label>{t("expenses.recurrence")}</Label>
@@ -303,7 +303,7 @@ export default function ExpensesPage() {
                   </div>
                 )}
 
-                <div className="space-y-2"><Label>{t("common.description")}</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>{t("common.description")}</Label><Input placeholder={t("expenses.descriptionPlaceholder")} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
 
                 <div className="space-y-2">
                   <Label>{t("common.status")}</Label>
@@ -377,13 +377,13 @@ export default function ExpensesPage() {
           </Select>
           <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
             <SelectTrigger className="w-32 h-8">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder={t("common.status")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="planned">Planned</SelectItem>
-              <SelectItem value="paid">Paid</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
+              <SelectItem value="all">{t("filter.allStatuses")}</SelectItem>
+              <SelectItem value="planned">{t("expenses.planned")}</SelectItem>
+              <SelectItem value="paid">{t("payment.paid")}</SelectItem>
+              <SelectItem value="cancelled">{t("status.cancelled")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -488,9 +488,9 @@ export default function ExpensesPage() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="planned">Planned</SelectItem>
-                              <SelectItem value="paid">Paid</SelectItem>
-                              <SelectItem value="cancelled">Cancelled</SelectItem>
+                              <SelectItem value="planned">{t("expenses.planned")}</SelectItem>
+                              <SelectItem value="paid">{t("payment.paid")}</SelectItem>
+                              <SelectItem value="cancelled">{t("status.cancelled")}</SelectItem>
                             </SelectContent>
                           </Select>
                         </td>
@@ -546,20 +546,20 @@ export default function ExpensesPage() {
               {isRecurring && (
                 <div className="space-y-3 mt-2">
                   <div className="space-y-2">
-                    <Label>Scope</Label>
+                    <Label>{t("expenses.deleteScope")}</Label>
                     <Select value={deleteScope} onValueChange={(v: any) => setDeleteScope(v)}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="single">Only this</SelectItem>
-                        <SelectItem value="future">This and future</SelectItem>
-                        <SelectItem value="series">Entire series</SelectItem>
+                        <SelectItem value="single">{t("expenses.deleteOnlyThis")}</SelectItem>
+                        <SelectItem value="future">{t("expenses.deleteThisAndFuture")}</SelectItem>
+                        <SelectItem value="series">{t("expenses.deleteEntireSeries")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   {deleteScope !== "single" && (
                     <div className="flex items-center gap-2">
                       <Checkbox id="del-paid" checked={deleteIncludePaid} onCheckedChange={(v) => setDeleteIncludePaid(!!v)} />
-                      <Label htmlFor="del-paid" className="text-sm">Also delete already-paid instances</Label>
+                      <Label htmlFor="del-paid" className="text-sm">{t("expenses.deleteAlsoPaid")}</Label>
                     </div>
                   )}
                 </div>
