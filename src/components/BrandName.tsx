@@ -27,7 +27,7 @@ export function BrandText({ text, className }: { text: string; className?: strin
   return (
     <span className={className}>
       {parts.map((part, i) =>
-        /^Solo\s\.Bizz$/.test(part) ? <BrandName key={i} className="font-semibold" /> : <span key={i}>{part}</span>,
+        /^Solo\s\.Bizz$/.test(part) ? <BrandName key={i} className="font-semibold text-foreground" /> : <span key={i}>{part}</span>,
       )}
     </span>
   );
