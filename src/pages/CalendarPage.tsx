@@ -2041,6 +2041,29 @@ export default function CalendarPage() {
 
             </Tooltip>
 
+            {/* Incoming requests — always accessible, highlighted when new ones exist */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline" size="icon"
+                  className={cn(
+                    "h-10 w-10 rounded-xl relative",
+                    pendingRequests.length > 0 && "border-warning/50 text-warning",
+                  )}
+                  aria-label={t("booking.inbox")}
+                  onClick={() => setInboxOpen(true)}
+                >
+                  <Inbox className="h-4 w-4" />
+                  {pendingRequests.length > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-warning text-warning-foreground text-[10px] font-bold flex items-center justify-center">
+                      {pendingRequests.length}
+                    </span>
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t("booking.inbox")}</TooltipContent>
+            </Tooltip>
+
             {/* Agenda drawer trigger below xl */}
             <Tooltip>
               <TooltipTrigger asChild>
@@ -2054,20 +2077,6 @@ export default function CalendarPage() {
               </TooltipTrigger>
               <TooltipContent>{(t as any)("calendar.agenda") || "Today schedule"}</TooltipContent>
             </Tooltip>
-
-            {pendingRequests.length > 0 && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl relative" aria-label="Booking inbox" onClick={() => setInboxOpen(true)}>
-                    <Inbox className="h-4 w-4" />
-                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
-                      {pendingRequests.length}
-                    </span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t("booking.inbox") || "Booking inbox"}</TooltipContent>
-              </Tooltip>
-            )}
 
             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
               <DialogTrigger asChild>
@@ -2620,6 +2629,7 @@ export default function CalendarPage() {
                   (r) => toUTCDateStr(new Date(r.requested_slot_at)) === dayStr,
                 );
                 const isToday = isSameDay(day, new Date());
+                const isMonthDayOff = isDayOff(day);
                 return (
                   <div
                     key={i}
@@ -2638,6 +2648,7 @@ export default function CalendarPage() {
                       !inMonth && "bg-muted/20 text-muted-foreground",
                       "hover:bg-primary/5",
                       isToday && "bg-accent",
+                      isMonthDayOff && "bg-destructive/[0.06]",
                     )}
                     title={hasOutsidePublicBooking ? ((t as any)("calendar.outsidePublicBookingTooltip") || "Clients do not see this time in the public calendar. You can add your own event.") : undefined}
                   >
@@ -2653,7 +2664,14 @@ export default function CalendarPage() {
                       <span className={cn("text-xs font-semibold", isToday && "text-accent-foreground")}>
                         {format(day, "d")}
                       </span>
-                      <Plus className="h-3.5 w-3.5 text-primary/40 opacity-0 group-hover/month-slot:opacity-100 transition-opacity" />
+                      {isMonthDayOff ? (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-1.5 py-0.5 text-[9px] font-medium text-destructive">
+                          <CalendarOff className="h-2.5 w-2.5" />
+                          {t("calendar.dayOffShort")}
+                        </span>
+                      ) : (
+                        <Plus className="h-3.5 w-3.5 text-primary/40 opacity-0 group-hover/month-slot:opacity-100 transition-opacity" />
+                      )}
                     </div>
                     <div className="relative z-10 space-y-0.5">
                       {dayApts.slice(0, 3).map((apt: any) => {
@@ -2745,6 +2763,7 @@ export default function CalendarPage() {
                       <th key={i} className={cn(
                         "px-2 py-2.5 text-center border-l border-border relative group font-normal",
                         isTodayCol ? "bg-primary/[0.06]" : "",
+                        dayOffStatus && "bg-destructive/[0.06]",
                       )}>
                         <p className={cn(
                           "text-[11px] uppercase tracking-wide",
@@ -2756,6 +2775,12 @@ export default function CalendarPage() {
                         )}>
                           {format(day, "MMM d", { locale: dateLocale })}
                         </p>
+                        {dayOffStatus && (
+                          <span className="mt-1 inline-flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-1.5 py-0.5 text-[10px] font-medium text-destructive">
+                            <CalendarOff className="h-2.5 w-2.5" />
+                            {t("calendar.dayOffShort")}
+                          </span>
+                        )}
 
                         <button
                           onClick={() => handleQuickDayOff(day)}
@@ -2776,6 +2801,7 @@ export default function CalendarPage() {
                       <span className="text-xs text-muted-foreground font-medium">{fmtHour(hour)}</span>
                     </td>
                     {days.map((day, dayIdx) => {
+                      const isDayOffCol = isDayOff(day);
                       const events = getEventsForDayHour(day, hour);
                       const pendingReqs = getPendingRequestsForDayHour(day, hour);
                       const outsidePublicBookingGaps = publicBookingGapsForHour(day, hour);
@@ -2802,6 +2828,7 @@ export default function CalendarPage() {
                           onDrop={(e) => handleDrop(e, day, hour)}
                           className={cn(
                             "relative border-l border-b border-border transition-colors",
+                            isDayOffCol && "bg-destructive/[0.05]",
                             !hasAny && "hover:bg-primary/5 cursor-pointer group/slot",
                             dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && canDropOnSlot(day, hour, dragAptId) && "bg-primary/15 ring-2 ring-primary/30 ring-inset",
                             dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && !canDropOnSlot(day, hour, dragAptId) && "bg-destructive/10 ring-2 ring-destructive/30 ring-inset",
