@@ -1081,9 +1081,9 @@ function LandingNav() {
           <Link
             to="/auth"
             onClick={() => track("cta_clicked", { source_page: "/", cta: "nav", lang })}
-            className="whitespace-nowrap text-sm font-semibold text-secondary hover:underline underline-offset-4 transition-colors"
+            className="inline-flex min-h-[40px] items-center whitespace-nowrap rounded-xl bg-secondary px-5 py-2 text-sm font-semibold text-secondary-foreground shadow-sm transition-colors hover:bg-secondary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
-            <BrandText text={t("navOpenApp")} />
+            <BrandText text={t("navOpenApp")} brandClassName="font-semibold text-secondary-foreground" />
           </Link>
         </div>
       </div>
@@ -1102,10 +1102,6 @@ function HeroSection() {
     <section className="w-full [padding-block-end:clamp(20px,3vh,44px)] [padding-block-start:clamp(20px,3vh,40px)] [padding-inline:clamp(24px,4vw,72px)]">
       <div className="grid w-full items-center gap-[clamp(24px,3vw,48px)] lg:grid-cols-[minmax(320px,1fr)_minmax(0,3fr)] lg:gap-[clamp(40px,3.5vw,64px)] xl:grid-cols-[minmax(340px,1fr)_minmax(0,3.2fr)]">
         <div className="min-w-0 text-center lg:text-left">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium leading-normal text-primary">
-            <Sparkles className="h-3.5 w-3.5 shrink-0" />
-            <BrandText text={lt(lang, active.label)} className="leading-normal" />
-          </div>
           <div key={slide} className="hero-slide-text">
             <h1 className="mb-5 font-bold tracking-tight text-foreground [font-size:clamp(24px,2vw,38px)] [line-height:1.08]">
               <span className="block">{lt(lang, active.title)}</span>
