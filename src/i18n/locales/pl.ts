@@ -2266,7 +2266,7 @@ export default {
   "onbj.doneTitle": "Twoja praktyka jest gotowa",
   "onbj.doneSub": "Znasz już podstawowy cykl Solo .Bizz: od umówienia klienta po wynik finansowy.",
   "onbj.doneCta": "Zaczynam pracę",
-} as const;  "onbj.k.practice.t": "Skonfiguruj swoją praktykę",
+  "onbj.k.practice.t": "Skonfiguruj swoją praktykę",
   "onbj.k.practice.d": "Uzupełnij dane praktyki i zapisz profil. Po zapisaniu wrócisz automatycznie do kalendarza.",
   "onbj.k.practice.c": "Skonfiguruj praktykę",
   "onbj.k.sessions.t": "Utwórz dwie pierwsze sesje",
@@ -2294,4 +2294,4 @@ export default {
   "onbj.k.expense.d": "Dodaj wydatek praktyki samodzielnie, aby zobaczyć realny wynik, a nie tylko przychód.",
   "onbj.k.expense.c": "Dodaj wydatek",
   "onbj.focusHint": "Otworzyliśmy dzień z Twoją sesją. Kliknij sesję, aby ją otworzyć.",
-
+} as const;

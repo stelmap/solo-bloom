@@ -2266,7 +2266,7 @@ export default {
   "onbj.doneTitle": "Votre pratique est prête",
   "onbj.doneSub": "Vous connaissez le cycle Solo .Bizz : de la prise de rendez-vous au résultat financier.",
   "onbj.doneCta": "Commencer",
-} as const;  "onbj.k.practice.t": "Configurez votre pratique",
+  "onbj.k.practice.t": "Configurez votre pratique",
   "onbj.k.practice.d": "Renseignez les informations de votre pratique et enregistrez le profil. Vous reviendrez automatiquement au calendrier.",
   "onbj.k.practice.c": "Configurer la pratique",
   "onbj.k.sessions.t": "Créez vos deux premières séances",
@@ -2294,4 +2294,4 @@ export default {
   "onbj.k.expense.d": "Ajoutez vous-même une dépense pour voir votre résultat réel, pas seulement les revenus.",
   "onbj.k.expense.c": "Ajouter une dépense",
   "onbj.focusHint": "Nous avons ouvert la journée de votre séance. Cliquez sur la séance pour l'ouvrir.",
-
+} as const;
