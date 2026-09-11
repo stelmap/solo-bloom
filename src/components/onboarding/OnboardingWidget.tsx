@@ -10,6 +10,7 @@ import {
   useSetOnboardingState,
   type OnboardingStepKey,
 } from "@/hooks/useOnboardingJourney";
+import { useOverlayOpen } from "@/hooks/useOverlayOpen";
 
 /** Deep links for each guided step. The wizard only navigates — never acts. */
 const STEP_TARGET: Record<OnboardingStepKey, string> = {
@@ -30,26 +31,24 @@ export function OnboardingWidget() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
-  const { loading, done, completedCount, total, allDone, currentStep, dismissed, minimized, openSessions } =
+  const { loading, done, completedCount, total, allDone, currentStep, dismissed, minimized } =
     useOnboardingJourney();
   const { patch } = useSetOnboardingState();
+  const overlayOpen = useOverlayOpen();
 
   if (loading || dismissed) return null;
+  // A primary working modal/drawer (session details, create/edit forms, ...)
+  // always takes priority. The wizard only hides visually; state is untouched.
+  if (overlayOpen) return null;
   if (HIDDEN_PREFIXES.some((p) => location.pathname.startsWith(p))) return null;
 
   const stepIndex = (k: OnboardingStepKey) => ONBOARDING_STEP_KEYS.indexOf(k) + 1;
 
-  /**
-   * For the paid / unpaid steps we point the calendar at one of the sessions the
-   * user created, so it can be found and opened manually. No status is changed.
-   */
-  const targetFor = (key: OnboardingStepKey) => {
-    if (key === "paid" || key === "unpaid") {
-      const apt = key === "paid" ? openSessions[0] : openSessions[1] ?? openSessions[0];
-      return apt?.id ? `/calendar?focusAppointmentId=${apt.id}` : "/calendar";
-    }
-    return STEP_TARGET[key];
-  };
+  const targetFor = (key: OnboardingStepKey) => STEP_TARGET[key];
+
+  // The session status steps are instruction-only: the user must find and open
+  // the session manually in the calendar.
+  const INSTRUCTION_ONLY: OnboardingStepKey[] = ["paid", "unpaid"];
 
   if (minimized) {
     return (
@@ -164,7 +163,7 @@ export function OnboardingWidget() {
                           {t(`onbj.k.${key}.d`)}
                         </p>
                       )}
-                      {!isDone && (
+                      {!isDone && !INSTRUCTION_ONLY.includes(key) && (
                         <div className="mt-2 flex flex-wrap gap-2">
                           <Button
                             size="sm"
