@@ -39,22 +39,24 @@ export function OutcomeStrip({ lang }: { lang: AppLanguage }) {
             {CARDS.map((card, i) => (
               <li key={card.title} className="contents">
                 <div
-                  className="flex h-full items-start gap-4 rounded-2xl border border-primary/15 bg-card shadow-sm"
+                  className="flex h-full items-start gap-4 rounded-2xl border border-border bg-card shadow-md ring-1 ring-secondary/5"
                   style={{ padding: "clamp(16px, 1.6vw, 28px)" }}
                 >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                    <card.icon className="h-5 w-5 text-primary" strokeWidth={1.75} aria-hidden="true" />
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+                    <card.icon className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
                   </span>
                   <div className="min-w-0">
-                    <strong className="block text-base font-bold leading-snug text-foreground">
+                    <strong className="block text-base font-bold leading-snug text-secondary">
                       {lt(lang, card.title)}
                     </strong>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{lt(lang, card.text)}</p>
+                    <p className="mt-1 text-sm leading-relaxed text-foreground/70">{lt(lang, card.text)}</p>
                   </div>
                 </div>
                 {i < CARDS.length - 1 && (
                   <div aria-hidden="true" className="flex items-center justify-center">
-                    <ArrowRight className="h-5 w-5 rotate-90 text-primary lg:rotate-0" strokeWidth={1.75} />
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 ring-1 ring-primary/40">
+                      <ArrowRight className="h-5 w-5 rotate-90 text-primary lg:rotate-0" strokeWidth={2.5} />
+                    </span>
                   </div>
                 )}
               </li>
