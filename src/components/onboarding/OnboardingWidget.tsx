@@ -38,11 +38,28 @@ export function OnboardingWidget() {
   const { loading, done, completedCount, total, allDone, currentStep, dismissed, minimized } =
     useOnboardingJourney();
   const { patch } = useSetOnboardingState();
+  const { data: appointments = [] } = useAppointments();
 
   if (loading || dismissed) return null;
   if (HIDDEN_PREFIXES.some((p) => location.pathname.startsWith(p))) return null;
 
   const stepIndex = (k: OnboardingStepKey) => ONBOARDING_STEP_KEYS.indexOf(k) + 1;
+
+  /** Session the user should act on for the "complete as paid / unpaid" steps. */
+  const OPEN_STATUSES = new Set(["scheduled", "confirmed", "reminder_sent"]);
+  const openSession = (appointments as any[])
+    .filter((a) => OPEN_STATUSES.has(String(a.status)))
+    .sort(
+      (a, b) =>
+        new Date(a.scheduled_at ?? 0).getTime() - new Date(b.scheduled_at ?? 0).getTime(),
+    )[0];
+
+  const targetFor = (key: OnboardingStepKey) => {
+    if (key === "paid" || key === "unpaid") {
+      return openSession?.id ? `/calendar?appointmentId=${openSession.id}` : "/calendar?new=1";
+    }
+    return STEP_TARGET[key];
+  };
 
   if (minimized) {
     return (
