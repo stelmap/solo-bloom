@@ -160,22 +160,21 @@ export function AboutOverlay({
             Від IT до психології. Від хаосу в записах до власного продукту.
           </p>
 
-          <ol className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
+          <ol className="mt-10 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {steps.map((step, i) => (
-              <li key={step.title}>
-                <div className="flex items-center gap-3 lg:flex-col lg:items-start">
-                  <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-muted text-primary">
-                    <step.icon className="h-6 w-6" />
-                  </span>
-                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground lg:mt-4">
-                    {i + 1}
-                  </span>
-                </div>
-                <h3 className="mt-4 text-base font-semibold text-foreground">{step.title}</h3>
+              <li key={step.title} className="flex flex-col">
+                <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-muted text-primary">
+                  <step.icon className="h-6 w-6" />
+                </span>
+                <span className="mt-4 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                  {i + 1}
+                </span>
+                <h3 className="mt-4 text-base font-semibold leading-snug text-foreground">{step.title}</h3>
                 <div className="mt-2 space-y-2 text-sm leading-relaxed text-muted-foreground">{step.body}</div>
               </li>
             ))}
           </ol>
+
         </section>
 
         {/* Today */}
