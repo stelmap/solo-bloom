@@ -196,16 +196,19 @@ export function PricingFollowUp({ lang }: { lang: AppLanguage }) {
     <>
       {/* 1 — plan benefits */}
       <section className="px-4 pb-4 pt-0 sm:px-6 bg-orange-50/60">
-        <div className="mx-auto max-w-6xl rounded-3xl bg-muted/60 p-6 sm:p-10">
-          <h2 className="text-center text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+        <div className="mx-auto max-w-6xl rounded-3xl border-2 border-primary/30 bg-card p-6 shadow-md sm:p-10">
+          <h2 className="text-center text-2xl font-bold tracking-tight text-secondary sm:text-3xl xl:text-4xl">
             {p(lang, COPY.benefitsTitle)}
           </h2>
+          <span aria-hidden="true" className="mx-auto mt-4 block h-1 w-16 rounded-full bg-primary" />
           <ul className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {BENEFITS.map((b) => (
               <li key={b.title.en} className="flex flex-col items-center text-center">
-                <b.icon className="h-6 w-6 text-secondary" strokeWidth={1.75} aria-hidden="true" />
-                <strong className="mt-3 text-sm font-semibold text-foreground sm:text-base">{p(lang, b.title)}</strong>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">{p(lang, b.text)}</p>
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+                  <b.icon className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
+                </span>
+                <strong className="mt-3 text-sm font-semibold text-secondary sm:text-base">{p(lang, b.title)}</strong>
+                <p className="mt-1 text-xs leading-relaxed text-foreground/70 sm:text-sm">{p(lang, b.text)}</p>
               </li>
             ))}
           </ul>
