@@ -1,7 +1,7 @@
 /// <reference types="npm:@types/react@18.3.1" />
 
 /**
- * Shared SoloBizz brand shell for ALL outgoing emails (auth + transactional).
+ * Shared Solo .Bizz brand shell for ALL outgoing emails (auth + transactional).
  *
  * Visual language (matches solobizz_email_templates.html):
  *   - Dark navy header band with "Solo" + orange "Bizz" wordmark.
@@ -273,7 +273,7 @@ interface ShellProps {
 }
 
 /**
- * SoloBizzShell — the outer email frame all SoloBizz emails share.
+ * SoloBizzShell — the outer email frame all Solo .Bizz emails share.
  * Pass the localized preview, hero icon/title/subtitle, and the body
  * paragraphs as children. Pass a localized footer node if needed.
  */
@@ -315,7 +315,7 @@ export const SoloBizzShell: React.FC<ShellProps> = ({
           <Section style={styles.footer}>
             {footer ?? (
               <Text style={styles.footerText}>
-                © {new Date().getUTCFullYear()} SoloBizz · solo-bizz.com
+                © {new Date().getUTCFullYear()} Solo .Bizz · solo-bizz.com
               </Text>
             )}
           </Section>
