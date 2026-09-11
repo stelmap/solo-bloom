@@ -2267,7 +2267,7 @@ export default {
   "onbj.doneTitle": "Your practice is ready",
   "onbj.doneSub": "You now know the core Solo .Bizz cycle: from booking a client to the financial result.",
   "onbj.doneCta": "Start working",
-} as const;  "onbj.k.practice.t": "Set up your practice",
+  "onbj.k.practice.t": "Set up your practice",
   "onbj.k.practice.d": "Fill in your practice details and save the profile. You will be brought back to the calendar automatically.",
   "onbj.k.practice.c": "Set up practice",
   "onbj.k.sessions.t": "Create your first two sessions",
@@ -2295,4 +2295,4 @@ export default {
   "onbj.k.expense.d": "Add a practice expense yourself to see your real result, not just income.",
   "onbj.k.expense.c": "Add expense",
   "onbj.focusHint": "We opened the day with your session. Click the session to open it.",
-
+} as const;
