@@ -124,6 +124,11 @@ export function applyConsent(c: Consent | null) {
   if (!c) return;
   if (c.marketing) loadMetaPixel();
   if (c.analytics) loadPlerdy();
+  // Product analytics (PostHog) is optional too: start it only after the
+  // analytics category is accepted, and stop capturing when it is withdrawn.
+  import("@/lib/analytics")
+    .then((m) => (c.analytics ? m.initAnalytics() : m.disableAnalytics()))
+    .catch(() => {});
 }
 
 /** Call once at app boot to re-apply a previously stored consent. */
@@ -131,3 +136,4 @@ export function bootConsent() {
   const c = getConsent();
   if (c) applyConsent(c);
 }
+
