@@ -1255,7 +1255,7 @@ function PricingSection() {
 
   return (
     <BillingCycleContext.Provider value={cycle}>
-    <section id="pricing" className="py-20 px-4 sm:px-6 bg-background">
+    <section id="pricing" className="py-20 px-4 sm:px-6 bg-muted/40">
       <div id="pricing-plans" className="max-w-6xl mx-auto">
         <div className="text-center mb-10">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">{t("pricingTitle")}</h2>

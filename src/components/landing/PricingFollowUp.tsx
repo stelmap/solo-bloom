@@ -195,7 +195,7 @@ export function PricingFollowUp({ lang }: { lang: AppLanguage }) {
   return (
     <>
       {/* 1 — plan benefits */}
-      <section className="px-4 pb-4 pt-0 sm:px-6 bg-background">
+      <section className="px-4 pb-4 pt-0 sm:px-6 bg-muted/40">
         <div className="mx-auto max-w-6xl rounded-3xl border-2 border-primary/30 bg-card p-6 shadow-md sm:p-10">
           <h2 className="text-center text-2xl font-bold tracking-tight text-secondary sm:text-3xl xl:text-4xl">
             {p(lang, COPY.benefitsTitle)}
@@ -216,7 +216,7 @@ export function PricingFollowUp({ lang }: { lang: AppLanguage }) {
       </section>
 
       {/* 2 — FAQ */}
-      <section id="faq" className="px-4 py-20 sm:px-6 bg-background">
+      <section id="faq" className="px-4 py-20 sm:px-6 bg-muted/40">
         <div className="mx-auto max-w-6xl">
           <div className="text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">{p(lang, COPY.faqEyebrow)}</p>
