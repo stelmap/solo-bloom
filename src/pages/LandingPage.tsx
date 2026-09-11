@@ -1771,6 +1771,7 @@ export default function LandingPage() {
 /** Inner shell: has access to the landing language context. */
 function LandingShell() {
   const { lang } = useLandingLang();
+  const [contactOpen, setContactOpen] = useState(false);
 
   const activateOffer = useCallback(() => {
     storePendingOffer(null);
