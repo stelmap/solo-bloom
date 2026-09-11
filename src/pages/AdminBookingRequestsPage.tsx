@@ -14,6 +14,8 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { contactRequestTypeLabel } from "@/components/landing/ContactRequestDialog";
 import { Loader2, RefreshCw, Mail, Phone, Send } from "lucide-react";
 
 type BookingRequest = {
@@ -24,7 +26,10 @@ type BookingRequest = {
   message: string | null;
   language: string | null;
   source: string | null;
-  status: "new" | "in_progress" | "done" | "archived";
+  status: "new" | "in_progress" | "contacted" | "resolved" | "closed" | "done" | "archived";
+  request_type: string | null;
+  request_type_other: string | null;
+  user_id: string | null;
   created_at: string;
 };
 
@@ -32,6 +37,9 @@ const STATUSES = [
   { value: "all", label: "Усі" },
   { value: "new", label: "Нові" },
   { value: "in_progress", label: "В роботі" },
+  { value: "contacted", label: "Сконтактовано" },
+  { value: "resolved", label: "Вирішено" },
+  { value: "closed", label: "Закрито" },
   { value: "done", label: "Завершено" },
   { value: "archived", label: "Архів" },
 ] as const;
@@ -39,6 +47,9 @@ const STATUSES = [
 const STATUS_VARIANT: Record<BookingRequest["status"], "default" | "secondary" | "outline"> = {
   new: "default",
   in_progress: "secondary",
+  contacted: "secondary",
+  resolved: "outline",
+  closed: "outline",
   done: "outline",
   archived: "outline",
 };
@@ -46,6 +57,9 @@ const STATUS_VARIANT: Record<BookingRequest["status"], "default" | "secondary" |
 const STATUS_LABEL: Record<BookingRequest["status"], string> = {
   new: "Нова",
   in_progress: "В роботі",
+  contacted: "Сконтактовано",
+  resolved: "Вирішено",
+  closed: "Закрито",
   done: "Завершено",
   archived: "Архів",
 };
@@ -74,6 +88,7 @@ export default function AdminBookingRequestsPage() {
   const [from, setFrom] = useState<string>("");
   const [to, setTo] = useState<string>("");
   const [search, setSearch] = useState<string>("");
+  const [details, setDetails] = useState<BookingRequest | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -135,10 +150,18 @@ export default function AdminBookingRequestsPage() {
 
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
-    if (!s) return rows;
-    return rows.filter((r) =>
-      [r.name, r.email, r.phone ?? "", r.message ?? ""].some((v) => v.toLowerCase().includes(s)),
-    );
+    const base = !s
+      ? rows
+      : rows.filter((r) =>
+          [r.name, r.email ?? "", r.phone ?? "", r.message ?? "", contactRequestTypeLabel(r.request_type)].some((v) =>
+            v.toLowerCase().includes(s),
+          ),
+        );
+    return [...base].sort((a, b) => {
+      if (a.status === "new" && b.status !== "new") return -1;
+      if (b.status === "new" && a.status !== "new") return 1;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
   }, [rows, search]);
 
   const updateStatus = async (id: string, status: BookingRequest["status"]) => {
@@ -226,6 +249,7 @@ export default function AdminBookingRequestsPage() {
               <TableRow>
                 <TableHead className="w-[140px]">Дата</TableHead>
                 <TableHead>Контакт</TableHead>
+                <TableHead className="w-[190px]">Причина звернення</TableHead>
                 <TableHead>Повідомлення</TableHead>
                 <TableHead className="w-[90px]">Мова</TableHead>
                 <TableHead className="w-[150px]">Email</TableHead>
@@ -245,9 +269,11 @@ export default function AdminBookingRequestsPage() {
                   <TableCell className="text-xs text-muted-foreground align-top">{fmtDate(r.created_at)}</TableCell>
                   <TableCell className="align-top">
                     <div className="font-medium">{r.name}</div>
-                    <a href={`mailto:${r.email}`} className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
-                      <Mail className="h-3 w-3" /> {r.email}
-                    </a>
+                    {r.email && (
+                      <a href={`mailto:${r.email}`} className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+                        <Mail className="h-3 w-3" /> {r.email}
+                      </a>
+                    )}
                     {r.phone && (
                       <div>
                         <a href={`tel:${r.phone}`} className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
@@ -261,8 +287,17 @@ export default function AdminBookingRequestsPage() {
                       </div>
                     )}
                   </TableCell>
+                  <TableCell className="align-top">
+                    <span className="text-sm">{contactRequestTypeLabel(r.request_type)}</span>
+                    {r.request_type_other && (
+                      <p className="mt-1 text-xs text-muted-foreground break-words">{r.request_type_other}</p>
+                    )}
+                  </TableCell>
                   <TableCell className="align-top max-w-md">
                     <p className="text-sm whitespace-pre-wrap break-words">{r.message || <span className="text-muted-foreground">—</span>}</p>
+                    <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => setDetails(r)}>
+                      Деталі
+                    </Button>
                   </TableCell>
                   <TableCell className="align-top">
                     <Badge variant="outline">{(r.language || "—").toUpperCase()}</Badge>
@@ -303,6 +338,9 @@ export default function AdminBookingRequestsPage() {
                         <SelectContent>
                           <SelectItem value="new">Нова</SelectItem>
                           <SelectItem value="in_progress">В роботі</SelectItem>
+                          <SelectItem value="contacted">Сконтактовано</SelectItem>
+                          <SelectItem value="resolved">Вирішено</SelectItem>
+                          <SelectItem value="closed">Закрито</SelectItem>
                           <SelectItem value="done">Завершено</SelectItem>
                           <SelectItem value="archived">Архів</SelectItem>
                         </SelectContent>
@@ -315,6 +353,40 @@ export default function AdminBookingRequestsPage() {
           </Table>
         </div>
       </div>
+
+      <Dialog open={!!details} onOpenChange={(v) => !v && setDetails(null)}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Заявка</DialogTitle>
+          </DialogHeader>
+          {details && (
+            <dl className="space-y-2 text-sm">
+              {[
+                ["ID", details.id],
+                ["Створено", fmtDate(details.created_at)],
+                ["Статус", STATUS_LABEL[details.status]],
+                ["Ім'я", details.name],
+                ["Телефон", details.phone || "—"],
+                ["Email", details.email || "—"],
+                ["Тип запиту", contactRequestTypeLabel(details.request_type)],
+                ["Уточнення", details.request_type_other || "—"],
+                ["Джерело", details.source || "—"],
+                ["Користувач", details.user_id || "—"],
+                ["Мова", (details.language || "—").toUpperCase()],
+              ].map(([k, v]) => (
+                <div key={k as string} className="grid grid-cols-[130px_1fr] gap-2">
+                  <dt className="text-muted-foreground">{k}</dt>
+                  <dd className="break-words">{v}</dd>
+                </div>
+              ))}
+              <div>
+                <dt className="text-muted-foreground mb-1">Повідомлення</dt>
+                <dd className="whitespace-pre-wrap break-words">{details.message || "—"}</dd>
+              </div>
+            </dl>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
