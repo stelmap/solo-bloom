@@ -10,23 +10,18 @@ import {
   useSetOnboardingState,
   type OnboardingStepKey,
 } from "@/hooks/useOnboardingJourney";
-import { useAppointments } from "@/hooks/useData";
 
-/** Deep links for each guided step. */
+/** Deep links for each guided step. The wizard only navigates — never acts. */
 const STEP_TARGET: Record<OnboardingStepKey, string> = {
   practice: "/settings/practice",
-  session: "/calendar?new=1",
+  sessions: "/calendar",
   paid: "/calendar",
   unpaid: "/calendar",
+  payment: "/finances/income",
+  debt: "/finances/income",
   day: "/dashboard#today",
   finance: "/finances/overview",
-  expense: "/finances/expenses?new=1",
-};
-
-/** Secondary "see the result" link, shown once the step is completed. */
-const STEP_RESULT: Partial<Record<OnboardingStepKey, { path: string; key: string; okKey: string }>> = {
-  paid: { path: "/finances/income", key: "onbj.s3link", okKey: "onbj.s3ok" },
-  unpaid: { path: "/finances/payment-audit", key: "onbj.s4link", okKey: "onbj.s4ok" },
+  expense: "/finances/expenses",
 };
 
 const HIDDEN_PREFIXES = ["/auth", "/onboarding", "/book", "/agreement", "/confirm"];
@@ -35,28 +30,23 @@ export function OnboardingWidget() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
-  const { loading, done, completedCount, total, allDone, currentStep, dismissed, minimized } =
+  const { loading, done, completedCount, total, allDone, currentStep, dismissed, minimized, openSessions } =
     useOnboardingJourney();
   const { patch } = useSetOnboardingState();
-  const { data: appointments = [] } = useAppointments();
 
   if (loading || dismissed) return null;
   if (HIDDEN_PREFIXES.some((p) => location.pathname.startsWith(p))) return null;
 
   const stepIndex = (k: OnboardingStepKey) => ONBOARDING_STEP_KEYS.indexOf(k) + 1;
 
-  /** Session the user should act on for the "complete as paid / unpaid" steps. */
-  const OPEN_STATUSES = new Set(["scheduled", "confirmed", "reminder_sent"]);
-  const openSession = (appointments as any[])
-    .filter((a) => OPEN_STATUSES.has(String(a.status)))
-    .sort(
-      (a, b) =>
-        new Date(a.scheduled_at ?? 0).getTime() - new Date(b.scheduled_at ?? 0).getTime(),
-    )[0];
-
+  /**
+   * For the paid / unpaid steps we point the calendar at one of the sessions the
+   * user created, so it can be found and opened manually. No status is changed.
+   */
   const targetFor = (key: OnboardingStepKey) => {
     if (key === "paid" || key === "unpaid") {
-      return openSession?.id ? `/calendar?appointmentId=${openSession.id}` : "/calendar?new=1";
+      const apt = key === "paid" ? openSessions[0] : openSessions[1] ?? openSessions[0];
+      return apt?.id ? `/calendar?focusAppointmentId=${apt.id}` : "/calendar";
     }
     return STEP_TARGET[key];
   };
@@ -67,7 +57,7 @@ export function OnboardingWidget() {
         type="button"
         onClick={() => patch({ minimized: false })}
         aria-label={t("onbj.expand")}
-        className="fixed bottom-4 right-4 z-40 flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground shadow-lg hover:bg-accent"
+        className="fixed bottom-4 right-4 z-[60] flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground shadow-lg hover:bg-accent"
       >
         <Sparkles className="h-4 w-4 text-primary" />
         {t("onbj.mini", { done: completedCount, total })}
@@ -76,7 +66,7 @@ export function OnboardingWidget() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-40 w-[min(24rem,calc(100vw-2rem))] rounded-2xl border border-border bg-card shadow-2xl">
+    <div className="fixed bottom-4 right-4 z-[60] w-[min(24rem,calc(100vw-2rem))] rounded-2xl border border-border bg-card shadow-2xl">
       <div className="flex items-start gap-3 border-b border-border p-4">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10">
           <Sparkles className="h-4 w-4 text-primary" />
@@ -135,7 +125,6 @@ export function OnboardingWidget() {
               const isDone = done[key];
               const isCurrent = key === currentStep;
               const n = stepIndex(key);
-              const result = STEP_RESULT[key];
               return (
                 <div
                   key={key}
@@ -168,31 +157,25 @@ export function OnboardingWidget() {
                           isDone && "line-through decoration-muted-foreground/50",
                         )}
                       >
-                        {t(`onbj.s${n}t`)}
+                        {t(`onbj.k.${key}.t`)}
                       </p>
-                      {(isCurrent || !isDone) && (
-                        <p className="mt-0.5 text-xs text-muted-foreground">{t(`onbj.s${n}d`)}</p>
+                      {!isDone && (
+                        <p className="mt-0.5 whitespace-pre-line text-xs text-muted-foreground">
+                          {t(`onbj.k.${key}.d`)}
+                        </p>
                       )}
-                      {isDone && result && (
-                        <p className="mt-0.5 text-xs text-muted-foreground">{t(result.okKey)}</p>
-                      )}
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {!isDone && (
+                      {!isDone && (
+                        <div className="mt-2 flex flex-wrap gap-2">
                           <Button
                             size="sm"
                             variant={isCurrent ? "default" : "outline"}
                             onClick={() => navigate(targetFor(key))}
                           >
-                            {t(`onbj.s${n}c`)}
+                            {t(`onbj.k.${key}.c`)}
                             <ArrowRight className="ml-1 h-3.5 w-3.5" />
                           </Button>
-                        )}
-                        {isDone && result && (
-                          <Button size="sm" variant="ghost" onClick={() => navigate(result.path)}>
-                            {t(result.key)}
-                          </Button>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
