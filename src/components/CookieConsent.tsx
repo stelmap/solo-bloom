@@ -74,8 +74,10 @@ export function CookieConsent() {
   const [expanded, setExpanded] = useState(false);
   const [analytics, setAnalytics] = useState(false);
   const [marketing, setMarketing] = useState(false);
-  const coerce = (l: string): Language => (l === "en" || l === "uk" || l === "fr" || l === "pl" ? l : "en") as Language;
-  const [lang, setLang] = useState<Language>(coerce(getStoredLang()));
+  const coerce = (l: string): AppLanguage =>
+    l === "en" || l === "uk" || l === "fr" || l === "pl" || l === "ru" ? (l as AppLanguage) : "en";
+  const [lang, setLang] = useState<AppLanguage>(coerce(getStoredLang()));
+
 
   useEffect(() => {
     setOpen(getConsent() === null);
