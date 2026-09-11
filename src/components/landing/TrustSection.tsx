@@ -285,7 +285,7 @@ export function TrustSection({
   };
 
   return (
-    <section className="bg-muted/40 py-16 sm:py-20" style={{ paddingInline: "clamp(16px, 4vw, 64px)" }} aria-labelledby="trust-title">
+    <section id="reviews" className="bg-muted/40 py-16 sm:py-20" style={{ paddingInline: "clamp(16px, 4vw, 64px)" }} aria-labelledby="trust-title">
       <div className="mx-auto w-full" style={{ width: "min(92vw, 1720px)", maxWidth: "100%" }}>
         <header className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-bold uppercase tracking-[0.08em] text-primary">{c.eyebrow}</p>

@@ -1,4 +1,4 @@
-import { BrandName } from "@/components/BrandName";
+import { BrandName, BrandText } from "@/components/BrandName";
 import { AboutOverlay } from "@/components/landing/AboutOverlay";
 import { useState, useRef, useCallback, createContext, useContext, useEffect, type ReactNode } from "react";
 import { Helmet } from "react-helmet-async";
@@ -63,9 +63,9 @@ type Copy = Record<Language, string>;
 const C = {
   // Nav
   navAudience: { en: "What's included", fr: "Ce qui est inclus", uk: "Що включено", pl: "Co jest w zestawie" },
-  navHow: { en: "Comparison", fr: "Comparaison", uk: "Порівняння", pl: "Porównanie" },
+  navReviews: { en: "Reviews", fr: "Avis", uk: "Відгуки", pl: "Opinie" },
   navPricing: { en: "Pricing", fr: "Tarifs", uk: "Ціни", pl: "Cennik" },
-  navFaq: { en: "FAQ", fr: "FAQ", uk: "Питання", pl: "FAQ" },
+  navFaq: { en: "Questions & answers", fr: "Questions et réponses", uk: "Питання та відповіді", pl: "Pytania i odpowiedzi" },
   navLogin: { en: "Log in", fr: "Connexion", uk: "Увійти", pl: "Zaloguj się" },
   navTry: { en: "Start for free", fr: "Commencer gratuitement", uk: "Почати безкоштовно", pl: "Zacznij za darmo" },
   navOpenApp: { en: "Go to Solo .Bizz →", fr: "Aller à Solo .Bizz →", uk: "Перейти в Solo .Bizz →", pl: "Przejdź do Solo .Bizz →" },
@@ -670,9 +670,9 @@ const SELECT_LANGUAGE_LABEL: Record<AppLanguage, string> = {
 const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
   // Nav
   navAudience: "Что включено",
-  navHow: "Сравнение",
+  navReviews: "Отзывы",
   navPricing: "Цены",
-  navFaq: "Вопросы",
+  navFaq: "Вопросы и ответы",
   navLogin: "Войти",
   navTry: "Начать бесплатно",
   navOpenApp: "Перейти в Solo .Bizz →",
@@ -1021,8 +1021,8 @@ function LandingNav() {
 
   const current = LANG_OPTIONS.find((o) => o.code === lang) ?? LANG_OPTIONS[1];
   const links = [
-    { label: t("navAudience"), href: "#features" },
-    { label: t("navHow"), href: "#comparison" },
+    { label: t("navAudience"), href: "#workflow" },
+    { label: t("navReviews"), href: "#reviews" },
     { label: t("navPricing"), href: "#pricing" },
     { label: t("navFaq"), href: "#faq" },
   ];
@@ -1082,7 +1082,7 @@ function LandingNav() {
             onClick={() => track("cta_clicked", { source_page: "/", cta: "nav", lang })}
             className="whitespace-nowrap text-sm font-semibold text-secondary hover:underline underline-offset-4 transition-colors"
           >
-            {t("navOpenApp")}
+            <BrandText text={t("navOpenApp")} />
           </Link>
         </div>
       </div>
@@ -1103,7 +1103,7 @@ function HeroSection() {
         <div className="min-w-0 text-center lg:text-left">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium leading-normal text-primary">
             <Sparkles className="h-3.5 w-3.5 shrink-0" />
-            <span className="leading-normal">{lt(lang, active.label)}</span>
+            <BrandText text={lt(lang, active.label)} className="leading-normal" />
           </div>
           <div key={slide} className="hero-slide-text">
             <h1 className="mb-5 font-bold tracking-tight text-foreground [font-size:clamp(24px,2vw,38px)] [line-height:1.08]">
@@ -1111,7 +1111,7 @@ function HeroSection() {
               {active.title2 && <span className="mt-2 block text-primary">{lt(lang, active.title2)}</span>}
             </h1>
             <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-              {lt(lang, active.body)}
+              <BrandText text={lt(lang, active.body)} />
             </p>
           </div>
           <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center lg:flex-nowrap lg:justify-start">

@@ -18,4 +18,19 @@ export function BrandName({
   );
 }
 
+/**
+ * Renders arbitrary copy while styling every "Solo .Bizz" occurrence with the
+ * canonical brand mark (dark "Solo", orange ".Bizz").
+ */
+export function BrandText({ text, className }: { text: string; className?: string }) {
+  const parts = text.split(/(Solo\s\.Bizz)/g);
+  return (
+    <span className={className}>
+      {parts.map((part, i) =>
+        /^Solo\s\.Bizz$/.test(part) ? <BrandName key={i} className="font-semibold text-foreground" /> : <span key={i}>{part}</span>,
+      )}
+    </span>
+  );
+}
+
 export default BrandName;
