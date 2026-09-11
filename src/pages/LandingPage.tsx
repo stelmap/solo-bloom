@@ -1653,7 +1653,7 @@ function LandingFooter() {
 
         <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-secondary-foreground/15 pt-6 sm:flex-row">
           <p className="text-xs text-secondary-foreground/70">
-            © {new Date().getFullYear()} <BrandName className="font-semibold" /> {T.rights}
+            © {new Date().getFullYear()} <BrandName className="font-semibold" />. {T.rights}
           </p>
           <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             <Link to="/terms" className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.terms}</Link>
