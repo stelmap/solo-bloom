@@ -1,7 +1,76 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+import { Link } from "react-router-dom";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Eye,
+  FileText,
+  Heart,
+  Laptop,
+  Lightbulb,
+  Quote,
+  Rocket,
+  Sprout,
+  Users,
+  X,
+} from "lucide-react";
 import { BrandName } from "@/components/BrandName";
+
+const steps = [
+  {
+    icon: Laptop,
+    title: "Майже 15 років в IT",
+    body: (
+      <p>
+        Я працювала в IT, будувала продукти, працювала з процесами і командами. Це дало мені системне мислення і досвід
+        створення зручних рішень.
+      </p>
+    ),
+  },
+  {
+    icon: Heart,
+    title: "Психологія і практика",
+    body: (
+      <p>
+        У якийсь момент я зрозуміла, що хочу працювати з людьми. Так у моєму житті з’явилася психологія і власна
+        приватна практика.
+      </p>
+    ),
+  },
+  {
+    icon: FileText,
+    title: "Реальність малого бізнесу",
+    body: (
+      <p>
+        Разом із практикою прийшли записи клієнтів, календар, оплати, фінанси, переноси, борги, нотатки. Я плутала
+        записи, могла щось забути, губила частину доходу і тримала забагато інформації в голові.
+      </p>
+    ),
+  },
+  {
+    icon: Lightbulb,
+    title: "Точка зміни",
+    body: (
+      <>
+        <p>В якийсь момент я сказала собі:</p>
+        <p className="font-semibold text-primary">«Досить, так більше не може працювати».</p>
+        <p>І тоді моя перша професія допомогла моїй другій.</p>
+      </>
+    ),
+  },
+  {
+    icon: Rocket,
+    title: "Перший прототип і розвиток",
+    body: (
+      <p>
+        Так з’явився перший прототип Solo .Bizz. Після цього я багато спілкувалася з колегами, слухала їхні потреби,
+        ідеї та фідбеки. І крок за кроком Solo .Bizz став продуктом, яким він є сьогодні.
+      </p>
+    ),
+  },
+];
+
 
 /**
  * Full-screen editorial "About / Founder story" overlay rendered above the
@@ -68,90 +137,147 @@ export function AboutOverlay({
         <X className="h-5 w-5" />
       </button>
 
-      <div className="mx-auto w-full max-w-[900px] px-5 py-14 sm:px-8 sm:py-20">
-        <BrandName className="text-2xl font-bold text-foreground sm:text-3xl" />
-        <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-          ABOUT SOLO .BIZZ
-        </p>
+      <div className="mx-auto w-full max-w-[1100px] px-5 py-10 sm:px-8 sm:py-14">
+        {/* Hero banner */}
+        <section className="relative overflow-hidden rounded-3xl bg-secondary px-6 py-12 text-secondary-foreground sm:px-12 sm:py-16">
+          <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-primary/10" aria-hidden />
+          <div className="relative max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">ПРО МЕНЕ</p>
+            <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-5xl">
+              Мій шлях до <BrandName accentClassName="text-primary" />
+            </h1>
+            <p className="mt-5 text-base leading-relaxed text-secondary-foreground/80 sm:text-lg">
+              Це історія про те, як досвід в IT, любов до людей і реальність приватної практики привели до створення{" "}
+              <BrandName />.
+            </p>
+          </div>
+        </section>
 
-        <h1 className="mt-10 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Про мене</h1>
-        <div className="mt-6 space-y-5 text-base leading-relaxed text-muted-foreground sm:text-lg">
-          <p className="text-foreground">
-            Привіт! Мене звати Ольга Стельмах, я засновниця <BrandName className="font-semibold" />.
+        {/* Timeline */}
+        <section className="mt-14">
+          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Як це було</h2>
+          <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+            Від IT до психології. Від хаосу в записах до власного продукту.
           </p>
-          <p>
-            Майже 15 років я працювала в IT. Але в якийсь момент зрозуміла, що є інша частина мене — та, яка хоче
-            працювати з людьми й допомагати їм. Так у моєму житті з’явилася психологія і власна приватна практика.
-          </p>
-          <p>
-            І разом із практикою дуже швидко з’явилася реальність малого бізнесу: записи клієнтів, календар, оплати,
-            фінанси, переноси, борги, нотатки. Я плутала записи, могла щось забути, губила частину доходу і постійно
-            тримала занадто багато інформації в голові.
-          </p>
-          <p>В якийсь момент я сказала собі:</p>
-          <blockquote className="border-l-2 border-primary pl-5 text-xl font-semibold leading-snug text-foreground sm:text-2xl">
-            «Досить, так більше не може працювати».
-          </blockquote>
-          <p>І тоді моя перша професія допомогла моїй другій.</p>
-          <p>
-            Так з’явився перший прототип <BrandName className="font-semibold" />.
-          </p>
-          <p>
-            Після цього я почала багато говорити з колегами та іншими спеціалістами, які ведуть приватну практику:
-            слухала, як вони працюють, що їм заважає, де вони втрачають час і гроші, чого їм не вистачає.
-          </p>
-          <p>
-            На основі цих розмов, ідей і десятків фідбеків <BrandName className="font-semibold" /> поступово став
-            продуктом, яким він є сьогодні.
-          </p>
-          <p>
-            Сьогодні <BrandName className="font-semibold" /> — це вже не тільки система для психологів.
-          </p>
-          <p>
-            Це система для спеціалістів, які працюють із клієнтами, своїм часом і власними фінансами та хочуть
-            ставитися до своєї практики як до справжнього бізнесу — але без зайвої складності.
-          </p>
-        </div>
 
-        <section className="mt-16 border-t border-border pt-10">
-          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Наша місія</h2>
-          <p className="mt-5 text-2xl font-semibold leading-snug text-foreground sm:text-3xl">
-            «Зробити малий бізнес зрозумілим, стабільним і прогнозованим».
-          </p>
-          <div className="mt-5 space-y-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            <p>
+          <ol className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
+            {steps.map((step, i) => (
+              <li key={step.title}>
+                <div className="flex items-center gap-3 lg:flex-col lg:items-start">
+                  <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-muted text-primary">
+                    <step.icon className="h-6 w-6" />
+                  </span>
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground lg:mt-4">
+                    {i + 1}
+                  </span>
+                </div>
+                <h3 className="mt-4 text-base font-semibold text-foreground">{step.title}</h3>
+                <div className="mt-2 space-y-2 text-sm leading-relaxed text-muted-foreground">{step.body}</div>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        {/* Today */}
+        <section className="mt-14 rounded-2xl border border-border bg-muted/40 p-6 sm:p-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+            <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-card text-primary">
+              <Users className="h-6 w-6" />
+            </span>
+            <div>
+              <h2 className="text-lg font-bold text-foreground sm:text-xl">
+                Сьогодні <BrandName /> — це вже не тільки система для психологів.
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+                Це система для спеціалістів, які працюють із клієнтами, своїм часом і власними фінансами та хочуть
+                ставитися до своєї практики як до справжнього бізнесу — але без зайвої складності.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Mission & vision */}
+        <div className="mt-8 grid gap-6 lg:grid-cols-2">
+          <section className="rounded-2xl border border-border bg-card p-6 sm:p-8">
+            <div className="flex items-start gap-4">
+              <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary">
+                <Sprout className="h-6 w-6" />
+              </span>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">НАША МІСІЯ</p>
+                <p className="mt-3 text-xl font-bold leading-snug text-foreground sm:text-2xl">
+                  «Зробити малий бізнес зрозумілим, стабільним і прогнозованим».
+                </p>
+              </div>
+            </div>
+            <p className="mt-5 text-sm leading-relaxed text-muted-foreground sm:text-base">
               Ми хочемо, щоб спеціалісту не потрібно було бути бухгалтером, фінансистом чи проходити десятки
               бізнес-курсів, щоб просто розуміти, що відбувається з його практикою.
             </p>
-            <p>
-              <BrandName className="font-semibold" /> має допомагати керувати клієнтами, часом і грошима просто — в
-              одному місці, зрозумілою мовою.
-            </p>
-          </div>
-        </section>
+          </section>
 
-        <section className="mt-16 border-t border-border pt-10">
-          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Наша візія</h2>
-          <blockquote className="mt-5 border-l-2 border-primary pl-5 text-xl font-semibold leading-snug text-foreground sm:text-2xl">
-            «Приватна практика — це не просто календар із клієнтами. Це маленький бізнес». І ним можна управляти легко.
+          <section className="rounded-2xl border border-border bg-card p-6 sm:p-8">
+            <div className="flex items-start gap-4">
+              <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-muted text-foreground">
+                <Eye className="h-6 w-6" />
+              </span>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">НАША ВІЗІЯ</p>
+                <p className="mt-3 text-xl font-bold leading-snug text-foreground sm:text-2xl">
+                  «Приватна практика — це не просто календар із клієнтами. Це маленький бізнес». І ним можна управляти
+                  легко.
+                </p>
+              </div>
+            </div>
+            <p className="mt-5 text-sm leading-relaxed text-muted-foreground sm:text-base">
+              Наша візія — створити продукт, у якому будь-який спеціаліст зможе відкрити <BrandName /> і одразу
+              зрозуміти: що відбувається з моїм бізнесом, скільки я заробляю, де втрачаю гроші, наскільки я завантажена
+              і що мені робити далі.
+            </p>
+          </section>
+        </div>
+
+        {/* Quote */}
+        <figure className="mt-14 border-l-2 border-primary pl-6">
+          <Quote className="h-8 w-8 text-primary/40" aria-hidden />
+          <blockquote className="mt-3 text-xl font-medium leading-snug text-foreground sm:text-2xl">
+            Ми хочемо, щоб управління власною практикою перестало бути ще однією складною професією і стало природною
+            частиною роботи.
           </blockquote>
-          <div className="mt-5 space-y-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            <p>
-              Для цього не потрібно ставати експертом у фінансах, будувати складні Excel-таблиці або вчитися
-              користуватися десятьма різними системами.
-            </p>
-            <p>
-              Наша візія — створити продукт, у якому будь-який спеціаліст зможе відкрити{" "}
-              <BrandName className="font-semibold" /> і одразу зрозуміти: що відбувається з моїм бізнесом, скільки я
-              заробляю, де втрачаю гроші, наскільки я завантажена і що мені робити далі.
-            </p>
-            <p>
-              Ми хочемо, щоб управління власною практикою перестало бути ще однією складною професією і стало
-              природною частиною роботи.
-            </p>
+          <figcaption className="mt-5 text-sm text-muted-foreground">— Ольга Стельмах</figcaption>
+        </figure>
+
+        {/* CTA */}
+        <section className="mt-14 rounded-3xl bg-muted/50 p-6 sm:p-10">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-md">
+              <h2 className="text-2xl font-bold tracking-tight text-foreground">Хочете спробувати?</h2>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                Приєднуйтесь до <BrandName /> і відчуйте, як може виглядати проста і зрозуміла система для вашої
+                практики.
+              </p>
+            </div>
+            <div className="flex flex-col gap-4">
+              <Link
+                to="/auth?mode=signup"
+                onClick={onClose}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3.5 text-base font-semibold text-primary-foreground shadow-md transition-colors hover:bg-[hsl(var(--primary-hover))]"
+              >
+                Спробувати безкоштовно <ArrowRight className="h-4 w-4" />
+              </Link>
+              <ul className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
+                {["Без банківської картки", "Пару хвилин на реєстрацію", "Підтримка на email"].map((item) => (
+                  <li key={item} className="inline-flex items-center gap-1.5">
+                    <CheckCircle2 className="h-4 w-4 text-primary" aria-hidden />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </section>
       </div>
+
     </div>,
     document.body,
   );
