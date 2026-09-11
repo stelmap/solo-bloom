@@ -677,7 +677,7 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
                 <p className="text-xs text-muted-foreground">{t("dashe.onbSub")}</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1 min-w-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 flex-1 min-w-0">
               {onboardingSteps.map((s, i) => (
                 <button
                   key={s.key}
