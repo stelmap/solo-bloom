@@ -168,9 +168,17 @@ export function CookieConsent() {
               </div>
             )}
 
-            <div className="mt-3 flex flex-wrap gap-2">
+            {/* Accept and reject are presented with equal visual weight; managing
+                preferences is available at the same level. */}
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <Button size="sm" onClick={acceptAll}>
+                {tr("acceptAll")}
+              </Button>
+              <Button size="sm" onClick={rejectAll} variant="secondary">
+                {tr("rejectAll")}
+              </Button>
               {expanded ? (
-                <Button size="sm" onClick={saveCustom}>
+                <Button size="sm" variant="outline" onClick={saveCustom}>
                   {tr("save")}
                 </Button>
               ) : (
@@ -178,13 +186,8 @@ export function CookieConsent() {
                   {tr("customize")}
                 </Button>
               )}
-              <Button size="sm" variant="ghost" onClick={rejectAll}>
-                {tr("rejectAll")}
-              </Button>
-              <Button size="sm" onClick={acceptAll} className="ml-auto">
-                {tr("acceptAll")}
-              </Button>
             </div>
+
           </div>
           <button
             type="button"
