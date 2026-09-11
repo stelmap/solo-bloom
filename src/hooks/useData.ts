@@ -641,6 +641,27 @@ export function useUpdateAppointment() {
     }) => {
       const { error } = await supabase.from("appointments").update(updates as any).eq("id", id);
       if (error) throw error;
+
+      // A session marked completed without an explicit payment decision must
+      // never look settled: keep lifecycle and payment status independent and
+      // surface the amount as outstanding.
+      if (updates.status === "completed" && !updates.payment_status) {
+        const { data: apt } = await supabase
+          .from("appointments")
+          .select("price, payment_status, client_id")
+          .eq("id", id)
+          .maybeSingle();
+        const current = (apt as any)?.payment_status as string | null;
+        const price = Number((apt as any)?.price ?? 0);
+        const SETTLED = ["paid_now", "paid_in_advance", "paid_from_prepayment", "partially_paid", "partially_paid_from_prepayment", "waiting_for_payment"];
+        if (price > 0 && (!current || !SETTLED.includes(current))) {
+          await supabase
+            .from("appointments")
+            .update({ payment_status: "waiting_for_payment" } as any)
+            .eq("id", id);
+        }
+        await (supabase as any).rpc("recalc_my_appointment_payment_status", { p_appointment_id: id });
+      }
     },
     onSuccess: () => { track("session_updated"); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
