@@ -1,7 +1,76 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+import { Link } from "react-router-dom";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Eye,
+  FileText,
+  Heart,
+  Laptop,
+  Lightbulb,
+  Quote,
+  Rocket,
+  Sprout,
+  Users,
+  X,
+} from "lucide-react";
 import { BrandName } from "@/components/BrandName";
+
+const steps = [
+  {
+    icon: Laptop,
+    title: "Майже 15 років в IT",
+    body: (
+      <p>
+        Я працювала в IT, будувала продукти, працювала з процесами і командами. Це дало мені системне мислення і досвід
+        створення зручних рішень.
+      </p>
+    ),
+  },
+  {
+    icon: Heart,
+    title: "Психологія і практика",
+    body: (
+      <p>
+        У якийсь момент я зрозуміла, що хочу працювати з людьми. Так у моєму житті з’явилася психологія і власна
+        приватна практика.
+      </p>
+    ),
+  },
+  {
+    icon: FileText,
+    title: "Реальність малого бізнесу",
+    body: (
+      <p>
+        Разом із практикою прийшли записи клієнтів, календар, оплати, фінанси, переноси, борги, нотатки. Я плутала
+        записи, могла щось забути, губила частину доходу і тримала забагато інформації в голові.
+      </p>
+    ),
+  },
+  {
+    icon: Lightbulb,
+    title: "Точка зміни",
+    body: (
+      <>
+        <p>В якийсь момент я сказала собі:</p>
+        <p className="font-semibold text-primary">«Досить, так більше не може працювати».</p>
+        <p>І тоді моя перша професія допомогла моїй другій.</p>
+      </>
+    ),
+  },
+  {
+    icon: Rocket,
+    title: "Перший прототип і розвиток",
+    body: (
+      <p>
+        Так з’явився перший прототип Solo .Bizz. Після цього я багато спілкувалася з колегами, слухала їхні потреби,
+        ідеї та фідбеки. І крок за кроком Solo .Bizz став продуктом, яким він є сьогодні.
+      </p>
+    ),
+  },
+];
+
 
 /**
  * Full-screen editorial "About / Founder story" overlay rendered above the
