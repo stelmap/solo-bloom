@@ -38,6 +38,29 @@ export function OnboardingWidget() {
     useOnboardingJourney();
   const { patch } = useSetOnboardingState();
   const overlayOpen = useOverlayOpen();
+  const qc = useQueryClient();
+
+  // The wizard is a live checklist of real product data: re-read the underlying
+  // sources whenever the user navigates, an overlay (session sheet, forms)
+  // closes, or the tab regains focus — so actions done outside the wizard show up.
+  useEffect(() => {
+    if (overlayOpen) return;
+    qc.invalidateQueries({ queryKey: ["profile"] });
+    qc.invalidateQueries({ queryKey: ["appointments"] });
+    qc.invalidateQueries({ queryKey: ["expenses"] });
+  }, [qc, location.pathname, overlayOpen]);
+
+  useEffect(() => {
+    const onFocus = () => {
+      qc.invalidateQueries({ queryKey: ["profile"] });
+      qc.invalidateQueries({ queryKey: ["appointments"] });
+      qc.invalidateQueries({ queryKey: ["expenses"] });
+    };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [qc]);
+
+
 
   if (loading || dismissed) return null;
   // A primary working modal/drawer (session details, create/edit forms, ...)
