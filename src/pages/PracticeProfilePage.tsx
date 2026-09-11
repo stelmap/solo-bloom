@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useUpdateProfile } from "@/hooks/useData";
 import { useBookingLink } from "@/hooks/usePracticeProfile";
+import { useOnboardingJourney, useSetOnboardingState } from "@/hooks/useOnboardingJourney";
 import { BookingAvailabilitySection, type BookingAvailabilityHandle } from "@/components/practice/BookingAvailabilitySection";
 
 import { useToast } from "@/hooks/use-toast";
@@ -203,6 +204,10 @@ export default function PracticeProfilePage() {
   const updateProfile = useUpdateProfile();
   const { data: link } = useBookingLink();
   const availabilityRef = useRef<BookingAvailabilityHandle>(null);
+  const navigate = useNavigate();
+  const { patch: setOnboardingState } = useSetOnboardingState();
+  const { dismissed: onboardingDismissed, allDone: onboardingAllDone } = useOnboardingJourney();
+  const onboardingActive = !onboardingDismissed && !onboardingAllDone;
 
   const [form, setForm] = useState({
     avatar_url: "",
