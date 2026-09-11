@@ -473,7 +473,17 @@ export default function AuthPage() {
                     </Button>
                   )}
                   <Button type="submit" className="w-full" disabled={loading}>{loading ? t("common.loading") : modeCopy.button}</Button>
+                  {mode === "signup" && (
+                    <p className="text-center text-xs leading-relaxed text-muted-foreground">
+                      {legalAck[0]}{" "}
+                      <Link to="/terms" className="text-primary hover:underline">{legalAck[1]}</Link>{" "}
+                      {legalAck[2]}{" "}
+                      <Link to="/privacy" className="text-primary hover:underline">{legalAck[3]}</Link>
+                      {legalAck[4]}
+                    </p>
+                  )}
                 </form>
+
                 <div className="space-y-3 text-center text-sm text-muted-foreground">
                   {mode === "login" && <button onClick={() => resetMode("forgot")} className="text-primary font-medium hover:underline">{t("auth.forgotPassword")}</button>}
                   <p>
