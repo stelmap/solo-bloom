@@ -195,13 +195,16 @@ export function PricingFollowUp({ lang }: { lang: AppLanguage }) {
   return (
     <>
       {/* 1 — plan benefits */}
-      <section className="px-4 pb-4 pt-0 sm:px-6 bg-muted/40">
-        <div className="mx-auto max-w-6xl rounded-3xl border-2 border-primary/30 bg-card p-6 shadow-md sm:p-10">
-          <h2 className="text-center text-2xl font-bold tracking-tight text-secondary sm:text-3xl xl:text-4xl">
+      <section className="landing-section bg-muted/40 [padding-block-end:clamp(8px,1vw,16px)] [padding-block-start:0]">
+        <div
+          className="page-container rounded-3xl border-2 border-primary/30 bg-card shadow-md"
+          style={{ padding: "clamp(20px, 2.4vw, 48px)" }}
+        >
+          <h2 className="landing-h2 text-center font-bold tracking-tight text-secondary">
             {p(lang, COPY.benefitsTitle)}
           </h2>
           <span aria-hidden="true" className="mx-auto mt-4 block h-1 w-16 rounded-full bg-primary" />
-          <ul className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="mt-8 grid gap-[clamp(16px,1.8vw,36px)] [grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))]">
             {BENEFITS.map((b) => (
               <li key={b.title.en} className="flex flex-col items-center text-center">
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">

@@ -285,14 +285,14 @@ export function TrustSection({
   };
 
   return (
-    <section id="reviews" className="bg-muted/40 py-16 sm:py-20" style={{ paddingInline: "clamp(16px, 4vw, 64px)" }} aria-labelledby="trust-title">
-      <div className="mx-auto w-full" style={{ width: "min(92vw, 1720px)", maxWidth: "100%" }}>
-        <header className="mx-auto max-w-3xl text-center">
+    <section id="reviews" className="landing-section bg-muted/40" aria-labelledby="trust-title">
+      <div className="page-container">
+        <header className="mx-auto max-w-[70ch] text-center">
           <p className="text-xs font-bold uppercase tracking-[0.08em] text-primary">{c.eyebrow}</p>
-          <h2 id="trust-title" className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <h2 id="trust-title" className="landing-h2 mt-3 font-bold tracking-tight text-foreground">
             {c.title}
           </h2>
-          <p className="mt-4 text-base leading-relaxed text-muted-foreground">{c.lead}</p>
+          <p className="landing-lead mt-4 leading-relaxed text-muted-foreground">{c.lead}</p>
           <ul className="mt-6 flex flex-wrap items-center justify-center gap-2">
             {c.audiences.map((a) => (
               <li

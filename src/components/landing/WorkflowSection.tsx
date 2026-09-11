@@ -17,15 +17,11 @@ const AFTER: LandingCopyKey[] = ["after1", "after2", "after3", "after4"];
 /** Connected workflow (booking → session → payment → report) + before/after. */
 export function WorkflowSection({ lang }: { lang: AppLanguage }) {
   return (
-    <section
-      id="workflow"
-      className="bg-muted/30 py-16 sm:py-20"
-      style={{ paddingInline: "clamp(16px, 4vw, 64px)" }}
-    >
-      <div className="mx-auto w-full" style={{ width: "min(92vw, 1720px)", maxWidth: "100%" }}>
+    <section id="workflow" className="landing-section bg-muted/30">
+      <div className="page-container">
         <div className="mb-10 text-center">
           <p className="text-xs font-bold uppercase tracking-[0.08em] text-primary">{lt(lang, "workflowEyebrow")}</p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">{lt(lang, "workflowTitle")}</h2>
+          <h2 className="landing-h2 mt-3 font-bold tracking-tight text-foreground">{lt(lang, "workflowTitle")}</h2>
         </div>
 
         <ol
