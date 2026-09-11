@@ -101,6 +101,9 @@ export default function AdminReviewsPage() {
   const [history, setHistory] = useState<HistoryRow[]>([]);
   const [reply, setReply] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<Review | null>(null);
+  const [confirmAction, setConfirmAction] = useState<
+    { review: Review; action: string; notify?: boolean; title: string; description: string } | null
+  >(null);
   const [acting, setActing] = useState(false);
 
   useEffect(() => {
