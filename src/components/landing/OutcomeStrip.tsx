@@ -14,18 +14,23 @@ export function OutcomeStrip({ lang }: { lang: AppLanguage }) {
     <section className="w-full py-12 sm:py-16" style={{ paddingInline: "clamp(16px, 4vw, 64px)" }}>
       <div className="mx-auto w-full" style={{ width: "min(92vw, 1720px)", maxWidth: "100%" }}>
         <div
-          className="relative overflow-hidden rounded-3xl border border-primary/20 bg-orange-50/50"
+          className="relative overflow-hidden rounded-3xl border-2 border-primary/40 bg-primary/5 shadow-sm"
           style={{ padding: "clamp(20px, 3vw, 56px)" }}
         >
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute right-0 top-0 rounded-bl-full bg-primary/10"
+            className="pointer-events-none absolute right-0 top-0 rounded-bl-full bg-primary/20"
             style={{ width: "clamp(90px, 12vw, 220px)", height: "clamp(90px, 12vw, 220px)" }}
           />
 
-          <h2 className="relative text-2xl font-bold tracking-tight text-foreground sm:text-3xl xl:text-4xl">
+          <h2 className="relative mx-auto max-w-4xl text-center text-2xl font-bold tracking-tight text-secondary sm:text-3xl xl:text-4xl">
             {lt(lang, "outcomeTitle")}
           </h2>
+          <span
+            aria-hidden="true"
+            className="relative mx-auto mt-4 block h-1 w-16 rounded-full bg-primary"
+          />
+
 
           <ul
             className="relative mt-8 grid grid-cols-1 items-stretch lg:grid-cols-[1fr_auto_1fr_auto_1fr]"
