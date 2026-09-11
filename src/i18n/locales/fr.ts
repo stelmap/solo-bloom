@@ -2303,7 +2303,7 @@ export default {
   "expenses.amountPlaceholder": "0,00",
   "expenses.descriptionPlaceholder": "Note facultative",
   "calendar.noUpcoming": "Aucune séance à venir",
-  "calendar.noSessionsToday": "Aucune séance prévue aujourd"hui",
+  "calendar.noSessionsToday": "Aucune séance prévue aujourd'hui",
   "calendar.more": "de plus",
   "booking.inbox": "Demandes entrantes",
   "calendar.dayOffShort": "Jour de congé",

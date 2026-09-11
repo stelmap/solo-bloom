@@ -2302,7 +2302,7 @@ export default {
   "expenses.deleteEntireSeries": "Усю серію",
   "expenses.deleteAlsoPaid": "Також видалити вже оплачені записи",
   "expenses.amountPlaceholder": "0,00",
-  "expenses.descriptionPlaceholder": "Необов"язкова примітка",
+  "expenses.descriptionPlaceholder": "Необов'язкова примітка",
   "calendar.noUpcoming": "Немає запланованих сесій",
   "calendar.noSessionsToday": "На сьогодні немає запланованих сесій",
   "calendar.more": "ще",
