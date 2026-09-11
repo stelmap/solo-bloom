@@ -441,37 +441,6 @@ export function TrustSection({
 
         <ReviewDialog open={reviewOpen} onOpenChange={setReviewOpen} lang={lang as string} />
 
-        {/* CTA */}
-        <div className="mt-8 flex flex-col items-center gap-6 rounded-2xl border border-primary/20 bg-primary/5 p-7 text-center sm:p-9 md:flex-row md:items-center md:justify-between md:gap-10 md:text-left">
-          <div className="md:max-w-xl">
-            <h3 className="text-xl font-bold text-foreground sm:text-2xl">{c.ctaTitle}</h3>
-            <p className="mt-2 text-sm text-muted-foreground sm:text-base">{c.ctaText}</p>
-          </div>
-          <div className="flex w-full flex-col items-center gap-2 md:w-auto md:shrink-0">
-            <Link
-              to="/auth?mode=signup"
-              aria-disabled={submitting}
-              onClick={(e) => {
-                if (submitting) {
-                  e.preventDefault();
-                  return;
-                }
-                setSubmitting(true);
-                onCtaClick?.();
-              }}
-              className={cn(
-                buttonVariants({ size: "lg" }),
-                "h-12 w-full gap-2 rounded-xl px-8 text-base font-semibold shadow-lg shadow-primary/25 md:w-auto",
-                submitting && "pointer-events-none opacity-70",
-              )}
-            >
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              {c.ctaButton}
-              {submitting ? null : <ArrowRight className="h-4 w-4" />}
-            </Link>
-            <p className="text-xs text-muted-foreground">{c.ctaNote}</p>
-          </div>
-        </div>
 
       </div>
     </section>
