@@ -1444,73 +1444,6 @@ const FAQ_EMAIL = "info@solobizz.com";
 
 // ── Contact / book a call ─────────────────────────────────────────────
 
-function ContactCallSection() {
-  const { t, lang } = useLandingLang();
-  return (
-    <section className="py-20 px-4 sm:px-6 bg-background">
-      <div className="max-w-3xl mx-auto text-center">
-        <div id="contact" className="max-w-2xl mx-auto rounded-2xl border border-border bg-muted/40 p-6 sm:p-10 text-center">
-          <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
-            {t("doubtTitle")}
-          </h3>
-          <p className="text-base text-muted-foreground mb-3">
-            {lang === "uk"
-              ? "Запишіться на коротку розмову, і ми покажемо, як Solo .Bizz може спростити вашу роботу, упорядкувати записи, оплати та допомогти краще бачити фінансову картину вашої практики."
-              : lang === "ru"
-              ? "Запишитесь на короткий разговор — мы покажем, как Solo .Bizz может упростить вашу работу, упорядочить записи, оплаты и помочь лучше видеть финансовую картину вашей практики."
-              : t("doubtText")}
-          </p>
-          <p className="text-sm text-muted-foreground mb-6">
-            {lang === "uk"
-              ? "Після короткої розмови ви зрозумієте, як система може підійти саме під ваш формат роботи."
-              : lang === "ru"
-              ? "После короткого разговора вы поймёте, как система может подойти именно под ваш формат работы."
-              : "After a short call you'll understand how the system can fit your way of working."}
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <BookingDialog
-              lang={lang}
-              source="/#final"
-              trigger={
-                <Button
-                  size="lg"
-                  className="h-12 px-8 text-base font-semibold rounded-xl gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow"
-                  onClick={() => track("cta_clicked", { source_page: "/#final", cta: "book_call", lang })}
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  {t("doubtCta")}
-                </Button>
-              }
-            />
-            <a
-              href={`mailto:${CONTACT_EMAIL}`}
-              onClick={() => track("cta_clicked", { source_page: "/#final", cta: "email_us", lang })}
-              className={`${buttonVariants({ size: "lg" })} h-12 px-8 text-base font-semibold rounded-xl gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow`}
-            >
-              <Mail className="h-4 w-4" />
-              {lang === "uk" ? "Написати нам"
-                : lang === "fr" ? "Nous écrire"
-                : lang === "pl" ? "Napisz do nas"
-                : lang === "ru" ? "Написать нам"
-                : "Email us"}
-            </a>
-          </div>
-          <p className="text-xs text-muted-foreground mt-5">
-            {lang === "uk"
-              ? "Можете залишити заявку або написати на email — ми відповімо зручним для вас способом."
-              : lang === "fr"
-              ? "Laissez une demande ou écrivez-nous par email — nous répondrons par le canal qui vous convient."
-              : lang === "pl"
-              ? "Zostaw zgłoszenie lub napisz e-mail — odpowiemy w wygodny dla Ciebie sposób."
-              : lang === "ru"
-              ? "Можно оставить заявку или написать на email — мы ответим удобным для вас способом."
-              : "Leave a request or email us — we'll reply your way."}
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 // ── Testimonials replaced by TrustSection (src/components/landing/TrustSection.tsx)
 
@@ -1790,7 +1723,6 @@ function LandingShell() {
 
         <PricingSection />
         <PricingFollowUp lang={lang} />
-        <ContactCallSection />
         <AboutContactsSection />
       </main>
       <LandingFooter />
