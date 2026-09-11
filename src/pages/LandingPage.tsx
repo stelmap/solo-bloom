@@ -1646,25 +1646,25 @@ function LandingFooter() {
             </p>
             <p className="flex items-start gap-2 md:justify-end">
               <Mail className="h-4 w-4 shrink-0 text-primary mt-0.5 md:order-2" />
-              <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-foreground">{CONTACT_EMAIL}</a>
+              <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-secondary-foreground">{CONTACT_EMAIL}</a>
             </p>
           </address>
         </div>
 
-        <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 sm:flex-row">
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Solo .Bizz. {T.rights}
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-secondary-foreground/15 pt-6 sm:flex-row">
+          <p className="text-xs text-secondary-foreground/70">
+            © {new Date().getFullYear()} <BrandName className="font-semibold" /> {T.rights}
           </p>
           <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-            <Link to="/terms" className="text-xs text-muted-foreground hover:text-foreground">{T.terms}</Link>
-            <Link to="/privacy" className="text-xs text-muted-foreground hover:text-foreground">{T.privacy}</Link>
-            <Link to="/cookie-policy" className="text-xs text-muted-foreground hover:text-foreground">{T.cookies}</Link>
+            <Link to="/terms" className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.terms}</Link>
+            <Link to="/privacy" className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.privacy}</Link>
+            <Link to="/cookie-policy" className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.cookies}</Link>
             <button
               type="button"
               onClick={() => {
                 try { window.dispatchEvent(new CustomEvent("cookie_consent_open")); } catch {}
               }}
-              className="text-xs text-muted-foreground hover:text-foreground"
+              className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground"
             >
               {T.manageCookies}
             </button>
