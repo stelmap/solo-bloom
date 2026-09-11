@@ -1427,15 +1427,6 @@ function PricingSection() {
 
         <p className="mt-6 text-center text-xs text-muted-foreground">{t("docsNote")}</p>
 
-        <div className="mt-12 text-center max-w-3xl mx-auto space-y-2">
-          <p className="text-base text-muted-foreground">{t("pricingFooter1")}</p>
-          <p className="text-base font-semibold text-foreground">{t("pricingFooter2")}</p>
-        </div>
-
-        <p className="mt-8 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-          <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-          {t("privacyShort")}
-        </p>
 
       </div>
     </section>
