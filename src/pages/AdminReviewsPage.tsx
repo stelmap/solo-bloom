@@ -193,6 +193,23 @@ export default function AdminReviewsPage() {
     toast({ title: "Готово", description: MOD_LABEL[updated.moderation_status] });
   };
 
+  const setVerification = async (review: Review, verified: boolean) => {
+    setActing(true);
+    const { data, error } = await (supabase as any).rpc("admin_set_review_verification", {
+      p_review_id: review.id,
+      p_verified: verified,
+    });
+    setActing(false);
+    if (error) {
+      toast({ title: "Дію не виконано", description: error.message, variant: "destructive" });
+      return;
+    }
+    const updated = data as Review;
+    setRows((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+    if (selected?.id === updated.id) void openDetail(updated);
+    toast({ title: verified ? "Автора позначено як підтвердженого" : "Підтвердження знято" });
+  };
+
   const saveReply = async () => {
     if (!selected) return;
     setActing(true);
