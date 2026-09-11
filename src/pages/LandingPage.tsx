@@ -1,5 +1,6 @@
 import { BrandName, BrandText } from "@/components/BrandName";
 import { AboutOverlay } from "@/components/landing/AboutOverlay";
+import { ContactRequestDialog } from "@/components/landing/ContactRequestDialog";
 import { useState, useRef, useCallback, createContext, useContext, useEffect, type ReactNode } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
@@ -1771,6 +1772,7 @@ export default function LandingPage() {
 /** Inner shell: has access to the landing language context. */
 function LandingShell() {
   const { lang } = useLandingLang();
+  const [contactOpen, setContactOpen] = useState(false);
 
   const activateOffer = useCallback(() => {
     storePendingOffer(null);
@@ -1779,7 +1781,10 @@ function LandingShell() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background">
-      {isCampaignActive() && <PromoTopBar lang={lang} onActivate={activateOffer} />}
+      {isCampaignActive() && (
+        <PromoTopBar lang={lang} onActivate={activateOffer} onContact={() => setContactOpen(true)} />
+      )}
+      <ContactRequestDialog open={contactOpen} onOpenChange={setContactOpen} lang={lang} />
       <LandingNav />
       <main>
         <HeroSection />

@@ -741,36 +741,45 @@ export type Database = {
       booking_requests: {
         Row: {
           created_at: string
-          email: string
+          email: string | null
           id: string
           language: string | null
           message: string | null
           name: string
           phone: string | null
+          request_type: string | null
+          request_type_other: string | null
           source: string | null
           status: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
-          email: string
+          email?: string | null
           id?: string
           language?: string | null
           message?: string | null
           name: string
           phone?: string | null
+          request_type?: string | null
+          request_type_other?: string | null
           source?: string | null
           status?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
-          email?: string
+          email?: string | null
           id?: string
           language?: string | null
           message?: string | null
           name?: string
           phone?: string | null
+          request_type?: string | null
+          request_type_other?: string | null
           source?: string | null
           status?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -3622,14 +3631,17 @@ export type Database = {
         Args: { p_from?: string; p_status?: string; p_to?: string }
         Returns: {
           created_at: string
-          email: string
+          email: string | null
           id: string
           language: string | null
           message: string | null
           name: string
           phone: string | null
+          request_type: string | null
+          request_type_other: string | null
           source: string | null
           status: string
+          user_id: string | null
         }[]
         SetofOptions: {
           from: "*"
@@ -3729,14 +3741,17 @@ export type Database = {
         Args: { p_id: string; p_status: string }
         Returns: {
           created_at: string
-          email: string
+          email: string | null
           id: string
           language: string | null
           message: string | null
           name: string
           phone: string | null
+          request_type: string | null
+          request_type_other: string | null
           source: string | null
           status: string
+          user_id: string | null
         }
         SetofOptions: {
           from: "*"

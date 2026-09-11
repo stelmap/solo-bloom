@@ -14,6 +14,8 @@ interface Props {
   lang: AppLanguage;
   /** Activates the campaign offer (stores the offer reference + scrolls to pricing). */
   onActivate: () => void;
+  /** Opens the "contact us" request form. */
+  onContact?: () => void;
 }
 
 /**
@@ -21,7 +23,7 @@ interface Props {
  * in localStorage for 7 days. The bar only *references* the campaign — the
  * discount itself is validated and applied server-side at checkout.
  */
-export function PromoTopBar({ lang, onActivate }: Props) {
+export function PromoTopBar({ lang, onActivate, onContact }: Props) {
   const [visible, setVisible] = useState(false);
   const viewed = useRef(false);
 
@@ -59,6 +61,15 @@ export function PromoTopBar({ lang, onActivate }: Props) {
         >
           {lt(lang, "promoBarCta")} <ArrowRight className="h-3.5 w-3.5" />
         </button>
+        {onContact && (
+          <button
+            type="button"
+            onClick={onContact}
+            className="inline-flex items-center rounded-lg border border-secondary-foreground/40 bg-transparent px-3 py-1.5 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary-foreground/10"
+          >
+            Зв’язатися з нами
+          </button>
+        )}
       </div>
       <button
         type="button"
