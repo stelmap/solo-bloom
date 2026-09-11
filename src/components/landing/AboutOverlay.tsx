@@ -137,13 +137,13 @@ export function AboutOverlay({
         <X className="h-5 w-5" />
       </button>
 
-      <div className="mx-auto w-full max-w-[1100px] px-5 py-10 sm:px-8 sm:py-14">
+      <div className="mx-auto w-full max-w-[1600px] px-[clamp(1rem,4vw,4rem)] py-[clamp(2rem,4vw,4.5rem)]">
         {/* Hero banner */}
-        <section className="relative overflow-hidden rounded-3xl bg-secondary px-6 py-12 text-secondary-foreground sm:px-12 sm:py-16">
+        <section className="relative overflow-hidden rounded-3xl bg-secondary px-[clamp(1.5rem,3vw,3.5rem)] py-[clamp(2.5rem,5vw,4.5rem)] text-secondary-foreground">
           <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-primary/10" aria-hidden />
-          <div className="relative max-w-2xl">
+          <div className="relative max-w-[60ch]">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">ПРО МЕНЕ</p>
-            <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-5xl">
+            <h1 className="mt-4 text-[clamp(1.75rem,3.4vw,3.25rem)] font-bold leading-tight tracking-tight">
               Мій шлях до <BrandName accentClassName="text-primary" />
             </h1>
             <p className="mt-5 text-base leading-relaxed text-secondary-foreground/80 sm:text-lg">
