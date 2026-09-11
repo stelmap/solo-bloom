@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Check, ChevronDown, Sparkles, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +13,7 @@ import {
   type OnboardingStepKey,
 } from "@/hooks/useOnboardingJourney";
 import { useOverlayOpen } from "@/hooks/useOverlayOpen";
+
 
 /** Deep links for each guided step. The wizard only navigates — never acts. */
 const STEP_TARGET: Record<OnboardingStepKey, string> = {
