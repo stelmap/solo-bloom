@@ -2496,6 +2496,7 @@ export type Database = {
           language: string
           mfa_required: boolean
           onboarding_completed: boolean
+          onboarding_state: Json
           phone: string | null
           public_email: string | null
           reminder_minutes: number
@@ -2530,6 +2531,7 @@ export type Database = {
           language?: string
           mfa_required?: boolean
           onboarding_completed?: boolean
+          onboarding_state?: Json
           phone?: string | null
           public_email?: string | null
           reminder_minutes?: number
@@ -2564,6 +2566,7 @@ export type Database = {
           language?: string
           mfa_required?: boolean
           onboarding_completed?: boolean
+          onboarding_state?: Json
           phone?: string | null
           public_email?: string | null
           reminder_minutes?: number

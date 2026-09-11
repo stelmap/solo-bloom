@@ -1247,6 +1247,15 @@ export default function CalendarPage() {
   // calendar to that day and open the session sheet directly.
   const [searchParams, setSearchParams] = useSearchParams();
   const deepLinkAppointmentId = searchParams.get("appointmentId");
+
+  // Deep link from the setup guide: open the new-session dialog straight away.
+  useEffect(() => {
+    if (searchParams.get("new") !== "1") return;
+    setCreateOpen(true);
+    const next = new URLSearchParams(searchParams);
+    next.delete("new");
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
   const handledDeepLinkRef = useRef<string | null>(null);
   useEffect(() => {
     if (!deepLinkAppointmentId) return;

@@ -40,7 +40,7 @@ export default function ExpensesPage() {
   const dateLocale = lang === "uk" ? "uk-UA" : lang === "fr" ? "fr-FR" : lang === "pl" ? "pl-PL" : "en-US";
   const { symbol: cs } = useCurrency();
   const [searchParams] = useSearchParams();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(searchParams.get("new") === "1");
   const [editId, setEditId] = useState<string | null>(null);
   const [editExpense, setEditExpense] = useState<any>(null);
   const [editScopeOpen, setEditScopeOpen] = useState(false);
