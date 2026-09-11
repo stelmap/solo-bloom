@@ -1626,13 +1626,16 @@ function LandingFooter() {
   };
 
   return (
-    <footer className="border-t border-border bg-secondary/30 px-4 py-10 sm:px-6">
+    <footer className="bg-secondary px-4 py-12 text-secondary-foreground sm:px-6">
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-          <p className="max-w-sm text-lg font-semibold leading-snug text-foreground sm:text-xl">
-            {T.slogan}
-          </p>
-          <address className="not-italic space-y-2 text-sm text-muted-foreground md:text-right">
+          <div className="max-w-sm">
+            <BrandName className="text-2xl font-bold text-secondary-foreground sm:text-3xl" />
+            <p className="mt-2 text-lg font-semibold leading-snug text-secondary-foreground/95 sm:text-xl">
+              {T.slogan}
+            </p>
+          </div>
+          <address className="not-italic space-y-2 text-sm text-secondary-foreground/70 md:text-right">
             <p className="flex items-start gap-2 md:justify-end">
               <MapPin className="h-4 w-4 shrink-0 text-primary mt-0.5 md:order-2" />
               <span>{OFFICE_ADDRESS}</span>
@@ -1643,25 +1646,25 @@ function LandingFooter() {
             </p>
             <p className="flex items-start gap-2 md:justify-end">
               <Mail className="h-4 w-4 shrink-0 text-primary mt-0.5 md:order-2" />
-              <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-foreground">{CONTACT_EMAIL}</a>
+              <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-secondary-foreground">{CONTACT_EMAIL}</a>
             </p>
           </address>
         </div>
 
-        <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 sm:flex-row">
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Solo .Bizz. {T.rights}
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-secondary-foreground/15 pt-6 sm:flex-row">
+          <p className="text-xs text-secondary-foreground/70">
+            © {new Date().getFullYear()} <BrandName className="font-semibold" />. {T.rights}
           </p>
           <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-            <Link to="/terms" className="text-xs text-muted-foreground hover:text-foreground">{T.terms}</Link>
-            <Link to="/privacy" className="text-xs text-muted-foreground hover:text-foreground">{T.privacy}</Link>
-            <Link to="/cookie-policy" className="text-xs text-muted-foreground hover:text-foreground">{T.cookies}</Link>
+            <Link to="/terms" className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.terms}</Link>
+            <Link to="/privacy" className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.privacy}</Link>
+            <Link to="/cookie-policy" className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.cookies}</Link>
             <button
               type="button"
               onClick={() => {
                 try { window.dispatchEvent(new CustomEvent("cookie_consent_open")); } catch {}
               }}
-              className="text-xs text-muted-foreground hover:text-foreground"
+              className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground"
             >
               {T.manageCookies}
             </button>
