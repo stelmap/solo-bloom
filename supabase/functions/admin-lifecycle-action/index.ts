@@ -20,7 +20,7 @@ type Action =
 
 
 // Recursively remove every storage object stored under `<userId>/` in a bucket.
-// Paths in every SoloBizz bucket start with the owning user's id, so this is
+// Paths in every Solo .Bizz bucket start with the owning user's id, so this is
 // strictly tenant-scoped: no other user's files can ever be matched.
 async function purgeUserStorage(admin: any, bucket: string, userId: string): Promise<number> {
   let removed = 0;
@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
     const graceDays = settings?.deletion_grace_days ?? 7;
 
     // Detect language from profile — send warning/deletion emails in the user's
-    // chosen SoloBizz language so notifications match their in-app preference.
+    // chosen Solo .Bizz language so notifications match their in-app preference.
     const { data: profile } = await admin.from("profiles").select("language").eq("user_id", targetUserId).maybeSingle();
     const SUPPORTED_LANGS = ["en", "uk", "ru", "pl", "fr"] as const;
     const rawLang = String(profile?.language ?? "").toLowerCase().slice(0, 2);

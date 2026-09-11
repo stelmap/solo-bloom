@@ -23,7 +23,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
   reauthentication: ReauthenticationEmail,
 }
 
-const SITE_NAME = 'SoloBizz'
+const SITE_NAME = 'Solo .Bizz'
 const SAMPLE_URL = 'https://example.com/auth/callback?token=preview-token'
 const SAMPLE_EMAIL = 'user@example.com'
 const SAMPLE_NEW_EMAIL = 'new-user@example.com'

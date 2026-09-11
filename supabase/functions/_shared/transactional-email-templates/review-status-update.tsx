@@ -5,7 +5,7 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = 'SoloBizz'
+const SITE_NAME = 'Solo .Bizz'
 
 type Kind = 'received' | 'approved' | 'rejected'
 
@@ -18,15 +18,15 @@ interface ReviewStatusData {
 const COPY: Record<Kind, { title: string; text: string }> = {
   received: {
     title: 'Дякуємо за ваш відгук',
-    text: 'Ми отримали ваш відгук про SoloBizz. Перед публікацією він проходить перевірку — ми повідомимо вас, коли він з’явиться на сайті.',
+    text: 'Ми отримали ваш відгук про Solo .Bizz. Перед публікацією він проходить перевірку — ми повідомимо вас, коли він з’явиться на сайті.',
   },
   approved: {
     title: 'Ваш відгук опубліковано',
-    text: 'Ваш відгук про SoloBizz пройшов перевірку і вже опублікований на сайті. Дякуємо, що ділитеся своїм досвідом з іншими фахівцями.',
+    text: 'Ваш відгук про Solo .Bizz пройшов перевірку і вже опублікований на сайті. Дякуємо, що ділитеся своїм досвідом з іншими фахівцями.',
   },
   rejected: {
     title: 'Ваш відгук не було опубліковано',
-    text: 'Дякуємо за ваш відгук про SoloBizz. Цього разу ми не змогли його опублікувати.',
+    text: 'Дякуємо за ваш відгук про Solo .Bizz. Цього разу ми не змогли його опублікувати.',
   },
 }
 

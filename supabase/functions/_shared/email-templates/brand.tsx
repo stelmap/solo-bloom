@@ -298,7 +298,7 @@ export const SoloBizzShell: React.FC<ShellProps> = ({
           <Section style={styles.header}>
             <Heading style={styles.wordmark}>
               <span style={styles.wordmarkSolo}>Solo</span>
-              <span style={styles.wordmarkBizz}>Bizz</span>
+              <span style={styles.wordmarkBizz}>&nbsp;.Bizz</span>
             </Heading>
             <Text style={styles.tagline}>{tagline}</Text>
           </Section>
