@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useAppointments, useAllIncome, useProfile, useClients, useServices, useWorkingSchedule } from "@/hooks/useData";
-import { useBookingLink } from "@/hooks/usePracticeProfile";
+import { useBookingLink, usePracticeProfileStatus } from "@/hooks/usePracticeProfile";
 import { toast } from "@/hooks/use-toast";
 import { formatScheduledTime } from "@/lib/timeFormat";
 import { useNeedsAttention } from "@/hooks/useNeedsAttention";
