@@ -37,12 +37,45 @@ let initialized = false;
 let enabled = false;
 let environment: EnvironmentValue = "development";
 
+/**
+ * Product analytics is an optional technology: nothing is initialised or sent
+ * before the visitor has accepted the "analytics" cookie category.
+ */
+function hasAnalyticsConsent(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const raw = window.localStorage.getItem("cookie_consent_v1");
+    if (!raw) return false;
+    return !!JSON.parse(raw)?.analytics;
+  } catch {
+    return false;
+  }
+}
+
+/** Stop capturing after the visitor withdraws analytics consent. */
+export function disableAnalytics(): void {
+  enabled = false;
+  if (!initialized) return;
+  try {
+    posthog.opt_out_capturing();
+  } catch {
+    /* noop */
+  }
+}
+
 export function initAnalytics(): void {
   if (initialized || typeof window === "undefined") return;
+  if (!hasAnalyticsConsent()) return;
   initialized = true;
   environment = detectEnvironment();
   // Capture from every environment (prod, preview, dev) so we can segment by env.
   enabled = true;
+  try {
+    posthog.opt_in_capturing();
+  } catch {
+    /* noop */
+  }
+
   posthog.init(POSTHOG_KEY, {
     api_host: POSTHOG_HOST,
     ui_host: POSTHOG_UI_HOST,
