@@ -217,12 +217,26 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
     { key: "clients", show: !hasClients, icon: UserPlus, title: t("dashe.setupClients"), sub: t("dashe.setupClientsSub"), path: "/clients" },
   ].filter((s) => s.show);
 
+  // Onboarding progress — every step is derived from persisted workspace data,
+  // so it survives refresh, re-login and other devices. Steps are independent:
+  // finishing one never marks another as done.
+  const realAppointments = (allAppointments as any[]).filter(
+    (a) => a.status !== "cancelled" || PAID_STATUSES.has(a.payment_status) || a.payment_status === "waiting_for_payment",
+  );
+  const hasAppointment = (allAppointments as any[]).length > 0;
+  const hasCompletedSession = (allAppointments as any[]).some((a) => a.status === "completed");
+  const hasRecordedPayment = (allAppointments as any[]).some((a) => PAID_STATUSES.has(a.payment_status));
+  void realAppointments;
+
   const onboardingSteps = [
-    { key: "client", done: hasClients, icon: Users, title: t("dashe.onbStep1"), sub: t("dashe.onbStep1Sub"), path: "/clients" },
-    { key: "service", done: hasServices, icon: Briefcase, title: t("dashe.onbStep2"), sub: t("dashe.onbStep2Sub"), path: "/services" },
-    { key: "booking", done: !!bookingHandle && hasClients, icon: Link2, title: t("dashe.onbStep3"), sub: t("dashe.onbStep3Sub"), path: "/settings/practice" },
+    { key: "profile", done: profileComplete, icon: Briefcase, title: t("dashe.onbProfile"), sub: t("dashe.onbProfileSub"), path: "/settings/practice" },
+    { key: "client", done: hasClients, icon: Users, title: t("dashe.onbClient"), sub: t("dashe.onbClientSub"), path: "/clients" },
+    { key: "session", done: hasAppointment, icon: Link2, title: t("dashe.onbSession"), sub: t("dashe.onbSessionSub"), path: "/calendar" },
+    { key: "completed", done: hasCompletedSession, icon: Check, title: t("dashe.onbDone"), sub: t("dashe.onbDoneSub"), path: "/calendar" },
+    { key: "payment", done: hasRecordedPayment, icon: Sparkles, title: t("dashe.onbPayment"), sub: t("dashe.onbPaymentSub"), path: "/income" },
   ];
-  const showOnboarding = onboardingSteps.some((s) => !s.done);
+  const completedSteps = onboardingSteps.filter((s) => s.done).length;
+  const showOnboarding = !onboardingLoading && completedSteps < onboardingSteps.length;
 
 
 
