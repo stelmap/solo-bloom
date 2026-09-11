@@ -23,7 +23,7 @@ interface Props {
  * in localStorage for 7 days. The bar only *references* the campaign — the
  * discount itself is validated and applied server-side at checkout.
  */
-export function PromoTopBar({ lang, onActivate }: Props) {
+export function PromoTopBar({ lang, onActivate, onContact }: Props) {
   const [visible, setVisible] = useState(false);
   const viewed = useRef(false);
 
