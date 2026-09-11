@@ -142,10 +142,18 @@ export default function AdminReviewsPage() {
         end.setHours(23, 59, 59, 999);
         if (new Date(r.created_at) > end) return false;
       }
-      if (s && ![r.display_name, r.email].some((v) => v.toLowerCase().includes(s))) return false;
+      if (s && ![r.display_name, r.email, r.body].some((v) => (v ?? "").toLowerCase().includes(s)))
+        return false;
       return true;
     });
   }, [rows, modFilter, verFilter, ratingFilter, planFilter, from, to, search]);
+
+  const counters = useMemo(() => ({
+    pending: rows.filter((r) => r.moderation_status === "pending").length,
+    published: rows.filter((r) => r.moderation_status === "approved").length,
+    rejected: rows.filter((r) => r.moderation_status === "rejected").length,
+    verified: rows.filter((r) => r.verification_status === "verified_user").length,
+  }), [rows]);
 
   const openDetail = async (r: Review) => {
     setSelected(r);
