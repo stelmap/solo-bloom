@@ -260,6 +260,32 @@ export default function AdminReviewsPage() {
           </Button>
         </div>
 
+        <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            { key: "pending", label: "Очікують модерації", value: counters.pending, highlight: counters.pending > 0 },
+            { key: "published", label: "Опубліковано", value: counters.published },
+            { key: "rejected", label: "Відхилено", value: counters.rejected },
+            { key: "verified", label: "Підтверджені автори", value: counters.verified },
+          ].map((c) => (
+            <button
+              key={c.key}
+              type="button"
+              onClick={() => {
+                if (c.key === "verified") { setVerFilter("verified_user"); setModFilter("all"); }
+                else { setVerFilter("all"); setModFilter(c.key === "published" ? "approved" : c.key); }
+              }}
+              className={`rounded-xl border p-4 text-left transition-colors hover:bg-muted/50 ${
+                c.highlight ? "border-primary bg-primary/5" : "border-border"
+              }`}
+            >
+              <div className={`text-2xl font-bold ${c.highlight ? "text-primary" : ""}`}>{c.value}</div>
+              <div className="text-xs text-muted-foreground">{c.label}</div>
+            </button>
+          ))}
+        </div>
+
+
+
         <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <Label className="text-xs">Статус модерації</Label>
