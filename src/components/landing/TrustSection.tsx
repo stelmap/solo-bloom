@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowRight, ChevronLeft, ChevronRight, MessageSquare, ShieldCheck } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, MessageSquare, ShieldCheck, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ReviewDialog } from "@/components/landing/ReviewDialog";
 import type { AppLanguage } from "@/i18n/translations";
