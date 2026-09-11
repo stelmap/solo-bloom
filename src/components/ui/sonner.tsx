@@ -9,6 +9,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
+      // Top-right keeps toasts clear of the bottom-right onboarding wizard.
+      position="top-right"
       className="toaster group"
       toastOptions={{
         classNames: {
