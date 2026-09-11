@@ -643,8 +643,8 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
       </div>
 
 
-      )}
     </div>
+
 
   );
 }
