@@ -56,7 +56,15 @@ export default function AuthPage() {
   const [resendLoading, setResendLoading] = useState(false);
   const checkoutTriggeredRef = useRef(false);
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const legalAck = {
+    en: ["By creating an account you accept our", "Terms & Conditions", "and", "Privacy Policy", "."],
+    uk: ["Створюючи акаунт, ви приймаєте", "Умови використання", "та", "Політику конфіденційності", "."],
+    pl: ["Zakładając konto, akceptujesz", "Regulamin", "i", "Politykę prywatności", "."],
+    fr: ["En créant un compte, vous acceptez nos", "Conditions générales", "et notre", "Politique de confidentialité", "."],
+    ru: ["Создавая аккаунт, вы принимаете", "Условия использования", "и", "Политику конфиденциальности", "."],
+  }[lang] ?? ["By creating an account you accept our", "Terms & Conditions", "and", "Privacy Policy", "."];
+
   const [checkoutRedirecting, setCheckoutRedirecting] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
