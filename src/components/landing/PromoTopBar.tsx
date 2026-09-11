@@ -14,6 +14,8 @@ interface Props {
   lang: AppLanguage;
   /** Activates the campaign offer (stores the offer reference + scrolls to pricing). */
   onActivate: () => void;
+  /** Opens the "contact us" request form. */
+  onContact?: () => void;
 }
 
 /**
