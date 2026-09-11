@@ -6,6 +6,7 @@ import { track } from "@/lib/analytics";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { UnifiedDashboard } from "@/components/dashboard/UnifiedDashboard";
+import { useSetOnboardingState } from "@/hooks/useOnboardingJourney";
 
 export default function Dashboard() {
   const { data: stats } = useDashboardStats();
@@ -30,6 +31,20 @@ export default function Dashboard() {
     }
     return count;
   }, [allClients, allAppointments]);
+
+  const { markViewed } = useSetOnboardingState();
+  useEffect(() => { markViewed("day"); }, [markViewed]);
+
+  // Deep link from the setup guide: scroll the daily overview into view.
+  useEffect(() => {
+    if (window.location.hash !== "#today") return;
+    const el = document.getElementById("today");
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    el.classList.add("ring-2", "ring-primary");
+    const timer = window.setTimeout(() => el.classList.remove("ring-2", "ring-primary"), 2500);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     track("dashboard_viewed", { range: "month", lang });
