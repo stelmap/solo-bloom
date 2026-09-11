@@ -196,3 +196,48 @@
   .hero-slide-media,
   .hero-slide-text { animation: none; }
 }
+
+/* ── Landing responsive layout system ─────────────────────────────────
+   One shared container + fluid spacing/typography for every landing
+   section, matching the hero's fluid behaviour. */
+@layer utilities {
+  .page-container {
+    width: 100%;
+    max-width: 1720px;
+    margin-inline: auto;
+  }
+  .landing-section {
+    width: 100%;
+    padding-inline: clamp(20px, 4vw, 72px);
+    padding-block: clamp(48px, 6vw, 104px);
+  }
+  .landing-section-tight {
+    padding-block: clamp(28px, 3.5vw, 60px);
+  }
+  .landing-h2 {
+    font-size: clamp(1.75rem, 0.9rem + 1.9vw, 3rem);
+    line-height: 1.12;
+  }
+  .landing-h3 {
+    font-size: clamp(1.05rem, 0.85rem + 0.5vw, 1.5rem);
+    line-height: 1.25;
+  }
+  .landing-lead {
+    font-size: clamp(0.95rem, 0.85rem + 0.35vw, 1.2rem);
+  }
+  .landing-body {
+    font-size: clamp(0.875rem, 0.82rem + 0.2vw, 1.05rem);
+  }
+  .landing-grid-3 {
+    display: grid;
+    gap: clamp(16px, 1.8vw, 36px);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    align-items: stretch;
+  }
+  .landing-media {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+}
