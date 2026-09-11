@@ -1031,7 +1031,7 @@ function LandingNav() {
   return (
     <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border/50">
       <AboutOverlay open={aboutOpen} scrollY={aboutScrollY.current} onClose={() => setAboutOpen(false)} />
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div className="page-container flex h-16 items-center justify-between [padding-inline:clamp(20px,4vw,72px)]">
         <button
           type="button"
           onClick={() => {
@@ -1099,8 +1099,8 @@ function HeroSection() {
   const [slide, setSlide] = useState(0);
   const active = HERO_SLIDES[slide];
   return (
-    <section className="w-full [padding-block-end:clamp(20px,3vh,44px)] [padding-block-start:clamp(20px,3vh,40px)] [padding-inline:clamp(24px,4vw,72px)]">
-      <div className="grid w-full items-center gap-[clamp(24px,3vw,48px)] lg:grid-cols-[minmax(320px,1fr)_minmax(0,3fr)] lg:gap-[clamp(40px,3.5vw,64px)] xl:grid-cols-[minmax(340px,1fr)_minmax(0,3.2fr)]">
+    <section className="w-full [padding-block-end:clamp(20px,3vh,44px)] [padding-block-start:clamp(20px,3vh,40px)] [padding-inline:clamp(20px,4vw,72px)]">
+      <div className="page-container grid w-full items-center gap-[clamp(24px,3vw,48px)] lg:grid-cols-[minmax(320px,1fr)_minmax(0,3fr)] lg:gap-[clamp(40px,3.5vw,64px)] xl:grid-cols-[minmax(340px,1fr)_minmax(0,3.2fr)]">
         <div className="min-w-0 text-center lg:text-left">
           <div key={slide} className="hero-slide-text">
             <h1 className="mb-5 font-bold tracking-tight text-foreground [font-size:clamp(24px,2vw,38px)] [line-height:1.08]">
@@ -1255,10 +1255,10 @@ function PricingSection() {
 
   return (
     <BillingCycleContext.Provider value={cycle}>
-    <section id="pricing" className="py-20 px-4 sm:px-6 bg-muted/40">
-      <div id="pricing-plans" className="max-w-6xl mx-auto">
+    <section id="pricing" className="landing-section bg-muted/40">
+      <div id="pricing-plans" className="page-container">
         <div className="text-center mb-10">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">{t("pricingTitle")}</h2>
+          <h2 className="landing-h2 font-bold text-foreground">{t("pricingTitle")}</h2>
         </div>
 
 
@@ -1294,7 +1294,7 @@ function PricingSection() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-stretch pt-4">
+        <div className="landing-grid-3 w-full pt-4">
           {plans.map((p) => {
             const isFilled = p.variant === "filled";
             const isPrimaryBadge = p.badgeColor === "primary";
@@ -1322,7 +1322,8 @@ function PricingSection() {
             return (
               <div
                 key={p.id}
-                className={`relative p-8 rounded-2xl bg-card flex flex-col ${
+                style={{ padding: "clamp(20px, 2vw, 40px)" }}
+                className={`relative min-w-0 rounded-2xl bg-card flex flex-col ${
                   p.highlighted ? "border-2 border-primary shadow-xl" : "border border-border"
                 }`}
               >
@@ -1338,8 +1339,8 @@ function PricingSection() {
                   </span>
                 )}
 
-                <h3 className="text-2xl font-semibold text-foreground">{p.name}</h3>
-                <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed min-h-[3rem]">{p.desc}</p>
+                <h3 className="landing-h3 font-semibold text-foreground">{p.name}</h3>
+                <p className="landing-body text-muted-foreground mt-2 mb-6 leading-relaxed">{p.desc}</p>
 
                 <div className="mb-2">
                   <SupportUkrainePrice
@@ -1469,8 +1470,8 @@ function LandingFooter() {
   };
 
   return (
-    <footer className="bg-secondary px-4 py-12 text-secondary-foreground sm:px-6">
-      <div className="mx-auto max-w-6xl">
+    <footer className="landing-section landing-section-tight bg-secondary text-secondary-foreground">
+      <div className="page-container">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="max-w-sm">
             <BrandName className="text-2xl font-bold text-secondary-foreground sm:text-3xl" />

@@ -50,15 +50,15 @@ export function ProductTour({ lang }: { lang: AppLanguage }) {
   };
 
   return (
-    <section id="product-tour" className="px-4 py-16 sm:px-6 sm:py-20">
-      <div className="mx-auto max-w-6xl">
+    <section id="product-tour" className="landing-section">
+      <div className="page-container">
         <div className="mb-10 text-center">
           <p className="text-xs font-bold uppercase tracking-[0.08em] text-primary">{lt(lang, "tourEyebrow")}</p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">{lt(lang, "tourTitle")}</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-base text-muted-foreground">{lt(lang, "tourText")}</p>
+          <h2 className="landing-h2 mt-3 font-bold tracking-tight text-foreground">{lt(lang, "tourTitle")}</h2>
+          <p className="landing-lead mx-auto mt-3 max-w-[65ch] text-muted-foreground">{lt(lang, "tourText")}</p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)]">
+        <div className="grid gap-[clamp(16px,2vw,40px)] lg:grid-cols-[minmax(0,clamp(220px,18vw,320px))_minmax(0,1fr)]">
           <div role="tablist" aria-label={lt(lang, "tourTitle")} aria-orientation="vertical" className="flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
             {SLIDES.map((slide, i) => (
               <button
@@ -92,7 +92,7 @@ export function ProductTour({ lang }: { lang: AppLanguage }) {
             className="min-w-0"
           >
             <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
-              <img src={active.image} alt={lt(lang, active.alt)} loading="lazy" className="block w-full" />
+              <img src={active.image} alt={lt(lang, active.alt)} loading="lazy" className="landing-media" />
             </div>
             <div className="mt-5">
               <h3 className="text-xl font-bold text-foreground">{lt(lang, active.title)}</h3>

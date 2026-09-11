@@ -11,8 +11,8 @@ const CARDS: { icon: typeof Clock; title: LandingCopyKey; text: LandingCopyKey }
 /** "From routine to result" — three connected benefit cards, shown right after the hero. */
 export function OutcomeStrip({ lang }: { lang: AppLanguage }) {
   return (
-    <section className="w-full py-12 sm:py-16" style={{ paddingInline: "clamp(16px, 4vw, 64px)" }}>
-      <div className="mx-auto w-full" style={{ width: "min(92vw, 1720px)", maxWidth: "100%" }}>
+    <section className="landing-section landing-section-tight">
+      <div className="page-container">
         <div
           className="relative overflow-hidden rounded-3xl border-2 border-primary/40 bg-primary/5 shadow-sm"
           style={{ padding: "clamp(20px, 3vw, 56px)" }}
@@ -23,7 +23,7 @@ export function OutcomeStrip({ lang }: { lang: AppLanguage }) {
             style={{ width: "clamp(90px, 12vw, 220px)", height: "clamp(90px, 12vw, 220px)" }}
           />
 
-          <h2 className="relative mx-auto max-w-4xl text-center text-2xl font-bold tracking-tight text-secondary sm:text-3xl xl:text-4xl">
+          <h2 className="landing-h2 relative mx-auto max-w-[60ch] text-center font-bold tracking-tight text-secondary">
             {lt(lang, "outcomeTitle")}
           </h2>
           <span

@@ -45,7 +45,7 @@ export function PromoTopBar({ lang, onActivate, onContact }: Props) {
       aria-label={lt(lang, "promoBarText")}
       className="relative z-[60] bg-secondary text-secondary-foreground"
     >
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-3 gap-y-2 px-10 py-2 text-center sm:px-14">
+      <div className="page-container flex flex-wrap items-center justify-center gap-x-3 gap-y-2 py-2 text-center [padding-inline:clamp(40px,4vw,72px)]">
         <span aria-hidden="true" className="inline-block h-3.5 w-5 overflow-hidden rounded-[2px]">
           <span className="block h-1/2 bg-[hsl(214_85%_52%)]" />
           <span className="block h-1/2 bg-[hsl(47_95%_55%)]" />
