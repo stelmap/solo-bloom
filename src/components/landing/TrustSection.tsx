@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import { ArrowRight, ChevronLeft, ChevronRight, Loader2, MessageSquare, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ReviewDialog } from "@/components/landing/ReviewDialog";
