@@ -70,11 +70,8 @@ export function initAnalytics(): void {
   environment = detectEnvironment();
   // Capture from every environment (prod, preview, dev) so we can segment by env.
   enabled = true;
-  try {
-    posthog.opt_in_capturing();
-  } catch {
-    /* noop */
-  }
+
+
 
   posthog.init(POSTHOG_KEY, {
     api_host: POSTHOG_HOST,
