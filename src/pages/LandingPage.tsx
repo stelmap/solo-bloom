@@ -1626,13 +1626,16 @@ function LandingFooter() {
   };
 
   return (
-    <footer className="border-t border-border bg-secondary/30 px-4 py-10 sm:px-6">
+    <footer className="bg-secondary px-4 py-12 text-secondary-foreground sm:px-6">
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-          <p className="max-w-sm text-lg font-semibold leading-snug text-foreground sm:text-xl">
-            {T.slogan}
-          </p>
-          <address className="not-italic space-y-2 text-sm text-muted-foreground md:text-right">
+          <div className="max-w-sm">
+            <BrandName className="text-2xl font-bold text-secondary-foreground sm:text-3xl" />
+            <p className="mt-2 text-lg font-semibold leading-snug text-secondary-foreground/95 sm:text-xl">
+              {T.slogan}
+            </p>
+          </div>
+          <address className="not-italic space-y-2 text-sm text-secondary-foreground/70 md:text-right">
             <p className="flex items-start gap-2 md:justify-end">
               <MapPin className="h-4 w-4 shrink-0 text-primary mt-0.5 md:order-2" />
               <span>{OFFICE_ADDRESS}</span>
