@@ -11,9 +11,9 @@ export function useOverlayOpen() {
   useEffect(() => {
     const check = () => {
       const nodes = document.querySelectorAll(
-        '[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]',
+        '[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"], [aria-modal="true"][data-state="open"]',
       );
-      setOpen(nodes.length > 0);
+      setOpen(nodes.length > 0 || document.body.hasAttribute("data-scroll-locked"));
     };
 
     check();
@@ -22,7 +22,7 @@ export function useOverlayOpen() {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["data-state", "role"],
+      attributeFilter: ["data-state", "role", "aria-modal", "data-scroll-locked"],
     });
     return () => observer.disconnect();
   }, []);
