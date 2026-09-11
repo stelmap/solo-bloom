@@ -344,7 +344,7 @@ export default function AdminReviewsPage() {
             <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
           </div>
           <div className="sm:col-span-2">
-            <Label className="text-xs">Пошук за ім’ям або email</Label>
+            <Label className="text-xs">Пошук за ім’ям, email або текстом відгуку</Label>
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Пошук…" />
           </div>
         </div>
