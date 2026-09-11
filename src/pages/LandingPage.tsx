@@ -1610,96 +1610,44 @@ function LandingFooter() {
   const { lang } = useLandingLang();
   const pick = (m: Partial<Record<AppLanguage, string>>) => m[lang] ?? m.en ?? "";
   const T = {
-    product: pick({ en: "Product", uk: "Продукт", fr: "Produit", pl: "Produkt", ru: "Продукт" }),
-    howItWorks: pick({ en: "How it works", uk: "Як це працює", fr: "Comment ça marche", pl: "Jak to działa", ru: "Как это работает" }),
-    pricing: pick({ en: "Pricing", uk: "Ціни", fr: "Tarifs", pl: "Cennik", ru: "Цены" }),
-    company: pick({ en: "Company", uk: "Компанія", fr: "Société", pl: "Firma", ru: "Компания" }),
-    about: pick({ en: "About us", uk: "Про нас", fr: "À propos", pl: "O nas", ru: "О нас" }),
-    contacts: pick({ en: "Contacts", uk: "Контакти", fr: "Contacts", pl: "Kontakt", ru: "Контакты" }),
-    careers: pick({ en: "Careers", uk: "Вакансії", fr: "Carrières", pl: "Kariera", ru: "Вакансии" }),
-    getInTouch: pick({ en: "Get in touch", uk: "Зв'язок", fr: "Nous contacter", pl: "Kontakt", ru: "Связь" }),
-    phone: pick({ en: "Phone", uk: "Телефон", fr: "Téléphone", pl: "Telefon", ru: "Телефон" }),
-    tagline: pick({
-      en: "CRM for private practice: clients, bookings, payments and finance.",
-      uk: "CRM для приватної практики: клієнти, записи, оплати та фінанси.",
-      fr: "CRM pour pratique privée : clients, réservations, paiements et finances.",
-      pl: "CRM dla prywatnej praktyki: klienci, rezerwacje, płatności i finanse.",
-      ru: "CRM для частной практики: клиенты, записи, оплаты и финансы.",
+    slogan: pick({
+      en: "More time for what matters.",
+      uk: "Більше часу для того, що важливо.",
+      fr: "Plus de temps pour l'essentiel.",
+      pl: "Więcej czasu na to, co ważne.",
+      ru: "Больше времени для того, что важно.",
     }),
-    rights: pick({ en: "All rights reserved.", uk: "Усі права захищені.", fr: "Tous droits réservés.", pl: "Wszelkie prawa zastrzeżone.", ru: "Все права защищены." }),
-    terms: pick({ en: "Terms", uk: "Умови", fr: "Conditions", pl: "Regulamin", ru: "Условия" }),
+    rights: pick({ en: "All rights reserved.", uk: "Усі права захищено.", fr: "Tous droits réservés.", pl: "Wszelkie prawa zastrzeżone.", ru: "Все права защищены." }),
+    terms: pick({ en: "Terms and Conditions", uk: "Умови", fr: "Conditions", pl: "Regulamin", ru: "Условия" }),
     privacy: pick({ en: "Privacy", uk: "Конфіденційність", fr: "Confidentialité", pl: "Prywatność", ru: "Конфиденциальность" }),
     cookies: "Cookies",
     manageCookies: pick({ en: "Manage cookies", uk: "Керувати cookies", fr: "Gérer les cookies", pl: "Zarządzaj cookies", ru: "Управление cookies" }),
   };
-  const groups = [
-    {
-      title: T.product,
-      links: [
-        { label: T.howItWorks, href: "#comparison" },
-        { label: T.pricing, href: "#pricing" },
-        { label: "FAQ", href: "#faq" },
-      ],
-    },
-    {
-      title: T.company,
-      links: [
-        { label: T.about, href: "#about" },
-        { label: T.contacts, href: "#contacts" },
-        { label: T.careers, href: VACANCIES_URL },
-      ],
-    },
-    {
-      title: T.getInTouch,
-      links: [
-        { label: "Email", href: `mailto:${CONTACT_EMAIL}`, external: true },
-        { label: T.phone, href: `tel:${PHONE_NUMBER.replace(/\s+/g, "")}`, external: true },
-      ],
-    },
-  ];
 
   return (
-    <footer className="border-t border-border bg-secondary/30 px-4 sm:px-6 py-12">
+    <footer className="border-t border-border bg-secondary/30 px-4 py-10 sm:px-6">
       <div className="mx-auto max-w-6xl">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <div className="text-xl font-bold text-foreground mb-2"><BrandName /></div>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-3">{T.tagline}</p>
-            <p className="text-sm text-muted-foreground flex items-start gap-2">
-              <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-              {OFFICE_ADDRESS}
+        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+          <p className="max-w-sm text-lg font-semibold leading-snug text-foreground sm:text-xl">
+            {T.slogan}
+          </p>
+          <address className="not-italic space-y-2 text-sm text-muted-foreground md:text-right">
+            <p className="flex items-start gap-2 md:justify-end">
+              <MapPin className="h-4 w-4 shrink-0 text-primary mt-0.5 md:order-2" />
+              <span>{OFFICE_ADDRESS}</span>
             </p>
-            <p className="text-sm text-muted-foreground flex items-start gap-2 mt-1">
-              <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-              {OFFICE_ADDRESS_LVIV}
+            <p className="flex items-start gap-2 md:justify-end">
+              <MapPin className="h-4 w-4 shrink-0 text-primary mt-0.5 md:order-2" />
+              <span>{OFFICE_ADDRESS_LVIV}</span>
             </p>
-          </div>
-          {groups.map((g) => (
-            <div key={g.title}>
-              <h4 className="text-sm font-semibold text-foreground mb-3">{g.title}</h4>
-              <ul className="space-y-2">
-                {g.links.map((l) => {
-                  const isTelegram = l.href === TELEGRAM_URL;
-                  return (
-                    <li key={l.label}>
-                      <a
-                        href={l.href}
-                        target={l.external ? "_blank" : undefined}
-                        rel={l.external ? "noopener noreferrer" : undefined}
-                        onClick={isTelegram ? () => track("cta_clicked", { source_page: "/#footer", cta: "telegram", lang }) : undefined}
-                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        {l.label}
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
+            <p className="flex items-start gap-2 md:justify-end">
+              <Mail className="h-4 w-4 shrink-0 text-primary mt-0.5 md:order-2" />
+              <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-foreground">{CONTACT_EMAIL}</a>
+            </p>
+          </address>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 sm:flex-row">
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} Solo .Bizz. {T.rights}
           </p>
