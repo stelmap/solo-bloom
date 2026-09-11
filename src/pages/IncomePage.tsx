@@ -9,6 +9,7 @@ import { downloadCSV } from "@/lib/csvExport";
 import { Badge } from "@/components/ui/badge";
 import { useIncome, useIncomeSum, useCreateIncome, useDeleteIncome, useExpectedPayments, useMarkExpectedPaymentPaid, useClients, useCompleteFlexiblePrice, useClientCreditBalance } from "@/hooks/useData";
 import { FlexiblePriceCompleteDialog } from "@/components/FlexiblePriceCompleteDialog";
+import { useOnboardingJourney, useSetOnboardingState } from "@/hooks/useOnboardingJourney";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -28,6 +29,14 @@ import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOf
 
 export default function IncomePage() {
   useEffect(() => { import("@/lib/analytics").then(({ track }) => track("income_page_opened")); }, []);
+  // Onboarding: opening Income is what completes the "view payment" / "view debt"
+  // steps — and only once the matching session actually exists.
+  const { markViewed: markOnboardingViewed } = useSetOnboardingState();
+  const { done: onboardingDone } = useOnboardingJourney();
+  useEffect(() => {
+    if (onboardingDone.paid) markOnboardingViewed("payment");
+    if (onboardingDone.unpaid) markOnboardingViewed("debt");
+  }, [onboardingDone.paid, onboardingDone.unpaid, markOnboardingViewed]);
   const [page, setPage] = useState(0);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();

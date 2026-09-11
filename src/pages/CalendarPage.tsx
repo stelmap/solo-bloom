@@ -1248,14 +1248,33 @@ export default function CalendarPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const deepLinkAppointmentId = searchParams.get("appointmentId");
 
-  // Deep link from the setup guide: open the new-session dialog straight away.
+  // Deep link ?new=1: open the new-session dialog with today's date pre-filled.
   useEffect(() => {
     if (searchParams.get("new") !== "1") return;
+    setForm((f) => ({ ...f, date: f.date || format(new Date(), "yyyy-MM-dd"), time: f.time || "09:00" }));
     setCreateOpen(true);
     const next = new URLSearchParams(searchParams);
     next.delete("new");
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
+  // Setup guide: jump to the day of a session the user should open themselves.
+  // The guide never opens or changes the session for them.
+  const focusAppointmentId = searchParams.get("focusAppointmentId");
+  const handledFocusRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!focusAppointmentId) return;
+    if (handledFocusRef.current === focusAppointmentId) return;
+    const apt = (appointments as any[]).find((a) => a.id === focusAppointmentId);
+    if (!apt) return;
+    handledFocusRef.current = focusAppointmentId;
+    setCurrentDate(new Date(apt.scheduled_at));
+    toast({ title: t("onbj.focusHint") });
+    const next = new URLSearchParams(searchParams);
+    next.delete("focusAppointmentId");
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusAppointmentId, appointments]);
+
   const handledDeepLinkRef = useRef<string | null>(null);
   useEffect(() => {
     if (!deepLinkAppointmentId) return;

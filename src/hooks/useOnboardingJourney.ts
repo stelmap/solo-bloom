@@ -6,25 +6,28 @@ import { useAppointments, useAllExpenses, useProfile } from "@/hooks/useData";
 import { usePracticeProfileStatus } from "@/hooks/usePracticeProfile";
 
 /**
- * Guided first-use journey: practice setup → first session → paid session →
- * unpaid session → daily overview → finance dashboard → first expense.
+ * Guided first-use journey. The wizard only explains and navigates — it never
+ * creates sessions, payments or expenses on the user's behalf.
  *
- * Completion is always derived from real persisted data. Only the two purely
- * educational steps (daily overview / finance dashboard) rely on a stored
- * "viewed" flag, kept in `profiles.onboarding_state` so it survives refresh,
- * re-login and other devices.
+ * Completion is derived from real persisted data. Only the purely observational
+ * steps (view payment / view debt / daily overview / finance analytics) rely on
+ * a stored "viewed" flag in `profiles.onboarding_state`, and those flags are
+ * only set when the user genuinely opens the matching page with the matching
+ * data in place.
  */
 export type OnboardingStepKey =
   | "practice"
-  | "session"
+  | "sessions"
   | "paid"
   | "unpaid"
+  | "payment"
+  | "debt"
   | "day"
   | "finance"
   | "expense";
 
 export const ONBOARDING_STEP_KEYS: OnboardingStepKey[] = [
-  "practice", "session", "paid", "unpaid", "day", "finance", "expense",
+  "practice", "sessions", "paid", "unpaid", "payment", "debt", "day", "finance", "expense",
 ];
 
 const PAID_STATUSES = new Set(["paid_now", "paid_in_advance", "paid_from_prepayment"]);
@@ -68,6 +71,7 @@ export function useSetOnboardingState() {
     },
   });
 
+  const viewedKey = JSON.stringify(current.viewed ?? {});
   const markViewed = useCallback(
     (key: OnboardingStepKey) => {
       if (!user) return;
@@ -75,17 +79,19 @@ export function useSetOnboardingState() {
       mutation.mutate({ viewed: { [key]: true } });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [user?.id, current.viewed?.day, current.viewed?.finance],
+    [user?.id, viewedKey],
   );
 
   return { patch: mutation.mutate, markViewed, state: current };
 }
 
-/** Marks an educational onboarding step as viewed when the page is opened. */
+/** Marks an observational onboarding step as viewed when the page is opened. */
 export function useMarkOnboardingViewed(key: OnboardingStepKey) {
   const { markViewed } = useSetOnboardingState();
   return markViewed.bind(null, key);
 }
+
+const OPEN_STATUSES = new Set(["scheduled", "confirmed", "reminder_sent"]);
 
 export function useOnboardingJourney() {
   const { data: profile } = useProfile();
@@ -95,24 +101,33 @@ export function useOnboardingJourney() {
   const state = useOnboardingState();
 
   const flags = useMemo(() => {
-    let hasSession = false;
+    let sessionCount = 0;
     let hasPaid = false;
     let hasUnpaid = false;
+    const open: any[] = [];
     for (const a of appointments as any[]) {
-      hasSession = true;
+      sessionCount += 1;
       if (a.status === "completed") {
         if (PAID_STATUSES.has(a.payment_status)) hasPaid = true;
         else if (OUTSTANDING_STATUSES.has(a.payment_status)) hasUnpaid = true;
       }
+      if (OPEN_STATUSES.has(String(a.status))) open.push(a);
     }
-    return { hasSession, hasPaid, hasUnpaid };
+    open.sort(
+      (a, b) =>
+        new Date(a.scheduled_at ?? 0).getTime() - new Date(b.scheduled_at ?? 0).getTime(),
+    );
+    return { sessionCount, hasPaid, hasUnpaid, openSessions: open };
   }, [appointments]);
 
   const done: Record<OnboardingStepKey, boolean> = {
     practice: practiceComplete,
-    session: flags.hasSession,
+    sessions: flags.sessionCount >= 2,
     paid: flags.hasPaid,
     unpaid: flags.hasUnpaid,
+    // Observational steps need BOTH the underlying data and a real page visit.
+    payment: flags.hasPaid && !!state.viewed?.payment,
+    debt: flags.hasUnpaid && !!state.viewed?.debt,
     day: !!state.viewed?.day,
     finance: !!state.viewed?.finance,
     expense: (expenses as any[]).length > 0,
@@ -130,6 +145,7 @@ export function useOnboardingJourney() {
     total,
     allDone,
     currentStep,
+    openSessions: flags.openSessions,
     dismissed: !!state.dismissed || !!(profile as any)?.onboarding_completed,
     minimized: !!state.minimized,
   };

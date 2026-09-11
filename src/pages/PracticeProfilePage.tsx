@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useUpdateProfile } from "@/hooks/useData";
 import { useBookingLink } from "@/hooks/usePracticeProfile";
+import { useOnboardingJourney, useSetOnboardingState } from "@/hooks/useOnboardingJourney";
 import { BookingAvailabilitySection, type BookingAvailabilityHandle } from "@/components/practice/BookingAvailabilitySection";
 
 import { useToast } from "@/hooks/use-toast";
@@ -203,6 +204,10 @@ export default function PracticeProfilePage() {
   const updateProfile = useUpdateProfile();
   const { data: link } = useBookingLink();
   const availabilityRef = useRef<BookingAvailabilityHandle>(null);
+  const navigate = useNavigate();
+  const { patch: setOnboardingState } = useSetOnboardingState();
+  const { dismissed: onboardingDismissed, allDone: onboardingAllDone } = useOnboardingJourney();
+  const onboardingActive = !onboardingDismissed && !onboardingAllDone;
 
   const [form, setForm] = useState({
     avatar_url: "",
@@ -375,7 +380,14 @@ export default function PracticeProfilePage() {
       setAvailabilityDirty(false);
       setLang((form.language as AppLanguage) || "en");
       qc.invalidateQueries({ queryKey: ["booking_link", user.id] });
+      await qc.invalidateQueries({ queryKey: ["profile"] });
       toast({ title: L.saved });
+      // Onboarding: after a successful save bring the user back to the calendar
+      // with the setup guide open on the next incomplete step.
+      if (onboardingActive) {
+        setOnboardingState({ minimized: false });
+        navigate("/calendar");
+      }
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     } finally {
