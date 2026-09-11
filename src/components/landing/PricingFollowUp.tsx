@@ -248,39 +248,6 @@ export function PricingFollowUp({ lang }: { lang: AppLanguage }) {
         </div>
       </section>
 
-      {/* 3 — final CTA */}
-      <section className="px-0 pb-0 pt-0">
-        <div className="rounded-b-[2.5rem] bg-gradient-to-b from-secondary to-secondary/95 px-4 py-16 sm:px-6 sm:py-20">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-3xl font-bold leading-tight tracking-tight text-secondary-foreground sm:text-4xl">
-              {p(lang, COPY.ctaTitle)}
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-secondary-foreground/80">
-              {p(lang, COPY.ctaText)}
-            </p>
-            <div className="mt-8 flex justify-center">
-              <Link
-                to="/auth?mode=signup"
-                onClick={() => {
-                  track("cta_clicked", { source_page: "/", cta: "final", lang });
-                  track("registration_started", landingEventProps({ locale: lang, source_page: "/", cta: "final" }));
-                }}
-                className={`${buttonVariants({ size: "lg" })} h-12 w-full max-w-sm gap-2 rounded-xl px-8 text-base font-semibold shadow-[0_0_36px_hsl(var(--primary)/0.45)] transition-shadow hover:shadow-[0_0_48px_hsl(var(--primary)/0.6)] sm:w-auto`}
-              >
-                {p(lang, COPY.ctaButton)} <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-            <p className="mt-4 text-sm text-secondary-foreground/70">{p(lang, COPY.ctaNote)}</p>
-            <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-secondary-foreground/80 sm:text-sm">
-              {[COPY.trust1, COPY.trust2, COPY.trust3, COPY.trust4].map((item) => (
-                <li key={item.en} className="inline-flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-success" aria-hidden="true" /> {p(lang, item)}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </section>
     </>
   );
 }
