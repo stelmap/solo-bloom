@@ -1248,9 +1248,10 @@ export default function CalendarPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const deepLinkAppointmentId = searchParams.get("appointmentId");
 
-  // Deep link from the setup guide: open the new-session dialog straight away.
+  // Deep link ?new=1: open the new-session dialog with today's date pre-filled.
   useEffect(() => {
     if (searchParams.get("new") !== "1") return;
+    setForm((f) => ({ ...f, date: f.date || format(new Date(), "yyyy-MM-dd"), time: f.time || "09:00" }));
     setCreateOpen(true);
     const next = new URLSearchParams(searchParams);
     next.delete("new");
