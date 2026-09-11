@@ -1,5 +1,6 @@
 import { BrandName, BrandText } from "@/components/BrandName";
 import { AboutOverlay } from "@/components/landing/AboutOverlay";
+import { ContactRequestDialog } from "@/components/landing/ContactRequestDialog";
 import { useState, useRef, useCallback, createContext, useContext, useEffect, type ReactNode } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
