@@ -419,9 +419,14 @@ export function TrustSection({
 
         {/* Leave a review CTA */}
         <div className="mt-8 flex flex-col items-center gap-5 rounded-2xl border border-primary/20 bg-primary/[0.04] p-6 text-center sm:p-8 md:flex-row md:items-center md:justify-between md:gap-10 md:text-left">
-          <div className="md:max-w-xl">
-            <h3 className="text-lg font-bold text-foreground sm:text-xl">{c.reviewCtaTitle}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{c.reviewCtaText}</p>
+          <div className="flex items-start gap-4 md:max-w-xl">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+              <Star className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
+            </span>
+            <div className="text-center md:text-left">
+              <h3 className="text-lg font-bold text-foreground sm:text-xl">{c.reviewCtaTitle}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{c.reviewCtaText}</p>
+            </div>
           </div>
           <button
             type="button"
