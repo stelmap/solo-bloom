@@ -3740,6 +3740,38 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_set_review_verification: {
+        Args: { p_note?: string; p_review_id: string; p_verified: boolean }
+        Returns: {
+          admin_reply: string | null
+          admin_reply_at: string | null
+          body: string
+          body_hash: string | null
+          consent: boolean
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          ip_hash: string | null
+          language: string | null
+          moderation_status: Database["public"]["Enums"]["review_moderation_status"]
+          plan: string | null
+          profession: string
+          published_at: string | null
+          rating: number
+          updated_at: string
+          verification_checked_at: string | null
+          verification_status: Database["public"]["Enums"]["review_verification_status"]
+          verified_records_count: number
+          verified_user_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "reviews"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_update_booking_request_status: {
         Args: { p_id: string; p_status: string }
         Returns: {

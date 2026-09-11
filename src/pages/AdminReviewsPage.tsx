@@ -101,6 +101,9 @@ export default function AdminReviewsPage() {
   const [history, setHistory] = useState<HistoryRow[]>([]);
   const [reply, setReply] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<Review | null>(null);
+  const [confirmAction, setConfirmAction] = useState<
+    { review: Review; action: string; notify?: boolean; title: string; description: string } | null
+  >(null);
   const [acting, setActing] = useState(false);
 
   useEffect(() => {
@@ -139,10 +142,18 @@ export default function AdminReviewsPage() {
         end.setHours(23, 59, 59, 999);
         if (new Date(r.created_at) > end) return false;
       }
-      if (s && ![r.display_name, r.email].some((v) => v.toLowerCase().includes(s))) return false;
+      if (s && ![r.display_name, r.email, r.body].some((v) => (v ?? "").toLowerCase().includes(s)))
+        return false;
       return true;
     });
   }, [rows, modFilter, verFilter, ratingFilter, planFilter, from, to, search]);
+
+  const counters = useMemo(() => ({
+    pending: rows.filter((r) => r.moderation_status === "pending").length,
+    published: rows.filter((r) => r.moderation_status === "approved").length,
+    rejected: rows.filter((r) => r.moderation_status === "rejected").length,
+    verified: rows.filter((r) => r.verification_status === "verified_user").length,
+  }), [rows]);
 
   const openDetail = async (r: Review) => {
     setSelected(r);
@@ -180,6 +191,23 @@ export default function AdminReviewsPage() {
       void notify(updated, action === "approve" ? "approved" : "rejected");
     }
     toast({ title: "Готово", description: MOD_LABEL[updated.moderation_status] });
+  };
+
+  const setVerification = async (review: Review, verified: boolean) => {
+    setActing(true);
+    const { data, error } = await (supabase as any).rpc("admin_set_review_verification", {
+      p_review_id: review.id,
+      p_verified: verified,
+    });
+    setActing(false);
+    if (error) {
+      toast({ title: "Дію не виконано", description: error.message, variant: "destructive" });
+      return;
+    }
+    const updated = data as Review;
+    setRows((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+    if (selected?.id === updated.id) void openDetail(updated);
+    toast({ title: verified ? "Автора позначено як підтвердженого" : "Підтвердження знято" });
   };
 
   const saveReply = async () => {
@@ -231,6 +259,32 @@ export default function AdminReviewsPage() {
             <RefreshCw className={`h-4 w-4 ${busy ? "animate-spin" : ""}`} /> Оновити
           </Button>
         </div>
+
+        <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            { key: "pending", label: "Очікують модерації", value: counters.pending, highlight: counters.pending > 0 },
+            { key: "published", label: "Опубліковано", value: counters.published },
+            { key: "rejected", label: "Відхилено", value: counters.rejected },
+            { key: "verified", label: "Підтверджені автори", value: counters.verified },
+          ].map((c) => (
+            <button
+              key={c.key}
+              type="button"
+              onClick={() => {
+                if (c.key === "verified") { setVerFilter("verified_user"); setModFilter("all"); }
+                else { setVerFilter("all"); setModFilter(c.key === "published" ? "approved" : c.key); }
+              }}
+              className={`rounded-xl border p-4 text-left transition-colors hover:bg-muted/50 ${
+                c.highlight ? "border-primary bg-primary/5" : "border-border"
+              }`}
+            >
+              <div className={`text-2xl font-bold ${c.highlight ? "text-primary" : ""}`}>{c.value}</div>
+              <div className="text-xs text-muted-foreground">{c.label}</div>
+            </button>
+          ))}
+        </div>
+
+
 
         <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div>
@@ -290,7 +344,7 @@ export default function AdminReviewsPage() {
             <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
           </div>
           <div className="sm:col-span-2">
-            <Label className="text-xs">Пошук за ім’ям або email</Label>
+            <Label className="text-xs">Пошук за ім’ям, email або текстом відгуку</Label>
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Пошук…" />
           </div>
         </div>
@@ -408,17 +462,53 @@ export default function AdminReviewsPage() {
               </div>
 
               <DialogFooter className="flex-wrap gap-2 sm:justify-start">
+                {selected.verification_status === "verified_user" ? (
+                  <Button size="sm" variant="outline" disabled={acting} onClick={() => void setVerification(selected, false)}>
+                    Зняти підтвердження автора
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="outline" className="gap-1" disabled={acting} onClick={() => void setVerification(selected, true)}>
+                    <ShieldCheck className="h-3.5 w-3.5" /> Підтвердити автора
+                  </Button>
+                )}
                 <Button size="sm" disabled={acting} onClick={() => void act(selected, "approve", true)}>
                   Схвалити та опублікувати
                 </Button>
-                <Button size="sm" variant="outline" disabled={acting} onClick={() => void act(selected, "reject", true)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={acting}
+                  onClick={() => setConfirmAction({
+                    review: selected, action: "reject", notify: true,
+                    title: "Відхилити відгук?",
+                    description: "Відгук не буде опубліковано, автор отримає повідомлення. Запис залишиться в історії модерації.",
+                  })}
+                >
                   Відхилити та повідомити
                 </Button>
-                <Button size="sm" variant="outline" disabled={acting} onClick={() => void act(selected, "reject")}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={acting}
+                  onClick={() => setConfirmAction({
+                    review: selected, action: "reject",
+                    title: "Відхилити відгук?",
+                    description: "Відгук не буде опубліковано. Запис залишиться в історії модерації.",
+                  })}
+                >
                   Відхилити без листа
                 </Button>
-                <Button size="sm" variant="outline" disabled={acting} onClick={() => void act(selected, "hide")}>
-                  Приховати із сайту
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={acting}
+                  onClick={() => setConfirmAction({
+                    review: selected, action: "hide",
+                    title: "Зняти з публікації?",
+                    description: "Відгук одразу зникне з публічного сайту, але залишиться в історії модерації.",
+                  })}
+                >
+                  Зняти з публікації
                 </Button>
                 <Button size="sm" variant="outline" disabled={acting} onClick={() => void act(selected, "restore")}>
                   Повернути на сайт
@@ -453,6 +543,28 @@ export default function AdminReviewsPage() {
               }}
             >
               Видалити
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!confirmAction} onOpenChange={(o) => !o && setConfirmAction(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmAction?.title}</AlertDialogTitle>
+            <AlertDialogDescription>{confirmAction?.description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Скасувати</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmAction) {
+                  void act(confirmAction.review, confirmAction.action, confirmAction.notify);
+                }
+                setConfirmAction(null);
+              }}
+            >
+              Підтвердити
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
