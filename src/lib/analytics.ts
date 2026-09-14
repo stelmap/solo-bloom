@@ -445,8 +445,15 @@ async function persistEventToSupabase(event: string, props: BaseEventProps): Pro
       anonymousId = posthog.get_distinct_id?.() ?? null;
       sessionId = posthog.get_session_id?.() ?? null;
     } catch { /* noop */ }
+    // Only attribute the event to a user when a live session exists; otherwise
+    // the row-level-security policy rejects it (expired token => anon role).
+    let sessionUserId: string | null = null;
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      sessionUserId = sessionData.session?.user?.id ?? null;
+    } catch { /* noop */ }
     await (supabase.from("user_activity_events") as any).insert({
-      user_id: currentUserId, // may be NULL for anonymous visits
+      user_id: sessionUserId && sessionUserId === currentUserId ? sessionUserId : null,
       event_name: event,
       event_metadata: props as Record<string, unknown>,
       domain: url.hostname,

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { requireActiveSession } from "@/lib/sessionGuard";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateCapacity } from "@/lib/capacity";
 import { track } from "@/lib/analytics";
@@ -1788,6 +1789,9 @@ export function useCreateExpense() {
       instance_status?: "planned" | "paid" | "cancelled";
       paid_date?: string | null;
     }) => {
+      // Make sure the session is still valid — otherwise the insert is rejected
+      // by row-level security with an opaque error instead of a re-login prompt.
+      const uid = await requireActiveSession();
       const recurrence: RecurrenceKind = expense.recurrence
         ?? (expense.is_recurring ? "monthly" : "one_time");
 
@@ -1795,7 +1799,7 @@ export function useCreateExpense() {
       if (recurrence === "one_time") {
         const status = expense.instance_status || "planned";
         const row: any = attachDemoFlag({
-          user_id: user!.id,
+          user_id: uid,
           category: expense.category,
           amount: expense.amount,
           date: expense.date,
