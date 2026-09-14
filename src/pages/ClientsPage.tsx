@@ -22,6 +22,7 @@ import { PaywallDialog } from "@/components/PaywallDialog";
 import { ListSkeleton } from "@/components/ListSkeleton";
 import { ClientLanguageSelect } from "@/components/ClientLanguageSelect";
 import { describeError } from "@/lib/errorMessages";
+import { isValidOptionalEmail } from "@/lib/validateEmail";
 
 
 const getArchiveReasonLabel = (reason: string, t: any) => {
@@ -130,6 +131,7 @@ export default function ClientsPage() {
   const [archiveTarget, setArchiveTarget] = useState<{ id: string; name: string } | null>(null);
   const [statusFilter, setStatusFilter] = useState<"active" | "archived" | "all">("active");
   const [importing, setImporting] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState<{ name: string; phone: string; email: string; notes: string; telegram: string; communication_language: "" | "uk" | "ru" | "en" | "pl" }>({ name: "", phone: "", email: "", notes: "", telegram: "", communication_language: "" });
 
@@ -266,6 +268,10 @@ export default function ClientsPage() {
 
   const handleCreate = async () => {
     if (!form.name.trim()) return;
+    if (!isValidOptionalEmail(form.email)) {
+      setEmailError(t("errors.validation.invalidEmail"));
+      return;
+    }
     if (!form.communication_language) {
       toast({ title: t("clientLang.required"), variant: "destructive" });
       return;
@@ -273,6 +279,7 @@ export default function ClientsPage() {
     try {
       await createClient.mutateAsync(form);
       setForm({ name: "", phone: "", email: "", notes: "", telegram: "", communication_language: "" });
+      setEmailError(null);
       setOpen(false);
       toast({ title: t("toast.clientAdded") });
     } catch (e: any) {
@@ -413,7 +420,17 @@ export default function ClientsPage() {
               <div className="space-y-4">
                 <div className="space-y-2"><Label>{t("common.name")} *</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>{t("common.phone")}</Label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>{t("common.email")}</Label><Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
+                <div className="space-y-2">
+                  <Label>{t("common.email")}</Label>
+                  <Input
+                    type="email"
+                    value={form.email}
+                    aria-invalid={!!emailError}
+                    onChange={e => { setForm(f => ({ ...f, email: e.target.value })); if (emailError) setEmailError(null); }}
+                    onBlur={e => setEmailError(isValidOptionalEmail(e.target.value) ? null : t("errors.validation.invalidEmail"))}
+                  />
+                  {emailError && <p className="text-xs text-destructive">{emailError}</p>}
+                </div>
                 
                 <div className="space-y-2"><Label>{t("common.notes")}</Label><Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
                 <ClientLanguageSelect

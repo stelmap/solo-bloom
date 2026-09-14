@@ -58,6 +58,7 @@ import {
   isRealSession,
 } from "@/lib/paymentClassifiers";
 import { describeError } from "@/lib/errorMessages";
+import { isValidOptionalEmail } from "@/lib/validateEmail";
 
 
 export default function ClientDetailPage() {
@@ -88,6 +89,7 @@ export default function ClientDetailPage() {
   const { data: clientSupervisions = [] } = useSupervisions(id);
 
   const [editOpen, setEditOpen] = useState(false);
+  const [editEmailError, setEditEmailError] = useState<string | null>(null);
   const [thirdPartyPayer, setThirdPartyPayer] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
@@ -345,6 +347,10 @@ export default function ClientDetailPage() {
 
   const handleSaveEdit = async () => {
     if (!editForm.name.trim()) return;
+    if (!isValidOptionalEmail(editForm.email)) {
+      setEditEmailError(t("errors.validation.invalidEmail"));
+      return;
+    }
     if (!editForm.communication_language) {
       toast({ title: t("clientLang.required"), variant: "destructive" });
       return;
@@ -1053,7 +1059,17 @@ export default function ClientDetailPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2 sm:col-span-2"><Label>{t("common.name")} *</Label><Input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>{t("common.phone")}</Label><Input value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>{t("common.email")}</Label><Input type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} /></div>
+                <div className="space-y-2">
+                  <Label>{t("common.email")}</Label>
+                  <Input
+                    type="email"
+                    value={editForm.email}
+                    aria-invalid={!!editEmailError}
+                    onChange={e => { setEditForm(f => ({ ...f, email: e.target.value })); if (editEmailError) setEditEmailError(null); }}
+                    onBlur={e => setEditEmailError(isValidOptionalEmail(e.target.value) ? null : t("errors.validation.invalidEmail"))}
+                  />
+                  {editEmailError && <p className="text-xs text-destructive">{editEmailError}</p>}
+                </div>
                 
               </div>
             </section>
