@@ -36,7 +36,9 @@ export function OnboardingWidget() {
   const location = useLocation();
   const { loading, done, completedCount, total, allDone, currentStep, dismissed, minimized } =
     useOnboardingJourney();
-  const { patch } = useSetOnboardingState();
+  const { patch, state } = useSetOnboardingState();
+  const { user } = useAuth();
+
   const overlayOpen = useOverlayOpen();
   const qc = useQueryClient();
 
