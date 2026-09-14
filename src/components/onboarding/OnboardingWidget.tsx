@@ -36,10 +36,15 @@ export function OnboardingWidget() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
-  const { loading, done, completedCount, total, allDone, currentStep, dismissed, minimized } =
+  const { loading, done, completedCount, total, allDone, currentStep, dismissed } =
     useOnboardingJourney();
-  const { patch, state } = useSetOnboardingState();
+  const { patch } = useSetOnboardingState();
   const { user } = useAuth();
+
+  // Closing or minimizing the wizard only lasts for the current signed-in
+  // session — a new login re-opens it while onboarding is unfinished.
+  const [closed, setClosed] = useState(false);
+  const [minimized, setMinimized] = useState(false);
 
   const overlayOpen = useOverlayOpen();
   const qc = useQueryClient();
@@ -64,23 +69,14 @@ export function OnboardingWidget() {
     return () => window.removeEventListener("focus", onFocus);
   }, [qc]);
 
-  // Every new login re-opens the wizard while the journey is unfinished, even
-  // if it was hidden or minimized in an earlier session. Done once per login.
+  // Signing in as (another) user resets the session-local hidden state.
   useEffect(() => {
-    if (loading || allDone || !user?.id) return;
-    const flag = `onbj.autoOpen.${user.id}`;
-    if (sessionStorage.getItem(flag)) return;
-    sessionStorage.setItem(flag, "1");
-    if (state.dismissed || state.minimized) {
-      patch({ dismissed: false, minimized: false });
-    }
-  }, [loading, allDone, user?.id, state.dismissed, state.minimized, patch]);
+    setClosed(false);
+    setMinimized(false);
+  }, [user?.id]);
 
+  if (loading || dismissed || closed) return null;
 
-
-
-
-  if (loading || dismissed) return null;
   // A primary working modal/drawer (session details, create/edit forms, ...)
   // always takes priority. The wizard only hides visually; state is untouched.
   if (overlayOpen) return null;
