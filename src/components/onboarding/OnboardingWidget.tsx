@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Check, ChevronDown, Sparkles, X, ArrowRight } from "lucide-react";
@@ -13,6 +13,7 @@ import {
 } from "@/hooks/useOnboardingJourney";
 import { useOverlayOpen } from "@/hooks/useOverlayOpen";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUpdateProfile } from "@/hooks/useData";
 
 
 
