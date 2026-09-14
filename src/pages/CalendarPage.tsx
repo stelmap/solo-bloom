@@ -2526,7 +2526,7 @@ export default function CalendarPage() {
                 </form>
 
                 {/* Nested quick-add: client */}
-                <Dialog open={qaClientOpen} onOpenChange={setQaClientOpen}>
+                <Dialog open={qaClientOpen} onOpenChange={(o) => { setQaClientOpen(o); if (!o) setQaEmailError(null); }}>
                   <DialogContent>
                     <DialogHeader><DialogTitle>{L.qaClientTitle}</DialogTitle></DialogHeader>
                     <div className="space-y-3">

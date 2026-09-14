@@ -403,7 +403,7 @@ export default function ClientsPage() {
                 <Upload className="h-4 w-4 mr-1" /> {importing ? "..." : "Import"}
               </Button>
             </>}
-            <Dialog open={open} onOpenChange={setOpen}>
+            <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEmailError(null); }}>
               <Button
                 onClick={() => {
                   if (atClientLimit) {
