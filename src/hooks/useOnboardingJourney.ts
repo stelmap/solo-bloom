@@ -60,6 +60,7 @@ export function useSetOnboardingState() {
         ...current,
         ...patch,
         viewed: { ...(current.viewed ?? {}), ...(patch.viewed ?? {}) },
+        achieved: { ...(current.achieved ?? {}), ...(patch.achieved ?? {}) },
       };
       const { error } = await supabase
         .from("profiles")
