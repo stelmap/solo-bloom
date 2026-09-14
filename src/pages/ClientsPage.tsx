@@ -419,7 +419,17 @@ export default function ClientsPage() {
               <div className="space-y-4">
                 <div className="space-y-2"><Label>{t("common.name")} *</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>{t("common.phone")}</Label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>{t("common.email")}</Label><Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
+                <div className="space-y-2">
+                  <Label>{t("common.email")}</Label>
+                  <Input
+                    type="email"
+                    value={form.email}
+                    aria-invalid={!!emailError}
+                    onChange={e => { setForm(f => ({ ...f, email: e.target.value })); if (emailError) setEmailError(null); }}
+                    onBlur={e => setEmailError(isValidOptionalEmail(e.target.value) ? null : t("errors.validation.invalidEmail"))}
+                  />
+                  {emailError && <p className="text-xs text-destructive">{emailError}</p>}
+                </div>
                 
                 <div className="space-y-2"><Label>{t("common.notes")}</Label><Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
                 <ClientLanguageSelect
