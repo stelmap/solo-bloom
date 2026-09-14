@@ -249,7 +249,7 @@ export default function PublicBookingPage() {
         p_to_date: fmtDate(to),
       });
       if (error) {
-        if (!opts?.silent) setError(error.message);
+        if (!opts?.silent) setError(describeError(error));
       } else {
         const next = ((data as any[]) || []).map((r) => r.slot_at).slice(0, 200);
         setSlots((prev) => (prev.length === next.length && prev.every((s, i) => s === next[i]) ? prev : next));

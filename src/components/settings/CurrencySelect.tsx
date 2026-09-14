@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { describeError } from "@/lib/errorMessages";
 
 /**
  * Single source of truth for the practice currency (profiles.currency).
@@ -44,7 +45,7 @@ export function CurrencySelect({ label, savedLabel, className }: Props) {
       );
       if (savedLabel) toast({ title: savedLabel });
     } catch (e: any) {
-      toast({ title: e?.message ?? "Error", variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e), variant: "destructive" });
     }
   };
 

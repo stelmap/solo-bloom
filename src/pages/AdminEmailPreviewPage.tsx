@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
+import { describeError } from "@/lib/errorMessages";
 
 const TEMPLATES = [
   { id: "signup", label: "Signup confirmation" },
@@ -66,12 +67,12 @@ export default function AdminEmailPreviewPage() {
         );
         if (cancelled) return;
         if (error) {
-          setError(error.message);
+          setError(describeError(error));
         } else {
           setPreview(data as Preview);
         }
       } catch (e: any) {
-        if (!cancelled) setError(e?.message ?? "Failed to load preview");
+        if (!cancelled) setError(describeError(e, "errors.crud.loadFailed"));
       } finally {
         if (!cancelled) setBusy(false);
       }
