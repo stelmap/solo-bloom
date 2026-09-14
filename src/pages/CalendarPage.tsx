@@ -794,6 +794,10 @@ export default function CalendarPage() {
   const handleQuickAddClient = async () => {
     const name = qaClient.name.trim();
     if (!name) return;
+    if (!isValidOptionalEmail(qaClient.email)) {
+      setQaEmailError(t("errors.validation.invalidEmail"));
+      return;
+    }
     try {
       const c: any = await createClient.mutateAsync({
         name,
@@ -807,6 +811,7 @@ export default function CalendarPage() {
       );
       setForm(f => ({ ...f, client_id: c.id }));
       setQaClient({ name: "", email: "", phone: "" });
+      setQaEmailError(null);
       setQaClientOpen(false);
     } catch (e: any) {
       toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
