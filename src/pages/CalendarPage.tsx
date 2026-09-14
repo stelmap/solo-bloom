@@ -64,6 +64,7 @@ import { BookingInboxPanel } from "@/components/BookingInboxPanel";
 import { SidebarSection } from "@/components/calendar/SidebarSection";
 import { useNeedsAttention } from "@/hooks/useNeedsAttention";
 import { describeError } from "@/lib/errorMessages";
+import { isValidOptionalEmail } from "@/lib/validateEmail";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
@@ -787,11 +788,16 @@ export default function CalendarPage() {
   const [qaClientOpen, setQaClientOpen] = useState(false);
   const [qaServiceOpen, setQaServiceOpen] = useState(false);
   const [qaClient, setQaClient] = useState({ name: "", email: "", phone: "" });
+  const [qaEmailError, setQaEmailError] = useState<string | null>(null);
   const [qaService, setQaService] = useState({ name: "", duration_minutes: 60, price: 0 });
 
   const handleQuickAddClient = async () => {
     const name = qaClient.name.trim();
     if (!name) return;
+    if (!isValidOptionalEmail(qaClient.email)) {
+      setQaEmailError(t("errors.validation.invalidEmail"));
+      return;
+    }
     try {
       const c: any = await createClient.mutateAsync({
         name,
@@ -805,6 +811,7 @@ export default function CalendarPage() {
       );
       setForm(f => ({ ...f, client_id: c.id }));
       setQaClient({ name: "", email: "", phone: "" });
+      setQaEmailError(null);
       setQaClientOpen(false);
     } catch (e: any) {
       toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
@@ -2519,7 +2526,7 @@ export default function CalendarPage() {
                 </form>
 
                 {/* Nested quick-add: client */}
-                <Dialog open={qaClientOpen} onOpenChange={setQaClientOpen}>
+                <Dialog open={qaClientOpen} onOpenChange={(o) => { setQaClientOpen(o); if (!o) setQaEmailError(null); }}>
                   <DialogContent>
                     <DialogHeader><DialogTitle>{L.qaClientTitle}</DialogTitle></DialogHeader>
                     <div className="space-y-3">
@@ -2529,7 +2536,14 @@ export default function CalendarPage() {
                       </div>
                       <div className="space-y-1.5">
                         <Label>{L.clientEmail}</Label>
-                        <Input type="email" value={qaClient.email} onChange={e => setQaClient(s => ({ ...s, email: e.target.value }))} />
+                        <Input
+                          type="email"
+                          value={qaClient.email}
+                          aria-invalid={!!qaEmailError}
+                          onChange={e => { setQaClient(s => ({ ...s, email: e.target.value })); if (qaEmailError) setQaEmailError(null); }}
+                          onBlur={e => setQaEmailError(isValidOptionalEmail(e.target.value) ? null : t("errors.validation.invalidEmail"))}
+                        />
+                        {qaEmailError && <p className="text-xs text-destructive">{qaEmailError}</p>}
                       </div>
                       <div className="space-y-1.5">
                         <Label>{L.clientPhone}</Label>
