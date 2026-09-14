@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { sendBookingConfirmationEmail } from "@/lib/sendBookingConfirmationEmail";
+import { describeError } from "@/lib/errorMessages";
 
 
 function fmt(s: string) {
@@ -117,7 +118,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       }
       setConfirmingFor(null); setConfirmClientId(""); setConfirmServiceId("");
     } catch (e: any) {
-      toast({ title: "Could not confirm", description: e.message, variant: "destructive" });
+      toast({ title: "Could not confirm", description: describeError(e.message), variant: "destructive" });
     }
   }
 
@@ -126,7 +127,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       await decline.mutateAsync({ id: req.id, reason: "cancelled_therapist" });
       toast({ title: "Declined" });
     } catch (e: any) {
-      toast({ title: "Could not decline", description: e.message, variant: "destructive" });
+      toast({ title: "Could not decline", description: describeError(e.message), variant: "destructive" });
     }
   }
 
@@ -137,7 +138,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       toast({ title: "Client linked" });
       setLinkingFor(null); setLinkClientId("");
     } catch (e: any) {
-      toast({ title: "Could not link", description: e.message, variant: "destructive" });
+      toast({ title: "Could not link", description: describeError(e.message), variant: "destructive" });
     }
   }
 
@@ -177,7 +178,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       });
       setCreatingFor(null);
     } catch (e: any) {
-      toast({ title: "Could not create client", description: e.message, variant: "destructive" });
+      toast({ title: "Could not create client", description: describeError(e.message), variant: "destructive" });
     }
   }
 

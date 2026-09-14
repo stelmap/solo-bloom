@@ -24,6 +24,7 @@ import { useCurrency, type CurrencyCode } from "@/hooks/useCurrency";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { SessionFormatsBlock, stripLegacySessionFormatsSection } from "@/components/SessionFormatsBlock";
 import { buildVarMap, interpolateText } from "@/lib/agreementInterpolate";
+import { describeError } from "@/lib/errorMessages";
 
 
 const SUPPORTED_CURRENCIES: CurrencyCode[] = ["EUR", "UAH", "PLN", "USD"];
@@ -134,7 +135,7 @@ export default function AgreementTemplateEditorPage() {
         .eq("id", versionId)
         .maybeSingle();
       if (error || !data) {
-        toast({ title: "Not found", description: error?.message, variant: "destructive" });
+        toast({ title: "Not found", description: describeError(error?.message), variant: "destructive" });
         navigate("/settings/agreements");
         return;
       }
@@ -208,7 +209,7 @@ export default function AgreementTemplateEditorPage() {
       .update({ content: content as any, controls: controls as any })
       .eq("id", versionId);
     setSaving(false);
-    if (error) toast({ title: t("ae.saveFailed"), description: error.message, variant: "destructive" });
+    if (error) toast({ title: t("ae.saveFailed"), description: describeError(error.message), variant: "destructive" });
     else toast({ title: t("ae.draftSaved") });
   }
 
@@ -224,7 +225,7 @@ export default function AgreementTemplateEditorPage() {
       .from("agreement_template_versions")
       .update({ status: "active", activated_at: new Date().toISOString() })
       .eq("id", versionId);
-    if (error) toast({ title: "Activate failed", description: error.message, variant: "destructive" });
+    if (error) toast({ title: "Activate failed", description: describeError(error.message), variant: "destructive" });
     else {
       toast({ title: `Version ${versionNumber} activated` });
       navigate("/settings/agreements");
@@ -259,7 +260,7 @@ export default function AgreementTemplateEditorPage() {
       toast({ title: `Draft v${nextNum} created` });
       if (created) navigate(`/settings/agreements/version/${created.id}`);
     } catch (e: any) {
-      toast({ title: "Failed to create draft", description: e.message, variant: "destructive" });
+      toast({ title: "Failed to create draft", description: describeError(e.message), variant: "destructive" });
     } finally {
       setSaving(false);
     }

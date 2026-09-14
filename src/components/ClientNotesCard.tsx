@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { RichTextEditor, RichTextView } from "@/components/RichTextEditor";
 import { noteToPlainText } from "@/lib/richText";
+import { describeError } from "@/lib/errorMessages";
 
 
 type Props = {
@@ -65,7 +66,7 @@ export function ClientNotesCard({ client, mode = "edit", inlineEdit, collapsible
       setSavedAt(new Date());
       setDirty(false);
     } catch (e: any) {
-      toast({ title: t("clientNotes.saveFailed"), description: e.message, variant: "destructive" });
+      toast({ title: t("clientNotes.saveFailed"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -187,7 +188,7 @@ export function ClientNotesCard({ client, mode = "edit", inlineEdit, collapsible
                     setSavedAt(new Date());
                     setInlineOpen(false);
                   } catch (e: any) {
-                    toast({ title: t("clientNotes.saveFailed"), description: e.message, variant: "destructive" });
+                    toast({ title: t("clientNotes.saveFailed"), description: describeError(e.message), variant: "destructive" });
                   }
                 }}
                 disabled={saving}

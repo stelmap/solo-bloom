@@ -21,6 +21,7 @@ import { useFreeStarterMode } from "@/hooks/useDemoWorkspace";
 import { PaywallDialog } from "@/components/PaywallDialog";
 import { ListSkeleton } from "@/components/ListSkeleton";
 import { ClientLanguageSelect } from "@/components/ClientLanguageSelect";
+import { describeError } from "@/lib/errorMessages";
 
 
 const getArchiveReasonLabel = (reason: string, t: any) => {
@@ -259,7 +260,7 @@ export default function ClientsPage() {
       await unarchiveClient.mutateAsync(id);
       toast({ title: t("archive.toast.unarchived") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -280,7 +281,7 @@ export default function ClientsPage() {
         setPaywallOpen(true);
         return;
       }
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -291,7 +292,7 @@ export default function ClientsPage() {
       toast({ title: t("toast.clientDeleted") });
       setDeleteId(null);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -358,7 +359,7 @@ export default function ClientsPage() {
 
       toast({ title: t("toast.clientAdded"), description: `${imported} clients imported` });
     } catch (err: any) {
-      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(err.message), variant: "destructive" });
     } finally {
       setImporting(false);
       if (fileInputRef.current) fileInputRef.current.value = "";

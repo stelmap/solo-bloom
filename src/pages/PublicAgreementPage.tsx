@@ -13,6 +13,7 @@ import { buildVarMap, interpolateText, notSpecifiedLabel } from "@/lib/agreement
 import { SignedAgreementDocument, useSignedPdfLabels } from "@/components/SignedAgreementDocument";
 import { downloadSignedAgreementPdf, type SignedAgreementData } from "@/lib/signedAgreementPdf";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { describeError } from "@/lib/errorMessages";
 
 
 type Control =
@@ -348,7 +349,7 @@ export default function PublicAgreementPage() {
       // Re-fetch so the stored signing timestamp is rendered into the document text.
       try { await loadAgreement(sessionToken); } catch { /* keep local state */ }
     } catch (err: any) {
-      toast({ title: t("pa.couldNotSign"), description: errorLabel(err.message, t), variant: "destructive" });
+      toast({ title: t("pa.couldNotSign"), description: describeError(errorLabel(err.message, t)), variant: "destructive" });
     } finally {
       setBusy(false);
     }

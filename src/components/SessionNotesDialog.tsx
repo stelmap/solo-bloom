@@ -8,6 +8,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { describeError } from "@/lib/errorMessages";
 
 interface SessionNotesDialogProps {
   open: boolean;
@@ -55,7 +56,7 @@ export function SessionNotesDialog({ open, onOpenChange, appointmentId, clientId
         setHomework(data.homework_text ?? "");
         setTransference(data.transference ?? "");
       } catch (e: any) {
-        if (!cancelled) toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+        if (!cancelled) toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -90,7 +91,7 @@ export function SessionNotesDialog({ open, onOpenChange, appointmentId, clientId
       toast({ title: t("sessionNotes.saved") });
       onOpenChange(false);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     } finally {
       setSaving(false);
     }

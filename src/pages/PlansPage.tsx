@@ -248,7 +248,7 @@ export default function PlansPage() {
       }
       setConfirmClearOpen(true);
     } catch (e: any) {
-      toast({ title: t("plans.checkFailed"), description: e?.message ?? String(e), variant: "destructive" });
+      toast({ title: t("plans.checkFailed"), description: describeError(e?.message ?? String(e)), variant: "destructive" });
     } finally {
       setClearing(false);
     }
@@ -274,7 +274,7 @@ export default function PlansPage() {
       qc.invalidateQueries();
       sessionStorage.setItem(`demo_seed_attempted:${user.id}`, "1");
     } catch (e: any) {
-      toast({ title: t("plans.failedClear"), description: e?.message ?? String(e), variant: "destructive" });
+      toast({ title: t("plans.failedClear"), description: describeError(e?.message ?? String(e)), variant: "destructive" });
     } finally {
       setClearing(false);
       setConfirmClearOpen(false);
@@ -293,8 +293,8 @@ export default function PlansPage() {
           .eq("is_active", true),
       ]);
       if (cancelled) return;
-      if (plansRes.error) toast({ title: t("plans.failedLoadPlans"), description: plansRes.error.message, variant: "destructive" });
-      if (pricesRes.error) toast({ title: t("plans.failedLoadPrices"), description: pricesRes.error.message, variant: "destructive" });
+      if (plansRes.error) toast({ title: t("plans.failedLoadPlans"), description: describeError(plansRes.error.message), variant: "destructive" });
+      if (pricesRes.error) toast({ title: t("plans.failedLoadPrices"), description: describeError(pricesRes.error.message), variant: "destructive" });
       setPlans((plansRes.data ?? []) as Plan[]);
       setPrices((pricesRes.data ?? []) as PlanPrice[]);
       setLoading(false);

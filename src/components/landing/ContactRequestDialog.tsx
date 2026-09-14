@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { CheckCircle2, Loader2 } from "lucide-react";
+import { describeError } from "@/lib/errorMessages";
 
 type Lang = "en" | "uk" | "ru" | "pl" | "fr";
 
@@ -339,7 +340,7 @@ export function ContactRequestDialog({ open, onOpenChange, lang, placement = "To
     });
     setSubmitting(false);
     if (error) {
-      toast({ title: t.failTitle, description: error.message, variant: "destructive" });
+      toast({ title: t.failTitle, description: describeError(error.message), variant: "destructive" });
       return;
     }
     setDone(true);

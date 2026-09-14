@@ -26,6 +26,7 @@ import {
   type BusinessCountry,
 } from "@/lib/taxIdentifiers";
 import { Link } from "react-router-dom";
+import { describeError } from "@/lib/errorMessages";
 
 export function CurrencyInvoicingSection() {
   const { t } = useLanguage();
@@ -60,7 +61,7 @@ export function CurrencyInvoicingSection() {
       await updateProfile.mutateAsync(form);
       toast({ title: t("settings.saved") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -168,7 +169,7 @@ export function RevenueRecognitionSection() {
       await updateProfile.mutateAsync({ income_recognition_method: v } as any);
       toast({ title: t("settings.saved") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -251,16 +252,16 @@ export function TaxesSection() {
       toast({ title: t("tax.saved") });
       setTaxOpen(false);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
   const handleDeleteTax = async (id: string) => {
     try { await deleteTax.mutateAsync(id); toast({ title: t("tax.deleted") }); }
-    catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
+    catch (e: any) { toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" }); }
   };
   const handleToggleTax = async (id: string, isActive: boolean) => {
     try { await updateTax.mutateAsync({ id, is_active: isActive }); }
-    catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
+    catch (e: any) { toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" }); }
   };
 
   return (
@@ -296,7 +297,7 @@ export function TaxesSection() {
                   await generateTax.mutateAsync({ taxSettingId: tax.id, entries: freshEntries });
                   toast({ title: t("tax.refreshed") });
                 } catch (e: any) {
-                  toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+                  toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
                 }
               };
               return (

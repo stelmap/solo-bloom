@@ -392,7 +392,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       await updateAppointment.mutateAsync({ id: apt.id, status: "reminder_sent" });
       toast({ title: t("confirmation.reminderSent") });
     } catch (e: any) {
-      toast({ title: t("confirmation.reminderFailed"), description: e.message, variant: "destructive" });
+      toast({ title: t("confirmation.reminderFailed"), description: describeError(e.message), variant: "destructive" });
     } finally {
       setSendingReminder(false);
     }
@@ -404,7 +404,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       setNotesDirty(false);
       toast({ title: t("session.notesSaved") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -466,7 +466,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       setMode("view");
       toast({ title: t("toast.appointmentUpdated") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -503,7 +503,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       setMode("view");
       toast({ title: t("toast.appointmentUpdated") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -605,7 +605,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       }
 
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -646,7 +646,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       });
       onOpenChange(false);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -693,7 +693,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
       onOpenChange(false);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -719,7 +719,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       });
       onOpenChange(false);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -741,7 +741,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       setCancelOpen(false);
       onOpenChange(false);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -753,7 +753,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       setDeleteOpen(false);
       onOpenChange(false);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -988,7 +988,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                               try {
                                 await updateAttendance.mutateAsync({ id: att.id, status: v, groupSessionId: groupSessionId! });
                               } catch (e: any) {
-                                toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+                                toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
                               }
                             }}
                           >
@@ -1182,7 +1182,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                               toast({ title: t("sessionNotes.saved") });
                               setEditingNotes(false);
                             } catch (e: any) {
-                              toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+                              toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
                             } finally {
                               setSavingNotes(false);
                             }
@@ -1335,7 +1335,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                           toast({ title: t("session.reopened") || "Session reopened" });
                           onOpenChange(false);
                         } catch (e: any) {
-                          toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+                          toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
                         }
                       }}
                       disabled={reopenAppointment.isPending}

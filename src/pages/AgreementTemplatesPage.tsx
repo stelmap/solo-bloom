@@ -26,6 +26,7 @@ import {
   STARTER_TEMPLATE_CONTROLS,
 } from "@/lib/agreementStarterTemplate";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { describeError } from "@/lib/errorMessages";
 
 type Template = {
   id: string;
@@ -92,7 +93,7 @@ export default function AgreementTemplatesPage() {
       setDeleteTarget(null);
       toast({ title: t("agreements.templates.deleted") });
     } catch (e: any) {
-      toast({ title: t("agreements.templates.deleteFail"), description: e.message, variant: "destructive" });
+      toast({ title: t("agreements.templates.deleteFail"), description: describeError(e.message), variant: "destructive" });
     } finally {
       setDeleting(false);
     }
@@ -109,7 +110,7 @@ export default function AgreementTemplatesPage() {
       .update({ name })
       .eq("id", tpl.id);
     if (error) {
-      toast({ title: t("agreements.templates.renameFail"), description: error.message, variant: "destructive" });
+      toast({ title: t("agreements.templates.renameFail"), description: describeError(error.message), variant: "destructive" });
       return;
     }
     setRenamingId(null);
@@ -124,7 +125,7 @@ export default function AgreementTemplatesPage() {
       .select("*")
       .order("created_at", { ascending: false });
     if (error) {
-      toast({ title: t("agreements.templates.loadFail"), description: error.message, variant: "destructive" });
+      toast({ title: t("agreements.templates.loadFail"), description: describeError(error.message), variant: "destructive" });
       setLoading(false);
       return;
     }
@@ -156,7 +157,7 @@ export default function AgreementTemplatesPage() {
       .select()
       .single();
     if (error || !tpl) {
-      toast({ title: t("agreements.templates.createFail"), description: error?.message, variant: "destructive" });
+      toast({ title: t("agreements.templates.createFail"), description: describeError(error?.message), variant: "destructive" });
       setCreating(false);
       return;
     }
@@ -213,7 +214,7 @@ export default function AgreementTemplatesPage() {
       .from("agreement_template_versions")
       .update({ status: "active", activated_at: new Date().toISOString() })
       .eq("id", v.id);
-    if (error) toast({ title: t("agreements.templates.activateFail"), description: error.message, variant: "destructive" });
+    if (error) toast({ title: t("agreements.templates.activateFail"), description: describeError(error.message), variant: "destructive" });
     else toast({ title: t("agreements.templates.activatedToast", { n: v.version_number }) });
     await load();
   }
@@ -275,7 +276,7 @@ export default function AgreementTemplatesPage() {
       await load();
       if (version) navigate(`/settings/agreements/version/${version.id}`);
     } catch (e: any) {
-      toast({ title: t("agreements.starter.fail"), description: e?.message, variant: "destructive" });
+      toast({ title: t("agreements.starter.fail"), description: describeError(e?.message), variant: "destructive" });
     } finally {
       setSeeding(false);
     }

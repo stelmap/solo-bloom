@@ -14,6 +14,7 @@ import { Copy, RefreshCw, Loader2, ExternalLink, Plus, X } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useWorkingSchedule } from "@/hooks/useData";
 import {
+import { describeError } from "@/lib/errorMessages";
   syncBookingAvailabilityFromSchedule,
   getInheritFlag,
   setInheritFlag,
@@ -482,7 +483,7 @@ export function PublicBookingSection() {
       qc.invalidateQueries({ queryKey: ["booking_availability", userId] });
       toast({ title: tx("settings.saved", "Saved") });
     } catch (e: any) {
-      toast({ title: tx("common.error", "Error"), description: e.message, variant: "destructive" });
+      toast({ title: tx("common.error", "Error"), description: describeError(e.message), variant: "destructive" });
     } finally {
       setSaving(false);
     }

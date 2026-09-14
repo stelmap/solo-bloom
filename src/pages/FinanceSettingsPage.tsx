@@ -16,6 +16,7 @@ import { ArrowLeft, Info, Loader2, PenLine, Receipt } from "lucide-react";
 import { TaxesSection } from "@/components/settings/FinanceSections";
 import { InvoiceSignatureSection } from "@/components/settings/InvoiceSignatureSection";
 import {
+import { describeError } from "@/lib/errorMessages";
   BUSINESS_COUNTRIES,
   TAX_ID_OPTIONS,
   getDefaultTaxIdForCountry,
@@ -256,7 +257,7 @@ export default function FinanceSettingsPage() {
       setBaseline(JSON.stringify(form));
       toast({ title: L.saved });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 

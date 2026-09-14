@@ -22,6 +22,7 @@ import { buildVarMap, interpolateText, splitClientName, notSpecifiedLabel } from
 import { SignedAgreementDocument, useSignedPdfLabels } from "@/components/SignedAgreementDocument";
 import { downloadSignedAgreementPdf, type SignedAgreementData } from "@/lib/signedAgreementPdf";
 import { Download, FileCheck2 } from "lucide-react";
+import { describeError } from "@/lib/errorMessages";
 
 
 type Template = {
@@ -208,7 +209,7 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName, maxIte
       setEditContent(null);
       await load();
     } catch (e: any) {
-      toast({ title: t("agreements.edit.saveFail"), description: e?.message, variant: "destructive" });
+      toast({ title: t("agreements.edit.saveFail"), description: describeError(e?.message), variant: "destructive" });
     } finally {
       setSavingEdit(false);
     }
@@ -354,7 +355,7 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName, maxIte
       setPickedTemplate("");
       await load();
     } catch (e: any) {
-      toast({ title: t("agreements.toast.createFail"), description: e.message, variant: "destructive" });
+      toast({ title: t("agreements.toast.createFail"), description: describeError(e.message), variant: "destructive" });
     } finally {
       setCreating(false);
     }
@@ -398,7 +399,7 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName, maxIte
       setLinkDialog({ open: true, url });
       await load();
     } catch (e: any) {
-      toast({ title: t("agreements.toast.linkFail"), description: e.message, variant: "destructive" });
+      toast({ title: t("agreements.toast.linkFail"), description: describeError(e.message), variant: "destructive" });
     }
   }
 
@@ -411,7 +412,7 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName, maxIte
       .update({ revoked_at: new Date().toISOString() })
       .eq("id", inv.id);
     if (error) {
-      toast({ title: t("agreements.toast.revokeFail"), description: error.message, variant: "destructive" });
+      toast({ title: t("agreements.toast.revokeFail"), description: describeError(error.message), variant: "destructive" });
       return;
     }
     await supabase.from("agreement_instances").update({ status: "revoked" }).eq("id", instance.id);
@@ -432,7 +433,7 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName, maxIte
       setDeleteInst(null);
       await load();
     } catch (e: any) {
-      toast({ title: t("agreements.toast.deleteFail"), description: e?.message, variant: "destructive" });
+      toast({ title: t("agreements.toast.deleteFail"), description: describeError(e?.message), variant: "destructive" });
     } finally {
       setDeleting(false);
     }
@@ -624,7 +625,7 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName, maxIte
                 if (error) throw error;
                 toast({ title: t("agreements.link.emailSent") });
               } catch (e: any) {
-                toast({ title: t("agreements.link.emailFailed"), description: e?.message, variant: "destructive" });
+                toast({ title: t("agreements.link.emailFailed"), description: describeError(e?.message), variant: "destructive" });
               } finally {
                 setSendingEmail(false);
               }

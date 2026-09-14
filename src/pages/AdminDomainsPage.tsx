@@ -49,7 +49,7 @@ export default function AdminDomainsPage() {
       .select("*")
       .order("host", { ascending: true });
     if (error) {
-      toast({ title: "Failed to load domain status", description: error.message, variant: "destructive" });
+      toast({ title: "Failed to load domain status", description: describeError(error.message), variant: "destructive" });
     } else {
       setRows((data ?? []) as DomainRow[]);
     }

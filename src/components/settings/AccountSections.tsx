@@ -17,6 +17,7 @@ import { Eye, EyeOff, Lock, Sun, Moon, Monitor, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme, type Theme } from "@/hooks/useTheme";
 import { readSoundReminder, writeSoundReminder, type SoundReminderSettings } from "@/hooks/useSoundReminder";
+import { describeError } from "@/lib/errorMessages";
 
 export function ProfileSection() {
   const { user } = useAuth();
@@ -48,7 +49,7 @@ export function ProfileSection() {
       setLang(newLang);
       toast({ title: langChanged ? translateFor(newLang, "language.updated") : translateFor(newLang, "settings.saved") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -166,7 +167,7 @@ export function SecuritySection() {
       toast({ title: t("password.changed") });
       setPasswordForm({ current: "", newPass: "", confirm: "" });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     } finally {
       setChangingPassword(false);
     }
@@ -234,7 +235,7 @@ export function NotificationsSection() {
       await updateProfile.mutateAsync({ reminder_minutes: val });
       toast({ title: t("settings.saved") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 

@@ -22,6 +22,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { AppLanguage } from "@/i18n/translations";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ImageIcon, Loader2, Copy, ExternalLink } from "lucide-react";
+import { describeError } from "@/lib/errorMessages";
 
 type Lang = "en" | "uk" | "ru" | "fr" | "pl";
 const normLang = (v: unknown): Lang => {
@@ -332,7 +333,7 @@ export default function PracticeProfilePage() {
       setForm((f) => ({ ...f, avatar_url: pub.publicUrl }));
       toast({ title: L.saved });
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({ title: "Error", description: describeError(err.message), variant: "destructive" });
     } finally {
       setUploading(false);
     }
@@ -389,7 +390,7 @@ export default function PracticeProfilePage() {
         navigate("/calendar");
       }
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: "Error", description: describeError(e.message), variant: "destructive" });
     } finally {
       setSaving(false);
     }

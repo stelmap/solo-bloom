@@ -23,6 +23,7 @@ import { useSearchParams } from "react-router-dom";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, subMonths, format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics";
+import { describeError } from "@/lib/errorMessages";
 
 const DEFAULT_CATEGORIES = ["Rent", "Materials", "Insurance", "Equipment", "Marketing", "Utilities", "Laundry", "Software", "Tax", "Other"];
 
@@ -202,7 +203,7 @@ export default function ExpensesPage() {
       }
       setOpen(false);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -215,7 +216,7 @@ export default function ExpensesPage() {
       setDeleteScope("single");
       setDeleteIncludePaid(false);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -228,7 +229,7 @@ export default function ExpensesPage() {
       await updatePaymentStatus.mutateAsync({ id: target.id, payment_status: newStatus });
       track("payment_status_toggled", { entity: "expense", new_status: newStatus });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -475,7 +476,7 @@ export default function ExpensesPage() {
                                 }
                                 track("payment_status_toggled", { entity: "expense", new_status: v });
                               } catch (e: any) {
-                                toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+                                toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
                               }
                             }}
                           >

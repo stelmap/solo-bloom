@@ -18,6 +18,7 @@ import { calculateCapacity, sessionsNeededForTarget } from "@/lib/capacity";
 import { buildGoalForecast } from "@/lib/forecasting";
 import { format, startOfMonth, subMonths } from "date-fns";
 import { track } from "@/lib/analytics";
+import { describeError } from "@/lib/errorMessages";
 
 interface GoalForm {
   goal_number: number;
@@ -214,7 +215,7 @@ export default function BreakevenPage() {
       setWizardOpen(false);
       toast({ title: t("goals.saved") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 

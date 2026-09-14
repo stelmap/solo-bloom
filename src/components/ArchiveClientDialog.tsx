@@ -10,6 +10,7 @@ import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { useArchiveClient, useClientFutureAppointments } from "@/hooks/useData";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
+import { describeError } from "@/lib/errorMessages";
 
 interface Props {
   open: boolean;
@@ -73,7 +74,7 @@ export function ArchiveClientDialog({ open, onOpenChange, clientId, clientName, 
       onOpenChange(false);
       onArchived?.();
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 

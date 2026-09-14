@@ -26,6 +26,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, format, parseISO, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { describeError } from "@/lib/errorMessages";
 
 export default function IncomePage() {
   useEffect(() => { import("@/lib/analytics").then(({ track }) => track("income_page_opened")); }, []);
@@ -181,7 +182,7 @@ export default function IncomePage() {
       toast({ title: t("toast.incomeDeleted") });
       setDeleteId(null);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -218,7 +219,7 @@ export default function IncomePage() {
       setFlexTarget(null);
       toast({ title: t("toast.paymentReceived"), description: t("toast.paymentRecordedDesc", { symbol: cs, amount: actualAmount.toFixed(2) }) });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -239,7 +240,7 @@ export default function IncomePage() {
       setPayDialog(null);
       toast({ title: t("toast.paymentReceived"), description: t("toast.paymentRecordedDesc", { symbol: cs, amount: Number(payDialog.amount).toFixed(2) }) });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 

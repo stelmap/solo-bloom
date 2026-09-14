@@ -21,6 +21,7 @@ import { Loader2, RefreshCw, Users, UserPlus, Clock, X, CreditCard, FileCheck, S
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { allowedActions, statusBadgeVariant, statusLabel, type LifecycleAction, type LifecycleStatus } from "@/lib/userLifecycle";
+import { describeError } from "@/lib/errorMessages";
 
 type AdminUser = {
   id: string;
@@ -105,7 +106,7 @@ export default function AdminUsersPage() {
       if (error) throw error;
       setUsers((data as any).users ?? []);
     } catch (e: any) {
-      toast({ title: "Failed to load users", description: e?.message ?? String(e), variant: "destructive" });
+      toast({ title: "Failed to load users", description: describeError(e?.message ?? String(e)), variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -225,7 +226,7 @@ export default function AdminUsersPage() {
       setDialogConfirm("");
       await load();
     } catch (e: any) {
-      toast({ title: "Action failed", description: e?.message ?? String(e), variant: "destructive" });
+      toast({ title: "Action failed", description: describeError(e?.message ?? String(e)), variant: "destructive" });
     } finally {
       setDialogBusy(false);
     }

@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Eye, Trash2, Calendar, DollarSign, FileText, ClipboardList, MessageSquare, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { describeError } from "@/lib/errorMessages";
 
 export default function SupervisionPage() {
   const { t } = useLanguage();
@@ -98,7 +99,7 @@ export default function SupervisionPage() {
       setCreateForm({ client_id: "", supervision_date: new Date().toISOString().split("T")[0], paid_amount: "" });
       setSelectedClientId(undefined);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -111,7 +112,7 @@ export default function SupervisionPage() {
       // Update local data
       setDetailData((prev: any) => prev ? { ...prev, ...editFields } : prev);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -123,7 +124,7 @@ export default function SupervisionPage() {
       setDetailId(null);
       setDetailData(null);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
