@@ -2090,13 +2090,13 @@ export default function CalendarPage() {
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 mr-1" /> {t("calendar.newAppointment")}</Button>
               </DialogTrigger>
-              <DialogContent className={cn("max-h-[92vh] overflow-visible max-w-[calc(100vw-1rem)] rounded-2xl p-0 mx-2 sm:mx-0", D.maxW)}>
-                <DialogHeader className={cn(D.headPad, "space-y-0 text-left")}>
+              <DialogContent className={cn("flex max-h-[92vh] flex-col overflow-hidden max-w-[calc(100vw-1rem)] rounded-2xl p-0 mx-2 sm:mx-0", D.maxW)}>
+                <DialogHeader className={cn(D.headPad, "shrink-0 space-y-0 text-left")}>
                   <DialogTitle id="new-appointment-title" className={cn(D.title, "font-bold tracking-tight leading-tight")}>{t("calendar.newAppointment")}</DialogTitle>
                 </DialogHeader>
 
                 <form
-                  className={cn(D.pad, "space-y-3.5")}
+                  className={cn(D.pad, "min-h-0 flex-1 overflow-y-auto space-y-3.5")}
                   onSubmit={(e) => { e.preventDefault(); handleCreate(); }}
                   aria-labelledby="new-appointment-title"
                 >
