@@ -141,18 +141,11 @@ export function useOnboardingJourney() {
     expense: (expenses as any[]).length > 0,
   };
 
-  // A step that was genuinely completed once stays completed forever, even if
-  // the underlying business data later changes (e.g. an unpaid session is paid).
   const achieved = state.achieved ?? {};
-  const done = ONBOARDING_STEP_KEYS.reduce((acc, k) => {
-    acc[k] = derived[k] || !!achieved[k];
-    return acc;
-  }, {} as Record<OnboardingStepKey, boolean>);
+  const done = mergeStickyDone(derived, achieved);
 
   const ready = !!profile && !practiceLoading;
-  const newlyAchieved = ready
-    ? ONBOARDING_STEP_KEYS.filter((k) => derived[k] && !achieved[k])
-    : [];
+  const newlyAchieved = ready ? newlyAchievedSteps(derived, achieved) : [];
   const newlyAchievedKey = newlyAchieved.join(",");
 
   useEffect(() => {
