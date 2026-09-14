@@ -2271,7 +2271,10 @@ export default {
   "onbj.k.practice.d": "Fill in your practice details and save the profile. You will be brought back to the calendar automatically.",
   "onbj.k.practice.c": "Set up practice",
   "onbj.k.sessions.t": "Create your first two sessions",
-  "onbj.k.sessions.d": "Go to the calendar and create two sessions.\nClick an empty slot in the calendar — the new session form opens.\nPick a client, a service and create the session. Repeat once more for the second session.",
+  "onbj.k.sessions.d": "Create two sessions right in the calendar.
+Click an empty slot — the new session form opens.
+Pick a client, a service and create the session.
+Repeat once more for the second session.",
   "onbj.k.sessions.c": "Go to calendar",
   "onbj.k.paid.t": "Mark one session as paid",
   "onbj.k.paid.d": "Open one of your sessions in the calendar and mark it as paid and completed.",

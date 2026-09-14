@@ -72,9 +72,9 @@ export function OnboardingWidget() {
 
   const targetFor = (key: OnboardingStepKey) => STEP_TARGET[key];
 
-  // The session status steps are instruction-only: the user must find and open
-  // the session manually in the calendar.
-  const INSTRUCTION_ONLY: OnboardingStepKey[] = ["paid", "unpaid"];
+  // Instruction-only steps: the wizard is already shown on the calendar, so the
+  // user works directly with it — no navigation button, no automatic actions.
+  const INSTRUCTION_ONLY: OnboardingStepKey[] = ["sessions", "paid", "unpaid"];
 
   if (minimized) {
     return (
