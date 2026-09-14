@@ -131,6 +131,7 @@ export default function ClientsPage() {
   const [archiveTarget, setArchiveTarget] = useState<{ id: string; name: string } | null>(null);
   const [statusFilter, setStatusFilter] = useState<"active" | "archived" | "all">("active");
   const [importing, setImporting] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState<{ name: string; phone: string; email: string; notes: string; telegram: string; communication_language: "" | "uk" | "ru" | "en" | "pl" }>({ name: "", phone: "", email: "", notes: "", telegram: "", communication_language: "" });
 
