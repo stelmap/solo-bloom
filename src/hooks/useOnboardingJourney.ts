@@ -37,6 +37,8 @@ const OUTSTANDING_STATUSES = new Set([
 
 export type OnboardingState = {
   viewed?: Partial<Record<OnboardingStepKey, boolean>>;
+  /** Steps the user has genuinely completed at least once — never reversed. */
+  achieved?: Partial<Record<OnboardingStepKey, boolean>>;
   minimized?: boolean;
   dismissed?: boolean;
 };
