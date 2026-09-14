@@ -267,6 +267,10 @@ export default function ClientsPage() {
 
   const handleCreate = async () => {
     if (!form.name.trim()) return;
+    if (!isValidOptionalEmail(form.email)) {
+      setEmailError(t("errors.validation.invalidEmail"));
+      return;
+    }
     if (!form.communication_language) {
       toast({ title: t("clientLang.required"), variant: "destructive" });
       return;
