@@ -22,6 +22,7 @@ import { PaywallDialog } from "@/components/PaywallDialog";
 import { ListSkeleton } from "@/components/ListSkeleton";
 import { ClientLanguageSelect } from "@/components/ClientLanguageSelect";
 import { describeError } from "@/lib/errorMessages";
+import { isValidOptionalEmail } from "@/lib/validateEmail";
 
 
 const getArchiveReasonLabel = (reason: string, t: any) => {
