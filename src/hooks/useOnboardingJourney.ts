@@ -102,6 +102,8 @@ export function useOnboardingJourney() {
   const { data: expenses = [] } = useAllExpenses();
   const { complete: practiceComplete, loading: practiceLoading } = usePracticeProfileStatus();
   const state = useOnboardingState();
+  const { patch } = useSetOnboardingState();
+
 
   const flags = useMemo(() => {
     let sessionCount = 0;
