@@ -64,6 +64,7 @@ import { BookingInboxPanel } from "@/components/BookingInboxPanel";
 import { SidebarSection } from "@/components/calendar/SidebarSection";
 import { useNeedsAttention } from "@/hooks/useNeedsAttention";
 import { describeError } from "@/lib/errorMessages";
+import { isValidOptionalEmail } from "@/lib/validateEmail";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
@@ -787,6 +788,7 @@ export default function CalendarPage() {
   const [qaClientOpen, setQaClientOpen] = useState(false);
   const [qaServiceOpen, setQaServiceOpen] = useState(false);
   const [qaClient, setQaClient] = useState({ name: "", email: "", phone: "" });
+  const [qaEmailError, setQaEmailError] = useState<string | null>(null);
   const [qaService, setQaService] = useState({ name: "", duration_minutes: 60, price: 0 });
 
   const handleQuickAddClient = async () => {
