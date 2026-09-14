@@ -1822,7 +1822,7 @@ export function useCreateExpense() {
 
       // 1. Insert template row
       const tpl: any = attachDemoFlag({
-        user_id: user!.id,
+        user_id: uid,
         category: expense.category,
         amount: expense.amount,
         date: startDate,
@@ -1845,7 +1845,7 @@ export function useCreateExpense() {
         ? generateMonthlyOccurrences(startDate, isLastDay, 12)
         : generateYearlyOccurrences(startDate, 5);
       const instanceRows = dates.map(d => attachDemoFlag({
-        user_id: user!.id,
+        user_id: uid,
         category: expense.category,
         amount: expense.amount,
         date: d,

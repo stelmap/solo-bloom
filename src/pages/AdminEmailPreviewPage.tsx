@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { checkIsAdmin } from "@/lib/sessionGuard";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -38,15 +39,7 @@ export default function AdminEmailPreviewPage() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data, error } = await supabase.rpc("has_role", {
-        _user_id: user.id,
-        _role: "admin",
-      });
-      if (error) {
-        setIsAdmin(false);
-        return;
-      }
-      setIsAdmin(Boolean(data));
+      setIsAdmin(await checkIsAdmin());
     })();
   }, [user]);
 
