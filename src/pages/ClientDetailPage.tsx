@@ -58,6 +58,7 @@ import {
   isRealSession,
 } from "@/lib/paymentClassifiers";
 import { describeError } from "@/lib/errorMessages";
+import { isValidOptionalEmail } from "@/lib/validateEmail";
 
 
 export default function ClientDetailPage() {
