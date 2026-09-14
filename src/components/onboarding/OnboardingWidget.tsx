@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Check, ChevronDown, Sparkles, X, ArrowRight } from "lucide-react";
@@ -13,6 +13,7 @@ import {
 } from "@/hooks/useOnboardingJourney";
 import { useOverlayOpen } from "@/hooks/useOverlayOpen";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUpdateProfile } from "@/hooks/useData";
 
 
 
@@ -68,12 +69,32 @@ export function OnboardingWidget() {
   }, [qc]);
 
   // Signing in as (another) user resets the session-local hidden state.
+  const wasDismissedAtLogin = useRef<boolean | null>(null);
   useEffect(() => {
     setClosed(false);
     setMinimized(false);
+    wasDismissedAtLogin.current = null;
   }, [user?.id]);
 
-  if (loading || dismissed || closed) return null;
+  // Snapshot, once per signed-in session, whether onboarding was already
+  // finished before this login — that permanently stops the auto-open.
+  if (!loading && wasDismissedAtLogin.current === null) {
+    wasDismissedAtLogin.current = dismissed;
+  }
+
+  // Finishing the last step persists completion, so the wizard never
+  // auto-opens again after the success message is dismissed.
+  const updateProfile = useUpdateProfile();
+  const persistedDone = useRef(false);
+  useEffect(() => {
+    if (loading || !allDone || dismissed || persistedDone.current) return;
+    persistedDone.current = true;
+    updateProfile.mutate({ onboarding_completed: true } as any);
+  }, [loading, allDone, dismissed, updateProfile]);
+
+  if (loading || closed) return null;
+  // Already complete before this login → stay closed.
+  if (wasDismissedAtLogin.current) return null;
 
   // A primary working modal/drawer (session details, create/edit forms, ...)
   // always takes priority. The wizard only hides visually; state is untouched.
