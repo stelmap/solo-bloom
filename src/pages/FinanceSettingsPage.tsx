@@ -16,13 +16,13 @@ import { ArrowLeft, Info, Loader2, PenLine, Receipt } from "lucide-react";
 import { TaxesSection } from "@/components/settings/FinanceSections";
 import { InvoiceSignatureSection } from "@/components/settings/InvoiceSignatureSection";
 import {
-import { describeError } from "@/lib/errorMessages";
   BUSINESS_COUNTRIES,
   TAX_ID_OPTIONS,
   getDefaultTaxIdForCountry,
   isValidTaxIdForCountry,
   type BusinessCountry,
 } from "@/lib/taxIdentifiers";
+import { describeError } from "@/lib/errorMessages";
 
 type Lang = "en" | "uk" | "ru" | "fr" | "pl";
 const normLang = (v: unknown): Lang => {

@@ -7,7 +7,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { UserIdentity } from "@supabase/supabase-js";
 import {
-import { describeError } from "@/lib/errorMessages";
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -17,6 +16,7 @@ import { describeError } from "@/lib/errorMessages";
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { describeError } from "@/lib/errorMessages";
 
 export function ConnectedAccountsSection() {
   const { t } = useLanguage();

@@ -14,12 +14,12 @@ import { Copy, RefreshCw, Loader2, ExternalLink, Plus, X } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useWorkingSchedule } from "@/hooks/useData";
 import {
-import { describeError } from "@/lib/errorMessages";
   syncBookingAvailabilityFromSchedule,
   getInheritFlag,
   setInheritFlag,
   dowToWeekday,
 } from "@/lib/bookingAvailabilitySync";
+import { describeError } from "@/lib/errorMessages";
 
 const WEEKDAY_KEYS = [
   "day.sunday", "day.monday", "day.tuesday", "day.wednesday",

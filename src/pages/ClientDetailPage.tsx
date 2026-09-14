@@ -49,7 +49,6 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useDemoMode } from "@/hooks/useDemoWorkspace";
 import {
-import { describeError } from "@/lib/errorMessages";
   isCompleted,
   isDelivered,
   isPaid,
@@ -58,6 +57,7 @@ import { describeError } from "@/lib/errorMessages";
   isPrepaid,
   isRealSession,
 } from "@/lib/paymentClassifiers";
+import { describeError } from "@/lib/errorMessages";
 
 
 export default function ClientDetailPage() {
