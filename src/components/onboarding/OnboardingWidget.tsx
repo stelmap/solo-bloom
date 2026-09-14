@@ -9,7 +9,6 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import {
   ONBOARDING_STEP_KEYS,
   useOnboardingJourney,
-  useSetOnboardingState,
   type OnboardingStepKey,
 } from "@/hooks/useOnboardingJourney";
 import { useOverlayOpen } from "@/hooks/useOverlayOpen";
@@ -38,7 +37,6 @@ export function OnboardingWidget() {
   const location = useLocation();
   const { loading, done, completedCount, total, allDone, currentStep, dismissed } =
     useOnboardingJourney();
-  const { patch } = useSetOnboardingState();
   const { user } = useAuth();
 
   // Closing or minimizing the wizard only lasts for the current signed-in
