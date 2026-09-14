@@ -279,6 +279,7 @@ export default function ClientsPage() {
     try {
       await createClient.mutateAsync(form);
       setForm({ name: "", phone: "", email: "", notes: "", telegram: "", communication_language: "" });
+      setEmailError(null);
       setOpen(false);
       toast({ title: t("toast.clientAdded") });
     } catch (e: any) {
