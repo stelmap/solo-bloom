@@ -149,7 +149,9 @@ export function useOnboardingJourney() {
     allDone,
     currentStep,
     openSessions: flags.openSessions,
-    dismissed: !!state.dismissed || !!(profile as any)?.onboarding_completed,
-    minimized: !!state.minimized,
+    // Closing/minimizing the wizard is session-local UI state, never persisted:
+    // only a fully completed journey permanently stops the wizard.
+    dismissed: !!(profile as any)?.onboarding_completed,
+
   };
 }
