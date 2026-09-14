@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { describeError } from "@/lib/errorMessages";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type DomainRow = {
   host: string;
@@ -49,7 +50,7 @@ export default function AdminDomainsPage() {
       .select("*")
       .order("host", { ascending: true });
     if (error) {
-      toast({ title: "Failed to load domain status", description: describeError(error.message), variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(error, "errors.admin.domainStatusFailed"), variant: "destructive" });
     } else {
       setRows((data ?? []) as DomainRow[]);
     }
@@ -65,7 +66,7 @@ export default function AdminDomainsPage() {
       await fetchRows();
     } catch (e) {
       toast({
-        title: "Check failed",
+        title: t("common.error"),
         description: describeError(e instanceof Error ? e.message : String(e)),
         variant: "destructive",
       });

@@ -23,6 +23,7 @@ import {
 import { cn } from "@/lib/utils";
 import { sendBookingConfirmationEmail } from "@/lib/sendBookingConfirmationEmail";
 import { describeError } from "@/lib/errorMessages";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 
 function fmt(s: string) {
@@ -83,11 +84,11 @@ export function BookingInboxPanel({ className }: { className?: string }) {
   async function resendConfirmationEmail(req: BookingRequestRow) {
     const res = await sendConfirmationEmail(req);
     if (res.ok) {
-      toast({ title: "Confirmation email sent", description: `Sent to ${req.email}` });
+      toast({ title: t("bookingInbox.emailSent"), description: t("bookingInbox.emailSentTo", { email: req.email }) });
     } else {
       toast({
-        title: "Confirmation email failed",
-        description: res.error,
+        title: t("bookingInbox.emailFailed"),
+        description: t("bookingInbox.emailFailedTo", { email: req.email }),
         variant: "destructive",
       });
     }
@@ -96,7 +97,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
   async function handleConfirm(req: BookingRequestRow) {
     const cid = req.client_id ?? confirmClientId;
     if (!cid) {
-      toast({ title: "Choose a client to confirm", variant: "destructive" });
+      toast({ title: t("bookingInbox.chooseClient"), variant: "destructive" });
       return;
     }
     try {
@@ -106,19 +107,19 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       const emailRes = await sendConfirmationEmail(req, confirmServiceId || undefined);
       if (emailRes.ok) {
         toast({
-          title: "Booking confirmed",
-          description: `Confirmation email sent to ${req.email}`,
+          title: t("bookingInbox.confirmed"),
+          description: t("bookingInbox.confirmedEmailSentTo", { email: req.email }),
         });
       } else {
         toast({
-          title: "Booking confirmed — but email failed",
-          description: `Could not send confirmation to ${req.email}. ${emailRes.error ?? ""}`.trim(),
+          title: t("bookingInbox.confirmedEmailFailed"),
+          description: t("bookingInbox.emailFailedTo", { email: req.email }),
           variant: "destructive",
         });
       }
       setConfirmingFor(null); setConfirmClientId(""); setConfirmServiceId("");
     } catch (e: any) {
-      toast({ title: "Could not confirm", description: describeError(e.message), variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e, "bookingInbox.confirmFailed"), variant: "destructive" });
     }
   }
 

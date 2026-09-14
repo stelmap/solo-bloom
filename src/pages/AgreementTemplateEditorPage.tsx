@@ -135,7 +135,7 @@ export default function AgreementTemplateEditorPage() {
         .eq("id", versionId)
         .maybeSingle();
       if (error || !data) {
-        toast({ title: "Not found", description: describeError(error?.message), variant: "destructive" });
+        toast({ title: t("common.error"), description: describeError(error, "errors.agreements.templateNotFound"), variant: "destructive" });
         navigate("/settings/agreements");
         return;
       }
@@ -225,7 +225,7 @@ export default function AgreementTemplateEditorPage() {
       .from("agreement_template_versions")
       .update({ status: "active", activated_at: new Date().toISOString() })
       .eq("id", versionId);
-    if (error) toast({ title: "Activate failed", description: describeError(error.message), variant: "destructive" });
+    if (error) toast({ title: t("common.error"), description: describeError(error, "errors.agreements.activateFailed"), variant: "destructive" });
     else {
       toast({ title: `Version ${versionNumber} activated` });
       navigate("/settings/agreements");
@@ -260,7 +260,7 @@ export default function AgreementTemplateEditorPage() {
       toast({ title: `Draft v${nextNum} created` });
       if (created) navigate(`/settings/agreements/version/${created.id}`);
     } catch (e: any) {
-      toast({ title: "Failed to create draft", description: describeError(e.message), variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e, "errors.agreements.draftFailed"), variant: "destructive" });
     } finally {
       setSaving(false);
     }

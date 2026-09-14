@@ -199,7 +199,7 @@ export default function PracticeProfilePage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
-  const { lang, setLang } = useLanguage();
+  const { lang, setLang, t } = useLanguage();
   const L = COPY[normLang(lang)];
   const { data: profile } = useProfile();
   const updateProfile = useUpdateProfile();
@@ -317,7 +317,7 @@ export default function PracticeProfilePage() {
     e.target.value = "";
     if (!file || !user) return;
     if (!file.type.startsWith("image/") || file.size > 2 * 1024 * 1024) {
-      toast({ title: "Error", description: L.uploadHint, variant: "destructive" });
+      toast({ title: t("common.error"), description: L.uploadHint, variant: "destructive" });
       return;
     }
     setUploading(true);
@@ -333,7 +333,7 @@ export default function PracticeProfilePage() {
       setForm((f) => ({ ...f, avatar_url: pub.publicUrl }));
       toast({ title: L.saved });
     } catch (err: any) {
-      toast({ title: "Error", description: describeError(err.message), variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(err, "errors.crud.uploadFailed"), variant: "destructive" });
     } finally {
       setUploading(false);
     }
@@ -390,7 +390,7 @@ export default function PracticeProfilePage() {
         navigate("/calendar");
       }
     } catch (e: any) {
-      toast({ title: "Error", description: describeError(e.message), variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e, "errors.crud.saveFailed"), variant: "destructive" });
     } finally {
       setSaving(false);
     }
