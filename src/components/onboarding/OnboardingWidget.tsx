@@ -13,6 +13,8 @@ import {
   type OnboardingStepKey,
 } from "@/hooks/useOnboardingJourney";
 import { useOverlayOpen } from "@/hooks/useOverlayOpen";
+import { useAuth } from "@/contexts/AuthContext";
+
 
 
 /** Deep links for each guided step. The wizard only navigates — never acts. */
