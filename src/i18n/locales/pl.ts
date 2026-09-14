@@ -2370,4 +2370,9 @@ export default {
   "errors.agreements.templateNotFound": "Nie znaleziono szablonu",
   "errors.agreements.activateFailed": "Nie udało się aktywować szablonu",
   "errors.agreements.draftFailed": "Nie udało się utworzyć wersji roboczej",
+  "auth.confirmationEmailSent": "Wysłano e-mail z potwierdzeniem",
+  "auth.confirmationEmailSentDesc": "Wysłaliśmy nowy e-mail z potwierdzeniem. Sprawdź skrzynkę odbiorczą.",
+  "auth.confirmationEmailFailed": "Nie udało się wysłać e-maila z potwierdzeniem. Spróbuj później.",
+  "auth.confirmEmailBeforeLogin": "Potwierdź swój e-mail przed zalogowaniem. Możesz wysłać wiadomość ponownie.",
+  "auth.alreadySubscribed": "Masz już aktywną subskrypcję",
 } as const;

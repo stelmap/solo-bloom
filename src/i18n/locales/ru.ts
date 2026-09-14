@@ -2502,4 +2502,9 @@ export default {
   "errors.agreements.templateNotFound": "Шаблон не найден",
   "errors.agreements.activateFailed": "Не удалось активировать шаблон",
   "errors.agreements.draftFailed": "Не удалось создать черновик",
+  "auth.confirmationEmailSent": "Письмо с подтверждением отправлено",
+  "auth.confirmationEmailSentDesc": "Новое письмо с подтверждением отправлено. Проверьте почту.",
+  "auth.confirmationEmailFailed": "Не удалось отправить письмо с подтверждением. Попробуйте позже.",
+  "auth.confirmEmailBeforeLogin": "Подтвердите почту перед входом. Можно отправить письмо повторно.",
+  "auth.alreadySubscribed": "У вас уже есть активная подписка",
 } as const;

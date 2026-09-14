@@ -99,13 +99,13 @@ export default function AuthPage() {
       });
       if (error) throw error;
       toast({
-        title: "Confirmation email sent",
-        description: "A new confirmation email has been sent. Please check your inbox.",
+        title: t("auth.confirmationEmailSent"),
+        description: t("auth.confirmationEmailSentDesc"),
       });
     } catch (err: any) {
       toast({
         title: t("common.error"),
-        description: describeError(err?.message, "We could not send the confirmation email. Please try again later."),
+        description: describeError(err, "auth.confirmationEmailFailed"),
         variant: "destructive",
       });
     } finally {
@@ -154,16 +154,16 @@ export default function AuthPage() {
           // ignore
         }
         if (serverCode === "already_subscribed") {
-          toast({ title: "You're already subscribed", description: serverMsg });
+          toast({ title: t("auth.alreadySubscribed") });
           navigate(getPostAuthRedirect(), { replace: true });
           return;
         }
-        throw new Error(serverMsg || error.message || "Failed to start checkout");
+        throw error;
       }
-      if (!data?.url) throw new Error("No checkout URL returned");
+      if (!data?.url) throw new Error("checkout_url_missing");
       window.location.href = data.url;
     } catch (err: any) {
-      const msg = err?.message || "Failed to start checkout";
+      const msg = describeError(err, "errors.subscription.checkoutFailed");
       setCheckoutError(msg);
       setCheckoutRedirecting(false);
       checkoutTriggeredRef.current = false;
@@ -304,11 +304,11 @@ export default function AuthPage() {
         /confirm/i.test(rawMsg) && mode === "login";
       if (mode === "login" && notConfirmed) {
         setNeedsConfirmation(true);
-        const msg = "Please confirm your email before logging in. You can resend the confirmation email.";
+        const msg = t("auth.confirmEmailBeforeLogin");
         setFormError(msg);
         toast({ title: t("common.error"), description: msg, variant: "destructive" });
       } else {
-        const message = mode === "login" ? t("auth.incorrectEmailOrPassword") : rawMsg;
+        const message = mode === "login" ? t("auth.incorrectEmailOrPassword") : describeError(error, "errors.general.unknown");
         setFormError(message);
         toast({ title: t("common.error"), description: message, variant: "destructive" });
       }

@@ -2371,4 +2371,9 @@ export default {
   "errors.agreements.templateNotFound": "Шаблон не знайдено",
   "errors.agreements.activateFailed": "Не вдалося активувати шаблон",
   "errors.agreements.draftFailed": "Не вдалося створити чернетку",
+  "auth.confirmationEmailSent": "Лист із підтвердженням надіслано",
+  "auth.confirmationEmailSentDesc": "Новий лист із підтвердженням надіслано. Перевірте поштову скриньку.",
+  "auth.confirmationEmailFailed": "Не вдалося надіслати лист із підтвердженням. Спробуйте пізніше.",
+  "auth.confirmEmailBeforeLogin": "Підтвердьте пошту перед входом. Можна надіслати лист повторно.",
+  "auth.alreadySubscribed": "У вас уже є активна підписка",
 } as const;

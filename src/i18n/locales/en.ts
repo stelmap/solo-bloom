@@ -2371,4 +2371,9 @@ export default {
   "errors.agreements.templateNotFound": "This template was not found",
   "errors.agreements.activateFailed": "Could not activate the template",
   "errors.agreements.draftFailed": "Could not create a draft",
+  "auth.confirmationEmailSent": "Confirmation email sent",
+  "auth.confirmationEmailSentDesc": "A new confirmation email has been sent. Please check your inbox.",
+  "auth.confirmationEmailFailed": "We could not send the confirmation email. Please try again later.",
+  "auth.confirmEmailBeforeLogin": "Please confirm your email before logging in. You can resend the confirmation email.",
+  "auth.alreadySubscribed": "You already have an active subscription",
 } as const;

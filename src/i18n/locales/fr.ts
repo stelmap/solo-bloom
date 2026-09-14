@@ -2370,4 +2370,9 @@ export default {
   "errors.agreements.templateNotFound": "Modèle introuvable",
   "errors.agreements.activateFailed": "Impossible d'activer le modèle",
   "errors.agreements.draftFailed": "Impossible de créer un brouillon",
+  "auth.confirmationEmailSent": "E-mail de confirmation envoyé",
+  "auth.confirmationEmailSentDesc": "Un nouvel e-mail de confirmation a été envoyé. Vérifiez votre boîte de réception.",
+  "auth.confirmationEmailFailed": "Impossible d'envoyer l'e-mail de confirmation. Réessayez plus tard.",
+  "auth.confirmEmailBeforeLogin": "Confirmez votre e-mail avant de vous connecter. Vous pouvez renvoyer l'e-mail.",
+  "auth.alreadySubscribed": "Vous avez déjà un abonnement actif",
 } as const;
