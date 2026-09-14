@@ -1,5 +1,5 @@
 import { createContext, useContext, ReactNode, useCallback, useEffect, useState } from "react";
-import { Language, AppLanguage, TranslationKey, getDict, loadLocale, englishDict } from "./translations";
+import { Language, AppLanguage, TranslationKey, getDict, loadLocale, englishDict, setActiveLang } from "./translations";
 import { useProfile, useUpdateProfile } from "@/hooks/useData";
 import { track } from "@/lib/analytics";
 
@@ -177,6 +177,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       updateProfile.mutate({ language: preLoginLang });
     }
   }, [profile, profileLang, preLoginLang, updateProfile]);
+
+  // Publish the active language so non-React code (error messages) matches the UI.
+  useEffect(() => {
+    setActiveLang(lang);
+  }, [lang]);
 
   // Keep <html lang> in sync so assistive tech announces the right language.
   useEffect(() => {

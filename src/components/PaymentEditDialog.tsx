@@ -14,6 +14,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
 import { useCorrectPayment } from "@/hooks/useData";
 import { formatScheduledTime } from "@/lib/timeFormat";
+import { describeError } from "@/lib/errorMessages";
 
 interface PaymentEditDialogProps {
   open: boolean;
@@ -87,7 +88,7 @@ export function PaymentEditDialog({ open, onOpenChange, appointment: apt, use12h
     } catch (e: any) {
       toast({
         title: t("paymentEdit.errorRecalc"),
-        description: e?.message,
+        description: describeError(e?.message),
         variant: "destructive",
       });
     }

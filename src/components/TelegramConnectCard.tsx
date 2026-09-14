@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { describeError } from "@/lib/errorMessages";
 
 interface Props { client: any }
 
@@ -39,7 +40,7 @@ export function TelegramConnectCard({ client }: Props) {
       setLink(data.link);
       qc.invalidateQueries({ queryKey: ["client", client.id] });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     } finally {
       setLoading(false);
     }

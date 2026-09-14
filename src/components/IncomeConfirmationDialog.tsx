@@ -22,6 +22,7 @@ import { AlertTriangle } from "lucide-react";
 import { matchesFilter, type FilterKey as BucketFilterKey } from "@/lib/incomeAppointmentFilters";
 import { INCOME_FLOW_COPY, normIncomeLang } from "@/lib/incomeFlowCopy";
 import { Search } from "lucide-react";
+import { describeError } from "@/lib/errorMessages";
 
 interface Props {
   open: boolean;
@@ -290,7 +291,7 @@ export function IncomeConfirmationDialog({ open, onOpenChange, clientId, clientN
       toast({ title: t("incomeConfirm.saved") });
       onOpenChange(false);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e?.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e?.message), variant: "destructive" });
     }
   };
 

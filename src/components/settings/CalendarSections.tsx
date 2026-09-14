@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Plus, Trash2, CalendarOff, Image as ImageIcon, Check, Loader2 } from "lucide-react";
 import { syncBookingAvailabilityFromSchedule, getInheritFlag } from "@/lib/bookingAvailabilitySync";
+import { describeError } from "@/lib/errorMessages";
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, "0")}:00`);
 const DAY_FULL_KEYS = ["day.monday", "day.tuesday", "day.wednesday", "day.thursday", "day.friday", "day.saturday", "day.sunday"] as const;
@@ -109,7 +110,7 @@ export function WorkingHoursSection() {
       setSavedAt(Date.now());
       toast({ title: t("settings.saved") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -271,7 +272,7 @@ export function DaysOffSection() {
       setDayOffOpen(false);
       setConfirmOpen(true);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     } finally {
       setCheckingAffected(false);
     }
@@ -298,13 +299,13 @@ export function DaysOffSection() {
       setAffectedAppointments([]);
       setConfirmOpen(false);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
   const handleDeleteDayOff = async (id: string) => {
     try { await deleteDayOff.mutateAsync(id); toast({ title: t("toast.dayOffRemoved") }); }
-    catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
+    catch (e: any) { toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" }); }
   };
 
   return (
@@ -420,7 +421,7 @@ export function PracticeProfileSection() {
       setSavedAt(Date.now());
       toast({ title: t("settings.saved") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -450,7 +451,7 @@ export function PracticeProfileSection() {
       setForm((f) => ({ ...f, avatar_url: url }));
       toast({ title: t("settings.saved") });
     } catch (err: any) {
-      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(err.message), variant: "destructive" });
     } finally {
       setUploading(false);
     }
@@ -462,7 +463,7 @@ export function PracticeProfileSection() {
       setForm((f) => ({ ...f, avatar_url: "" }));
       toast({ title: t("settings.saved") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 

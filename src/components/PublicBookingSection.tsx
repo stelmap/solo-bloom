@@ -19,6 +19,7 @@ import {
   setInheritFlag,
   dowToWeekday,
 } from "@/lib/bookingAvailabilitySync";
+import { describeError } from "@/lib/errorMessages";
 
 const WEEKDAY_KEYS = [
   "day.sunday", "day.monday", "day.tuesday", "day.wednesday",
@@ -482,7 +483,7 @@ export function PublicBookingSection() {
       qc.invalidateQueries({ queryKey: ["booking_availability", userId] });
       toast({ title: tx("settings.saved", "Saved") });
     } catch (e: any) {
-      toast({ title: tx("common.error", "Error"), description: e.message, variant: "destructive" });
+      toast({ title: tx("common.error", "Error"), description: describeError(e.message), variant: "destructive" });
     } finally {
       setSaving(false);
     }

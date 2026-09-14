@@ -63,6 +63,7 @@ import { Inbox } from "lucide-react";
 import { BookingInboxPanel } from "@/components/BookingInboxPanel";
 import { SidebarSection } from "@/components/calendar/SidebarSection";
 import { useNeedsAttention } from "@/hooks/useNeedsAttention";
+import { describeError } from "@/lib/errorMessages";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
@@ -806,7 +807,7 @@ export default function CalendarPage() {
       setQaClient({ name: "", email: "", phone: "" });
       setQaClientOpen(false);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -827,7 +828,7 @@ export default function CalendarPage() {
       setQaService({ name: "", duration_minutes: 60, price: 0 });
       setQaServiceOpen(false);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -946,7 +947,7 @@ export default function CalendarPage() {
       setCreateOpen(false);
       toast({ title: L.blockedCreated });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e?.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e?.message), variant: "destructive" });
     }
   };
 
@@ -990,7 +991,7 @@ export default function CalendarPage() {
       await qc.refetchQueries({ queryKey: ["days-off"], type: "active" });
       return true;
     } catch (err: any) {
-      toast({ title: t("common.error"), description: err?.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(err?.message), variant: "destructive" });
       return false;
     }
   };
@@ -1023,7 +1024,7 @@ export default function CalendarPage() {
         ),
       });
     } catch (err: any) {
-      toast({ title: t("common.error"), description: err?.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(err?.message), variant: "destructive" });
     }
   };
 
@@ -1133,11 +1134,11 @@ export default function CalendarPage() {
               qc.invalidateQueries({ queryKey: ["appointments"] });
               toast({ title: t("recurring.seriesCreated"), description: t("recurring.seriesCreatedDesc", { count: (result as any).count }) });
             } catch (e: any) {
-              toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+              toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
             }
           })();
         } catch (e: any) {
-          toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+          toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
         }
       } else {
         // Single group session
@@ -1164,7 +1165,7 @@ export default function CalendarPage() {
           setCreateOpen(false);
           toast({ title: t("groups.groupSessionCreated") });
         } catch (e: any) {
-          toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+          toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
         }
       }
       return;
@@ -1212,10 +1213,10 @@ export default function CalendarPage() {
             qc.invalidateQueries({ queryKey: ["appointments"] });
             toast({ title: t("recurring.seriesCreated"), description: t("recurring.seriesCreatedDesc", { count: (result as any).count }) });
           } catch (e: any) {
-            toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+            toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
           }
         })();
-      } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
+      } catch (e: any) { toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" }); }
     } else {
       try {
         const newApt = await createAppointment.mutateAsync({
@@ -1230,7 +1231,7 @@ export default function CalendarPage() {
         setServiceError(false);
         setCreateOpen(false);
         toast({ title: t("toast.appointmentCreated") });
-      } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
+      } catch (e: any) { toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" }); }
     }
     } finally {
       submittingRef.current = false;
@@ -1325,7 +1326,7 @@ export default function CalendarPage() {
       toast({ title: t("toast.sessionsCancelled", { count: dayOffConfirm.affectedApts.length.toString() }) });
       setDayOffConfirm(null);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -1616,7 +1617,7 @@ export default function CalendarPage() {
       markRescheduled(aptId);
       toast({ title: t("calendar.sessionMoved") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -1668,7 +1669,7 @@ export default function CalendarPage() {
       }
       toast({ title: t("calendar.sessionMoved") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 

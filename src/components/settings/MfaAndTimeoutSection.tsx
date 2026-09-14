@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ShieldCheck, Timer, KeyRound, Trash2, Eye, EyeOff, Copy, Check, Maximize2 } from "lucide-react";
 import { readIdleTimeoutMinutes, writeIdleTimeoutMinutes } from "@/hooks/useIdleTimeout";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { describeError } from "@/lib/errorMessages";
 
 interface MfaFactor {
   id: string;
@@ -60,7 +61,7 @@ export function MfaAndTimeoutSection() {
     setLoading(true);
     const { data, error } = await supabase.auth.mfa.listFactors();
     if (error) {
-      toast({ title: t("mfa.error"), description: error.message, variant: "destructive" });
+      toast({ title: t("mfa.error"), description: describeError(error.message), variant: "destructive" });
     } else {
       setFactors([...(data?.totp ?? [])] as MfaFactor[]);
     }
@@ -81,7 +82,7 @@ export function MfaAndTimeoutSection() {
         friendlyName: `${ISSUER} (${email ?? "account"})`,
       });
       if (error || !data) {
-        toast({ title: t("mfa.error"), description: error?.message ?? t("mfa.startFail"), variant: "destructive" });
+        toast({ title: t("mfa.error"), description: describeError(error?.message, t("mfa.startFail")), variant: "destructive" });
         return;
       }
 
@@ -162,7 +163,7 @@ export function MfaAndTimeoutSection() {
   async function unenroll(factorId: string) {
     const { error } = await supabase.auth.mfa.unenroll({ factorId });
     if (error) {
-      toast({ title: t("mfa.error"), description: error.message, variant: "destructive" });
+      toast({ title: t("mfa.error"), description: describeError(error.message), variant: "destructive" });
     } else {
       toast({ title: t("mfa.toastRemoved") });
       await loadFactors();

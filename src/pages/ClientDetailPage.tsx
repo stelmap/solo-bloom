@@ -57,6 +57,7 @@ import {
   isPrepaid,
   isRealSession,
 } from "@/lib/paymentClassifiers";
+import { describeError } from "@/lib/errorMessages";
 
 
 export default function ClientDetailPage() {
@@ -382,7 +383,7 @@ export default function ClientDetailPage() {
       setEditOpen(false);
       toast({ title: t("toast.clientUpdated") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -392,7 +393,7 @@ export default function ClientDetailPage() {
       toast({ title: t("toast.clientDeleted") });
       navigate("/clients");
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -403,7 +404,7 @@ export default function ClientDetailPage() {
       setNoteText("");
       toast({ title: t("toast.noteAdded") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -414,7 +415,7 @@ export default function ClientDetailPage() {
       await uploadAttachment.mutateAsync({ file, clientId: client.id });
       toast({ title: t("toast.fileUploaded") });
     } catch (err: any) {
-      toast({ title: t("toast.uploadFailed"), description: err.message, variant: "destructive" });
+      toast({ title: t("toast.uploadFailed"), description: describeError(err.message), variant: "destructive" });
     }
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -655,7 +656,7 @@ export default function ClientDetailPage() {
                   {client.status === "archived" ? (
                     <DropdownMenuItem onSelect={async () => {
                       try { await unarchiveClient.mutateAsync(client.id); toast({ title: t("archive.toast.unarchived") }); }
-                      catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
+                      catch (e: any) { toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" }); }
                     }}>
                       <ArchiveRestore className="h-4 w-4 mr-2" /> {t("archive.action.unarchive")}
                     </DropdownMenuItem>

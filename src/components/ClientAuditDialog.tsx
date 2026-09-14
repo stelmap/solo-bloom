@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { isRealSession, isCancelled } from "@/lib/paymentClassifiers";
 import { Loader2, RefreshCw } from "lucide-react";
+import { describeError } from "@/lib/errorMessages";
 
 type UISnapshot = {
   totalSessions: number;
@@ -96,7 +97,7 @@ export function ClientAuditDialog({ open, onOpenChange, clientId, ui, currencySy
       setRows(next);
       setExtra({ orphanScheduled, allocationsTotal, incomeCount: income.length });
     } catch (e: any) {
-      setError(e?.message ?? String(e));
+      setError(describeError(e));
     } finally {
       setLoading(false);
     }

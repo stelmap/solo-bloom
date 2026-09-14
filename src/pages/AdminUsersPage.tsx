@@ -21,6 +21,8 @@ import { Loader2, RefreshCw, Users, UserPlus, Clock, X, CreditCard, FileCheck, S
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { allowedActions, statusBadgeVariant, statusLabel, type LifecycleAction, type LifecycleStatus } from "@/lib/userLifecycle";
+import { describeError } from "@/lib/errorMessages";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type AdminUser = {
   id: string;
@@ -77,6 +79,7 @@ function fmt(d: string | null | undefined) {
 }
 
 export default function AdminUsersPage() {
+  const { t } = useLanguage();
   const { user, loading } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -105,7 +108,7 @@ export default function AdminUsersPage() {
       if (error) throw error;
       setUsers((data as any).users ?? []);
     } catch (e: any) {
-      toast({ title: "Failed to load users", description: e?.message ?? String(e), variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e, "errors.admin.loadUsersFailed"), variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -225,7 +228,7 @@ export default function AdminUsersPage() {
       setDialogConfirm("");
       await load();
     } catch (e: any) {
-      toast({ title: "Action failed", description: e?.message ?? String(e), variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e, "errors.admin.actionFailed"), variant: "destructive" });
     } finally {
       setDialogBusy(false);
     }

@@ -29,6 +29,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { filterAuditRows } from "@/lib/paymentAuditFilters";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { describeError } from "@/lib/errorMessages";
 
 type AllocStatus = "linked" | "not_linked" | "partial" | "prepayment" | "overpayment";
 type QuickFilter = "all" | AllocStatus | "confirmed" | "expected" | "draft" | "cancelled";
@@ -655,7 +656,7 @@ export default function PaymentAuditPage() {
             setDeleteId(null);
             setOpenRow(null);
           } catch (e: any) {
-            toast({ title: t("common.error"), description: e?.message, variant: "destructive" });
+            toast({ title: t("common.error"), description: describeError(e?.message), variant: "destructive" });
           }
         }}
       />

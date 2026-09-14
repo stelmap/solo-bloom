@@ -10,6 +10,7 @@ import { Download, Trash2, Shield, History, AlertTriangle } from "lucide-react";
 import { useAuditLog, useDeletionRequest, useRequestDeletion, useCancelDeletion, downloadMyData } from "@/hooks/useGdpr";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useDateFormat } from "@/lib/dateLocale";
+import { describeError } from "@/lib/errorMessages";
 
 export function PrivacySection() {
   const { t } = useLanguage();
@@ -26,7 +27,7 @@ export function PrivacySection() {
       await downloadMyData();
       toast({ title: t("privacy.export.successTitle"), description: t("privacy.export.successDesc") });
     } catch (e) {
-      toast({ title: t("privacy.export.failTitle"), description: String(e), variant: "destructive" });
+      toast({ title: t("privacy.export.failTitle"), description: describeError(String(e)), variant: "destructive" });
     } finally {
       setExporting(false);
     }
@@ -37,7 +38,7 @@ export function PrivacySection() {
       await requestDeletion.mutateAsync(undefined);
       toast({ title: t("privacy.delete.toastScheduled"), description: t("privacy.delete.toastScheduledDesc") });
     } catch (e) {
-      toast({ title: t("privacy.delete.failTitle"), description: String(e), variant: "destructive" });
+      toast({ title: t("privacy.delete.failTitle"), description: describeError(String(e)), variant: "destructive" });
     }
   };
 
@@ -46,7 +47,7 @@ export function PrivacySection() {
       await cancelDeletion.mutateAsync();
       toast({ title: t("privacy.delete.toastCancelled") });
     } catch (e) {
-      toast({ title: t("privacy.delete.cancelFailTitle"), description: String(e), variant: "destructive" });
+      toast({ title: t("privacy.delete.cancelFailTitle"), description: describeError(String(e)), variant: "destructive" });
     }
   };
 

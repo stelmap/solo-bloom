@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, RefreshCw, ShieldCheck, Star } from "lucide-react";
+import { describeError } from "@/lib/errorMessages";
 
 type ModerationStatus = "pending" | "approved" | "rejected" | "hidden" | "deleted" | "spam";
 type VerificationStatus = "verified_user" | "not_verified" | "verification_failed";
@@ -118,7 +119,7 @@ export default function AdminReviewsPage() {
     const { data, error } = await (supabase as any).rpc("admin_list_reviews");
     setBusy(false);
     if (error) {
-      toast({ title: "Не вдалося завантажити відгуки", description: error.message, variant: "destructive" });
+      toast({ title: "Не вдалося завантажити відгуки", description: describeError(error.message), variant: "destructive" });
       return;
     }
     setRows((data ?? []) as Review[]);
@@ -180,7 +181,7 @@ export default function AdminReviewsPage() {
     });
     setActing(false);
     if (error) {
-      toast({ title: "Дію не виконано", description: error.message, variant: "destructive" });
+      toast({ title: "Дію не виконано", description: describeError(error.message), variant: "destructive" });
       return;
     }
     const updated = data as Review;
@@ -200,7 +201,7 @@ export default function AdminReviewsPage() {
     });
     setActing(false);
     if (error) {
-      toast({ title: "Дію не виконано", description: error.message, variant: "destructive" });
+      toast({ title: "Дію не виконано", description: describeError(error.message), variant: "destructive" });
       return;
     }
     const updated = data as Review;
@@ -218,7 +219,7 @@ export default function AdminReviewsPage() {
     });
     setActing(false);
     if (error) {
-      toast({ title: "Не вдалося зберегти відповідь", description: error.message, variant: "destructive" });
+      toast({ title: "Не вдалося зберегти відповідь", description: describeError(error.message), variant: "destructive" });
       return;
     }
     const updated = data as Review;

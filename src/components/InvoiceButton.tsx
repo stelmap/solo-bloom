@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { track } from "@/lib/analytics";
 import type { AppLanguage } from "@/i18n/translations";
+import { describeError } from "@/lib/errorMessages";
 
 interface InvoiceButtonProps {
   appointment: any;
@@ -164,7 +165,7 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
       toast({ title: t("invoice.generated") });
     } catch (e: any) {
       console.error("[invoice] handleGenerate failed", e);
-      toast({ title: t("common.error"), description: e?.message || "PDF error", variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e?.message, "PDF error"), variant: "destructive" });
     } finally {
       setGenerating(false);
     }
@@ -178,7 +179,7 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
       track("invoice_downloaded", { kind: "existing" });
     } catch (e: any) {
       console.error("[invoice] handleDownloadExisting failed", e);
-      toast({ title: t("common.error"), description: e?.message || "PDF error", variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e?.message, "PDF error"), variant: "destructive" });
     }
   };
 
@@ -190,7 +191,7 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
       setDeleteTarget(null);
     } catch (e: any) {
       console.error("[invoice] delete failed", e);
-      toast({ title: t("common.error"), description: e?.message || "Delete failed", variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e?.message, "Delete failed"), variant: "destructive" });
     }
   };
 

@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { describeError } from "@/lib/errorMessages";
 
 const GroupCard = memo(({ group, onNavigate, inactive }: { group: any; onNavigate: (id: string) => void; inactive?: boolean }) => (
   <div
@@ -78,7 +79,7 @@ export default function GroupsPage() {
       setOpen(false);
       navigate(`/groups/${(created as any).id}`);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     } finally {
       setSubmitting(false);
     }

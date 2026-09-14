@@ -22,6 +22,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { AppLanguage } from "@/i18n/translations";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ImageIcon, Loader2, Copy, ExternalLink } from "lucide-react";
+import { describeError } from "@/lib/errorMessages";
 
 type Lang = "en" | "uk" | "ru" | "fr" | "pl";
 const normLang = (v: unknown): Lang => {
@@ -198,7 +199,7 @@ export default function PracticeProfilePage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
-  const { lang, setLang } = useLanguage();
+  const { lang, setLang, t } = useLanguage();
   const L = COPY[normLang(lang)];
   const { data: profile } = useProfile();
   const updateProfile = useUpdateProfile();
@@ -316,7 +317,7 @@ export default function PracticeProfilePage() {
     e.target.value = "";
     if (!file || !user) return;
     if (!file.type.startsWith("image/") || file.size > 2 * 1024 * 1024) {
-      toast({ title: "Error", description: L.uploadHint, variant: "destructive" });
+      toast({ title: t("common.error"), description: L.uploadHint, variant: "destructive" });
       return;
     }
     setUploading(true);
@@ -332,7 +333,7 @@ export default function PracticeProfilePage() {
       setForm((f) => ({ ...f, avatar_url: pub.publicUrl }));
       toast({ title: L.saved });
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(err, "errors.crud.uploadFailed"), variant: "destructive" });
     } finally {
       setUploading(false);
     }
@@ -389,7 +390,7 @@ export default function PracticeProfilePage() {
         navigate("/calendar");
       }
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e, "errors.crud.saveFailed"), variant: "destructive" });
     } finally {
       setSaving(false);
     }

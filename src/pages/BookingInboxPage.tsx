@@ -25,6 +25,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { getDateLocale } from "@/lib/dateLocale";
 import { format as fnsFormat } from "date-fns";
 import { Loader2, Mail, Phone, CheckCircle2, XCircle, UserPlus, RefreshCw, AlertCircle, Sparkles } from "lucide-react";
+import { describeError } from "@/lib/errorMessages";
 
 type Lang = "en" | "uk" | "fr" | "pl";
 
@@ -237,7 +238,7 @@ export default function BookingInboxPage() {
       setConfirmClientId("");
       setConfirmServiceId("");
     } catch (e: any) {
-      toast({ title: L.toastCouldNotConfirm, description: e.message, variant: "destructive" });
+      toast({ title: L.toastCouldNotConfirm, description: describeError(e.message), variant: "destructive" });
     }
   }
 
@@ -246,7 +247,7 @@ export default function BookingInboxPage() {
       await decline.mutateAsync({ id: req.id, reason });
       toast({ title: reason === "spam" ? L.toastMarkedSpam : L.toastDeclined });
     } catch (e: any) {
-      toast({ title: L.toastCouldNotUpdate, description: e.message, variant: "destructive" });
+      toast({ title: L.toastCouldNotUpdate, description: describeError(e.message), variant: "destructive" });
     }
   }
 
@@ -258,7 +259,7 @@ export default function BookingInboxPage() {
       setLinkingFor(null);
       setLinkClientId("");
     } catch (e: any) {
-      toast({ title: L.toastCouldNotLink, description: e.message, variant: "destructive" });
+      toast({ title: L.toastCouldNotLink, description: describeError(e.message), variant: "destructive" });
     }
   }
 
@@ -294,7 +295,7 @@ export default function BookingInboxPage() {
       });
       setCreatingFor(null);
     } catch (e: any) {
-      toast({ title: L.toastCouldNotCreate, description: e.message, variant: "destructive" });
+      toast({ title: L.toastCouldNotCreate, description: describeError(e.message), variant: "destructive" });
     }
   }
 

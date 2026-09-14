@@ -12,6 +12,7 @@ import { Eye, EyeOff, Lock, ShieldAlert } from "lucide-react";
 import { track } from "@/lib/analytics";
 import { PublicFooter } from "@/components/PublicFooter";
 import { SeoHead } from "@/components/SeoHead";
+import { describeError } from "@/lib/errorMessages";
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -74,7 +75,7 @@ export default function ResetPasswordPage() {
       toast({ title: t("auth.passwordUpdated"), description: t("auth.passwordUpdatedDesc") });
        navigate("/auth", { replace: true });
     } catch (error: any) {
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(error.message), variant: "destructive" });
     } finally {
       setLoading(false);
     }

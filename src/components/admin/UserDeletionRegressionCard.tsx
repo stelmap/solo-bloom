@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ShieldAlert, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { describeError } from "@/lib/errorMessages";
 
 type Check = { name: string; passed: boolean; detail?: string };
 type Report = { ok: boolean; passed: number; total: number; checks: Check[] };
@@ -33,7 +34,7 @@ export function UserDeletionRegressionCard() {
         variant: r.ok ? undefined : "destructive",
       });
     } catch (e: any) {
-      toast({ title: "Regression run failed", description: e?.message ?? String(e), variant: "destructive" });
+      toast({ title: "Regression run failed", description: describeError(e?.message ?? String(e)), variant: "destructive" });
     } finally {
       setRunning(false);
     }

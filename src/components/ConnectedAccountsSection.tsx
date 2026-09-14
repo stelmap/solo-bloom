@@ -16,6 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { describeError } from "@/lib/errorMessages";
 
 export function ConnectedAccountsSection() {
   const { t } = useLanguage();
@@ -51,7 +52,7 @@ export function ConnectedAccountsSection() {
     } catch (e: any) {
       toast({
         title: t("common.error"),
-        description: e?.message || t("auth.googleSignInFailed"),
+        description: describeError(e?.message, t("auth.googleSignInFailed")),
         variant: "destructive",
       });
       setBusy(false);
@@ -77,7 +78,7 @@ export function ConnectedAccountsSection() {
     } catch (e: any) {
       toast({
         title: t("common.error"),
-        description: e?.message,
+        description: describeError(e?.message),
         variant: "destructive",
       });
     } finally {

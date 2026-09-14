@@ -18,6 +18,7 @@ import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { contactRequestTypeLabel } from "@/components/landing/ContactRequestDialog";
 import { Loader2, RefreshCw, Mail, Phone, Send } from "lucide-react";
+import { describeError } from "@/lib/errorMessages";
 
 type BookingRequest = {
   id: string;
@@ -113,7 +114,7 @@ export default function AdminBookingRequestsPage() {
       const { data, error } = await (supabase as any).rpc("admin_list_booking_requests", params);
       if (error) {
         setBusy(false);
-        toast({ title: "Не вдалося завантажити заявки", description: error.message, variant: "destructive" });
+        toast({ title: "Не вдалося завантажити заявки", description: describeError(error.message), variant: "destructive" });
         return;
       }
       const list = (data ?? []) as BookingRequest[];
@@ -172,7 +173,7 @@ export default function AdminBookingRequestsPage() {
     });
     if (error) {
       setRows(prev);
-      toast({ title: "Помилка оновлення", description: error.message, variant: "destructive" });
+      toast({ title: "Помилка оновлення", description: describeError(error.message), variant: "destructive" });
     }
   };
 

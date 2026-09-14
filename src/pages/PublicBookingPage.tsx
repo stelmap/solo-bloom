@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CalendarDays, CheckCircle2, ChevronLeft, Clock, Globe, Loader2, MapPin, Mail, Building2 } from "lucide-react";
 import { z } from "zod";
 import { toast } from "@/hooks/use-toast";
+import { describeError } from "@/lib/errorMessages";
 
 type PageInfo = {
   display_name: string;
@@ -248,7 +249,7 @@ export default function PublicBookingPage() {
         p_to_date: fmtDate(to),
       });
       if (error) {
-        if (!opts?.silent) setError(error.message);
+        if (!opts?.silent) setError(describeError(error));
       } else {
         const next = ((data as any[]) || []).map((r) => r.slot_at).slice(0, 200);
         setSlots((prev) => (prev.length === next.length && prev.every((s, i) => s === next[i]) ? prev : next));
@@ -389,7 +390,7 @@ export default function PublicBookingPage() {
       const isTaken = /no longer available/i.test(error.message);
       toast({
         title: isTaken ? L.takenTitle : L.couldNotBook,
-        description: isTaken ? L.takenDesc : error.message,
+        description: describeError(isTaken ? L.takenDesc : error.message),
         variant: "destructive",
       });
       if (isTaken) {

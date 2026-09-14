@@ -27,6 +27,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { describeError } from "@/lib/errorMessages";
 
 export default function GroupDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -98,7 +99,7 @@ export default function GroupDetailPage() {
       toast({ title: t("groups.updated") });
       setEditOpen(false);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     } finally {
       setEditSaving(false);
     }
@@ -125,7 +126,7 @@ export default function GroupDetailPage() {
       setAddMemberOpen(false);
     } catch (e: any) {
       const isDupe = e.message?.includes("duplicate") || e.message?.includes("unique");
-      toast({ title: t("common.error"), description: isDupe ? t("groups.memberAlreadyExists") : e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(isDupe ? t("groups.memberAlreadyExists") : e.message), variant: "destructive" });
     }
   };
 
@@ -142,7 +143,7 @@ export default function GroupDetailPage() {
       toast({ title: t("groups.memberRemoved") });
       setRemoveMemberId(null);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -156,7 +157,7 @@ export default function GroupDetailPage() {
       if (e.message === "GROUP_HAS_SESSIONS") {
         toast({ title: t("common.error"), description: t("groups.cannotDeleteHasSessions"), variant: "destructive" });
       } else {
-        toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+        toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
       }
       setDeleteOpen(false);
     }
@@ -495,7 +496,7 @@ function AttendanceDialog({ groupSessionId, open, onOpenChange }: { groupSession
     try {
       await updateAttendance.mutateAsync({ id: attId, status: newStatus, groupSessionId });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 

@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SIGNATURE_BUCKET } from "@/lib/invoiceSignature";
 import { cn } from "@/lib/utils";
 import { PenLine, Upload, Trash2, Loader2 } from "lucide-react";
+import { describeError } from "@/lib/errorMessages";
 
 const ACCEPT = "image/png,image/jpeg,image/jpg,image/webp";
 const MAX_SIZE = 2 * 1024 * 1024;
@@ -89,7 +90,7 @@ export function InvoiceSignatureSection() {
       if (kind === "signature") setSigPath(path); else setStampPath(path);
       toast({ title: t("invoiceSig.uploaded") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -118,7 +119,7 @@ export function InvoiceSignatureSection() {
       await updateProfile.mutateAsync({ use_scanned_invoice_signature: enabled } as any);
       toast({ title: t("invoiceSig.saved") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     } finally {
       setSaving(false);
     }

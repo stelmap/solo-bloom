@@ -22,6 +22,7 @@ import {
   isValidTaxIdForCountry,
   type BusinessCountry,
 } from "@/lib/taxIdentifiers";
+import { describeError } from "@/lib/errorMessages";
 
 type Lang = "en" | "uk" | "ru" | "fr" | "pl";
 const normLang = (v: unknown): Lang => {
@@ -256,7 +257,7 @@ export default function FinanceSettingsPage() {
       setBaseline(JSON.stringify(form));
       toast({ title: L.saved });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 

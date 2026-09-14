@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useDemoMode } from "@/hooks/useDemoWorkspace";
+import { describeError } from "@/lib/errorMessages";
 
 export default function ServicesPage() {
   const { data: services = [], isLoading } = useServices();
@@ -51,7 +52,7 @@ export default function ServicesPage() {
       }
       setOpen(false);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 
@@ -62,7 +63,7 @@ export default function ServicesPage() {
       toast({ title: t("toast.serviceDeleted") });
       setDeleteId(null);
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
     }
   };
 

@@ -11,6 +11,8 @@ import {
   Loader2, RefreshCw, ExternalLink, CheckCircle2, XCircle, Bell, Mail,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { describeError } from "@/lib/errorMessages";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type DomainRow = {
   host: string;
@@ -30,6 +32,7 @@ const KNOWN_HOSTS: { host: string; url: string; role: "redirect" | "primary" }[]
 const NOTIFY_EMAIL = "o.gilevich@gmail.com";
 
 export default function AdminDomainsPage() {
+  const { t } = useLanguage();
   const { user, loading } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [rows, setRows] = useState<DomainRow[]>([]);
@@ -48,7 +51,7 @@ export default function AdminDomainsPage() {
       .select("*")
       .order("host", { ascending: true });
     if (error) {
-      toast({ title: "Failed to load domain status", description: error.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(error, "errors.admin.domainStatusFailed"), variant: "destructive" });
     } else {
       setRows((data ?? []) as DomainRow[]);
     }
@@ -64,8 +67,8 @@ export default function AdminDomainsPage() {
       await fetchRows();
     } catch (e) {
       toast({
-        title: "Check failed",
-        description: e instanceof Error ? e.message : String(e),
+        title: t("common.error"),
+        description: describeError(e instanceof Error ? e.message : String(e)),
         variant: "destructive",
       });
     } finally {

@@ -31,6 +31,7 @@ import {
 import { format } from "date-fns";
 import { fr as frLocale, uk as ukLocale } from "date-fns/locale";
 import { track } from "@/lib/analytics";
+import { describeError } from "@/lib/errorMessages";
 
 type BillingPeriod = "monthly" | "quarterly" | "yearly";
 
@@ -136,7 +137,7 @@ export function SubscriptionSection() {
     try {
       await openStripePortal();
     } catch (err: any) {
-      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(err.message), variant: "destructive" });
     } finally {
       setPortalLoading(false);
     }
@@ -148,7 +149,7 @@ export function SubscriptionSection() {
     try {
       await openStripePortal();
     } catch (err: any) {
-      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: describeError(err.message), variant: "destructive" });
     } finally {
       setPortalLoading(false);
     }

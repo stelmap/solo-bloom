@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { describeError } from "@/lib/errorMessages";
 
 // Beta Supabase OAuth API; typed locally to avoid TS friction.
 type OAuthApi = {
@@ -42,7 +43,7 @@ export default function OAuthConsentPage() {
       const { data, error } = await oauth.getAuthorizationDetails(authorizationId);
       if (!active) return;
       if (error) {
-        setError(error.message);
+        setError(describeError(error));
         return;
       }
       const immediate = data?.redirect_url ?? data?.redirect_to;
@@ -65,7 +66,7 @@ export default function OAuthConsentPage() {
       : await oauth.denyAuthorization(authorizationId);
     if (error) {
       setBusy(false);
-      setError(error.message);
+      setError(describeError(error));
       return;
     }
     const target = data?.redirect_url ?? data?.redirect_to;
