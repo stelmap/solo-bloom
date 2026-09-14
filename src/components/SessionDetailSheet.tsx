@@ -43,6 +43,7 @@ import { showsFlexibleLabel } from "@/lib/flexiblePrice";
 import { SessionNotesDialog } from "@/components/SessionNotesDialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Checkbox } from "@/components/ui/checkbox";
+import { describeError } from "@/lib/errorMessages";
 
 interface SessionDetailSheetProps {
   appointment: any | null;
@@ -766,7 +767,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       if (result.protected > 0 && scope === "following") {
         toast({
           title: t("recurring.partialDeleted.title"),
-          description: t("recurring.partialDeleted.desc", { deleted: String(result.deleted), protected: String(result.protected) }),
+          description: describeError(t("recurring.partialDeleted.desc", { deleted: String(result.deleted), protected: String(result.protected) })),
         });
       } else {
         toast({ title: t("toast.appointmentDeleted") });

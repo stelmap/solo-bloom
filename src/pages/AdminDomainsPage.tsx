@@ -11,6 +11,7 @@ import {
   Loader2, RefreshCw, ExternalLink, CheckCircle2, XCircle, Bell, Mail,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { describeError } from "@/lib/errorMessages";
 
 type DomainRow = {
   host: string;
@@ -65,7 +66,7 @@ export default function AdminDomainsPage() {
     } catch (e) {
       toast({
         title: "Check failed",
-        description: e instanceof Error ? e.message : String(e),
+        description: describeError(e instanceof Error ? e.message : String(e)),
         variant: "destructive",
       });
     } finally {

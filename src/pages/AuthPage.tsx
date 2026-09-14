@@ -16,6 +16,7 @@ import { getFreshAccessToken } from "@/lib/checkoutAuth";
 import { getPostAuthRedirect } from "@/lib/authRedirect";
 import { PublicFooter } from "@/components/PublicFooter";
 import { SeoHead } from "@/components/SeoHead";
+import { describeError } from "@/lib/errorMessages";
 
 const PLAN_SELECTION_MAP: Record<string, { planCode: "solo" | "pro"; billingPeriod: "monthly" | "quarterly" | "yearly" }> = {
   solo_monthly: { planCode: "solo", billingPeriod: "monthly" },
@@ -104,7 +105,7 @@ export default function AuthPage() {
     } catch (err: any) {
       toast({
         title: t("common.error"),
-        description: err?.message || "We could not send the confirmation email. Please try again later.",
+        description: describeError(err?.message, "We could not send the confirmation email. Please try again later."),
         variant: "destructive",
       });
     } finally {

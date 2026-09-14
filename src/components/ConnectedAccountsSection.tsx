@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { UserIdentity } from "@supabase/supabase-js";
 import {
+import { describeError } from "@/lib/errorMessages";
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -51,7 +52,7 @@ export function ConnectedAccountsSection() {
     } catch (e: any) {
       toast({
         title: t("common.error"),
-        description: e?.message || t("auth.googleSignInFailed"),
+        description: describeError(e?.message, t("auth.googleSignInFailed")),
         variant: "destructive",
       });
       setBusy(false);
@@ -77,7 +78,7 @@ export function ConnectedAccountsSection() {
     } catch (e: any) {
       toast({
         title: t("common.error"),
-        description: e?.message,
+        description: describeError(e?.message),
         variant: "destructive",
       });
     } finally {

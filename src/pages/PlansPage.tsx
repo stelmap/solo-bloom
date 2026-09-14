@@ -18,6 +18,7 @@ import { campaignText, isCampaignPlan, SUPPORT_UA_PROMO_CODE } from "@/lib/suppo
 import { useSupportUkraine } from "@/hooks/useSupportUkraine";
 import { SupportUkrainePrice } from "@/components/campaign/SupportUkrainePrice";
 import { SupportUkrainePromoInput } from "@/components/campaign/SupportUkrainePromoInput";
+import { describeError } from "@/lib/errorMessages";
 
 type Plan = {
   id: string;
@@ -451,7 +452,7 @@ export default function PlansPage() {
       setSlowCheckout(false);
       toast({
         title: t("plans.checkoutFailed"),
-        description: e?.message ?? String(e),
+        description: describeError(e?.message ?? String(e)),
         variant: "destructive",
       });
       setContinuing(false);
