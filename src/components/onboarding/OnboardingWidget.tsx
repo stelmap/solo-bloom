@@ -94,7 +94,7 @@ export function OnboardingWidget() {
     return (
       <button
         type="button"
-        onClick={() => patch({ minimized: false })}
+        onClick={() => setMinimized(false)}
         aria-label={t("onbj.expand")}
         className="fixed bottom-4 right-4 z-[60] flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground shadow-lg hover:bg-accent"
       >
@@ -121,7 +121,7 @@ export function OnboardingWidget() {
         <div className="flex shrink-0 items-center gap-1">
           <button
             type="button"
-            onClick={() => patch({ minimized: true })}
+            onClick={() => setMinimized(true)}
             aria-label={t("onbj.minimize")}
             className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
           >
@@ -129,7 +129,7 @@ export function OnboardingWidget() {
           </button>
           <button
             type="button"
-            onClick={() => patch({ dismissed: true })}
+            onClick={() => setClosed(true)}
             aria-label={t("onbj.hide")}
             className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
           >
@@ -143,7 +143,7 @@ export function OnboardingWidget() {
           <Button
             className="w-full"
             onClick={() => {
-              patch({ dismissed: true });
+              setClosed(true);
               navigate("/dashboard");
             }}
           >
