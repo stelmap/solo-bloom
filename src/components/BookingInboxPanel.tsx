@@ -32,6 +32,7 @@ function fmt(s: string) {
 }
 
 export function BookingInboxPanel({ className }: { className?: string }) {
+  const { t } = useLanguage();
   const { data: rows = [], isLoading, refetch, isFetching } = useBookingRequests();
   const { data: services = [] } = useServices();
   const { data: clients = [] } = useClients();

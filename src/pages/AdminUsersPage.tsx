@@ -79,6 +79,7 @@ function fmt(d: string | null | undefined) {
 }
 
 export default function AdminUsersPage() {
+  const { t } = useLanguage();
   const { user, loading } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);

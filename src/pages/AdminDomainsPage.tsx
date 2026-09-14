@@ -32,6 +32,7 @@ const KNOWN_HOSTS: { host: string; url: string; role: "redirect" | "primary" }[]
 const NOTIFY_EMAIL = "o.gilevich@gmail.com";
 
 export default function AdminDomainsPage() {
+  const { t } = useLanguage();
   const { user, loading } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [rows, setRows] = useState<DomainRow[]>([]);
