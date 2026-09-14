@@ -96,6 +96,30 @@ export function useMarkOnboardingViewed(key: OnboardingStepKey) {
 
 const OPEN_STATUSES = new Set(["scheduled", "confirmed", "reminder_sent"]);
 
+type StepFlags = Partial<Record<OnboardingStepKey, boolean>>;
+
+/**
+ * A step that was genuinely completed once stays completed forever, even if the
+ * underlying business data later changes (e.g. an unpaid session gets paid).
+ */
+export function mergeStickyDone(
+  derived: Record<OnboardingStepKey, boolean>,
+  achieved: StepFlags,
+): Record<OnboardingStepKey, boolean> {
+  return ONBOARDING_STEP_KEYS.reduce((acc, k) => {
+    acc[k] = !!derived[k] || !!achieved[k];
+    return acc;
+  }, {} as Record<OnboardingStepKey, boolean>);
+}
+
+/** Steps that are true right now but not yet persisted as achieved. */
+export function newlyAchievedSteps(
+  derived: Record<OnboardingStepKey, boolean>,
+  achieved: StepFlags,
+): OnboardingStepKey[] {
+  return ONBOARDING_STEP_KEYS.filter((k) => derived[k] && !achieved[k]);
+}
+
 export function useOnboardingJourney() {
   const { data: profile } = useProfile();
   const { data: appointments = [] } = useAppointments();
@@ -141,18 +165,11 @@ export function useOnboardingJourney() {
     expense: (expenses as any[]).length > 0,
   };
 
-  // A step that was genuinely completed once stays completed forever, even if
-  // the underlying business data later changes (e.g. an unpaid session is paid).
   const achieved = state.achieved ?? {};
-  const done = ONBOARDING_STEP_KEYS.reduce((acc, k) => {
-    acc[k] = derived[k] || !!achieved[k];
-    return acc;
-  }, {} as Record<OnboardingStepKey, boolean>);
+  const done = mergeStickyDone(derived, achieved);
 
   const ready = !!profile && !practiceLoading;
-  const newlyAchieved = ready
-    ? ONBOARDING_STEP_KEYS.filter((k) => derived[k] && !achieved[k])
-    : [];
+  const newlyAchieved = ready ? newlyAchievedSteps(derived, achieved) : [];
   const newlyAchievedKey = newlyAchieved.join(",");
 
   useEffect(() => {
