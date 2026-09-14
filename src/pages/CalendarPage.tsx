@@ -2536,7 +2536,14 @@ export default function CalendarPage() {
                       </div>
                       <div className="space-y-1.5">
                         <Label>{L.clientEmail}</Label>
-                        <Input type="email" value={qaClient.email} onChange={e => setQaClient(s => ({ ...s, email: e.target.value }))} />
+                        <Input
+                          type="email"
+                          value={qaClient.email}
+                          aria-invalid={!!qaEmailError}
+                          onChange={e => { setQaClient(s => ({ ...s, email: e.target.value })); if (qaEmailError) setQaEmailError(null); }}
+                          onBlur={e => setQaEmailError(isValidOptionalEmail(e.target.value) ? null : t("errors.validation.invalidEmail"))}
+                        />
+                        {qaEmailError && <p className="text-xs text-destructive">{qaEmailError}</p>}
                       </div>
                       <div className="space-y-1.5">
                         <Label>{L.clientPhone}</Label>
