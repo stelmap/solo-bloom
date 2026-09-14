@@ -126,7 +126,8 @@ export function useOnboardingJourney() {
     return { sessionCount, hasPaid, hasUnpaid, openSessions: open };
   }, [appointments]);
 
-  const done: Record<OnboardingStepKey, boolean> = {
+  // Live view of the current data state.
+  const derived: Record<OnboardingStepKey, boolean> = {
     practice: practiceComplete,
     sessions: flags.sessionCount >= 2,
     paid: flags.hasPaid,
@@ -140,6 +141,27 @@ export function useOnboardingJourney() {
     expense: (expenses as any[]).length > 0,
   };
 
+  // A step that was genuinely completed once stays completed forever, even if
+  // the underlying business data later changes (e.g. an unpaid session is paid).
+  const achieved = state.achieved ?? {};
+  const done = ONBOARDING_STEP_KEYS.reduce((acc, k) => {
+    acc[k] = derived[k] || !!achieved[k];
+    return acc;
+  }, {} as Record<OnboardingStepKey, boolean>);
+
+  const ready = !!profile && !practiceLoading;
+  const newlyAchieved = ready
+    ? ONBOARDING_STEP_KEYS.filter((k) => derived[k] && !achieved[k])
+    : [];
+  const newlyAchievedKey = newlyAchieved.join(",");
+
+  useEffect(() => {
+    if (!newlyAchievedKey) return;
+    const next: Partial<Record<OnboardingStepKey, boolean>> = {};
+    for (const k of newlyAchievedKey.split(",") as OnboardingStepKey[]) next[k] = true;
+    patch({ achieved: next });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [newlyAchievedKey]);
 
   const completedCount = ONBOARDING_STEP_KEYS.filter((k) => done[k]).length;
   const total = ONBOARDING_STEP_KEYS.length;
