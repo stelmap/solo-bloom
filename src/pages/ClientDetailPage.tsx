@@ -347,6 +347,10 @@ export default function ClientDetailPage() {
 
   const handleSaveEdit = async () => {
     if (!editForm.name.trim()) return;
+    if (!isValidOptionalEmail(editForm.email)) {
+      setEditEmailError(t("errors.validation.invalidEmail"));
+      return;
+    }
     if (!editForm.communication_language) {
       toast({ title: t("clientLang.required"), variant: "destructive" });
       return;
