@@ -28,6 +28,21 @@ const loaders: Record<AppLanguage, () => Promise<{ default: Record<string, strin
   ru: () => import("./locales/ru"),
 };
 
+/**
+ * The language the UI is currently rendering in. Kept in a module variable so
+ * non-React code (error mappers, mutation handlers) translates with exactly
+ * the same state the interface uses, instead of detecting language on its own.
+ */
+let activeLang: AppLanguage = "en";
+
+export function setActiveLang(lang: AppLanguage) {
+  activeLang = lang;
+}
+
+export function getActiveLang(): AppLanguage {
+  return activeLang;
+}
+
 /** Synchronously read a loaded dict, or fall back to English if not yet loaded. */
 export function getDict(lang: AppLanguage): Readonly<Record<string, string>> {
   return loaded[lang] ?? en;
