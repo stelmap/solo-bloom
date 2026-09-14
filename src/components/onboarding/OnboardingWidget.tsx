@@ -13,6 +13,8 @@ import {
   type OnboardingStepKey,
 } from "@/hooks/useOnboardingJourney";
 import { useOverlayOpen } from "@/hooks/useOverlayOpen";
+import { useAuth } from "@/contexts/AuthContext";
+
 
 
 /** Deep links for each guided step. The wizard only navigates — never acts. */
@@ -36,7 +38,9 @@ export function OnboardingWidget() {
   const location = useLocation();
   const { loading, done, completedCount, total, allDone, currentStep, dismissed, minimized } =
     useOnboardingJourney();
-  const { patch } = useSetOnboardingState();
+  const { patch, state } = useSetOnboardingState();
+  const { user } = useAuth();
+
   const overlayOpen = useOverlayOpen();
   const qc = useQueryClient();
 
@@ -59,6 +63,20 @@ export function OnboardingWidget() {
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
   }, [qc]);
+
+  // Every new login re-opens the wizard while the journey is unfinished, even
+  // if it was hidden or minimized in an earlier session. Done once per login.
+  useEffect(() => {
+    if (loading || allDone || !user?.id) return;
+    const flag = `onbj.autoOpen.${user.id}`;
+    if (sessionStorage.getItem(flag)) return;
+    sessionStorage.setItem(flag, "1");
+    if (state.dismissed || state.minimized) {
+      patch({ dismissed: false, minimized: false });
+    }
+  }, [loading, allDone, user?.id, state.dismissed, state.minimized, patch]);
+
+
 
 
 
