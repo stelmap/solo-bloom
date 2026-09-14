@@ -1,6 +1,6 @@
 import { BrandName, BrandText } from "@/components/BrandName";
 import { AboutOverlay } from "@/components/landing/AboutOverlay";
-import { ContactRequestDialog } from "@/components/landing/ContactRequestDialog";
+import { ContactRequestDialog, contactCtaLabel } from "@/components/landing/ContactRequestDialog";
 import { useState, useRef, useCallback, createContext, useContext, useEffect, type ReactNode } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
@@ -1451,7 +1451,7 @@ const FAQ_EMAIL = "info@solobizz.com";
 
 // ── About / Contacts / Footer ─────────────────────────────────────────
 
-function LandingFooter() {
+function LandingFooter({ onContact }: { onContact: () => void }) {
   const { lang } = useLandingLang();
   const pick = (m: Partial<Record<AppLanguage, string>>) => m[lang] ?? m.en ?? "";
   const T = {
@@ -1491,6 +1491,15 @@ function LandingFooter() {
             <p className="flex items-start gap-2 md:justify-end">
               <Mail className="h-4 w-4 shrink-0 text-primary mt-0.5 md:order-2" />
               <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-secondary-foreground">{CONTACT_EMAIL}</a>
+            </p>
+            <p className="md:flex md:justify-end">
+              <button
+                type="button"
+                onClick={onContact}
+                className="mt-2 inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                {contactCtaLabel(lang)}
+              </button>
             </p>
           </address>
         </div>
@@ -1648,7 +1657,7 @@ function LandingShell() {
         <PricingSection />
         <PricingFollowUp lang={lang} />
       </main>
-      <LandingFooter />
+      <LandingFooter onContact={() => setContactOpen(true)} />
     </div>
   );
 }
