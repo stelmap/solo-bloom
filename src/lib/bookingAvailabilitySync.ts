@@ -49,15 +49,9 @@ export async function syncBookingAvailabilityFromSchedule(
     ...shared,
   }));
 
-  // Insert the new rows FIRST, so a rejected insert can never leave the user
-  // with zero availability. Only once they exist do we drop the old rows.
-  if (rows.length > 0) {
-    const { error: insertError } = await supabase
-      .from("booking_availability")
-      .insert(rows as any);
-    if (insertError) throw insertError;
-  }
-
+  // Delete the old rows FIRST: they share (user_id, weekday, sort_order) with
+  // the new ones, which collides with the unique index, and their intervals
+  // trip the "intervals overlap for this weekday" trigger.
   const staleIds = ((existing as any[]) ?? []).map((r) => r.id).filter(Boolean);
   if (staleIds.length > 0) {
     const { error: deleteError } = await supabase
@@ -66,6 +60,13 @@ export async function syncBookingAvailabilityFromSchedule(
       .eq("user_id", userId)
       .in("id", staleIds);
     if (deleteError) throw deleteError;
+  }
+
+  if (rows.length > 0) {
+    const { error: insertError } = await supabase
+      .from("booking_availability")
+      .insert(rows as any);
+    if (insertError) throw insertError;
   }
 }
 

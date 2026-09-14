@@ -3,6 +3,7 @@ import { ArrowRight, X } from "lucide-react";
 import type { AppLanguage } from "@/i18n/translations";
 import { lt } from "@/lib/landingRedesignCopy";
 import { track } from "@/lib/analytics";
+import { contactCtaLabel } from "@/components/landing/ContactRequestDialog";
 import {
   dismissPromoBar,
   isCampaignActive,
@@ -67,7 +68,7 @@ export function PromoTopBar({ lang, onActivate, onContact }: Props) {
             onClick={onContact}
             className="inline-flex items-center rounded-lg border border-secondary-foreground/40 bg-transparent px-3 py-1.5 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary-foreground/10"
           >
-            Зв’язатися з нами
+            {contactCtaLabel(lang)}
           </button>
         )}
       </div>

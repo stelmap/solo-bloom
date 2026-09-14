@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { checkIsAdmin } from "@/lib/sessionGuard";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { TranslationKey } from "@/i18n/translations";
 import { useEntitlements, type FeatureCode } from "@/hooks/useEntitlements";
@@ -95,8 +96,7 @@ export function AppSidebar() {
 
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
-    supabase.rpc("has_role", { _user_id: user.id, _role: "admin" })
-      .then(({ data }) => setIsAdmin(data === true));
+    void checkIsAdmin().then(setIsAdmin);
   }, [user]);
 
   // Escape closes the expanded overlay / mobile drawer
