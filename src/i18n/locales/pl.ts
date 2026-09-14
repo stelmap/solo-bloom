@@ -2270,10 +2270,7 @@ export default {
   "onbj.k.practice.d": "Uzupełnij dane praktyki i zapisz profil. Po zapisaniu wrócisz automatycznie do kalendarza.",
   "onbj.k.practice.c": "Skonfiguruj praktykę",
   "onbj.k.sessions.t": "Utwórz dwie pierwsze sesje",
-  "onbj.k.sessions.d": "Utwórz dwie sesje bezpośrednio w kalendarzu.
-Kliknij wolne pole — otworzy się formularz nowej wizyty.
-Wybierz klienta, usługę i utwórz sesję.
-Powtórz to jeszcze raz dla drugiej sesji.",
+  "onbj.k.sessions.d": "Utwórz dwie sesje bezpośrednio w kalendarzu.\nKliknij wolne pole — otworzy się formularz nowej wizyty.\nWybierz klienta, usługę i utwórz sesję.\nPowtórz to jeszcze raz dla drugiej sesji.",
   "onbj.k.sessions.c": "Przejdź do kalendarza",
   "onbj.k.paid.t": "Oznacz jedną sesję jako opłaconą",
   "onbj.k.paid.d": "Otwórz jedną z utworzonych sesji w kalendarzu i oznacz ją jako opłaconą i zakończoną.",

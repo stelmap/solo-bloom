@@ -2270,10 +2270,7 @@ export default {
   "onbj.k.practice.d": "Renseignez les informations de votre pratique et enregistrez le profil. Vous reviendrez automatiquement au calendrier.",
   "onbj.k.practice.c": "Configurer la pratique",
   "onbj.k.sessions.t": "Créez vos deux premières séances",
-  "onbj.k.sessions.d": "Créez deux séances directement dans le calendrier.
-Cliquez sur un créneau libre — le formulaire de nouvelle séance s'ouvre.
-Choisissez un client, un service et créez la séance.
-Répétez l'opération pour la seconde séance.",
+  "onbj.k.sessions.d": "Créez deux séances directement dans le calendrier.\nCliquez sur un créneau libre — le formulaire de nouvelle séance s'ouvre.\nChoisissez un client, un service et créez la séance.\nRépétez l'opération pour la seconde séance.",
   "onbj.k.sessions.c": "Aller au calendrier",
   "onbj.k.paid.t": "Marquez une séance comme payée",
   "onbj.k.paid.d": "Ouvrez l'une de vos séances dans le calendrier et marquez-la comme payée et terminée.",
