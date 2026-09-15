@@ -1,41 +1,39 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { paddleCorsHeaders as corsHeaders, paddleFetch } from "../_shared/paddle.ts";
 
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-
-const PRICE_TO_PLAN_CODE: Record<string, "solo" | "pro"> = {
-  price_1TPQ3DRxXuU3N5IFMcxZCvva: "solo",
-  price_1TPQ5FRxXuU3N5IF5ufGLkV1: "solo",
-  price_1TPQ60RxXuU3N5IFBiGOuz8f: "solo",
-  price_1TPQahRxXuU3N5IF3umwA0Bd: "pro",
-  price_1TPQbIRxXuU3N5IFPVrvG60z: "pro",
-  price_1TPQbmRxXuU3N5IFirrjnqdi: "pro",
-};
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+type Result = {
+  subscribed: boolean;
+  on_trial: boolean;
+  subscription_end: string | null;
+  trial_end: string | null;
+  price_id: string | null;
+  cancel_at_period_end: boolean;
+  discount_percent: number | null;
+};
+
+const EMPTY_RESULT: Result = {
+  subscribed: false,
+  on_trial: false,
+  subscription_end: null,
+  trial_end: null,
+  price_id: null,
+  cancel_at_period_end: false,
+  discount_percent: null,
+};
+
 async function syncPlanRecords(
   supabaseAdmin: any,
   userId: string,
-  subscription: Stripe.Subscription | null,
-  result: {
-    subscribed: boolean;
-    on_trial: boolean;
-    subscription_end: string | null;
-    trial_end: string | null;
-    price_id: string | null;
-    cancel_at_period_end?: boolean;
-  },
+  subscription: { id?: string; current_period_start?: string | null; customer_id?: string } | null,
+  result: Result,
 ) {
   if (!result.subscribed && !result.on_trial) {
     await Promise.all([
@@ -43,7 +41,7 @@ async function syncPlanRecords(
         .from("entitlements")
         .update({ is_active: false, active_until: new Date().toISOString() })
         .eq("user_id", userId)
-        .eq("source_type", "stripe")
+        .eq("source_type", "paddle")
         .eq("is_active", true),
       supabaseAdmin
         .from("subscriptions")
@@ -53,17 +51,15 @@ async function syncPlanRecords(
     return;
   }
 
-  const planCode = result.price_id ? PRICE_TO_PLAN_CODE[result.price_id] : undefined;
-  const planRes = planCode
-    ? await supabaseAdmin.from("plans").select("id").eq("code", planCode).maybeSingle()
-    : { data: null };
   const priceRes = result.price_id
-    ? await supabaseAdmin.from("plan_prices").select("id").eq("stripe_price_id", result.price_id).maybeSingle()
+    ? await supabaseAdmin
+        .from("plan_prices")
+        .select("id, plan_id, plans(code)")
+        .eq("paddle_price_id", result.price_id)
+        .maybeSingle()
     : { data: null };
 
-  const periodStart = typeof subscription?.current_period_start === "number"
-    ? new Date(subscription.current_period_start * 1000).toISOString()
-    : null;
+  const planCode = (priceRes.data as any)?.plans?.code as string | undefined;
   const activeUntil = result.on_trial ? result.trial_end : result.subscription_end;
 
   const { data: subRow, error: subError } = await supabaseAdmin
@@ -71,10 +67,11 @@ async function syncPlanRecords(
     .upsert({
       user_id: userId,
       status: result.on_trial ? "trialing" : "active",
-      stripe_subscription_id: subscription?.id ?? null,
-      current_plan_id: (planRes.data as any)?.id ?? null,
+      paddle_subscription_id: subscription?.id ?? null,
+      paddle_customer_id: subscription?.customer_id ?? null,
+      current_plan_id: (priceRes.data as any)?.plan_id ?? null,
       current_price_id: (priceRes.data as any)?.id ?? null,
-      current_period_start: periodStart,
+      current_period_start: subscription?.current_period_start ?? null,
       current_period_end: activeUntil,
       legacy_full_access: false,
       legacy_access_until: null,
@@ -88,9 +85,8 @@ async function syncPlanRecords(
     return;
   }
 
-  // Finance, Supervision, and Reports (operational + financial) are now
-  // baseline features available to every authenticated user — regardless of
-  // plan. Only premium-only features remain gated to Pro Practice.
+  // Finance, Supervision, and Reports remain baseline features for every
+  // authenticated user; only premium-only features are gated to Pro Practice.
   const features = planCode === "pro"
     ? ["premium_access", "financial_access", "operational_access"]
     : ["financial_access", "operational_access"];
@@ -99,14 +95,14 @@ async function syncPlanRecords(
     .from("entitlements")
     .update({ is_active: false, active_until: new Date().toISOString() })
     .eq("user_id", userId)
-    .eq("source_type", "stripe")
+    .in("source_type", ["paddle", "stripe"])
     .eq("is_active", true);
 
   await supabaseAdmin.from("entitlements").insert(
     features.map((featureCode) => ({
       user_id: userId,
       feature_code: featureCode,
-      source_type: "stripe",
+      source_type: "paddle",
       source_ref: (subRow as any).id,
       active_from: new Date().toISOString(),
       active_until: activeUntil,
@@ -125,25 +121,22 @@ serve(async (req) => {
   const supabaseAdmin = createClient<any>(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    { auth: { persistSession: false } }
+    { auth: { persistSession: false } },
   );
 
   try {
     logStep("Function started");
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+    if (!Deno.env.get("PADDLE_API_KEY")) throw new Error("PADDLE_API_KEY is not set");
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) throw new Error("No authorization header provided");
-
     const token = authHeader.replace("Bearer ", "");
 
-    // Use a user-context client to validate the JWT
     const supabaseUser = createClient<any>(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
+      { global: { headers: { Authorization: authHeader } } },
     );
 
     const { data: claimsData, error: claimsError } = await supabaseUser.auth.getClaims(token);
@@ -155,21 +148,18 @@ serve(async (req) => {
       });
     }
 
-    const userId = claimsData.claims.sub;
+    const userId = claimsData.claims.sub as string;
     const userEmail = claimsData.claims.email as string | undefined;
     if (!userEmail) throw new Error("User email not available");
-    logStep("User authenticated", { email: userEmail });
 
-    // Check for force refresh param
     let forceRefresh = false;
     try {
       const body = await req.clone().json();
       forceRefresh = body?.force === true;
     } catch {
-      // No body or not JSON — that's fine
+      // no body — fine
     }
 
-    // Check cache first
     if (!forceRefresh) {
       const { data: cached } = await supabaseAdmin
         .from("subscription_cache")
@@ -177,124 +167,83 @@ serve(async (req) => {
         .eq("user_id", userId)
         .single();
 
-      if (cached) {
-        const cacheAge = Date.now() - new Date(cached.checked_at).getTime();
-        if (cacheAge < CACHE_TTL_MS) {
-          logStep("Returning cached result", { cacheAgeMs: cacheAge });
-          await syncPlanRecords(supabaseAdmin, userId, null, {
-            subscribed: cached.subscribed,
-            on_trial: cached.on_trial,
-            subscription_end: cached.subscription_end,
-            trial_end: cached.trial_end,
-            price_id: cached.price_id,
-          });
-          return new Response(
-            JSON.stringify({
-              subscribed: cached.subscribed,
-              on_trial: cached.on_trial,
-              subscription_end: cached.subscription_end,
-              trial_end: cached.trial_end,
-              price_id: cached.price_id,
-              cancel_at_period_end: cached.cancel_at_period_end,
-              discount_percent: cached.discount_percent ?? null,
-            }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-          );
-        }
+      if (cached && Date.now() - new Date(cached.checked_at).getTime() < CACHE_TTL_MS) {
+        const cachedResult: Result = {
+          subscribed: cached.subscribed,
+          on_trial: cached.on_trial,
+          subscription_end: cached.subscription_end,
+          trial_end: cached.trial_end,
+          price_id: cached.price_id,
+          cancel_at_period_end: cached.cancel_at_period_end ?? false,
+          discount_percent: cached.discount_percent ?? null,
+        };
+        logStep("Returning cached result");
+        await syncPlanRecords(supabaseAdmin, userId, null, cachedResult);
+        return new Response(JSON.stringify(cachedResult), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
       }
     }
 
-    // Cache miss or stale — query Stripe
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
+    // Cache miss or stale — query Paddle
+    const customers = await paddleFetch<{ data: Array<{ id: string }> }>(
+      `/customers?email=${encodeURIComponent(userEmail)}&per_page=1`,
+    );
+    const customerId = customers.data?.[0]?.id;
 
-    if (customers.data.length === 0) {
-      logStep("No Stripe customer found");
-      const result = { subscribed: false, on_trial: false, subscription_end: null, trial_end: null, price_id: null, cancel_at_period_end: false, discount_percent: null as number | null };
-      // Update cache
-      await supabaseAdmin.from("subscription_cache").upsert({
-        user_id: userId,
-        ...result,
-        checked_at: new Date().toISOString(),
-      }, { onConflict: "user_id" });
-      await syncPlanRecords(supabaseAdmin, userId, null, result);
+    let result: Result = { ...EMPTY_RESULT };
+    let subscription: any = null;
 
-      return new Response(JSON.stringify(result), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
-      });
+    if (customerId) {
+      const subs = await paddleFetch<{ data: any[] }>(
+        `/subscriptions?customer_id=${customerId}&status=active,trialing&per_page=1`,
+      );
+      subscription = subs.data?.[0] ?? null;
     }
 
-    const customerId = customers.data[0].id;
-    logStep("Found customer", { customerId });
-
-    const activeSubs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1, expand: ["data.discounts"] });
-    const trialingSubs = await stripe.subscriptions.list({ customer: customerId, status: "trialing", limit: 1, expand: ["data.discounts"] });
-    const subscription = activeSubs.data[0] || trialingSubs.data[0];
-
-    let result;
-    if (!subscription) {
-      logStep("No active or trialing subscription");
-      result = { subscribed: false, on_trial: false, subscription_end: null, trial_end: null, price_id: null, cancel_at_period_end: false, discount_percent: null as number | null };
-    } else {
+    if (subscription) {
       const onTrial = subscription.status === "trialing";
+      const periodEnd = subscription.current_billing_period?.ends_at ?? null;
+      const trialEnd = onTrial ? periodEnd : null;
+      const priceId = subscription.items?.[0]?.price?.id ?? null;
 
-      // Safely convert Stripe unix timestamps (seconds) to ISO strings
-      let subscriptionEnd: string | null = null;
-      if (typeof subscription.current_period_end === "number" && subscription.current_period_end > 0) {
-        subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      }
-
-      let trialEnd: string | null = null;
-      if (typeof subscription.trial_end === "number" && subscription.trial_end > 0) {
-        trialEnd = new Date(subscription.trial_end * 1000).toISOString();
-      }
-
-      const priceId = subscription.items.data[0]?.price?.id || null;
-
-      // Real discount currently attached to the subscription (if any). The UI
-      // must never claim a discount that Stripe is not actually applying.
       let discountPercent: number | null = null;
-      const rawDiscounts: any[] = (subscription as any).discounts
-        ?? ((subscription as any).discount ? [(subscription as any).discount] : []);
-      for (const d of rawDiscounts) {
-        const pct = typeof d === "object" ? d?.coupon?.percent_off : null;
-        if (typeof pct === "number" && pct > 0) {
-          discountPercent = pct;
-          break;
-        }
-      }
-
-      logStep("Subscription found", {
-        status: subscription.status,
-        onTrial,
-        subscriptionEnd,
-        trialEnd,
-        priceId,
-        rawPeriodEnd: subscription.current_period_end,
-        rawTrialEnd: subscription.trial_end,
-      });
+      const rawAmount = subscription.discount?.id
+        ? await paddleFetch<{ data: { type: string; amount: string } }>(`/discounts/${subscription.discount.id}`)
+            .then((d) => (d.data.type === "percentage" ? Number(d.data.amount) : null))
+            .catch(() => null)
+        : null;
+      if (typeof rawAmount === "number" && rawAmount > 0) discountPercent = rawAmount;
 
       result = {
         subscribed: true,
         on_trial: onTrial,
-        subscription_end: subscriptionEnd,
+        subscription_end: periodEnd,
         trial_end: trialEnd,
         price_id: priceId,
-        cancel_at_period_end: subscription.cancel_at_period_end,
+        cancel_at_period_end: subscription.scheduled_change?.action === "cancel",
         discount_percent: discountPercent,
+      };
+      subscription = {
+        id: subscription.id,
+        customer_id: subscription.customer_id,
+        current_period_start: subscription.current_billing_period?.starts_at ?? null,
       };
     }
 
-    // Update cache
+    logStep("Paddle checked", { subscribed: result.subscribed, priceId: result.price_id });
+
     await supabaseAdmin.from("subscription_cache").upsert({
       user_id: userId,
       ...result,
       checked_at: new Date().toISOString(),
     }, { onConflict: "user_id" });
-    await syncPlanRecords(supabaseAdmin, userId, subscription ?? null, result);
+    await syncPlanRecords(supabaseAdmin, userId, subscription, result);
 
     return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
