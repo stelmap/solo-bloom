@@ -13,7 +13,7 @@ import BrandName from "@/components/BrandName";
  * and a clear success state is shown once the payment completes.
  */
 export default function CheckoutPage() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const paddleRef = useRef<Paddle | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "failed" | "done">("loading");
@@ -50,8 +50,13 @@ export default function CheckoutPage() {
       setStatus("failed");
       return;
     }
-    paddleRef.current.Checkout.open({ transactionId: txn });
-  }, []);
+    // Paddle has no Ukrainian locale; fall back to English for it.
+    const paddleLocale = ["en", "pl", "fr", "ru"].includes(lang) ? lang : "en";
+    paddleRef.current.Checkout.open({
+      transactionId: txn,
+      settings: { locale: paddleLocale, displayMode: "overlay" },
+    });
+  }, [lang]);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-muted/30 p-6">
