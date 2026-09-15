@@ -686,13 +686,12 @@ export default function PlansPage() {
                         )}
                       </div>
 
-                      <p className="text-sm mb-1 text-muted-foreground">{billedLabel}</p>
                       <p className="text-xs text-muted-foreground mb-5 min-h-[1rem]">
                         {campaignEligible && isCampaignPlan(plan.code)
-                          ? "\u00A0"
+                          ? billedLabel
                           : equivPerMonth !== null && price
-                            ? `≈ ${formatPrice(Number(equivPerMonth.toFixed(2)), price.currency)} / ${periodSuffix["monthly"]}`
-                            : "\u00A0"}
+                            ? `${billedLabel} · ≈ ${formatPrice(Number(equivPerMonth.toFixed(2)), price.currency)} / ${periodSuffix["monthly"]}`
+                            : billedLabel}
                       </p>
 
                       {pill && (
