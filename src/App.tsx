@@ -70,6 +70,7 @@ const TermsPage = lazyWithReload(() => import("./pages/TermsPage"));
 const CookiePolicyPage = lazyWithReload(() => import("./pages/CookiePolicyPage"));
 const RefundPolicyPage = lazyWithReload(() => import("./pages/RefundPolicyPage"));
 const CareersPage = lazyWithReload(() => import("./pages/CareersPage"));
+const StartPracticeGuidePage = lazyWithReload(() => import("./pages/StartPracticeGuidePage"));
 const AdminBookingRequestsPage = lazyWithReload(() => import("./pages/AdminBookingRequestsPage"));
 const ConfirmSessionPage = lazyWithReload(() => import("./pages/ConfirmSessionPage"));
 const PublicBookingPage = lazyWithReload(() => import("./pages/PublicBookingPage"));
@@ -139,6 +140,7 @@ const App = () => {
                 <Route path="/cookie-policy" element={<CookiePolicyPage />} />
                 <Route path="/refund-policy" element={<RefundPolicyPage />} />
                 <Route path="/careers" element={<CareersPage />} />
+                <Route path="/guides/start-private-practice" element={<StartPracticeGuidePage />} />
                 <Route path="/confirm-session" element={<ConfirmSessionPage />} />
                 <Route path="/book/:token" element={<PublicBookingPage />} />
                 <Route path="/agreement/:token" element={<PublicAgreementPage />} />
