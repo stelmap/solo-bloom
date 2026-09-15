@@ -714,6 +714,10 @@ export default function PlansPage() {
               </div>
             )}
 
+            {!loading && orderedPlans.length > 0 && (
+              <p className="mt-6 text-center text-xs text-muted-foreground">{tr(COPY.docsNote)}</p>
+            )}
+
             {/* Support Ukrainian Sole Practitioners — compact pill + promo code */}
             <div className="mt-8 flex flex-col items-center gap-2">
               <button
