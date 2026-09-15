@@ -49,8 +49,6 @@ import {
 // ── Configurable external links (replace as needed) ───────────────────
 const YOUTUBE_URL = "https://www.youtube.com/@OneBizz_SoloBizz";
 const CONTACT_EMAIL = "info@solo-bizz.com";
-const LEGAL_ENTITY =
-  "ФОП Стельмах Ольга Володимирівна · РНОКПП 3184604284 · вул. Лікарська, 21, Брюховичі, Львів, 79491, Україна";
 const CONTACT_OR_CALENDAR_URL = `mailto:${CONTACT_EMAIL}`;
 const BOOKING_URL = "#booking"; // [BOOKING_OR_CONTACT_FORM_URL]
 const TELEGRAM_URL = "https://t.me/solobizzcontact";
@@ -1510,8 +1508,6 @@ function LandingFooter({ onContact }: { onContact: () => void }) {
         <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-secondary-foreground/15 pt-6 sm:flex-row">
           <p className="text-xs text-secondary-foreground/70">
             © {new Date().getFullYear()} <BrandName className="font-semibold" />. {T.rights}
-            <br />
-            <span className="text-secondary-foreground/60">{LEGAL_ENTITY}</span>
           </p>
           <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             <Link to="/terms" className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.terms}</Link>

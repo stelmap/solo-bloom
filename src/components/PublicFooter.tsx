@@ -60,13 +60,6 @@ export function PublicFooter() {
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
         <p className="text-sm text-muted-foreground">
           © {new Date().getFullYear()} <BrandName />. {l.rights}
-          <br />
-          <span className="text-xs">
-            ФОП Стельмах Ольга Володимирівна · РНОКПП 3184604284 · вул. Лікарська, 21, Брюховичі, Львів, 79491, Україна ·{" "}
-            <a href="mailto:info@solo-bizz.com" className="underline-offset-4 hover:underline">
-              info@solo-bizz.com
-            </a>
-          </span>
         </p>
 
         <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2" aria-label={l.nav}>
