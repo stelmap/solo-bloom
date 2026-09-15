@@ -1,56 +1,42 @@
-# Billing Flow
+# Billing flow (Paddle)
 
-## Current Status: Not Implemented
+Solo .Bizz uses Paddle Billing as merchant of record. Stripe has been removed.
 
-Billing/subscription functionality has not been implemented yet. This document describes the **planned architecture**.
+## Environment
 
-## Planned Flow
+- `PADDLE_API_KEY` — server-side API key (sandbox by default).
+- `PADDLE_CLIENT_TOKEN` — publishable client-side token used by Paddle.js.
+- `PADDLE_WEBHOOK_SECRET` — signature secret for the notification destination.
+- `PADDLE_ENVIRONMENT` — `sandbox` (default) or `production`.
+- `PADDLE_SETUP_TOKEN` — one-off token authorising the `paddle-setup` function.
 
-### Subscription Model
-- **Trial:** 7-day free trial (no card required)
-- **Paid:** €20/month recurring subscription
-- **Payment provider:** Stripe (planned)
+## Catalogue
 
-### Subscription States
+`paddle-setup` (admin/service-role or `x-setup-token`) creates the Paddle
+products and prices for every active plan in `plans` / `plan_prices` and stores
+`plans.paddle_product_id` and `plan_prices.paddle_price_id`. It is idempotent:
+rows that already carry a `paddle_price_id` are skipped. It also creates the
+`SUPPORTUA50` 50% recurring discount used by the Support Ukraine campaign.
 
-```
-[new user] → trial_active → active (paid)
-                          → expired (trial ended, no payment)
-              active      → payment_failed → active (retry success)
-                          → cancelled (user cancelled)
-              cancelled   → expired (end of billing period)
-```
+## Checkout
 
-| State | Access |
-|-------|--------|
-| `trial_active` | Full access |
-| `active` | Full access |
-| `payment_failed` | Limited/warning |
-| `cancelled` | Access until period end |
-| `expired` | No access (redirect to billing) |
+1. The app calls `create-checkout` with `{ planCode, billingPeriod, promoCode }`.
+2. The function resolves `paddle_price_id`, finds/creates the Paddle customer,
+   applies the Support Ukraine discount when the profile is eligible (validated
+   server-side), and creates a Paddle transaction with
+   `custom_data = { user_id, plan_code, billing_period }`.
+3. It returns the hosted checkout URL (`/checkout?_ptxn=txn_…`).
+4. `src/pages/CheckoutPage.tsx` loads Paddle.js with the client token from
+   `paddle-config` and opens the overlay for that transaction.
+5. Paddle redirects to `/purchase-success`, which forces a subscription refresh.
 
-### Implementation Plan
+## Subscription state
 
-1. **Stripe Integration**
-   - Create Stripe customer on signup
-   - Stripe Checkout for subscription
-   - Stripe Customer Portal for management
-   - Webhook endpoint for billing events
-
-2. **Database**
-   - `subscriptions` table with user_id, stripe_customer_id, status, current_period_end
-   - RLS policies to check subscription status
-
-3. **Edge Function**
-   - `stripe-webhook` — process Stripe events
-   - Events: `checkout.session.completed`, `invoice.paid`, `invoice.payment_failed`, `customer.subscription.deleted`
-
-4. **Frontend**
-   - Billing page with current status
-   - Upgrade/manage subscription buttons
-   - Access gating based on subscription status
-
-### Prerequisites
-- Stripe account with API keys
-- Stripe webhook secret configured
-- Stripe product/price created for €20/month plan
+- `check-subscription` reads the Paddle customer's active/trialing subscription,
+  caches the result in `subscription_cache` (5 min TTL) and syncs
+  `subscriptions` + `entitlements` (`source_type = 'paddle'`).
+- `paddle-webhook` verifies the `Paddle-Signature` HMAC, handles
+  `subscription.*` and `transaction.completed`, and invalidates the cache for
+  the `custom_data.user_id`.
+- `customer-portal` creates a Paddle customer portal session for billing
+  management (payment method, cancellation, invoices).
