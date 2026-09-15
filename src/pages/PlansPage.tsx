@@ -215,8 +215,8 @@ export default function PlansPage() {
   const periodLabels: Record<BillingPeriod, string> = { monthly: t("plans.monthly"), quarterly: t("plans.quarterly"), yearly: t("plans.yearly") };
   const periodSuffix: Record<BillingPeriod, string> = { monthly: t("plans.month" as any), quarterly: t("plans.threeMonths" as any), yearly: t("plans.year" as any) };
   const planFeatures: Record<string, string[]> = {
-    solo: [tr(COPY.solo.f1), tr(COPY.solo.f2), tr(COPY.solo.f3), tr(COPY.solo.f4), tr(COPY.mfaSecurity), tr(COPY.solo.f5)],
-    pro: [tr(COPY.pro.f1), tr(COPY.pro.f2), tr(COPY.pro.f3), tr(COPY.pro.f4), tr(COPY.mfaSecurity)],
+    solo: [tr(COPY.solo.f1), tr(COPY.solo.f3), tr(COPY.solo.f4), tr(COPY.solo.f5)],
+    pro: [tr(COPY.pro.f1), tr(COPY.pro.f3), tr(COPY.pro.f4), tr(COPY.mfaSecurity)],
   };
   const planNames: Record<string, string> = {
     solo: tr(COPY.solo.name),
