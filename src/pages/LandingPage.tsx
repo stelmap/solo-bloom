@@ -1607,18 +1607,6 @@ export default function LandingPage() {
       <Helmet>
         <link rel="canonical" href="https://solo-bizz.com/" />
         <meta property="og:url" content="https://solo-bizz.com/" />
-        <script type="application/ld+json">{JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: [
-            { "@type": "Question", name: "Is it hard to start using Solo .Bizz?", acceptedAnswer: { "@type": "Answer", text: "No. You can sign up and add your first client in under a minute. No setup, no training required." } },
-            { "@type": "Question", name: "Will it work if I work alone?", acceptedAnswer: { "@type": "Answer", text: "Yes. Solo .Bizz is built specifically for solo practitioners — psychologists, therapists, coaches and tutors." } },
-            { "@type": "Question", name: "Can I run group sessions or supervisions?", acceptedAnswer: { "@type": "Answer", text: "Yes. You can manage individual sessions, group sessions and supervisions in one place." } },
-            { "@type": "Question", name: "Can I use it for teaching or tutoring?", acceptedAnswer: { "@type": "Answer", text: "Yes. Tutors and teachers use Solo .Bizz to track lessons, payments and student progress." } },
-            { "@type": "Question", name: "Is there free access?", acceptedAnswer: { "@type": "Answer", text: "Yes. Solo .Bizz has a permanent Free Starter plan for up to 5 active clients — no credit card required." } },
-            { "@type": "Question", name: "Do I need a credit card to start?", acceptedAnswer: { "@type": "Answer", text: "No credit card is needed for the Free Starter plan." } },
-          ],
-        })}</script>
       </Helmet>
       <LandingShell />
     </LandingLangProvider>
@@ -1628,6 +1616,19 @@ export default function LandingPage() {
 /** Inner shell: has access to the landing language context. */
 function LandingShell() {
   const { lang } = useLandingLang();
+  const faqJsonLd = useMemo(
+    () =>
+      JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: FAQ.map((item) => ({
+          "@type": "Question",
+          name: pickCopy(lang, item.q),
+          acceptedAnswer: { "@type": "Answer", text: pickCopy(lang, item.a) },
+        })),
+      }),
+    [lang],
+  );
   const [contactOpen, setContactOpen] = useState(false);
 
   const activateOffer = useCallback(() => {
@@ -1637,6 +1638,9 @@ function LandingShell() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background">
+      <Helmet>
+        <script type="application/ld+json">{faqJsonLd}</script>
+      </Helmet>
       {isCampaignActive() && (
         <PromoTopBar lang={lang} onActivate={activateOffer} onContact={() => setContactOpen(true)} />
       )}
