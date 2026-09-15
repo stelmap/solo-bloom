@@ -177,6 +177,15 @@ serve(async (req) => {
         500,
       );
     }
+    if (message.includes("transaction_checkout_not_enabled")) {
+      return json(
+        {
+          error: "Payments are temporarily unavailable: the payment provider has not finished account verification.",
+          code: "checkout_not_enabled",
+        },
+        503,
+      );
+    }
     return json({ error: "Could not start checkout. Please try again." }, 500);
   }
 });

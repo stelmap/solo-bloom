@@ -1319,6 +1319,7 @@ export default {
   "plans.checkoutUnavailable": "Оплата недоступна",
   "plans.checkoutChooseAgain": "Пожалуйста, выберите тариф ещё раз.",
   "plans.checkoutFailed": "Не удалось открыть оплату",
+  "plans.checkoutNotEnabled": "Оплата временно недоступна: платёжный провайдер ещё завершает проверку аккаунта. Попробуйте позже или напишите на info@solo-bizz.com.",
   "plans.openingCheckout": "Открываем безопасную оплату...",
   "plans.checkoutSlowWarning": "Открытие оплаты занимает дольше обычного...",
   "checkout.title": "Завершите оплату",

@@ -1282,6 +1282,7 @@ export default {
   "plans.checkoutUnavailable": "Paiement indisponible",
   "plans.checkoutChooseAgain": "Veuillez choisir à nouveau un forfait.",
   "plans.checkoutFailed": "Impossible de démarrer le paiement",
+  "plans.checkoutNotEnabled": "Les paiements sont temporairement indisponibles : le prestataire de paiement finalise la vérification du compte. Réessayez plus tard ou écrivez à info@solo-bizz.com.",
   "plans.openingCheckout": "Ouverture du paiement sécurisé...",
   "plans.checkoutSlowWarning": "Le paiement prend plus de temps que prévu...",
   "checkout.title": "Finalisez votre paiement",

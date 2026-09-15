@@ -1265,6 +1265,7 @@ export default {
   "plans.checkoutUnavailable": "Checkout unavailable",
   "plans.checkoutChooseAgain": "Please choose a plan again.",
   "plans.checkoutFailed": "Couldn't start checkout",
+  "plans.checkoutNotEnabled": "Payments are temporarily unavailable: the payment provider is still finishing account verification. Please try again later or email info@solo-bizz.com.",
   "plans.openingCheckout": "Opening secure checkout...",
   "plans.checkoutSlowWarning": "Checkout is taking longer than expected...",
   "checkout.title": "Complete your payment",
