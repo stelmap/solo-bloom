@@ -13,6 +13,7 @@ import { CalendarDays, CheckCircle2, ChevronLeft, Clock, Globe, Loader2, MapPin,
 import { z } from "zod";
 import { toast } from "@/hooks/use-toast";
 import { describeError } from "@/lib/errorMessages";
+import { SeoHead } from "@/components/SeoHead";
 
 type PageInfo = {
   display_name: string;
@@ -483,6 +484,12 @@ export default function PublicBookingPage() {
 
   return (
     <div className="min-h-screen bg-muted/30 py-8 px-4">
+      <SeoHead
+        path="/book"
+        title="Book a session — Solo .Bizz"
+        description="Private booking link to choose a time with your practitioner."
+        noindex
+      />
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex justify-end">
           <Select value={lang} onValueChange={(v) => changeLang(v as Lang)}>
