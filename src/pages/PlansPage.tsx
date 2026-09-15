@@ -6,7 +6,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, Check, CheckCircle2, Loader2, Sparkles, ArrowLeft, Trash2, ShieldCheck, Users } from "lucide-react";
+import { AlertCircle, Check, CheckCircle2, Loader2, Sparkles, ArrowLeft, Trash2, ShieldCheck, Users, Star, Lock, RefreshCw, ChevronRight, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHasDemoData } from "@/hooks/useDemoWorkspace";
@@ -19,6 +19,7 @@ import { useSupportUkraine } from "@/hooks/useSupportUkraine";
 import { SupportUkrainePrice } from "@/components/campaign/SupportUkrainePrice";
 import { SupportUkrainePromoInput } from "@/components/campaign/SupportUkrainePromoInput";
 import { describeError } from "@/lib/errorMessages";
+import { BrandName } from "@/components/BrandName";
 
 type Plan = {
   id: string;
@@ -39,7 +40,7 @@ type PlanPrice = {
 type BillingPeriod = "monthly" | "quarterly" | "yearly";
 
 const PLAN_ORDER = ["solo", "pro"];
-const HIGHLIGHTED_CODE = "pro";
+const HIGHLIGHTED_CODE = "solo";
 
 function formatPrice(amount: number, currency: string) {
   const symbol = currency === "EUR" ? "€" : currency === "USD" ? "$" : currency + " ";
@@ -85,6 +86,7 @@ export default function PlansPage() {
   const [slowCheckout, setSlowCheckout] = useState(false);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [clearing, setClearing] = useState(false);
+  const [promoOpen, setPromoOpen] = useState(false);
 
   useEffect(() => {
     track("pricing_page_viewed", { surface: "in_app_plans" });
@@ -184,6 +186,25 @@ export default function PlansPage() {
       uk: "Solo .Bizz дає кожному терапевту повну систему управління практикою з першої сесії.",
       pl: "Solo .Bizz daje każdemu terapeucie pełen system zarządzania praktyką od pierwszej sesji.",
     },
+    heroTitle: {
+      en: "Every feature on every plan.\nOnly the number of active clients differs.",
+      fr: "Toutes les fonctionnalités sur chaque forfait.\nSeul le nombre de clients actifs change.",
+      uk: "Усі функції в кожному плані.\nРізниться лише кількість активних клієнтів.",
+      pl: "Wszystkie funkcje w każdym planie.\nRóżni się tylko liczba aktywnych klientów.",
+    },
+    heroSubtitle: {
+      en: "Choose the plan that fits your practice. You can always change it later.",
+      fr: "Choisissez le forfait adapté à votre pratique. Vous pouvez en changer à tout moment.",
+      uk: "Обирайте план, що відповідає вашій практиці. Ви завжди можете змінити його пізніше.",
+      pl: "Wybierz plan pasujący do Twojej praktyki. Zawsze możesz go później zmienić.",
+    },
+    bestChoice: { en: "Best choice", fr: "Meilleur choix", uk: "Найкращий вибір", pl: "Najlepszy wybór" },
+    trustPay: { en: "Secure payment via Paddle", fr: "Paiement sécurisé via Paddle", uk: "Безпечна оплата через Paddle", pl: "Bezpieczna płatność przez Paddle" },
+    trustPaySub: { en: "Your data is protected", fr: "Vos données sont protégées", uk: "Ваші дані захищені", pl: "Twoje dane są chronione" },
+    trustCancel: { en: "Cancel anytime", fr: "Annulation à tout moment", uk: "Скасування будь-коли", pl: "Anulowanie w dowolnej chwili" },
+    trustCancelSub: { en: "No extra questions", fr: "Sans questions inutiles", uk: "Без зайвих питань", pl: "Bez zbędnych pytań" },
+    trustPrivacy: { en: "Data privacy", fr: "Confidentialité des données", uk: "Конфіденційність даних", pl: "Prywatność danych" },
+    trustPrivacySub: { en: "GDPR compliant", fr: "Conforme au RGPD", uk: "Відповідно до GDPR", pl: "Zgodnie z GDPR" },
     privacyShort: {
       en: "Your clients' data is protected. We don't see or use client information.",
       fr: "Les données de vos clients sont protégées. Nous ne voyons ni n'utilisons les informations clients.",
@@ -195,8 +216,8 @@ export default function PlansPage() {
   const periodLabels: Record<BillingPeriod, string> = { monthly: t("plans.monthly"), quarterly: t("plans.quarterly"), yearly: t("plans.yearly") };
   const periodSuffix: Record<BillingPeriod, string> = { monthly: t("plans.month" as any), quarterly: t("plans.threeMonths" as any), yearly: t("plans.year" as any) };
   const planFeatures: Record<string, string[]> = {
-    solo: [tr(COPY.solo.f1), tr(COPY.solo.f2), tr(COPY.solo.f3), tr(COPY.solo.f4), tr(COPY.mfaSecurity), tr(COPY.solo.f5)],
-    pro: [tr(COPY.pro.f1), tr(COPY.pro.f2), tr(COPY.pro.f3), tr(COPY.pro.f4), tr(COPY.mfaSecurity)],
+    solo: [tr(COPY.solo.f1), tr(COPY.solo.f3), tr(COPY.solo.f4), tr(COPY.solo.f5)],
+    pro: [tr(COPY.pro.f1), tr(COPY.pro.f3), tr(COPY.pro.f4), tr(COPY.mfaSecurity)],
   };
   const planNames: Record<string, string> = {
     solo: tr(COPY.solo.name),
@@ -207,18 +228,18 @@ export default function PlansPage() {
     pro: tr(COPY.pro.desc),
   };
   const planPills: Record<string, string> = {
-    solo: tr(COPY.solo.pill),
+    solo: tr(COPY.solo.f2),
     pro: tr(COPY.pro.pill),
   };
   const planBadges: Record<string, string> = {
-    solo: tr(COPY.solo.badge),
-    pro: tr(COPY.pro.badge),
+    solo: tr(COPY.bestChoice),
+    pro: "",
   };
   const planCtas: Record<string, string> = {
     solo: tr(COPY.solo.cta),
     pro: tr(COPY.pro.cta),
   };
-  const freeFeatures = [tr(COPY.free.f2), tr(COPY.free.f3), tr(COPY.free.f4), tr(COPY.free.f5), tr(COPY.mfaSecurity)];
+  const freeFeatures = [tr(COPY.free.f2), tr(COPY.free.f3), tr(COPY.free.f4), tr(COPY.mfaSecurity)];
   const freePill = tr(COPY.free.pill);
 
 
@@ -476,15 +497,13 @@ export default function PlansPage() {
         <section className="px-4 sm:px-6 py-10 sm:py-16 bg-orange-50/60 dark:bg-card/40">
           <div className="max-w-6xl mx-auto">
             <header className="text-center mb-10 space-y-4">
-              <p className="text-sm font-semibold uppercase tracking-widest text-primary">{t("plans.title")}</p>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">{t("plans.title")}</h2>
-              <p className="text-lg text-muted-foreground dark:text-foreground/80 max-w-2xl mx-auto">
-                {t("plans.subtitle")}
+              <BrandName className="block text-3xl font-bold text-foreground" />
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground whitespace-pre-line leading-snug">
+                {tr(COPY.heroTitle)}
+              </h1>
+              <p className="text-base text-muted-foreground dark:text-foreground/80 max-w-2xl mx-auto">
+                {tr(COPY.heroSubtitle)}
               </p>
-              <div className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 dark:bg-emerald-500/15 dark:border-emerald-500/30 dark:text-emerald-300">
-                <Check className="h-4 w-4 shrink-0" />
-                <span className="text-sm font-medium">{tr(COPY.allFeaturesBadge)}</span>
-              </div>
             </header>
 
 
@@ -632,14 +651,8 @@ export default function PlansPage() {
                       )}
                     >
                       {badgeText && (
-                        <span
-                          className={cn(
-                            "absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap",
-                            isHighlighted
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-emerald-500 text-white"
-                          )}
-                        >
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-primary text-primary-foreground shadow-sm">
+                          <Star className="h-3.5 w-3.5" />
                           {badgeText}
                         </span>
                       )}
@@ -674,13 +687,12 @@ export default function PlansPage() {
                         )}
                       </div>
 
-                      <p className="text-sm mb-1 text-muted-foreground">{billedLabel}</p>
                       <p className="text-xs text-muted-foreground mb-5 min-h-[1rem]">
                         {campaignEligible && isCampaignPlan(plan.code)
-                          ? "\u00A0"
+                          ? billedLabel
                           : equivPerMonth !== null && price
-                            ? `≈ ${formatPrice(Number(equivPerMonth.toFixed(2)), price.currency)} / ${periodSuffix["monthly"]}`
-                            : "\u00A0"}
+                            ? `${billedLabel} · ≈ ${formatPrice(Number(equivPerMonth.toFixed(2)), price.currency)} / ${periodSuffix["monthly"]}`
+                            : billedLabel}
                       </p>
 
                       {pill && (
@@ -728,35 +740,51 @@ export default function PlansPage() {
               </div>
             )}
 
-            {/* Support Ukrainian Psychotherapists — eligibility / promo code */}
-            <div className="mt-10 max-w-xl mx-auto p-5 rounded-2xl border border-border bg-card">
-              <p className="text-sm font-semibold text-foreground mb-1">
-                {campaignText(lang, "campaignName")}
-              </p>
-              <p className="text-sm text-muted-foreground mb-4">
+            {/* Support Ukrainian Sole Practitioners — compact pill + promo code */}
+            <div className="mt-8 flex flex-col items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPromoOpen((v) => !v)}
+                className="inline-flex items-center gap-2 max-w-full px-4 py-2 rounded-full border border-border bg-card text-sm text-foreground shadow-sm hover:border-primary/40 transition-colors"
+              >
+                <Heart className="h-4 w-4 text-sky-500 shrink-0" />
+                <span className="truncate">🇺🇦 {campaignText(lang, "campaignName")}</span>
+                <ChevronRight className={cn("h-4 w-4 text-muted-foreground shrink-0 transition-transform", promoOpen && "rotate-90")} />
+              </button>
+              <p className="text-xs text-muted-foreground text-center">
                 {campaignText(lang, "bannerDiscount")}
               </p>
-              <SupportUkrainePromoInput
-                lang={lang}
-                eligible={campaignEligible}
-                planCode={orderedPlans[0]?.code ?? "solo"}
-                onApply={applyPromoCode}
-              />
-              {campaignEligible && (
-                <p className="mt-3 text-xs text-muted-foreground">{campaignText(lang, "renewalNotice")}</p>
+              {promoOpen && (
+                <div className="mt-2 w-full max-w-xl p-5 rounded-2xl border border-border bg-card">
+                  <SupportUkrainePromoInput
+                    lang={lang}
+                    eligible={campaignEligible}
+                    planCode={orderedPlans[0]?.code ?? "solo"}
+                    onApply={applyPromoCode}
+                  />
+                  {campaignEligible && (
+                    <p className="mt-3 text-xs text-muted-foreground">{campaignText(lang, "renewalNotice")}</p>
+                  )}
+                </div>
               )}
             </div>
 
-            {/* Landing-aligned footer copy */}
-            <div className="mt-12 text-center max-w-3xl mx-auto space-y-2">
-              <p className="text-base text-muted-foreground">{tr(COPY.footer1)}</p>
-              <p className="text-base font-semibold text-foreground">{tr(COPY.footer2)}</p>
+            {/* Trust row */}
+            <div className="mt-10 pt-8 border-t border-border grid gap-6 sm:grid-cols-3 max-w-4xl mx-auto">
+              {[
+                { icon: Lock, title: tr(COPY.trustPay), sub: tr(COPY.trustPaySub) },
+                { icon: RefreshCw, title: tr(COPY.trustCancel), sub: tr(COPY.trustCancelSub) },
+                { icon: ShieldCheck, title: tr(COPY.trustPrivacy), sub: tr(COPY.trustPrivacySub) },
+              ].map(({ icon: Icon, title, sub }) => (
+                <div key={title} className="flex items-start gap-3 justify-center sm:justify-start">
+                  <Icon className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{title}</p>
+                    <p className="text-xs text-muted-foreground">{sub}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-
-            <p className="mt-8 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-              <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-              {tr(COPY.privacyShort)}
-            </p>
           </div>
         </section>
 
