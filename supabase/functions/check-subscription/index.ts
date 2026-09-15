@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { paddleCorsHeaders as corsHeaders, paddleFetch } from "../_shared/paddle.ts";
+import { syncSubscriptionRecords } from "../_shared/paddleSubscriptionSync.ts";
 
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -28,90 +29,6 @@ const EMPTY_RESULT: Result = {
   cancel_at_period_end: false,
   discount_percent: null,
 };
-
-async function syncPlanRecords(
-  supabaseAdmin: any,
-  userId: string,
-  subscription: { id?: string; current_period_start?: string | null; customer_id?: string } | null,
-  result: Result,
-) {
-  if (!result.subscribed && !result.on_trial) {
-    await Promise.all([
-      supabaseAdmin
-        .from("entitlements")
-        .update({ is_active: false, active_until: new Date().toISOString() })
-        .eq("user_id", userId)
-        .eq("source_type", "paddle")
-        .eq("is_active", true),
-      supabaseAdmin
-        .from("subscriptions")
-        .update({ status: "inactive", current_period_end: null, current_period_start: null })
-        .eq("user_id", userId),
-    ]);
-    return;
-  }
-
-  const priceRes = result.price_id
-    ? await supabaseAdmin
-        .from("plan_prices")
-        .select("id, plan_id, plans(code)")
-        .eq("paddle_price_id", result.price_id)
-        .maybeSingle()
-    : { data: null };
-
-  const planCode = (priceRes.data as any)?.plans?.code as string | undefined;
-  const activeUntil = result.on_trial ? result.trial_end : result.subscription_end;
-
-  const { data: subRow, error: subError } = await supabaseAdmin
-    .from("subscriptions")
-    .upsert({
-      user_id: userId,
-      status: result.on_trial ? "trialing" : "active",
-      paddle_subscription_id: subscription?.id ?? null,
-      paddle_customer_id: subscription?.customer_id ?? null,
-      current_plan_id: (priceRes.data as any)?.plan_id ?? null,
-      current_price_id: (priceRes.data as any)?.id ?? null,
-      current_period_start: subscription?.current_period_start ?? null,
-      current_period_end: activeUntil,
-      legacy_full_access: false,
-      legacy_access_until: null,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: "user_id" })
-    .select("id")
-    .single();
-
-  if (subError) {
-    logStep("Subscription row sync failed", { message: subError.message });
-    return;
-  }
-
-  // Finance, Supervision, and Reports remain baseline features for every
-  // authenticated user; only premium-only features are gated to Pro Practice.
-  const features = planCode === "pro"
-    ? ["premium_access", "financial_access", "operational_access"]
-    : ["financial_access", "operational_access"];
-
-  await supabaseAdmin
-    .from("entitlements")
-    .update({ is_active: false, active_until: new Date().toISOString() })
-    .eq("user_id", userId)
-    .in("source_type", ["paddle", "stripe"])
-    .eq("is_active", true);
-
-  await supabaseAdmin.from("entitlements").insert(
-    features.map((featureCode) => ({
-      user_id: userId,
-      feature_code: featureCode,
-      source_type: "paddle",
-      source_ref: (subRow as any).id,
-      active_from: new Date().toISOString(),
-      active_until: activeUntil,
-      is_active: true,
-      updated_at: new Date().toISOString(),
-    })),
-    { onConflict: "user_id,feature_code,source_type" },
-  );
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -178,7 +95,13 @@ serve(async (req) => {
           discount_percent: cached.discount_percent ?? null,
         };
         logStep("Returning cached result");
-        await syncPlanRecords(supabaseAdmin, userId, null, cachedResult);
+        await syncSubscriptionRecords(supabaseAdmin, {
+          userId,
+          subscribed: cachedResult.subscribed || cachedResult.on_trial,
+          onTrial: cachedResult.on_trial,
+          paddlePriceId: cachedResult.price_id,
+          periodEnd: cachedResult.on_trial ? cachedResult.trial_end : cachedResult.subscription_end,
+        });
         return new Response(JSON.stringify(cachedResult), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
@@ -239,7 +162,16 @@ serve(async (req) => {
       ...result,
       checked_at: new Date().toISOString(),
     }, { onConflict: "user_id" });
-    await syncPlanRecords(supabaseAdmin, userId, subscription, result);
+    await syncSubscriptionRecords(supabaseAdmin, {
+      userId,
+      subscribed: result.subscribed || result.on_trial,
+      onTrial: result.on_trial,
+      subscriptionId: subscription?.id ?? null,
+      customerId: subscription?.customer_id ?? null,
+      paddlePriceId: result.price_id,
+      periodStart: subscription?.current_period_start ?? null,
+      periodEnd: result.on_trial ? result.trial_end : result.subscription_end,
+    });
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

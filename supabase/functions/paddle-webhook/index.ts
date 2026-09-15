@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { syncSubscriptionRecords } from "../_shared/paddleSubscriptionSync.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -92,11 +93,26 @@ serve(async (req) => {
       case "subscription.resumed":
       case "transaction.completed": {
         const data = (event.data ?? {}) as Record<string, any>;
-        const userId: string | null =
-          (data.custom_data?.user_id as string | undefined) ?? null;
+        const isSubscriptionEvent = String(event.event_type).startsWith("subscription.");
+        const subscriptionId: string | null = isSubscriptionEvent
+          ? (data.id as string | undefined) ?? null
+          : (data.subscription_id as string | undefined) ?? null;
+        const customerId: string | null = (data.customer_id as string | undefined) ?? null;
+
+        let userId: string | null = (data.custom_data?.user_id as string | undefined) ?? null;
+
+        // Renewal events carry no custom_data — resolve the user from stored ids.
+        if (!userId && (subscriptionId || customerId)) {
+          const lookup = supabaseAdmin.from("subscriptions").select("user_id");
+          const { data: row } = await (subscriptionId
+            ? lookup.eq("paddle_subscription_id", subscriptionId)
+            : lookup.eq("paddle_customer_id", customerId)
+          ).maybeSingle();
+          userId = (row as any)?.user_id ?? null;
+        }
 
         if (!userId) {
-          log("No user_id in custom_data; skipping", { type: event.event_type });
+          log("Could not resolve user; skipping", { type: event.event_type, subscriptionId, customerId });
           break;
         }
 
@@ -106,7 +122,23 @@ serve(async (req) => {
           .update({ checked_at: new Date(0).toISOString() })
           .eq("user_id", userId);
 
-        log("Cache invalidated", { userId, type: event.event_type });
+        if (isSubscriptionEvent) {
+          const status = String(data.status ?? "");
+          const active = status === "active" || status === "trialing";
+          await syncSubscriptionRecords(supabaseAdmin, {
+            userId,
+            subscribed: active,
+            onTrial: status === "trialing",
+            subscriptionId,
+            customerId,
+            paddlePriceId: data.items?.[0]?.price?.id ?? null,
+            periodStart: data.current_billing_period?.starts_at ?? null,
+            periodEnd: data.current_billing_period?.ends_at ?? null,
+          });
+          log("Subscription persisted", { userId, status, subscriptionId });
+        } else {
+          log("Transaction completed", { userId, subscriptionId });
+        }
         break;
       }
       default:
