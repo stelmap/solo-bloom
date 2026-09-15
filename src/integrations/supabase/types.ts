@@ -3720,6 +3720,28 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      admin_list_subscriptions: {
+        Args: never
+        Returns: {
+          billing_period: string
+          created_at: string
+          currency: string
+          current_period_end: string
+          current_period_start: string
+          email: string
+          full_name: string
+          legacy_access_until: string
+          legacy_full_access: boolean
+          paddle_customer_id: string
+          paddle_subscription_id: string
+          plan_code: string
+          plan_name: string
+          price: number
+          status: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
       admin_set_review_reply: {
         Args: { p_reply: string; p_review_id: string }
         Returns: {

@@ -82,6 +82,7 @@ const CheckoutPage = lazyWithReload(() => import("./pages/CheckoutPage"));
 const AdminEmailPreviewPage = lazyWithReload(() => import("./pages/AdminEmailPreviewPage"));
 const AdminUsersPage = lazyWithReload(() => import("./pages/AdminUsersPage"));
 const AdminReviewsPage = lazyWithReload(() => import("./pages/AdminReviewsPage"));
+const AdminSubscriptionsPage = lazyWithReload(() => import("./pages/AdminSubscriptionsPage"));
 const AdminDomainsPage = lazyWithReload(() => import("./pages/AdminDomainsPage"));
 const AdminAnalyticsPage = lazyWithReload(() => import("./pages/AdminAnalyticsPage"));
 const AdminTestsPage = lazyWithReload(() => import("./pages/AdminTestsPage"));
@@ -183,6 +184,7 @@ const App = () => {
                 <Route path="/admin/booking-requests" element={<ProtectedRoute><AdminBookingRequestsPage /></ProtectedRoute>} />
                 <Route path="/admin/users" element={<ProtectedRoute><AdminUsersPage /></ProtectedRoute>} />
                 <Route path="/admin/reviews" element={<ProtectedRoute><AdminReviewsPage /></ProtectedRoute>} />
+                <Route path="/admin/subscriptions" element={<ProtectedRoute><AdminSubscriptionsPage /></ProtectedRoute>} />
                 <Route path="/admin/domains" element={<ProtectedRoute><AdminDomainsPage /></ProtectedRoute>} />
                 <Route path="/admin/analytics" element={<ProtectedRoute><AdminAnalyticsPage /></ProtectedRoute>} />
                 <Route path="/admin/tests" element={<ProtectedRoute><AdminTestsPage /></ProtectedRoute>} />
