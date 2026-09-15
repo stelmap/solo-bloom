@@ -164,7 +164,7 @@ serve(async (req) => {
           code: SUPPORT_UA_CODE,
           enabled_for_checkout: true,
           recur: true,
-          currency_code: null,
+          
         }),
       });
       discountId = created.data.id as string;
