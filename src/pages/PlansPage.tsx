@@ -19,6 +19,7 @@ import { useSupportUkraine } from "@/hooks/useSupportUkraine";
 import { SupportUkrainePrice } from "@/components/campaign/SupportUkrainePrice";
 import { SupportUkrainePromoInput } from "@/components/campaign/SupportUkrainePromoInput";
 import { describeError } from "@/lib/errorMessages";
+import { BrandName } from "@/components/BrandName";
 
 type Plan = {
   id: string;
