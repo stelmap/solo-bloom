@@ -238,7 +238,7 @@ export default function PlansPage() {
     solo: tr(COPY.solo.cta),
     pro: tr(COPY.pro.cta),
   };
-  const freeFeatures = [tr(COPY.free.f2), tr(COPY.free.f3), tr(COPY.free.f4), tr(COPY.free.f5), tr(COPY.mfaSecurity)];
+  const freeFeatures = [tr(COPY.free.f2), tr(COPY.free.f3), tr(COPY.free.f4), tr(COPY.mfaSecurity)];
   const freePill = tr(COPY.free.pill);
 
 
