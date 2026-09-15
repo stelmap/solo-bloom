@@ -422,6 +422,17 @@ export default function PlansPage() {
         } catch {
           // ignore — fall back to error.message
         }
+        if (serverCode === "checkout_not_enabled") {
+          window.clearTimeout(slowTimer);
+          setSlowCheckout(false);
+          setContinuing(false);
+          toast({
+            title: t("plans.checkoutFailed"),
+            description: t("plans.checkoutNotEnabled"),
+            variant: "destructive",
+          });
+          return;
+        }
         if (serverCode === "already_subscribed") {
           window.clearTimeout(slowTimer);
           toast({ title: t("plans.alreadySubscribed") || "You're already subscribed", description: serverMsg });

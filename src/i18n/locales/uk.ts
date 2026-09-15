@@ -1269,6 +1269,7 @@ export default {
   "plans.checkoutUnavailable": "Оплата недоступна",
   "plans.checkoutChooseAgain": "Оберіть план ще раз.",
   "plans.checkoutFailed": "Не вдалося розпочати оплату",
+  "plans.checkoutNotEnabled": "Оплата тимчасово недоступна: платіжний провайдер ще завершує перевірку акаунта. Спробуйте трохи пізніше або напишіть на info@solo-bizz.com.",
   "plans.openingCheckout": "Перехід до оплати...",
   "plans.checkoutSlowWarning": "Оплата відкривається довше, ніж очікувалось...",
   "checkout.title": "Завершіть оплату",

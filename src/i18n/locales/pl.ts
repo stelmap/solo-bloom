@@ -1282,6 +1282,7 @@ export default {
   "plans.checkoutUnavailable": "Płatność niedostępna",
   "plans.checkoutChooseAgain": "Wybierz plan ponownie.",
   "plans.checkoutFailed": "Nie udało się rozpocząć płatności",
+  "plans.checkoutNotEnabled": "Płatności są chwilowo niedostępne: dostawca płatności kończy weryfikację konta. Spróbuj później lub napisz na info@solo-bizz.com.",
   "plans.openingCheckout": "Otwieranie bezpiecznej płatności...",
   "plans.checkoutSlowWarning": "Otwieranie płatności trwa dłużej niż oczekiwano...",
   "checkout.title": "Dokończ płatność",
