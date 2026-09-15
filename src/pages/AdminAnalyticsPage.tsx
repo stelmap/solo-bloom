@@ -247,6 +247,28 @@ export default function AdminAnalyticsPage() {
     });
   }, [rows]);
 
+  // Visits to the pages we care about most: landing, the public guide and the
+  // Paddle checkout / pricing screens. "Visitors" = unique session/anon/user.
+  const keyPages = useMemo(() => {
+    const PAGES: { label: string; match: (p: string) => boolean }[] = [
+      { label: "Home page (/)", match: (p) => p === "/" },
+      { label: "Guide — start a private practice", match: (p) => p.startsWith("/guides/start-private-practice") },
+      { label: "Pricing (/plans)", match: (p) => p.startsWith("/plans") },
+      { label: "Checkout (/checkout)", match: (p) => p.startsWith("/checkout") },
+    ];
+    return PAGES.map((page) => {
+      const visitors = new Set<string>();
+      let views = 0;
+      for (const r of rows) {
+        if (!r.path || !page.match(r.path)) continue;
+        views += 1;
+        const key = r.session_id || r.anonymous_id || r.user_id;
+        if (key) visitors.add(key);
+      }
+      return { label: page.label, views, visitors: visitors.size };
+    });
+  }, [rows]);
+
   // Web-traffic style metrics computed from raw event rows.
   // A "visit" = a unique session_id (falls back to anonymous_id, then user_id).
   // A "page view" = any event with a path (we don't have $pageview-only data,
