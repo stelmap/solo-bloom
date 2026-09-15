@@ -8,6 +8,15 @@ import {
   SUPPORT_UA_DISCOUNT_CODE,
 } from "../_shared/paddle.ts";
 
+// Customers migrating from the previous payment provider keep their old price.
+const LEGACY_DISCOUNTS: Record<string, { code: string; planCode: string; billingPeriod: string }> = {
+  "hlushkowladyslav@gmail.com": { code: "LEGACYVLAD3", planCode: "solo", billingPeriod: "yearly" },
+  "daria.benedite@gmail.com": { code: "LEGACYDARIA10", planCode: "solo", billingPeriod: "monthly" },
+  "p6218030@gmail.com": { code: "LEGACYP621803010", planCode: "solo", billingPeriod: "monthly" },
+  "os.symvoldrama@gmail.com": { code: "LEGACY1EURPRO", planCode: "pro", billingPeriod: "monthly" },
+  "o.gilevich@gmail.com": { code: "LEGACY1EURSOLO", planCode: "solo", billingPeriod: "monthly" },
+};
+
 const VALID_PLAN_CODES = new Set(["solo", "pro"]);
 const VALID_BILLING_PERIODS = new Set(["monthly", "quarterly", "yearly"]);
 
@@ -107,8 +116,23 @@ serve(async (req) => {
       promoCodeSent === "SUPPORT_UA_PSYCHOTHERAPY_50";
     log("Support Ukraine eligibility", { campaignEligible });
 
+    // Legacy customers migrating from the previous provider keep their old
+    // price through a personal, recurring discount code.
+    const legacy = LEGACY_DISCOUNTS[user.email.toLowerCase()];
+    const legacyMatch = legacy && legacy.planCode === planCode && legacy.billingPeriod === billingPeriod
+      ? legacy
+      : null;
+
     let discountId: string | null = null;
-    if (campaignEligible) {
+    if (legacyMatch) {
+      try {
+        discountId = await findDiscountIdByCode(legacyMatch.code);
+        log("Legacy discount applied", { code: legacyMatch.code });
+      } catch (err) {
+        log("Legacy discount lookup failed", { message: err instanceof Error ? err.message : String(err) });
+      }
+    }
+    if (!discountId && campaignEligible) {
       try {
         discountId = await findDiscountIdByCode(SUPPORT_UA_DISCOUNT_CODE);
       } catch (err) {
