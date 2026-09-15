@@ -198,7 +198,8 @@ export default function PlansPage() {
       uk: "Обирайте план, що відповідає вашій практиці. Ви завжди можете змінити його пізніше.",
       pl: "Wybierz plan pasujący do Twojej praktyki. Zawsze możesz go później zmienić.",
     },
-    bestChoice: { en: "Best choice", fr: "Meilleur choix", uk: "Найкращий вибір", pl: "Najlepszy wybór" },
+    bestChoice: { en: "Best choice", fr: "Meilleur choix", uk: "Найкращий вибір", pl: "Najlepszy wybor" },
+    selectedLabel: { en: "Selected", fr: "Sélectionné", uk: "Обрано", pl: "Wybrany" },
     trustPay: { en: "Secure payment via Paddle", fr: "Paiement sécurisé via Paddle", uk: "Безпечна оплата через Paddle", pl: "Bezpieczna płatność przez Paddle" },
     trustPaySub: { en: "Your data is protected", fr: "Vos données sont protégées", uk: "Ваші дані захищені", pl: "Twoje dane są chronione" },
     trustCancel: { en: "Cancel anytime", fr: "Annulation à tout moment", uk: "Скасування будь-коли", pl: "Anulowanie w dowolnej chwili" },
@@ -483,8 +484,8 @@ export default function PlansPage() {
 
   return (
     <AppLayout>
-      <div className="animate-fade-in">
-        <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
+      <div className="animate-fade-in bg-muted/30 min-h-screen">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
           <button
             onClick={() => navigate("/settings")}
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -494,17 +495,21 @@ export default function PlansPage() {
           </button>
         </div>
 
-        <section className="px-4 sm:px-6 py-10 sm:py-16 bg-orange-50/60 dark:bg-card/40">
+        <section className="px-4 sm:px-6 pt-4 pb-8 sm:pb-10">
           <div className="max-w-6xl mx-auto">
-            <header className="text-center mb-10 space-y-4">
-              <BrandName className="block text-3xl font-bold text-foreground" />
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground whitespace-pre-line leading-snug">
-                {tr(COPY.heroTitle)}
+            <header className="text-center mb-6 space-y-1.5">
+              <BrandName className="block text-xl font-bold text-foreground" />
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
+                {tr(COPY.heroTitle).split("\n")[0]}
               </h1>
-              <p className="text-base text-muted-foreground dark:text-foreground/80 max-w-2xl mx-auto">
+              <p className="text-sm text-muted-foreground">
+                {tr(COPY.heroTitle).split("\n")[1]}
+              </p>
+              <p className="text-sm text-muted-foreground max-w-xl mx-auto">
                 {tr(COPY.heroSubtitle)}
               </p>
             </header>
+
 
 
             {subscriptionError && (
@@ -568,39 +573,34 @@ export default function PlansPage() {
                 <p className="text-muted-foreground">{t("plans.loadingNone")}</p>
               </div>
             ) : (
-              <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-stretch pt-4">
+              <div className="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto items-stretch pt-4">
                 {/* Free Starter card */}
-                <div className="relative p-8 rounded-2xl bg-card border border-border flex flex-col">
-                  <h3 className="text-2xl font-semibold text-foreground">{tr(COPY.free.name)}</h3>
-                  <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed min-h-[3rem]">
-                    {tr(COPY.free.desc)}
-                  </p>
+                <div className="relative p-6 rounded-2xl bg-card border border-border flex flex-col">
+                  <h3 className="text-lg font-semibold text-foreground">{tr(COPY.free.name)}</h3>
 
-                  <div className="flex items-baseline gap-1 mb-2">
-                    <span className="text-5xl font-bold text-foreground">€0</span>
-                    <span className="text-muted-foreground text-base">/ {periodSuffix["monthly"]}</span>
+                  <div className="mt-3 flex items-baseline gap-1">
+                    <span className="text-4xl font-bold text-foreground">€0</span>
+                    <span className="text-muted-foreground text-sm">/ {periodSuffix["monthly"]}</span>
                   </div>
-
-                  <p className="text-sm mb-1 font-semibold text-primary">{tr(COPY.free.foreverBadge)}</p>
-                  <p className="text-xs text-muted-foreground mb-5 min-h-[1rem]">
-                    {tr(COPY.free.noCard)}
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {tr(COPY.free.foreverBadge)} · {tr(COPY.free.noCard)}
                   </p>
 
-                  <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-muted/60 border border-border mb-6">
+                  <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/60 border border-border">
                     <Users className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span className="text-sm font-medium text-foreground">{freePill}</span>
                   </div>
 
-                  <ul className="space-y-3 mb-8 flex-1">
+                  <ul className="mt-4 space-y-2 flex-1">
                     {freeFeatures.map((f) => (
-                      <li key={f} className="flex items-start gap-3 text-foreground">
+                      <li key={f} className="flex items-start gap-2.5 text-foreground">
                         <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
-                        <span className="text-sm">{f}</span>
+                        <span className="text-sm leading-snug">{f}</span>
                       </li>
                     ))}
                   </ul>
 
-                  <p className="mt-auto text-xs text-muted-foreground text-center">
+                  <p className="mt-6 text-xs text-muted-foreground text-center">
                     {tr(COPY.free.availableByDefault)}
                   </p>
                 </div>
@@ -630,7 +630,7 @@ export default function PlansPage() {
                       ? "text-emerald-500"
                       : "text-muted-foreground";
                   const displayName = planNames[plan.code] || plan.name;
-                  const displayDesc = planDescriptions[plan.code] || plan.description;
+                  // description intentionally omitted for a compact card layout
                   const badgeText = planBadges[plan.code];
                   const ctaText = planCtas[plan.code] || t("plans.continueSelect");
 
@@ -640,36 +640,35 @@ export default function PlansPage() {
                       type="button"
                       onClick={() => startCheckout(plan.id)}
                       disabled={continuing}
+                      aria-pressed={isSelected}
                       className={cn(
-                        "relative p-8 rounded-2xl bg-card flex flex-col text-left transition-all disabled:cursor-not-allowed",
-                        isHighlighted
-                          ? "border-2 border-primary shadow-xl"
-                          : "border border-border",
+                        "relative p-6 rounded-2xl bg-card flex flex-col text-left transition-all disabled:cursor-not-allowed",
                         isSelected
-                          ? "ring-2 ring-primary/40 -translate-y-0.5"
-                          : "hover:-translate-y-0.5 hover:shadow-md"
+                          ? "border-2 border-primary ring-4 ring-primary/15 shadow-lg -translate-y-0.5"
+                          : isHighlighted
+                            ? "border-2 border-primary/50 shadow-md hover:-translate-y-0.5 hover:shadow-lg"
+                            : "border border-border hover:-translate-y-0.5 hover:shadow-md"
                       )}
                     >
-                      {badgeText && (
-                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-primary text-primary-foreground shadow-sm">
-                          <Star className="h-3.5 w-3.5" />
-                          {badgeText}
+                      {(isSelected || badgeText) && (
+                        <span
+                          className={cn(
+                            "absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap shadow-sm",
+                            isSelected
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-primary/10 text-primary border border-primary/30",
+                          )}
+                        >
+                          {isSelected ? <Check className="h-3.5 w-3.5" /> : <Star className="h-3.5 w-3.5" />}
+                          {isSelected ? tr(COPY.selectedLabel) : badgeText}
                         </span>
                       )}
 
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="text-2xl font-semibold text-foreground">{displayName}</h3>
-                        {isSelected && (
-                          <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0">
-                            <Check className="h-3.5 w-3.5" />
-                          </div>
-                        )}
+                      <div className="flex items-start justify-between gap-2 mt-1">
+                        <h3 className="text-lg font-semibold text-foreground">{displayName}</h3>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed min-h-[3rem]">
-                        {displayDesc}
-                      </p>
 
-                      <div className="mb-2">
+                      <div className="mt-3">
                         {price ? (
                           <SupportUkrainePrice
                             lang={lang}
@@ -681,13 +680,13 @@ export default function PlansPage() {
                           />
                         ) : (
                           <div className="flex items-baseline gap-1">
-                            <span className="text-5xl font-bold text-foreground">—</span>
+                            <span className="text-4xl font-bold text-foreground">—</span>
                             <span className="text-muted-foreground text-base">/ {periodSuffix[period]}</span>
                           </div>
                         )}
                       </div>
 
-                      <p className="text-xs text-muted-foreground mb-5 min-h-[1rem]">
+                      <p className="mt-1 text-xs text-muted-foreground">
                         {campaignEligible && isCampaignPlan(plan.code)
                           ? billedLabel
                           : equivPerMonth !== null && price
@@ -696,24 +695,24 @@ export default function PlansPage() {
                       </p>
 
                       {pill && (
-                        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-muted/60 border border-border mb-6">
+                        <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/60 border border-border">
                           <Users className="h-4 w-4 text-muted-foreground shrink-0" />
                           <span className="text-sm font-medium text-foreground">{pill}</span>
                         </div>
                       )}
 
-                      <ul className="space-y-3 mb-8 flex-1">
+                      <ul className="mt-4 space-y-2 flex-1">
                         {features.map((f) => (
-                          <li key={f} className="flex items-start gap-3 text-foreground">
+                          <li key={f} className="flex items-start gap-2.5 text-foreground">
                             <CheckCircle2 className={cn("h-4 w-4 shrink-0 mt-0.5", bulletColor)} />
-                            <span className="text-sm">{f}</span>
+                            <span className="text-sm leading-snug">{f}</span>
                           </li>
                         ))}
                       </ul>
 
                       <div
                         className={cn(
-                          "mt-auto w-full h-12 px-8 inline-flex items-center justify-center rounded-xl text-base font-semibold gap-2 transition-all",
+                          "mt-6 w-full h-11 px-6 inline-flex items-center justify-center rounded-xl text-sm font-semibold gap-2 transition-all",
                           isSelected
                             ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
                             : "border border-border text-foreground bg-background hover:border-primary/40"
@@ -789,14 +788,9 @@ export default function PlansPage() {
         </section>
 
 
-        <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-
-
-          {/* Footer */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
-            <p className="text-xs text-muted-foreground">
-              {t("plans.footerSecure")}
-            </p>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+          {/* Footer — trust messages live in the trust row above, not repeated here */}
+          <div className="flex justify-end">
             {canClearDemo && (
               <Button
                 variant="outline"
