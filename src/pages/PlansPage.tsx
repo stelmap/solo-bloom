@@ -483,8 +483,8 @@ export default function PlansPage() {
 
   return (
     <AppLayout>
-      <div className="animate-fade-in">
-        <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
+      <div className="animate-fade-in bg-muted/30 min-h-screen">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
           <button
             onClick={() => navigate("/settings")}
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -494,17 +494,21 @@ export default function PlansPage() {
           </button>
         </div>
 
-        <section className="px-4 sm:px-6 py-10 sm:py-16 bg-orange-50/60 dark:bg-card/40">
+        <section className="px-4 sm:px-6 pt-4 pb-8 sm:pb-10">
           <div className="max-w-6xl mx-auto">
-            <header className="text-center mb-10 space-y-4">
-              <BrandName className="block text-3xl font-bold text-foreground" />
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground whitespace-pre-line leading-snug">
-                {tr(COPY.heroTitle)}
+            <header className="text-center mb-6 space-y-1.5">
+              <BrandName className="block text-xl font-bold text-foreground" />
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
+                {tr(COPY.heroTitle).split("\n")[0]}
               </h1>
-              <p className="text-base text-muted-foreground dark:text-foreground/80 max-w-2xl mx-auto">
+              <p className="text-sm text-muted-foreground">
+                {tr(COPY.heroTitle).split("\n")[1]}
+              </p>
+              <p className="text-sm text-muted-foreground max-w-xl mx-auto">
                 {tr(COPY.heroSubtitle)}
               </p>
             </header>
+
 
 
             {subscriptionError && (
