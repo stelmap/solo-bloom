@@ -195,7 +195,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
             {pending.length === 0 ? "No pending requests" : `${pending.length} pending`}
           </p>
         </div>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => refetch()} disabled={isFetching}>
+        <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Refresh" onClick={() => refetch()} disabled={isFetching}>
           <RefreshCw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} />
         </Button>
         <Button

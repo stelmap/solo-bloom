@@ -611,6 +611,7 @@ export function PublicBookingSection() {
                   type="button"
                   variant="outline"
                   size="icon"
+                  aria-label={L.linkCopied}
                   onClick={() => {
                     navigator.clipboard.writeText(url);
                     toast({ title: L.linkCopied });
@@ -619,7 +620,7 @@ export function PublicBookingSection() {
                   <Copy className="h-4 w-4" />
                 </Button>
                 <Button type="button" variant="outline" size="icon" asChild>
-                  <a href={url} target="_blank" rel="noopener noreferrer">
+                  <a href={url} target="_blank" rel="noopener noreferrer" aria-label={L.yourLink}>
                     <ExternalLink className="h-4 w-4" />
                   </a>
                 </Button>
@@ -627,6 +628,7 @@ export function PublicBookingSection() {
                   type="button"
                   variant="outline"
                   size="icon"
+                  aria-label={L.regenerateConfirm}
                   onClick={() => {
                     if (confirm(L.regenerateConfirm)) regenerate.mutate();
                   }}

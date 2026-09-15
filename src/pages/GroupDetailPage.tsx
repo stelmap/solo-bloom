@@ -178,7 +178,7 @@ export default function GroupDetailPage() {
       <div className="space-y-6 max-w-4xl">
         {/* Header */}
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/groups")}>
+          <Button variant="ghost" size="icon" aria-label={t("common.back")} onClick={() => navigate("/groups")}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1 min-w-0">
@@ -230,7 +230,7 @@ export default function GroupDetailPage() {
                       </p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                  <Button variant="ghost" size="icon" aria-label={t("common.delete")} className="h-8 w-8 text-muted-foreground hover:text-destructive"
                     onClick={() => setRemoveMemberId(m.id)}>
                     <UserMinus className="h-4 w-4" />
                   </Button>

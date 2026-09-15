@@ -408,7 +408,7 @@ export default function AgreementTemplateEditorPage() {
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">{t("ae.section", { n: String(idx + 1) })}</span>
                         {!readOnly && (
-                          <Button variant="ghost" size="icon" onClick={() => removeSection(s.id)}>
+                          <Button variant="ghost" size="icon" aria-label={t("common.delete")} onClick={() => removeSection(s.id)}>
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         )}

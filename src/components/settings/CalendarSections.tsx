@@ -372,7 +372,7 @@ export function DaysOffSection() {
                 <Badge className={dayOffTypeColor(dayOff.type)}>{dayOffTypeLabel(dayOff.type)}</Badge>
                 {dayOff.label && <span className="text-xs text-muted-foreground">{dayOff.label}</span>}
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDeleteDayOff(dayOff.id)}><Trash2 className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" aria-label={t("common.delete")} className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDeleteDayOff(dayOff.id)}><Trash2 className="h-4 w-4" /></Button>
             </div>
           ))}
         </div>
