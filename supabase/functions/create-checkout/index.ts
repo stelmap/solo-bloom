@@ -1,26 +1,15 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
-
-const SUPPORT_UA_COUPON = "SUPPORT_UA_PSYCHOTHERAPY_50";
+import {
+  findDiscountIdByCode,
+  getOrCreatePaddleCustomer,
+  paddleCorsHeaders as corsHeaders,
+  paddleFetch,
+  SUPPORT_UA_DISCOUNT_CODE,
+} from "../_shared/paddle.ts";
 
 const VALID_PLAN_CODES = new Set(["solo", "pro"]);
 const VALID_BILLING_PERIODS = new Set(["monthly", "quarterly", "yearly"]);
-
-const LEGACY_PRICE_TO_SELECTION: Record<string, { planCode: string; billingPeriod: string }> = {
-  price_1TPQ3DRxXuU3N5IFMcxZCvva: { planCode: "solo", billingPeriod: "monthly" },
-  price_1TPQ5FRxXuU3N5IF5ufGLkV1: { planCode: "solo", billingPeriod: "quarterly" },
-  price_1TPQ60RxXuU3N5IFBiGOuz8f: { planCode: "solo", billingPeriod: "yearly" },
-  price_1TPQahRxXuU3N5IF3umwA0Bd: { planCode: "pro", billingPeriod: "monthly" },
-  price_1TPQbIRxXuU3N5IFPVrvG60z: { planCode: "pro", billingPeriod: "quarterly" },
-  price_1TPQbmRxXuU3N5IFirrjnqdi: { planCode: "pro", billingPeriod: "yearly" },
-};
 
 const log = (step: string, details?: unknown) => {
   const tail = details !== undefined ? ` - ${JSON.stringify(details)}` : "";
@@ -43,7 +32,7 @@ serve(async (req) => {
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
     );
 
     const authHeader = req.headers.get("Authorization");
@@ -57,164 +46,105 @@ serve(async (req) => {
     if (!user?.email) {
       return json({ error: "You must be signed in to start checkout." }, 401);
     }
-    log("User authenticated", { userId: user.id, email: user.email });
+    log("User authenticated", { userId: user.id });
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) {
-      log("STRIPE_SECRET_KEY missing");
+    if (!Deno.env.get("PADDLE_API_KEY")) {
       return json({ error: "Server is not configured for payments. Please contact support." }, 500);
     }
 
-    let body: { planCode?: string; billingPeriod?: string; priceId?: string; withTrial?: boolean; locale?: string } = {};
+    let body: { planCode?: string; billingPeriod?: string; locale?: string; promoCode?: string | null } = {};
     try {
       body = await req.json();
     } catch {
       return json({ error: "Invalid request body." }, 400);
     }
-    // Trial removed: ignore any `withTrial` flag sent by older clients.
-    const withTrial = false;
-    // Stripe Checkout does not support Ukrainian — fall back to `auto` for `uk`.
-    const STRIPE_SUPPORTED_LOCALES = new Set([
-      "auto","bg","cs","da","de","el","en","en-GB","es","es-419","et","fi","fil","fr","fr-CA",
-      "hr","hu","id","it","ja","ko","lt","lv","ms","mt","nb","nl","pl","pt","pt-BR","ro","ru",
-      "sk","sl","sv","th","tr","vi","zh","zh-HK","zh-TW",
-    ]);
-    const stripeLocale = (body.locale && STRIPE_SUPPORTED_LOCALES.has(body.locale) ? body.locale : "auto") as string;
-    const legacySelection = body.priceId ? LEGACY_PRICE_TO_SELECTION[body.priceId] : undefined;
-    const planCode = body.planCode ?? legacySelection?.planCode;
-    const billingPeriod = body.billingPeriod ?? legacySelection?.billingPeriod;
+
+    const planCode = body.planCode;
+    const billingPeriod = body.billingPeriod;
     if (!planCode || !VALID_PLAN_CODES.has(planCode) || !billingPeriod || !VALID_BILLING_PERIODS.has(billingPeriod)) {
-      log("Unavailable plan selection", { planCode, billingPeriod, legacyPriceIdReceived: Boolean(body.priceId) });
+      log("Unavailable plan selection", { planCode, billingPeriod });
       return json({ error: "This plan is currently unavailable. Please refresh and choose a plan again." }, 400);
     }
 
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
+      { auth: { persistSession: false } },
     );
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-
-    // Run DB price lookup and Stripe customer lookup in parallel to minimise latency.
-    const priceLookupPromise = supabaseAdmin
-      .from("plan_prices")
-      .select("stripe_price_id, plans!inner(code, is_active)")
-      .eq("billing_period", billingPeriod)
-      .eq("is_active", true)
-      .eq("plans.code", planCode)
-      .eq("plans.is_active", true)
-      .maybeSingle();
-
-    const customerLookupPromise = stripe.customers
-      .list({ email: user.email, limit: 1 })
-      .then((res) => ({ data: res.data }))
-      .catch((err) => {
-        const msg = err instanceof Error ? err.message : String(err);
-        log("Stripe customer lookup failed", { message: msg });
-        return { data: [] as Array<{ id: string }> };
-      });
-
-    // "Support Ukrainian Psychotherapists": eligibility is re-validated server-side
-    // from the practice profile; the client-sent promo code is only a fallback.
-    const profileLookupPromise = supabaseAdmin
-      .from("profiles")
-      .select("language, business_country")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    const [priceResult, customers, profileResult] = await Promise.all([
-      priceLookupPromise,
-      customerLookupPromise,
-      profileLookupPromise,
+    const [priceResult, profileResult] = await Promise.all([
+      supabaseAdmin
+        .from("plan_prices")
+        .select("paddle_price_id, plans!inner(code, is_active)")
+        .eq("billing_period", billingPeriod)
+        .eq("is_active", true)
+        .eq("plans.code", planCode)
+        .eq("plans.is_active", true)
+        .maybeSingle(),
+      supabaseAdmin
+        .from("profiles")
+        .select("language, business_country")
+        .eq("user_id", user.id)
+        .maybeSingle(),
     ]);
-    const { data: priceRow, error: priceError } = priceResult;
 
-    const priceId = (priceRow as any)?.stripe_price_id as string | undefined;
-    if (priceError || !priceId) {
-      log("Active Stripe price lookup failed", { planCode, billingPeriod, message: priceError?.message });
+    const priceId = (priceResult.data as any)?.paddle_price_id as string | undefined;
+    if (priceResult.error || !priceId) {
+      log("Paddle price lookup failed", { planCode, billingPeriod, message: priceResult.error?.message });
       return json({ error: "This plan is currently unavailable. Please refresh and choose a plan again." }, 400);
     }
-    log("Active price resolved", { planCode, billingPeriod, priceId, withTrial });
 
-    const profile = (profileResult as any)?.data as { language?: string; business_country?: string } | null;
+    // "Support Ukrainian Psychotherapists": eligibility is re-validated
+    // server-side from the practice profile; the client hint is a fallback.
+    const profile = (profileResult.data as any) as { language?: string; business_country?: string } | null;
     const country = String(profile?.business_country ?? "").trim().toLowerCase();
     const profileLang = String(profile?.language ?? "").trim().toLowerCase();
-    const promoCodeSent = String((body as any).promoCode ?? "").trim().toUpperCase();
-    const campaignPlan = planCode === "solo" || planCode === "pro";
+    const promoCodeSent = String(body.promoCode ?? "").trim().toUpperCase();
     const campaignEligible =
-      campaignPlan &&
-      (["ua", "ukr", "ukraine", "україна", "украина"].includes(country) ||
-        profileLang === "uk" ||
-        promoCodeSent === SUPPORT_UA_COUPON);
-    log("Support Ukraine eligibility", { campaignEligible, country, profileLang });
+      ["ua", "ukr", "ukraine", "україна", "украина"].includes(country) ||
+      profileLang === "uk" ||
+      promoCodeSent === SUPPORT_UA_DISCOUNT_CODE ||
+      promoCodeSent === "SUPPORT_UA_PSYCHOTHERAPY_50";
+    log("Support Ukraine eligibility", { campaignEligible });
 
-    // NOTE: skipping `stripe.prices.retrieve` validation and the active-subscription pre-check
-    // on purpose — each adds ~200–500ms and is not required to create a Checkout Session.
-    // Duplicate subscriptions are surfaced by the webhook + customer portal flow.
-
-    let customerId: string | undefined = customers.data[0]?.id;
-    if (customerId) {
-      log("Found existing customer", { customerId });
-    } else {
-      // Create the customer up-front so we can attach Solo .Bizz user metadata
-      // (used by webhook to link the Stripe customer to the internal user_id).
+    let discountId: string | null = null;
+    if (campaignEligible) {
       try {
-        const created = await stripe.customers.create({
-          email: user.email,
-          metadata: { user_id: user.id, plan_code: planCode },
-        });
-        customerId = created.id;
-        log("Created new Stripe customer", { customerId });
-      } catch (stripeErr) {
-        const msg = stripeErr instanceof Error ? stripeErr.message : String(stripeErr);
-        log("Stripe customer create failed", { message: msg });
-        // Fall through and let Checkout create one on its own via customer_email.
+        discountId = await findDiscountIdByCode(SUPPORT_UA_DISCOUNT_CODE);
+      } catch (err) {
+        log("Discount lookup failed", { message: err instanceof Error ? err.message : String(err) });
       }
     }
 
-    const origin = req.headers.get("origin") || "https://solo-bizz-app.lovable.app";
+    const customerId = await getOrCreatePaddleCustomer(user.email, user.id);
 
-    const sessionMetadata = {
+    const origin = req.headers.get("origin") || "https://solo-bizz.com";
+    const customData = {
       user_id: user.id,
       plan_code: planCode,
       billing_period: billingPeriod,
-      ...(campaignEligible ? { campaign: SUPPORT_UA_COUPON } : {}),
+      ...(campaignEligible ? { campaign: SUPPORT_UA_DISCOUNT_CODE } : {}),
     };
 
-    const session = await stripe.checkout.sessions.create({
-      ...(customerId ? { customer: customerId } : { customer_email: user.email }),
-      client_reference_id: user.id,
-      line_items: [{ price: priceId, quantity: 1 }],
-      mode: "subscription",
-      locale: stripeLocale as any,
-      payment_method_collection: "always",
-      billing_address_collection: "auto",
-      phone_number_collection: { enabled: true },
-      metadata: sessionMetadata,
-      subscription_data: {
-        metadata: sessionMetadata,
-        ...(withTrial ? { trial_period_days: 7 } : {}),
+    const txn = await paddleFetch<{ data: { id: string; checkout?: { url?: string | null } } }>("/transactions", {
+      method: "POST",
+      body: {
+        items: [{ price_id: priceId, quantity: 1 }],
+        customer_id: customerId,
+        ...(discountId ? { discount_id: discountId } : {}),
+        custom_data: customData,
+        checkout: { url: `${origin}/checkout` },
       },
-      // The campaign discount is applied exactly once: when it is auto-applied
-      // we disable manual promotion codes so a second 50% cannot be stacked.
-      ...(campaignEligible
-        ? { discounts: [{ coupon: SUPPORT_UA_COUPON }] }
-        : { allow_promotion_codes: true }),
-      success_url: `${origin}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/plans?checkout=cancel`,
     });
 
-    if (!session.url) {
-      log("Stripe returned no checkout URL", { sessionId: session.id });
-      return json({ error: "Could not create checkout session. Please try again." }, 502);
-    }
+    const transactionId = txn.data.id;
+    const checkoutUrl = txn.data.checkout?.url ?? `${origin}/checkout?_ptxn=${transactionId}`;
 
-    log("Checkout session created", { sessionId: session.id });
-    return json({ url: session.url, sessionId: session.id }, 200);
+    log("Transaction created", { transactionId });
+    return json({ url: checkoutUrl, transactionId, sessionId: transactionId }, 200);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     log("Unhandled error", { message });
-    return json({ error: message || "Unexpected error. Please try again." }, 500);
+    return json({ error: "Could not start checkout. Please try again." }, 500);
   }
 });

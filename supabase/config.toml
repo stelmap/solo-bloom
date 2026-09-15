@@ -9,9 +9,11 @@ project_id = "rxculneqqaziutulnocs"
     verify_jwt = false
   [functions.send-session-reminders]
     verify_jwt = true
-  [functions.stripe-webhook]
-    verify_jwt = false
   [functions.paddle-webhook]
+    verify_jwt = false
+  [functions.paddle-config]
+    verify_jwt = false
+  [functions.paddle-setup]
     verify_jwt = false
   [functions.admin-preview-auth-email]
     verify_jwt = true

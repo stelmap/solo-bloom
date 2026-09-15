@@ -77,6 +77,7 @@ const SupervisionPage = lazyWithReload(() => import("./pages/SupervisionPage"));
 const DiagnosticsPage = lazyWithReload(() => import("./pages/DiagnosticsPage"));
 const PlansPage = lazyWithReload(() => import("./pages/PlansPage"));
 const PurchaseSuccessPage = lazyWithReload(() => import("./pages/PurchaseSuccessPage"));
+const CheckoutPage = lazyWithReload(() => import("./pages/CheckoutPage"));
 
 const AdminEmailPreviewPage = lazyWithReload(() => import("./pages/AdminEmailPreviewPage"));
 const AdminUsersPage = lazyWithReload(() => import("./pages/AdminUsersPage"));
@@ -139,6 +140,7 @@ const App = () => {
                 <Route path="/book/:token" element={<PublicBookingPage />} />
                 <Route path="/agreement/:token" element={<PublicAgreementPage />} />
                 <Route path="/server-update" element={<ServerUpdatePage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/.lovable/oauth/consent" element={<OAuthConsentPage />} />
 
 

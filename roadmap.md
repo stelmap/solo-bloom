@@ -24,8 +24,9 @@
 - [x] Fluid hero layout (no fixed px), aspect-ratio screenshot, no horizontal scroll
 
 ## Paddle billing migration (replaces Stripe)
-- [ ] Store Paddle credentials (sandbox API key, client token, webhook secret)
-- [ ] Recreate plans/prices in Paddle and map to `plans` table
-- [ ] Replace `create-checkout` / `check-subscription` / `customer-portal` / `stripe-webhook` with Paddle equivalents
-- [ ] Port 7-day trial and Support Ukraine 50% discount
-- [ ] Update frontend billing UI and tests
+- [x] Store Paddle credentials (sandbox API key, client token, webhook secret)
+- [x] Recreate plans/prices in Paddle and map to `plan_prices.paddle_price_id`
+- [x] Replace `create-checkout` / `check-subscription` / `customer-portal`; `stripe-webhook` → `paddle-webhook`
+- [x] Support Ukraine 50% discount ported (`SUPPORTUA50`); no trial (already removed)
+- [x] `/checkout` overlay page, billing settings + e2e test on Paddle
+- [ ] Switch `PADDLE_ENVIRONMENT` to `production` and rerun `paddle-setup` after Paddle verification

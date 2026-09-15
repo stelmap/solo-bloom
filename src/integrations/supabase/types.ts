@@ -2411,6 +2411,7 @@ export type Database = {
           currency: string
           id: string
           is_active: boolean
+          paddle_price_id: string | null
           plan_id: string
           price: number
           stripe_price_id: string | null
@@ -2422,6 +2423,7 @@ export type Database = {
           currency?: string
           id?: string
           is_active?: boolean
+          paddle_price_id?: string | null
           plan_id: string
           price?: number
           stripe_price_id?: string | null
@@ -2433,6 +2435,7 @@ export type Database = {
           currency?: string
           id?: string
           is_active?: boolean
+          paddle_price_id?: string | null
           plan_id?: string
           price?: number
           stripe_price_id?: string | null
@@ -2456,6 +2459,7 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          paddle_product_id: string | null
           updated_at: string
         }
         Insert: {
@@ -2465,6 +2469,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          paddle_product_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -2474,6 +2479,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          paddle_product_id?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -3048,6 +3054,8 @@ export type Database = {
           legacy_full_access: boolean
           migrated_at: string | null
           migration_version: number | null
+          paddle_customer_id: string | null
+          paddle_subscription_id: string | null
           status: string
           stripe_subscription_id: string | null
           updated_at: string
@@ -3064,6 +3072,8 @@ export type Database = {
           legacy_full_access?: boolean
           migrated_at?: string | null
           migration_version?: number | null
+          paddle_customer_id?: string | null
+          paddle_subscription_id?: string | null
           status?: string
           stripe_subscription_id?: string | null
           updated_at?: string
@@ -3080,6 +3090,8 @@ export type Database = {
           legacy_full_access?: boolean
           migrated_at?: string | null
           migration_version?: number | null
+          paddle_customer_id?: string | null
+          paddle_subscription_id?: string | null
           status?: string
           stripe_subscription_id?: string | null
           updated_at?: string
