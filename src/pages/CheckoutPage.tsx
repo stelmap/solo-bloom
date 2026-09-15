@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/i18n/LanguageContext";
 import BrandName from "@/components/BrandName";
+import { SeoHead } from "@/components/SeoHead";
 
 /**
  * Paddle hosted-checkout landing page. Paddle redirects buyers here with a
@@ -60,6 +61,12 @@ export default function CheckoutPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-muted/30 p-6">
+      <SeoHead
+        path="/checkout"
+        title="Checkout — Solo .Bizz"
+        description="Secure checkout for your Solo .Bizz subscription, processed by Paddle."
+        noindex
+      />
       <section className="w-full max-w-md rounded-2xl border bg-card p-8 text-center shadow-sm">
         {status === "done" ? (
           <>
