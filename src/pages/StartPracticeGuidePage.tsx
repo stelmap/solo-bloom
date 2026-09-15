@@ -14,6 +14,9 @@ type Copy = {
   h1: string;
   intro: string;
   steps: Step[];
+  askTitle: string;
+  askIntro: string;
+  asks: { q: string; a: string }[];
   faqTitle: string;
   faq: { q: string; a: string }[];
   ctaTitle: string;
@@ -72,6 +75,35 @@ const UK: Copy = {
         "Активні клієнти, проведені сесії, сплачені та несплачені суми, витрати, точка беззбитковості.",
         "Ці шість чисел показують стан практики краще, ніж відчуття завантаженості.",
       ],
+    },
+  ],
+  askTitle: "Що зазвичай питають клієнти — і як відповідає Solo .Bizz",
+  askIntro:
+    "Перед першою зустріччю люди питають майже те саме. Ось типові запити й те, що допомагає відповісти на них спокійно й однаково щоразу.",
+  asks: [
+    {
+      q: "«Коли у вас є вільне вікно?»",
+      a: "Надсилаєте посилання на бронювання — клієнт бачить лише ваші вільні години й обирає сам. Вихідні дні та зайняті слоти не показуються.",
+    },
+    {
+      q: "«Скільки коштує сесія і як платити?»",
+      a: "Ціна й тривалість закріплені за послугою, тож сума однакова в розкладі, у нагадуванні та в обліку доходу.",
+    },
+    {
+      q: "«Чи можу я перенести або скасувати?»",
+      a: "Правила перенесення ви задаєте один раз — і вони показуються клієнту під час запису, тож не доводиться пояснювати їх у листуванні.",
+    },
+    {
+      q: "«Що ви записуєте про мене і хто це бачить?»",
+      a: "Нотатки сесій зашифровані й доступні лише вам; дані клієнта можна експортувати або видалити на його запит.",
+    },
+    {
+      q: "«Потрібно щось підписувати перед початком?»",
+      a: "Надсилаєте угоду посиланням — клієнт підписує онлайн, а у вас зберігається підписана версія з датою.",
+    },
+    {
+      q: "«Я вже платив за цю сесію?»",
+      a: "У картці клієнта видно сплачені й несплачені сесії, тому відповідь займає кілька секунд, без пошуку у виписці.",
     },
   ],
   faqTitle: "Часті питання",
@@ -151,6 +183,35 @@ const EN: Copy = {
         "Active clients, sessions delivered, paid and unpaid amounts, expenses, break-even point.",
         "These six numbers describe your practice better than how busy it feels.",
       ],
+    },
+  ],
+  askTitle: "What clients usually ask — and how Solo .Bizz answers it",
+  askIntro:
+    "Before a first session people ask nearly the same things. Here are the common questions and what makes them easy to answer the same way every time.",
+  asks: [
+    {
+      q: "\u201CWhen do you have a free slot?\u201D",
+      a: "You send a booking link — the client sees only your open hours and picks one. Days off and busy slots never show up.",
+    },
+    {
+      q: "\u201CHow much is a session and how do I pay?\u201D",
+      a: "Price and duration belong to the service, so the amount is the same in the schedule, in the reminder and in your income records.",
+    },
+    {
+      q: "\u201CCan I reschedule or cancel?\u201D",
+      a: "You set the reschedule rules once and clients see them while booking, so you don't repeat them in every chat.",
+    },
+    {
+      q: "\u201CWhat do you write about me, and who sees it?\u201D",
+      a: "Session notes are encrypted and visible only to you; a client's data can be exported or deleted on request.",
+    },
+    {
+      q: "\u201CDo I need to sign anything first?\u201D",
+      a: "You send the agreement as a link — the client signs online and you keep the signed version with its date.",
+    },
+    {
+      q: "\u201CDid I already pay for that session?\u201D",
+      a: "The client card shows paid and unpaid sessions, so answering takes seconds instead of digging through a bank statement.",
     },
   ],
   faqTitle: "Frequently asked questions",
@@ -237,6 +298,17 @@ export default function StartPracticeGuidePage() {
                   <p key={p} className="mt-2 text-muted-foreground">{p}</p>
                 ))}
               </section>
+            ))}
+          </div>
+
+          <h2 className="mt-12 text-2xl font-semibold text-foreground">{c.askTitle}</h2>
+          <p className="mt-2 text-muted-foreground">{c.askIntro}</p>
+          <div className="mt-5 space-y-3">
+            {c.asks.map((a) => (
+              <div key={a.q} className="rounded-xl border border-border bg-card p-4">
+                <p className="font-medium text-foreground">{a.q}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{a.a}</p>
+              </div>
             ))}
           </div>
 
