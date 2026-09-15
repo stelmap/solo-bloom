@@ -1,11 +1,6 @@
 import type { LegalDoc } from "@/legal/types";
 import { LEGAL_LAST_UPDATED } from "@/legal/types";
 
-// TODO (administrator): the legal entity name, registered address, company
-// registration number and VAT number of the Solo .Bizz operator are not
-// available in the project configuration. Add them to section 1 once
-// confirmed. Do not guess these values.
-
 export const privacyEn: LegalDoc = {
   back: "Back to home",
   title: "Privacy Policy",

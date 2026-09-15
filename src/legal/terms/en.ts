@@ -1,11 +1,6 @@
 import type { LegalDoc } from "@/legal/types";
 import { LEGAL_LAST_UPDATED } from "@/legal/types";
 
-// TODO (administrator): confirm and insert (a) the legal entity name, address
-// and registration details of the Solo .Bizz operator in section 1, and
-// (b) the governing law and competent courts in section 16. These are not
-// available in the project configuration and must not be invented.
-
 export const termsEn: LegalDoc = {
   back: "Back to home",
   title: "Terms & Conditions",
