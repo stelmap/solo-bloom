@@ -227,12 +227,12 @@ export default function PlansPage() {
     pro: tr(COPY.pro.desc),
   };
   const planPills: Record<string, string> = {
-    solo: tr(COPY.solo.pill),
+    solo: tr(COPY.solo.f2),
     pro: tr(COPY.pro.pill),
   };
   const planBadges: Record<string, string> = {
-    solo: tr(COPY.solo.badge),
-    pro: tr(COPY.pro.badge),
+    solo: tr(COPY.bestChoice),
+    pro: "",
   };
   const planCtas: Record<string, string> = {
     solo: tr(COPY.solo.cta),
