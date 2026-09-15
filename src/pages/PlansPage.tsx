@@ -500,7 +500,10 @@ export default function PlansPage() {
                 <div className="inline-flex rounded-full border border-border bg-card p-1 shadow-sm">
                   {availablePeriods.map((p) => {
                     const isActive = period === p;
-                    const saveLabel = p === "quarterly" ? "−20%" : p === "yearly" ? "−40%" : null;
+                    // Discount badge mirrors the landing switcher: real savings vs monthly.
+                    const refPlanId = orderedPlans.find((pl) => pl.code === HIGHLIGHTED_CODE)?.id ?? orderedPlans[0]?.id;
+                    const savePct = refPlanId ? savingsVsMonthly(prices, refPlanId, p) : null;
+                    const saveLabel = savePct ? `−${savePct}%` : null;
                     return (
                       <button
                         key={p}
