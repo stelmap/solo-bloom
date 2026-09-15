@@ -630,7 +630,7 @@ export default function PlansPage() {
                       ? "text-emerald-500"
                       : "text-muted-foreground";
                   const displayName = planNames[plan.code] || plan.name;
-                  const displayDesc = planDescriptions[plan.code] || plan.description;
+                  // description intentionally omitted for a compact card layout
                   const badgeText = planBadges[plan.code];
                   const ctaText = planCtas[plan.code] || t("plans.continueSelect");
 
@@ -680,7 +680,7 @@ export default function PlansPage() {
                           />
                         ) : (
                           <div className="flex items-baseline gap-1">
-                            <span className="text-5xl font-bold text-foreground">—</span>
+                            <span className="text-4xl font-bold text-foreground">—</span>
                             <span className="text-muted-foreground text-base">/ {periodSuffix[period]}</span>
                           </div>
                         )}
