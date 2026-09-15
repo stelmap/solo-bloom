@@ -71,6 +71,8 @@ export async function syncSubscriptionRecords(supabaseAdmin: any, input: PaddleS
     current_period_end: keep(input.periodEnd, (existing as any)?.current_period_end),
     legacy_full_access: false,
     legacy_access_until: null,
+    // Once a Paddle subscription exists, the legacy (Stripe) migration is done.
+    ...(input.subscriptionId ? { migrated_to_paddle_at: new Date().toISOString() } : {}),
     updated_at: new Date().toISOString(),
   };
 
