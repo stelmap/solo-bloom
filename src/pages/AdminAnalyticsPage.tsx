@@ -487,6 +487,18 @@ export default function AdminAnalyticsPage() {
               </CardContent>
             </Card>
 
+            <Card>
+              <CardHeader><CardTitle>Key page visits</CardTitle></CardHeader>
+              <CardContent className="space-y-2">
+                {keyPages.map((p) => (
+                  <div key={p.label} className="flex items-center justify-between border-b last:border-0 py-2 text-sm">
+                    <span className="font-medium">{p.label}</span>
+                    <span className="text-muted-foreground">{p.visitors} visitors · {p.views} views</span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
             <div className="grid md:grid-cols-2 gap-4">
               <BreakdownCard title="By domain" data={stats.byDomain} />
               <BreakdownCard title="By source" data={stats.bySource} />
