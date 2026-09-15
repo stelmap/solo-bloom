@@ -103,144 +103,114 @@ export default function PlansPage() {
   const isPaid = subscription.subscribed || subscription.on_trial;
   const canClearDemo = !isPaid && Boolean(hasDemoData);
 
-  // ── Landing-page-aligned copy (mirrors src/pages/LandingPage.tsx pricing section) ──
-  type L = "en" | "fr" | "uk" | "pl";
-  const L = (lang as L) in { en: 1, fr: 1, uk: 1, pl: 1 } ? (lang as L) : "en";
+  // ── Landing-page copy is the SOURCE OF TRUTH ──────────────────────────────
+  // Every string below is copied verbatim from the pricing section of
+  // src/pages/LandingPage.tsx (LANDING_COPY + the RU map). Do not reword here:
+  // change the landing page first, then mirror it back into this block.
+  type L = "en" | "fr" | "uk" | "pl" | "ru";
+  const L: L = (["en", "fr", "uk", "pl", "ru"] as const).includes(lang as L) ? (lang as L) : "en";
   const tr = (m: Record<L, string>) => m[L];
 
   const COPY = {
-    mfaSecurity: { en: "MFA & data protection", fr: "MFA et protection des données", uk: "MFA та захист даних", pl: "MFA i ochrona danych" },
-    allFeaturesBadge: {
-      en: "All features included on every plan",
-      fr: "Toutes les fonctionnalités incluses sur chaque forfait",
-      uk: "Усі функції включені в кожному плані",
-      pl: "Wszystkie funkcje w każdym planie",
+    mfaSecurity: { en: "MFA & data protection", fr: "MFA et protection des données", uk: "MFA та захист даних", pl: "MFA i ochrona danych", ru: "MFA и защита данных" },
+    billedMonthly: { en: "Billed monthly", fr: "Facturé mensuellement", uk: "Оплата щомісяця", pl: "Rozliczane co miesiąc", ru: "Оплата ежемесячно" },
+    billedQuarterly: { en: "Billed every 3 months", fr: "Facturé tous les 3 mois", uk: "Оплата раз на 3 місяці", pl: "Rozliczane co 3 miesiące", ru: "Оплата раз в 3 месяца" },
+    billedYearly: { en: "Billed yearly", fr: "Facturé annuellement", uk: "Оплата раз на рік", pl: "Rozliczane co rok", ru: "Оплата раз в год" },
+    docsNote: {
+      en: "*Client document management is in development. Informed consent is already available.",
+      fr: "*La gestion des documents clients est en développement. Le consentement éclairé est déjà disponible.",
+      uk: "*Керування документами клієнтів у розробці. Поінформована згода вже доступна.",
+      pl: "*Zarządzanie dokumentami klientów jest w budowie. Świadoma zgoda jest już dostępna.",
+      ru: "*Управление документами клиентов в разработке. Информированное согласие уже доступно.",
     },
-    billedMonthly: { en: "Billed monthly", fr: "Facturé mensuellement", uk: "Оплата щомісяця", pl: "Rozliczane miesięcznie" },
-    billedQuarterly: { en: "Billed every 3 months", fr: "Facturé tous les 3 mois", uk: "Оплата кожні 3 місяці", pl: "Rozliczane co 3 miesiące" },
-    billedYearly: { en: "Billed yearly", fr: "Facturé annuellement", uk: "Оплата щорічно", pl: "Rozliczane rocznie" },
     free: {
-      name: { en: "Free Starter", fr: "Free Starter", uk: "Free Starter", pl: "Free Starter" },
-      desc: {
-        en: "For those just starting or running a small private practice.",
-        fr: "Pour ceux qui démarrent ou gèrent une petite pratique privée.",
-        uk: "Для тих, хто тільки починає або веде невелику приватну практику.",
-        pl: "Dla tych, którzy zaczynają lub prowadzą małą prywatną praktykę.",
-      },
-      foreverBadge: { en: "Free forever", fr: "Gratuit pour toujours", uk: "Безкоштовно назавжди", pl: "Za darmo na zawsze" },
-      noCard: { en: "No card required.", fr: "Sans carte bancaire.", uk: "Без картки.", pl: "Bez karty." },
-      pill: { en: "Up to 5 active clients", fr: "Jusqu'à 5 clients actifs", uk: "До 5 активних клієнтів", pl: "Do 5 aktywnych klientów" },
-      f2: { en: "All Solo .Bizz features included", fr: "Toutes les fonctionnalités Solo .Bizz incluses", uk: "Усі функції Solo .Bizz включено", pl: "Wszystkie funkcje Solo .Bizz w komplecie" },
-      f3: { en: "Calendar, clients, payments, reminders", fr: "Calendrier, clients, paiements, rappels", uk: "Календар, клієнти, оплати, нагадування", pl: "Kalendarz, klienci, płatności, przypomnienia" },
-      f4: { en: "Financial analytics & reports", fr: "Analytique financière et rapports", uk: "Фінансова аналітика та звіти", pl: "Analityka finansowa i raporty" },
-      f5: { en: "Forever free, no card required", fr: "Gratuit pour toujours, sans carte", uk: "Назавжди безкоштовно, без картки", pl: "Za darmo na zawsze, bez karty" },
+      name: { en: "Free Starter", fr: "Free Starter", uk: "Free Starter", pl: "Free Starter", ru: "Free Starter" },
+      foreverBadge: { en: "Free forever", fr: "Gratuit pour toujours", uk: "Безкоштовно назавжди", pl: "Za darmo na zawsze", ru: "Бесплатно навсегда" },
+      noCard: { en: "No card required.", fr: "Sans carte bancaire.", uk: "Без картки.", pl: "Bez karty.", ru: "Без банковской карты." },
+      pill: { en: "Up to 5 active clients", fr: "Jusqu'à 5 clients actifs", uk: "До 5 активних клієнтів", pl: "Do 5 aktywnych klientów", ru: "До 5 активных клиентов" },
+      f2: { en: "Core Solo .Bizz functionality included", fr: "Fonctionnalités Solo .Bizz essentielles incluses", uk: "Базовий функціонал Solo .Bizz включено", pl: "Podstawowa funkcjonalność Solo .Bizz w zestawie", ru: "Базовый функционал Solo .Bizz включён" },
+      f3: { en: "Calendar, clients, payments, reminders", fr: "Calendrier, clients, paiements, rappels", uk: "Календар, клієнти, оплати, нагадування", pl: "Kalendarz, klienci, płatności, przypomnienia", ru: "Календарь, клиенты, оплаты, напоминания" },
+      f4: { en: "Basic income overview (full financial reports on paid plans)", fr: "Aperçu des revenus de base (rapports complets sur les offres payantes)", uk: "Базовий огляд доходу (повні фінансові звіти — у платних тарифах)", pl: "Podstawowy przegląd przychodów (pełne raporty w planach płatnych)", ru: "Базовый обзор дохода (полные финансовые отчёты — в платных тарифах)" },
+      f5: { en: "Forever free, no card required", fr: "Gratuit pour toujours, sans carte", uk: "Назавжди безкоштовно, без картки", pl: "Za darmo na zawsze, bez karty", ru: "Навсегда бесплатно, без карты" },
       availableByDefault: {
         en: "Included by default — no action needed.",
         fr: "Inclus par défaut — aucune action requise.",
         uk: "Доступно за замовчуванням — без додаткових дій.",
         pl: "Dostępne domyślnie — bez dodatkowych działań.",
+        ru: "Доступно по умолчанию — без дополнительных действий.",
       },
     },
     solo: {
-      name: { en: "Solo Practice", fr: "Solo Practice", uk: "Solo Practice", pl: "Solo Practice" },
-      desc: {
-        en: "All Solo .Bizz features included. For a small practice — manage clients, sessions and payments without chaos.",
-        fr: "Toutes les fonctionnalités Solo .Bizz incluses. Pour une petite pratique — gérez clients, séances et paiements sans chaos.",
-        uk: "Усі функції Solo .Bizz включено. Для невеликої практики — ведення клієнтів, сесій та оплат без хаосу.",
-        pl: "Wszystkie funkcje Solo .Bizz w komplecie. Dla małej praktyki — klienci, sesje i płatności bez chaosu.",
-      },
-      badge: { en: "Best for practice", fr: "Idéal pour la pratique", uk: "Найкраще для практики", pl: "Najlepsze dla praktyki" },
-      pill: { en: "Larger active client limit", fr: "Limite de clients actifs plus élevée", uk: "Більший ліміт активних клієнтів", pl: "Większy limit aktywnych klientów" },
-      f1: { en: "All Solo .Bizz features included", fr: "Toutes les fonctionnalités Solo .Bizz incluses", uk: "Усі функції Solo .Bizz включено", pl: "Wszystkie funkcje Solo .Bizz w komplecie" },
-      f2: { en: "Up to 20 active clients", fr: "Jusqu'à 20 clients actifs", uk: "До 20 активних клієнтів", pl: "Do 20 aktywnych klientów" },
-      f3: { en: "Calendar, clients, payments, reminders", fr: "Calendrier, clients, paiements, rappels", uk: "Календар, клієнти, оплати, нагадування", pl: "Kalendarz, klienci, płatności, przypomnienia" },
-      f4: { en: "Financial analytics & reports", fr: "Analytique financière et rapports", uk: "Фінансова аналітика та звіти", pl: "Analityka finansowa i raporty" },
-      f5: { en: "Cancel anytime", fr: "Annulation à tout moment", uk: "Скасування будь-коли", pl: "Anulowanie w dowolnej chwili" },
-      cta: { en: "Choose Solo Practice", fr: "Choisir Solo Practice", uk: "Обрати Solo Practice", pl: "Wybierz Solo Practice" },
+      name: { en: "Solo Practice", fr: "Solo Practice", uk: "Solo Practice", pl: "Solo Practice", ru: "Solo Practice" },
+      badge: { en: "Best for practice", fr: "Idéal pour la pratique", uk: "Найкраще для практики", pl: "Najlepsze dla praktyki", ru: "Лучший выбор для практики" },
+      pill: { en: "Up to 20 active clients", fr: "Jusqu'à 20 clients actifs", uk: "До 20 активних клієнтів", pl: "Do 20 aktywnych klientów", ru: "До 20 активных клиентов" },
+      f3: { en: "Clients, payments, debts and reminders", fr: "Clients, paiements, dettes et rappels", uk: "Клієнти, оплати, борги та нагадування", pl: "Klienci, płatności, długi i przypomnienia", ru: "Клиенты, оплаты, долги и напоминания" },
+      f4: { en: "Financial analytics & reports", fr: "Analytique financière et rapports", uk: "Фінансова аналітика та звіти", pl: "Analityka finansowa i raporty", ru: "Финансовая аналитика и отчёты" },
+      f5: { en: "Cancel anytime", fr: "Annulation à tout moment", uk: "Скасування будь-коли", pl: "Anulowanie w dowolnej chwili", ru: "Отмена в любой момент" },
+      f6: { en: "Calendar and online booking", fr: "Calendrier et réservation en ligne", uk: "Календар та онлайн-запис", pl: "Kalendarz i rezerwacja online", ru: "Календарь и онлайн-запись" },
+      f7: { en: "Client document management*", fr: "Gestion des documents clients*", uk: "Керування документами клієнтів*", pl: "Zarządzanie dokumentami klientów*", ru: "Управление документами клиентов*" },
+      f8: { en: "Informed consent document available", fr: "Document de consentement éclairé disponible", uk: "Доступна поінформована згода", pl: "Dostępny dokument świadomej zgody", ru: "Доступно информированное согласие" },
+      cta: { en: "Choose Solo Practice", fr: "Choisir Solo Practice", uk: "Обрати Solo Practice", pl: "Wybierz Solo Practice", ru: "Выбрать Solo Practice" },
     },
     pro: {
-      name: { en: "Pro Practice", fr: "Pro Practice", uk: "Pro Practice", pl: "Pro Practice" },
-      desc: {
-        en: "All Solo .Bizz features included. For a large client base and priority support.",
-        fr: "Toutes les fonctionnalités Solo .Bizz incluses. Pour une grande base de clients et un support prioritaire.",
-        uk: "Усі функції Solo .Bizz включено. Для великої бази клієнтів і пріоритетної підтримки.",
-        pl: "Wszystkie funkcje Solo .Bizz w komplecie. Dla dużej bazy klientów i wsparcia priorytetowego.",
-      },
-      badge: { en: "For a growing practice", fr: "Pour une pratique en croissance", uk: "Для практики, що росте", pl: "Dla rosnącej praktyki" },
-      pill: { en: "Unlimited clients", fr: "Clients illimités", uk: "Необмежена кількість клієнтів", pl: "Nieograniczona liczba klientów" },
-      f1: { en: "All Solo .Bizz features included", fr: "Toutes les fonctionnalités Solo .Bizz incluses", uk: "Усі функції Solo .Bizz включено", pl: "Wszystkie funkcje Solo .Bizz w komplecie" },
-      f2: { en: "Unlimited active clients", fr: "Clients actifs illimités", uk: "Необмежена кількість клієнтів", pl: "Nieograniczona liczba klientów" },
-      f3: { en: "Priority support", fr: "Support prioritaire", uk: "Пріоритетна підтримка", pl: "Wsparcie priorytetowe" },
-      f4: { en: "Personal onboarding consultation", fr: "Consultation d'onboarding personnelle", uk: "Персональна консультація з налаштування", pl: "Osobista konsultacja wdrożeniowa" },
-      cta: { en: "Choose Pro Practice", fr: "Choisir Pro Practice", uk: "Обрати Pro Practice", pl: "Wybierz Pro Practice" },
-    },
-    footer1: {
-      en: "Choose a plan based on the number of active clients — not on missing features.",
-      fr: "Choisissez un forfait en fonction du nombre de clients actifs — pas des fonctionnalités manquantes.",
-      uk: "Оберіть план за кількістю активних клієнтів — а не за відсутніми функціями.",
-      pl: "Wybierz plan na podstawie liczby aktywnych klientów — nie brakujących funkcji.",
-    },
-    footer2: {
-      en: "Solo .Bizz gives every therapist the full practice management system from the very first session.",
-      fr: "Solo .Bizz offre à chaque thérapeute le système complet de gestion de pratique dès la première séance.",
-      uk: "Solo .Bizz дає кожному терапевту повну систему управління практикою з першої сесії.",
-      pl: "Solo .Bizz daje każdemu terapeucie pełen system zarządzania praktyką od pierwszej sesji.",
+      name: { en: "Pro Practice", fr: "Pro Practice", uk: "Pro Practice", pl: "Pro Practice", ru: "Pro Practice" },
+      badge: { en: "For a growing practice", fr: "Pour une pratique en croissance", uk: "Для практики, що росте", pl: "Dla rosnącej praktyki", ru: "Для растущей практики" },
+      pill: { en: "Unlimited active clients", fr: "Clients actifs illimités", uk: "Необмежена кількість клієнтів", pl: "Nieograniczona liczba klientów", ru: "Неограниченное число клиентов" },
+      f3: { en: "Priority support", fr: "Support prioritaire", uk: "Пріоритетна підтримка", pl: "Wsparcie priorytetowe", ru: "Приоритетная поддержка" },
+      f4: { en: "Custom onboarding consultations", fr: "Consultations d'onboarding personnalisées", uk: "Індивідуальні консультації з налаштування", pl: "Indywidualne konsultacje wdrożeniowe", ru: "Индивидуальные консультации по настройке" },
+      f5: { en: "All Solo Practice functionality", fr: "Toutes les fonctionnalités Solo Practice", uk: "Увесь функціонал Solo Practice", pl: "Cała funkcjonalność Solo Practice", ru: "Весь функционал Solo Practice" },
+      f6: { en: "Group sessions and supervision", fr: "Séances de groupe et supervision", uk: "Групові сесії та супервізія", pl: "Sesje grupowe i superwizja", ru: "Групповые сессии и супервизия" },
+      f7: { en: "Advanced financial control, invoices and printing", fr: "Contrôle financier avancé, factures et impression", uk: "Розширений фінансовий контроль, рахунки та друк", pl: "Zaawansowana kontrola finansów, faktury i druk", ru: "Расширенный финансовый контроль, счета и печать" },
+      f8: { en: "Client document management*", fr: "Gestion des documents clients*", uk: "Керування документами клієнтів*", pl: "Zarządzanie dokumentami klientów*", ru: "Управление документами клиентов*" },
+      cta: { en: "Choose Pro Practice", fr: "Choisir Pro Practice", uk: "Обрати Pro Practice", pl: "Wybierz Pro Practice", ru: "Выбрать Pro Practice" },
     },
     heroTitle: {
-      en: "Every feature on every plan.\nOnly the number of active clients differs.",
-      fr: "Toutes les fonctionnalités sur chaque forfait.\nSeul le nombre de clients actifs change.",
-      uk: "Усі функції в кожному плані.\nРізниться лише кількість активних клієнтів.",
-      pl: "Wszystkie funkcje w każdym planie.\nRóżni się tylko liczba aktywnych klientów.",
+      en: "Choose the plan that fits you\nChoose a plan based on the number of active clients — not on missing features.",
+      fr: "Choisissez le forfait qui vous convient\nChoisissez un forfait en fonction du nombre de clients actifs — pas des fonctionnalités manquantes.",
+      uk: "Оберіть план, який підходить саме вам\nОберіть план за кількістю активних клієнтів — а не за відсутніми функціями.",
+      pl: "Wybierz plan odpowiedni dla Ciebie\nWybierz plan na podstawie liczby aktywnych klientów — a nie brakujących funkcji.",
+      ru: "Выберите план, который подходит именно вам\nВыбирайте план по количеству активных клиентов — а не по отсутствующим функциям.",
     },
     heroSubtitle: {
-      en: "Choose the plan that fits your practice. You can always change it later.",
-      fr: "Choisissez le forfait adapté à votre pratique. Vous pouvez en changer à tout moment.",
-      uk: "Обирайте план, що відповідає вашій практиці. Ви завжди можете змінити його пізніше.",
-      pl: "Wybierz plan pasujący do Twojej praktyki. Zawsze możesz go później zmienić.",
+      en: "Solo .Bizz gives every independent professional a complete practice management system from the very first session.",
+      fr: "Solo .Bizz offre à chaque professionnel indépendant un système complet de gestion de pratique dès la première séance.",
+      uk: "Solo .Bizz дає кожному незалежному спеціалісту повну систему управління практикою з першої сесії.",
+      pl: "Solo .Bizz daje każdemu niezależnemu specjaliście kompletny system zarządzania praktyką już od pierwszej sesji.",
+      ru: "Solo .Bizz даёт каждому независимому специалисту полноценную систему управления практикой с самой первой сессии.",
     },
-    bestChoice: { en: "Best choice", fr: "Meilleur choix", uk: "Найкращий вибір", pl: "Najlepszy wybor" },
-    selectedLabel: { en: "Selected", fr: "Sélectionné", uk: "Обрано", pl: "Wybrany" },
-    trustPay: { en: "Secure payment via Paddle", fr: "Paiement sécurisé via Paddle", uk: "Безпечна оплата через Paddle", pl: "Bezpieczna płatność przez Paddle" },
-    trustPaySub: { en: "Your data is protected", fr: "Vos données sont protégées", uk: "Ваші дані захищені", pl: "Twoje dane są chronione" },
-    trustCancel: { en: "Cancel anytime", fr: "Annulation à tout moment", uk: "Скасування будь-коли", pl: "Anulowanie w dowolnej chwili" },
-    trustCancelSub: { en: "No extra questions", fr: "Sans questions inutiles", uk: "Без зайвих питань", pl: "Bez zbędnych pytań" },
-    trustPrivacy: { en: "Data privacy", fr: "Confidentialité des données", uk: "Конфіденційність даних", pl: "Prywatność danych" },
-    trustPrivacySub: { en: "GDPR compliant", fr: "Conforme au RGPD", uk: "Відповідно до GDPR", pl: "Zgodnie z GDPR" },
-    privacyShort: {
-      en: "Your clients' data is protected. We don't see or use client information.",
-      fr: "Les données de vos clients sont protégées. Nous ne voyons ni n'utilisons les informations clients.",
-      uk: "Дані ваших клієнтів захищені. Ми не бачимо і не використовуємо клієнтську інформацію.",
-      pl: "Dane Twoich klientów są chronione. Nie widzimy i nie wykorzystujemy informacji o klientach.",
-    },
+    selectedLabel: { en: "Selected", fr: "Sélectionné", uk: "Обрано", pl: "Wybrany", ru: "Выбрано" },
+    trustPay: { en: "Secure payment via Paddle", fr: "Paiement sécurisé via Paddle", uk: "Безпечна оплата через Paddle", pl: "Bezpieczna płatność przez Paddle", ru: "Безопасная оплата через Paddle" },
+    trustPaySub: { en: "Your data is protected", fr: "Vos données sont protégées", uk: "Ваші дані захищені", pl: "Twoje dane są chronione", ru: "Ваши данные защищены" },
+    trustCancel: { en: "Cancel anytime", fr: "Annulation à tout moment", uk: "Скасування будь-коли", pl: "Anulowanie w dowolnej chwili", ru: "Отмена в любой момент" },
+    trustCancelSub: { en: "No extra questions", fr: "Sans questions inutiles", uk: "Без зайвих питань", pl: "Bez zbędnych pytań", ru: "Без лишних вопросов" },
+    trustPrivacy: { en: "Data privacy", fr: "Confidentialité des données", uk: "Конфіденційність даних", pl: "Prywatność danych", ru: "Конфиденциальность данных" },
+    trustPrivacySub: { en: "GDPR compliant", fr: "Conforme au RGPD", uk: "Відповідно до GDPR", pl: "Zgodnie z GDPR", ru: "В соответствии с GDPR" },
   };
 
   const periodLabels: Record<BillingPeriod, string> = { monthly: t("plans.monthly"), quarterly: t("plans.quarterly"), yearly: t("plans.yearly") };
   const periodSuffix: Record<BillingPeriod, string> = { monthly: t("plans.month" as any), quarterly: t("plans.threeMonths" as any), yearly: t("plans.year" as any) };
+  // Bullet order mirrors the landing pricing cards exactly.
   const planFeatures: Record<string, string[]> = {
-    solo: [tr(COPY.solo.f1), tr(COPY.solo.f3), tr(COPY.solo.f4), tr(COPY.solo.f5)],
-    pro: [tr(COPY.pro.f1), tr(COPY.pro.f3), tr(COPY.pro.f4), tr(COPY.mfaSecurity)],
+    solo: [tr(COPY.solo.f6), tr(COPY.solo.f3), tr(COPY.solo.f4), tr(COPY.solo.f7), tr(COPY.solo.f8), tr(COPY.mfaSecurity), tr(COPY.solo.f5)],
+    pro: [tr(COPY.pro.f5), tr(COPY.pro.f6), tr(COPY.pro.f7), tr(COPY.pro.f8), tr(COPY.pro.f3), tr(COPY.pro.f4), tr(COPY.mfaSecurity)],
   };
   const planNames: Record<string, string> = {
     solo: tr(COPY.solo.name),
     pro: tr(COPY.pro.name),
   };
-  const planDescriptions: Record<string, string> = {
-    solo: tr(COPY.solo.desc),
-    pro: tr(COPY.pro.desc),
-  };
   const planPills: Record<string, string> = {
-    solo: tr(COPY.solo.f2),
+    solo: tr(COPY.solo.pill),
     pro: tr(COPY.pro.pill),
   };
   const planBadges: Record<string, string> = {
-    solo: tr(COPY.bestChoice),
-    pro: "",
+    solo: tr(COPY.solo.badge),
+    pro: tr(COPY.pro.badge),
   };
   const planCtas: Record<string, string> = {
     solo: tr(COPY.solo.cta),
     pro: tr(COPY.pro.cta),
   };
-  const freeFeatures = [tr(COPY.free.f2), tr(COPY.free.f3), tr(COPY.free.f4), tr(COPY.mfaSecurity)];
+  const freeFeatures = [tr(COPY.free.f2), tr(COPY.free.f3), tr(COPY.free.f4), tr(COPY.free.f5), tr(COPY.mfaSecurity)];
   const freePill = tr(COPY.free.pill);
 
 
