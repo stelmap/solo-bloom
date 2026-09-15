@@ -3899,6 +3899,7 @@ export type Database = {
         }[]
       }
       cleanup_demo_workspace: { Args: { p_user_id: string }; Returns: Json }
+      client_notes_decrypt_own: { Args: { p_note_id: string }; Returns: string }
       client_prepaid_balance: {
         Args: {
           p_client_id: string
