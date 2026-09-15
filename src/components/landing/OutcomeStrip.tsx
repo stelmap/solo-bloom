@@ -23,7 +23,7 @@ export function OutcomeStrip({ lang }: { lang: AppLanguage }) {
             style={{ width: "clamp(90px, 12vw, 220px)", height: "clamp(90px, 12vw, 220px)" }}
           />
 
-          <h2 className="landing-h2 relative mx-auto max-w-[60ch] text-center font-bold tracking-tight text-secondary">
+          <h2 className="landing-h2 relative mx-auto max-w-[60ch] text-center font-bold tracking-tight text-foreground">
             {lt(lang, "outcomeTitle")}
           </h2>
           <span
@@ -46,7 +46,7 @@ export function OutcomeStrip({ lang }: { lang: AppLanguage }) {
                     <card.icon className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
                   </span>
                   <div className="min-w-0">
-                    <strong className="block text-base font-bold leading-snug text-secondary">
+                    <strong className="block text-base font-bold leading-snug text-foreground">
                       {lt(lang, card.title)}
                     </strong>
                     <p className="mt-1 text-sm leading-relaxed text-foreground/70">{lt(lang, card.text)}</p>

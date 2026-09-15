@@ -200,7 +200,7 @@ export function PricingFollowUp({ lang }: { lang: AppLanguage }) {
           className="page-container rounded-3xl border-2 border-primary/30 bg-card shadow-md"
           style={{ padding: "clamp(20px, 2.4vw, 48px)" }}
         >
-          <h2 className="landing-h2 text-center font-bold tracking-tight text-secondary">
+          <h2 className="landing-h2 text-center font-bold tracking-tight text-foreground">
             {p(lang, COPY.benefitsTitle)}
           </h2>
           <span aria-hidden="true" className="mx-auto mt-4 block h-1 w-16 rounded-full bg-primary" />
@@ -210,7 +210,7 @@ export function PricingFollowUp({ lang }: { lang: AppLanguage }) {
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
                   <b.icon className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
                 </span>
-                <strong className="mt-3 text-sm font-semibold text-secondary sm:text-base">{p(lang, b.title)}</strong>
+                <strong className="mt-3 text-sm font-semibold text-foreground sm:text-base">{p(lang, b.title)}</strong>
                 <p className="mt-1 text-xs leading-relaxed text-foreground/70 sm:text-sm">{p(lang, b.text)}</p>
               </li>
             ))}
