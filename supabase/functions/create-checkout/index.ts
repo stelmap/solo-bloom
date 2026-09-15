@@ -133,12 +133,14 @@ serve(async (req) => {
         customer_id: customerId,
         ...(discountId ? { discount_id: discountId } : {}),
         custom_data: customData,
-        checkout: { url: `${origin}/checkout` },
+        // No explicit checkout.url: Paddle only accepts approved domains, and
+        // preview/dev origins are not approved. The account default payment
+        // link is used instead, and we open the overlay on our own page.
       },
     });
 
     const transactionId = txn.data.id;
-    const checkoutUrl = txn.data.checkout?.url ?? `${origin}/checkout?_ptxn=${transactionId}`;
+    const checkoutUrl = `${origin}/checkout?_ptxn=${transactionId}`;
 
     log("Transaction created", { transactionId });
     return json({ url: checkoutUrl, transactionId, sessionId: transactionId }, 200);
