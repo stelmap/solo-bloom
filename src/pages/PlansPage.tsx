@@ -495,15 +495,13 @@ export default function PlansPage() {
         <section className="px-4 sm:px-6 py-10 sm:py-16 bg-orange-50/60 dark:bg-card/40">
           <div className="max-w-6xl mx-auto">
             <header className="text-center mb-10 space-y-4">
-              <p className="text-sm font-semibold uppercase tracking-widest text-primary">{t("plans.title")}</p>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">{t("plans.title")}</h2>
-              <p className="text-lg text-muted-foreground dark:text-foreground/80 max-w-2xl mx-auto">
-                {t("plans.subtitle")}
+              <BrandName className="block text-3xl font-bold text-foreground" />
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground whitespace-pre-line leading-snug">
+                {tr(COPY.heroTitle)}
+              </h1>
+              <p className="text-base text-muted-foreground dark:text-foreground/80 max-w-2xl mx-auto">
+                {tr(COPY.heroSubtitle)}
               </p>
-              <div className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 dark:bg-emerald-500/15 dark:border-emerald-500/30 dark:text-emerald-300">
-                <Check className="h-4 w-4 shrink-0" />
-                <span className="text-sm font-medium">{tr(COPY.allFeaturesBadge)}</span>
-              </div>
             </header>
 
 
