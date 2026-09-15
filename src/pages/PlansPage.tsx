@@ -86,6 +86,7 @@ export default function PlansPage() {
   const [slowCheckout, setSlowCheckout] = useState(false);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [clearing, setClearing] = useState(false);
+  const [promoOpen, setPromoOpen] = useState(false);
 
   useEffect(() => {
     track("pricing_page_viewed", { surface: "in_app_plans" });
