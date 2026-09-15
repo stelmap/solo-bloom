@@ -39,7 +39,7 @@ type PlanPrice = {
 type BillingPeriod = "monthly" | "quarterly" | "yearly";
 
 const PLAN_ORDER = ["solo", "pro"];
-const HIGHLIGHTED_CODE = "pro";
+const HIGHLIGHTED_CODE = "solo";
 
 function formatPrice(amount: number, currency: string) {
   const symbol = currency === "EUR" ? "€" : currency === "USD" ? "$" : currency + " ";
