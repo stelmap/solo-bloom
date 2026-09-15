@@ -198,7 +198,7 @@ export default function PlansPage() {
       uk: "Обирайте план, що відповідає вашій практиці. Ви завжди можете змінити його пізніше.",
       pl: "Wybierz plan pasujący do Twojej praktyki. Zawsze możesz go później zmienić.",
     },
-    bestChoice: { en: "Best choice", fr: "Meilleur choix", uk: "Найкращий вибір", pl: "Najlepszy wybір" },
+    bestChoice: { en: "Best choice", fr: "Meilleur choix", uk: "Найкращий вибір", pl: "Najlepszy wybor" },
     selectedLabel: { en: "Selected", fr: "Sélectionné", uk: "Обрано", pl: "Wybrany" },
     trustPay: { en: "Secure payment via Paddle", fr: "Paiement sécurisé via Paddle", uk: "Безпечна оплата через Paddle", pl: "Bezpieczna płatność przez Paddle" },
     trustPaySub: { en: "Your data is protected", fr: "Vos données sont protégées", uk: "Ваші дані захищені", pl: "Twoje dane są chronione" },
