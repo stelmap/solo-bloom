@@ -439,7 +439,7 @@ export default function PracticeProfilePage() {
                 <Label className="font-semibold text-sm">
                   {L.emblem} <span className="text-muted-foreground font-normal text-xs">{L.optional}</span>
                 </Label>
-                <label className="h-24 w-36 rounded-xl border border-dashed border-border bg-muted/40 flex flex-col items-center justify-center gap-1 cursor-pointer overflow-hidden text-center">
+                <label aria-label={L.upload} className="h-24 w-36 rounded-xl border border-dashed border-border bg-muted/40 flex flex-col items-center justify-center gap-1 cursor-pointer overflow-hidden text-center">
                   {form.avatar_url ? (
                     <img src={form.avatar_url} alt={form.business_name || "Practice emblem"} className="h-full w-full object-contain p-2" />
                   ) : uploading ? (
@@ -451,7 +451,7 @@ export default function PracticeProfilePage() {
                       <span className="text-[10px] text-muted-foreground px-2">{L.uploadHint}</span>
                     </>
                   )}
-                  <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
+                  <input type="file" accept="image/*" aria-label={L.upload} className="hidden" onChange={handleFile} />
                 </label>
                 {form.avatar_url && (
                   <Button variant="ghost" size="sm" className="w-36" onClick={removeImage}>{L.remove}</Button>
