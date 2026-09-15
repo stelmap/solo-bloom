@@ -59,6 +59,16 @@ export default function CheckoutPage() {
     });
   }, [lang]);
 
+  // Open the Paddle overlay automatically as soon as it is ready, so picking a
+  // plan goes straight to payment; the button below is the manual retry.
+  const autoOpened = useRef(false);
+  useEffect(() => {
+    if (status === "ready" && !autoOpened.current) {
+      autoOpened.current = true;
+      openCheckout();
+    }
+  }, [status, openCheckout]);
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-muted/30 p-6">
       <SeoHead
