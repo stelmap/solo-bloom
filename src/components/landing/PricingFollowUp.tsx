@@ -7,7 +7,7 @@ import { track } from "@/lib/analytics";
 import { landingEventProps } from "@/lib/landingCampaign";
 
 type L = Partial<Record<AppLanguage, string>> & { en: string };
-const p = (lang: AppLanguage, m: L) => m[lang] ?? m.en;
+export const p = (lang: AppLanguage, m: L) => m[lang] ?? m.en;
 
 const BENEFITS: { icon: typeof Tag; title: L; text: L }[] = [
   {
@@ -38,7 +38,7 @@ const BENEFITS: { icon: typeof Tag; title: L; text: L }[] = [
   },
 ];
 
-const FAQ: { q: L; a: L }[] = [
+export const FAQ: { q: L; a: L }[] = [
   {
     q: {
       en: "Do all plans include the calendar and client booking?",
@@ -184,7 +184,7 @@ const COPY = {
   } as L,
   trust1: { en: "Data protected", uk: "Дані захищені", pl: "Dane chronione", fr: "Données protégées", ru: "Данные защищены" } as L,
   trust2: { en: "GDPR compliant", uk: "Відповідає GDPR", pl: "Zgodność z RODO", fr: "Conforme au RGPD", ru: "Соответствует GDPR" } as L,
-  trust3: { en: "Secure payments via Stripe", uk: "Безпечні платежі через Stripe", pl: "Bezpieczne płatności przez Stripe", fr: "Paiements sécurisés via Stripe", ru: "Безопасные платежи через Stripe" } as L,
+  trust3: { en: "Secure payments via Paddle", uk: "Безпечні платежі через Paddle", pl: "Bezpieczne płatności przez Paddle", fr: "Paiements sécurisés via Paddle", ru: "Безопасные платежи через Paddle" } as L,
   trust4: { en: "Email support", uk: "Підтримка на email", pl: "Wsparcie e-mail", fr: "Assistance par e-mail", ru: "Поддержка на email" } as L,
 };
 
