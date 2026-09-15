@@ -1604,10 +1604,6 @@ export default function LandingPage() {
   return (
     <LandingLangProvider>
       <LandingSEO />
-      <Helmet>
-        <link rel="canonical" href="https://solo-bizz.com/" />
-        <meta property="og:url" content="https://solo-bizz.com/" />
-      </Helmet>
       <LandingShell />
     </LandingLangProvider>
   );
@@ -1616,6 +1612,7 @@ export default function LandingPage() {
 /** Inner shell: has access to the landing language context. */
 function LandingShell() {
   const { lang } = useLandingLang();
+  const canonicalUrl = lang === "en" ? "https://solo-bizz.com/" : `https://solo-bizz.com/?lang=${lang}`;
   const faqJsonLd = useMemo(
     () =>
       JSON.stringify({
@@ -1639,6 +1636,8 @@ function LandingShell() {
   return (
     <div className="min-h-screen overflow-x-hidden bg-background">
       <Helmet>
+        <link rel="canonical" href={canonicalUrl} />
+        <meta property="og:url" content={canonicalUrl} />
         <script type="application/ld+json">{faqJsonLd}</script>
       </Helmet>
       {isCampaignActive() && (
