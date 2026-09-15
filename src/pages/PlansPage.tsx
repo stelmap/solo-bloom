@@ -629,7 +629,9 @@ export default function PlansPage() {
                             "absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap shadow-sm",
                             isSelected
                               ? "bg-primary text-primary-foreground"
-                              : "bg-primary/10 text-primary border border-primary/30",
+                              : isPro
+                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                : "bg-primary/10 text-primary border border-primary/30",
                           )}
                         >
                           {isSelected ? <Check className="h-3.5 w-3.5" /> : <Star className="h-3.5 w-3.5" />}
