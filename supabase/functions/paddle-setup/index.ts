@@ -18,7 +18,9 @@ const json = (body: unknown, status: number) =>
     status,
   });
 
-const PADDLE_API = "https://sandbox-api.paddle.com";
+const PADDLE_API = (Deno.env.get("PADDLE_ENVIRONMENT") ?? "sandbox").toLowerCase() === "production"
+  ? "https://api.paddle.com"
+  : "https://sandbox-api.paddle.com";
 // Paddle discount codes must be alphanumeric, max 32 chars.
 const SUPPORT_UA_CODE = "SUPPORTUA50";
 
