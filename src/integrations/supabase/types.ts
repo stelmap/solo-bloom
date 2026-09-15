@@ -3052,7 +3052,10 @@ export type Database = {
           id: string
           legacy_access_until: string | null
           legacy_full_access: boolean
+          legacy_provider: string | null
           migrated_at: string | null
+          migrated_to_paddle_at: string | null
+          migration_prompt_dismissed_at: string | null
           migration_version: number | null
           paddle_customer_id: string | null
           paddle_subscription_id: string | null
@@ -3070,7 +3073,10 @@ export type Database = {
           id?: string
           legacy_access_until?: string | null
           legacy_full_access?: boolean
+          legacy_provider?: string | null
           migrated_at?: string | null
+          migrated_to_paddle_at?: string | null
+          migration_prompt_dismissed_at?: string | null
           migration_version?: number | null
           paddle_customer_id?: string | null
           paddle_subscription_id?: string | null
@@ -3088,7 +3094,10 @@ export type Database = {
           id?: string
           legacy_access_until?: string | null
           legacy_full_access?: boolean
+          legacy_provider?: string | null
           migrated_at?: string | null
+          migrated_to_paddle_at?: string | null
+          migration_prompt_dismissed_at?: string | null
           migration_version?: number | null
           paddle_customer_id?: string | null
           paddle_subscription_id?: string | null
@@ -3929,6 +3938,7 @@ export type Database = {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
       }
+      dismiss_paddle_migration_prompt: { Args: never; Returns: undefined }
       email_queue_dispatch: { Args: never; Returns: undefined }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
