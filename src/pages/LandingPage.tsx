@@ -1532,8 +1532,8 @@ function LandingFooter({ onContact }: { onContact: () => void }) {
 
 const SEO_META: Record<AppLanguage, { title: string; description: string; ogTitle: string; ogDesc: string; ogLocale: string; htmlLang: string }> = {
   en: {
-    title: "Solo .Bizz — CRM for psychologists, coaches & solo practices",
-    description: "Solo .Bizz helps psychologists, therapists, coaches and tutors manage clients, sessions, payments and income — all in one calm, simple workspace.",
+    title: "Solo .Bizz — CRM for psychologists, coaches & tutors",
+    description: "Manage clients, sessions, payments and income in one calm workspace built for psychologists, therapists, coaches and tutors.",
     ogTitle: "Solo .Bizz — Run your solo practice without the chaos",
     ogDesc: "Clients, sessions, payments and income in one place. Built for psychologists, therapists, coaches and tutors.",
     ogLocale: "en_US",
