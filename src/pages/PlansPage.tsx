@@ -573,39 +573,34 @@ export default function PlansPage() {
                 <p className="text-muted-foreground">{t("plans.loadingNone")}</p>
               </div>
             ) : (
-              <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-stretch pt-4">
+              <div className="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto items-stretch pt-4">
                 {/* Free Starter card */}
-                <div className="relative p-8 rounded-2xl bg-card border border-border flex flex-col">
-                  <h3 className="text-2xl font-semibold text-foreground">{tr(COPY.free.name)}</h3>
-                  <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed min-h-[3rem]">
-                    {tr(COPY.free.desc)}
-                  </p>
+                <div className="relative p-6 rounded-2xl bg-card border border-border flex flex-col">
+                  <h3 className="text-lg font-semibold text-foreground">{tr(COPY.free.name)}</h3>
 
-                  <div className="flex items-baseline gap-1 mb-2">
-                    <span className="text-5xl font-bold text-foreground">€0</span>
-                    <span className="text-muted-foreground text-base">/ {periodSuffix["monthly"]}</span>
+                  <div className="mt-3 flex items-baseline gap-1">
+                    <span className="text-4xl font-bold text-foreground">€0</span>
+                    <span className="text-muted-foreground text-sm">/ {periodSuffix["monthly"]}</span>
                   </div>
-
-                  <p className="text-sm mb-1 font-semibold text-primary">{tr(COPY.free.foreverBadge)}</p>
-                  <p className="text-xs text-muted-foreground mb-5 min-h-[1rem]">
-                    {tr(COPY.free.noCard)}
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {tr(COPY.free.foreverBadge)} · {tr(COPY.free.noCard)}
                   </p>
 
-                  <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-muted/60 border border-border mb-6">
+                  <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/60 border border-border">
                     <Users className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span className="text-sm font-medium text-foreground">{freePill}</span>
                   </div>
 
-                  <ul className="space-y-3 mb-8 flex-1">
+                  <ul className="mt-4 space-y-2 flex-1">
                     {freeFeatures.map((f) => (
-                      <li key={f} className="flex items-start gap-3 text-foreground">
+                      <li key={f} className="flex items-start gap-2.5 text-foreground">
                         <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
-                        <span className="text-sm">{f}</span>
+                        <span className="text-sm leading-snug">{f}</span>
                       </li>
                     ))}
                   </ul>
 
-                  <p className="mt-auto text-xs text-muted-foreground text-center">
+                  <p className="mt-6 text-xs text-muted-foreground text-center">
                     {tr(COPY.free.availableByDefault)}
                   </p>
                 </div>
