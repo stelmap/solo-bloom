@@ -626,7 +626,7 @@ export default function PlansPage() {
                       {(isSelected || badgeText) && (
                         <span
                           className={cn(
-                            "absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap shadow-sm",
+                            "mb-3 self-start inline-flex max-w-full items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold shadow-sm",
                             isSelected
                               ? "bg-primary text-primary-foreground"
                               : isPro
@@ -634,12 +634,12 @@ export default function PlansPage() {
                                 : "bg-primary/10 text-primary border border-primary/30",
                           )}
                         >
-                          {isSelected ? <Check className="h-3.5 w-3.5" /> : <Star className="h-3.5 w-3.5" />}
-                          {isSelected ? tr(COPY.selectedLabel) : badgeText}
+                          {isSelected ? <Check className="h-3.5 w-3.5 shrink-0" /> : <Star className="h-3.5 w-3.5 shrink-0" />}
+                          <span className="truncate">{isSelected ? tr(COPY.selectedLabel) : badgeText}</span>
                         </span>
                       )}
 
-                      <div className="flex items-start justify-between gap-2 mt-1">
+                      <div className="flex items-start justify-between gap-2">
                         <h3 className="text-lg font-semibold text-foreground">{displayName}</h3>
                       </div>
 
