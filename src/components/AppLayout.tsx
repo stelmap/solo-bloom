@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { useSidebarPinned } from "@/hooks/useSidebarPinned";
 import { AppSidebar } from "./AppSidebar";
 import { DemoBanner } from "./DemoBanner";
+import { PaddleMigrationBanner } from "./PaddleMigrationBanner";
 import { useSoundReminder } from "@/hooks/useSoundReminder";
 import { useTaxAccrualSync } from "@/hooks/useData";
 import { track } from "@/lib/analytics";
@@ -36,6 +37,7 @@ export function AppLayout({ children, fluid = false }: { children: React.ReactNo
         <AppSidebar />
         <main className={cn(sidebarOffset, "transition-[margin] duration-200 ease-out h-[100dvh] overflow-hidden flex flex-col")}>
           <DemoBanner />
+          <PaddleMigrationBanner />
           <div className="flex-1 min-h-0 overflow-hidden w-full px-4 lg:px-6 py-3 lg:py-4 pt-16 lg:pt-4">
             {children}
           </div>
@@ -50,6 +52,7 @@ export function AppLayout({ children, fluid = false }: { children: React.ReactNo
       <AppSidebar />
       <main className={cn(sidebarOffset, "transition-[margin] duration-200 ease-out min-h-screen")}>
         <DemoBanner />
+          <PaddleMigrationBanner />
         <div className="p-4 lg:px-10 xl:px-14 lg:py-8 pt-16 lg:pt-8 max-w-[1600px] mx-auto">
           {children}
         </div>

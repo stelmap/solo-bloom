@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
@@ -65,7 +65,17 @@ function savingsVsMonthly(
   return pct > 0 ? pct : null;
 }
 
+const MIGRATION_NOTE: Record<string, string> = {
+  en: "You are moving your existing subscription to our new payment provider. Choose the same plan you have now — your price stays the same and your current access continues until the switch is complete.",
+  uk: "Ви переносите наявну підписку до нової платіжної системи. Оберіть той самий тариф, що й зараз — ціна залишається такою самою, а доступ працює до завершення переходу.",
+  ru: "Вы переносите текущую подписку в новую платёжную систему. Выберите тот же тариф — цена остаётся прежней, а доступ работает до завершения перехода.",
+  pl: "Przenosisz istniejącą subskrypcję do nowego operatora płatności. Wybierz ten sam plan — cena pozostaje bez zmian, a dostęp działa do zakończenia przeniesienia.",
+  fr: "Vous transférez votre abonnement vers notre nouveau prestataire de paiement. Choisissez le même forfait — le prix reste identique et votre accès continue jusqu'à la fin du transfert.",
+};
+
 export default function PlansPage() {
+  const [searchParams] = useSearchParams();
+  const isMigrating = searchParams.get("migrate") === "1";
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, subscription, subscriptionError } = useAuth();
@@ -464,6 +474,14 @@ export default function PlansPage() {
             {t("plans.backToSettings")}
           </button>
         </div>
+
+        {isMigrating && (
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+            <div className="rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-900">
+              {MIGRATION_NOTE[lang] ?? MIGRATION_NOTE.en}
+            </div>
+          </div>
+        )}
 
         <section className="px-4 sm:px-6 pt-4 pb-8 sm:pb-10">
           <div className="max-w-6xl mx-auto">
