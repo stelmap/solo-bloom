@@ -62,9 +62,12 @@ serve(async (req) => {
   });
 
   // Authorisation: service role key, or a signed-in admin user.
+  const setupToken = Deno.env.get("PADDLE_SETUP_TOKEN") ?? "";
+  const providedSetupToken = req.headers.get("x-setup-token") ?? "";
   const token = (req.headers.get("Authorization") ?? "").replace("Bearer ", "").trim();
-  if (!token) return json({ error: "Not authorised" }, 401);
-  if (token !== serviceKey) {
+  const setupTokenOk = Boolean(setupToken) && providedSetupToken === setupToken;
+  if (!token && !setupTokenOk) return json({ error: "Not authorised" }, 401);
+  if (!setupTokenOk && token !== serviceKey) {
     const { data: userData } = await supabaseAdmin.auth.getUser(token);
     const userId = userData?.user?.id;
     if (!userId) return json({ error: "Not authorised" }, 401);
