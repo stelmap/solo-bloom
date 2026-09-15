@@ -84,7 +84,7 @@ export function SubscriptionSection() {
       const { data } = await supabase
         .from("plan_prices")
         .select("billing_period, price, currency, plans(name, code)")
-        .eq("stripe_price_id", priceId)
+        .eq("paddle_price_id", priceId)
         .maybeSingle();
 
       if (cancelled) return;
