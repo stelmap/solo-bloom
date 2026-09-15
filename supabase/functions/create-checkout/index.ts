@@ -145,6 +145,12 @@ serve(async (req) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     log("Unhandled error", { message });
+    if (message.includes("transaction_default_checkout_url_not_set")) {
+      return json(
+        { error: "Payments are not fully set up yet: the default payment link is missing in the payment provider settings." },
+        500,
+      );
+    }
     return json({ error: "Could not start checkout. Please try again." }, 500);
   }
 });
