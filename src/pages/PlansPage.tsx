@@ -739,35 +739,51 @@ export default function PlansPage() {
               </div>
             )}
 
-            {/* Support Ukrainian Psychotherapists — eligibility / promo code */}
-            <div className="mt-10 max-w-xl mx-auto p-5 rounded-2xl border border-border bg-card">
-              <p className="text-sm font-semibold text-foreground mb-1">
-                {campaignText(lang, "campaignName")}
-              </p>
-              <p className="text-sm text-muted-foreground mb-4">
+            {/* Support Ukrainian Sole Practitioners — compact pill + promo code */}
+            <div className="mt-8 flex flex-col items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPromoOpen((v) => !v)}
+                className="inline-flex items-center gap-2 max-w-full px-4 py-2 rounded-full border border-border bg-card text-sm text-foreground shadow-sm hover:border-primary/40 transition-colors"
+              >
+                <Heart className="h-4 w-4 text-sky-500 shrink-0" />
+                <span className="truncate">🇺🇦 {campaignText(lang, "campaignName")}</span>
+                <ChevronRight className={cn("h-4 w-4 text-muted-foreground shrink-0 transition-transform", promoOpen && "rotate-90")} />
+              </button>
+              <p className="text-xs text-muted-foreground text-center">
                 {campaignText(lang, "bannerDiscount")}
               </p>
-              <SupportUkrainePromoInput
-                lang={lang}
-                eligible={campaignEligible}
-                planCode={orderedPlans[0]?.code ?? "solo"}
-                onApply={applyPromoCode}
-              />
-              {campaignEligible && (
-                <p className="mt-3 text-xs text-muted-foreground">{campaignText(lang, "renewalNotice")}</p>
+              {promoOpen && (
+                <div className="mt-2 w-full max-w-xl p-5 rounded-2xl border border-border bg-card">
+                  <SupportUkrainePromoInput
+                    lang={lang}
+                    eligible={campaignEligible}
+                    planCode={orderedPlans[0]?.code ?? "solo"}
+                    onApply={applyPromoCode}
+                  />
+                  {campaignEligible && (
+                    <p className="mt-3 text-xs text-muted-foreground">{campaignText(lang, "renewalNotice")}</p>
+                  )}
+                </div>
               )}
             </div>
 
-            {/* Landing-aligned footer copy */}
-            <div className="mt-12 text-center max-w-3xl mx-auto space-y-2">
-              <p className="text-base text-muted-foreground">{tr(COPY.footer1)}</p>
-              <p className="text-base font-semibold text-foreground">{tr(COPY.footer2)}</p>
+            {/* Trust row */}
+            <div className="mt-10 pt-8 border-t border-border grid gap-6 sm:grid-cols-3 max-w-4xl mx-auto">
+              {[
+                { icon: Lock, title: tr(COPY.trustPay), sub: tr(COPY.trustPaySub) },
+                { icon: RefreshCw, title: tr(COPY.trustCancel), sub: tr(COPY.trustCancelSub) },
+                { icon: ShieldCheck, title: tr(COPY.trustPrivacy), sub: tr(COPY.trustPrivacySub) },
+              ].map(({ icon: Icon, title, sub }) => (
+                <div key={title} className="flex items-start gap-3 justify-center sm:justify-start">
+                  <Icon className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{title}</p>
+                    <p className="text-xs text-muted-foreground">{sub}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-
-            <p className="mt-8 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-              <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-              {tr(COPY.privacyShort)}
-            </p>
           </div>
         </section>
 
