@@ -111,7 +111,7 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName, maxIte
       const { data: prof } = await supabase
         .from("profiles")
         .select("full_name, business_name")
-        .eq("id", user.id)
+        .eq("user_id", user.id)
         .maybeSingle();
       if (prof) setTherapistProfile({ full_name: (prof as any).full_name || "", business_name: (prof as any).business_name || "" });
     })();
@@ -607,7 +607,7 @@ export function ClientAgreementsCard({ clientId, clientEmail, clientName, maxIte
                 const { data: prof } = await supabase
                   .from("profiles")
                   .select("full_name, business_name, language")
-                  .eq("id", (await supabase.auth.getUser()).data.user?.id ?? "")
+                  .eq("user_id", (await supabase.auth.getUser()).data.user?.id ?? "")
                   .maybeSingle();
                 const specialistName =
                   (prof as any)?.business_name ||

@@ -96,7 +96,7 @@ export default function AgreementTemplateEditorPage() {
       const { data: u } = await supabase.auth.getUser();
       const uid = u?.user?.id;
       if (!uid) return;
-      const { data: prof } = await supabase.from("profiles").select("full_name, business_name").eq("id", uid).maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("full_name, business_name").eq("user_id", uid).maybeSingle();
       if (prof) setTherapistProfile({ full_name: (prof as any).full_name || "", business_name: (prof as any).business_name || "" });
     })();
   }, []);
