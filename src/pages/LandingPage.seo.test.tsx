@@ -45,7 +45,7 @@ describe("LandingSEO localized meta tags", () => {
     });
 
     expect(document.title).toBe(
-      "Solo .Bizz — CRM for psychologists, coaches & solo practices"
+      "Solo .Bizz — CRM for psychologists, coaches & tutors"
     );
     expect(document.documentElement.lang).toBe("en");
     expect(getMeta('meta[name="description"]')).toMatch(/psychologists, therapists, coaches and tutors/);
