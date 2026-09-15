@@ -341,10 +341,10 @@ export default function AgreementTemplatesPage() {
                           }}
                           className="h-8"
                         />
-                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => renameTemplate(tpl)}>
+                        <Button size="icon" variant="ghost" aria-label={t("common.save")} className="h-8 w-8" onClick={() => renameTemplate(tpl)}>
                           <Check className="w-4 h-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setRenamingId(null)}>
+                        <Button size="icon" variant="ghost" aria-label={t("common.cancel")} className="h-8 w-8" onClick={() => setRenamingId(null)}>
                           <X className="w-4 h-4" />
                         </Button>
                       </div>
