@@ -68,6 +68,7 @@ const FinanceSettingsPage = lazyWithReload(() => import("./pages/FinanceSettings
 const PrivacyPage = lazyWithReload(() => import("./pages/PrivacyPage"));
 const TermsPage = lazyWithReload(() => import("./pages/TermsPage"));
 const CookiePolicyPage = lazyWithReload(() => import("./pages/CookiePolicyPage"));
+const RefundPolicyPage = lazyWithReload(() => import("./pages/RefundPolicyPage"));
 const CareersPage = lazyWithReload(() => import("./pages/CareersPage"));
 const AdminBookingRequestsPage = lazyWithReload(() => import("./pages/AdminBookingRequestsPage"));
 const ConfirmSessionPage = lazyWithReload(() => import("./pages/ConfirmSessionPage"));
@@ -136,6 +137,7 @@ const App = () => {
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="/cookie-policy" element={<CookiePolicyPage />} />
+                <Route path="/refund-policy" element={<RefundPolicyPage />} />
                 <Route path="/careers" element={<CareersPage />} />
                 <Route path="/confirm-session" element={<ConfirmSessionPage />} />
                 <Route path="/book/:token" element={<PublicBookingPage />} />
