@@ -51,7 +51,7 @@ export default function CheckoutPage() {
       return;
     }
     // Paddle has no Ukrainian locale; fall back to English for it.
-    const paddleLocale = ["en", "pl", "fr", "ru"].includes(language) ? language : "en";
+    const paddleLocale = ["en", "pl", "fr", "ru"].includes(lang) ? lang : "en";
     paddleRef.current.Checkout.open({
       transactionId: txn,
       settings: { locale: paddleLocale, displayMode: "overlay" },
