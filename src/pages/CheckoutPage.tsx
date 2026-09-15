@@ -56,7 +56,7 @@ export default function CheckoutPage() {
       transactionId: txn,
       settings: { locale: paddleLocale, displayMode: "overlay" },
     });
-  }, [language]);
+  }, [lang]);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-muted/30 p-6">
