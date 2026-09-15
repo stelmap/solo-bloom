@@ -3,13 +3,14 @@ import { Link } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { AppLanguage } from "@/i18n/translations";
 
-const LABELS: Record<AppLanguage, { rights: string; nav: string; terms: string; privacy: string; cookies: string; settings: string }> = {
+const LABELS: Record<AppLanguage, { rights: string; nav: string; terms: string; privacy: string; cookies: string; refund: string; settings: string }> = {
   en: {
     rights: "All rights reserved.",
     nav: "Legal links",
     terms: "Terms & Conditions",
     privacy: "Privacy Policy",
     cookies: "Cookie Policy",
+    refund: "Refund Policy",
     settings: "Cookie settings",
   },
   uk: {
@@ -18,6 +19,7 @@ const LABELS: Record<AppLanguage, { rights: string; nav: string; terms: string; 
     terms: "Умови використання",
     privacy: "Політика конфіденційності",
     cookies: "Політика cookie",
+    refund: "Політика повернення коштів",
     settings: "Налаштування cookie",
   },
   pl: {
@@ -26,6 +28,7 @@ const LABELS: Record<AppLanguage, { rights: string; nav: string; terms: string; 
     terms: "Regulamin",
     privacy: "Polityka prywatności",
     cookies: "Polityka plików cookie",
+    refund: "Polityka zwrotów",
     settings: "Ustawienia cookie",
   },
   fr: {
@@ -34,6 +37,7 @@ const LABELS: Record<AppLanguage, { rights: string; nav: string; terms: string; 
     terms: "Conditions générales",
     privacy: "Politique de confidentialité",
     cookies: "Politique de cookies",
+    refund: "Politique de remboursement",
     settings: "Paramètres des cookies",
   },
   ru: {
@@ -42,6 +46,7 @@ const LABELS: Record<AppLanguage, { rights: string; nav: string; terms: string; 
     terms: "Условия использования",
     privacy: "Политика конфиденциальности",
     cookies: "Политика cookie",
+    refund: "Политика возврата средств",
     settings: "Настройки cookie",
   },
 };
@@ -66,6 +71,9 @@ export function PublicFooter() {
           </Link>
           <Link to="/cookie-policy" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             {l.cookies}
+          </Link>
+          <Link to="/refund-policy" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            {l.refund}
           </Link>
           <button
             type="button"

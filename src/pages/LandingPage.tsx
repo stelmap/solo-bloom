@@ -1466,6 +1466,7 @@ function LandingFooter({ onContact }: { onContact: () => void }) {
     terms: pick({ en: "Terms and Conditions", uk: "Умови", fr: "Conditions", pl: "Regulamin", ru: "Условия" }),
     privacy: pick({ en: "Privacy", uk: "Конфіденційність", fr: "Confidentialité", pl: "Prywatność", ru: "Конфиденциальность" }),
     cookies: "Cookies",
+    refund: pick({ en: "Refunds", uk: "Повернення коштів", fr: "Remboursements", pl: "Zwroty", ru: "Возврат средств" }),
     manageCookies: pick({ en: "Manage cookies", uk: "Керувати cookies", fr: "Gérer les cookies", pl: "Zarządzaj cookies", ru: "Управление cookies" }),
   };
 
@@ -1512,6 +1513,7 @@ function LandingFooter({ onContact }: { onContact: () => void }) {
             <Link to="/terms" className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.terms}</Link>
             <Link to="/privacy" className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.privacy}</Link>
             <Link to="/cookie-policy" className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.cookies}</Link>
+            <Link to="/refund-policy" className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.refund}</Link>
             <button
               type="button"
               onClick={() => {
