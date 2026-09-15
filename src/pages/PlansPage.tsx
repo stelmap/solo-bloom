@@ -640,36 +640,35 @@ export default function PlansPage() {
                       type="button"
                       onClick={() => startCheckout(plan.id)}
                       disabled={continuing}
+                      aria-pressed={isSelected}
                       className={cn(
-                        "relative p-8 rounded-2xl bg-card flex flex-col text-left transition-all disabled:cursor-not-allowed",
-                        isHighlighted
-                          ? "border-2 border-primary shadow-xl"
-                          : "border border-border",
+                        "relative p-6 rounded-2xl bg-card flex flex-col text-left transition-all disabled:cursor-not-allowed",
                         isSelected
-                          ? "ring-2 ring-primary/40 -translate-y-0.5"
-                          : "hover:-translate-y-0.5 hover:shadow-md"
+                          ? "border-2 border-primary ring-4 ring-primary/15 shadow-lg -translate-y-0.5"
+                          : isHighlighted
+                            ? "border-2 border-primary/50 shadow-md hover:-translate-y-0.5 hover:shadow-lg"
+                            : "border border-border hover:-translate-y-0.5 hover:shadow-md"
                       )}
                     >
-                      {badgeText && (
-                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-primary text-primary-foreground shadow-sm">
-                          <Star className="h-3.5 w-3.5" />
-                          {badgeText}
+                      {(isSelected || badgeText) && (
+                        <span
+                          className={cn(
+                            "absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap shadow-sm",
+                            isSelected
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-primary/10 text-primary border border-primary/30",
+                          )}
+                        >
+                          {isSelected ? <Check className="h-3.5 w-3.5" /> : <Star className="h-3.5 w-3.5" />}
+                          {isSelected ? tr(COPY.selectedLabel) : badgeText}
                         </span>
                       )}
 
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="text-2xl font-semibold text-foreground">{displayName}</h3>
-                        {isSelected && (
-                          <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0">
-                            <Check className="h-3.5 w-3.5" />
-                          </div>
-                        )}
+                      <div className="flex items-start justify-between gap-2 mt-1">
+                        <h3 className="text-lg font-semibold text-foreground">{displayName}</h3>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed min-h-[3rem]">
-                        {displayDesc}
-                      </p>
 
-                      <div className="mb-2">
+                      <div className="mt-3">
                         {price ? (
                           <SupportUkrainePrice
                             lang={lang}
