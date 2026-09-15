@@ -11,8 +11,7 @@ export const termsPl: LegalDoc = {
     {
       h: "1. Kto świadczy usługę",
       body: [
-        "Solo .Bizz jest prowadzony przez operatora Solo .Bizz, kontakt: info@solo-bizz.com.",
-        "**Uzupełnienie:** pełne dane podmiotu prawnego zostaną opublikowane tutaj po ich formalnym potwierdzeniu.",
+        "Solo .Bizz jest prowadzony przez **Olhę Stelmakh, jednoosobową działalność gospodarczą (FOP)**, numer identyfikacyjny 3184604284, adres rejestrowy: ul. Likarska 21, Briuchowycze, Lwów, 79491, Ukraina. Kontakt: info@solo-bizz.com.",
         "Zakładając konto lub korzystając z Solo .Bizz, akceptujesz ten Regulamin. Jeśli go nie akceptujesz, prosimy nie korzystać z usługi.",
       ],
     },

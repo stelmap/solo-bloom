@@ -13,7 +13,7 @@ export const privacyFr: LegalDoc = {
       body: [
         "Solo .Bizz est une plateforme de gestion de pratique destinée aux professionnels indépendants : psychologues, thérapeutes, superviseurs, coachs, enseignants et consultants.",
         "Pour les traitements décrits ici dans lesquels Solo .Bizz agit en tant que responsable, le responsable est l'exploitant de Solo .Bizz. Contact : info@solo-bizz.com.",
-        "**Précision :** les informations complètes sur l'entité juridique (dénomination, adresse, numéro d'immatriculation, numéro de TVA) seront publiées ici après confirmation officielle. D'ici là, toute demande relative à la vie privée peut être adressée à l'adresse ci-dessus.",
+        "Solo .Bizz est exploité par **Olha Stelmakh, entrepreneure individuelle (FOP)**, numéro d'identification 3184604284, immatriculée au 21 rue Likarska, Brioukhovytchi, Lviv, 79491, Ukraine.",
         "Nous n'avons pas désigné de délégué à la protection des données. Les demandes sont traitées via l'adresse de contact ci-dessus.",
       ],
     },

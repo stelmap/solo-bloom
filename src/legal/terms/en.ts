@@ -1,11 +1,6 @@
 import type { LegalDoc } from "@/legal/types";
 import { LEGAL_LAST_UPDATED } from "@/legal/types";
 
-// TODO (administrator): confirm and insert (a) the legal entity name, address
-// and registration details of the Solo .Bizz operator in section 1, and
-// (b) the governing law and competent courts in section 16. These are not
-// available in the project configuration and must not be invented.
-
 export const termsEn: LegalDoc = {
   back: "Back to home",
   title: "Terms & Conditions",
@@ -16,8 +11,7 @@ export const termsEn: LegalDoc = {
     {
       h: "1. Who provides the service",
       body: [
-        "Solo .Bizz is operated by the Solo .Bizz operator, reachable at info@solo-bizz.com.",
-        "**Note for completeness:** the full legal entity details will be published here once formally confirmed.",
+        "Solo .Bizz is operated by **Olha Volodymyrivna Stelmakh, individual entrepreneur (FOP)**, tax identification number 3184604284, registered at 21 Likarska Street, Briukhovychi, Lviv, 79491, Ukraine, reachable at info@solo-bizz.com.",
         "By creating an account or using Solo .Bizz you accept these Terms. If you do not accept them, please do not use the service.",
       ],
     },
