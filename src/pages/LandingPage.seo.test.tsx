@@ -69,12 +69,12 @@ describe("LandingSEO localized meta tags", () => {
     });
 
     expect(document.title).toBe(
-      "Solo .Bizz — CRM для психологів, коучів і приватної практики"
+      "CRM для психологів, коучів і репетиторів — Solo .Bizz"
     );
     expect(document.documentElement.lang).toBe("uk");
-    expect(getMeta('meta[name="description"]')).toMatch(/психологам, терапевтам/);
+    expect(getMeta('meta[name="description"]')).toMatch(/Клієнти, сесії, оплати та дохід/);
     expect(getMeta('meta[property="og:title"]')).toBe(
-      "Solo .Bizz — Керуйте приватною практикою без хаосу"
+      "Solo .Bizz — CRM і тарифи для приватної практики"
     );
     expect(getMeta('meta[property="og:locale"]')).toBe("uk_UA");
     expect(getMeta('meta[name="twitter:description"]')).toMatch(/Клієнти, сесії/);
