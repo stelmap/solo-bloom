@@ -650,14 +650,8 @@ export default function PlansPage() {
                       )}
                     >
                       {badgeText && (
-                        <span
-                          className={cn(
-                            "absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap",
-                            isHighlighted
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-emerald-500 text-white"
-                          )}
-                        >
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-primary text-primary-foreground shadow-sm">
+                          <Star className="h-3.5 w-3.5" />
                           {badgeText}
                         </span>
                       )}
