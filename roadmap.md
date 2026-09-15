@@ -22,3 +22,10 @@
 - [x] Remove small preview thumbnails from the overview slide
 - [x] Tabs, arrows, dots and counter drive one shared slide state
 - [x] Fluid hero layout (no fixed px), aspect-ratio screenshot, no horizontal scroll
+
+## Paddle billing migration (replaces Stripe)
+- [ ] Store Paddle credentials (sandbox API key, client token, webhook secret)
+- [ ] Recreate plans/prices in Paddle and map to `plans` table
+- [ ] Replace `create-checkout` / `check-subscription` / `customer-portal` / `stripe-webhook` with Paddle equivalents
+- [ ] Port 7-day trial and Support Ukraine 50% discount
+- [ ] Update frontend billing UI and tests
