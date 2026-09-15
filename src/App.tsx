@@ -129,6 +129,7 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <RouteAnalytics />
             <CookieConsent />
             <Suspense fallback={<PageFallback />}>
               <Routes>
