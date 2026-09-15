@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
     const [{ data: rev }, { data: client }, { data: profile }, { data: instance }] = await Promise.all([
       supabase.from("agreement_revisions").select("id, revision_number, content_snapshot, controls_snapshot, content_hash").eq("id", inv.revision_id).maybeSingle(),
       supabase.from("clients").select("name, email, communication_language").eq("id", inv.client_id).maybeSingle(),
-      supabase.from("profiles").select("full_name, business_name").eq("id", inv.user_id).maybeSingle(),
+      supabase.from("profiles").select("full_name, business_name").eq("user_id", inv.user_id).maybeSingle(),
       supabase.from("agreement_instances").select("id, status, template_version_id").eq("id", inv.instance_id).maybeSingle(),
     ]);
     if (!rev || !client || !instance) {

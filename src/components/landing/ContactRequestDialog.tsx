@@ -292,7 +292,7 @@ export function ContactRequestDialog({ open, onOpenChange, lang, placement = "To
     void supabase
       .from("profiles")
       .select("full_name, phone")
-      .eq("id", user.id)
+      .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
         if (!data) return;
