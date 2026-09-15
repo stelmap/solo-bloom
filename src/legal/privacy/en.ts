@@ -18,7 +18,7 @@ export const privacyEn: LegalDoc = {
       body: [
         "Solo .Bizz is a practice-management platform for independent professionals such as psychologists, therapists, supervisors, coaches, tutors and consultants.",
         "For the processing described in this policy where Solo .Bizz acts as controller, the operator of Solo .Bizz is the controller. You can reach us at info@solo-bizz.com.",
-        "**Note for completeness:** the full legal entity details (registered company name, address, registration number, VAT number) will be published here once formally confirmed. Until then, all privacy requests can be sent to the contact address above.",
+        "Solo .Bizz is operated by **Olha Volodymyrivna Stelmakh, individual entrepreneur (FOP)**, tax identification number 3184604284, registered at 21 Likarska Street, Briukhovychi, Lviv, 79491, Ukraine.",
         "We have not appointed a Data Protection Officer. Privacy requests are handled through the contact address above.",
       ],
     },

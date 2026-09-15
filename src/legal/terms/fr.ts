@@ -11,8 +11,7 @@ export const termsFr: LegalDoc = {
     {
       h: "1. Qui fournit le service",
       body: [
-        "Solo .Bizz est exploité par l'exploitant de Solo .Bizz, joignable à info@solo-bizz.com.",
-        "**Précision :** les informations complètes sur l'entité juridique seront publiées ici après confirmation officielle.",
+        "Solo .Bizz est exploité par **Olha Stelmakh, entrepreneure individuelle (FOP)**, numéro d'identification 3184604284, immatriculée au 21 rue Likarska, Brioukhovytchi, Lviv, 79491, Ukraine, joignable à info@solo-bizz.com.",
         "En créant un compte ou en utilisant Solo .Bizz, vous acceptez ces Conditions. Si vous ne les acceptez pas, n'utilisez pas le service.",
       ],
     },

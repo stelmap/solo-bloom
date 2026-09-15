@@ -13,7 +13,7 @@ export const privacyPl: LegalDoc = {
       body: [
         "Solo .Bizz to platforma do zarządzania praktyką dla niezależnych specjalistów: psychologów, terapeutów, superwizorów, coachów, korepetytorów i konsultantów.",
         "W zakresie przetwarzania opisanego w tej polityce, w którym Solo .Bizz działa jako administrator, administratorem jest operator Solo .Bizz. Kontakt: info@solo-bizz.com.",
-        "**Uzupełnienie:** pełne dane podmiotu prawnego (nazwa, adres, numer rejestrowy, numer VAT) zostaną opublikowane tutaj po ich formalnym potwierdzeniu. Do tego czasu wszystkie żądania dotyczące prywatności prosimy kierować na powyższy adres.",
+        "Operatorem Solo .Bizz jest **Olha Stelmakh, jednoosobowa działalność gospodarcza (FOP)**, numer identyfikacyjny 3184604284, adres rejestrowy: ul. Likarska 21, Briuchowycze, Lwów, 79491, Ukraina.",
         "Nie wyznaczyliśmy inspektora ochrony danych. Sprawy dotyczące prywatności obsługujemy pod powyższym adresem kontaktowym.",
       ],
     },
