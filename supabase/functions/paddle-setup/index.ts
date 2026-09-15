@@ -19,7 +19,8 @@ const json = (body: unknown, status: number) =>
   });
 
 const PADDLE_API = "https://sandbox-api.paddle.com";
-const SUPPORT_UA_CODE = "SUPPORT_UA_PSYCHOTHERAPY_50";
+// Paddle discount codes must be alphanumeric, max 32 chars.
+const SUPPORT_UA_CODE = "SUPPORTUA50";
 
 const PLAN_NAMES: Record<string, string> = {
   solo: "Solo .Bizz Solo",
