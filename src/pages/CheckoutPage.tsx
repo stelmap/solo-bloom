@@ -13,7 +13,7 @@ import BrandName from "@/components/BrandName";
  * and a clear success state is shown once the payment completes.
  */
 export default function CheckoutPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const paddleRef = useRef<Paddle | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "failed" | "done">("loading");
