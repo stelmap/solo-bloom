@@ -1,7 +1,7 @@
 import { BrandName, BrandText } from "@/components/BrandName";
 import { AboutOverlay } from "@/components/landing/AboutOverlay";
 import { ContactRequestDialog, contactCtaLabel } from "@/components/landing/ContactRequestDialog";
-import { useState, useRef, useCallback, createContext, useContext, useEffect, type ReactNode } from "react";
+import { useState, useRef, useCallback, createContext, useContext, useEffect, type ReactNode, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { BookingDialog } from "@/components/BookingDialog";
@@ -28,7 +28,7 @@ import { HeroCarousel, HERO_SLIDES } from "@/components/landing/HeroCarousel";
 
 import { WorkflowSection } from "@/components/landing/WorkflowSection";
 import { OutcomeStrip } from "@/components/landing/OutcomeStrip";
-import { PricingFollowUp } from "@/components/landing/PricingFollowUp";
+import { PricingFollowUp, FAQ, p as pickCopy } from "@/components/landing/PricingFollowUp";
 import { TrustSection } from "@/components/landing/TrustSection";
 import { lt } from "@/lib/landingRedesignCopy";
 import {
