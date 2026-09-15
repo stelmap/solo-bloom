@@ -14,6 +14,7 @@ import { SignedAgreementDocument, useSignedPdfLabels } from "@/components/Signed
 import { downloadSignedAgreementPdf, type SignedAgreementData } from "@/lib/signedAgreementPdf";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { describeError } from "@/lib/errorMessages";
+import { SeoHead } from "@/components/SeoHead";
 
 
 type Control =
@@ -697,6 +698,12 @@ function errorLabel(code: string | undefined, t: (k: string, v?: Record<string, 
 function Shell({ children, wide }: { children: React.ReactNode; wide?: boolean }) {
   return (
     <div className="min-h-screen bg-background flex items-start justify-center py-10 px-4">
+      <SeoHead
+        path="/agreement"
+        title="Client agreement — Solo .Bizz"
+        description="Private link to review and sign a client agreement issued by a Solo .Bizz practitioner."
+        noindex
+      />
       <div className={`w-full ${wide ? "max-w-3xl" : "max-w-xl"} bg-card border border-border rounded-xl p-6 sm:p-8 shadow-sm`}>
         {children}
       </div>
