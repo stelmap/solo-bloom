@@ -1246,7 +1246,7 @@ export default {
   "plans.mostPopular": "Most popular",
   "plans.savePctVsMonthly": "Save {pct}% vs monthly",
   "plans.loadingNone": "No active plans available yet.",
-  "plans.footerSecure": "Secure checkout via Stripe. Cancel anytime from Settings.",
+  "plans.footerSecure": "Secure checkout via Paddle. Cancel anytime from Settings.",
   "privacy.shortClients": "Your clients' data is protected. We don't see or use client information.",
   "privacy.longClients": "Your client data stays private. Solo .Bizz does not read, analyze or use information about your clients. Client data is protected, and only the practice owner has access.",
   "plans.continue": "Continue",
