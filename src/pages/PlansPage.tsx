@@ -465,6 +465,14 @@ export default function PlansPage() {
           </button>
         </div>
 
+        {isMigrating && (
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+            <div className="rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-900">
+              {MIGRATION_NOTE[lang] ?? MIGRATION_NOTE.en}
+            </div>
+          </div>
+        )}
+
         <section className="px-4 sm:px-6 pt-4 pb-8 sm:pb-10">
           <div className="max-w-6xl mx-auto">
             <header className="text-center mb-6 space-y-1.5">
