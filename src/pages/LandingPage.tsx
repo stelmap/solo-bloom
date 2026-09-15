@@ -313,8 +313,8 @@ const C = {
   },
 
   // Pricing
-  pricingEyebrow: { en: "Pricing", fr: "Tarifs", uk: "Ціни", pl: "Cennik" },
-  pricingTitle: { en: "Choose the plan that fits you", fr: "Choisissez le forfait qui vous convient", uk: "Оберіть план, який підходить саме вам", pl: "Wybierz plan odpowiedni dla Ciebie" },
+  pricingEyebrow: { en: "Pricing", fr: "Tarifs", uk: "Тарифи", pl: "Cennik" },
+  pricingTitle: { en: "Choose the plan that fits you", fr: "Choisissez le forfait qui vous convient", uk: "Тарифи Solo .Bizz — оберіть план для своєї практики", pl: "Wybierz plan odpowiedni dla Ciebie" },
   pricingSub: {
     en: "All core features are included in every plan. The only difference is the number of active clients. No hidden limits.",
     fr: "Toutes les fonctionnalités principales sont incluses dans chaque forfait. La seule différence — le nombre de clients actifs. Aucune limite cachée.",
@@ -1540,10 +1540,10 @@ const SEO_META: Record<AppLanguage, { title: string; description: string; ogTitl
     htmlLang: "en",
   },
   uk: {
-    title: "Solo .Bizz — CRM для психологів, коучів і приватної практики",
-    description: "Solo .Bizz допомагає психологам, терапевтам, коучам і репетиторам вести клієнтів, сесії, оплати та дохід — в одному простому робочому просторі.",
-    ogTitle: "Solo .Bizz — Керуйте приватною практикою без хаосу",
-    ogDesc: "Клієнти, сесії, оплати та дохід в одному місці. Створено для психологів, терапевтів, коучів і репетиторів.",
+    title: "CRM для психологів, коучів і репетиторів — Solo .Bizz",
+    description: "Клієнти, сесії, оплати та дохід приватної практики в одному місці. Тарифи від 0 €: безкоштовний план до 5 клієнтів, картка не потрібна.",
+    ogTitle: "Solo .Bizz — CRM і тарифи для приватної практики",
+    ogDesc: "Клієнти, сесії, оплати та дохід в одному місці. Безкоштовний план до 5 клієнтів, далі від 6 € на місяць. Для психологів, коучів і репетиторів.",
     ogLocale: "uk_UA",
     htmlLang: "uk",
   },
