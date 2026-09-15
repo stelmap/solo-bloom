@@ -488,7 +488,7 @@ export function PracticeProfileSection() {
         <div className="flex-1 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <Button asChild variant="outline" size="sm" disabled={uploading}>
-              <label className="cursor-pointer">
+              <label aria-label={t("settings.uploadPhoto") || "Upload photo"} className="cursor-pointer">
                 {uploading ? (
                   <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("common.uploading") || "Uploading…"}</>
                 ) : form.avatar_url ? (
@@ -496,7 +496,7 @@ export function PracticeProfileSection() {
                 ) : (
                   t("settings.uploadPhoto") || "Upload photo"
                 )}
-                <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
+                <input type="file" accept="image/*" aria-label={t("settings.uploadPhoto") || "Upload photo"} className="hidden" onChange={handleFile} />
               </label>
             </Button>
             {form.avatar_url && (
