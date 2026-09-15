@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/i18n/LanguageContext";
 import BrandName from "@/components/BrandName";
 import { SeoHead } from "@/components/SeoHead";
+import { track } from "@/lib/analytics";
 
 /**
  * Paddle hosted-checkout landing page. Paddle redirects buyers here with a
@@ -20,6 +21,10 @@ export default function CheckoutPage() {
   const [status, setStatus] = useState<"loading" | "ready" | "failed" | "done">("loading");
 
   useEffect(() => {
+    track("pricing_page_viewed", { surface: "paddle_checkout_page" });
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
@@ -29,7 +34,14 @@ export default function CheckoutPage() {
           token: data.clientToken,
           environment: data.environment === "production" ? "production" : "sandbox",
           eventCallback: (event) => {
-            if (event?.name === "checkout.completed") setStatus("done");
+            if (event?.name === "checkout.completed") {
+              setStatus("done");
+              track("checkout_completed", { surface: "paddle_checkout_page" });
+              track("payment_succeeded", { surface: "paddle_checkout_page" });
+            }
+            if (event?.name === "checkout.error") {
+              track("payment_failed", { surface: "paddle_checkout_page" });
+            }
           },
         });
         if (cancelled || !paddle) return;
@@ -49,8 +61,10 @@ export default function CheckoutPage() {
     const txn = new URLSearchParams(window.location.search).get("_ptxn");
     if (!paddleRef.current || !txn) {
       setStatus("failed");
+      track("payment_failed", { surface: "paddle_checkout_page", reason: "checkout_unavailable" });
       return;
     }
+    track("checkout_started", { surface: "paddle_checkout_page" });
     // Paddle has no Ukrainian locale; fall back to English for it.
     const paddleLocale = ["en", "pl", "fr", "ru"].includes(lang) ? lang : "en";
     paddleRef.current.Checkout.open({
