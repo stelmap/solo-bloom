@@ -686,7 +686,7 @@ export default function PlansPage() {
                         )}
                       </div>
 
-                      <p className="text-xs text-muted-foreground mb-5 min-h-[1rem]">
+                      <p className="mt-1 text-xs text-muted-foreground">
                         {campaignEligible && isCampaignPlan(plan.code)
                           ? billedLabel
                           : equivPerMonth !== null && price
@@ -695,24 +695,24 @@ export default function PlansPage() {
                       </p>
 
                       {pill && (
-                        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-muted/60 border border-border mb-6">
+                        <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/60 border border-border">
                           <Users className="h-4 w-4 text-muted-foreground shrink-0" />
                           <span className="text-sm font-medium text-foreground">{pill}</span>
                         </div>
                       )}
 
-                      <ul className="space-y-3 mb-8 flex-1">
+                      <ul className="mt-4 space-y-2 flex-1">
                         {features.map((f) => (
-                          <li key={f} className="flex items-start gap-3 text-foreground">
+                          <li key={f} className="flex items-start gap-2.5 text-foreground">
                             <CheckCircle2 className={cn("h-4 w-4 shrink-0 mt-0.5", bulletColor)} />
-                            <span className="text-sm">{f}</span>
+                            <span className="text-sm leading-snug">{f}</span>
                           </li>
                         ))}
                       </ul>
 
                       <div
                         className={cn(
-                          "mt-auto w-full h-12 px-8 inline-flex items-center justify-center rounded-xl text-base font-semibold gap-2 transition-all",
+                          "mt-6 w-full h-11 px-6 inline-flex items-center justify-center rounded-xl text-sm font-semibold gap-2 transition-all",
                           isSelected
                             ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
                             : "border border-border text-foreground bg-background hover:border-primary/40"
