@@ -3192,6 +3192,205 @@ export type Database = {
           },
         ]
       }
+      support_articles: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_published: boolean
+          language: string
+          module: string
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          language?: string
+          module: string
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          language?: string
+          module?: string
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      support_conversations: {
+        Row: {
+          anon_id: string | null
+          category: string | null
+          created_at: string
+          error_code: string | null
+          error_connected: boolean
+          escalated: boolean
+          feedback: string | null
+          feedback_comment: string | null
+          first_question: string | null
+          id: string
+          language: string
+          message_count: number
+          module: string | null
+          page_path: string | null
+          resolved_by_bot: boolean | null
+          surface: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          anon_id?: string | null
+          category?: string | null
+          created_at?: string
+          error_code?: string | null
+          error_connected?: boolean
+          escalated?: boolean
+          feedback?: string | null
+          feedback_comment?: string | null
+          first_question?: string | null
+          id?: string
+          language?: string
+          message_count?: number
+          module?: string | null
+          page_path?: string | null
+          resolved_by_bot?: boolean | null
+          surface?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          anon_id?: string | null
+          category?: string | null
+          created_at?: string
+          error_code?: string | null
+          error_connected?: boolean
+          escalated?: boolean
+          feedback?: string | null
+          feedback_comment?: string | null
+          first_question?: string | null
+          id?: string
+          language?: string
+          message_count?: number
+          module?: string | null
+          page_path?: string | null
+          resolved_by_bot?: boolean | null
+          surface?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      support_issues: {
+        Row: {
+          admin_note: string | null
+          bot_answer: string | null
+          category: string | null
+          conversation_id: string | null
+          created_at: string
+          description: string | null
+          error_code: string | null
+          id: string
+          language: string | null
+          module: string | null
+          page_path: string | null
+          question: string | null
+          status: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          admin_note?: string | null
+          bot_answer?: string | null
+          category?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          description?: string | null
+          error_code?: string | null
+          id?: string
+          language?: string | null
+          module?: string | null
+          page_path?: string | null
+          question?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          admin_note?: string | null
+          bot_answer?: string | null
+          category?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          description?: string | null
+          error_code?: string | null
+          id?: string
+          language?: string | null
+          module?: string | null
+          page_path?: string | null
+          question?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_issues_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "support_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          role: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          role: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "support_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppressed_emails: {
         Row: {
           created_at: string
