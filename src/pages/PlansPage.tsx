@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { AlertCircle, Check, CheckCircle2, Loader2, Sparkles, ArrowLeft, Trash2, ShieldCheck, Users, Star, Lock, RefreshCw, ChevronRight, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
