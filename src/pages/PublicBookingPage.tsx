@@ -410,7 +410,12 @@ export default function PublicBookingPage() {
           p_from_date: fmtDate(from),
           p_to_date: fmtDate(to),
         });
-        setSlots(((fresh as any[]) || []).map((r) => r.slot_at).slice(0, 200));
+        setSlots(
+          ((fresh as any[]) || [])
+            .map((r) => r.slot_at)
+            .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
+            .slice(0, 200),
+        );
         setSlotsLoading(false);
       }
       return;
