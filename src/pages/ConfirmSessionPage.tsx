@@ -111,7 +111,7 @@ export default function ConfirmSessionPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-foreground">
-            <BrandName />
+            <BrandName /> — Confirm your session
           </h1>
         </div>
 
