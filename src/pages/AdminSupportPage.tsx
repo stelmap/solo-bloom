@@ -3,7 +3,6 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { checkIsAdmin } from "@/lib/sessionGuard";
-import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -202,17 +201,15 @@ export default function AdminSupportPage() {
 
   if (authLoading || isAdmin === null) {
     return (
-      <AppLayout>
-        <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
-      </AppLayout>
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
     );
   }
   if (!user || !isAdmin) return <Navigate to="/dashboard" replace />;
 
   return (
-    <AppLayout>
+    <div className="min-h-screen bg-background px-4 py-8 sm:px-6">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">Support / Helpdesk</h1>
         <Button variant="outline" size="sm" onClick={load} disabled={loading}>
@@ -475,6 +472,6 @@ export default function AdminSupportPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AppLayout>
+    </div>
   );
 }
