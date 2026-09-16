@@ -97,6 +97,9 @@ export default function PlansPage() {
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [promoOpen, setPromoOpen] = useState(false);
+  // Manually entered Paddle discount code (any active code from the Paddle account).
+  const [promoInput, setPromoInput] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
 
   useEffect(() => {
     track("pricing_page_viewed", { surface: "in_app_plans" });
