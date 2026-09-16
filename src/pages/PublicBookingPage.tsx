@@ -252,7 +252,12 @@ export default function PublicBookingPage() {
       if (error) {
         if (!opts?.silent) setError(describeError(error));
       } else {
-        const next = ((data as any[]) || []).map((r) => r.slot_at).slice(0, 200);
+        // Always chronological: earliest date/time first (sort BEFORE the cap
+        // so the first slots we keep are the soonest ones).
+        const next = ((data as any[]) || [])
+          .map((r) => r.slot_at)
+          .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
+          .slice(0, 200);
         setSlots((prev) => (prev.length === next.length && prev.every((s, i) => s === next[i]) ? prev : next));
         // If the visitor had picked a slot that has since been taken or
         // blocked, drop the selection and tell them right away.
