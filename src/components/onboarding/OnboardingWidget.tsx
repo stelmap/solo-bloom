@@ -42,8 +42,36 @@ export function OnboardingWidget() {
 
   // Closing or minimizing the wizard only lasts for the current signed-in
   // session — a new login re-opens it while onboarding is unfinished.
-  const [closed, setClosed] = useState(false);
-  const [minimized, setMinimized] = useState(false);
+  // The widget remounts on every route change (AppLayout lives inside each
+  // page), so the choice is kept in sessionStorage instead of local state.
+  const sessionKey = (name: string) => `onbj:${name}:${user?.id ?? "anon"}`;
+  const readFlag = (name: string) => {
+    try {
+      return sessionStorage.getItem(sessionKey(name)) === "1";
+    } catch {
+      return false;
+    }
+  };
+  const writeFlag = (name: string, value: boolean) => {
+    try {
+      if (value) sessionStorage.setItem(sessionKey(name), "1");
+      else sessionStorage.removeItem(sessionKey(name));
+    } catch {
+      /* storage unavailable — fall back to in-memory state only */
+    }
+  };
+
+  const [closed, setClosedState] = useState(() => readFlag("closed"));
+  const [minimized, setMinimizedState] = useState(() => readFlag("minimized"));
+
+  const setClosed = (v: boolean) => {
+    writeFlag("closed", v);
+    setClosedState(v);
+  };
+  const setMinimized = (v: boolean) => {
+    writeFlag("minimized", v);
+    setMinimizedState(v);
+  };
 
   const overlayOpen = useOverlayOpen();
   const qc = useQueryClient();
@@ -68,12 +96,17 @@ export function OnboardingWidget() {
     return () => window.removeEventListener("focus", onFocus);
   }, [qc]);
 
-  // Signing in as (another) user resets the session-local hidden state.
+  // Signing in as (another) user reloads the session-local hidden state.
+  // Flags are stored per user id, so a route remount keeps the user's choice.
   const wasDismissedAtLogin = useRef<boolean | null>(null);
+  const lastUserId = useRef<string | undefined>(user?.id);
   useEffect(() => {
-    setClosed(false);
-    setMinimized(false);
+    if (lastUserId.current === user?.id) return;
+    lastUserId.current = user?.id;
+    setClosedState(readFlag("closed"));
+    setMinimizedState(readFlag("minimized"));
     wasDismissedAtLogin.current = null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   // Snapshot, once per signed-in session, whether onboarding was already
