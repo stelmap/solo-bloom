@@ -137,6 +137,7 @@ export function AppSidebar() {
       { icon: ShieldCheck, label: "Users", path: "/admin/users" },
       { icon: ShieldCheck, label: "Reviews", path: "/admin/reviews" },
       { icon: ShieldCheck, label: "Subscriptions", path: "/admin/subscriptions" },
+      { icon: ShieldCheck, label: "Support", path: "/admin/support" },
     ];
     if (user?.email?.toLowerCase() === "o.gilevich@gmail.com") {
       items.push(
