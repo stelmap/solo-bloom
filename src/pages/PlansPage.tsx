@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { AlertCircle, Check, CheckCircle2, Loader2, Sparkles, ArrowLeft, Trash2, ShieldCheck, Users, Star, Lock, RefreshCw, ChevronRight, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -97,6 +98,9 @@ export default function PlansPage() {
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [promoOpen, setPromoOpen] = useState(false);
+  // Manually entered Paddle discount code (any active code from the Paddle account).
+  const [promoInput, setPromoInput] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
 
   useEffect(() => {
     track("pricing_page_viewed", { surface: "in_app_plans" });
@@ -123,6 +127,13 @@ export default function PlansPage() {
 
   const COPY = {
     mfaSecurity: { en: "MFA & data protection", fr: "MFA et protection des données", uk: "MFA та захист даних", pl: "MFA i ochrona danych", ru: "MFA и защита данных" },
+    promoTitle: { en: "Have a promo code?", fr: "Vous avez un code promo ?", uk: "Маєте промокод?", pl: "Masz kod promocyjny?", ru: "Есть промокод?" },
+    promoPlaceholder: { en: "Enter code", fr: "Saisir le code", uk: "Введіть код", pl: "Wpisz kod", ru: "Введите код" },
+    promoApply: { en: "Apply", fr: "Appliquer", uk: "Застосувати", pl: "Zastosuj", ru: "Применить" },
+    promoRemove: { en: "Remove", fr: "Retirer", uk: "Прибрати", pl: "Usuń", ru: "Убрать" },
+    promoApplied: { en: "Code applied. The discount is shown at payment.", fr: "Code appliqué. La remise s'affiche au paiement.", uk: "Код застосовано. Знижку буде видно під час оплати.", pl: "Kod zastosowany. Rabat zobaczysz przy płatności.", ru: "Код применён. Скидка будет видна при оплате." },
+    promoInvalidTitle: { en: "Promo code not valid", fr: "Code promo non valide", uk: "Промокод недійсний", pl: "Kod promocyjny nieprawidłowy", ru: "Промокод недействителен" },
+    promoInvalidBody: { en: "Check the code and try again, or continue without it.", fr: "Vérifiez le code et réessayez, ou continuez sans lui.", uk: "Перевірте код і спробуйте ще раз або продовжте без нього.", pl: "Sprawdź kod i spróbuj ponownie lub kontynuuj bez niego.", ru: "Проверьте код и попробуйте снова или продолжите без него." },
     billedMonthly: { en: "Billed monthly", fr: "Facturé mensuellement", uk: "Оплата щомісяця", pl: "Rozliczane co miesiąc", ru: "Оплата ежемесячно" },
     billedQuarterly: { en: "Billed every 3 months", fr: "Facturé tous les 3 mois", uk: "Оплата раз на 3 місяці", pl: "Rozliczane co 3 miesiące", ru: "Оплата раз в 3 месяца" },
     billedYearly: { en: "Billed yearly", fr: "Facturé annuellement", uk: "Оплата раз на рік", pl: "Rozliczane co rok", ru: "Оплата раз в год" },
@@ -403,9 +414,9 @@ export default function PlansPage() {
           billingPeriod: period,
           withTrial: false,
           locale: lang,
-          // The backend re-validates eligibility; this is only a hint so the
-          // coupon is pre-applied for users who entered the promo code.
-          promoCode: campaignEligible ? SUPPORT_UA_PROMO_CODE : null,
+          // A manually entered code wins; otherwise the backend re-validates
+          // campaign eligibility and pre-applies the campaign coupon.
+          promoCode: appliedPromo ?? (campaignEligible ? SUPPORT_UA_PROMO_CODE : null),
         },
       });
       const durationMs = Date.now() - startedAt;
@@ -421,6 +432,18 @@ export default function PlansPage() {
           }
         } catch {
           // ignore — fall back to error.message
+        }
+        if (serverCode === "invalid_promo_code") {
+          window.clearTimeout(slowTimer);
+          setSlowCheckout(false);
+          setContinuing(false);
+          setAppliedPromo(null);
+          toast({
+            title: tr(COPY.promoInvalidTitle),
+            description: tr(COPY.promoInvalidBody),
+            variant: "destructive",
+          });
+          return;
         }
         if (serverCode === "checkout_not_enabled") {
           window.clearTimeout(slowTimer);
@@ -745,6 +768,54 @@ export default function PlansPage() {
 
             {!loading && orderedPlans.length > 0 && (
               <p className="mt-6 text-center text-xs text-muted-foreground">{tr(COPY.docsNote)}</p>
+            )}
+
+            {/* Promo code — any active discount code from the payment provider */}
+            {!loading && orderedPlans.length > 0 && (
+              <div className="mt-8 mx-auto w-full max-w-md rounded-2xl border border-border bg-card p-5">
+                <label htmlFor="promo-code" className="block text-sm font-medium text-foreground">
+                  {tr(COPY.promoTitle)}
+                </label>
+                <div className="mt-3 flex gap-2">
+                  <Input
+                    id="promo-code"
+                    value={promoInput}
+                    onChange={(e) => setPromoInput(e.target.value.toUpperCase().slice(0, 40))}
+                    placeholder={tr(COPY.promoPlaceholder)}
+                    disabled={Boolean(appliedPromo)}
+                    autoComplete="off"
+                    spellCheck={false}
+                    className="uppercase"
+                  />
+                  {appliedPromo ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setAppliedPromo(null);
+                        setPromoInput("");
+                      }}
+                    >
+                      {tr(COPY.promoRemove)}
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={promoInput.trim().length < 3}
+                      onClick={() => setAppliedPromo(promoInput.trim().toUpperCase())}
+                    >
+                      {tr(COPY.promoApply)}
+                    </Button>
+                  )}
+                </div>
+                {appliedPromo && (
+                  <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Check className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                    {tr(COPY.promoApplied)}
+                  </p>
+                )}
+              </div>
             )}
 
             {/* Support Ukrainian Sole Practitioners — compact pill + promo code */}

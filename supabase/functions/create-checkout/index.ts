@@ -132,6 +132,25 @@ serve(async (req) => {
         log("Legacy discount lookup failed", { message: err instanceof Error ? err.message : String(err) });
       }
     }
+
+    // Manually entered promo code: any active Paddle discount code works.
+    // Codes are 3–40 chars, letters/digits/dashes only — reject anything else
+    // before it reaches the Paddle API.
+    const manualCode =
+      promoCodeSent && promoCodeSent !== SUPPORT_UA_DISCOUNT_CODE && /^[A-Z0-9-]{3,40}$/.test(promoCodeSent)
+        ? promoCodeSent
+        : null;
+    if (!discountId && manualCode) {
+      try {
+        discountId = await findDiscountIdByCode(manualCode);
+      } catch (err) {
+        log("Manual discount lookup failed", { message: err instanceof Error ? err.message : String(err) });
+      }
+      if (!discountId) {
+        return json({ error: "This promo code is not valid.", code: "invalid_promo_code" }, 400);
+      }
+      log("Manual discount applied", { code: manualCode });
+    }
     if (!discountId && campaignEligible) {
       try {
         discountId = await findDiscountIdByCode(SUPPORT_UA_DISCOUNT_CODE);
