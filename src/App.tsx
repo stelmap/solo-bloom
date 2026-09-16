@@ -111,11 +111,9 @@ const queryClient = new QueryClient({
 });
 
 function PageFallback() {
-  return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="animate-pulse text-muted-foreground text-sm">Loading…</div>
-    </div>
-  );
+  // Neutral shell: no text, no flash — just the app background while the
+  // route chunk resolves.
+  return <div className="min-h-screen bg-background" aria-hidden="true" />;
 }
 
 const App = () => {
