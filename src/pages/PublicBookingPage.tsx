@@ -328,7 +328,8 @@ export default function PublicBookingPage() {
 
   const groupedByDay = useMemo(() => {
     const m: Record<string, { label: string; slots: string[] }> = {};
-    for (const s of slots) {
+    const ordered = [...slots].sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+    for (const s of ordered) {
       const d = new Date(s);
       const key = d.toLocaleDateString("en-CA", { timeZone: tz });
       const label = d.toLocaleDateString(intlLocale, {
