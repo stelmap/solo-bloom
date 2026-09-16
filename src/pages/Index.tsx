@@ -22,11 +22,7 @@ export default function Index() {
       window.location.search.includes("code="));
 
   if (loading || (hasAuthCallback && !user)) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
-      </div>
-    );
+    return <div className="min-h-screen bg-background" aria-hidden="true" />;
   }
 
   if (user) {
@@ -36,11 +32,7 @@ export default function Index() {
 
   return (
     <Suspense
-      fallback={
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <div className="animate-pulse text-muted-foreground">Loading...</div>
-        </div>
-      }
+      fallback={<div className="min-h-screen bg-background" aria-hidden="true" />}
     >
       <LandingPage />
     </Suspense>
