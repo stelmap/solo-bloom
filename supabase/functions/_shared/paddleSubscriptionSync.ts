@@ -26,6 +26,24 @@ export async function syncSubscriptionRecords(supabaseAdmin: any, input: PaddleS
   const { userId } = input;
 
   if (!input.subscribed) {
+    // Legacy (pre-Paddle) subscribers are invisible to Paddle. Their access and
+    // migration banner must survive a Paddle "no subscription found" result.
+    const { data: legacy } = await supabaseAdmin
+      .from("subscriptions")
+      .select("status, stripe_subscription_id, paddle_subscription_id, legacy_full_access")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const l = legacy as any;
+    if (
+      l &&
+      !l.paddle_subscription_id &&
+      (!!l.stripe_subscription_id || l.legacy_full_access === true) &&
+      (l.status === "active" || l.status === "trialing")
+    ) {
+      console.log("[PADDLE-SYNC] Legacy subscription kept active");
+      return;
+    }
+
     await Promise.all([
       supabaseAdmin
         .from("entitlements")
