@@ -425,6 +425,18 @@ export default function PlansPage() {
         } catch {
           // ignore — fall back to error.message
         }
+        if (serverCode === "invalid_promo_code") {
+          window.clearTimeout(slowTimer);
+          setSlowCheckout(false);
+          setContinuing(false);
+          setAppliedPromo(null);
+          toast({
+            title: tr(COPY.promoInvalidTitle),
+            description: tr(COPY.promoInvalidBody),
+            variant: "destructive",
+          });
+          return;
+        }
         if (serverCode === "checkout_not_enabled") {
           window.clearTimeout(slowTimer);
           setSlowCheckout(false);
