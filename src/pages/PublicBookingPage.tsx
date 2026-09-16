@@ -470,7 +470,7 @@ export default function PublicBookingPage() {
         <Card className="max-w-md w-full">
           <CardContent className="pt-8 pb-8 text-center">
             <CheckCircle2 className="mx-auto h-12 w-12 text-primary mb-3" />
-            <h2 className="text-xl font-semibold mb-2">{L.thankYou}</h2>
+            <h1 className="text-xl font-semibold mb-2">{L.thankYou}</h1>
             <p className="text-sm text-muted-foreground">
               {done.requiresApproval ? L.requestReceived : L.sessionConfirmed}
             </p>
