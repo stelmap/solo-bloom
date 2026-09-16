@@ -109,20 +109,71 @@ serve(async (req) => {
       }
     }
 
-    // Cache miss or stale — query Paddle
-    const customers = await paddleFetch<{ data: Array<{ id: string }> }>(
-      `/customers?email=${encodeURIComponent(userEmail)}&per_page=1`,
-    );
-    const customerId = customers.data?.[0]?.id;
+    // Legacy (pre-Paddle) subscribers still paying through the old provider.
+    // Paddle knows nothing about them, so their access must be preserved and
+    // their subscription row must never be downgraded by this check.
+    const { data: existingSub } = await supabaseAdmin
+      .from("subscriptions")
+      .select("status, stripe_subscription_id, paddle_subscription_id, legacy_full_access, legacy_access_until, current_period_end")
+      .eq("user_id", userId)
+      .maybeSingle();
 
+    const legacyRow = existingSub as any;
+    const hasLegacyAccess = !!legacyRow &&
+      !legacyRow.paddle_subscription_id &&
+      (!!legacyRow.stripe_subscription_id || legacyRow.legacy_full_access === true) &&
+      (legacyRow.status === "active" || legacyRow.status === "trialing");
+
+    // Cache miss or stale — query Paddle
     let result: Result = { ...EMPTY_RESULT };
     let subscription: any = null;
 
-    if (customerId) {
-      const subs = await paddleFetch<{ data: any[] }>(
-        `/subscriptions?customer_id=${customerId}&status=active,trialing&per_page=1`,
+    try {
+      const customers = await paddleFetch<{ data: Array<{ id: string }> }>(
+        `/customers?email=${encodeURIComponent(userEmail)}&per_page=1`,
       );
-      subscription = subs.data?.[0] ?? null;
+      const customerId = customers.data?.[0]?.id;
+
+      if (customerId) {
+        const subs = await paddleFetch<{ data: any[] }>(
+          `/subscriptions?customer_id=${customerId}&status=active,trialing&per_page=1`,
+        );
+        subscription = subs.data?.[0] ?? null;
+      }
+    } catch (paddleError) {
+      // Payment provider unreachable / misconfigured: never downgrade anyone on
+      // a failed lookup — report the last known state and leave records intact.
+      const message = paddleError instanceof Error ? paddleError.message : String(paddleError);
+      logStep("Paddle lookup failed, keeping last known state", { message });
+      const fallback: Result = {
+        ...EMPTY_RESULT,
+        subscribed: hasLegacyAccess,
+        subscription_end: hasLegacyAccess
+          ? (legacyRow?.current_period_end ?? legacyRow?.legacy_access_until ?? null)
+          : null,
+      };
+      return new Response(JSON.stringify(fallback), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    if (!subscription && hasLegacyAccess) {
+      logStep("Legacy subscription preserved", { userId });
+      const legacyResult: Result = {
+        ...EMPTY_RESULT,
+        subscribed: true,
+        subscription_end: legacyRow?.current_period_end ?? legacyRow?.legacy_access_until ?? null,
+      };
+      await supabaseAdmin.from("subscription_cache").upsert({
+        user_id: userId,
+        ...legacyResult,
+        checked_at: new Date().toISOString(),
+      }, { onConflict: "user_id" });
+      return new Response(JSON.stringify(legacyResult), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
 
     if (subscription) {
