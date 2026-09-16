@@ -406,9 +406,9 @@ export default function PlansPage() {
           billingPeriod: period,
           withTrial: false,
           locale: lang,
-          // The backend re-validates eligibility; this is only a hint so the
-          // coupon is pre-applied for users who entered the promo code.
-          promoCode: campaignEligible ? SUPPORT_UA_PROMO_CODE : null,
+          // A manually entered code wins; otherwise the backend re-validates
+          // campaign eligibility and pre-applies the campaign coupon.
+          promoCode: appliedPromo ?? (campaignEligible ? SUPPORT_UA_PROMO_CODE : null),
         },
       });
       const durationMs = Date.now() - startedAt;
