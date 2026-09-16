@@ -126,6 +126,13 @@ export default function PlansPage() {
 
   const COPY = {
     mfaSecurity: { en: "MFA & data protection", fr: "MFA et protection des données", uk: "MFA та захист даних", pl: "MFA i ochrona danych", ru: "MFA и защита данных" },
+    promoTitle: { en: "Have a promo code?", fr: "Vous avez un code promo ?", uk: "Маєте промокод?", pl: "Masz kod promocyjny?", ru: "Есть промокод?" },
+    promoPlaceholder: { en: "Enter code", fr: "Saisir le code", uk: "Введіть код", pl: "Wpisz kod", ru: "Введите код" },
+    promoApply: { en: "Apply", fr: "Appliquer", uk: "Застосувати", pl: "Zastosuj", ru: "Применить" },
+    promoRemove: { en: "Remove", fr: "Retirer", uk: "Прибрати", pl: "Usuń", ru: "Убрать" },
+    promoApplied: { en: "Code applied. The discount is shown at payment.", fr: "Code appliqué. La remise s'affiche au paiement.", uk: "Код застосовано. Знижку буде видно під час оплати.", pl: "Kod zastosowany. Rabat zobaczysz przy płatności.", ru: "Код применён. Скидка будет видна при оплате." },
+    promoInvalidTitle: { en: "Promo code not valid", fr: "Code promo non valide", uk: "Промокод недійсний", pl: "Kod promocyjny nieprawidłowy", ru: "Промокод недействителен" },
+    promoInvalidBody: { en: "Check the code and try again, or continue without it.", fr: "Vérifiez le code et réessayez, ou continuez sans lui.", uk: "Перевірте код і спробуйте ще раз або продовжте без нього.", pl: "Sprawdź kod i spróbuj ponownie lub kontynuuj bez niego.", ru: "Проверьте код и попробуйте снова или продолжите без него." },
     billedMonthly: { en: "Billed monthly", fr: "Facturé mensuellement", uk: "Оплата щомісяця", pl: "Rozliczane co miesiąc", ru: "Оплата ежемесячно" },
     billedQuarterly: { en: "Billed every 3 months", fr: "Facturé tous les 3 mois", uk: "Оплата раз на 3 місяці", pl: "Rozliczane co 3 miesiące", ru: "Оплата раз в 3 месяца" },
     billedYearly: { en: "Billed yearly", fr: "Facturé annuellement", uk: "Оплата раз на рік", pl: "Rozliczane co rok", ru: "Оплата раз в год" },
