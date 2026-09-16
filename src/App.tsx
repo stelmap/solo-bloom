@@ -10,6 +10,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 import { lazy, Suspense, ComponentType, useEffect } from "react";
 import { CookieConsent } from "@/components/CookieConsent";
+import { SupportWidget } from "@/components/support/SupportWidget";
 import { bootConsent } from "@/lib/consent";
 
 // Wrap lazy() so stale-chunk errors after a deploy trigger a one-time reload
