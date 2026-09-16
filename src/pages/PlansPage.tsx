@@ -769,6 +769,54 @@ export default function PlansPage() {
               <p className="mt-6 text-center text-xs text-muted-foreground">{tr(COPY.docsNote)}</p>
             )}
 
+            {/* Promo code — any active discount code from the payment provider */}
+            {!loading && orderedPlans.length > 0 && (
+              <div className="mt-8 mx-auto w-full max-w-md rounded-2xl border border-border bg-card p-5">
+                <label htmlFor="promo-code" className="block text-sm font-medium text-foreground">
+                  {tr(COPY.promoTitle)}
+                </label>
+                <div className="mt-3 flex gap-2">
+                  <Input
+                    id="promo-code"
+                    value={promoInput}
+                    onChange={(e) => setPromoInput(e.target.value.toUpperCase().slice(0, 40))}
+                    placeholder={tr(COPY.promoPlaceholder)}
+                    disabled={Boolean(appliedPromo)}
+                    autoComplete="off"
+                    spellCheck={false}
+                    className="uppercase"
+                  />
+                  {appliedPromo ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setAppliedPromo(null);
+                        setPromoInput("");
+                      }}
+                    >
+                      {tr(COPY.promoRemove)}
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={promoInput.trim().length < 3}
+                      onClick={() => setAppliedPromo(promoInput.trim().toUpperCase())}
+                    >
+                      {tr(COPY.promoApply)}
+                    </Button>
+                  )}
+                </div>
+                {appliedPromo && (
+                  <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Check className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                    {tr(COPY.promoApplied)}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Support Ukrainian Sole Practitioners — compact pill + promo code */}
             <div className="mt-8 flex flex-col items-center gap-2">
               <button
