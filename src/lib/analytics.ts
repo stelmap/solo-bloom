@@ -239,7 +239,12 @@ export type AnalyticsEvent =
   | "pricing_plan_select"
   | "stripe_checkout_started"
   | "stripe_checkout_completed"
-  | "stripe_checkout_cancelled";
+  | "stripe_checkout_cancelled"
+  // AI helpdesk
+  | "support_opened"
+  | "support_message_sent"
+  | "support_feedback"
+  | "support_issue_reported";
 
 // Events we persist to Supabase user_activity_events for the admin dashboard.
 const PERSISTED_EVENTS = new Set<AnalyticsEvent>([
