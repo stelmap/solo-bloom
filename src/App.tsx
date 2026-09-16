@@ -90,6 +90,7 @@ const AdminSubscriptionsPage = lazyWithReload(() => import("./pages/AdminSubscri
 const AdminDomainsPage = lazyWithReload(() => import("./pages/AdminDomainsPage"));
 const AdminAnalyticsPage = lazyWithReload(() => import("./pages/AdminAnalyticsPage"));
 const AdminTestsPage = lazyWithReload(() => import("./pages/AdminTestsPage"));
+const AdminSupportPage = lazyWithReload(() => import("./pages/AdminSupportPage"));
 const ServerUpdatePage = lazyWithReload(() => import("./pages/ServerUpdatePage"));
 const OAuthConsentPage = lazyWithReload(() => import("./pages/OAuthConsentPage"));
 const AgreementTemplatesPage = lazyWithReload(() => import("./pages/AgreementTemplatesPage"));
@@ -193,9 +194,11 @@ const App = () => {
                 <Route path="/admin/domains" element={<ProtectedRoute><AdminDomainsPage /></ProtectedRoute>} />
                 <Route path="/admin/analytics" element={<ProtectedRoute><AdminAnalyticsPage /></ProtectedRoute>} />
                 <Route path="/admin/tests" element={<ProtectedRoute><AdminTestsPage /></ProtectedRoute>} />
+                <Route path="/admin/support" element={<ProtectedRoute><AdminSupportPage /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
+            <SupportWidget />
           </BrowserRouter>
         </TooltipProvider>
       </LanguageProvider>
