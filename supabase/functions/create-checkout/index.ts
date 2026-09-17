@@ -196,6 +196,16 @@ serve(async (req) => {
         500,
       );
     }
+    if (message.includes("transaction_balance_less_than_charge_limit")) {
+      return json(
+        {
+          error:
+            "This promo code reduces the total below the minimum amount the payment provider can charge. Please use a different code or choose a longer billing period.",
+          code: "discount_below_minimum",
+        },
+        400,
+      );
+    }
     if (message.includes("transaction_checkout_not_enabled")) {
       return json(
         {
