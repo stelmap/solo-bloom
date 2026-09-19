@@ -983,10 +983,7 @@ export default function CalendarPage() {
       return false;
     }
     try {
-      // days_off is unique per (user, date): drop any other blocked row on the
-      // target date so moving never creates a duplicate record.
-      const clash = (blockedBlocksByDate[next.date] || []).find(b => b.id !== id);
-      if (clash) await supabase.from("days_off").delete().eq("id", clash.id);
+      // Multiple blocked ranges per date are allowed — move the row as-is.
       const { error } = await supabase.from("days_off").update({
         date: next.date,
         custom_start_time: `${next.start}:00`,
