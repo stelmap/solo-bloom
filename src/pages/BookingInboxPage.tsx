@@ -26,6 +26,7 @@ import { getDateLocale } from "@/lib/dateLocale";
 import { format as fnsFormat } from "date-fns";
 import { Loader2, Mail, Phone, CheckCircle2, XCircle, UserPlus, RefreshCw, AlertCircle, Sparkles } from "lucide-react";
 import { describeError } from "@/lib/errorMessages";
+import { formatWallClock } from "@/lib/timeFormat";
 
 type Lang = "en" | "uk" | "fr" | "pl";
 
@@ -160,10 +161,9 @@ export default function BookingInboxPage() {
   const { lang } = useLanguage();
   const L = COPY[(lang as Lang)] ?? COPY.en;
   const dateLocale = getDateLocale(lang);
-  const fmt = (s: string) => {
-    try { return fnsFormat(new Date(s), "PP p", { locale: dateLocale }); }
-    catch { return s; }
-  };
+  // Booking slots are stored as wall-clock times labelled UTC — always render
+  // them in UTC so the inbox matches the public booking page and the calendar.
+  const fmt = (s: string) => formatWallClock(s, lang);
 
   const initialStatus = (() => {
     if (typeof window === "undefined") return "all";
