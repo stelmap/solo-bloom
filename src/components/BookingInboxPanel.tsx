@@ -24,11 +24,13 @@ import { cn } from "@/lib/utils";
 import { sendBookingConfirmationEmail } from "@/lib/sendBookingConfirmationEmail";
 import { describeError } from "@/lib/errorMessages";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { formatWallClock } from "@/lib/timeFormat";
 
 
+// Booking slots are stored as wall-clock times labelled UTC — render them in
+// UTC so the inbox matches the public booking page, calendar and emails.
 function fmt(s: string) {
-  try { return new Date(s).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }); }
-  catch { return s; }
+  return formatWallClock(s);
 }
 
 export function BookingInboxPanel({ className }: { className?: string }) {
