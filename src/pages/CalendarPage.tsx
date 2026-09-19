@@ -937,11 +937,10 @@ export default function CalendarPage() {
         custom_end_time: `${blockEnd}:00`,
         is_non_working: false,
       }));
-      // One row per date (days_off is unique per user+date) — upsert so an
-      // existing entry for that date is replaced by the new blocked range.
+      // Several independent blocked ranges may coexist on the same date.
       const { error } = await supabase
         .from("days_off")
-        .upsert(rows as any, { onConflict: "user_id,date" });
+        .insert(rows as any);
       if (error) throw error;
       await qc.invalidateQueries({ queryKey: ["days-off"] });
       setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
