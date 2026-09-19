@@ -22,8 +22,6 @@ import {
 } from "@/hooks/useBookingInbox";
 import { toast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { getDateLocale } from "@/lib/dateLocale";
-import { format as fnsFormat } from "date-fns";
 import { Loader2, Mail, Phone, CheckCircle2, XCircle, UserPlus, RefreshCw, AlertCircle, Sparkles } from "lucide-react";
 import { describeError } from "@/lib/errorMessages";
 import { formatWallClock } from "@/lib/timeFormat";
