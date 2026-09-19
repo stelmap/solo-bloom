@@ -390,6 +390,18 @@ export function BookingInboxPanel({ className }: { className?: string }) {
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground">Client</label>
                 <ClientPicker clients={(clients as any[]).filter((c: any) => c.status !== "archived")} value={confirmClientId} onChange={setConfirmClientId} />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1 mt-1"
+                  onClick={() => {
+                    const req = confirmingFor;
+                    setConfirmingFor(null);
+                    openCreateClient(req);
+                  }}
+                >
+                  <UserPlus className="h-3.5 w-3.5" /> New client
+                </Button>
               </div>
             )}
             <div className="space-y-1">
