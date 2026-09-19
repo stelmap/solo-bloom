@@ -180,7 +180,12 @@ export function BookingInboxPanel({ className }: { className?: string }) {
         title: existing ? "Linked to existing client" : "Client created and linked",
         description: existing ? `Matched ${existing.name} by email` : undefined,
       });
+      // Continue straight into confirmation so the appointment is created too.
+      const req = creatingFor;
       setCreatingFor(null);
+      setConfirmingFor({ ...req, client_id: clientId });
+      setConfirmClientId(clientId);
+      setConfirmServiceId((services as any[])[0]?.id ?? "");
     } catch (e: any) {
       toast({ title: "Could not create client", description: describeError(e.message), variant: "destructive" });
     }

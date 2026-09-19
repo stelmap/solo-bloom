@@ -293,7 +293,13 @@ export default function BookingInboxPage() {
         title: existing ? L.toastLinkedExisting : L.toastCreated,
         description: existing ? L.toastMatchedBy(existing.name) : undefined,
       });
+      // Continue straight into confirmation so the booking itself is created
+      // for the client we just linked — never leave a half-finished request.
+      const req = creatingFor;
       setCreatingFor(null);
+      setConfirmingFor({ ...req, client_id: clientId });
+      setConfirmClientId(clientId);
+      setConfirmServiceId((services as any[])[0]?.id ?? "");
     } catch (e: any) {
       toast({ title: L.toastCouldNotCreate, description: describeError(e.message), variant: "destructive" });
     }
