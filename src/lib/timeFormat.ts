@@ -13,6 +13,26 @@ export function formatTime(time: string, use12h: boolean): string {
   return `${h12}:${m.toString().padStart(2, "0")} ${ampm}`;
 }
 
+/**
+ * Format a stored booking/appointment instant for display.
+ *
+ * Sessions are stored as wall-clock times labelled UTC (the same convention the
+ * internal calendar uses), so they must ALWAYS be rendered in UTC. Rendering
+ * them in the browser's timezone shifts the hour and makes the booking inbox
+ * disagree with the public booking page, the calendar and the emails.
+ */
+export function formatWallClock(iso: string, locale?: string): string {
+  try {
+    return new Intl.DateTimeFormat(locale || undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: "UTC",
+    }).format(new Date(iso));
+  } catch {
+    return iso;
+  }
+}
+
 /** Extract "HH:mm" from an ISO date string using UTC and format it */
 export function formatScheduledTime(isoDate: string, use12h: boolean): string {
   const d = new Date(isoDate);

@@ -24,11 +24,13 @@ import { cn } from "@/lib/utils";
 import { sendBookingConfirmationEmail } from "@/lib/sendBookingConfirmationEmail";
 import { describeError } from "@/lib/errorMessages";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { formatWallClock } from "@/lib/timeFormat";
 
 
+// Booking slots are stored as wall-clock times labelled UTC — render them in
+// UTC so the inbox matches the public booking page, calendar and emails.
 function fmt(s: string) {
-  try { return new Date(s).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }); }
-  catch { return s; }
+  return formatWallClock(s);
 }
 
 export function BookingInboxPanel({ className }: { className?: string }) {
@@ -178,7 +180,12 @@ export function BookingInboxPanel({ className }: { className?: string }) {
         title: existing ? "Linked to existing client" : "Client created and linked",
         description: existing ? `Matched ${existing.name} by email` : undefined,
       });
+      // Continue straight into confirmation so the appointment is created too.
+      const req = creatingFor;
       setCreatingFor(null);
+      setConfirmingFor({ ...req, client_id: clientId });
+      setConfirmClientId(clientId);
+      setConfirmServiceId((services as any[])[0]?.id ?? "");
     } catch (e: any) {
       toast({ title: "Could not create client", description: describeError(e.message), variant: "destructive" });
     }
@@ -383,6 +390,18 @@ export function BookingInboxPanel({ className }: { className?: string }) {
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground">Client</label>
                 <ClientPicker clients={(clients as any[]).filter((c: any) => c.status !== "archived")} value={confirmClientId} onChange={setConfirmClientId} />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1 mt-1"
+                  onClick={() => {
+                    const req = confirmingFor;
+                    setConfirmingFor(null);
+                    openCreateClient(req);
+                  }}
+                >
+                  <UserPlus className="h-3.5 w-3.5" /> New client
+                </Button>
               </div>
             )}
             <div className="space-y-1">

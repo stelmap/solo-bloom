@@ -22,10 +22,9 @@ import {
 } from "@/hooks/useBookingInbox";
 import { toast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { getDateLocale } from "@/lib/dateLocale";
-import { format as fnsFormat } from "date-fns";
 import { Loader2, Mail, Phone, CheckCircle2, XCircle, UserPlus, RefreshCw, AlertCircle, Sparkles } from "lucide-react";
 import { describeError } from "@/lib/errorMessages";
+import { formatWallClock } from "@/lib/timeFormat";
 
 type Lang = "en" | "uk" | "fr" | "pl";
 
@@ -159,11 +158,9 @@ const STATUS_TONE: Record<string, string> = {
 export default function BookingInboxPage() {
   const { lang } = useLanguage();
   const L = COPY[(lang as Lang)] ?? COPY.en;
-  const dateLocale = getDateLocale(lang);
-  const fmt = (s: string) => {
-    try { return fnsFormat(new Date(s), "PP p", { locale: dateLocale }); }
-    catch { return s; }
-  };
+  // Booking slots are stored as wall-clock times labelled UTC — always render
+  // them in UTC so the inbox matches the public booking page and the calendar.
+  const fmt = (s: string) => formatWallClock(s, lang);
 
   const initialStatus = (() => {
     if (typeof window === "undefined") return "all";
@@ -293,7 +290,13 @@ export default function BookingInboxPage() {
         title: existing ? L.toastLinkedExisting : L.toastCreated,
         description: existing ? L.toastMatchedBy(existing.name) : undefined,
       });
+      // Continue straight into confirmation so the booking itself is created
+      // for the client we just linked — never leave a half-finished request.
+      const req = creatingFor;
       setCreatingFor(null);
+      setConfirmingFor({ ...req, client_id: clientId });
+      setConfirmClientId(clientId);
+      setConfirmServiceId((services as any[])[0]?.id ?? "");
     } catch (e: any) {
       toast({ title: L.toastCouldNotCreate, description: describeError(e.message), variant: "destructive" });
     }
@@ -521,6 +524,18 @@ export default function BookingInboxPage() {
                   value={confirmClientId}
                   onChange={setConfirmClientId}
                 />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1 mt-1"
+                  onClick={() => {
+                    const req = confirmingFor;
+                    setConfirmingFor(null);
+                    openCreateClient(req);
+                  }}
+                >
+                  <UserPlus className="h-3.5 w-3.5" /> {L.actCreateNew}
+                </Button>
               </div>
             )}
             <div className="space-y-1">

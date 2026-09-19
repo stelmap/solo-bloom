@@ -26,14 +26,18 @@ export async function sendBookingConfirmationEmail({
   try {
     const slot = new Date(req.requested_slot_at);
     const lang = (profile as any)?.language || "en";
+    // Slots are stored as wall-clock times labelled UTC — format in UTC so the
+    // client is told exactly the time they picked on the booking page.
     const dateFmt = slot.toLocaleDateString(lang, {
       year: "numeric",
       month: "long",
       day: "numeric",
+      timeZone: "UTC",
     });
     const timeFmt = slot.toLocaleTimeString(lang, {
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: "UTC",
     });
     const specialistName =
       (profile as any)?.business_name ||
