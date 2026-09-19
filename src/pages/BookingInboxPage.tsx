@@ -158,7 +158,6 @@ const STATUS_TONE: Record<string, string> = {
 export default function BookingInboxPage() {
   const { lang } = useLanguage();
   const L = COPY[(lang as Lang)] ?? COPY.en;
-  const dateLocale = getDateLocale(lang);
   // Booking slots are stored as wall-clock times labelled UTC — always render
   // them in UTC so the inbox matches the public booking page and the calendar.
   const fmt = (s: string) => formatWallClock(s, lang);
