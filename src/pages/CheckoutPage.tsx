@@ -19,7 +19,7 @@ import { SUPPORT_OPEN_EVENT } from "@/lib/support";
 /** Paddle only launches its overlay from approved domains. */
 const CANONICAL_HOST = "solo-bizz.com";
 const isApprovedHost = (host: string) =>
-  host === CANONICAL_HOST || host === `www.${CANONICAL_HOST}` || host === "localhost" || host.startsWith("localhost:");
+  host === CANONICAL_HOST || host === "localhost" || host.startsWith("localhost:");
 
 export default function CheckoutPage() {
   const { t, lang } = useLanguage();
