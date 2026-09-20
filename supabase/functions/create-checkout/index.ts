@@ -161,7 +161,11 @@ serve(async (req) => {
 
     const customerId = await getOrCreatePaddleCustomer(user.email, user.id);
 
-    const origin = req.headers.get("origin") || "https://solo-bizz.com";
+    // Paddle only launches its overlay from approved domains, so the checkout
+    // page must always be served from the canonical production host (preview
+    // and www origins make Paddle show its generic "Something went wrong").
+    const rawOrigin = req.headers.get("origin") || "";
+    const origin = /^http:\/\/localhost(:\d+)?$/.test(rawOrigin) ? rawOrigin : "https://solo-bizz.com";
     const customData = {
       user_id: user.id,
       plan_code: planCode,
