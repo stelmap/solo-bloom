@@ -8,9 +8,11 @@
 import posthog from "posthog-js";
 
 const POSTHOG_KEY = "phc_vfqFKQL2ZpD9oo4XRNgDAesH8ayrWvZF6DUTLyhGkjrn";
-// Custom reverse-proxy domain (managed by PostHog) — avoids ad-blockers and
-// keeps analytics traffic on our own domain. Falls back via PostHog's edge.
-const POSTHOG_HOST = "https://t.solo-bizz.com";
+// PostHog EU ingestion endpoint. The custom reverse-proxy domain
+// (t.solo-bizz.com) has no DNS record yet, which made every analytics request
+// fail with ERR_NAME_NOT_RESOLVED in the browser console; switch back to the
+// proxy host only once its CNAME is live.
+const POSTHOG_HOST = "https://eu.i.posthog.com";
 const POSTHOG_UI_HOST = "https://eu.posthog.com";
 
 // Hostname → environment mapping. Every event is tagged with `environment`
