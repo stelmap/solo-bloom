@@ -24,8 +24,8 @@ export const cookiesUk: LegalDoc = {
           rows: [
             [
               "sb-*-auth-token",
-              "Solo .Bizz (Lovable Cloud)",
-              "Тримає вас у системі та підтримує сесію",
+              "Solo .Bizz",
+              "Безпечно тримає вас у системі та підтримує автентифіковану сесію.",
               "Необхідні",
               "До виходу або завершення сесії",
               "Перша сторона",
@@ -39,9 +39,9 @@ export const cookiesUk: LegalDoc = {
               "Перша сторона",
             ],
             [
-              "app_lang / landing_lang / pre_login_lang",
+              "app_lang / landing_lang / pre_login_lang / calendar.density",
               "Solo .Bizz",
-              "Запам’ятовує обрану мову інтерфейсу",
+              "Запам’ятовує обрану мову інтерфейсу та локальні налаштування відображення",
               "Необхідні",
               "Доки не очистите сховище браузера",
               "Перша сторона",
@@ -71,8 +71,8 @@ export const cookiesUk: LegalDoc = {
               "Третя сторона",
             ],
             [
-              "Cookie Stripe",
-              "Stripe",
+              "Cookie Paddle",
+              "Paddle",
               "Обробка платежів і запобігання шахрайству під час оплати",
               "Необхідні",
               "Згідно з налаштуваннями постачальника",

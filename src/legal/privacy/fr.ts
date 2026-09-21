@@ -23,6 +23,9 @@ export const privacyFr: LegalDoc = {
         "**A. Données de l'utilisateur Solo .Bizz.** Vos données en tant que professionnel : compte, abonnement, demandes d'assistance et usage du produit.",
         "**B. Données de vos clients.** Les informations que vous saisissez dans Solo .Bizz pour gérer votre pratique : coordonnées des clients, séances, notes, accords, statuts de paiement.",
         "Cette distinction compte : la catégorie A est traitée pour nos propres finalités en tant que prestataire, tandis que la catégorie B constitue les données de votre pratique, que nous traitons pour votre compte et selon vos instructions.",
+        "**Les données de compte et de service** correspondent à ce qui est nécessaire pour créer et exploiter un compte Solo .Bizz : nom d'utilisateur, adresse e-mail, informations d'authentification, préférences du compte, langue de l'interface, informations d'abonnement et de facturation, configuration du service, demandes d'assistance et informations techniques de l'application.",
+        "**Les données de pratique et de clients** correspondent à ce que le professionnel saisit pour gérer sa pratique : informations et coordonnées des clients, rendez-vous et agenda, services et tarifs, comptes rendus de séances, notes lorsque la fonctionnalité le permet, statuts de paiement et de séance, consentements, documents, réservations, groupes et autres enregistrements de pratique.",
+        "Les données de compte et de service comme les données de pratique et de clients sont protégées par les mesures techniques et organisationnelles décrites dans la présente Politique de confidentialité.",
       ],
     },
     {

@@ -23,6 +23,9 @@ export const privacyPl: LegalDoc = {
         "**A. Dane użytkownika Solo .Bizz.** Dane o Tobie jako specjaliście: konto, subskrypcja, zgłoszenia do wsparcia i sposób korzystania z produktu.",
         "**B. Dane Twoich klientów.** Informacje, które wprowadzasz do Solo .Bizz, prowadząc własną praktykę: dane kontaktowe klientów, sesje, notatki, umowy, statusy płatności.",
         "To rozróżnienie ma znaczenie: kategorię A przetwarzamy we własnych celach jako dostawca usługi, a kategoria B to dane Twojej praktyki, które przetwarzamy w Twoim imieniu i zgodnie z Twoimi poleceniami.",
+        "**Dane konta i usługi** to informacje potrzebne do utworzenia i prowadzenia konta Solo .Bizz: nazwa użytkownika, adres e-mail, dane uwierzytelniania, ustawienia konta, język interfejsu, informacje o subskrypcji i rozliczeniach, konfiguracja usługi, zgłoszenia do wsparcia oraz informacje techniczne aplikacji.",
+        "**Dane praktyki i klientów** to informacje wprowadzane przez specjalistę podczas prowadzenia praktyki: dane klientów i kontakty, wizyty i kalendarz, usługi i ceny, zapisy sesji, notatki (tam gdzie funkcja na to pozwala), statusy płatności i sesji, zgody, dokumenty, dane rezerwacji, grupy oraz inne zapisy praktyki.",
+        "Zarówno dane konta i usługi, jak i dane praktyki oraz klientów są chronione środkami technicznymi i organizacyjnymi opisanymi w tej Polityce prywatności.",
       ],
     },
     {

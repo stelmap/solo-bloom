@@ -23,6 +23,9 @@ export const privacyEn: LegalDoc = {
         "**A. Data about the Solo .Bizz user.** This is data about you as a professional using the platform: your account, your subscription, your support requests and how you use the product.",
         "**B. Data about your clients.** This is the information you enter into Solo .Bizz while running your own practice, for example client contact details, sessions, notes, agreements and payment status.",
         "The distinction matters: we handle category A for our own purposes as a service provider, while category B is your practice data, which we process on your behalf and under your instructions.",
+        "**Account and Service Data** covers what is needed to create and operate a Solo .Bizz account: user name, email address, authentication information, account preferences, interface language, subscription and billing-related information, service configuration, support requests and technical or application information.",
+        "**Practice and Client Data** covers what a professional enters while managing their practice: client and contact information, appointments and calendar data, services and prices, session records, notes where the functionality permits them, payment and session status, consent records, documents, booking information, group and session information and other practice records.",
+        "Both Account and Service Data and Practice and Client Data are protected using the technical and organisational security measures described in this Privacy Policy.",
       ],
     },
     {

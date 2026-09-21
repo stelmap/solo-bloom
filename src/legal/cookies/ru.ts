@@ -24,7 +24,7 @@ export const cookiesRu: LegalDoc = {
           rows: [
             [
               "sb-*-auth-token",
-              "Solo .Bizz (Lovable Cloud)",
+              "Solo .Bizz",
               "Сохраняет вход и поддерживает сессию",
               "Необходимые",
               "До выхода или окончания сессии",
@@ -71,8 +71,8 @@ export const cookiesRu: LegalDoc = {
               "Третья сторона",
             ],
             [
-              "Cookie Stripe",
-              "Stripe",
+              "Cookie Paddle",
+              "Paddle",
               "Обработка платежей и предотвращение мошенничества при оплате",
               "Необходимые",
               "Согласно настройкам поставщика",

@@ -24,7 +24,7 @@ export const cookiesPl: LegalDoc = {
           rows: [
             [
               "sb-*-auth-token",
-              "Solo .Bizz (Lovable Cloud)",
+              "Solo .Bizz",
               "Utrzymuje zalogowanie i sesję",
               "Niezbędne",
               "Do wylogowania lub wygaśnięcia sesji",
@@ -71,8 +71,8 @@ export const cookiesPl: LegalDoc = {
               "Zewnętrzne",
             ],
             [
-              "Pliki cookie Stripe",
-              "Stripe",
+              "Pliki cookie Paddle",
+              "Paddle",
               "Obsługa płatności i przeciwdziałanie oszustwom",
               "Niezbędne",
               "Zgodnie z ustawieniami dostawcy",
