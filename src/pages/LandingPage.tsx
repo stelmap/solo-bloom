@@ -129,7 +129,7 @@ const C = {
     pl: "Przy 20+ klientach ręczna administracja może zajmować 4–8+ godzin tygodniowo. Solo .Bizz pomaga odzyskać ten czas.",
   },
   trustData: { en: "Client data is protected", fr: "Données clients protégées", uk: "Дані клієнтів приватні", pl: "Dane klientów chronione" },
-  trustStripe: { en: "Secure Stripe payments", fr: "Paiements sécurisés via Stripe", uk: "Без картки для Free", pl: "Bezpieczne płatności przez Stripe" },
+  trustStripe: { en: "Secure Paddle payments", fr: "Paiements sécurisés via Paddle", uk: "Без картки для Free", pl: "Bezpieczne płatności przez Paddle" },
   trustGdpr: { en: "GDPR compliant", fr: "Conforme RGPD", uk: "Відповідає GDPR", pl: "Zgodne z RODO" },
   trustSupport: { en: "Email support", fr: "Support email", uk: "Скасування будь-коли", pl: "Wsparcie przez email" },
 
@@ -703,7 +703,7 @@ const RU_OVERRIDES: Partial<Record<CopyKey, string>> = {
 
   // Trust
   trustData: "Данные клиентов защищены",
-  trustStripe: "Безопасные платежи через Stripe",
+  trustStripe: "Безопасные платежи через Paddle",
   trustGdpr: "Соответствие GDPR",
   trustSupport: "Поддержка по email",
 

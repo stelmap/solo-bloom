@@ -11,7 +11,7 @@ export const refundPl: LegalDoc = {
     {
       h: "1. Komu płacisz",
       body: [
-        "Solo .Bizz prowadzi **jednoosobowa działalność gospodarcza Olha Volodymyrivna Stelmakh**, numer identyfikacyjny 3184604284, ul. Likarska 21, Briuchowyczi, Lwów, 79491, Ukraina.",
+        "Solo .Bizz prowadzi **jednoosobowa działalność gospodarcza Olha Volodymyrivna Stelmakh**, zarejestrowana we Lwowie, Ukraina. Kontakt: info@solo-bizz.com.",
         "Wszystkie płatności obsługuje **Paddle.com Market Ltd** jako Merchant of Record i reseller usługi. To Paddle widnieje na wyciągu bankowym i wystawia fakturę.",
         "Pytania o płatność lub zwrot: info@solo-bizz.com.",
       ],

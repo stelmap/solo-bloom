@@ -13,7 +13,7 @@ export const privacyFr: LegalDoc = {
       body: [
         "Solo .Bizz est une plateforme de gestion de pratique destinée aux professionnels indépendants : psychologues, thérapeutes, superviseurs, coachs, enseignants et consultants.",
         "Pour les traitements décrits ici dans lesquels Solo .Bizz agit en tant que responsable, le responsable est l'exploitant de Solo .Bizz. Contact : info@solo-bizz.com.",
-        "Solo .Bizz est exploité par **Olha Stelmakh, entrepreneure individuelle (FOP)**, numéro d'identification 3184604284, immatriculée au 21 rue Likarska, Brioukhovytchi, Lviv, 79491, Ukraine.",
+        "Responsable du traitement / service : **Solo .Bizz**. Contact vie privée : info@solo-bizz.com.",
         "Nous n'avons pas désigné de délégué à la protection des données. Les demandes sont traitées via l'adresse de contact ci-dessus.",
       ],
     },
@@ -23,6 +23,9 @@ export const privacyFr: LegalDoc = {
         "**A. Données de l'utilisateur Solo .Bizz.** Vos données en tant que professionnel : compte, abonnement, demandes d'assistance et usage du produit.",
         "**B. Données de vos clients.** Les informations que vous saisissez dans Solo .Bizz pour gérer votre pratique : coordonnées des clients, séances, notes, accords, statuts de paiement.",
         "Cette distinction compte : la catégorie A est traitée pour nos propres finalités en tant que prestataire, tandis que la catégorie B constitue les données de votre pratique, que nous traitons pour votre compte et selon vos instructions.",
+        "**Les données de compte et de service** correspondent à ce qui est nécessaire pour créer et exploiter un compte Solo .Bizz : nom d'utilisateur, adresse e-mail, informations d'authentification, préférences du compte, langue de l'interface, informations d'abonnement et de facturation, configuration du service, demandes d'assistance et informations techniques de l'application.",
+        "**Les données de pratique et de clients** correspondent à ce que le professionnel saisit pour gérer sa pratique : informations et coordonnées des clients, rendez-vous et agenda, services et tarifs, comptes rendus de séances, notes lorsque la fonctionnalité le permet, statuts de paiement et de séance, consentements, documents, réservations, groupes et autres enregistrements de pratique.",
+        "Les données de compte et de service comme les données de pratique et de clients sont protégées par les mesures techniques et organisationnelles décrites dans la présente Politique de confidentialité.",
       ],
     },
     {
@@ -96,13 +99,13 @@ export const privacyFr: LegalDoc = {
       ],
     },
     {
-      h: "8. Prestataires et sous-traitants",
+      h: "8. Prestataires de services",
       body: [
-        "Nous recourons à un nombre limité de prestataires tiers :",
+        "Nous recourons à un nombre limité de prestataires tiers soigneusement sélectionnés pour exploiter, sécuriser et améliorer Solo .Bizz. Ces prestataires ne peuvent traiter des données personnelles que dans la mesure nécessaire à la fourniture de leurs services et sont soumis aux exigences contractuelles et de protection des données applicables.",
         [
-          "**Lovable Cloud** — hébergement, base de données, authentification, stockage de fichiers et fonctions serveur ;",
-          "**Stripe** — abonnements, traitement des paiements et facturation ;",
-          "**Service d'e-mails géré par Lovable** — e-mails transactionnels (compte, réservations, séances, facturation) ;",
+          "**Fournisseurs d'infrastructure cloud et d'hébergement** — hébergement, infrastructure de base de données, authentification, stockage sécurisé de fichiers et fonctions serveur ;",
+          "**Paddle** — abonnements, traitement des paiements, facturation et gestion des règlements en tant que Merchant of Record ; les données de carte sont traitées par Paddle et ne sont pas conservées par Solo .Bizz ;",
+          "**Prestataire d'e-mails transactionnels** — envoi des messages liés au compte, aux réservations, aux rendez-vous, aux séances et à la facturation ;",
           "**PostHog (UE)** — analyse produit ;",
           "**Plerdy** — analyse d'usage du site et cartes de chaleur, chargé uniquement après consentement analytique ;",
           "**Meta Pixel** — mesure publicitaire, chargé uniquement après consentement marketing ;",
@@ -157,10 +160,16 @@ export const privacyFr: LegalDoc = {
       ],
     },
     {
-      h: "13. Sécurité",
+      h: "13. Sécurité et protection de vos données",
       body: [
-        "Nous appliquons des mesures techniques et organisationnelles appropriées : chiffrement des transmissions, contrôles d'authentification, restrictions d'accès au niveau des lignes en base de données, journalisation des accès et maintenance régulière.",
-        "Aucun service en ligne n'est totalement sûr ; nous ne promettons donc pas une sécurité absolue. Protégez vos identifiants et prévenez-nous en cas de suspicion d'accès non autorisé.",
+        "Solo .Bizz applique des mesures techniques et organisationnelles appropriées destinées à protéger les données personnelles contre tout accès non autorisé, divulgation, altération, perte ou destruction.",
+        "Les connexions à Solo .Bizz sont protégées par HTTPS/TLS, ce qui contribue à protéger les informations transmises entre votre appareil et le Service.",
+        "Les données stockées par le Service sont protégées par un chiffrement au repos assuré par l'infrastructure de production.",
+        "L'accès aux systèmes de production et aux informations stockées est restreint par l'authentification, des contrôles d'accès et des mécanismes d'autorisation, y compris des règles d'accès au niveau des lignes en base de données et la journalisation des accès.",
+        "Nous utilisons des protections d'infrastructure et opérationnelles destinées à préserver la confidentialité, l'intégrité et la disponibilité des données : infrastructure sécurisée, protection réseau, surveillance, sauvegardes et restrictions d'accès, le cas échéant.",
+        "Les données de compte et de service comme les données de pratique et de clients sont protégées par les mesures techniques et organisationnelles décrites dans cette section.",
+        "Les mesures de sécurité sont revues et mises à jour à mesure que le Service évolue et selon la nature et la sensibilité des informations traitées.",
+        "Aucun service en ligne ne peut garantir une sécurité absolue. Nous appliquons néanmoins des garanties appropriées visant à réduire les risques d'accès non autorisé, de perte, d'altération, de divulgation ou de destruction des informations. Protégez vos identifiants et prévenez-nous en cas de suspicion d'accès non autorisé.",
       ],
     },
     {

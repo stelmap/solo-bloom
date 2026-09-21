@@ -13,7 +13,7 @@ export const privacyEn: LegalDoc = {
       body: [
         "Solo .Bizz is a practice-management platform for independent professionals such as psychologists, therapists, supervisors, coaches, tutors and consultants.",
         "For the processing described in this policy where Solo .Bizz acts as controller, the operator of Solo .Bizz is the controller. You can reach us at info@solo-bizz.com.",
-        "Solo .Bizz is operated by **Olha Volodymyrivna Stelmakh, individual entrepreneur (FOP)**, tax identification number 3184604284, registered at 21 Likarska Street, Briukhovychi, Lviv, 79491, Ukraine.",
+        "Data controller / service: **Solo .Bizz**. Privacy contact: info@solo-bizz.com.",
         "We have not appointed a Data Protection Officer. Privacy requests are handled through the contact address above.",
       ],
     },
@@ -23,6 +23,9 @@ export const privacyEn: LegalDoc = {
         "**A. Data about the Solo .Bizz user.** This is data about you as a professional using the platform: your account, your subscription, your support requests and how you use the product.",
         "**B. Data about your clients.** This is the information you enter into Solo .Bizz while running your own practice, for example client contact details, sessions, notes, agreements and payment status.",
         "The distinction matters: we handle category A for our own purposes as a service provider, while category B is your practice data, which we process on your behalf and under your instructions.",
+        "**Account and Service Data** covers what is needed to create and operate a Solo .Bizz account: user name, email address, authentication information, account preferences, interface language, subscription and billing-related information, service configuration, support requests and technical or application information.",
+        "**Practice and Client Data** covers what a professional enters while managing their practice: client and contact information, appointments and calendar data, services and prices, session records, notes where the functionality permits them, payment and session status, consent records, documents, booking information, group and session information and other practice records.",
+        "Both Account and Service Data and Practice and Client Data are protected using the technical and organisational security measures described in this Privacy Policy.",
       ],
     },
     {
@@ -96,13 +99,13 @@ export const privacyEn: LegalDoc = {
       ],
     },
     {
-      h: "8. Service providers and subprocessors",
+      h: "8. Service providers",
       body: [
-        "We use a limited number of third-party providers to operate the service. The providers currently used are:",
+        "We use a limited number of carefully selected third-party service providers to operate, secure and improve Solo .Bizz. These providers may process personal data only where necessary to provide their services and are subject to applicable contractual and data-protection requirements.",
         [
-          "**Lovable Cloud** — hosting, database, authentication, file storage and server-side functions;",
-          "**Stripe** — subscription checkout, payment processing and billing management;",
-          "**Lovable managed email delivery** — transactional email (account, booking, session and billing notifications);",
+          "**Cloud infrastructure and hosting providers** — hosting, database infrastructure, authentication, secure file storage and server-side functionality;",
+          "**Paddle** — subscription checkout, payment processing, invoicing and billing management as Merchant of Record; card details are handled by Paddle, not stored by Solo .Bizz;",
+          "**Transactional email provider** — delivery of transactional messages such as account, booking, appointment, session and billing notifications;",
           "**PostHog (EU)** — product analytics;",
           "**Plerdy** — website usage analytics and heatmaps, loaded only after analytics consent;",
           "**Meta Pixel** — advertising measurement, loaded only after marketing consent;",
@@ -157,10 +160,16 @@ export const privacyEn: LegalDoc = {
       ],
     },
     {
-      h: "13. Security",
+      h: "13. Security and protection of your data",
       body: [
-        "We apply appropriate technical and organisational measures to protect personal data, including encrypted transport, authentication controls, row-level access restrictions in the database, access logging and regular maintenance.",
-        "No online service can be completely secure, so we do not make absolute security promises. Please keep your credentials safe and tell us if you suspect unauthorised access to your account.",
+        "Solo .Bizz applies appropriate technical and organisational measures designed to protect personal data against unauthorised access, disclosure, alteration, loss or destruction.",
+        "Connections to Solo .Bizz are protected using HTTPS/TLS, helping protect information transmitted between your device and the Service.",
+        "Data stored by the Service is protected using encryption at rest provided by the production infrastructure.",
+        "Access to production systems and stored information is restricted through authentication, access controls and authorisation mechanisms, including row-level access rules in the database and access logging.",
+        "We use infrastructure and operational safeguards designed to protect the confidentiality, integrity and availability of data. These may include secure infrastructure, network protection, monitoring, backups and access restrictions where applicable.",
+        "Both Account and Service Data and Practice and Client Data are protected using the technical and organisational security measures described in this section.",
+        "Security measures are reviewed and updated as the Service evolves and according to the nature and sensitivity of the information being processed.",
+        "No online service can guarantee absolute security. Solo .Bizz nevertheless applies appropriate safeguards designed to reduce the risks associated with unauthorised access, loss, alteration, disclosure or destruction of personal information. Please keep your credentials safe and tell us if you suspect unauthorised access to your account.",
       ],
     },
     {

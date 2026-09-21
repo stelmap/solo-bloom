@@ -11,7 +11,7 @@ export const refundEn: LegalDoc = {
     {
       h: "1. Who you pay",
       body: [
-        "Solo .Bizz is operated by **individual entrepreneur Olha Volodymyrivna Stelmakh**, tax ID 3184604284, Likarska St. 21, Briukhovychi, Lviv, 79491, Ukraine.",
+        "Solo .Bizz is operated by **individual entrepreneur Olha Volodymyrivna Stelmakh**, registered in Lviv, Ukraine. Contact: info@solo-bizz.com.",
         "All payments are processed by **Paddle.com Market Ltd**, which acts as Merchant of Record and reseller of the service. Paddle appears on your bank or card statement and issues your invoice.",
         "Questions about a payment or refund: info@solo-bizz.com.",
       ],

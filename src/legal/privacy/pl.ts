@@ -13,7 +13,7 @@ export const privacyPl: LegalDoc = {
       body: [
         "Solo .Bizz to platforma do zarządzania praktyką dla niezależnych specjalistów: psychologów, terapeutów, superwizorów, coachów, korepetytorów i konsultantów.",
         "W zakresie przetwarzania opisanego w tej polityce, w którym Solo .Bizz działa jako administrator, administratorem jest operator Solo .Bizz. Kontakt: info@solo-bizz.com.",
-        "Operatorem Solo .Bizz jest **Olha Stelmakh, jednoosobowa działalność gospodarcza (FOP)**, numer identyfikacyjny 3184604284, adres rejestrowy: ul. Likarska 21, Briuchowycze, Lwów, 79491, Ukraina.",
+        "Administrator danych / usługa: **Solo .Bizz**. Kontakt w sprawach prywatności: info@solo-bizz.com.",
         "Nie wyznaczyliśmy inspektora ochrony danych. Sprawy dotyczące prywatności obsługujemy pod powyższym adresem kontaktowym.",
       ],
     },
@@ -23,6 +23,9 @@ export const privacyPl: LegalDoc = {
         "**A. Dane użytkownika Solo .Bizz.** Dane o Tobie jako specjaliście: konto, subskrypcja, zgłoszenia do wsparcia i sposób korzystania z produktu.",
         "**B. Dane Twoich klientów.** Informacje, które wprowadzasz do Solo .Bizz, prowadząc własną praktykę: dane kontaktowe klientów, sesje, notatki, umowy, statusy płatności.",
         "To rozróżnienie ma znaczenie: kategorię A przetwarzamy we własnych celach jako dostawca usługi, a kategoria B to dane Twojej praktyki, które przetwarzamy w Twoim imieniu i zgodnie z Twoimi poleceniami.",
+        "**Dane konta i usługi** to informacje potrzebne do utworzenia i prowadzenia konta Solo .Bizz: nazwa użytkownika, adres e-mail, dane uwierzytelniania, ustawienia konta, język interfejsu, informacje o subskrypcji i rozliczeniach, konfiguracja usługi, zgłoszenia do wsparcia oraz informacje techniczne aplikacji.",
+        "**Dane praktyki i klientów** to informacje wprowadzane przez specjalistę podczas prowadzenia praktyki: dane klientów i kontakty, wizyty i kalendarz, usługi i ceny, zapisy sesji, notatki (tam gdzie funkcja na to pozwala), statusy płatności i sesji, zgody, dokumenty, dane rezerwacji, grupy oraz inne zapisy praktyki.",
+        "Zarówno dane konta i usługi, jak i dane praktyki oraz klientów są chronione środkami technicznymi i organizacyjnymi opisanymi w tej Polityce prywatności.",
       ],
     },
     {
@@ -96,13 +99,13 @@ export const privacyPl: LegalDoc = {
       ],
     },
     {
-      h: "8. Dostawcy usług i podmioty podprzetwarzające",
+      h: "8. Dostawcy usług",
       body: [
-        "Do prowadzenia usługi korzystamy z ograniczonej liczby dostawców zewnętrznych:",
+        "Korzystamy z ograniczonej liczby starannie wybranych dostawców zewnętrznych, aby prowadzić, zabezpieczać i rozwijać Solo .Bizz. Mogą oni przetwarzać dane osobowe wyłącznie w zakresie niezbędnym do świadczenia swoich usług i podlegają odpowiednim wymogom umownym oraz wymogom ochrony danych.",
         [
-          "**Lovable Cloud** — hosting, baza danych, uwierzytelnianie, przechowywanie plików i funkcje serwerowe;",
-          "**Stripe** — zamówienia subskrypcji, obsługa płatności i rozliczeń;",
-          "**Zarządzana usługa e-mail Lovable** — wiadomości transakcyjne (konto, rezerwacje, sesje, płatności);",
+          "**Dostawcy infrastruktury chmurowej i hostingu** — hosting, infrastruktura bazy danych, uwierzytelnianie, bezpieczne przechowywanie plików i funkcje serwerowe;",
+          "**Paddle** — zamówienia subskrypcji, obsługa płatności, fakturowanie i rozliczenia jako Merchant of Record; dane karty obsługuje Paddle, a Solo .Bizz ich nie przechowuje;",
+          "**Dostawca poczty transakcyjnej** — dostarczanie wiadomości dotyczących konta, rezerwacji, wizyt, sesji i płatności;",
           "**PostHog (EU)** — analityka produktowa;",
           "**Plerdy** — analityka korzystania ze strony i mapy ciepła, ładowane wyłącznie po zgodzie analitycznej;",
           "**Meta Pixel** — pomiar skuteczności reklam, ładowany wyłącznie po zgodzie marketingowej;",
@@ -157,10 +160,16 @@ export const privacyPl: LegalDoc = {
       ],
     },
     {
-      h: "13. Bezpieczeństwo",
+      h: "13. Bezpieczeństwo i ochrona Twoich danych",
       body: [
-        "Stosujemy odpowiednie środki techniczne i organizacyjne: szyfrowanie transmisji, kontrolę uwierzytelniania, ograniczenia dostępu na poziomie wierszy w bazie danych, rejestrowanie dostępu i regularne utrzymanie.",
-        "Żadna usługa online nie jest w pełni bezpieczna, dlatego nie składamy absolutnych obietnic. Chroń swoje dane logowania i poinformuj nas w razie podejrzenia nieuprawnionego dostępu.",
+        "Solo .Bizz stosuje odpowiednie środki techniczne i organizacyjne mające chronić dane osobowe przed nieuprawnionym dostępem, ujawnieniem, zmianą, utratą lub zniszczeniem.",
+        "Połączenia z Solo .Bizz są chronione protokołem HTTPS/TLS, co pomaga zabezpieczyć informacje przesyłane między Twoim urządzeniem a Usługą.",
+        "Dane przechowywane przez Usługę są chronione szyfrowaniem w spoczynku zapewnianym przez infrastrukturę produkcyjną.",
+        "Dostęp do systemów produkcyjnych i przechowywanych informacji jest ograniczony przez uwierzytelnianie, kontrolę dostępu i mechanizmy autoryzacji, w tym reguły dostępu na poziomie wierszy w bazie danych oraz rejestrowanie dostępu.",
+        "Stosujemy zabezpieczenia infrastrukturalne i operacyjne chroniące poufność, integralność i dostępność danych: bezpieczną infrastrukturę, ochronę sieci, monitoring, kopie zapasowe i ograniczenia dostępu, tam gdzie ma to zastosowanie.",
+        "Zarówno dane konta i usługi, jak i dane praktyki oraz klientów są chronione środkami technicznymi i organizacyjnymi opisanymi w tej sekcji.",
+        "Środki bezpieczeństwa są weryfikowane i aktualizowane wraz z rozwojem Usługi oraz stosownie do charakteru i wrażliwości przetwarzanych informacji.",
+        "Żadna usługa online nie może zagwarantować absolutnego bezpieczeństwa. Stosujemy odpowiednie zabezpieczenia ograniczające ryzyko nieuprawnionego dostępu, utraty, zmiany, ujawnienia lub zniszczenia informacji. Chroń swoje dane logowania i poinformuj nas w razie podejrzenia nieuprawnionego dostępu.",
       ],
     },
     {

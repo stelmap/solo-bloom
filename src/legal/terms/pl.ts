@@ -11,7 +11,7 @@ export const termsPl: LegalDoc = {
     {
       h: "1. Kto świadczy usługę",
       body: [
-        "Solo .Bizz jest prowadzony przez **Olhę Stelmakh, jednoosobową działalność gospodarczą (FOP)**, numer identyfikacyjny 3184604284, adres rejestrowy: ul. Likarska 21, Briuchowycze, Lwów, 79491, Ukraina. Kontakt: info@solo-bizz.com.",
+        "Solo .Bizz jest prowadzony przez **Olhę Stelmakh, jednoosobową działalność gospodarczą (FOP)**, zarejestrowaną we Lwowie, Ukraina. Kontakt: info@solo-bizz.com.",
         "Zakładając konto lub korzystając z Solo .Bizz, akceptujesz ten Regulamin. Jeśli go nie akceptujesz, prosimy nie korzystać z usługi.",
       ],
     },
@@ -63,13 +63,13 @@ export const termsPl: LegalDoc = {
     {
       h: "6. Subskrypcje, płatności i odnowienie",
       body: [
-        "Plany płatne są subskrypcjami cyklicznymi obsługiwanymi przez dostawcę płatności Stripe.",
+        "Plany płatne są subskrypcjami cyklicznymi obsługiwanymi przez dostawcę płatności Paddle.com Market Ltd, działającego jako Merchant of Record.",
         [
-          "płatność realizowana jest przez Stripe Checkout, a metoda płatności jest zapisywana przy zakupie;",
+          "płatność realizowana jest w oknie płatności Paddle, a metoda płatności jest zapisywana przy zakupie;",
           "subskrypcja odnawia się automatycznie na koniec każdego okresu, dopóki jej nie anulujesz;",
           "odnowienie jest pobierane z zapisanej metody płatności;",
           "obecnie nie oferujemy bezpłatnego okresu próbnego — jeśli zostanie wprowadzony, jego warunki i długość pokażemy przed zakupem;",
-          "nie przechowujemy pełnych danych karty — obsługuje je Stripe;",
+          "nie przechowujemy pełnych danych karty — obsługuje je Paddle;",
           "w razie nieudanej płatności dostęp do funkcji płatnych może zostać ograniczony do czasu opłacenia.",
         ],
         "Subskrypcją, jej anulowaniem i metodą płatności zarządzasz w portalu rozliczeniowym dostępnym na Twoim koncie.",
@@ -153,7 +153,7 @@ export const termsPl: LegalDoc = {
     {
       h: "15. Usługi zewnętrzne",
       body: [
-        "Solo .Bizz korzysta z dostawców zewnętrznych: infrastruktury chmurowej, Stripe do płatności, dostawcy wysyłki e-mail, dostawców analityki oraz — jeśli z nich korzystasz — logowania Google i powiadomień Telegram.",
+        "Solo .Bizz korzysta z dostawców zewnętrznych: infrastruktury chmurowej i hostingu, Paddle do płatności, dostawcy poczty transakcyjnej, dostawców analityki oraz — jeśli z nich korzystasz — logowania Google i powiadomień Telegram.",
         "Do ich usług stosują się ich własne warunki, a my nie odpowiadamy za ich samodzielne działania lub zaniechania.",
       ],
     },

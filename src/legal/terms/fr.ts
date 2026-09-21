@@ -11,7 +11,7 @@ export const termsFr: LegalDoc = {
     {
       h: "1. Qui fournit le service",
       body: [
-        "Solo .Bizz est exploité par **Olha Stelmakh, entrepreneure individuelle (FOP)**, numéro d'identification 3184604284, immatriculée au 21 rue Likarska, Brioukhovytchi, Lviv, 79491, Ukraine, joignable à info@solo-bizz.com.",
+        "Solo .Bizz est exploité par **Olha Stelmakh, entrepreneure individuelle (FOP)**, immatriculée à Lviv, Ukraine. Contact : info@solo-bizz.com.",
         "En créant un compte ou en utilisant Solo .Bizz, vous acceptez ces Conditions. Si vous ne les acceptez pas, n'utilisez pas le service.",
       ],
     },
@@ -63,13 +63,13 @@ export const termsFr: LegalDoc = {
     {
       h: "6. Abonnements, paiements et renouvellement",
       body: [
-        "Les formules payantes sont des abonnements récurrents traités par notre prestataire de paiement Stripe.",
+        "Les formules payantes sont des abonnements récurrents traités par notre prestataire de paiement Paddle.com Market Ltd, qui agit comme Merchant of Record.",
         [
-          "le paiement s'effectue via Stripe Checkout et un moyen de paiement est enregistré lors de l'achat ;",
+          "le paiement s'effectue via la fenêtre de paiement Paddle et un moyen de paiement est enregistré lors de l'achat ;",
           "l'abonnement se renouvelle automatiquement à la fin de chaque période jusqu'à résiliation ;",
           "le renouvellement est prélevé sur le moyen de paiement enregistré ;",
           "aucune période d'essai gratuite n'est proposée actuellement — si elle est introduite, sa durée et ses conditions seront indiquées avant l'achat ;",
-          "nous ne conservons pas vos données de carte complètes : elles sont gérées par Stripe ;",
+          "nous ne conservons pas vos données de carte complètes : elles sont gérées par Paddle ;",
           "en cas d'échec de paiement, l'accès aux fonctions payantes peut être limité jusqu'au règlement.",
         ],
         "Vous pouvez gérer ou résilier votre abonnement et mettre à jour votre moyen de paiement depuis le portail de facturation disponible dans votre compte.",
@@ -153,7 +153,7 @@ export const termsFr: LegalDoc = {
     {
       h: "15. Services tiers",
       body: [
-        "Solo .Bizz s'appuie sur des prestataires tiers : infrastructure cloud, Stripe pour les paiements, notre prestataire d'envoi d'e-mails, des services d'analyse et — si vous les utilisez — la connexion Google et les notifications Telegram.",
+        "Solo .Bizz s'appuie sur des prestataires tiers : infrastructure cloud et hébergement, Paddle pour les paiements, notre prestataire d'e-mails transactionnels, des services d'analyse et — si vous les utilisez — la connexion Google et les notifications Telegram.",
         "Leurs propres conditions s'appliquent à leurs services et nous ne répondons pas de leurs actes ou omissions indépendants.",
       ],
     },

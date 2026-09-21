@@ -24,8 +24,8 @@ export const cookiesFr: LegalDoc = {
           rows: [
             [
               "sb-*-auth-token",
-              "Solo .Bizz (Lovable Cloud)",
-              "Maintient votre connexion et votre session",
+              "Solo .Bizz",
+              "Maintient votre connexion de manière sécurisée et votre session authentifiée.",
               "Nécessaire",
               "Jusqu'à la déconnexion ou l'expiration",
               "Interne",
@@ -39,9 +39,9 @@ export const cookiesFr: LegalDoc = {
               "Interne",
             ],
             [
-              "app_lang / landing_lang / pre_login_lang",
+              "app_lang / landing_lang / pre_login_lang / calendar.density",
               "Solo .Bizz",
-              "Mémorise la langue d'interface choisie",
+              "Mémorise la langue d'interface choisie et les réglages d'affichage locaux",
               "Nécessaire",
               "Jusqu'à effacement du stockage du navigateur",
               "Interne",
@@ -71,8 +71,8 @@ export const cookiesFr: LegalDoc = {
               "Tiers",
             ],
             [
-              "Cookies Stripe",
-              "Stripe",
+              "Cookies Paddle",
+              "Paddle",
               "Traitement des paiements et prévention de la fraude",
               "Nécessaire",
               "Selon le paramétrage du fournisseur",

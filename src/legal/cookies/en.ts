@@ -24,8 +24,8 @@ export const cookiesEn: LegalDoc = {
           rows: [
             [
               "sb-*-auth-token",
-              "Solo .Bizz (Lovable Cloud)",
-              "Keeps you signed in and maintains your session",
+              "Solo .Bizz",
+              "Keeps you signed in securely and maintains your authenticated session.",
               "Necessary",
               "Until sign-out or session expiry",
               "First party",
@@ -39,9 +39,9 @@ export const cookiesEn: LegalDoc = {
               "First party",
             ],
             [
-              "app_lang / landing_lang / pre_login_lang",
+              "app_lang / landing_lang / pre_login_lang / calendar.density",
               "Solo .Bizz",
-              "Remembers your selected interface language",
+              "Remembers your selected interface language and local display settings",
               "Necessary",
               "Until you clear browser storage",
               "First party",
@@ -71,9 +71,9 @@ export const cookiesEn: LegalDoc = {
               "Third party",
             ],
             [
-              "Stripe cookies",
-              "Stripe",
-              "Payment processing and fraud prevention during checkout",
+              "Paddle cookies",
+              "Paddle",
+              "Payment processing, subscription checkout and fraud prevention during checkout",
               "Necessary",
               "As set by the provider",
               "Third party",
