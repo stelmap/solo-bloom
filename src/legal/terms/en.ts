@@ -11,7 +11,7 @@ export const termsEn: LegalDoc = {
     {
       h: "1. Who provides the service",
       body: [
-        "Solo .Bizz is operated by **Olha Volodymyrivna Stelmakh, individual entrepreneur (FOP)**, tax identification number 3184604284, registered at 21 Likarska Street, Briukhovychi, Lviv, 79491, Ukraine, reachable at info@solo-bizz.com.",
+        "Solo .Bizz is operated by **Olha Volodymyrivna Stelmakh, individual entrepreneur (FOP)**, registered in Lviv, Ukraine. Contact: info@solo-bizz.com.",
         "By creating an account or using Solo .Bizz you accept these Terms. If you do not accept them, please do not use the service.",
       ],
     },
@@ -63,13 +63,13 @@ export const termsEn: LegalDoc = {
     {
       h: "6. Subscriptions, payments and renewal",
       body: [
-        "Paid plans are recurring subscriptions processed by our payment provider, Stripe.",
+        "Paid plans are recurring subscriptions processed by our payment provider, Paddle.com Market Ltd, which acts as Merchant of Record.",
         [
-          "you pay through Stripe Checkout and a payment method is collected at purchase;",
+          "you pay through the Paddle checkout and a payment method is collected at purchase;",
           "the subscription renews automatically at the end of each billing period until you cancel;",
           "renewal is charged to the payment method on file;",
           "no free trial is currently offered — if a trial is introduced, its length and conditions will be shown before purchase;",
-          "we do not store your full card details; they are handled by Stripe;",
+          "we do not store your full card details; they are handled by Paddle;",
           "if a payment fails, access to paid features may be limited until payment succeeds.",
         ],
         "You can manage or cancel your subscription and update your payment method through the billing portal available in your account.",
@@ -153,7 +153,7 @@ export const termsEn: LegalDoc = {
     {
       h: "15. Third-party services",
       body: [
-        "Solo .Bizz relies on third-party providers, including our cloud infrastructure, Stripe for payments, our email delivery provider, analytics providers and — where you choose to use them — Google sign-in and Telegram notifications.",
+        "Solo .Bizz relies on third-party providers, including cloud infrastructure and hosting providers, Paddle for payments, our transactional email provider, analytics providers and — where you choose to use them — Google sign-in and Telegram notifications.",
         "Their own terms apply to their services, and we are not responsible for their independent acts or omissions.",
       ],
     },

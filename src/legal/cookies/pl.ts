@@ -25,7 +25,7 @@ export const cookiesPl: LegalDoc = {
             [
               "sb-*-auth-token",
               "Solo .Bizz",
-              "Utrzymuje zalogowanie i sesję",
+              "Bezpiecznie utrzymuje zalogowanie i uwierzytelnioną sesję.",
               "Niezbędne",
               "Do wylogowania lub wygaśnięcia sesji",
               "Własne",
@@ -39,9 +39,9 @@ export const cookiesPl: LegalDoc = {
               "Własne",
             ],
             [
-              "app_lang / landing_lang / pre_login_lang",
+              "app_lang / landing_lang / pre_login_lang / calendar.density",
               "Solo .Bizz",
-              "Zapamiętuje wybrany język interfejsu",
+              "Zapamiętuje wybrany język interfejsu i lokalne ustawienia wyświetlania",
               "Niezbędne",
               "Do wyczyszczenia pamięci przeglądarki",
               "Własne",

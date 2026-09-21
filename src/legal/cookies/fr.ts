@@ -25,7 +25,7 @@ export const cookiesFr: LegalDoc = {
             [
               "sb-*-auth-token",
               "Solo .Bizz",
-              "Maintient votre connexion et votre session",
+              "Maintient votre connexion de manière sécurisée et votre session authentifiée.",
               "Nécessaire",
               "Jusqu'à la déconnexion ou l'expiration",
               "Interne",
@@ -39,9 +39,9 @@ export const cookiesFr: LegalDoc = {
               "Interne",
             ],
             [
-              "app_lang / landing_lang / pre_login_lang",
+              "app_lang / landing_lang / pre_login_lang / calendar.density",
               "Solo .Bizz",
-              "Mémorise la langue d'interface choisie",
+              "Mémorise la langue d'interface choisie et les réglages d'affichage locaux",
               "Nécessaire",
               "Jusqu'à effacement du stockage du navigateur",
               "Interne",
