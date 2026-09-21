@@ -21,12 +21,12 @@ export type LegalDoc = {
 
 /** Release date of the current legal documents. Update on every material change. */
 export const LEGAL_LAST_UPDATED = {
-  en: "Last updated: September 11, 2026",
-  uk: "Останнє оновлення: 11 вересня 2026 р.",
-  pl: "Ostatnia aktualizacja: 11 września 2026 r.",
-  fr: "Dernière mise à jour : 11 septembre 2026",
-  ru: "Последнее обновление: 11 сентября 2026 г.",
+  en: "Last updated: September 21, 2026",
+  uk: "Останнє оновлення: 21 вересня 2026 р.",
+  pl: "Ostatnia aktualizacja: 21 września 2026 r.",
+  fr: "Dernière mise à jour : 21 septembre 2026",
+  ru: "Последнее обновление: 21 сентября 2026 г.",
 } as const;
 
 /** Version identifiers referenced by the documents themselves. */
-export const LEGAL_VERSION = "2026-09-11";
+export const LEGAL_VERSION = "2026-09-21";
