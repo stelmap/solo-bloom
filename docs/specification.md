@@ -32,7 +32,7 @@ claims, in-app messaging with clients, native mobile apps.
 | Frontend | React 18, Vite 5, TypeScript 5, Tailwind 3, shadcn/ui, Framer Motion |
 | Data layer | TanStack React Query; hooks in `src/hooks/` |
 | Routing | React Router 6, lazy routes with stale-chunk auto-reload |
-| Backend | Lovable Cloud (PostgreSQL + Auth + Storage + Edge Functions) |
+| Backend | Managed cloud backend (PostgreSQL + Auth + Storage + Edge Functions) |
 | Tables | 74 in `public`, all RLS-protected and user-scoped |
 | Edge functions | 35 (billing, email, agreements, GDPR, admin, support, Telegram, MCP) |
 | Migrations | 177 applied |
