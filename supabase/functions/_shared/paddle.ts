@@ -59,3 +59,36 @@ export async function findDiscountIdByCode(code: string): Promise<string | null>
   );
   return res.data?.[0]?.id ?? null;
 }
+
+const COUNTRY_ALIASES: Record<string, string> = {
+  ua: "UA", ukr: "UA", ukraine: "UA", "україна": "UA", "украина": "UA",
+  pl: "PL", pol: "PL", poland: "PL", polska: "PL", "польща": "PL", "польша": "PL",
+  fr: "FR", france: "FR", de: "DE", germany: "DE", deutschland: "DE",
+};
+
+/** Normalises a free-text country to an ISO 3166-1 alpha-2 code, or null. */
+export function toCountryCode(raw: string | null | undefined): string | null {
+  const v = String(raw ?? "").trim().toLowerCase();
+  if (!v) return null;
+  if (COUNTRY_ALIASES[v]) return COUNTRY_ALIASES[v];
+  return /^[a-z]{2}$/.test(v) ? v.toUpperCase() : null;
+}
+
+/** Returns an active address id for the customer in the given country, creating one if needed. */
+export async function getOrCreatePaddleAddress(customerId: string, countryCode: string): Promise<string | null> {
+  try {
+    const list = await paddleFetch<{ data: Array<{ id: string; country_code: string }> }>(
+      `/customers/${customerId}/addresses?status=active&per_page=50`,
+    );
+    const hit = list.data?.find((a) => a.country_code === countryCode);
+    if (hit) return hit.id;
+    const created = await paddleFetch<{ data: { id: string } }>(`/customers/${customerId}/addresses`, {
+      method: "POST",
+      body: { country_code: countryCode },
+    });
+    return created.data.id;
+  } catch (err) {
+    console.log(`[PADDLE] address prefill skipped: ${err instanceof Error ? err.message : String(err)}`);
+    return null;
+  }
+}
