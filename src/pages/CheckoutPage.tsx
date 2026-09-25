@@ -86,7 +86,8 @@ export default function CheckoutPage() {
       setStatus("ready");
       paddleRef.current.Checkout.open({
         transactionId: txn,
-        settings: { locale: paddleLocale, displayMode: "overlay" },
+        // One-page layout: contact, country and card on a single screen.
+        settings: { locale: paddleLocale, displayMode: "overlay", variant: "one-page" },
       });
     } catch {
       setStatus("failed");

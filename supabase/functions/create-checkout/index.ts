@@ -3,6 +3,8 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import {
   findDiscountIdByCode,
   getOrCreatePaddleCustomer,
+  getOrCreatePaddleAddress,
+  toCountryCode,
   paddleCorsHeaders as corsHeaders,
   paddleFetch,
   SUPPORT_UA_DISCOUNT_CODE,
@@ -161,6 +163,15 @@ serve(async (req) => {
 
     const customerId = await getOrCreatePaddleCustomer(user.email, user.id);
 
+    // Pre-fill the buyer's country so Paddle skips the "email + country" step
+    // and opens directly on the payment form.
+    const countryCode =
+      toCountryCode(profile?.business_country) ??
+      toCountryCode(req.headers.get("cf-ipcountry")) ??
+      (profileLang === "uk" ? "UA" : profileLang === "pl" ? "PL" : null);
+    const addressId = countryCode ? await getOrCreatePaddleAddress(customerId, countryCode) : null;
+    log("Address prefill", { countryCode, hasAddress: Boolean(addressId) });
+
     // Paddle only launches its overlay from approved domains, so the checkout
     // page must always be served from the canonical production host (preview
     // and www origins make Paddle show its generic "Something went wrong").
@@ -178,6 +189,7 @@ serve(async (req) => {
       body: {
         items: [{ price_id: priceId, quantity: 1 }],
         customer_id: customerId,
+        ...(addressId ? { address_id: addressId } : {}),
         ...(discountId ? { discount_id: discountId } : {}),
         custom_data: customData,
         // No explicit checkout.url: Paddle only accepts approved domains, and
