@@ -1,3 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { usePaymentMethods, localizedMethodName } from "@/hooks/usePaymentMethods";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText, Download, Loader2, Trash2 } from "lucide-react";
@@ -28,6 +31,30 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
   const { data: invoices = [] } = useInvoicesByAppointment(appointment?.id);
   const createInvoice = useCreateInvoice();
   const deleteInvoice = useDeleteInvoice();
+  const { data: allMethods = [] } = usePaymentMethods();
+  // Actual payment(s) for this session — method snapshot is taken from the payment itself.
+  const { data: payments = [] } = useQuery({
+    queryKey: ["invoice-payments", appointment?.id],
+    enabled: !!appointment?.id,
+    queryFn: async () => {
+      const { data } = await (supabase as any).from("income")
+        .select("payment_method, payment_method_name, payment_source, amount, date")
+        .eq("appointment_id", appointment.id).order("date", { ascending: true });
+      return (data ?? []) as any[];
+    },
+  });
+  const methodLabel = (code: string, snapshot?: string | null) => {
+    const m = allMethods.find((x) => x.code === code);
+    if (m?.is_built_in) return localizedMethodName(m, t);
+    return snapshot || m?.name || code;
+  };
+  const invoicePaymentMethod = (() => {
+    const real = payments.filter((p) => p.payment_source !== "prepaid_balance" && p.payment_method && p.payment_method !== "prepayment");
+    if (real.length) return Array.from(new Set(real.map((p) => methodLabel(p.payment_method, p.payment_method_name)))).join(", ");
+    if (payments.length) return undefined; // paid from prepaid balance — no new method
+    const shown = allMethods.filter((m) => m.is_active && m.show_on_invoice);
+    return shown.length ? shown.map((m) => localizedMethodName(m, t)).join(", ") : undefined;
+  })();
   const { toast } = useToast();
   const [generating, setGenerating] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
@@ -79,7 +106,7 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
       provider_business_country: (profile as any)?.business_country || undefined,
       provider_address: (profile as any)?.business_address || undefined,
       payment_status: appointment.payment_status || undefined,
-      payment_method: appointment.payment_method || undefined,
+      payment_method: invoicePaymentMethod,
       net_amount: Math.round(netAmount * 100) / 100,
       vat_rate: vatRate,
       vat_amount: Math.round(vatAmount * 100) / 100,

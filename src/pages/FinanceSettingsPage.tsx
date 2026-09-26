@@ -1,3 +1,5 @@
+import { PaymentMethodsManager } from "@/components/payments/PaymentMethodsManager";
+import { pmCopy } from "@/components/payments/paymentMethodsCopy";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
@@ -326,6 +328,15 @@ export default function FinanceSettingsPage() {
                 {L.recognitionNote}
               </p>
             </div>
+          </div>
+
+          {/* Payment methods (shared with Session payment + invoices) */}
+          <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+            <div>
+              <h2 className="font-semibold text-foreground">{pmCopy(lang).title}</h2>
+              <p className="text-sm text-muted-foreground mt-1">{pmCopy(lang).desc}</p>
+            </div>
+            <PaymentMethodsManager />
           </div>
 
           {/* Invoice details */}
