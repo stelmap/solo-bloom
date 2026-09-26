@@ -1,0 +1,55 @@
+const EN = {
+  title: "Payment methods", desc: "Shared across session payments, finance and invoices.",
+  label: "Payment method", configure: "Configure payment methods",
+  default: "Default", active: "Active", onInvoice: "Show on invoice", makeDefault: "Make default",
+  edit: "Edit", delete: "Delete", save: "Save", add: "Add", newPlaceholder: "New method, e.g. Revolut",
+  deleteTitle: "Delete payment method?",
+  deleteUsed: "This payment method has already been used in previous transactions. Deleting it will remove it from future selection, but historical transactions and invoices will keep the original payment method.",
+  deleteUnused: "The method will be removed from the list.",
+  prepaidSource: "Payment source: prepaid balance — the original payment method is kept.",
+};
+type Copy = typeof EN;
+const C: Record<string, Copy> = {
+  en: EN,
+  uk: {
+    title: "Способи оплати", desc: "Спільні для оплати сеансів, фінансів і рахунків.",
+    label: "Спосіб оплати", configure: "Налаштувати способи оплати",
+    default: "За замовчуванням", active: "Активний", onInvoice: "Показувати в рахунку", makeDefault: "Зробити основним",
+    edit: "Редагувати", delete: "Видалити", save: "Зберегти", add: "Додати", newPlaceholder: "Новий спосіб, напр. Revolut",
+    deleteTitle: "Видалити спосіб оплати?",
+    deleteUsed: "Цей спосіб оплати вже використовувався в попередніх транзакціях. Після видалення його не можна буде обрати надалі, але історичні транзакції та рахунки збережуть початковий спосіб оплати.",
+    deleteUnused: "Спосіб буде прибрано зі списку.",
+    prepaidSource: "Джерело оплати: баланс передоплати — початковий спосіб оплати зберігається.",
+  },
+  ru: {
+    title: "Способы оплаты", desc: "Общие для оплаты сеансов, финансов и счетов.",
+    label: "Способ оплаты", configure: "Настроить способы оплаты",
+    default: "По умолчанию", active: "Активен", onInvoice: "Показывать в счёте", makeDefault: "Сделать основным",
+    edit: "Изменить", delete: "Удалить", save: "Сохранить", add: "Добавить", newPlaceholder: "Новый способ, напр. Revolut",
+    deleteTitle: "Удалить способ оплаты?",
+    deleteUsed: "Этот способ оплаты уже использовался в прошлых транзакциях. После удаления его нельзя будет выбрать, но прошлые транзакции и счета сохранят исходный способ оплаты.",
+    deleteUnused: "Способ будет удалён из списка.",
+    prepaidSource: "Источник оплаты: баланс предоплаты — исходный способ оплаты сохраняется.",
+  },
+  pl: {
+    title: "Metody płatności", desc: "Wspólne dla płatności za sesje, finansów i faktur.",
+    label: "Sposób płatności", configure: "Konfiguruj metody płatności",
+    default: "Domyślna", active: "Aktywna", onInvoice: "Pokaż na fakturze", makeDefault: "Ustaw jako domyślną",
+    edit: "Edytuj", delete: "Usuń", save: "Zapisz", add: "Dodaj", newPlaceholder: "Nowa metoda, np. BLIK",
+    deleteTitle: "Usunąć metodę płatności?",
+    deleteUsed: "Ta metoda była już używana w poprzednich transakcjach. Po usunięciu nie będzie dostępna do wyboru, ale historyczne transakcje i faktury zachowają pierwotną metodę płatności.",
+    deleteUnused: "Metoda zostanie usunięta z listy.",
+    prepaidSource: "Źródło płatności: saldo przedpłaty — pierwotna metoda płatności zostaje zachowana.",
+  },
+  fr: {
+    title: "Moyens de paiement", desc: "Partagés entre paiements de séance, finances et factures.",
+    label: "Mode de paiement", configure: "Configurer les moyens de paiement",
+    default: "Par défaut", active: "Actif", onInvoice: "Afficher sur la facture", makeDefault: "Définir par défaut",
+    edit: "Modifier", delete: "Supprimer", save: "Enregistrer", add: "Ajouter", newPlaceholder: "Nouveau moyen, ex. Revolut",
+    deleteTitle: "Supprimer ce moyen de paiement ?",
+    deleteUsed: "Ce moyen de paiement a déjà été utilisé. Il ne sera plus proposé, mais les transactions et factures passées conserveront le moyen de paiement d'origine.",
+    deleteUnused: "Le moyen sera retiré de la liste.",
+    prepaidSource: "Source du paiement : solde prépayé — le moyen de paiement d'origine est conservé.",
+  },
+};
+export const pmCopy = (lang: string): Copy => C[lang] ?? EN;

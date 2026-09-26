@@ -1,3 +1,6 @@
+import { PaymentMethodPicker } from "@/components/payments/PaymentMethodPicker";
+import { pmCopy } from "@/components/payments/paymentMethodsCopy";
+import { useDefaultPaymentMethodCode } from "@/hooks/usePaymentMethods";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -160,6 +163,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
   // Complete form
   const [amountPaid, setAmountPaid] = useState(0);
+  const defaultMethodCode = useDefaultPaymentMethodCode();
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [paymentStatus, setPaymentStatus] = useState("paid_now");
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
@@ -511,7 +515,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     const p = Number(apt.price);
     
     setAmountPaid(p);
-    setPaymentMethod("cash");
+    setPaymentMethod(defaultMethodCode);
     // Priority: session already pre-allocated (prepaid for this slot) > client has unused credit > pay now.
     setPaymentStatus(
       fullyPreallocated && !isGroupSession
@@ -523,7 +527,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
 
     setGroupPaymentState("paid_now");
-    setGroupPaymentMethod("cash");
+    setGroupPaymentMethod(defaultMethodCode);
     setMode("complete");
   };
 
@@ -1585,6 +1589,9 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                     </div>
                   )}
 
+                  {paymentStatus === "paid_now" && (
+                    <PaymentMethodPicker value={paymentMethod} onChange={setPaymentMethod} />
+                  )}
                   <div className="space-y-2">
                     <Label>{t("common.paymentDate")}</Label>
                     <DatePicker date={paymentDate} onDateChange={setPaymentDate} />
@@ -1615,6 +1622,10 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
                 </div>
               </div>
+
+              {paymentStatus === "paid_from_prepayment" && (
+                <p className="text-xs text-muted-foreground">{pmCopy(lang).prepaidSource}</p>
+              )}
 
               <div className="flex gap-2">
                 <Button onClick={handleComplete} className="flex-1" disabled={completeAppointment.isPending || completeFromPrepayment.isPending}>

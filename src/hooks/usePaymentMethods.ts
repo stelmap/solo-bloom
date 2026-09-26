@@ -12,6 +12,9 @@ export interface PaymentMethod {
   is_built_in: boolean;
   is_active: boolean;
   sort_order: number;
+  is_default: boolean;
+  show_on_invoice: boolean;
+  deleted_at: string | null;
 }
 
 const BUILTIN_LABEL_KEYS: Record<string, string> = {
@@ -43,6 +46,7 @@ export function usePaymentMethods() {
       const { data, error } = await (supabase as any)
         .from("payment_methods")
         .select("*")
+        .is("deleted_at", null)
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: true });
       if (error) throw error;
@@ -68,6 +72,46 @@ export function usePaymentMethods() {
 export function useActivePaymentMethods() {
   const q = usePaymentMethods();
   return { ...q, data: (q.data ?? []).filter(m => m.is_active) };
+}
+
+/** Code of the default active method (falls back to first active, then "cash"). */
+export function useDefaultPaymentMethodCode(): string {
+  const { data } = useActivePaymentMethods();
+  return data.find(m => m.is_default)?.code ?? data[0]?.code ?? "cash";
+}
+
+export function useSetDefaultPaymentMethod() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error: e1 } = await (supabase as any).from("payment_methods").update({ is_default: false }).eq("user_id", user!.id).eq("is_default", true);
+      if (e1) throw e1;
+      const { error } = await (supabase as any).from("payment_methods").update({ is_default: true, is_active: true }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["payment_methods", user?.id] }),
+  });
+}
+
+export function useUpdatePaymentMethodFlags() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async ({ id, ...patch }: { id: string; show_on_invoice?: boolean; is_active?: boolean; name?: string }) => {
+      const { error } = await (supabase as any).from("payment_methods").update(patch).eq("id", id);
+      if (error) throw error;
+      // Keep a valid default among active methods.
+      await (supabase as any).rpc("ensure_default_payment_methods", { p_user_id: user!.id });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["payment_methods", user?.id] }),
+  });
+}
+
+/** Number of income records that reference this method code. */
+export async function paymentMethodUsageCount(code: string): Promise<number> {
+  const { count } = await (supabase as any).from("income").select("id", { count: "exact", head: true }).eq("payment_method", code);
+  return count ?? 0;
 }
 
 export function useUpsertPaymentMethod() {
@@ -105,8 +149,9 @@ export function useTogglePaymentMethod() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
-      const { error } = await (supabase as any).from("payment_methods").update({ is_active }).eq("id", id);
+      const { error } = await (supabase as any).from("payment_methods").update(is_active ? { is_active } : { is_active, is_default: false }).eq("id", id);
       if (error) throw error;
+      await (supabase as any).rpc("ensure_default_payment_methods", { p_user_id: user!.id });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["payment_methods", user?.id] }),
   });
@@ -117,17 +162,15 @@ export function useDeletePaymentMethod() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (id: string) => {
-      // Check usage in income (custom methods only) before deletion
-      const { data: pm } = await (supabase as any).from("payment_methods").select("code, is_built_in").eq("id", id).maybeSingle();
+      // Methods referenced by past payments are soft-deleted so history keeps them.
+      const { data: pm } = await (supabase as any).from("payment_methods").select("code").eq("id", id).maybeSingle();
       if (!pm) throw new Error("Not found");
-      if (pm.is_built_in) throw new Error("Built-in payment methods cannot be deleted");
-      const { count } = await (supabase as any)
-        .from("income")
-        .select("id", { count: "exact", head: true })
-        .eq("payment_method", pm.code);
-      if ((count ?? 0) > 0) throw new Error("Cannot delete: payment method has been used");
-      const { error } = await (supabase as any).from("payment_methods").delete().eq("id", id);
+      const used = await paymentMethodUsageCount(pm.code);
+      const { error } = used > 0
+        ? await (supabase as any).from("payment_methods").update({ deleted_at: new Date().toISOString(), is_active: false, is_default: false }).eq("id", id)
+        : await (supabase as any).from("payment_methods").delete().eq("id", id);
       if (error) throw error;
+      await (supabase as any).rpc("ensure_default_payment_methods", { p_user_id: user!.id });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["payment_methods", user?.id] }),
   });
