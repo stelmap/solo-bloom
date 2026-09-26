@@ -1552,6 +1552,9 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 )}
               </div>
 
+              {paymentStatus !== "waiting_for_payment" && (
+                <PaymentMethodPicker value={paymentMethod} onChange={setPaymentMethod} />
+              )}
 
               {(paymentStatus === "paid_now" || paymentStatus === "paid_in_advance") && (
                 <>
@@ -1589,9 +1592,6 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                     </div>
                   )}
 
-                  {paymentStatus === "paid_now" && (
-                    <PaymentMethodPicker value={paymentMethod} onChange={setPaymentMethod} />
-                  )}
                   <div className="space-y-2">
                     <Label>{t("common.paymentDate")}</Label>
                     <DatePicker date={paymentDate} onDateChange={setPaymentDate} />
