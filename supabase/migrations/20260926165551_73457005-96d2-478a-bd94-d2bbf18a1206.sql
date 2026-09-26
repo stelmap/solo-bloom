@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.income_snapshot_payment_details() FROM PUBLIC, anon, authenticated;
