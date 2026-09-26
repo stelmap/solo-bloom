@@ -2016,11 +2016,15 @@ export type Database = {
           client_id: string | null
           comment: string | null
           created_at: string
+          currency: string | null
           date: string
           description: string | null
           id: string
           is_demo: boolean
           payment_method: string
+          payment_method_id: string | null
+          payment_method_name: string | null
+          payment_source: string
           seed_batch_id: string | null
           seed_source: string | null
           session_date: string | null
@@ -2038,11 +2042,15 @@ export type Database = {
           client_id?: string | null
           comment?: string | null
           created_at?: string
+          currency?: string | null
           date?: string
           description?: string | null
           id?: string
           is_demo?: boolean
           payment_method?: string
+          payment_method_id?: string | null
+          payment_method_name?: string | null
+          payment_source?: string
           seed_batch_id?: string | null
           seed_source?: string | null
           session_date?: string | null
@@ -2060,11 +2068,15 @@ export type Database = {
           client_id?: string | null
           comment?: string | null
           created_at?: string
+          currency?: string | null
           date?: string
           description?: string | null
           id?: string
           is_demo?: boolean
           payment_method?: string
+          payment_method_id?: string | null
+          payment_method_name?: string | null
+          payment_source?: string
           seed_batch_id?: string | null
           seed_source?: string | null
           session_date?: string | null
@@ -2372,10 +2384,13 @@ export type Database = {
         Row: {
           code: string
           created_at: string
+          deleted_at: string | null
           id: string
           is_active: boolean
           is_built_in: boolean
+          is_default: boolean
           name: string
+          show_on_invoice: boolean
           sort_order: number
           updated_at: string
           user_id: string
@@ -2383,10 +2398,13 @@ export type Database = {
         Insert: {
           code: string
           created_at?: string
+          deleted_at?: string | null
           id?: string
           is_active?: boolean
           is_built_in?: boolean
+          is_default?: boolean
           name: string
+          show_on_invoice?: boolean
           sort_order?: number
           updated_at?: string
           user_id: string
@@ -2394,10 +2412,13 @@ export type Database = {
         Update: {
           code?: string
           created_at?: string
+          deleted_at?: string | null
           id?: string
           is_active?: boolean
           is_built_in?: boolean
+          is_default?: boolean
           name?: string
+          show_on_invoice?: boolean
           sort_order?: number
           updated_at?: string
           user_id?: string
