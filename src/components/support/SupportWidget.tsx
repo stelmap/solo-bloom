@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics";
+import { useOverlayOpen } from "@/hooks/useOverlayOpen";
 import {
   SUPPORT_OPEN_EVENT, SupportAction, SupportContext, getSupportAnonId, moduleFromPath,
 } from "@/lib/support";
@@ -44,6 +45,7 @@ export function SupportWidget() {
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
+  const overlayOpen = useOverlayOpen();
   const [view, setView] = useState<"chat" | "history">("chat");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -216,6 +218,8 @@ export function SupportWidget() {
 
   /* ---------- render ---------- */
   if (!open) {
+    // Never sit on top of a drawer/modal: its actions must stay clickable.
+    if (overlayOpen) return null;
     return (
       <button
         type="button"
