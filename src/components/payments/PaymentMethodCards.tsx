@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Banknote, CreditCard, Landmark, Receipt, Settings, Wallet, CircleDollarSign } from "lucide-react";
+import { Star, Banknote, CreditCard, Landmark, Receipt, Settings, Wallet, CircleDollarSign } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useActivePaymentMethods, localizedMethodName } from "@/hooks/usePaymentMethods";
 import { PaymentMethodsDialog } from "./PaymentMethodsManager";
