@@ -35,13 +35,14 @@ export function InvoiceButton({ appointment, client, service, part = "all" }: In
   const deleteInvoice = useDeleteInvoice();
   const { data: allMethods = [] } = usePaymentMethods();
   // Actual payment(s) for this session — method snapshot is taken from the payment itself.
-  const { data: payments = [] } = useQuery({
+  const { data: payments = [], refetch: refetchPayments } = useQuery({
     queryKey: ["invoice-payments", appointment?.id],
     enabled: !!appointment?.id,
     queryFn: async () => {
       const { data } = await (supabase as any).from("income")
-        .select("payment_method, payment_method_name, payment_source, amount, date")
-        .eq("appointment_id", appointment.id).order("date", { ascending: true });
+        .select("payment_method, payment_method_id, payment_method_name, payment_source, amount, date, created_at")
+        .eq("appointment_id", appointment.id).neq("status", "cancelled")
+        .order("date", { ascending: true }).order("created_at", { ascending: true });
       return (data ?? []) as any[];
     },
   });
@@ -52,21 +53,27 @@ export function InvoiceButton({ appointment, client, service, part = "all" }: In
   };
   // Invoice shows exactly ONE method: the actual one used (latest real payment),
   // falling back to the configured default. Never a list.
-  const invoicePaymentMethod = (() => {
-    const real = payments.filter((p) => p.payment_method && p.payment_method !== "prepayment");
+  // The invoice reads the method stored on the actual payment transaction.
+  // The current default is used ONLY when the session has no recorded payment.
+  const resolveInvoicePaymentMethod = (rows: any[]) => {
+    const real = rows.filter((p) => p.payment_method && p.payment_method !== "prepayment");
     const last = real[real.length - 1];
-    if (last) return methodLabel(last.payment_method, last.payment_method_name);
-    if (payments.length) return undefined;
+    if (last) {
+      const m = allMethods.find((x) => x.id === last.payment_method_id) ?? allMethods.find((x) => x.code === last.payment_method);
+      if (m?.is_built_in) return localizedMethodName({ ...m, name: last.payment_method_name ?? m.name }, t);
+      return last.payment_method_name || m?.name || last.payment_method;
+    }
+    if (rows.length) return undefined;
     const def = allMethods.find((m) => m.is_active && m.is_default);
     return def ? localizedMethodName(def, t) : undefined;
-  })();
+  };
   const { toast } = useToast();
   const [generating, setGenerating] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
 
   if (!appointment || !client || !service) return null;
 
-  const buildInvoiceData = (invoiceNumber: string) => {
+  const buildInvoiceData = (invoiceNumber: string, rows: any[] = payments) => {
     const price = appointment.price || service.price || 0;
     const vatMode = (profile as any)?.vat_mode || "none";
     const vatRate = Number((profile as any)?.vat_rate) || 0;
@@ -111,7 +118,7 @@ export function InvoiceButton({ appointment, client, service, part = "all" }: In
       provider_business_country: (profile as any)?.business_country || undefined,
       provider_address: (profile as any)?.business_address || undefined,
       payment_status: appointment.payment_status || undefined,
-      payment_method: invoicePaymentMethod,
+      payment_method: resolveInvoicePaymentMethod(rows),
       net_amount: Math.round(netAmount * 100) / 100,
       vat_rate: vatRate,
       vat_amount: Math.round(vatAmount * 100) / 100,
@@ -184,7 +191,9 @@ export function InvoiceButton({ appointment, client, service, part = "all" }: In
   const handleGenerate = async () => {
     setGenerating(true);
     try {
-      const result = await createInvoice.mutateAsync(buildInvoiceData(""));
+      // Always read fresh payment rows so a just-selected method is used, never a stale default.
+      const fresh = (await refetchPayments()).data ?? payments;
+      const result = await createInvoice.mutateAsync(buildInvoiceData("", fresh));
       const assets = await loadSignatureAssets();
       const invoiceData = {
         ...result,
