@@ -23,6 +23,7 @@ import { Separator } from "@/components/ui/separator";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import {
   CheckCircle, XCircle, Ban, Clock, Pencil, Trash2, DollarSign, Repeat, Save, X, FileText, Bell, Send, Users, Check, MinusCircle, ChevronRight, User, Tag, Calendar as CalendarIcon, CreditCard, Coins,
+  Zap,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
