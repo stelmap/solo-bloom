@@ -81,9 +81,10 @@ export function useActivePaymentMethods() {
 }
 
 /** Code of the default active method (falls back to first active, then "cash"). */
+/** Configured default method code, or "" when no default exists (user must choose). */
 export function useDefaultPaymentMethodCode(): string {
   const { data } = useActivePaymentMethods();
-  return data.find(m => m.is_default)?.code ?? data[0]?.code ?? "cash";
+  return data.find(m => m.is_default)?.code ?? "";
 }
 
 export function useSetDefaultPaymentMethod() {

@@ -539,7 +539,23 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   };
 
 
+  // A paid completion must record exactly one method: the selected one, else the default.
+  const requirePaymentMethod = (status: string): boolean => {
+    const needs = ["paid_now", "paid_in_advance", "already_paid", "partially_paid"].includes(status);
+    if (!needs || isGroupSession || paymentMethod) return true;
+    const msg: Record<string, string> = {
+      en: "Please select a payment method before completing the session as paid.",
+      uk: "Оберіть спосіб оплати перед завершенням сесії як оплаченої.",
+      ru: "Выберите способ оплаты перед завершением сессии как оплаченной.",
+      fr: "Veuillez choisir un mode de paiement avant de clôturer la séance comme payée.",
+      pl: "Wybierz sposób płatności przed zakończeniem sesji jako opłaconej.",
+    };
+    toast({ title: t("common.error"), description: msg[lang] ?? msg.en, variant: "destructive" });
+    return false;
+  };
+
   const handleComplete = async () => {
+    if (!requirePaymentMethod(paymentStatus)) return;
     try {
       if (notesDirty) {
         await updateAppointment.mutateAsync({ id: apt.id, notes });
@@ -669,6 +685,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const handleQuickComplete = async (statusOverride?: string) => {
 
     const paymentStatusChoice = statusOverride ?? paymentStatus;
+    if (!requirePaymentMethod(paymentStatusChoice)) return;
+
 
     if (completeAppointment.isPending || completeFromPrepayment.isPending || completeFlexible.isPending) return;
     if (!isActive) return;

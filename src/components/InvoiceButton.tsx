@@ -50,12 +50,15 @@ export function InvoiceButton({ appointment, client, service, part = "all" }: In
     if (m?.is_built_in) return localizedMethodName(m, t);
     return snapshot || m?.name || code;
   };
+  // Invoice shows exactly ONE method: the actual one used (latest real payment),
+  // falling back to the configured default. Never a list.
   const invoicePaymentMethod = (() => {
-    const real = payments.filter((p) => p.payment_source !== "prepaid_balance" && p.payment_method && p.payment_method !== "prepayment");
-    if (real.length) return Array.from(new Set(real.map((p) => methodLabel(p.payment_method, p.payment_method_name)))).join(", ");
-    if (payments.length) return undefined; // paid from prepaid balance — no new method
-    const shown = allMethods.filter((m) => m.is_active && m.show_on_invoice);
-    return shown.length ? shown.map((m) => localizedMethodName(m, t)).join(", ") : undefined;
+    const real = payments.filter((p) => p.payment_method && p.payment_method !== "prepayment");
+    const last = real[real.length - 1];
+    if (last) return methodLabel(last.payment_method, last.payment_method_name);
+    if (payments.length) return undefined;
+    const def = allMethods.find((m) => m.is_active && m.is_default);
+    return def ? localizedMethodName(def, t) : undefined;
   })();
   const { toast } = useToast();
   const [generating, setGenerating] = useState(false);
