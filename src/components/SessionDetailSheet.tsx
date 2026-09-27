@@ -807,19 +807,19 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
               {isGroupSession && <Users className="h-5 w-5" />}
               <span>{isGroupSession ? (groupName || t("groups.groupSession")) : t("session.title")}</span>
             </SheetTitle>
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className={cn("gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium border-transparent", statusInfo.color)}>
+            <div className="flex flex-wrap items-center gap-2 [&>*]:gap-1.5 [&>*]:rounded-full [&>*]:border-border [&>*]:bg-card [&>*]:px-3 [&>*]:py-1 [&>*]:text-xs [&>*]:font-medium [&>*]:text-foreground">
+              <Badge variant="outline" className="bg-muted/60">
                 <CalendarIcon className="h-3.5 w-3.5" />{statusInfo.label}
               </Badge>
-              <Badge variant="outline" className="gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium bg-muted text-foreground border-transparent">
+              <Badge variant="outline">
                 <Clock className="h-3.5 w-3.5" />
                 {(t as any)(stateStyle.labelKey) || stateStyle.labelFallback}
               </Badge>
               {isGroupSession && (
-                <Badge variant="outline" className="text-xs border-primary/30 text-primary"><Users className="h-3 w-3 mr-1" />{t("groups.groupSession")}</Badge>
+                <Badge variant="outline"><Users className="h-3.5 w-3.5" />{t("groups.groupSession")}</Badge>
               )}
               {apt.recurring_rule_id && (
-                <Badge variant="outline" className="text-xs"><Repeat className="h-3 w-3 mr-1" />{t("recurring.badge")}</Badge>
+                <Badge variant="outline"><Repeat className="h-3.5 w-3.5" />{t("recurring.badge")}</Badge>
               )}
             </div>
           </SheetHeader>
@@ -827,7 +827,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
           {mode === "view" && (
             <div className="space-y-5">
               {/* Session info */}
-              <div className="rounded-xl border border-border bg-background p-4 space-y-3 text-sm [&>div]:items-center">
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 text-sm shadow-card [&>div]:items-center">
                 {isGroupSession ? (
                   <div className="flex justify-between">
                     <span className="flex items-center gap-2.5 text-muted-foreground"><Users className="h-4 w-4" />{t("groups.group")}</span>
@@ -909,7 +909,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 )}
                 <div className="flex justify-between">
                   <span className="flex items-center gap-2.5 text-muted-foreground"><Coins className="h-4 w-4" />{PM.payStatus}</span>
-                  <span className={cn("rounded-md px-2 py-0.5 text-xs font-semibold", payInfo.color, payInfo.color.includes("destructive") ? "bg-destructive/10" : payInfo.color.includes("success") ? "bg-success/10" : "bg-muted")}>{payInfo.label}</span>
+                  <span className={cn("rounded-full px-3 py-1 text-xs font-semibold", payInfo.color, payInfo.color.includes("destructive") ? "bg-destructive/10" : payInfo.color.includes("success") ? "bg-success/10" : "bg-muted")}>{payInfo.label}</span>
                 </div>
                 {hasPrepayment && isActive && !isGroupSession && (
                   <div className="flex justify-between items-center rounded-md bg-primary/5 border border-primary/20 px-2 py-1.5">
@@ -924,16 +924,16 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 )}
                 {showConfirmationState && (
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">{t("confirmation.status")}</span>
-                    <Badge variant="outline" className={cn("text-xs", 
-                      apt.confirmation_status === "confirmed" ? "border-success/30 text-success bg-success/10" :
-                      apt.confirmation_status === "pending" ? "border-warning/30 text-warning bg-warning/10" :
-                      "border-border text-muted-foreground"
+                    <span className="flex items-center gap-2.5 text-muted-foreground"><FileText className="h-4 w-4" />{t("confirmation.status")}</span>
+                    <span className={cn("inline-flex items-center rounded-full px-3 py-1 text-xs font-medium",
+                      apt.confirmation_status === "confirmed" ? "text-success bg-success/10" :
+                      apt.confirmation_status === "pending" ? "text-warning bg-warning/10" :
+                      "text-muted-foreground bg-muted"
                     )}>
                       {apt.confirmation_status === "confirmed" && <CheckCircle className="h-3 w-3 mr-1" />}
                       {apt.confirmation_status === "pending" && <Clock className="h-3 w-3 mr-1" />}
                       {confirmInfo.label}
-                    </Badge>
+                    </span>
                   </div>
                 )}
                 {apt.confirmation_timestamp && (
@@ -950,25 +950,36 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 )}
               </div>
 
-              {/* Send Reminder / Request Confirmation */}
-              {canSendReminder && (
-                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-primary">
-                      <Bell className="h-4 w-4" />
-                      <span>
-                        {clientRequiresConfirmation
-                          ? (apt.confirmation_status === "pending" ? t("confirmation.pending") : t("confirmation.requestConfirmation"))
-                          : t("confirmation.sendReminder")}
-                      </span>
-                    </div>
-                    <Button size="sm" variant="outline" onClick={handleSendReminder} disabled={sendingReminder}
-                      className="border-primary/30 text-primary hover:bg-primary/10 hover:text-primary">
-                      <Send className="h-3.5 w-3.5 mr-1" />
-                      {sendingReminder ? "..." : t("confirmation.sendReminder")}
-                    </Button>
+              {/* Quick actions — tertiary, neutral */}
+              {isActive && !isGroupSession && (
+                <section className="space-y-3 border-t border-border pt-4">
+                  <h3 className="flex items-center gap-2 text-base font-semibold text-foreground">
+                    <Zap className="h-4 w-4" />
+                    {({ uk: "Швидкі дії", ru: "Быстрые действия", pl: "Szybkie akcje", fr: "Actions rapides" } as Record<string, string>)[lang] ?? "Quick actions"}
+                  </h3>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                    {canSendReminder && clientRequiresConfirmation && (
+                      <Button variant="outline" onClick={handleSendReminder} disabled={sendingReminder}
+                        className="h-auto min-h-11 whitespace-normal rounded-xl bg-card px-3 py-2 text-xs font-medium text-foreground hover:bg-accent-soft">
+                        <Bell className="h-4 w-4 mr-2 shrink-0" />
+                        {apt.confirmation_status === "pending" ? t("confirmation.pending") : t("confirmation.requestConfirmation")}
+                      </Button>
+                    )}
+                    {canSendReminder && (
+                      <Button variant="outline" onClick={handleSendReminder} disabled={sendingReminder}
+                        className="h-auto min-h-11 whitespace-normal rounded-xl bg-card px-3 py-2 text-xs font-medium text-foreground hover:bg-accent-soft">
+                        <Send className="h-4 w-4 mr-2 shrink-0" />
+                        {sendingReminder ? "..." : t("confirmation.sendReminder")}
+                      </Button>
+                    )}
+                    <InvoiceButton
+                      part="button"
+                      appointment={apt}
+                      client={clients.find(c => c.id === apt.client_id)}
+                      service={services.find(s => s.id === apt.service_id)}
+                    />
                   </div>
-                </div>
+                </section>
               )}
 
               {/* Group attendance tracking */}
@@ -1247,10 +1258,10 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
               {/* Notes */}
               {!isGroupSession && (
-                <section className="space-y-2 border-t border-border pt-4">
+                <section className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                      <FileText className="h-4 w-4 text-muted-foreground" /> {t("session.notes")}
+                    <h3 className="flex items-center gap-2 text-base font-semibold text-foreground">
+                      <FileText className="h-4 w-4 text-foreground" /> {t("session.notes")}
                     </h3>
                     {apt.client_id && (
                       <button
@@ -1260,7 +1271,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                           setNotesDialogMode("edit");
                           setNotesDialogOpen(true);
                         }}
-                        className="text-xs font-medium text-primary hover:underline"
+                        className="text-sm font-medium text-primary hover:underline"
                       >
                         {t("sd.addNotes")}
                       </button>
@@ -1270,22 +1281,22 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                     value={notes}
                     onChange={(e) => { setNotes(e.target.value); setNotesDirty(true); }}
                     placeholder={PM.notesPlaceholder}
-                    className="min-h-[72px] bg-muted/40"
+                    className="min-h-[72px] rounded-xl bg-card"
                   />
                 </section>
               )}
 
-              {/* Complete session — workflow actions */}
+              {/* Complete session — one strong CTA + one neutral secondary */}
               {isActive && !isGroupSession && (
-                <div className="sticky bottom-0 -mx-6 space-y-2.5 border-t border-border bg-background px-6 pb-2 pt-4">
+                <div className="sticky bottom-0 -mx-6 space-y-2 border-t border-border bg-background px-6 pb-2 pt-4">
                   {(() => {
                     const busy = completeAppointment.isPending || completeFromPrepayment.isPending;
                     const primaryValue = usesPrepaymentCompletion ? SIMPLE_COMPLETION_OPTIONS[0].value : "paid_now";
                     return (
-                      <>
-                        <Button className="h-12 w-full rounded-xl text-sm font-semibold" disabled={busy}
+                      <div className={cn("grid gap-3", !usesPrepaymentCompletion && "sm:grid-cols-[1.15fr_1fr]")}>
+                        <Button className="h-12 w-full whitespace-normal rounded-xl text-sm font-semibold shadow-glow" disabled={busy}
                           onClick={() => handleQuickComplete(primaryValue)}>
-                          <Check className="h-4 w-4 mr-2" />
+                          <Check className="h-4 w-4 mr-2 shrink-0" />
                           {busy ? t("calendar.saving")
                             : primaryValue === "paid_from_prepayment" ? PM.completePrepay
                             : primaryValue === "paid_now" ? t("sd.paidComplete")
@@ -1293,28 +1304,21 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                         </Button>
                         {!usesPrepaymentCompletion && (
                           <Button variant="outline" disabled={busy}
-                            className="h-12 w-full rounded-xl border-primary/40 bg-primary/5 text-sm font-semibold text-primary hover:bg-primary/10 hover:text-primary"
+                            className="h-12 w-full whitespace-normal rounded-xl bg-card text-sm font-medium text-foreground hover:bg-muted"
                             onClick={() => handleQuickComplete("waiting_for_payment")}>
-                            <Clock className="h-4 w-4 mr-2" />
+                            <Clock className="h-4 w-4 mr-2 shrink-0" />
                             {t("sd.waitingComplete")}
                           </Button>
                         )}
-                      </>
+                      </div>
                     );
                   })()}
                   <InvoiceButton
+                    part="list"
                     appointment={apt}
                     client={clients.find(c => c.id === apt.client_id)}
                     service={services.find(s => s.id === apt.service_id)}
                   />
-                  <Separator />
-                  <Button
-                    variant="outline"
-                    className="h-12 w-full rounded-xl border-destructive/40 text-sm font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive"
-                    onClick={() => setCancelOpen(true)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" /> {t("cancelSession.title")}
-                  </Button>
                 </div>
               )}
 
@@ -1401,13 +1405,19 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 </div>
               )}
 
-              <div className="flex gap-2 border-t border-border pt-3">
-                <Button variant="ghost" size="sm" onClick={() => setEditChoiceOpen(true)}>
-                  <Pencil className="h-3.5 w-3.5 mr-1" /> {t("calendar.edit")}
+              <div className="flex items-center justify-between gap-1 border-t border-border pt-3 [&>*]:flex-1">
+                <Button variant="ghost" size="sm" className="font-semibold text-foreground" onClick={() => setEditChoiceOpen(true)}>
+                  <Pencil className="h-4 w-4 mr-1.5" /> {t("calendar.edit")}
                 </Button>
-                <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive"
+                {isActive && (
+                  <Button variant="ghost" size="sm" className="border-x border-border rounded-none font-semibold text-primary hover:text-primary hover:bg-primary/5"
+                    onClick={() => setCancelOpen(true)}>
+                    <XCircle className="h-4 w-4 mr-1.5" /> {t("cancelSession.title")}
+                  </Button>
+                )}
+                <Button variant="ghost" size="sm" className="font-semibold text-destructive hover:text-destructive hover:bg-destructive/5"
                   onClick={() => apt.recurring_rule_id ? setRecurDeleteOpen(true) : setDeleteOpen(true)}>
-                  <Trash2 className="h-3.5 w-3.5 mr-1" /> {t("calendar.delete")}
+                  <Trash2 className="h-4 w-4 mr-1.5" /> {t("calendar.delete")}
                 </Button>
               </div>
 
