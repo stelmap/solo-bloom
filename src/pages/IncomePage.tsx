@@ -11,6 +11,7 @@ import { useIncome, useIncomeSum, useCreateIncome, useDeleteIncome, useExpectedP
 import { FlexiblePriceCompleteDialog } from "@/components/FlexiblePriceCompleteDialog";
 import { useSetOnboardingState } from "@/hooks/useOnboardingJourney";
 
+import { localizeIncomeDescription, isPrepaymentDeduction } from "@/lib/incomeDescription";
 import { PaymentMethodCards } from "@/components/payments/PaymentMethodCards";
 import { pmCopy } from "@/components/payments/paymentMethodsCopy";
 import { useDefaultPaymentMethodCode } from "@/hooks/usePaymentMethods";
@@ -30,6 +31,8 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, format, parseISO, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { describeError } from "@/lib/errorMessages";
+
+const PREPAY_LABEL: Record<string, string> = { en: "Prepayment", uk: "Передплата", ru: "Предоплата", pl: "Przedpłata", fr: "Acompte" };
 
 export default function IncomePage() {
   useEffect(() => { import("@/lib/analytics").then(({ track }) => track("income_page_opened")); }, []);
@@ -275,7 +278,7 @@ export default function IncomePage() {
             <Button variant="outline" onClick={() => {
               downloadCSV("income.csv",
                 [t("csv.header.date"), t("csv.header.amount"), t("csv.header.source"), t("csv.header.description")],
-                filtered.map((i: any) => [i.date, String(i.amount), i.source || "", i.description || ""])
+                filtered.map((i: any) => [i.date, String(i.amount), i.source || "", localizeIncomeDescription(i.description, lang)])
               );
             }}><Download className="h-4 w-4 mr-1" /> {IP.export}</Button>
             <Dialog open={open} onOpenChange={setOpen}>
