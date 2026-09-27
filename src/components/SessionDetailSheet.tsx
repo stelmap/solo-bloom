@@ -1,7 +1,6 @@
 import { PaymentMethodPicker } from "@/components/payments/PaymentMethodPicker";
 import { PaymentMethodCards } from "@/components/payments/PaymentMethodCards";
 import { pmCopy } from "@/components/payments/paymentMethodsCopy";
-import { pmCopy } from "@/components/payments/paymentMethodsCopy";
 import { useDefaultPaymentMethodCode } from "@/hooks/usePaymentMethods";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
