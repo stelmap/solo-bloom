@@ -7,6 +7,7 @@ const EN = {
   deleteUsed: "This payment method has already been used in previous transactions. Deleting it will remove it from future selection, but historical transactions and invoices will keep the original payment method.",
   deleteUnused: "The method will be removed from the list.",
   prepaidSource: "Payment source: prepaid balance — the original payment method is kept.",
+    notesPlaceholder: "Add notes about this session...", completePrepay: "Complete & deduct from prepayment", generateInvoice: "Generate invoice", details: "Session Details", payStatus: "Payment status",
 };
 type Copy = typeof EN;
 const C: Record<string, Copy> = {
@@ -20,6 +21,7 @@ const C: Record<string, Copy> = {
     deleteUsed: "Цей спосіб оплати вже використовувався в попередніх транзакціях. Після видалення його не можна буде обрати надалі, але історичні транзакції та рахунки збережуть початковий спосіб оплати.",
     deleteUnused: "Спосіб буде прибрано зі списку.",
     prepaidSource: "Джерело оплати: баланс передоплати — початковий спосіб оплати зберігається.",
+    notesPlaceholder: "Додайте нотатки про цей сеанс...", completePrepay: "Завершити й списати з передоплати", generateInvoice: "Створити рахунок", details: "Деталі сеансу", payStatus: "Статус оплати",
   },
   ru: {
     title: "Способы оплаты", desc: "Общие для оплаты сеансов, финансов и счетов.",
@@ -30,6 +32,7 @@ const C: Record<string, Copy> = {
     deleteUsed: "Этот способ оплаты уже использовался в прошлых транзакциях. После удаления его нельзя будет выбрать, но прошлые транзакции и счета сохранят исходный способ оплаты.",
     deleteUnused: "Способ будет удалён из списка.",
     prepaidSource: "Источник оплаты: баланс предоплаты — исходный способ оплаты сохраняется.",
+    notesPlaceholder: "Добавьте заметки об этой сессии...", completePrepay: "Завершить и списать с предоплаты", generateInvoice: "Создать счёт", details: "Детали сессии", payStatus: "Статус оплаты",
   },
   pl: {
     title: "Metody płatności", desc: "Wspólne dla płatności za sesje, finansów i faktur.",
@@ -40,6 +43,7 @@ const C: Record<string, Copy> = {
     deleteUsed: "Ta metoda była już używana w poprzednich transakcjach. Po usunięciu nie będzie dostępna do wyboru, ale historyczne transakcje i faktury zachowają pierwotną metodę płatności.",
     deleteUnused: "Metoda zostanie usunięta z listy.",
     prepaidSource: "Źródło płatności: saldo przedpłaty — pierwotna metoda płatności zostaje zachowana.",
+    notesPlaceholder: "Dodaj notatki o tej sesji...", completePrepay: "Zakończ i pobierz z przedpłaty", generateInvoice: "Wystaw fakturę", details: "Szczegóły sesji", payStatus: "Status płatności",
   },
   fr: {
     title: "Moyens de paiement", desc: "Partagés entre paiements de séance, finances et factures.",
@@ -50,6 +54,7 @@ const C: Record<string, Copy> = {
     deleteUsed: "Ce moyen de paiement a déjà été utilisé. Il ne sera plus proposé, mais les transactions et factures passées conserveront le moyen de paiement d'origine.",
     deleteUnused: "Le moyen sera retiré de la liste.",
     prepaidSource: "Source du paiement : solde prépayé — le moyen de paiement d'origine est conservé.",
+    notesPlaceholder: "Ajoutez des notes sur cette séance...", completePrepay: "Terminer et déduire du prépaiement", generateInvoice: "Générer la facture", details: "Détails de la séance", payStatus: "Statut du paiement",
   },
 };
 export const pmCopy = (lang: string): Copy => C[lang] ?? EN;
