@@ -428,10 +428,10 @@ export default function IncomePage() {
                           <td className="p-4 text-sm font-medium text-foreground">
                             {entry.source === "appointment"
                               ? `${entry.appointments?.clients?.name} — ${entry.appointments?.services?.name}`
-                              : entry.description || t("income.manualEntry")}
+                              : localizeIncomeDescription(entry.description, lang) || t("income.manualEntry")}
                           </td>
                           <td className="p-4 text-sm font-semibold text-foreground">{cs}{Number(entry.amount).toFixed(2)}</td>
-                          <td className="p-4"><Badge variant={entry.source === "appointment" ? "default" : "secondary"} className="text-xs">{entry.source === "appointment" ? t("income.appointment") : t("income.manual")}</Badge></td>
+                          <td className="p-4"><Badge variant={entry.source === "appointment" ? "default" : "secondary"} className="text-xs">{entry.source === "appointment" ? t("income.appointment") : isPrepaymentDeduction(entry.description) ? (PREPAY_LABEL[lang] ?? PREPAY_LABEL.en) : t("income.manual")}</Badge></td>
                           <td className="p-4">
                             {entry.source !== "appointment" && (
                               <button onClick={() => setDeleteId(entry.id)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100">
