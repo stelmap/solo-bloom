@@ -1,4 +1,6 @@
 import { PaymentMethodPicker } from "@/components/payments/PaymentMethodPicker";
+import { PaymentMethodCards } from "@/components/payments/PaymentMethodCards";
+import { pmCopy } from "@/components/payments/paymentMethodsCopy";
 import { pmCopy } from "@/components/payments/paymentMethodsCopy";
 import { useDefaultPaymentMethodCode } from "@/hooks/usePaymentMethods";
 import { useState, useEffect, useMemo } from "react";
@@ -21,7 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import {
-  CheckCircle, XCircle, Ban, Clock, Pencil, Trash2, DollarSign, Repeat, Save, X, FileText, Bell, Send, Users, Check, MinusCircle, ChevronRight,
+  CheckCircle, XCircle, Ban, Clock, Pencil, Trash2, DollarSign, Repeat, Save, X, FileText, Bell, Send, Users, Check, MinusCircle, ChevronRight, User, Tag, Calendar as CalendarIcon, CreditCard, Coins,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -290,6 +292,10 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
         ];
 
 
+
+  const usesPrepaymentCompletion =
+    SIMPLE_COMPLETION_OPTIONS[0]?.value === "paid_from_prepayment" || SIMPLE_COMPLETION_OPTIONS[0]?.value === "already_paid";
+  const PM = pmCopy(lang);
 
   const prepaymentInsufficient =
     hasPrepayment && !isGroupSession && !fullyCoveredByPrepayment && prepaymentCovers < sessionPrice - 0.001;
@@ -823,7 +829,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
               <div className="rounded-xl border border-border bg-background p-4 space-y-3 text-sm [&>div]:items-center">
                 {isGroupSession ? (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">{t("groups.group")}</span>
+                    <span className="flex items-center gap-2.5 text-muted-foreground"><Users className="h-4 w-4" />{t("groups.group")}</span>
                     {groupId ? (
                       <button
                         type="button"
@@ -838,7 +844,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   </div>
                 ) : (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">{t("calendar.client")}</span>
+                    <span className="flex items-center gap-2.5 text-muted-foreground"><User className="h-4 w-4" />{t("calendar.client")}</span>
                     {apt.client_id ? (
                       <button
                         type="button"
@@ -853,12 +859,12 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("calendar.service")}</span>
+                  <span className="flex items-center gap-2.5 text-muted-foreground"><Tag className="h-4 w-4" />{t("calendar.service")}</span>
                   {apt.services?.name ? (
                     <button
                       type="button"
                       onClick={() => goTo(`/services`)}
-                      className="font-medium text-primary hover:underline text-right"
+                      className="font-medium text-foreground hover:underline text-right"
                     >
                       {apt.services.name}
                     </button>
@@ -868,17 +874,17 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 </div>
 
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("calendar.dateTime")}</span>
+                  <span className="flex items-center gap-2.5 text-muted-foreground"><CalendarIcon className="h-4 w-4" />{t("calendar.dateTime")}</span>
                   <span className="font-medium text-foreground">
                     {format(new Date(apt.scheduled_at), "MMM d, yyyy", { locale: dateLocale })} · {fmtTime(apt.scheduled_at)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("calendar.duration")}</span>
+                  <span className="flex items-center gap-2.5 text-muted-foreground"><Clock className="h-4 w-4" />{t("calendar.duration")}</span>
                   <span className="font-medium text-foreground">{apt.duration_minutes} {t("common.min")}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{flexApplied ? t("flexPrice.standardPrice") : t("calendar.price")}</span>
+                  <span className="flex items-center gap-2.5 text-muted-foreground"><CreditCard className="h-4 w-4" />{flexApplied ? t("flexPrice.standardPrice") : t("calendar.price")}</span>
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-foreground">{cs}{(flexApplied ? flexStandardPrice : Number(apt.price)).toFixed(2)}</span>
                     {(apt as any).price_override_reason && <Badge variant="outline" className="text-[10px]">{t("pricing.overridden")}</Badge>}
@@ -901,8 +907,8 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("common.payment")}</span>
-                  <span className={cn("font-medium", payInfo.color)}>{payInfo.label}</span>
+                  <span className="flex items-center gap-2.5 text-muted-foreground"><Coins className="h-4 w-4" />{PM.payStatus}</span>
+                  <span className={cn("rounded-md px-2 py-0.5 text-xs font-semibold", payInfo.color, payInfo.color.includes("destructive") ? "bg-destructive/10" : payInfo.color.includes("success") ? "bg-success/10" : "bg-muted")}>{payInfo.label}</span>
                 </div>
                 {hasPrepayment && isActive && !isGroupSession && (
                   <div className="flex justify-between items-center rounded-md bg-primary/5 border border-primary/20 px-2 py-1.5">
