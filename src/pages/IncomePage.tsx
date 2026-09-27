@@ -11,6 +11,9 @@ import { useIncome, useIncomeSum, useCreateIncome, useDeleteIncome, useExpectedP
 import { FlexiblePriceCompleteDialog } from "@/components/FlexiblePriceCompleteDialog";
 import { useSetOnboardingState } from "@/hooks/useOnboardingJourney";
 
+import { PaymentMethodCards } from "@/components/payments/PaymentMethodCards";
+import { pmCopy } from "@/components/payments/paymentMethodsCopy";
+import { useDefaultPaymentMethodCode } from "@/hooks/usePaymentMethods";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
@@ -96,7 +99,8 @@ export default function IncomePage() {
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [payDialog, setPayDialog] = useState<any>(null);
-  const [payMethod, setPayMethod] = useState("cash");
+  const defaultPayMethod = useDefaultPaymentMethodCode();
+  const [payMethod, setPayMethod] = useState("");
   const [payDate, setPayDate] = useState(new Date().toISOString().split("T")[0]);
   // Flexible-price clients: the same "actual amount received" modal used when
   // closing a session must also open when confirming an expected payment.
@@ -199,7 +203,7 @@ export default function IncomePage() {
       return;
     }
     setPayDialog(ep);
-    setPayMethod("cash");
+    setPayMethod(defaultPayMethod);
     setPayDate(new Date().toISOString().split("T")[0]);
   };
 
@@ -225,6 +229,10 @@ export default function IncomePage() {
 
   const handleMarkPaid = async () => {
     if (!payDialog) return;
+    if (!payMethod) {
+      toast({ title: t("common.error"), description: pmCopy(lang).label, variant: "destructive" });
+      return;
+    }
 
     try {
       await markPaid.mutateAsync({
@@ -514,11 +522,12 @@ export default function IncomePage() {
                 <div className="flex justify-between"><span className="text-muted-foreground">{t("calendar.client")}</span><span className="font-medium text-foreground">{payDialog.clients?.name}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">{t("common.amount")}</span><span className="font-semibold text-foreground">{cs}{Number(payDialog.amount).toFixed(2)}</span></div>
               </div>
+              <PaymentMethodCards value={payMethod} onChange={setPayMethod} />
               <div className="space-y-2">
                 <Label>{t("common.paymentDate")}</Label>
                 <DatePicker date={payDate} onDateChange={setPayDate} />
               </div>
-              <Button onClick={handleMarkPaid} className="w-full" disabled={markPaid.isPending}>
+              <Button onClick={handleMarkPaid} className="w-full" disabled={markPaid.isPending || !payMethod}>
                 {markPaid.isPending ? t("common.saving") : t("income.confirmPaymentReceived")}
               </Button>
             </div>
