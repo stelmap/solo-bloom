@@ -21,9 +21,11 @@ interface InvoiceButtonProps {
   appointment: any;
   client: any;
   service: any;
+  /** "button" = only the generate button (compact), "list" = only generated invoices. */
+  part?: "all" | "button" | "list";
 }
 
-export function InvoiceButton({ appointment, client, service }: InvoiceButtonProps) {
+export function InvoiceButton({ appointment, client, service, part = "all" }: InvoiceButtonProps) {
   const { t, lang } = useLanguage();
   const { code: currency } = useCurrency();
   const { data: profile } = useProfile();
@@ -223,12 +225,15 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
   };
 
   return (
-    <div className="space-y-2">
+    <div className={part === "button" ? "contents" : "space-y-2"}>
+      {part !== "list" && (
       <Button
         variant="outline"
         onClick={handleGenerate}
         disabled={generating}
-        className="h-12 w-full rounded-xl text-sm font-semibold"
+        className={part === "button"
+          ? "h-auto min-h-11 w-full whitespace-normal rounded-xl bg-card px-3 py-2 text-xs font-medium text-foreground hover:bg-accent-soft"
+          : "h-12 w-full rounded-xl text-sm font-semibold"}
       >
         {generating ? (
           <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -237,7 +242,8 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
         )}
         {t("invoice.generate")}
       </Button>
-      {invoices.length > 0 && (
+      )}
+      {part !== "button" && invoices.length > 0 && (
         <div className="space-y-1">
           {invoices.map((inv: any) => (
             <div key={inv.id} className="flex items-center gap-1">

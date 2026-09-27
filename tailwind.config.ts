@@ -58,6 +58,10 @@ export default {
           "cancelled-charged": "hsl(var(--state-cancelled-charged))",
           "cancelled-free": "hsl(var(--state-cancelled-free))",
         },
+        "accent-soft": {
+          DEFAULT: "hsl(var(--accent-soft))",
+          border: "hsl(var(--accent-soft-border))",
+        },
         success: {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
