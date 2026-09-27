@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Banknote, CreditCard, Landmark, Receipt, Settings, Wallet, CircleDollarSign } from "lucide-react";
+import { Star, Banknote, CreditCard, Landmark, Receipt, Settings, Wallet, CircleDollarSign } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useActivePaymentMethods, localizedMethodName } from "@/hooks/usePaymentMethods";
 import { PaymentMethodsDialog } from "./PaymentMethodsManager";
@@ -28,31 +28,35 @@ export function PaymentMethodCards({ value, onChange }: { value: string; onChang
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-          <CircleDollarSign className="h-4 w-4 text-muted-foreground" /> {L.label}
+        <h3 className="flex items-center gap-2 text-base font-semibold text-foreground">
+          <CircleDollarSign className="h-4 w-4" /> {L.label}
         </h3>
         <button type="button" onClick={() => setOpen(true)} aria-label={L.configure} title={L.configure}
           className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
           <Settings className="h-4 w-4" />
         </button>
       </div>
-      <div role="radiogroup" aria-label={L.label} className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div role="radiogroup" aria-label={L.label} className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {methods.map((m) => {
           const Icon = ICONS[m.code] ?? Wallet;
           const selected = value === m.code;
           return (
             <button key={m.id} type="button" role="radio" aria-checked={selected} onClick={() => onChange(m.code)}
               className={cn(
-                "relative flex min-h-[76px] flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-center text-sm transition-colors",
-                selected ? "border-primary/60 bg-primary/5" : "border-border bg-background hover:bg-muted/50",
+                "relative flex min-h-[52px] items-center gap-2.5 rounded-xl border px-3 py-2 text-left text-sm transition-colors",
+                selected ? "border-accent-soft-border bg-accent-soft" : "border-border bg-card hover:bg-muted/50",
               )}>
-              <span className={cn("absolute left-2 top-2 flex h-4 w-4 items-center justify-center rounded-full border",
+              <span className={cn("flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
                 selected ? "border-primary" : "border-muted-foreground/40")}>
                 {selected && <span className="h-2 w-2 rounded-full bg-primary" />}
               </span>
-              <Icon className="h-5 w-5 text-foreground" />
-              <span className="break-words leading-tight text-foreground">{localizedMethodName(m, t)}</span>
-              {m.is_default && <span className="text-[10px] text-muted-foreground">{L.default}</span>}
+              <Icon className="h-4 w-4 shrink-0 text-foreground" />
+              <span className="min-w-0 flex-1 break-words leading-tight text-foreground">{localizedMethodName(m, t)}</span>
+              {m.is_default && (
+                <Star className="h-3.5 w-3.5 shrink-0 fill-primary text-primary" aria-label={L.default}>
+                  <title>{L.default}</title>
+                </Star>
+              )}
             </button>
           );
         })}

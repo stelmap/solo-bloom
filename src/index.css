@@ -60,6 +60,8 @@
     --warning: 38 92% 50%;
     --warning-foreground: 222 47% 11%;
 
+    --accent-soft: 204 100% 96%;
+    --accent-soft-border: 204 100% 87%;
     --calendar-public-unavailable-bg: 220 5% 90%;
     --calendar-public-unavailable-line: 220 5% 65%;
 
@@ -114,6 +116,8 @@
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 55%;
     --warning-foreground: 222 47% 11%;
+    --accent-soft: 204 60% 16%;
+    --accent-soft-border: 204 60% 30%;
     --calendar-public-unavailable-bg: 220 5% 26%;
     --calendar-public-unavailable-line: 220 5% 45%;
   }
