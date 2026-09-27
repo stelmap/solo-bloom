@@ -39,14 +39,14 @@ export function PaymentMethodCards({ value, onChange }: { value: string; onChang
           <Settings className="h-4 w-4" />
         </button>
       </div>
-      <div role="radiogroup" aria-label={L.label} className="grid gap-2 [grid-template-columns:repeat(auto-fill,minmax(8.5rem,1fr))]">
+      <div role="radiogroup" aria-label={L.label} className="flex flex-wrap gap-2">
         {methods.map((m) => {
           const Icon = ICONS[m.code] ?? Wallet;
           const selected = value === m.code;
           return (
             <button key={m.id} type="button" role="radio" aria-checked={selected} onClick={() => onChange(m.code)}
               className={cn(
-                "relative flex h-10 items-center gap-2 rounded-lg border px-2.5 text-left text-sm transition-colors",
+                "relative flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border px-3 text-left text-sm transition-colors",
                 selected ? "border-accent-soft-border bg-accent-soft" : "border-border bg-card hover:bg-muted/50",
               )}>
               <span className={cn("flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
@@ -54,7 +54,7 @@ export function PaymentMethodCards({ value, onChange }: { value: string; onChang
                 {selected && <span className="h-2 w-2 rounded-full bg-primary" />}
               </span>
               <Icon className="h-4 w-4 shrink-0 text-foreground" />
-              <span className="min-w-0 flex-1 truncate whitespace-nowrap text-foreground">{localizedMethodName(m, t)}</span>
+              <span className="whitespace-nowrap text-foreground">{localizedMethodName(m, t)}</span>
               {m.is_default && (
                 <Star className="h-3.5 w-3.5 shrink-0 fill-primary text-primary" aria-label={L.default}>
                   <title>{L.default}</title>
