@@ -34,10 +34,10 @@ export function PaymentMethodPicker({ value, onChange }: { value: string; onChan
       <RadioGroup value={value} onValueChange={onChange} className="flex flex-wrap gap-2">
         {methods.map((m) => (
           <label key={m.id}
-            className={cn("flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer text-sm max-w-full",
+            className={cn("flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer text-sm whitespace-nowrap",
               value === m.code ? "border-primary bg-primary/5" : "border-border")}>
             <RadioGroupItem value={m.code} id={`pm-${m.id}`} />
-            <span className="break-words">{localizedMethodName(m, t)}</span>
+            <span className="whitespace-nowrap">{localizedMethodName(m, t)}</span>
           </label>
         ))}
       </RadioGroup>
