@@ -41,18 +41,10 @@ export function InvoiceButton({ appointment, client, service, part = "all" }: In
     queryFn: async () => {
       const { data } = await (supabase as any).from("income")
         .select("payment_method, payment_method_id, payment_method_name, payment_source, amount, date, created_at")
-        .eq("appointment_id", appointment.id).neq("status", "cancelled")
-        .order("date", { ascending: true }).order("created_at", { ascending: true });
+        .eq("appointment_id", appointment.id).order("date", { ascending: true }).order("created_at", { ascending: true });
       return (data ?? []) as any[];
     },
   });
-  const methodLabel = (code: string, snapshot?: string | null) => {
-    const m = allMethods.find((x) => x.code === code);
-    if (m?.is_built_in) return localizedMethodName(m, t);
-    return snapshot || m?.name || code;
-  };
-  // Invoice shows exactly ONE method: the actual one used (latest real payment),
-  // falling back to the configured default. Never a list.
   // The invoice reads the method stored on the actual payment transaction.
   // The current default is used ONLY when the session has no recorded payment.
   const resolveInvoicePaymentMethod = (rows: any[]) => {
