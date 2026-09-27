@@ -167,6 +167,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   const [amountPaid, setAmountPaid] = useState(0);
   const defaultMethodCode = useDefaultPaymentMethodCode();
   const [paymentMethod, setPaymentMethod] = useState("cash");
+  useEffect(() => { setPaymentMethod(defaultMethodCode); }, [apt?.id, defaultMethodCode]);
   const [paymentStatus, setPaymentStatus] = useState("paid_now");
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
   const [groupPaymentState, setGroupPaymentState] = useState("paid_now");
@@ -677,6 +678,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       return;
     }
     try {
+      if (notesDirty) await updateAppointment.mutateAsync({ id: apt.id, notes });
       if (paymentStatusChoice === "paid_from_prepayment") {
         await completeFromPrepayment.mutateAsync({
           appointmentId: apt.id, clientId: apt.client_id, price: sessionPrice,
