@@ -15,13 +15,16 @@ export function PaymentMethodCards({ value, onChange }: { value: string; onChang
   const { t, lang } = useLanguage();
   const L = pmCopy(lang);
   const { data: all } = useActivePaymentMethods();
-  const methods = all.filter((m) => m.show_on_invoice);
+  const methods = all;
   const [open, setOpen] = useState(false);
 
-  // Always start on the user's default (or first visible) method.
+  // Preselect the default only; with no default the user must choose explicitly.
   useEffect(() => {
-    if (methods.length && !methods.some((m) => m.code === value)) {
-      onChange(methods.find((m) => m.is_default)?.code ?? methods[0].code);
+    if (value && !methods.some((m) => m.code === value)) {
+      onChange(methods.find((m) => m.is_default)?.code ?? "");
+    } else if (!value) {
+      const d = methods.find((m) => m.is_default)?.code;
+      if (d) onChange(d);
     }
   }, [methods.map((m) => m.code).join(","), value]);
 
