@@ -11,6 +11,7 @@ import { useIncome, useIncomeSum, useCreateIncome, useDeleteIncome, useExpectedP
 import { FlexiblePriceCompleteDialog } from "@/components/FlexiblePriceCompleteDialog";
 import { useSetOnboardingState } from "@/hooks/useOnboardingJourney";
 
+import { localizeIncomeDescription, isPrepaymentDeduction } from "@/lib/incomeDescription";
 import { PaymentMethodCards } from "@/components/payments/PaymentMethodCards";
 import { pmCopy } from "@/components/payments/paymentMethodsCopy";
 import { useDefaultPaymentMethodCode } from "@/hooks/usePaymentMethods";
@@ -30,6 +31,8 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, format, parseISO, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { describeError } from "@/lib/errorMessages";
+
+const PREPAY_LABEL: Record<string, string> = { en: "Prepayment", uk: "Передплата", ru: "Предоплата", pl: "Przedpłata", fr: "Acompte" };
 
 export default function IncomePage() {
   useEffect(() => { import("@/lib/analytics").then(({ track }) => track("income_page_opened")); }, []);
@@ -275,7 +278,7 @@ export default function IncomePage() {
             <Button variant="outline" onClick={() => {
               downloadCSV("income.csv",
                 [t("csv.header.date"), t("csv.header.amount"), t("csv.header.source"), t("csv.header.description")],
-                filtered.map((i: any) => [i.date, String(i.amount), i.source || "", i.description || ""])
+                filtered.map((i: any) => [i.date, String(i.amount), i.source || "", localizeIncomeDescription(i.description, lang)])
               );
             }}><Download className="h-4 w-4 mr-1" /> {IP.export}</Button>
             <Dialog open={open} onOpenChange={setOpen}>
@@ -428,10 +431,10 @@ export default function IncomePage() {
                           <td className="p-4 text-sm font-medium text-foreground">
                             {entry.source === "appointment"
                               ? `${entry.appointments?.clients?.name} — ${entry.appointments?.services?.name}`
-                              : entry.description || t("income.manualEntry")}
+                              : localizeIncomeDescription(entry.description, lang) || t("income.manualEntry")}
                           </td>
                           <td className="p-4 text-sm font-semibold text-foreground">{cs}{Number(entry.amount).toFixed(2)}</td>
-                          <td className="p-4"><Badge variant={entry.source === "appointment" ? "default" : "secondary"} className="text-xs">{entry.source === "appointment" ? t("income.appointment") : t("income.manual")}</Badge></td>
+                          <td className="p-4"><Badge variant={entry.source === "appointment" ? "default" : "secondary"} className="text-xs">{entry.source === "appointment" ? t("income.appointment") : isPrepaymentDeduction(entry.description) ? (PREPAY_LABEL[lang] ?? PREPAY_LABEL.en) : t("income.manual")}</Badge></td>
                           <td className="p-4">
                             {entry.source !== "appointment" && (
                               <button onClick={() => setDeleteId(entry.id)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100">
