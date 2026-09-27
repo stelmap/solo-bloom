@@ -226,10 +226,9 @@ export function InvoiceButton({ appointment, client, service }: InvoiceButtonPro
     <div className="space-y-2">
       <Button
         variant="outline"
-        size="sm"
         onClick={handleGenerate}
         disabled={generating}
-        className="w-full"
+        className="h-12 w-full rounded-xl text-sm font-semibold"
       >
         {generating ? (
           <Loader2 className="h-4 w-4 animate-spin mr-2" />
