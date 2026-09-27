@@ -517,7 +517,7 @@ export default function IncomePage() {
 
       {/* Mark as paid dialog */}
       <Dialog open={!!payDialog} onOpenChange={(o) => { if (!o) setPayDialog(null); }}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto sm:max-h-none sm:overflow-visible">
           <DialogHeader><DialogTitle>{t("income.confirmPayment")}</DialogTitle></DialogHeader>
           {payDialog && (
             <div className="space-y-4">
