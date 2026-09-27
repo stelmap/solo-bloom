@@ -25,8 +25,14 @@ const BUILTIN_LABEL_KEYS: Record<string, string> = {
   check: "method.checkLabel",
 };
 
+/** Names the built-in methods are seeded with; any other stored name is a user rename. */
+const BUILTIN_SEED_NAMES: Record<string, string> = {
+  cash: "cash", card: "card", bank_transfer: "bank transfer", paypal: "paypal", check: "check",
+};
+
 export function localizedMethodName(m: Pick<PaymentMethod, "code" | "name" | "is_built_in">, t: (k: any) => string): string {
-  if (m.is_built_in && BUILTIN_LABEL_KEYS[m.code]) {
+  const renamed = !!m.name && m.name.trim().toLowerCase() !== BUILTIN_SEED_NAMES[m.code];
+  if (m.is_built_in && BUILTIN_LABEL_KEYS[m.code] && !renamed) {
     const lbl = t(BUILTIN_LABEL_KEYS[m.code]);
     if (lbl && !lbl.startsWith("method.")) return lbl;
   }
