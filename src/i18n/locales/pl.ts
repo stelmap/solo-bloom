@@ -1965,6 +1965,7 @@ export default {
   "clientLang.option.ru": "Rosyjski",
   "clientLang.option.en": "Angielski",
   "clientLang.option.pl": "Polski",
+  "clientLang.option.fr": "Francuski",
   "clientLang.filter.all": "Wszystkie języki",
   "clientLang.filter.missing": "Bez języka",
   "clientLang.blocked.title": "Nie wybrano języka klienta",
