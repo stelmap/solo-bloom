@@ -133,7 +133,7 @@ export default function ClientsPage() {
   const [importing, setImporting] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [form, setForm] = useState<{ name: string; phone: string; email: string; notes: string; telegram: string; communication_language: "" | "uk" | "ru" | "en" | "pl" }>({ name: "", phone: "", email: "", notes: "", telegram: "", communication_language: "" });
+  const [form, setForm] = useState<{ name: string; phone: string; email: string; notes: string; telegram: string; communication_language: "" | "uk" | "ru" | "en" | "pl" | "fr" }>({ name: "", phone: "", email: "", notes: "", telegram: "", communication_language: "" });
 
   const debouncedSearch = useDebouncedValue(search, 200);
   const counts = {
