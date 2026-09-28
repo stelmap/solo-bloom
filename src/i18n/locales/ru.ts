@@ -2097,6 +2097,7 @@ export default {
   "clientLang.option.ru": "Русский",
   "clientLang.option.en": "Английский",
   "clientLang.option.pl": "Польский",
+  "clientLang.option.fr": "Французский",
   "clientLang.filter.all": "Все языки",
   "clientLang.filter.missing": "Без языка",
   "clientLang.blocked.title": "Язык клиента не выбран",

@@ -4,9 +4,9 @@
  * Never derive from browser, therapist interface, or country.
  */
 
-export type ClientLanguage = "uk" | "ru" | "en" | "pl";
+export type ClientLanguage = "uk" | "ru" | "en" | "pl" | "fr";
 
-export const CLIENT_LANGUAGES: ClientLanguage[] = ["uk", "ru", "en", "pl"];
+export const CLIENT_LANGUAGES: ClientLanguage[] = ["uk", "ru", "en", "pl", "fr"];
 
 export const CLIENT_LANGUAGE_MISSING = "CLIENT_LANGUAGE_MISSING" as const;
 
@@ -35,16 +35,16 @@ export function clientLanguageLabel(
   uiLang: string
 ): string {
   const table: Record<string, Record<ClientLanguage, string>> = {
-    uk: { uk: "Українська", ru: "Російська", en: "Англійська", pl: "Польська" },
-    ru: { uk: "Украинский", ru: "Русский", en: "Английский", pl: "Польский" },
-    en: { uk: "Ukrainian", ru: "Russian", en: "English", pl: "Polish" },
-    pl: { uk: "Ukraiński", ru: "Rosyjski", en: "Angielski", pl: "Polski" },
-    fr: { uk: "Ukrainien", ru: "Russe", en: "Anglais", pl: "Polonais" },
+    uk: { uk: "Українська", ru: "Російська", en: "Англійська", pl: "Польська", fr: "Французька" },
+    ru: { uk: "Украинский", ru: "Русский", en: "Английский", pl: "Польский", fr: "Французский" },
+    en: { uk: "Ukrainian", ru: "Russian", en: "English", pl: "Polish", fr: "French" },
+    pl: { uk: "Ukraiński", ru: "Rosyjski", en: "Angielski", pl: "Polski", fr: "Francuski" },
+    fr: { uk: "Ukrainien", ru: "Russe", en: "Anglais", pl: "Polonais", fr: "Français" },
   };
   return (table[uiLang] ?? table.en)[code];
 }
 
 /** BCP-47 locale mapping for date/number formatting. */
 export function localeForClientLanguage(code: ClientLanguage): string {
-  return { uk: "uk-UA", ru: "ru", en: "en-GB", pl: "pl-PL" }[code];
+  return { uk: "uk-UA", ru: "ru", en: "en-GB", pl: "pl-PL", fr: "fr-FR" }[code];
 }

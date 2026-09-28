@@ -1966,6 +1966,7 @@ export default {
   "clientLang.option.ru": "Російська",
   "clientLang.option.en": "Англійська",
   "clientLang.option.pl": "Польська",
+  "clientLang.option.fr": "Французька",
   "clientLang.filter.all": "Усі мови",
   "clientLang.filter.missing": "Без мови",
   "clientLang.blocked.title": "Для клієнта не вибрано мову комунікації",
