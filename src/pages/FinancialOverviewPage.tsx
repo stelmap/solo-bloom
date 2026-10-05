@@ -161,8 +161,15 @@ export default function FinancialOverviewPage() {
     });
 
     // Instances are real rows now; bucket per month directly.
+    // Any expense with category "Tax" is a tax, never a generic expense.
+    // System-generated rows (tax_setting_id) are already covered by calcTaxes,
+    // so only manually entered Tax rows are added on top (no double counting).
+    const isTax = (e: any) => e.category === "Tax" || !!e.tax_setting_id;
+    const manualTaxFor = (mKey: string) => (allExpenses as any[])
+      .filter(e => !e.is_template && e.instance_status !== "cancelled" && e.date?.startsWith(mKey) && e.category === "Tax" && !e.tax_setting_id)
+      .reduce((s, e) => s + Number(e.amount), 0);
     const expensesByMonth = (allExpenses as any[])
-      .filter(e => !e.is_template && e.instance_status !== "cancelled");
+      .filter(e => !e.is_template && e.instance_status !== "cancelled" && !isTax(e));
     const getRecurringForMonth = (monthKey: string) =>
       expensesByMonth.filter(e => e.date?.startsWith(monthKey) && e.template_id)
         .reduce((s, e) => s + Number(e.amount), 0);
@@ -222,7 +229,7 @@ export default function FinancialOverviewPage() {
 
       const monthIncome = (allIncome as any[]).filter(i => (incomeDateOf(i) as string)?.startsWith(mKey));
       // Past/current months: include one-off expenses dated this month + recurring templates that apply to this month.
-      const oneOffMonthExpenses = (allExpenses as any[]).filter(e => !e.is_template && !e.template_id && e.instance_status !== "cancelled" && e.date?.startsWith(mKey));
+      const oneOffMonthExpenses = (allExpenses as any[]).filter(e => !e.is_template && !e.template_id && e.instance_status !== "cancelled" && e.date?.startsWith(mKey) && !isTax(e));
       const recurringMonthTotal = getRecurringForMonth(mKey);
       const totalIncome = monthIncome.reduce((s, i) => s + Number(i.amount), 0);
       const monthExpected = (expectedPayments as any[]).filter(ep => {
@@ -265,7 +272,7 @@ export default function FinancialOverviewPage() {
     }
 
     return pre.map(p => {
-      const monthTaxes = calcTaxes(p.income, p.idx, year, fcQuarterMap);
+      const monthTaxes = calcTaxes(p.income, p.idx, year, fcQuarterMap) + manualTaxFor(p.mKey);
       return {
         month: p.idx,
         label: capitalize(format(p.monthDate, "LLLL", { locale: dateLocale })),
