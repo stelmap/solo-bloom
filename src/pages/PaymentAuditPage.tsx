@@ -30,6 +30,8 @@ import { cn } from "@/lib/utils";
 import { filterAuditRows } from "@/lib/paymentAuditFilters";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { describeError } from "@/lib/errorMessages";
+import { storedMethodLabel } from "@/hooks/usePaymentMethods";
+import { pmCopy } from "@/components/payments/paymentMethodsCopy";
 
 type AllocStatus = "linked" | "not_linked" | "partial" | "prepayment" | "overpayment";
 type QuickFilter = "all" | AllocStatus | "confirmed" | "expected" | "draft" | "cancelled";
@@ -112,7 +114,7 @@ const allocBadgeVariant = (s: AllocStatus): { cls: string; key: string } => {
 };
 
 export default function PaymentAuditPage() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const dateLocale = useDateLocale();
   const { symbol: cs } = useCurrency();
   const navigate = useNavigate();

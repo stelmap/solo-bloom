@@ -277,7 +277,7 @@ export default function IncomePage() {
             <div className="flex gap-2">
             <Button variant="outline" onClick={() => {
               downloadCSV("income.csv",
-                [t("csv.header.date"), t("csv.header.amount"), t("csv.header.source"), t("csv.header.description")],
+                [t("csv.header.date"), t("csv.header.amount"), t("csv.header.source"), t("csv.header.description"), pmCopy(lang).label],
                 filtered.map((i: any) => [i.date, String(i.amount), i.source || "", localizeIncomeDescription(i.description, lang), storedMethodLabel(i, t)])
               );
             }}><Download className="h-4 w-4 mr-1" /> {IP.export}</Button>
