@@ -3,7 +3,7 @@
  * Presentation-only: reuses the existing payment classifiers so the calendar
  * stays consistent with the rest of the app.
  */
-import { isPaid, isBilledCancellation, type AppointmentLike } from "./paymentClassifiers";
+import { isPaid, isAwaiting, isBilledCancellation, type AppointmentLike } from "./paymentClassifiers";
 import type { CalendarStateKey } from "@/hooks/useCalendarDisplay";
 
 const isCancelledLike = (a: AppointmentLike) =>
@@ -15,6 +15,8 @@ export function matchesCalendarState(a: AppointmentLike, key: CalendarStateKey):
       return isPaid(a);
     case "unpaid":
       return !isPaid(a) && !(isCancelledLike(a) && !isBilledCancellation(a));
+    case "awaiting":
+      return !isCancelledLike(a) && isAwaiting(a);
     case "confirmed":
       return a.status === "confirmed";
     case "cancelled_charged":

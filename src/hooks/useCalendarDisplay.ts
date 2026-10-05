@@ -15,6 +15,7 @@ export type DisplayFlags = {
 export type CalendarStateKey =
   | "paid"
   | "unpaid"
+  | "awaiting"
   | "confirmed"
   | "cancelled_charged"
   | "cancelled_free";
@@ -101,6 +102,7 @@ export const initialFilters: CalendarFilters = {
   states: {
     paid: false,
     unpaid: false,
+    awaiting: false,
     confirmed: false,
     cancelled_charged: false,
     cancelled_free: false,
