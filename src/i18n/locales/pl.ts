@@ -492,6 +492,7 @@ export default {
   "calendar.scrollHint": "siatka przewija się",
   "calendar.state.paid": "Opłacone",
   "calendar.state.unpaid": "Nieopłacone",
+  "calendar.state.awaiting": "Oczekuje na płatność",
   "calendar.state.confirmed": "Potwierdzone",
   "calendar.state.cancelledCharged": "Anulowane — z opłatą",
   "calendar.state.cancelledFree": "Anulowane — bez opłaty",

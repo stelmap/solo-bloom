@@ -479,6 +479,7 @@ export default {
   "calendar.scrollHint": "сітка прокручується",
   "calendar.state.paid": "Оплачено",
   "calendar.state.unpaid": "Не оплачено",
+  "calendar.state.awaiting": "Очікує оплати",
   "calendar.state.confirmed": "Підтверджено",
   "calendar.state.cancelledCharged": "Скасовано — з оплатою",
   "calendar.state.cancelledFree": "Скасовано — без оплати",

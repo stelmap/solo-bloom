@@ -479,6 +479,7 @@ export default {
   "calendar.scrollHint": "grid scrolls",
   "calendar.state.paid": "Paid",
   "calendar.state.unpaid": "Unpaid",
+  "calendar.state.awaiting": "Awaiting payment",
   "calendar.state.confirmed": "Confirmed",
   "calendar.state.cancelledCharged": "Cancelled — client charged",
   "calendar.state.cancelledFree": "Cancelled — no charge",
