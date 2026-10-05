@@ -492,6 +492,7 @@ export default {
   "calendar.scrollHint": "la grille défile",
   "calendar.state.paid": "Payé",
   "calendar.state.unpaid": "Non payé",
+  "calendar.state.awaiting": "En attente de paiement",
   "calendar.state.confirmed": "Confirmé",
   "calendar.state.cancelledCharged": "Annulé — client facturé",
   "calendar.state.cancelledFree": "Annulé — sans frais",

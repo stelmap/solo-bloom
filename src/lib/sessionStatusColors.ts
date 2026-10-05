@@ -6,11 +6,12 @@
  * Every surface (calendar cards, filters, badges, legends, charts, tooltips)
  * must read its colors from here so the status system stays consistent.
  */
-import { isPaid, isBilledCancellation, type AppointmentLike } from "./paymentClassifiers";
+import { isPaid, isAwaiting, isBilledCancellation, type AppointmentLike } from "./paymentClassifiers";
 
 export type SessionStateKey =
   | "paid"
   | "unpaid"
+  | "awaiting"
   | "confirmed"
   | "cancelled_charged"
   | "cancelled_free";
@@ -46,6 +47,14 @@ export const SESSION_STATE_STYLES: Record<SessionStateKey, SessionStateStyle> = 
     badge: "bg-state-unpaid/25 text-foreground border border-state-unpaid",
     chart: "hsl(var(--state-unpaid))",
   },
+  awaiting: {
+    labelKey: "calendar.state.awaiting",
+    labelFallback: "Awaiting payment",
+    dot: "bg-state-awaiting",
+    card: "bg-state-awaiting/15 border-state-awaiting/40 border-l-4 border-l-state-awaiting text-foreground",
+    badge: "bg-state-awaiting/20 text-foreground border border-state-awaiting/60",
+    chart: "hsl(var(--state-awaiting))",
+  },
   confirmed: {
     labelKey: "calendar.state.confirmed",
     labelFallback: "Confirmed",
@@ -75,6 +84,7 @@ export const SESSION_STATE_STYLES: Record<SessionStateKey, SessionStateStyle> = 
 export const SESSION_STATE_ORDER: SessionStateKey[] = [
   "paid",
   "unpaid",
+  "awaiting",
   "confirmed",
   "cancelled_charged",
   "cancelled_free",
@@ -92,6 +102,8 @@ export function getSessionStateKey(a: AppointmentLike): SessionStateKey {
     return isBilledCancellation(a) ? "cancelled_charged" : "cancelled_free";
   }
   if (isPaid(a)) return "paid";
+  // Session happened but money is still outstanding — distinct amber style.
+  if (isAwaiting(a)) return "awaiting";
   if (a.status === "confirmed") return "confirmed";
   return "unpaid";
 }

@@ -39,6 +39,23 @@ export function localizedMethodName(m: Pick<PaymentMethod, "code" | "name" | "is
   return m.name;
 }
 
+/**
+ * Label for the method STORED on a transaction (income / payment row).
+ * Uses the saved code + name snapshot; never falls back to the current default.
+ * Returns "—" for historical rows with no method.
+ */
+export function storedMethodLabel(
+  row: { payment_method?: string | null; payment_method_name?: string | null } | null | undefined,
+  t: (k: any) => string,
+): string {
+  const code = row?.payment_method;
+  if (!code || code === "not_specified") return row?.payment_method_name || "—";
+  return localizedMethodName(
+    { code, name: row?.payment_method_name || BUILTIN_SEED_NAMES[code] || code, is_built_in: !!BUILTIN_LABEL_KEYS[code] },
+    t,
+  );
+}
+
 export function usePaymentMethods() {
   const { user } = useAuth();
   const qc = useQueryClient();

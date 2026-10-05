@@ -30,6 +30,8 @@ import { cn } from "@/lib/utils";
 import { filterAuditRows } from "@/lib/paymentAuditFilters";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { describeError } from "@/lib/errorMessages";
+import { storedMethodLabel } from "@/hooks/usePaymentMethods";
+import { pmCopy } from "@/components/payments/paymentMethodsCopy";
 
 type AllocStatus = "linked" | "not_linked" | "partial" | "prepayment" | "overpayment";
 type QuickFilter = "all" | AllocStatus | "confirmed" | "expected" | "draft" | "cancelled";
@@ -112,7 +114,7 @@ const allocBadgeVariant = (s: AllocStatus): { cls: string; key: string } => {
 };
 
 export default function PaymentAuditPage() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const dateLocale = useDateLocale();
   const { symbol: cs } = useCurrency();
   const navigate = useNavigate();
@@ -465,6 +467,7 @@ export default function PaymentAuditPage() {
                 <TableHead className="h-11 py-0">{t("audit.col.date")}</TableHead>
                 <TableHead className="h-11 py-0">{t("audit.col.client")}</TableHead>
                 <TableHead className="h-11 py-0 text-right">{t("audit.col.amount")}</TableHead>
+                <TableHead className="h-11 py-0 whitespace-nowrap">{pmCopy(lang).label}</TableHead>
                 <TableHead className="h-11 py-0">{t("audit.col.invoice")}</TableHead>
                 <TableHead className="h-11 py-0">{t("audit.col.allocation")}</TableHead>
                 <TableHead className="h-11 py-0">{t("audit.col.status")}</TableHead>
@@ -477,12 +480,12 @@ export default function PaymentAuditPage() {
               {isLoading ? (
                 Array.from({ length: 8 }).map((_, i) => (
                   <TableRow key={`sk-${i}`} className="h-12">
-                    <TableCell colSpan={10}><Skeleton className="h-4 w-full" /></TableCell>
+                    <TableCell colSpan={11}><Skeleton className="h-4 w-full" /></TableCell>
                   </TableRow>
                 ))
 
               ) : filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={10} className="text-center py-10 text-muted-foreground">{t("audit.empty")}</TableCell></TableRow>
+                <TableRow><TableCell colSpan={11} className="text-center py-10 text-muted-foreground">{t("audit.empty")}</TableCell></TableRow>
               ) : paged.map(r => {
                 const ab = allocBadgeVariant(r.allocStatus);
                 return (
@@ -499,6 +502,7 @@ export default function PaymentAuditPage() {
                         ? <span className="text-amber-700">−{cs}{Number((r as any).prepayMovement || 0).toFixed(2)}</span>
                         : `${cs}${r.amount.toFixed(2)}`}
                     </TableCell>
+                    <TableCell className="py-2 align-middle text-sm whitespace-nowrap">{r.kind === "income" ? storedMethodLabel(r.raw, t) : "—"}</TableCell>
                     <TableCell className="py-2 align-middle text-sm">{r.invoice?.invoice_number || <span className="text-muted-foreground">{t("audit.notGenerated")}</span>}</TableCell>
                     <TableCell className="py-2 align-middle"><Badge variant="outline" className={cn("inline-flex items-center border", ab.cls)}>{t(ab.key as any)}</Badge></TableCell>
                     <TableCell className="py-2 align-middle"><Badge variant="outline" className="inline-flex items-center capitalize">{t(`audit.pstatus.${r.paymentStatus}` as any) || r.paymentStatus}</Badge></TableCell>

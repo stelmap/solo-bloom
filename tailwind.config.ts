@@ -54,6 +54,7 @@ export default {
         state: {
           paid: "hsl(var(--state-paid))",
           unpaid: "hsl(var(--state-unpaid))",
+          awaiting: "hsl(var(--state-awaiting))",
           confirmed: "hsl(var(--state-confirmed))",
           "cancelled-charged": "hsl(var(--state-cancelled-charged))",
           "cancelled-free": "hsl(var(--state-cancelled-free))",

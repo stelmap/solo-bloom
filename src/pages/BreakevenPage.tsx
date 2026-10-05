@@ -127,8 +127,12 @@ export default function BreakevenPage() {
         total += tax.frequency === "quarterly" ? amt / 3 : amt;
       }
     }
-    return Math.round(total);
-  }, [activeTaxes, monthlyIncome, today]);
+    // Manually entered expenses with category "Tax" count as taxes too.
+    const manualTax = expenses.filter((e: any) =>
+      e.date.startsWith(monthKeyNow) && e.category === "Tax" && !e.tax_setting_id && e.instance_status !== "cancelled"
+    ).reduce((s: number, e: any) => s + Number(e.amount), 0);
+    return Math.round(total + manualTax);
+  }, [activeTaxes, monthlyIncome, today, expenses, monthKeyNow]);
 
   const netAfterTax = monthlyIncome - estimatedTax;
   const netProfit = netAfterTax - monthlyExpensesExTax;
