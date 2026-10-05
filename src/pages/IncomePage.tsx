@@ -14,7 +14,7 @@ import { useSetOnboardingState } from "@/hooks/useOnboardingJourney";
 import { localizeIncomeDescription, isPrepaymentDeduction } from "@/lib/incomeDescription";
 import { PaymentMethodCards } from "@/components/payments/PaymentMethodCards";
 import { pmCopy } from "@/components/payments/paymentMethodsCopy";
-import { useDefaultPaymentMethodCode } from "@/hooks/usePaymentMethods";
+import { useDefaultPaymentMethodCode, storedMethodLabel } from "@/hooks/usePaymentMethods";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
@@ -278,7 +278,7 @@ export default function IncomePage() {
             <Button variant="outline" onClick={() => {
               downloadCSV("income.csv",
                 [t("csv.header.date"), t("csv.header.amount"), t("csv.header.source"), t("csv.header.description")],
-                filtered.map((i: any) => [i.date, String(i.amount), i.source || "", localizeIncomeDescription(i.description, lang)])
+                filtered.map((i: any) => [i.date, String(i.amount), i.source || "", localizeIncomeDescription(i.description, lang), storedMethodLabel(i, t)])
               );
             }}><Download className="h-4 w-4 mr-1" /> {IP.export}</Button>
             <Dialog open={open} onOpenChange={setOpen}>
@@ -420,6 +420,7 @@ export default function IncomePage() {
                         <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.date")}</th>
                         <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.description")}</th>
                         <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.amount")}</th>
+                        <th className="text-left p-4 text-sm font-medium text-muted-foreground whitespace-nowrap">{pmCopy(lang).label}</th>
                         <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.source")}</th>
                         <th className="p-4 w-10"></th>
                       </tr>
@@ -434,6 +435,7 @@ export default function IncomePage() {
                               : localizeIncomeDescription(entry.description, lang) || t("income.manualEntry")}
                           </td>
                           <td className="p-4 text-sm font-semibold text-foreground">{cs}{Number(entry.amount).toFixed(2)}</td>
+                          <td className="p-4 text-sm text-foreground whitespace-nowrap">{storedMethodLabel(entry, t)}</td>
                           <td className="p-4"><Badge variant={entry.source === "appointment" ? "default" : "secondary"} className="text-xs">{entry.source === "appointment" ? t("income.appointment") : isPrepaymentDeduction(entry.description) ? (PREPAY_LABEL[lang] ?? PREPAY_LABEL.en) : t("income.manual")}</Badge></td>
                           <td className="p-4">
                             {entry.source !== "appointment" && (
