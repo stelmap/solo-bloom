@@ -1269,7 +1269,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
 
               {/* Payment method — horizontal radio cards (hidden when the session is covered by prepayment) */}
-              {isActive && !isGroupSession && !usesPrepaymentCompletion && (
+              {isActive && !isGroupSession && (
                 <div className="border-t border-border pt-4">
                   <PaymentMethodCards value={paymentMethod} onChange={setPaymentMethod} />
                 </div>
@@ -1302,6 +1302,26 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                     placeholder={PM.notesPlaceholder}
                     className="min-h-[72px] rounded-xl bg-card"
                   />
+                  {/* Outside the completion flow, notes need their own save action. */}
+                  {!isActive && notesDirty && (
+                    <div className="flex justify-end gap-2">
+                      <Button size="sm" variant="ghost" onClick={() => { setNotes(apt.notes || ""); setNotesDirty(false); }}>
+                        {t("common.cancel")}
+                      </Button>
+                      <Button size="sm" disabled={updateAppointment.isPending}
+                        onClick={async () => {
+                          try {
+                            await updateAppointment.mutateAsync({ id: apt.id, notes });
+                            setNotesDirty(false);
+                            toast({ title: t("common.saved") });
+                          } catch (e: any) {
+                            toast({ title: t("common.error"), description: e?.message, variant: "destructive" });
+                          }
+                        }}>
+                        {t("common.save")}
+                      </Button>
+                    </div>
+                  )}
                 </section>
               )}
 
@@ -1312,7 +1332,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                     const busy = completeAppointment.isPending || completeFromPrepayment.isPending;
                     const primaryValue = usesPrepaymentCompletion ? SIMPLE_COMPLETION_OPTIONS[0].value : "paid_now";
                     return (
-                      <div className={cn("grid gap-3", !usesPrepaymentCompletion && "sm:grid-cols-[1.15fr_1fr]")}>
+                      <div className={cn("grid gap-3", usesPrepaymentCompletion ? "sm:grid-cols-2 [&>*:first-child]:sm:col-span-2" : "sm:grid-cols-[1.15fr_1fr]")}>
                         <Button className="h-12 w-full whitespace-normal rounded-xl text-sm font-semibold shadow-glow" disabled={busy}
                           onClick={() => handleQuickComplete(primaryValue)}>
                           <Check className="h-4 w-4 mr-2 shrink-0" />
@@ -1321,7 +1341,15 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                             : primaryValue === "paid_now" ? t("sd.paidComplete")
                             : `${SIMPLE_COMPLETION_OPTIONS[0].label} · ${t("calendar.complete")}`}
                         </Button>
-                        {!usesPrepaymentCompletion && (
+                        {usesPrepaymentCompletion && (
+                          <Button variant="outline" disabled={busy}
+                            className="h-12 w-full whitespace-normal rounded-xl bg-card text-sm font-medium text-foreground hover:bg-muted"
+                            onClick={() => handleQuickComplete("paid_now")}>
+                            <Check className="h-4 w-4 mr-2 shrink-0" />
+                            {t("sd.paidComplete")}
+                          </Button>
+                        )}
+                        {(
                           <Button variant="outline" disabled={busy}
                             className="h-12 w-full whitespace-normal rounded-xl bg-card text-sm font-medium text-foreground hover:bg-muted"
                             onClick={() => handleQuickComplete("waiting_for_payment")}>
