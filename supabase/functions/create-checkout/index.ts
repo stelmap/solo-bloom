@@ -63,11 +63,37 @@ serve(async (req) => {
       return json({ error: "Server is not configured for payments. Please contact support." }, 500);
     }
 
-    let body: { planCode?: string; billingPeriod?: string; locale?: string; promoCode?: string | null } = {};
+    let body: { preview?: boolean; planCode?: string; billingPeriod?: string; locale?: string; promoCode?: string | null } = {};
     try {
       body = await req.json();
     } catch {
       return json({ error: "Invalid request body." }, 400);
+    }
+
+    // Preview: tell the plans page which personal (legacy) discount this
+    // customer will get, so the final price is visible before paying.
+    if (body.preview) {
+      const own = LEGACY_DISCOUNTS[user.email.toLowerCase()];
+      if (!own) return json({ discount: null }, 200);
+      try {
+        const res = await paddleFetch<{ data: Array<{ code: string; type: string; amount: string; currency_code?: string | null }> }>(
+          `/discounts?code=${encodeURIComponent(own.code)}&status=active&per_page=1`,
+        );
+        const d = res.data?.[0];
+        if (!d) return json({ discount: null }, 200);
+        return json({
+          discount: {
+            code: own.code,
+            planCode: own.planCode,
+            billingPeriod: own.billingPeriod,
+            type: d.type === "percentage" ? "percentage" : "flat",
+            // Paddle stores flat amounts in the lowest currency unit (cents).
+            amount: d.type === "percentage" ? Number(d.amount) : Number(d.amount) / 100,
+          },
+        }, 200);
+      } catch {
+        return json({ discount: null }, 200);
+      }
     }
 
     const planCode = body.planCode;
