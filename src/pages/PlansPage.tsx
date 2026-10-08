@@ -21,6 +21,8 @@ import { SupportUkrainePrice } from "@/components/campaign/SupportUkrainePrice";
 import { SupportUkrainePromoInput } from "@/components/campaign/SupportUkrainePromoInput";
 import { describeError } from "@/lib/errorMessages";
 import { BrandName } from "@/components/BrandName";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { askSupport } from "@/lib/support";
 
 type Plan = {
   id: string;
