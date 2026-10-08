@@ -63,7 +63,7 @@ serve(async (req) => {
       return json({ error: "Server is not configured for payments. Please contact support." }, 500);
     }
 
-    let body: { preview?: boolean; planCode?: string; billingPeriod?: string; locale?: string; promoCode?: string | null } = {};
+    let body: { preview?: boolean; acceptRegularPrice?: boolean; planCode?: string; billingPeriod?: string; locale?: string; promoCode?: string | null } = {};
     try {
       body = await req.json();
     } catch {
@@ -152,14 +152,22 @@ serve(async (req) => {
       : null;
 
     let discountId: string | null = null;
-    if (legacyMatch) {
+    const personalDiscountUnavailable = () => json({
+      error: "Your personal discount could not be applied.",
+      code: "personal_discount_unavailable",
+      discountCode: legacyMatch?.code ?? null,
+    }, 409);
+    if (legacyMatch && !body.acceptRegularPrice) {
       try {
         discountId = await findDiscountIdByCode(legacyMatch.code);
         log("Legacy discount applied", { code: legacyMatch.code });
       } catch (err) {
         log("Legacy discount lookup failed", { message: err instanceof Error ? err.message : String(err) });
       }
+      // The customer must explicitly agree to the regular price first.
+      if (!discountId) return personalDiscountUnavailable();
     }
+    const usesPersonalDiscount = !!(legacyMatch && discountId);
 
     // Manually entered promo code: any active Paddle discount code works.
     // Codes are 3–40 chars, letters/digits/dashes only — reject anything else
@@ -228,10 +236,15 @@ serve(async (req) => {
     try {
       txn = await createTxn(discountId);
     } catch (err) {
-      // An automatic (legacy / campaign) discount that is no longer applicable
-      // must never block payment: retry at the current price without it.
+      // An automatic campaign discount that is no longer applicable must not
+      // block payment: retry at the current price without it. A personal
+      // discount is never dropped silently (the customer confirms first).
       // A code the user typed is reported instead of silently dropped.
       if (!discountId || manualCode) throw err;
+      if (usesPersonalDiscount) {
+        log("Personal discount rejected by Paddle", { message: err instanceof Error ? err.message : String(err) });
+        return personalDiscountUnavailable();
+      }
       log("Discount rejected, retrying without it", { message: err instanceof Error ? err.message : String(err) });
       txn = await createTxn(null);
     }

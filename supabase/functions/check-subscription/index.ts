@@ -241,12 +241,16 @@ serve(async (req) => {
 
 /**
  * A pre-Paddle subscription only grants access while it has a future end date
- * (or an explicit open-ended legacy grant). Old provider rows with no end date
- * are historical: they must not keep a user "subscribed" and block renewal.
+ * (or an explicit open-ended legacy grant). Rows with a past end date, or with
+ * status other than active/trialing, are historical and must not block renewal.
  */
 function legacyAccessStillValid(row: any): boolean {
   const now = Date.now();
   const future = (v: string | null | undefined) => !!v && new Date(v).getTime() > now;
   if (row.legacy_full_access === true) return !row.legacy_access_until || future(row.legacy_access_until);
+  // No recorded end date at all: the paid period was never imported, so it
+  // cannot be verified here. Preserve access; expiry for such a customer is
+  // recorded explicitly (status "expired") after their history is checked.
+  if (!row.current_period_end && !row.legacy_access_until) return true;
   return future(row.current_period_end) || future(row.legacy_access_until);
 }
