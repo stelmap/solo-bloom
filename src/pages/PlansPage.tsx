@@ -21,6 +21,8 @@ import { SupportUkrainePrice } from "@/components/campaign/SupportUkrainePrice";
 import { SupportUkrainePromoInput } from "@/components/campaign/SupportUkrainePromoInput";
 import { describeError } from "@/lib/errorMessages";
 import { BrandName } from "@/components/BrandName";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { askSupport } from "@/lib/support";
 
 type Plan = {
   id: string;
@@ -101,6 +103,8 @@ export default function PlansPage() {
   // Manually entered Paddle discount code (any active code from the Paddle account).
   const [promoInput, setPromoInput] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
+  // Plan whose personal discount Paddle could not apply (asks before full price).
+  const [discountProblemPlanId, setDiscountProblemPlanId] = useState<string | null>(null);
 
   useEffect(() => {
     track("pricing_page_viewed", { surface: "in_app_plans" });
@@ -140,6 +144,15 @@ export default function PlansPage() {
   const tr = (m: Record<L, string>) => m[L];
 
   const COPY = {
+    discountProblemTitle: { en: "Your personal discount couldn't be applied", fr: "Votre remise personnelle n'a pas pu être appliquée", uk: "Не вдалося застосувати вашу персональну знижку", pl: "Nie udało się zastosować Twojego osobistego rabatu", ru: "Не удалось применить вашу персональную скидку" },
+    discountProblemBody: { en: "You can continue at the regular price or contact support so we can restore your discount.", fr: "Vous pouvez continuer au prix normal ou contacter le support pour rétablir votre remise.", uk: "Можна продовжити за звичайною ціною або звернутися в підтримку, щоб ми відновили знижку.", pl: "Możesz kontynuować w cenie regularnej lub skontaktować się z pomocą, abyśmy przywrócili rabat.", ru: "Можно продолжить по обычной цене или обратиться в поддержку, чтобы мы восстановили скидку." },
+    regularPrice: { en: "Regular price", fr: "Prix normal", uk: "Звичайна ціна", pl: "Cena regularna", ru: "Обычная цена" },
+    payRegular: { en: "Pay regular price", fr: "Payer le prix normal", uk: "Оплатити за звичайною ціною", pl: "Zapłać cenę regularną", ru: "Оплатить по обычной цене" },
+    contactSupport: { en: "Contact support", fr: "Contacter le support", uk: "Звернутися в підтримку", pl: "Skontaktuj się z pomocą", ru: "Связаться с поддержкой" },
+    originalPrice: { en: "Original price", fr: "Prix d'origine", uk: "Початкова ціна", pl: "Cena pierwotna", ru: "Исходная цена" },
+    discountLabel: { en: "Discount", fr: "Remise", uk: "Знижка", pl: "Rabat", ru: "Скидка" },
+    finalPrice: { en: "Final price", fr: "Prix final", uk: "Кінцева ціна", pl: "Cena końcowa", ru: "Итоговая цена" },
+    taxNote: { en: "Paddle may add VAT for your country at checkout.", fr: "Paddle peut ajouter la TVA de votre pays lors du paiement.", uk: "Paddle може додати ПДВ вашої країни під час оплати.", pl: "Paddle może doliczyć VAT Twojego kraju przy płatności.", ru: "Paddle может добавить НДС вашей страны при оплате." },
     personalDiscount: { en: "Your personal discount", fr: "Votre remise personnelle", uk: "Ваша персональна знижка", pl: "Twój osobisty rabat", ru: "Ваша персональная скидка" },
     mfaSecurity: { en: "MFA & data protection", fr: "MFA et protection des données", uk: "MFA та захист даних", pl: "MFA i ochrona danych", ru: "MFA и защита данных" },
     promoTitle: { en: "Have a promo code?", fr: "Vous avez un code promo ?", uk: "Маєте промокод?", pl: "Masz kod promocyjny?", ru: "Есть промокод?" },
@@ -357,7 +370,7 @@ export default function PlansPage() {
     if (!availablePeriods.includes(period)) setPeriod(availablePeriods[0]);
   }, [availablePeriods, period]);
 
-  const startCheckout = async (planId: string) => {
+  const startCheckout = async (planId: string, opts: { acceptRegularPrice?: boolean } = {}) => {
     if (continuing) return; // guard against double-click
     const selectedPlan = plans.find((plan) => plan.id === planId);
     if (!selectedPlan) {
@@ -432,6 +445,7 @@ export default function PlansPage() {
           // A manually entered code wins; otherwise the backend re-validates
           // campaign eligibility and pre-applies the campaign coupon.
           promoCode: appliedPromo ?? (campaignEligible ? SUPPORT_UA_PROMO_CODE : null),
+          acceptRegularPrice: opts.acceptRegularPrice === true,
         },
       });
       const durationMs = Date.now() - startedAt;
@@ -458,6 +472,13 @@ export default function PlansPage() {
             description: tr(COPY.promoInvalidBody),
             variant: "destructive",
           });
+          return;
+        }
+        if (serverCode === "personal_discount_unavailable") {
+          window.clearTimeout(slowTimer);
+          setSlowCheckout(false);
+          setContinuing(false);
+          setDiscountProblemPlanId(planId);
           return;
         }
         if (serverCode === "checkout_not_enabled") {
@@ -728,6 +749,13 @@ export default function PlansPage() {
                                   ? `${personalDiscount.amount}%`
                                   : formatPrice(personalDiscount.amount, price.currency)}
                               </span>
+                              <dl className="mt-2 space-y-0.5 rounded-lg border border-border bg-muted/40 p-2 text-xs">
+                                <div className="flex justify-between gap-2"><dt className="text-muted-foreground">{displayName}</dt><dd className="font-medium text-foreground">{billedLabel}</dd></div>
+                                <div className="flex justify-between gap-2"><dt className="text-muted-foreground">{tr(COPY.originalPrice)}</dt><dd className="text-foreground">{formatPrice(base, price.currency)} {price.currency}</dd></div>
+                                <div className="flex justify-between gap-2"><dt className="text-muted-foreground">{tr(COPY.discountLabel)} ({personalDiscount.code})</dt><dd className="text-foreground">−{formatPrice(Number((base - final).toFixed(2)), price.currency)}</dd></div>
+                                <div className="flex justify-between gap-2"><dt className="font-semibold text-foreground">{tr(COPY.finalPrice)}</dt><dd className="font-semibold text-foreground">{formatPrice(Number(final.toFixed(2)), price.currency)} {price.currency}</dd></div>
+                                <p className="pt-1 text-muted-foreground">{tr(COPY.taxNote)}</p>
+                              </dl>
                             </div>
                           );
                         })() : price ? (
@@ -928,6 +956,36 @@ export default function PlansPage() {
         title={t("plans.confirmClearTitle")}
         description={t("plans.confirmClearDesc")}
       />
+      <AlertDialog open={!!discountProblemPlanId} onOpenChange={(o) => { if (!o) setDiscountProblemPlanId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{tr(COPY.discountProblemTitle)}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {tr(COPY.discountProblemBody)}
+              {(() => {
+                const pr = discountProblemPlanId ? priceFor(discountProblemPlanId, period) : null;
+                return pr ? (
+                  <span className="mt-3 block font-semibold text-foreground">
+                    {tr(COPY.regularPrice)}: {formatPrice(Number(pr.price), pr.currency)} {pr.currency} / {periodSuffix[period]}
+                  </span>
+                ) : null;
+              })()}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => askSupport({ module: "Subscription", action: "personal_discount_unavailable" })}>
+              {tr(COPY.contactSupport)}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              const id = discountProblemPlanId;
+              setDiscountProblemPlanId(null);
+              if (id) void startCheckout(id, { acceptRegularPrice: true });
+            }}>
+              {tr(COPY.payRegular)}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }
