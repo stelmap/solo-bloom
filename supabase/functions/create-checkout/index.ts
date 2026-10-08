@@ -184,19 +184,31 @@ serve(async (req) => {
       ...(campaignEligible ? { campaign: SUPPORT_UA_DISCOUNT_CODE } : {}),
     };
 
-    const txn = await paddleFetch<{ data: { id: string; checkout?: { url?: string | null } } }>("/transactions", {
+    const createTxn = (withDiscount: string | null) => paddleFetch<{ data: { id: string; checkout?: { url?: string | null } } }>("/transactions", {
       method: "POST",
       body: {
         items: [{ price_id: priceId, quantity: 1 }],
         customer_id: customerId,
         ...(addressId ? { address_id: addressId } : {}),
-        ...(discountId ? { discount_id: discountId } : {}),
+        ...(withDiscount ? { discount_id: withDiscount } : {}),
         custom_data: customData,
         // No explicit checkout.url: Paddle only accepts approved domains, and
         // preview/dev origins are not approved. The account default payment
         // link is used instead, and we open the overlay on our own page.
       },
     });
+
+    let txn;
+    try {
+      txn = await createTxn(discountId);
+    } catch (err) {
+      // An automatic (legacy / campaign) discount that is no longer applicable
+      // must never block payment: retry at the current price without it.
+      // A code the user typed is reported instead of silently dropped.
+      if (!discountId || manualCode) throw err;
+      log("Discount rejected, retrying without it", { message: err instanceof Error ? err.message : String(err) });
+      txn = await createTxn(null);
+    }
 
     const transactionId = txn.data.id;
     const checkoutUrl = `${origin}/checkout?_ptxn=${transactionId}`;

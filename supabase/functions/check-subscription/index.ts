@@ -122,7 +122,8 @@ serve(async (req) => {
     const hasLegacyAccess = !!legacyRow &&
       !legacyRow.paddle_subscription_id &&
       (!!legacyRow.stripe_subscription_id || legacyRow.legacy_full_access === true) &&
-      (legacyRow.status === "active" || legacyRow.status === "trialing");
+      (legacyRow.status === "active" || legacyRow.status === "trialing") &&
+      legacyAccessStillValid(legacyRow);
 
     // Cache miss or stale — query Paddle
     let result: Result = { ...EMPTY_RESULT };
@@ -237,3 +238,15 @@ serve(async (req) => {
     });
   }
 });
+
+/**
+ * A pre-Paddle subscription only grants access while it has a future end date
+ * (or an explicit open-ended legacy grant). Old provider rows with no end date
+ * are historical: they must not keep a user "subscribed" and block renewal.
+ */
+function legacyAccessStillValid(row: any): boolean {
+  const now = Date.now();
+  const future = (v: string | null | undefined) => !!v && new Date(v).getTime() > now;
+  if (row.legacy_full_access === true) return !row.legacy_access_until || future(row.legacy_access_until);
+  return future(row.current_period_end) || future(row.legacy_access_until);
+}
