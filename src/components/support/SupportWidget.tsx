@@ -216,18 +216,73 @@ export function SupportWidget() {
 
   const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
 
+  /* ---------- draggable launcher ---------- */
+  const POS_KEY = "support_button_pos";
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(() => {
+    try { const r = localStorage.getItem(POS_KEY); return r ? JSON.parse(r) : null; } catch { return null; }
+  });
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const drag = useRef<{ dx: number; dy: number; sx: number; sy: number; moved: boolean } | null>(null);
+  const clamp = useCallback((x: number, y: number) => {
+    const el = btnRef.current;
+    const w = el?.offsetWidth ?? 56, h = el?.offsetHeight ?? 48, m = 8;
+    return {
+      x: Math.min(Math.max(m, x), window.innerWidth - w - m),
+      y: Math.min(Math.max(m, y), window.innerHeight - h - m),
+    };
+  }, []);
+  useEffect(() => {
+    if (!pos) return;
+    const onResize = () => setPos((p) => (p ? clamp(p.x, p.y) : p));
+    onResize();
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
+    return () => { window.removeEventListener("resize", onResize); window.removeEventListener("orientationchange", onResize); };
+  }, [!!pos, open, overlayOpen, clamp]);
+
+  const onPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    drag.current = { dx: e.clientX - r.left, dy: e.clientY - r.top, sx: e.clientX, sy: e.clientY, moved: false };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const d = drag.current;
+    if (!d) return;
+    if (!d.moved && Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < 5) return;
+    d.moved = true;
+    setPos(clamp(e.clientX - d.dx, e.clientY - d.dy));
+  };
+  const onPointerUp = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const d = drag.current;
+    drag.current = null;
+    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch { /* noop */ }
+    if (d?.moved) {
+      setPos((p) => { try { if (p) localStorage.setItem(POS_KEY, JSON.stringify(p)); } catch { /* noop */ } return p; });
+      return;
+    }
+    openWith({}); track("support_opened", { source: "button" });
+  };
+
   /* ---------- render ---------- */
   if (!open) {
     // Never sit on top of a drawer/modal: its actions must stay clickable.
     if (overlayOpen) return null;
     return (
       <button
+        ref={btnRef}
         type="button"
-        onClick={() => { openWith({}); track("support_opened", { source: "button" }); }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={() => { drag.current = null; }}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openWith({}); } }}
         aria-label={t("support.button")}
+        title={t("support.button")}
+        style={pos ? { left: pos.x, top: pos.y, right: "auto", bottom: "auto" } : undefined}
         className={cn(
-          "fixed right-4 z-[55] flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-lg transition hover:opacity-90",
-          insideApp ? "bottom-20 lg:bottom-4 lg:right-[calc(1rem+15rem)]" : "bottom-4",
+          "fixed z-[55] flex touch-none select-none cursor-grab active:cursor-grabbing items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-lg transition-opacity hover:opacity-90",
+          !pos && "right-4",
+          !pos && (insideApp ? "bottom-20 lg:bottom-4 lg:right-[calc(1rem+15rem)]" : "bottom-4"),
         )}
       >
         <LifeBuoy className="h-4 w-4" />
