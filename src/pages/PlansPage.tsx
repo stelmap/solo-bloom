@@ -114,6 +114,20 @@ export default function PlansPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Personal discount kept for customers moved over from the old provider.
+  // The server applies it at checkout; here it is shown before paying.
+  const { data: personalDiscount } = useQuery({
+    queryKey: ["personal-discount", user?.id],
+    enabled: !!user,
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const { data } = await supabase.functions.invoke("create-checkout", { body: { preview: true } });
+      return ((data as any)?.discount ?? null) as
+        | { code: string; planCode: string; billingPeriod: string; type: "percentage" | "flat"; amount: number }
+        | null;
+    },
+  });
+
   const isPaid = subscription.subscribed || subscription.on_trial;
   const canClearDemo = !isPaid && Boolean(hasDemoData);
 
@@ -126,6 +140,7 @@ export default function PlansPage() {
   const tr = (m: Record<L, string>) => m[L];
 
   const COPY = {
+    personalDiscount: { en: "Your personal discount", fr: "Votre remise personnelle", uk: "Ваша персональна знижка", pl: "Twój osobisty rabat", ru: "Ваша персональная скидка" },
     mfaSecurity: { en: "MFA & data protection", fr: "MFA et protection des données", uk: "MFA та захист даних", pl: "MFA i ochrona danych", ru: "MFA и защита данных" },
     promoTitle: { en: "Have a promo code?", fr: "Vous avez un code promo ?", uk: "Маєте промокод?", pl: "Masz kod promocyjny?", ru: "Есть промокод?" },
     promoPlaceholder: { en: "Enter code", fr: "Saisir le code", uk: "Введіть код", pl: "Wpisz kod", ru: "Введите код" },
@@ -696,7 +711,26 @@ export default function PlansPage() {
                       </div>
 
                       <div className="mt-3">
-                        {price ? (
+                        {price && personalDiscount && personalDiscount.planCode === plan.code && personalDiscount.billingPeriod === period ? (() => {
+                          const base = Number(price.price);
+                          const final = Math.max(0, personalDiscount.type === "percentage"
+                            ? base * (1 - personalDiscount.amount / 100)
+                            : base - personalDiscount.amount);
+                          return (
+                            <div className="space-y-1">
+                              <div className="flex flex-wrap items-baseline gap-2">
+                                <span className="text-4xl font-bold text-foreground">{formatPrice(Number(final.toFixed(2)), price.currency)}</span>
+                                <span className="text-muted-foreground text-sm">/ {periodSuffix[period]}</span>
+                                <span className="text-sm text-muted-foreground line-through">{formatPrice(base, price.currency)}</span>
+                              </div>
+                              <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                                {tr(COPY.personalDiscount)} −{personalDiscount.type === "percentage"
+                                  ? `${personalDiscount.amount}%`
+                                  : formatPrice(personalDiscount.amount, price.currency)}
+                              </span>
+                            </div>
+                          );
+                        })() : price ? (
                           <SupportUkrainePrice
                             lang={lang}
                             standardPrice={Number(price.price)}
