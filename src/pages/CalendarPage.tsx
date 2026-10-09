@@ -47,6 +47,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { CALENDAR_BLOCK_BASE, CALENDAR_BLOCK_REQUEST, CALENDAR_CHIP_BASE } from "@/lib/calendarBlockStyles";
 import { CalendarEventCard } from "@/components/calendar/CalendarEventCard";
+import { isSessionInProgress, nowBadgeLabel } from "@/lib/sessionNow";
 import { getSessionStateStyle, SESSION_STATE_STYLES, SESSION_STATE_ORDER } from "@/lib/sessionStatusColors";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
@@ -1726,6 +1727,16 @@ export default function CalendarPage() {
   const [addDayOffOpen, setAddDayOffOpen] = useState(false);
   const [newDayOffDate, setNewDayOffDate] = useState("");
   const [agendaOpen, setAgendaOpen] = useState(false);
+  // Live clock for the "now" highlight; scheduled_at is an absolute instant,
+  // so comparing to Date.now() is correct in any calendar time zone.
+  const nowLabel = nowBadgeLabel(lang);
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNowMs(Date.now()), 15_000);
+    const onVis = () => { if (!document.hidden) setNowMs(Date.now()); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { window.clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
+  }, []);
   const [needsOpen, setNeedsOpen] = useState(false);
 
   const { data: bookingLink } = useQuery({
@@ -2066,20 +2077,6 @@ export default function CalendarPage() {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>{t("booking.inbox")}</TooltipContent>
-            </Tooltip>
-
-            {/* Agenda drawer trigger below xl */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline" size="icon" className="h-10 w-10 rounded-xl xl:hidden"
-                  aria-label={(t as any)("calendar.agenda") || "Today schedule"}
-                  onClick={() => setAgendaOpen(true)}
-                >
-                  <PanelRightOpen className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{(t as any)("calendar.agenda") || "Today schedule"}</TooltipContent>
             </Tooltip>
 
             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
@@ -2725,7 +2722,7 @@ export default function CalendarPage() {
         )}
 
         {effectiveView !== "month" && (
-        <div className="flex flex-col xl:grid xl:grid-cols-[minmax(0,1fr)_clamp(280px,20vw,360px)] gap-4 flex-1 min-h-0 items-stretch">
+        <div className="flex flex-col gap-4 flex-1 min-h-0 items-stretch">
         <div
           className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex flex-col flex-1 min-w-0 min-h-0 w-full"
           style={{ touchAction: isMobile ? "pan-y" : undefined }}
@@ -2909,6 +2906,7 @@ export default function CalendarPage() {
                             const needsConfirmation = !isGroupEvt && client?.confirmation_required && evt.confirmation_status !== "confirmed";
                             const isConfirmed = !isGroupEvt && evt.confirmation_status === "confirmed";
                             const displayName = (isGroupEvt && groupName ? groupName : (evt as any).clients?.name) || "";
+                            const isNowEvt = isSessionInProgress(evt, nowMs);
                             // Split slot horizontally so concurrent events don't overlap (each is visible & clickable)
                             const total = events.length;
                             const widthPct = 100 / total;
@@ -2924,6 +2922,11 @@ export default function CalendarPage() {
                                 heightPx={heightPx}
                                 statusIcons={
                                   <>
+                                    {isNowEvt && (
+                                      <span className="rounded bg-primary px-1 text-[9px] font-bold uppercase leading-[14px] text-primary-foreground">
+                                        {nowLabel}
+                                      </span>
+                                    )}
                                     {(evt as any).recurring_rule_id && <Repeat className="h-2.5 w-2.5 opacity-50" />}
                                     {needsConfirmation && <span className="h-2 w-2 rounded-full bg-warning" />}
                                     {isConfirmed && <span className="h-2 w-2 rounded-full bg-success" />}
@@ -2935,6 +2938,7 @@ export default function CalendarPage() {
                                 onClick={(e) => { e.stopPropagation(); openSessionSheet(evt); }}
                                 className={cn(
                                   "top-0 z-10 hover:ring-2 hover:ring-ring/30",
+                                  isNowEvt && "z-[15] ring-2 ring-primary ring-offset-1 ring-offset-card shadow-md",
                                   isActiveEvt && "cursor-grab active:cursor-grabbing",
                                   dragAptId === evt.id && "opacity-40 ring-2 ring-primary",
                                 )}
@@ -2952,9 +2956,6 @@ export default function CalendarPage() {
           </div>
         </div>
 
-          <aside className="hidden xl:flex xl:flex-col min-w-0 min-h-0 overflow-y-auto">
-            {agendaContent}
-          </aside>
 
         </div>
         )}
@@ -2963,15 +2964,6 @@ export default function CalendarPage() {
 
       </div>
 
-
-      <Sheet open={agendaOpen} onOpenChange={setAgendaOpen}>
-        <SheetContent side={isMobile ? "bottom" : "right"} className={cn("overflow-y-auto", isMobile ? "h-[85vh] rounded-t-2xl" : "w-full sm:max-w-md")}>
-          <SheetHeader className="sr-only">
-            <SheetTitle>{(t as any)("calendar.agenda") || "Today schedule"}</SheetTitle>
-          </SheetHeader>
-          <div className="mt-4">{agendaContent}</div>
-        </SheetContent>
-      </Sheet>
 
       <Sheet open={inboxOpen} onOpenChange={setInboxOpen}>
 
