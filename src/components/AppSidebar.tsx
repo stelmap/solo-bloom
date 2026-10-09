@@ -36,6 +36,7 @@ const navItems: NavItem[] = [
   { kind: "leaf", icon: Calendar, labelKey: "nav.calendar", path: "/calendar" },
   { kind: "leaf", icon: Users, labelKey: "nav.clients", path: "/clients" },
   { kind: "leaf", icon: UsersRound, labelKey: "nav.groups", path: "/groups" },
+  { kind: "leaf", icon: DollarSign, labelKey: "nav.payments", path: "/payments" },
   { kind: "leaf", icon: Scissors, labelKey: "nav.services", path: "/services" },
   {
     kind: "group",
@@ -45,7 +46,6 @@ const navItems: NavItem[] = [
     children: [
       { icon: BarChart3, labelKey: "nav.practiceOverview", path: "/finances" },
       { icon: TrendingUp, labelKey: "nav.financialOverview", path: "/finances/overview" },
-      { icon: DollarSign, labelKey: "nav.income", path: "/finances/income" },
       { icon: TrendingDown, labelKey: "nav.expenses", path: "/finances/expenses" },
       { icon: ShieldCheck, labelKey: "nav.paymentAudit", path: "/finances/payment-audit" },
       { icon: Target, labelKey: "nav.breakeven", path: "/finances/breakeven" },

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -47,6 +47,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
 // Lazy loaded (behind auth or rarely visited)
+const RedirectKeepQuery = ({ to }: { to: string }) => { const l = useLocation(); return <Navigate to={to + l.search + l.hash} replace />; };
 const AuthPage = lazyWithReload(() => import("./pages/AuthPage"));
 const ResetPasswordPage = lazyWithReload(() => import("./pages/ResetPasswordPage"));
 const Dashboard = lazyWithReload(() => import("./pages/Dashboard"));
@@ -165,13 +166,14 @@ const App = () => {
                 <Route path="/finances" element={<ProtectedRoute><PracticeOverviewPage /></ProtectedRoute>} />
                 <Route path="/finances/overview" element={<ProtectedRoute><FinancialOverviewPage /></ProtectedRoute>} />
                 <Route path="/finances/cost-efficiency" element={<ProtectedRoute><CostEfficiencyPage /></ProtectedRoute>} />
-                <Route path="/finances/income" element={<ProtectedRoute><IncomePage /></ProtectedRoute>} />
+                <Route path="/payments" element={<ProtectedRoute><IncomePage /></ProtectedRoute>} />
+                <Route path="/finances/income" element={<RedirectKeepQuery to="/payments" />} />
                 <Route path="/finances/expenses" element={<ProtectedRoute><ExpensesPage /></ProtectedRoute>} />
                 <Route path="/finances/breakeven" element={<ProtectedRoute><BreakevenPage /></ProtectedRoute>} />
                 <Route path="/finances/payment-audit" element={<ProtectedRoute><PaymentAuditPage /></ProtectedRoute>} />
 
                 {/* Backwards-compatible redirects from old top-level routes */}
-                <Route path="/income" element={<Navigate to="/finances/income" replace />} />
+                <Route path="/income" element={<RedirectKeepQuery to="/payments" />} />
                 <Route path="/expenses" element={<Navigate to="/finances/expenses" replace />} />
                 <Route path="/breakeven" element={<Navigate to="/finances/breakeven" replace />} />
                 <Route path="/financial" element={<Navigate to="/finances" replace />} />

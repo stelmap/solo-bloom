@@ -534,7 +534,7 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
             <div className="px-5 py-4 flex items-center justify-between gap-2 border-b border-border">
               <h2 className="text-base font-semibold text-foreground">{t("dashm.recentUnpaid")}*</h2>
               <button
-                onClick={() => onOpenWidget("recent_unpaid_view_all", "/finances/income?tab=pending&range=all")}
+                onClick={() => onOpenWidget("recent_unpaid_view_all", "/payments?tab=pending&range=all")}
                 className="text-xs font-semibold text-primary inline-flex items-center gap-1 hover:opacity-80 whitespace-nowrap"
               >
                 {t("dashm.viewAll")} *

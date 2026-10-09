@@ -101,7 +101,7 @@ export function useNeedsAttention(monthKey: string = currentMonthKey()) {
       title: `${t("dashm.unpaidSessions", { count: derived.unpaid.length })}*`,
       sub: `${t("dashm.totalAmount")}: ${cs}${derived.unpaidTotal.toLocaleString()}`,
       widget: "unpaid_sessions",
-      path: "/finances/income?tab=pending&range=all",
+      path: "/payments?tab=pending&range=all",
     },
     {
       key: "debt",
@@ -111,7 +111,7 @@ export function useNeedsAttention(monthKey: string = currentMonthKey()) {
       title: `${t("ops.totalDebt")}: ${cs}${totalDebt.toLocaleString()}*`,
       sub: t("dashm.debtSub"),
       widget: "total_debt",
-      path: "/finances/income?tab=pending&range=all",
+      path: "/payments?tab=pending&range=all",
     },
     {
       key: "noNext",

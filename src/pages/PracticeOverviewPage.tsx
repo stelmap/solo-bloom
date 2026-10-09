@@ -205,13 +205,13 @@ export default function PracticeOverviewPage() {
     {
       key: "debt", icon: Receipt, value: `${cs}${totalDebt.toLocaleString()}`, show: totalDebt > 0,
       label: t("po.totalDebt"), sub: t("po.totalDebtSub"),
-      onClick: () => navigate("/finances/income?tab=pending&range=all"),
+      onClick: () => navigate("/payments?tab=pending&range=all"),
       tone: "danger" as const,
     },
     {
       key: "unpaid", icon: Clock, value: String(unpaidCount), show: unpaidCount > 0,
       label: t("po.unpaidAppointments"), sub: t("po.unpaidAppointmentsSub"),
-      onClick: () => navigate("/finances/income?tab=pending&range=all"),
+      onClick: () => navigate("/payments?tab=pending&range=all"),
       tone: "warning" as const,
     },
     {

@@ -5,6 +5,7 @@ export default {
   "nav.clients": "Klienci",
   "nav.services": "Usługi",
   "nav.income": "Przychody",
+  "nav.payments": "Płatności",
   "nav.expenses": "Koszty",
   "nav.breakeven": "Próg rentowności",
   "nav.settings": "Ustawienia",
