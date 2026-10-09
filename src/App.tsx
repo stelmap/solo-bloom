@@ -165,13 +165,14 @@ const App = () => {
                 <Route path="/finances" element={<ProtectedRoute><PracticeOverviewPage /></ProtectedRoute>} />
                 <Route path="/finances/overview" element={<ProtectedRoute><FinancialOverviewPage /></ProtectedRoute>} />
                 <Route path="/finances/cost-efficiency" element={<ProtectedRoute><CostEfficiencyPage /></ProtectedRoute>} />
-                <Route path="/finances/income" element={<ProtectedRoute><IncomePage /></ProtectedRoute>} />
+                <Route path="/payments" element={<ProtectedRoute><IncomePage /></ProtectedRoute>} />
+                <Route path="/finances/income" element={<Navigate to="/payments" replace />} />
                 <Route path="/finances/expenses" element={<ProtectedRoute><ExpensesPage /></ProtectedRoute>} />
                 <Route path="/finances/breakeven" element={<ProtectedRoute><BreakevenPage /></ProtectedRoute>} />
                 <Route path="/finances/payment-audit" element={<ProtectedRoute><PaymentAuditPage /></ProtectedRoute>} />
 
                 {/* Backwards-compatible redirects from old top-level routes */}
-                <Route path="/income" element={<Navigate to="/finances/income" replace />} />
+                <Route path="/income" element={<Navigate to="/payments" replace />} />
                 <Route path="/expenses" element={<Navigate to="/finances/expenses" replace />} />
                 <Route path="/breakeven" element={<Navigate to="/finances/breakeven" replace />} />
                 <Route path="/financial" element={<Navigate to="/finances" replace />} />

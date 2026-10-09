@@ -6,6 +6,7 @@ export default {
   "nav.clients": "Клиенты",
   "nav.services": "Услуги",
   "nav.income": "Доход",
+  "nav.payments": "Оплаты",
   "nav.expenses": "Расходы",
   "nav.breakeven": "Безубыточность",
   "nav.settings": "Настройки",

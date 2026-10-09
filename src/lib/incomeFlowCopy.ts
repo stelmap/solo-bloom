@@ -230,7 +230,7 @@ export interface IncomePageCopy {
 
 export const INCOME_PAGE_COPY: Record<IncomeFlowLang, IncomePageCopy> = {
   en: {
-    title: "Income",
+    title: "Payments",
     subtitle: "See what you've received and what clients still need to pay",
     export: "Export",
     addIncome: "Add income",
@@ -250,7 +250,7 @@ export const INCOME_PAGE_COPY: Record<IncomeFlowLang, IncomePageCopy> = {
     noPending: "No expected payments",
   },
   uk: {
-    title: "Дохід",
+    title: "Оплати",
     subtitle: "Перегляньте, що отримано і що клієнти ще мають сплатити",
     export: "Експорт",
     addIncome: "Додати дохід",
@@ -270,7 +270,7 @@ export const INCOME_PAGE_COPY: Record<IncomeFlowLang, IncomePageCopy> = {
     noPending: "Немає очікуваних оплат",
   },
   ru: {
-    title: "Доход",
+    title: "Оплаты",
     subtitle: "Смотрите, что получено и что клиенты ещё должны оплатить",
     export: "Экспорт",
     addIncome: "Добавить доход",
@@ -290,7 +290,7 @@ export const INCOME_PAGE_COPY: Record<IncomeFlowLang, IncomePageCopy> = {
     noPending: "Нет ожидаемых оплат",
   },
   fr: {
-    title: "Revenus",
+    title: "Paiements",
     subtitle: "Voyez ce que vous avez reçu et ce que les clients doivent encore payer",
     export: "Exporter",
     addIncome: "Ajouter un revenu",
