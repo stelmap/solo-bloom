@@ -1949,11 +1949,11 @@ export default function CalendarPage() {
           <Button variant="outline" className="h-10 rounded-xl" onClick={() => setCurrentDate(new Date())}>
             {t("calendar.today") || "Today"}
           </Button>
-          <Button variant="outline" className="h-10 rounded-xl whitespace-nowrap shrink-0" onClick={() => navigate("/dashboard#needs-attention")}>
+          <Button variant="outline" className="h-10 rounded-xl whitespace-nowrap shrink-0" aria-label={t("dashm.needsAttention")} onClick={() => navigate("/dashboard#needs-attention")}>
             <AlertTriangle className="h-4 w-4 sm:mr-1.5 text-warning" />
             <span className="hidden sm:inline">{t("dashm.needsAttention")}</span>
           </Button>
-          <Button variant="outline" className="h-10 rounded-xl whitespace-nowrap shrink-0" onClick={() => navigate("/payments")}>
+          <Button variant="outline" className="h-10 rounded-xl whitespace-nowrap shrink-0" aria-label={myPaymentsLabel} onClick={() => navigate("/payments")}>
             <Wallet className="h-4 w-4 sm:mr-1.5" />
             <span className="hidden sm:inline">{myPaymentsLabel}</span>
           </Button>
