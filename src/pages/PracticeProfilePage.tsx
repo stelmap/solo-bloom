@@ -317,7 +317,12 @@ export default function PracticeProfilePage() {
 
   const setupMode = (profile as any)?.profile_setup_completed === false && !(profile as any)?.onboarding_state?.setupSkipped;
   const closeSetup = async () => {
-    try { await setOnboardingState({ setupSkipped: true }); } catch { /* still leave */ }
+    // Leave without saving the form; only remember that setup was closed.
+    if (user?.id) {
+      const state = ((profile as any)?.onboarding_state ?? {}) as Record<string, unknown>;
+      await supabase.from("profiles").update({ onboarding_state: { ...state, setupSkipped: true } } as any).eq("user_id", user.id);
+      await qc.invalidateQueries({ queryKey: ["profile"] });
+    }
     navigate("/calendar", { replace: true });
   };
   const REQUIRED: (keyof typeof form)[] = ["business_name", "full_name", "public_email", "language", "timezone"];
