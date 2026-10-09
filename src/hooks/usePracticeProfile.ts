@@ -19,7 +19,6 @@ const REQUIRED_FIELDS: PracticeProfileField[] = [
   "business_name",
   "full_name",
   "public_email",
-  "phone",
   "currency",
   "language",
   "timezone",
