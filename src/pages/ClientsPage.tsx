@@ -1,3 +1,4 @@
+import { prepaidBadgeClass } from "@/components/clients/PrepaidSessionsCard";
 import { usePrepaidSummaries } from "@/hooks/usePrepaidSessions";
 import { prepaidCopy } from "@/lib/prepaidSessions";
 import { AppLayout } from "@/components/AppLayout";
@@ -94,6 +95,7 @@ const ClientCard = memo(({ client, onNavigate, onDelete, onArchive, onUnarchive,
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 flex-wrap">
           <h3 className="font-semibold text-foreground truncate">{client.name}</h3>
+          <PrepaidMiniBadge client={client} />
           {isArchived && (
             <Badge variant={getArchiveReasonVariant(client.archive_reason)} className="text-[10px]">
               {getArchiveReasonLabel(client.archive_reason, t)}
@@ -547,5 +549,19 @@ export default function ClientsPage() {
       )}
       <PaywallDialog open={paywallOpen} onOpenChange={setPaywallOpen} reason="client_limit" />
     </AppLayout>
+  );
+}
+
+function PrepaidMiniBadge({ client }: { client: any }) {
+  const { lang } = useLanguage();
+  const { summaries } = usePrepaidSummaries();
+  if (!client?.prepaid_sessions_mode) return null;
+  const sm = summaries.get(client.id);
+  if (!sm?.hasTopups) return null;
+  const P = prepaidCopy(lang);
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium whitespace-nowrap ${prepaidBadgeClass[sm.status]}`}>
+      {P.available}: {sm.balance}{sm.status === "low" || sm.status === "empty" ? ` · ${P[sm.status]}` : ""}
+    </span>
   );
 }
