@@ -8,7 +8,7 @@ import { SessionDetailSheet } from "@/components/SessionDetailSheet";
 import { ClientPicker } from "@/components/ClientPicker";
 import { DatePicker } from "@/components/ui/date-time-picker";
 import { TimePicker } from "@/components/ui/time-picker";
-import { ChevronLeft, ChevronRight, ChevronRight as ChevronRightIcon, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon, UserPlus, Briefcase, CheckCircle2, Circle, Flag, Search, X as XIcon, AlertTriangle, CalendarDays, SlidersHorizontal, MoreHorizontal, ChevronDown, ExternalLink, Copy, PanelRightOpen, Ban, Rows2, Rows3, Check, User as UserIcon, Tag as TagIcon, Clock as ClockIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronRight as ChevronRightIcon, Plus, Repeat, CalendarOff, BarChart3, GripVertical, Users, Settings as SettingsIcon, UserPlus, Briefcase, CheckCircle2, Circle, Flag, Search, X as XIcon, AlertTriangle, CalendarDays, SlidersHorizontal, MoreHorizontal, ChevronDown, ExternalLink, Copy, PanelRightOpen, Ban, Rows2, Rows3, Check, User as UserIcon, Tag as TagIcon, Clock as ClockIcon, Wallet } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -1730,6 +1730,7 @@ export default function CalendarPage() {
   // Live clock for the "now" highlight; scheduled_at is an absolute instant,
   // so comparing to Date.now() is correct in any calendar time zone.
   const nowLabel = nowBadgeLabel(lang);
+  const myPaymentsLabel = ({ en: "My payments", uk: "Мої оплати", ru: "Мои оплаты", pl: "Moje płatności", fr: "Mes paiements" } as Record<string, string>)[lang] ?? "My payments";
   const [liveNowMs, setLiveNowMs] = useState(() => Date.now());
   useEffect(() => {
     const id = window.setInterval(() => setLiveNowMs(Date.now()), 15_000);
@@ -1947,6 +1948,14 @@ export default function CalendarPage() {
 
           <Button variant="outline" className="h-10 rounded-xl" onClick={() => setCurrentDate(new Date())}>
             {t("calendar.today") || "Today"}
+          </Button>
+          <Button variant="outline" className="h-10 rounded-xl whitespace-nowrap shrink-0" aria-label={t("dashm.needsAttention")} onClick={() => navigate("/dashboard#needs-attention")}>
+            <AlertTriangle className="h-4 w-4 sm:mr-1.5 text-warning" />
+            <span className="hidden sm:inline">{t("dashm.needsAttention")}</span>
+          </Button>
+          <Button variant="outline" className="h-10 rounded-xl whitespace-nowrap shrink-0" aria-label={myPaymentsLabel} onClick={() => navigate("/payments")}>
+            <Wallet className="h-4 w-4 sm:mr-1.5" />
+            <span className="hidden sm:inline">{myPaymentsLabel}</span>
           </Button>
 
           {!isMobile && (
