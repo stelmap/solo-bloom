@@ -589,7 +589,7 @@ export default function ClientDetailPage() {
         { key: "awaiting", value: awaitingSessions, label: t("clientDetail.pendingPayments"), color: "text-warning", border: "border-border" },
         { key: "cancelled", value: cancelledSessions, label: t("clientDetail.cancelled"), color: "text-destructive", border: "border-border" },
         { key: "supervision", value: supervisionCount, label: t("clientDetail.supervisionSessions"), color: "text-primary", border: "border-primary/20", icon: <ClipboardList className="h-4 w-4 text-primary" /> },
-      ] as Array<{ key: StatFilter; value: number; label: string; color: string; border: string; icon?: any; sub?: string }>.filter((card) => SUPERVISION_UI_ENABLED || card.key !== "supervision").map((card) => {
+      ] as Array<{ key: StatFilter; value: number; label: string; color: string; border: string; icon?: any; sub?: string }>).filter((card) => SUPERVISION_UI_ENABLED || card.key !== "supervision").map((card) => {
         const active = statFilter === card.key;
         return (
           <button
