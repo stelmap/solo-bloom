@@ -1730,10 +1730,10 @@ export default function CalendarPage() {
   // Live clock for the "now" highlight; scheduled_at is an absolute instant,
   // so comparing to Date.now() is correct in any calendar time zone.
   const nowLabel = nowBadgeLabel(lang);
-  const [nowMs, setNowMs] = useState(() => Date.now());
+  const [liveNowMs, setLiveNowMs] = useState(() => Date.now());
   useEffect(() => {
-    const id = window.setInterval(() => setNowMs(Date.now()), 15_000);
-    const onVis = () => { if (!document.hidden) setNowMs(Date.now()); };
+    const id = window.setInterval(() => setLiveNowMs(Date.now()), 15_000);
+    const onVis = () => { if (!document.hidden) setLiveNowMs(Date.now()); };
     document.addEventListener("visibilitychange", onVis);
     return () => { window.clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
   }, []);
@@ -2906,7 +2906,7 @@ export default function CalendarPage() {
                             const needsConfirmation = !isGroupEvt && client?.confirmation_required && evt.confirmation_status !== "confirmed";
                             const isConfirmed = !isGroupEvt && evt.confirmation_status === "confirmed";
                             const displayName = (isGroupEvt && groupName ? groupName : (evt as any).clients?.name) || "";
-                            const isNowEvt = isSessionInProgress(evt, nowMs);
+                            const isNowEvt = isSessionInProgress(evt, liveNowMs);
                             // Split slot horizontally so concurrent events don't overlap (each is visible & clickable)
                             const total = events.length;
                             const widthPct = 100 / total;
