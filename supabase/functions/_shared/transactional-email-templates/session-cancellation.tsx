@@ -82,7 +82,7 @@ const STRINGS: Record<Lang, {
     label: 'Spotkanie ODWOŁANA',
     badge: 'Wizyta odwołana',
     greeting: (n) => `Cześć ${n},`,
-    body: 'Z przykrością informujemy, że Twoje nadchodzące spotkanie została odwołana.',
+    body: 'Z przykrością informujemy, że Twoje nadchodzące spotkanie zostało odwołane.',
     dateLabel: 'DATA',
     timeLabel: 'GODZINA',
     reasonLabel: 'POWÓD',
