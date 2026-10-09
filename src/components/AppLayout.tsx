@@ -55,7 +55,6 @@ export function AppLayout({ children, fluid = false }: { children: React.ReactNo
           {children}
         </div>
       </main>
-      <OnboardingWidget />
     </div>
   );
 }
