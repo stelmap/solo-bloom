@@ -2525,6 +2525,7 @@ export type Database = {
           onboarding_completed: boolean
           onboarding_state: Json
           phone: string | null
+          profile_setup_completed: boolean
           public_email: string | null
           reminder_minutes: number
           sessions_per_day: number
@@ -2560,6 +2561,7 @@ export type Database = {
           onboarding_completed?: boolean
           onboarding_state?: Json
           phone?: string | null
+          profile_setup_completed?: boolean
           public_email?: string | null
           reminder_minutes?: number
           sessions_per_day?: number
@@ -2595,6 +2597,7 @@ export type Database = {
           onboarding_completed?: boolean
           onboarding_state?: Json
           phone?: string | null
+          profile_setup_completed?: boolean
           public_email?: string | null
           reminder_minutes?: number
           sessions_per_day?: number
