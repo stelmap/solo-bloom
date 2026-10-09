@@ -1,3 +1,5 @@
+import { usePrepaidSummaries } from "@/hooks/usePrepaidSessions";
+import { prepaidCopy } from "@/lib/prepaidSessions";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -154,7 +156,8 @@ export default function ClientsPage() {
     return map;
   })();
 
-  const monthFilter = searchParams.get("filter") as "activeThisMonth" | "newThisMonth" | "completedThisMonth" | "droppedThisMonth" | "withoutNextSession" | null;
+  const { summaries: prepaidSummaries } = usePrepaidSummaries();
+  const monthFilter = searchParams.get("filter") as "activeThisMonth" | "newThisMonth" | "completedThisMonth" | "droppedThisMonth" | "withoutNextSession" | "prepaidLow" | "prepaidEmpty" | null;
 
   const isThisMonth = (dateStr: string | null | undefined) => {
     if (!dateStr) return false;
@@ -170,7 +173,7 @@ export default function ClientsPage() {
   const effectiveStatusFilter =
     monthFilter === "completedThisMonth" || monthFilter === "droppedThisMonth"
       ? "archived"
-      : monthFilter === "withoutNextSession"
+      : monthFilter === "withoutNextSession" || monthFilter === "prepaidLow" || monthFilter === "prepaidEmpty"
       ? "active"
       : monthFilter === "newThisMonth"
       ? "all"
@@ -236,6 +239,10 @@ export default function ClientsPage() {
           DROPPED_ARCHIVE_REASONS.has(c.archive_reason ?? "") &&
           isThisMonth(c.archived_at)
         );
+      }
+      if (monthFilter === "prepaidLow" || monthFilter === "prepaidEmpty") {
+        const sm = prepaidSummaries.get(c.id);
+        return !!c.prepaid_sessions_mode && !!sm?.hasTopups && sm.status === (monthFilter === "prepaidLow" ? "low" : "empty");
       }
       if (monthFilter === "withoutNextSession") {
         return (
@@ -473,6 +480,10 @@ export default function ClientsPage() {
                   ? t("ops.completedTherapyThisMonth")
                   : monthFilter === "withoutNextSession"
                   ? t("ops.clientsWithoutNextSession")
+                  : monthFilter === "prepaidLow"
+                  ? prepaidCopy(lang).low
+                  : monthFilter === "prepaidEmpty"
+                  ? prepaidCopy(lang).empty
                   : t("ops.droppedTherapyThisMonth")}
               </Badge>
               <button
