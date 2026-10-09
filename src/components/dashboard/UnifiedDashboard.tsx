@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -205,6 +207,17 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
   const totalDebt = Number(stats?.outstandingBalance ?? 0);
 
   const { items: attentionItems } = useNeedsAttention(monthKey);
+  // Deep link from the calendar: /dashboard#needs-attention — refresh the
+  // data and scroll the block into view.
+  const attentionQc = useQueryClient();
+  useEffect(() => {
+    if (window.location.hash !== "#needs-attention") return;
+    void attentionQc.invalidateQueries();
+    const id = window.setTimeout(() => {
+      document.getElementById("needs-attention")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 350);
+    return () => window.clearTimeout(id);
+  }, [attentionQc]);
   const attention = attentionItems.map((a) => ({
     ...a,
     onClick: () => onOpenWidget(a.widget, a.path),
@@ -459,7 +472,7 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
 
         {/* Right — finance widgets */}
         <div className="space-y-4">
-          <section className="bg-card border border-border rounded-[20px] shadow-card overflow-hidden">
+          <section id="needs-attention" className="scroll-mt-20 bg-card border border-border rounded-[20px] shadow-card overflow-hidden">
             <div className="px-5 py-4 flex items-center gap-3 border-b border-border">
               <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Bell className="h-4 w-4 text-primary" />
