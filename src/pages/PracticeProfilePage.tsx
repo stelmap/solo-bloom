@@ -61,6 +61,7 @@ const COPY: Record<Lang, Record<string, string>> = {
     save: "Save profile", saving: "Saving…", saved: "Saved",
     incomplete: "Complete the highlighted fields to finish setup.",
     back: "Settings",
+    requiredNote: "* Required fields", saveAndGo: "Save and go to calendar", publicInfo: "Clients see on your booking page: practice name, therapist name, email, emblem and your free slots. Phone, tax ID and address are not shown.", required: "Required field", invalidPhone: "Enter a valid phone number, e.g. +380 50 123 4567", invalidTaxId: "Use letters, digits, spaces, \"-\", \"/\" or \".\" (2–40 characters)", invalidEmail: "Enter a valid email", setupTitle: "Welcome! Set up your practice", setupSubtitle: "Fill in the required fields — then you can start working in the calendar.",
   },
   uk: {
     title: "Профіль практики",
@@ -92,6 +93,7 @@ const COPY: Record<Lang, Record<string, string>> = {
     save: "Зберегти профіль", saving: "Збереження…", saved: "Збережено",
     incomplete: "Заповніть підсвічені поля, щоб завершити налаштування.",
     back: "Налаштування",
+    requiredNote: "* Обов’язкові поля", saveAndGo: "Зберегти та перейти до календаря", publicInfo: "Клієнти бачать на сторінці запису: назву практики, ім’я терапевта, email, емблему та вільні слоти. Телефон, податковий номер і адреса не показуються.", required: "Обов’язкове поле", invalidPhone: "Введіть коректний номер, напр. +380 50 123 4567", invalidTaxId: "Лише літери, цифри, пробіли, «-», «/» або «.» (2–40 символів)", invalidEmail: "Введіть коректний email", setupTitle: "Вітаємо! Налаштуйте вашу практику", setupSubtitle: "Заповніть обов’язкові поля — після цього можна працювати з календарем.",
   },
   ru: {
     title: "Профиль практики",
@@ -123,6 +125,7 @@ const COPY: Record<Lang, Record<string, string>> = {
     save: "Сохранить профиль", saving: "Сохранение…", saved: "Сохранено",
     incomplete: "Заполните подсвеченные поля, чтобы завершить настройку.",
     back: "Настройки",
+    requiredNote: "* Обязательные поля", saveAndGo: "Сохранить и перейти к календарю", publicInfo: "Клиенты видят на странице записи: название практики, имя терапевта, email, эмблему и свободные слоты. Телефон, налоговый номер и адрес не показываются.", required: "Обязательное поле", invalidPhone: "Введите корректный номер, напр. +380 50 123 4567", invalidTaxId: "Только буквы, цифры, пробелы, «-», «/» или «.» (2–40 символов)", invalidEmail: "Введите корректный email", setupTitle: "Добро пожаловать! Настройте вашу практику", setupSubtitle: "Заполните обязательные поля — после этого можно работать с календарём.",
   },
   fr: {
     title: "Profil du cabinet",
@@ -154,6 +157,7 @@ const COPY: Record<Lang, Record<string, string>> = {
     save: "Enregistrer le profil", saving: "Enregistrement…", saved: "Enregistré",
     incomplete: "Complétez les champs surlignés pour terminer la configuration.",
     back: "Paramètres",
+    requiredNote: "* Champs obligatoires", saveAndGo: "Enregistrer et aller au calendrier", publicInfo: "Vos clients voient sur la page de réservation : nom du cabinet, nom du thérapeute, email, emblème et créneaux libres. Téléphone, numéro fiscal et adresse ne sont pas affichés.", required: "Champ obligatoire", invalidPhone: "Saisissez un numéro valide, ex. +33 6 12 34 56 78", invalidTaxId: "Lettres, chiffres, espaces, « - », « / » ou « . » (2 à 40 caractères)", invalidEmail: "Saisissez un email valide", setupTitle: "Bienvenue ! Configurez votre cabinet", setupSubtitle: "Remplissez les champs obligatoires, puis commencez à travailler dans le calendrier.",
   },
   pl: {
     title: "Profil praktyki",
@@ -185,6 +189,7 @@ const COPY: Record<Lang, Record<string, string>> = {
     save: "Zapisz profil", saving: "Zapisywanie…", saved: "Zapisano",
     incomplete: "Uzupełnij podświetlone pola, aby zakończyć konfigurację.",
     back: "Ustawienia",
+    requiredNote: "* Pola wymagane", saveAndGo: "Zapisz i przejdź do kalendarza", publicInfo: "Klienci widzą na stronie rezerwacji: nazwę praktyki, imię terapeuty, email, emblemat i wolne terminy. Telefon, NIP i adres nie są pokazywane.", required: "Pole wymagane", invalidPhone: "Wpisz poprawny numer, np. +48 512 345 678", invalidTaxId: "Tylko litery, cyfry, spacje, „-”, „/” lub „.” (2–40 znaków)", invalidEmail: "Wpisz poprawny email", setupTitle: "Witamy! Skonfiguruj swoją praktykę", setupSubtitle: "Uzupełnij pola wymagane — potem możesz pracować w kalendarzu.",
   },
 };
 
@@ -310,7 +315,18 @@ export default function PracticeProfilePage() {
   const handle = ((link as any)?.slug as string) || (link as any)?.token || "";
   const url = handle ? `${window.location.origin}/book/${handle}` : "";
 
-  const missing = (key: keyof typeof form) => touched && !String(form[key] || "").trim();
+  const setupMode = (profile as any)?.profile_setup_completed === false;
+  const REQUIRED: (keyof typeof form)[] = ["business_name", "full_name", "public_email", "language", "timezone"];
+  const fieldError = (key: keyof typeof form): string | null => {
+    const v = String(form[key] || "").trim();
+    if (REQUIRED.includes(key) && !v) return L.required;
+    if (!v) return null;
+    if (key === "public_email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return L.invalidEmail;
+    if (key === "phone" && !/^\+?[0-9 ()\-.]{6,25}$/.test(v)) return L.invalidPhone;
+    if (key === "business_id" && !/^[A-Za-z0-9 /\-.]{2,40}$/.test(v)) return L.invalidTaxId;
+    return null;
+  };
+  const missing = (key: keyof typeof form) => touched && !!fieldError(key);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -347,6 +363,11 @@ export default function PracticeProfilePage() {
   const handleSave = async () => {
     if (!user?.id || saving) return;
     setTouched(true);
+    const firstBad = (Object.keys(form) as (keyof typeof form)[]).find((k) => fieldError(k));
+    if (firstBad || !(profile as any)?.currency) {
+      toast({ title: L.incomplete, variant: "destructive" });
+      return;
+    }
     const availError = availabilityRef.current?.validate() ?? null;
     if (availError) {
       toast({ title: availError, variant: "destructive" });
@@ -356,6 +377,9 @@ export default function PracticeProfilePage() {
     try {
       await updateProfile.mutateAsync({
         ...form,
+        phone: form.phone.trim() || null,
+        business_id: form.business_id.trim() || null,
+        business_address: form.business_address.trim() || null,
         avatar_url: form.avatar_url || null,
       } as any);
 
@@ -383,6 +407,16 @@ export default function PracticeProfilePage() {
       qc.invalidateQueries({ queryKey: ["booking_link", user.id] });
       await qc.invalidateQueries({ queryKey: ["profile"] });
       toast({ title: L.saved });
+      if (setupMode) {
+        const { error: doneErr } = await supabase
+          .from("profiles")
+          .update({ profile_setup_completed: true } as any)
+          .eq("user_id", user.id);
+        if (doneErr) throw doneErr;
+        await qc.invalidateQueries({ queryKey: ["profile"] });
+        navigate("/calendar", { replace: true });
+        return;
+      }
       // Onboarding: after a successful save bring the user back to the calendar
       // with the setup guide open on the next incomplete step.
       if (onboardingActive) {
@@ -398,20 +432,22 @@ export default function PracticeProfilePage() {
 
   const field = (key: keyof typeof form, label: string, placeholder?: string, type = "text") => (
     <div className="space-y-1.5">
-      <Label className="font-semibold text-sm">{label}</Label>
+      <Label className="font-semibold text-sm">{label}{REQUIRED.includes(key) && <span className="text-destructive"> *</span>}</Label>
       <Input
         type={type}
         value={form[key] as string}
         placeholder={placeholder}
         onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+        aria-invalid={missing(key) || undefined}
         className={cn("h-10", missing(key) && "border-destructive")}
       />
+      {missing(key) && <p className="text-xs text-destructive">{fieldError(key)}</p>}
     </div>
   );
 
   const saveButton = (
-    <Button onClick={handleSave} disabled={saving || !dirty || updateProfile.isPending}>
-      {saving ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />{L.saving}</>) : L.save}
+    <Button onClick={handleSave} disabled={saving || (!dirty && !setupMode) || updateProfile.isPending}>
+      {saving ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />{L.saving}</>) : setupMode ? L.saveAndGo : L.save}
     </Button>
   );
 
@@ -420,11 +456,14 @@ export default function PracticeProfilePage() {
       <div className="space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <Link to="/settings" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-1">
-              <ArrowLeft className="h-4 w-4 mr-1" /> {L.back}
-            </Link>
-            <h1 className="text-2xl font-bold text-foreground">{L.title}</h1>
-            <p className="text-muted-foreground mt-1 text-sm">{L.subtitle}</p>
+            {!setupMode && (
+              <Link to="/settings" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-1">
+                <ArrowLeft className="h-4 w-4 mr-1" /> {L.back}
+              </Link>
+            )}
+            <h1 className="text-2xl font-bold text-foreground">{setupMode ? L.setupTitle : L.title}</h1>
+            <p className="text-muted-foreground mt-1 text-sm">{setupMode ? L.setupSubtitle : L.subtitle}</p>
+            <p className="text-xs text-muted-foreground mt-1"><span className="text-destructive">*</span> {L.requiredNote.replace(/^\*\s*/, "")}</p>
           </div>
           {saveButton}
         </div>
@@ -475,9 +514,9 @@ export default function PracticeProfilePage() {
             <div className="space-y-3">
               <h3 className="font-semibold text-foreground text-sm">{L.regional}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <CurrencySelect label={L.currency} savedLabel={L.saved} />
+                <CurrencySelect label={`${L.currency} *`} savedLabel={L.saved} />
                 <div className="space-y-1.5">
-                  <Label className="font-semibold text-sm">{L.language}</Label>
+                  <Label className="font-semibold text-sm">{L.language}<span className="text-destructive"> *</span></Label>
                   <Select value={form.language} onValueChange={(v) => setForm((f) => ({ ...f, language: v }))}>
                     <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -490,7 +529,7 @@ export default function PracticeProfilePage() {
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="font-semibold text-sm">{L.timezone}</Label>
+                  <Label className="font-semibold text-sm">{L.timezone}<span className="text-destructive"> *</span></Label>
                   {tzOptions.length > 0 ? (
                     <Select value={form.timezone} onValueChange={(v) => setForm((f) => ({ ...f, timezone: v }))}>
                       <SelectTrigger className={cn("h-10", missing("timezone") && "border-destructive")}><SelectValue /></SelectTrigger>
@@ -509,6 +548,7 @@ export default function PracticeProfilePage() {
           {/* RIGHT — public booking */}
           <div className="bg-card rounded-xl border border-border p-5 space-y-4">
             <h2 className="font-semibold text-foreground">{L.booking}</h2>
+            <p className="text-xs text-muted-foreground rounded-lg bg-muted/50 p-3">{L.publicInfo}</p>
 
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -556,9 +596,10 @@ export default function PracticeProfilePage() {
           </div>
         </div>
 
-        {touched && Object.entries(form).some(([k, v]) =>
-          ["business_name", "full_name", "public_email", "phone", "timezone"].includes(k) && !String(v || "").trim()
-        ) && <p className="text-xs text-destructive">{L.incomplete}</p>}
+        {touched && (Object.keys(form) as (keyof typeof form)[]).some((k) => fieldError(k)) && (
+          <p className="text-xs text-destructive">{L.incomplete}</p>
+        )}
+        {setupMode && <div className="flex justify-end">{saveButton}</div>}
       </div>
     </AppLayout>
   );
