@@ -1,3 +1,4 @@
+import { BackToCalendar } from "@/components/BackToCalendar";
 import { AppLayout } from "@/components/AppLayout";
 import { ListSkeleton } from "@/components/ListSkeleton";
 import { Button } from "@/components/ui/button";
@@ -270,6 +271,7 @@ export default function IncomePage() {
         )}
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
+            <BackToCalendar />
             <h1 className="text-3xl font-bold text-foreground">{IP.title}</h1>
             <p className="text-muted-foreground mt-1">{IP.subtitle}</p>
           </div>

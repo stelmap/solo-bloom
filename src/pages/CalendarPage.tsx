@@ -48,6 +48,7 @@ import { Badge } from "@/components/ui/badge";
 import { CALENDAR_BLOCK_BASE, CALENDAR_BLOCK_REQUEST, CALENDAR_CHIP_BASE } from "@/lib/calendarBlockStyles";
 import { CalendarEventCard } from "@/components/calendar/CalendarEventCard";
 import { isSessionInProgress, nowBadgeLabel } from "@/lib/sessionNow";
+import { saveCalendarReturn, takeCalendarReturn } from "@/lib/calendarReturn";
 import { getSessionStateStyle, SESSION_STATE_STYLES, SESSION_STATE_ORDER } from "@/lib/sessionStatusColors";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
@@ -450,11 +451,19 @@ export default function CalendarPage() {
   // Start the viewport at the working day (fallback 08:00) — the user can still
   // scroll up to 00:00 and down to 24:00.
   const didInitialScroll = useRef(false);
+  const returnState = useRef(takeCalendarReturn());
+  useEffect(() => {
+    const r = returnState.current;
+    if (!r) return;
+    const d = new Date(r.date);
+    if (!isNaN(d.getTime())) setCurrentDate(d);
+    if (r.filters && typeof r.filters === "object") setFilters({ ...initialFilters, ...(r.filters as any) });
+  }, []);
   useEffect(() => {
     const el = gridScrollRef.current;
     if (!el || didInitialScroll.current || rowHeight <= 0) return;
     const firstHour = Math.max(0, Math.min(startHour, 8));
-    el.scrollTop = firstHour * rowHeight;
+    el.scrollTop = returnState.current ? returnState.current.scrollTop : firstHour * rowHeight;
     didInitialScroll.current = true;
   }, [rowHeight, startHour]);
 
@@ -1730,7 +1739,15 @@ export default function CalendarPage() {
   // Live clock for the "now" highlight; scheduled_at is an absolute instant,
   // so comparing to Date.now() is correct in any calendar time zone.
   const nowLabel = nowBadgeLabel(lang);
-  const myPaymentsLabel = ({ en: "My payments", uk: "Мої оплати", ru: "Мои оплаты", pl: "Moje płatności", fr: "Mes paiements" } as Record<string, string>)[lang] ?? "My payments";
+  const paymentsLabel = t("nav.payments");
+  const goFromCalendar = (path: string) => {
+    saveCalendarReturn({
+      date: currentDate.toISOString(),
+      filters,
+      scrollTop: gridScrollRef.current?.scrollTop ?? 0,
+    });
+    navigate(path, { state: { fromCalendar: true } });
+  };
   const [liveNowMs, setLiveNowMs] = useState(() => Date.now());
   useEffect(() => {
     const id = window.setInterval(() => setLiveNowMs(Date.now()), 15_000);
@@ -1925,6 +1942,7 @@ export default function CalendarPage() {
 
 
         <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-nowrap items-center gap-2 shrink-0">
           {/* Period navigation */}
           <div className="flex items-center gap-1 rounded-xl border border-border bg-card p-1">
             <Button
@@ -1949,15 +1967,6 @@ export default function CalendarPage() {
           <Button variant="outline" className="h-10 rounded-xl" onClick={() => setCurrentDate(new Date())}>
             {t("calendar.today") || "Today"}
           </Button>
-          <Button variant="outline" className="h-10 rounded-xl whitespace-nowrap shrink-0" aria-label={t("dashm.needsAttention")} onClick={() => navigate("/dashboard#needs-attention")}>
-            <AlertTriangle className="h-4 w-4 sm:mr-1.5 text-warning" />
-            <span className="hidden sm:inline">{t("dashm.needsAttention")}</span>
-          </Button>
-          <Button variant="outline" className="h-10 rounded-xl whitespace-nowrap shrink-0" aria-label={myPaymentsLabel} onClick={() => navigate("/payments")}>
-            <Wallet className="h-4 w-4 sm:mr-1.5" />
-            <span className="hidden sm:inline">{myPaymentsLabel}</span>
-          </Button>
-
           {!isMobile && (
             <div role="tablist" aria-label="Calendar view" className="flex items-center gap-1 rounded-xl border border-border bg-card p-1">
               {(["day", "week", "month"] as CalendarView[]).map(v => (
@@ -1977,7 +1986,41 @@ export default function CalendarPage() {
             </div>
           )}
 
-          <div className="flex items-center gap-2 ml-auto">
+          </div>
+
+          <div className="flex flex-nowrap items-center gap-2 ml-auto shrink-0">
+            {/* Quick jumps */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline" size="icon"
+                  className={cn("h-10 w-10 rounded-xl relative", needsAttentionItems.length > 0 && "border-primary/50 text-primary")}
+                  aria-label={t("dashm.needsAttention")}
+                  onClick={() => goFromCalendar("/dashboard#needs-attention")}
+                >
+                  <AlertTriangle className="h-4 w-4" />
+                  {needsAttentionItems.length > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                      {needsAttentionItems.length}
+                    </span>
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t("dashm.needsAttention")}</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline" size="icon" className="h-10 w-10 rounded-xl"
+                  aria-label={paymentsLabel}
+                  onClick={() => goFromCalendar("/payments")}
+                >
+                  <Wallet className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{paymentsLabel}</TooltipContent>
+            </Tooltip>
+
             {/* Filters */}
             <Popover>
               <Tooltip>
