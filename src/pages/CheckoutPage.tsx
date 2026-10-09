@@ -76,7 +76,7 @@ export default function CheckoutPage() {
           <div className="mt-4 space-y-2">
             <Button className="w-full" size="lg" onClick={() => void open()}>{t("checkout.retry")}</Button>
             <Button className="w-full" size="lg" variant="outline" onClick={() => navigate("/plans")}>
-              {t("plans.title") || "Plans"}
+              {t("common.back")}
             </Button>
             <Button className="w-full" size="lg" variant="ghost" onClick={contactSupport}>
               <LifeBuoy className="h-4 w-4" aria-hidden="true" />
