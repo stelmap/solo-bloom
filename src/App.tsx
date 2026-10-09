@@ -47,6 +47,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
 // Lazy loaded (behind auth or rarely visited)
+const RedirectKeepQuery = ({ to }: { to: string }) => { const l = useLocation(); return <Navigate to={to + l.search + l.hash} replace />; };
 const AuthPage = lazyWithReload(() => import("./pages/AuthPage"));
 const ResetPasswordPage = lazyWithReload(() => import("./pages/ResetPasswordPage"));
 const Dashboard = lazyWithReload(() => import("./pages/Dashboard"));
@@ -166,13 +167,13 @@ const App = () => {
                 <Route path="/finances/overview" element={<ProtectedRoute><FinancialOverviewPage /></ProtectedRoute>} />
                 <Route path="/finances/cost-efficiency" element={<ProtectedRoute><CostEfficiencyPage /></ProtectedRoute>} />
                 <Route path="/payments" element={<ProtectedRoute><IncomePage /></ProtectedRoute>} />
-                <Route path="/finances/income" element={<Navigate to="/payments" replace />} />
+                <Route path="/finances/income" element={<RedirectKeepQuery to="/payments" />} />
                 <Route path="/finances/expenses" element={<ProtectedRoute><ExpensesPage /></ProtectedRoute>} />
                 <Route path="/finances/breakeven" element={<ProtectedRoute><BreakevenPage /></ProtectedRoute>} />
                 <Route path="/finances/payment-audit" element={<ProtectedRoute><PaymentAuditPage /></ProtectedRoute>} />
 
                 {/* Backwards-compatible redirects from old top-level routes */}
-                <Route path="/income" element={<Navigate to="/payments" replace />} />
+                <Route path="/income" element={<RedirectKeepQuery to="/payments" />} />
                 <Route path="/expenses" element={<Navigate to="/finances/expenses" replace />} />
                 <Route path="/breakeven" element={<Navigate to="/finances/breakeven" replace />} />
                 <Route path="/financial" element={<Navigate to="/finances" replace />} />

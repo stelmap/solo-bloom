@@ -310,7 +310,7 @@ export const INCOME_PAGE_COPY: Record<IncomeFlowLang, IncomePageCopy> = {
     noPending: "Aucun paiement attendu",
   },
   pl: {
-    title: "Przychód",
+    title: "Płatności",
     subtitle: "Zobacz, co otrzymano i co klienci muszą jeszcze zapłacić",
     export: "Eksport",
     addIncome: "Dodaj przychód",
