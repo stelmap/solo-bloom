@@ -1,5 +1,6 @@
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
+import { BackToCalendar } from "@/components/BackToCalendar";
 import { useDashboardStats, useClients, useAppointments } from "@/hooks/useData";
 import { useEffect, useMemo } from "react";
 import { track } from "@/lib/analytics";
@@ -59,6 +60,7 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="space-y-5">
+        <BackToCalendar />
         <BackButton />
         <UnifiedDashboard
           stats={stats}
