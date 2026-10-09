@@ -7,7 +7,6 @@ import { PaddleMigrationBanner } from "./PaddleMigrationBanner";
 import { useSoundReminder } from "@/hooks/useSoundReminder";
 import { useTaxAccrualSync } from "@/hooks/useData";
 import { track } from "@/lib/analytics";
-import { OnboardingWidget } from "@/components/onboarding/OnboardingWidget";
 
 const PRODUCT_ENTERED_KEY = "__product_entered_at";
 
@@ -42,7 +41,6 @@ export function AppLayout({ children, fluid = false }: { children: React.ReactNo
             {children}
           </div>
         </main>
-        <OnboardingWidget />
       </div>
     );
   }
