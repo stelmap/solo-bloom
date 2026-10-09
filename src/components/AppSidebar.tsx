@@ -1,3 +1,4 @@
+import { SUPERVISION_UI_ENABLED } from "@/lib/featureVisibility";
 import { BrandName } from "@/components/BrandName";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -51,7 +52,7 @@ const navItems: NavItem[] = [
       { icon: Settings, labelKey: "nav.financeSettings", path: "/finances/settings" },
     ],
   },
-  { kind: "leaf", icon: ClipboardList, labelKey: "nav.supervision", path: "/supervision" },
+  ...(SUPERVISION_UI_ENABLED ? [{ kind: "leaf" as const, icon: ClipboardList, labelKey: "nav.supervision", path: "/supervision" }] : []),
   { kind: "leaf", icon: Settings, labelKey: "nav.settings", path: "/settings" },
 ];
 

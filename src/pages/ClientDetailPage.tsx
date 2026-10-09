@@ -23,6 +23,7 @@ import {
   useServices,
 } from "@/hooks/useData";
 import { useSupervisions, useSupervisionCount } from "@/hooks/useSupervisions";
+import { SUPERVISION_UI_ENABLED } from "@/lib/featureVisibility";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, Phone, Mail, Send, Calendar, Pencil, Trash2, Plus, Paperclip, FileText, Image, Download, X, Bell, DollarSign, History, CreditCard, ClipboardList, ShieldCheck, Archive, ArchiveRestore,
@@ -580,7 +581,7 @@ export default function ClientDetailPage() {
   );
 
   const statCards = (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+    <div className={cn("grid grid-cols-2 sm:grid-cols-3 gap-4", SUPERVISION_UI_ENABLED ? "lg:grid-cols-6" : "lg:grid-cols-5")}>
       {([
         { key: "all", value: totalSessions, label: t("clientDetail.totalSessions"), color: "text-foreground", border: "border-border" },
         { key: "prepaid", value: prepaidSessions, label: t("clientDetail.prepaidSessions"), color: prepaidSessions > 0 ? "text-success" : "text-muted-foreground", border: "border-success/30", sub: prepaidSessions > 0 ? `${cs}${prepaidAmount.toFixed(0)}` : undefined },
@@ -588,7 +589,7 @@ export default function ClientDetailPage() {
         { key: "awaiting", value: awaitingSessions, label: t("clientDetail.pendingPayments"), color: "text-warning", border: "border-border" },
         { key: "cancelled", value: cancelledSessions, label: t("clientDetail.cancelled"), color: "text-destructive", border: "border-border" },
         { key: "supervision", value: supervisionCount, label: t("clientDetail.supervisionSessions"), color: "text-primary", border: "border-primary/20", icon: <ClipboardList className="h-4 w-4 text-primary" /> },
-      ] as Array<{ key: StatFilter; value: number; label: string; color: string; border: string; icon?: any; sub?: string }>).map((card) => {
+      ] as Array<{ key: StatFilter; value: number; label: string; color: string; border: string; icon?: any; sub?: string }>.filter((card) => SUPERVISION_UI_ENABLED || card.key !== "supervision").map((card) => {
         const active = statFilter === card.key;
         return (
           <button
@@ -989,6 +990,7 @@ export default function ClientDetailPage() {
               </div>
             )}
 
+            {SUPERVISION_UI_ENABLED && (
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
                 <ClipboardList className="h-4 w-4 text-primary" /> {t("supervision.history")}
@@ -1010,6 +1012,7 @@ export default function ClientDetailPage() {
                 </div>
               )}
             </div>
+            )}
           </TabsContent>
 
           {/* ---------- Files ---------- */}
