@@ -35,6 +35,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (
     profile &&
     (profile as any).profile_setup_completed === false &&
+    !(profile as any).onboarding_state?.setupSkipped &&
     !SETUP_EXEMPT.some((p) => location.pathname.startsWith(p))
   ) {
     return <Navigate to="/settings/practice?setup=1" replace />;

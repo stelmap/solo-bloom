@@ -21,7 +21,7 @@ import { CurrencySelect } from "@/components/settings/CurrencySelect";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { AppLanguage } from "@/i18n/translations";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ImageIcon, Loader2, Copy, ExternalLink } from "lucide-react";
+import { ArrowLeft, ImageIcon, Loader2, Copy, ExternalLink, X } from "lucide-react";
 import { describeError } from "@/lib/errorMessages";
 
 type Lang = "en" | "uk" | "ru" | "fr" | "pl";
@@ -60,7 +60,7 @@ const COPY: Record<Lang, Record<string, string>> = {
     regenerated: "Link regenerated. The old link no longer works.",
     save: "Save profile", saving: "Saving…", saved: "Saved",
     incomplete: "Complete the highlighted fields to finish setup.",
-    back: "Settings",
+    back: "Settings", close: "Close",
     requiredNote: "* Required fields", saveAndGo: "Save and go to calendar", publicInfo: "Clients see on your booking page: practice name, therapist name, email, emblem and your free slots. Phone, tax ID and address are not shown.", required: "Required field", invalidPhone: "Enter a valid phone number, e.g. +380 50 123 4567", invalidTaxId: "Use letters, digits, spaces, \"-\", \"/\" or \".\" (2–40 characters)", invalidEmail: "Enter a valid email", setupTitle: "Welcome! Set up your practice", setupSubtitle: "Fill in the required fields — then you can start working in the calendar.",
   },
   uk: {
@@ -92,7 +92,7 @@ const COPY: Record<Lang, Record<string, string>> = {
     regenerated: "Посилання оновлено. Старе більше не працює.",
     save: "Зберегти профіль", saving: "Збереження…", saved: "Збережено",
     incomplete: "Заповніть підсвічені поля, щоб завершити налаштування.",
-    back: "Налаштування",
+    back: "Налаштування", close: "Закрити",
     requiredNote: "* Обов’язкові поля", saveAndGo: "Зберегти та перейти до календаря", publicInfo: "Клієнти бачать на сторінці запису: назву практики, ім’я терапевта, email, емблему та вільні слоти. Телефон, податковий номер і адреса не показуються.", required: "Обов’язкове поле", invalidPhone: "Введіть коректний номер, напр. +380 50 123 4567", invalidTaxId: "Лише літери, цифри, пробіли, «-», «/» або «.» (2–40 символів)", invalidEmail: "Введіть коректний email", setupTitle: "Вітаємо! Налаштуйте вашу практику", setupSubtitle: "Заповніть обов’язкові поля — після цього можна працювати з календарем.",
   },
   ru: {
@@ -124,7 +124,7 @@ const COPY: Record<Lang, Record<string, string>> = {
     regenerated: "Ссылка обновлена. Старая больше не работает.",
     save: "Сохранить профиль", saving: "Сохранение…", saved: "Сохранено",
     incomplete: "Заполните подсвеченные поля, чтобы завершить настройку.",
-    back: "Настройки",
+    back: "Настройки", close: "Закрыть",
     requiredNote: "* Обязательные поля", saveAndGo: "Сохранить и перейти к календарю", publicInfo: "Клиенты видят на странице записи: название практики, имя терапевта, email, эмблему и свободные слоты. Телефон, налоговый номер и адрес не показываются.", required: "Обязательное поле", invalidPhone: "Введите корректный номер, напр. +380 50 123 4567", invalidTaxId: "Только буквы, цифры, пробелы, «-», «/» или «.» (2–40 символов)", invalidEmail: "Введите корректный email", setupTitle: "Добро пожаловать! Настройте вашу практику", setupSubtitle: "Заполните обязательные поля — после этого можно работать с календарём.",
   },
   fr: {
@@ -156,7 +156,7 @@ const COPY: Record<Lang, Record<string, string>> = {
     regenerated: "Lien régénéré. L'ancien ne fonctionne plus.",
     save: "Enregistrer le profil", saving: "Enregistrement…", saved: "Enregistré",
     incomplete: "Complétez les champs surlignés pour terminer la configuration.",
-    back: "Paramètres",
+    back: "Paramètres", close: "Fermer",
     requiredNote: "* Champs obligatoires", saveAndGo: "Enregistrer et aller au calendrier", publicInfo: "Vos clients voient sur la page de réservation : nom du cabinet, nom du thérapeute, email, emblème et créneaux libres. Téléphone, numéro fiscal et adresse ne sont pas affichés.", required: "Champ obligatoire", invalidPhone: "Saisissez un numéro valide, ex. +33 6 12 34 56 78", invalidTaxId: "Lettres, chiffres, espaces, « - », « / » ou « . » (2 à 40 caractères)", invalidEmail: "Saisissez un email valide", setupTitle: "Bienvenue ! Configurez votre cabinet", setupSubtitle: "Remplissez les champs obligatoires, puis commencez à travailler dans le calendrier.",
   },
   pl: {
@@ -188,7 +188,7 @@ const COPY: Record<Lang, Record<string, string>> = {
     regenerated: "Link wygenerowany ponownie. Stary już nie działa.",
     save: "Zapisz profil", saving: "Zapisywanie…", saved: "Zapisano",
     incomplete: "Uzupełnij podświetlone pola, aby zakończyć konfigurację.",
-    back: "Ustawienia",
+    back: "Ustawienia", close: "Zamknij",
     requiredNote: "* Pola wymagane", saveAndGo: "Zapisz i przejdź do kalendarza", publicInfo: "Klienci widzą na stronie rezerwacji: nazwę praktyki, imię terapeuty, email, emblemat i wolne terminy. Telefon, NIP i adres nie są pokazywane.", required: "Pole wymagane", invalidPhone: "Wpisz poprawny numer, np. +48 512 345 678", invalidTaxId: "Tylko litery, cyfry, spacje, „-”, „/” lub „.” (2–40 znaków)", invalidEmail: "Wpisz poprawny email", setupTitle: "Witamy! Skonfiguruj swoją praktykę", setupSubtitle: "Uzupełnij pola wymagane — potem możesz pracować w kalendarzu.",
   },
 };
@@ -315,7 +315,16 @@ export default function PracticeProfilePage() {
   const handle = ((link as any)?.slug as string) || (link as any)?.token || "";
   const url = handle ? `${window.location.origin}/book/${handle}` : "";
 
-  const setupMode = (profile as any)?.profile_setup_completed === false;
+  const setupMode = (profile as any)?.profile_setup_completed === false && !(profile as any)?.onboarding_state?.setupSkipped;
+  const closeSetup = async () => {
+    // Leave without saving the form; only remember that setup was closed.
+    if (user?.id) {
+      const state = ((profile as any)?.onboarding_state ?? {}) as Record<string, unknown>;
+      await supabase.from("profiles").update({ onboarding_state: { ...state, setupSkipped: true } } as any).eq("user_id", user.id);
+      await qc.invalidateQueries({ queryKey: ["profile"] });
+    }
+    navigate("/calendar", { replace: true });
+  };
   const REQUIRED: (keyof typeof form)[] = ["business_name", "full_name", "public_email", "language", "timezone"];
   const fieldError = (key: keyof typeof form): string | null => {
     const v = String(form[key] || "").trim();
@@ -465,7 +474,14 @@ export default function PracticeProfilePage() {
             <p className="text-muted-foreground mt-1 text-sm">{setupMode ? L.setupSubtitle : L.subtitle}</p>
             <p className="text-xs text-muted-foreground mt-1"><span className="text-destructive">*</span> {L.requiredNote.replace(/^\*\s*/, "")}</p>
           </div>
-          {saveButton}
+          <div className="flex items-center gap-2">
+            {setupMode && (
+              <Button variant="outline" onClick={closeSetup} disabled={saving}>
+                <X className="h-4 w-4 mr-1" />{L.close}
+              </Button>
+            )}
+            {saveButton}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">

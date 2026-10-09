@@ -41,6 +41,8 @@ export type OnboardingState = {
   achieved?: Partial<Record<OnboardingStepKey, boolean>>;
   minimized?: boolean;
   dismissed?: boolean;
+  /** Initial practice setup was closed without saving — never forced again. */
+  setupSkipped?: boolean;
 };
 
 export function useOnboardingState() {
