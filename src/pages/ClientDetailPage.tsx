@@ -1,3 +1,4 @@
+import { PrepaidSessionsCard } from "@/components/clients/PrepaidSessionsCard";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { SessionDetailSheet } from "@/components/SessionDetailSheet";
@@ -989,6 +990,8 @@ export default function ClientDetailPage() {
                 </div>
               </div>
             )}
+
+            {client && <PrepaidSessionsCard client={client} />}
 
             {SUPERVISION_UI_ENABLED && (
             <div className="bg-card rounded-xl border border-border p-5 space-y-4">
