@@ -1,9 +1,11 @@
 import { useMemo } from "react";
-import { CalendarDays, Clock, FileSignature, Inbox, Receipt, type LucideIcon } from "lucide-react";
+import { BatteryLow, BatteryWarning, CalendarDays, Clock, FileSignature, Inbox, Receipt, type LucideIcon } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useAppointments, useClients, useDashboardStats } from "@/hooks/useData";
 import { useBookingRequests } from "@/hooks/useBookingInbox";
+import { usePrepaidSummaries } from "@/hooks/usePrepaidSessions";
+import { prepaidCopy } from "@/lib/prepaidSessions";
 
 const PAID_STATUSES = new Set(["paid_now", "paid_in_advance", "paid_from_prepayment"]);
 
@@ -36,7 +38,9 @@ export function currentMonthKey(offset = 0) {
  * so counts and items always match.
  */
 export function useNeedsAttention(monthKey: string = currentMonthKey()) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const PP = prepaidCopy(lang);
+  const { summaries: prepaid } = usePrepaidSummaries();
   const { symbol: cs } = useCurrency();
   const { data: stats } = useDashboardStats();
   const { data: allAppointments = [] } = useAppointments();
@@ -80,6 +84,19 @@ export function useNeedsAttention(monthKey: string = currentMonthKey()) {
     return { cancelled, lostIncome, unpaid, unpaidTotal };
   }, [allAppointments, monthKey]);
 
+  const prepaidLists = useMemo(() => {
+    const low: { id: string; name: string; balance: number }[] = [];
+    const empty: { id: string; name: string; balance: number }[] = [];
+    for (const c of allClients as any[]) {
+      if (!c.prepaid_sessions_mode || (c.status ?? "active") !== "active") continue;
+      const sm = prepaid.get(c.id);
+      if (!sm || !sm.hasTopups) continue;
+      if (sm.status === "low") low.push({ id: c.id, name: c.name, balance: sm.balance });
+      else if (sm.status === "empty") empty.push({ id: c.id, name: c.name, balance: sm.balance });
+    }
+    return { low, empty };
+  }, [allClients, prepaid]);
+
   const totalDebt = Number((stats as any)?.outstandingBalance ?? 0);
 
   const items: AttentionItem[] = [
@@ -114,6 +131,26 @@ export function useNeedsAttention(monthKey: string = currentMonthKey()) {
       path: "/payments?tab=pending&range=all",
     },
     {
+      key: "prepaidLow",
+      icon: BatteryWarning,
+      tone: "warning" as const,
+      show: prepaidLists.low.length > 0,
+      title: `${PP.low}: ${prepaidLists.low.length}`,
+      sub: prepaidLists.low.map((c) => `${c.name} (${c.balance})`).slice(0, 3).join(", "),
+      widget: "prepaid_low",
+      path: "/clients?filter=prepaidLow",
+    },
+    {
+      key: "prepaidEmpty",
+      icon: BatteryLow,
+      tone: "danger" as const,
+      show: prepaidLists.empty.length > 0,
+      title: `${PP.empty}: ${prepaidLists.empty.length}`,
+      sub: prepaidLists.empty.map((c) => c.name).slice(0, 3).join(", "),
+      widget: "prepaid_empty",
+      path: "/clients?filter=prepaidEmpty",
+    },
+    {
       key: "noNext",
       icon: CalendarDays,
       tone: "info" as const,
@@ -135,5 +172,5 @@ export function useNeedsAttention(monthKey: string = currentMonthKey()) {
     },
   ].filter((a) => a.show).map(({ show, ...rest }) => rest);
 
-  return { items, count: items.length, pendingRequests, unpaid: derived.unpaid, unpaidTotal: derived.unpaidTotal };
+  return { items, count: items.length, prepaidLists, pendingRequests, unpaid: derived.unpaid, unpaidTotal: derived.unpaidTotal };
 }

@@ -1,3 +1,6 @@
+import { usePrepaidSummaries } from "@/hooks/usePrepaidSessions";
+import { prepaidCopy, prepaidStatus } from "@/lib/prepaidSessions";
+import { invalidatePrepaid } from "@/components/clients/PrepaidSessionsCard";
 import { PaymentMethodPicker } from "@/components/payments/PaymentMethodPicker";
 import { PaymentMethodCards } from "@/components/payments/PaymentMethodCards";
 import { pmCopy } from "@/components/payments/paymentMethodsCopy";
@@ -61,6 +64,9 @@ const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sa
 
 export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12h = false }: SessionDetailSheetProps) {
   const navigate = useNavigate();
+  const { summaries: prepaidSummaries } = usePrepaidSummaries();
+  const prepaidQc = useQueryClient();
+  const [prepaidBusy, setPrepaidBusy] = useState(false);
   const goTo = (path: string) => { onOpenChange(false); setTimeout(() => navigate(path), 50); };
 
   const { t, lang } = useLanguage();
@@ -342,6 +348,33 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
   // Determine if client requires confirmation
   const client = clients.find(c => c.id === apt.client_id);
+  const PP = prepaidCopy(lang);
+  const prepaidMode = !!(client as any)?.prepaid_sessions_mode && !apt.group_session_id;
+  const prepaidLeft = prepaidSummaries.get(apt.client_id ?? "")?.balance ?? 0;
+  const completeFromPrepaidSessions = async () => {
+    if (prepaidBusy) return;
+    setPrepaidBusy(true);
+    try {
+      if (notesDirty) await updateAppointment.mutateAsync({ id: apt.id, notes } as any);
+      const { data, error } = await (supabase as any).rpc("complete_with_prepaid_session", { p_appointment_id: apt.id });
+      if (error) throw error;
+      const left = Number(data ?? 0);
+      const status = prepaidStatus(left, true);
+      toast({
+        title: PP.left.replace("{n}", String(left)),
+        description: status === "low" ? PP.low : status === "empty" ? PP.empty : undefined,
+        variant: status === "empty" ? "destructive" : undefined,
+      });
+      invalidatePrepaid(prepaidQc);
+      onOpenChange(false);
+    } catch (e: any) {
+      const msg = String(e?.message ?? e);
+      toast({ title: msg.includes("no_prepaid_sessions") ? PP.noneLeft : describeError(e), variant: "destructive" });
+      invalidatePrepaid(prepaidQc);
+    } finally {
+      setPrepaidBusy(false);
+    }
+  };
   const flexibleEnabled = !isGroupSession && !!(client as any)?.flexible_session_price;
   const flexApplied = !!(apt as any).flex_price_applied;
   const flexStandardPrice = Number((apt as any).standard_price ?? apt.price ?? 0);
@@ -1326,7 +1359,20 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
               )}
 
               {/* Complete session — one strong CTA + one neutral secondary */}
-              {isActive && !isGroupSession && (
+              {isActive && prepaidMode && prepaidLeft > 0 && (
+                <div className="sticky bottom-0 -mx-6 space-y-2 border-t border-border bg-background px-6 pb-2 pt-4">
+                  <Button className="h-12 w-full whitespace-normal rounded-xl text-sm font-semibold shadow-glow" disabled={prepaidBusy}
+                    onClick={completeFromPrepaidSessions}>
+                    <Check className="h-4 w-4 mr-2 shrink-0" />
+                    {prepaidBusy ? t("calendar.saving") : PP.completeBtn}
+                  </Button>
+                  <p className="text-center text-xs text-muted-foreground">{PP.left.replace("{n}", String(prepaidLeft))}</p>
+                </div>
+              )}
+              {isActive && prepaidMode && prepaidLeft <= 0 && (
+                <p className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">{PP.noneLeft}</p>
+              )}
+              {isActive && !isGroupSession && !(prepaidMode && prepaidLeft > 0) && (
                 <div className="sticky bottom-0 -mx-6 space-y-2 border-t border-border bg-background px-6 pb-2 pt-4">
                   {(() => {
                     const busy = completeAppointment.isPending || completeFromPrepayment.isPending;

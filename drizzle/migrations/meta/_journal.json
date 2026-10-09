@@ -8,6 +8,20 @@
       "when": 1791545471017,
       "tag": "0000_profile_setup_completed",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791548220525,
+      "tag": "0001_prepaid_session_packages",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791548438623,
+      "tag": "0002_prepaid_balance_owner_only",
+      "breakpoints": true
     }
   ]
 }

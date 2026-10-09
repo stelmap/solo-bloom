@@ -1,3 +1,6 @@
+import { prepaidBadgeClass } from "@/components/clients/PrepaidSessionsCard";
+import { usePrepaidSummaries } from "@/hooks/usePrepaidSessions";
+import { prepaidCopy } from "@/lib/prepaidSessions";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -92,6 +95,7 @@ const ClientCard = memo(({ client, onNavigate, onDelete, onArchive, onUnarchive,
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 flex-wrap">
           <h3 className="font-semibold text-foreground truncate">{client.name}</h3>
+          <PrepaidMiniBadge client={client} />
           {isArchived && (
             <Badge variant={getArchiveReasonVariant(client.archive_reason)} className="text-[10px]">
               {getArchiveReasonLabel(client.archive_reason, t)}
@@ -121,7 +125,7 @@ export default function ClientsPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { isFreeStarter, atClientLimit } = useFreeStarterMode();
   const isDemoMode = false; // Free Starter Mode allows all client edits — gating is now via paywall on creation only.
   const [paywallOpen, setPaywallOpen] = useState(false);
@@ -154,7 +158,8 @@ export default function ClientsPage() {
     return map;
   })();
 
-  const monthFilter = searchParams.get("filter") as "activeThisMonth" | "newThisMonth" | "completedThisMonth" | "droppedThisMonth" | "withoutNextSession" | null;
+  const { summaries: prepaidSummaries } = usePrepaidSummaries();
+  const monthFilter = searchParams.get("filter") as "activeThisMonth" | "newThisMonth" | "completedThisMonth" | "droppedThisMonth" | "withoutNextSession" | "prepaidLow" | "prepaidEmpty" | null;
 
   const isThisMonth = (dateStr: string | null | undefined) => {
     if (!dateStr) return false;
@@ -170,7 +175,7 @@ export default function ClientsPage() {
   const effectiveStatusFilter =
     monthFilter === "completedThisMonth" || monthFilter === "droppedThisMonth"
       ? "archived"
-      : monthFilter === "withoutNextSession"
+      : monthFilter === "withoutNextSession" || monthFilter === "prepaidLow" || monthFilter === "prepaidEmpty"
       ? "active"
       : monthFilter === "newThisMonth"
       ? "all"
@@ -236,6 +241,10 @@ export default function ClientsPage() {
           DROPPED_ARCHIVE_REASONS.has(c.archive_reason ?? "") &&
           isThisMonth(c.archived_at)
         );
+      }
+      if (monthFilter === "prepaidLow" || monthFilter === "prepaidEmpty") {
+        const sm = prepaidSummaries.get(c.id);
+        return !!c.prepaid_sessions_mode && !!sm?.hasTopups && sm.status === (monthFilter === "prepaidLow" ? "low" : "empty");
       }
       if (monthFilter === "withoutNextSession") {
         return (
@@ -473,6 +482,10 @@ export default function ClientsPage() {
                   ? t("ops.completedTherapyThisMonth")
                   : monthFilter === "withoutNextSession"
                   ? t("ops.clientsWithoutNextSession")
+                  : monthFilter === "prepaidLow"
+                  ? prepaidCopy(lang).low
+                  : monthFilter === "prepaidEmpty"
+                  ? prepaidCopy(lang).empty
                   : t("ops.droppedTherapyThisMonth")}
               </Badge>
               <button
@@ -536,5 +549,19 @@ export default function ClientsPage() {
       )}
       <PaywallDialog open={paywallOpen} onOpenChange={setPaywallOpen} reason="client_limit" />
     </AppLayout>
+  );
+}
+
+function PrepaidMiniBadge({ client }: { client: any }) {
+  const { lang } = useLanguage();
+  const { summaries } = usePrepaidSummaries();
+  if (!client?.prepaid_sessions_mode) return null;
+  const sm = summaries.get(client.id);
+  if (!sm?.hasTopups) return null;
+  const P = prepaidCopy(lang);
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium whitespace-nowrap ${prepaidBadgeClass[sm.status]}`}>
+      {P.available}: {sm.balance}{sm.status === "low" || sm.status === "empty" ? ` · ${P[sm.status]}` : ""}
+    </span>
   );
 }

@@ -1111,6 +1111,7 @@ export type Database = {
           notes: string | null
           notification_preference: string
           phone: string | null
+          prepaid_sessions_mode: boolean
           pricing_mode: string
           seed_batch_id: string | null
           seed_source: string | null
@@ -1146,6 +1147,7 @@ export type Database = {
           notes?: string | null
           notification_preference?: string
           phone?: string | null
+          prepaid_sessions_mode?: boolean
           pricing_mode?: string
           seed_batch_id?: string | null
           seed_source?: string | null
@@ -1181,6 +1183,7 @@ export type Database = {
           notes?: string | null
           notification_preference?: string
           phone?: string | null
+          prepaid_sessions_mode?: boolean
           pricing_mode?: string
           seed_batch_id?: string | null
           seed_source?: string | null
@@ -3021,6 +3024,67 @@ export type Database = {
         }
         Relationships: []
       }
+      session_prepayment_ledger: {
+        Row: {
+          amount: number
+          appointment_id: string | null
+          client_id: string
+          created_at: string
+          id: string
+          income_id: string | null
+          kind: string
+          reversed_at: string | null
+          sessions: number
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          appointment_id?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          income_id?: string | null
+          kind: string
+          reversed_at?: string | null
+          sessions: number
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          appointment_id?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          income_id?: string | null
+          kind?: string
+          reversed_at?: string | null
+          sessions?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_prepayment_ledger_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_prepayment_ledger_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_prepayment_ledger_income_id_fkey"
+            columns: ["income_id"]
+            isOneToOne: false
+            referencedRelation: "income"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_cache: {
         Row: {
           cancel_at_period_end: boolean
@@ -3851,6 +3915,17 @@ export type Database = {
       _gdpr_decrypt: { Args: { cipher: string }; Returns: string }
       _gdpr_encrypt: { Args: { plain: string }; Returns: string }
       _gdpr_key: { Args: never; Returns: string }
+      add_prepaid_sessions: {
+        Args: {
+          p_amount: number
+          p_client_id: string
+          p_date?: string
+          p_income_id?: string
+          p_payment_method_id?: string
+          p_sessions: number
+        }
+        Returns: number
+      }
       admin_delete_user_and_data: {
         Args: { p_admin_id: string; p_user_id: string }
         Returns: Json
@@ -4131,6 +4206,10 @@ export type Database = {
         }
         Returns: number
       }
+      complete_with_prepaid_session: {
+        Args: { p_appointment_id: string }
+        Returns: number
+      }
       confirm_booking_request: {
         Args: { p_client_id?: string; p_id: string; p_service_id?: string }
         Returns: string
@@ -4232,6 +4311,10 @@ export type Database = {
           payload: Json
           source_queue: string
         }
+        Returns: number
+      }
+      prepaid_sessions_balance: {
+        Args: { p_client_id: string }
         Returns: number
       }
       process_gdpr_deletions: { Args: never; Returns: number }
