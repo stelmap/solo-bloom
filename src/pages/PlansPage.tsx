@@ -15,6 +15,7 @@ import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { track } from "@/lib/analytics";
 import { getFreshAccessToken } from "@/lib/checkoutAuth";
+import { isApprovedHost, openPaddleCheckout } from "@/lib/paddleCheckout";
 import { campaignText, isCampaignPlan, SUPPORT_UA_PROMO_CODE } from "@/lib/supportUkraine";
 import { useSupportUkraine } from "@/hooks/useSupportUkraine";
 import { SupportUkrainePrice } from "@/components/campaign/SupportUkrainePrice";
@@ -507,15 +508,38 @@ export default function PlansPage() {
         throw new Error(serverMsg || error.message || "Checkout failed");
       }
 
-      if (data?.url) {
+      if (data?.transactionId || data?.url) {
         track("cta_clicked", {
           ...baseProps,
           action: "checkout_session_create_success",
           duration_ms: durationMs,
         });
-        track("cta_clicked", { ...baseProps, action: "checkout_redirect_started" });
         window.clearTimeout(slowTimer);
-        window.location.href = data.url;
+        // Non-approved origins (preview) cannot host the overlay: continue on
+        // the production domain, which opens Paddle immediately.
+        if (!data.transactionId || !isApprovedHost(window.location.host)) {
+          track("cta_clicked", { ...baseProps, action: "checkout_redirect_started" });
+          window.location.href = data.url;
+          return;
+        }
+        await openPaddleCheckout(data.transactionId, lang, {
+          onCompleted: () => {
+            track("checkout_completed", { ...baseProps, surface: "in_app_plans" });
+            track("payment_succeeded", { ...baseProps, surface: "in_app_plans" });
+            navigate("/purchase-success");
+          },
+          onClosed: () => {
+            setContinuing(false);
+            setSlowCheckout(false);
+            track("stripe_checkout_cancelled", { ...baseProps, surface: "in_app_plans" });
+          },
+          onError: () => {
+            setContinuing(false);
+            setSlowCheckout(false);
+            track("payment_failed", { ...baseProps, surface: "in_app_plans" });
+          },
+        });
+        track("cta_clicked", { ...baseProps, action: "checkout_overlay_opened" });
         return;
       }
       throw new Error("No checkout URL returned");
