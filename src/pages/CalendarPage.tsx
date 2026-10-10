@@ -41,7 +41,12 @@ import { useGroups, useGroupMembers, useCreateGroupSession } from "@/hooks/useGr
 import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { useCalendarPrefs, countActiveQuickFilters } from "@/hooks/useCalendarPrefs";
+import { useUnpaidMeetings } from "@/hooks/useUnpaidMeetings";
+import { calToolbarCopy } from "@/lib/calendarToolbarCopy";
+import { isPaid as isPaidApt, isAwaiting as isAwaitingApt } from "@/lib/paymentClassifiers";
+import { CreditCard, Link2, UserRound } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -334,6 +339,21 @@ export default function CalendarPage() {
   const { data: workingSchedule = [] } = useWorkingSchedule();
   const { data: daysOff = [] } = useDaysOff();
   const { user } = useAuth();
+  const { prefs: calPrefs, update: updateCalPrefs, setFilters: setQuickFilters, resetFilters: resetQuickFilters } = useCalendarPrefs(user?.id);
+  const quickFilterCount = countActiveQuickFilters(calPrefs.filters);
+  const { data: unpaidMeetings = [] } = useUnpaidMeetings();
+  const [unpaidOpen, setUnpaidOpen] = useState(false);
+  const [viewPanelOpen, setViewPanelOpen] = useState(false);
+  const { data: bookingLinkRow } = useQuery({
+    queryKey: ["booking-link-url", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data } = await supabase.from("booking_links").select("slug, token, is_active").eq("user_id", user!.id).maybeSingle();
+      return data as { slug?: string | null; token?: string | null; is_active?: boolean } | null;
+    },
+  });
+  const bookingHandle = bookingLinkRow?.slug || bookingLinkRow?.token || "";
+  const bookingUrl = bookingHandle ? `${window.location.origin}/book/${bookingHandle}` : "";
   const { data: bookingAvailability = [] } = useQuery({
     queryKey: ["booking-availability-rules", user?.id],
     enabled: !!user?.id,
@@ -362,6 +382,7 @@ export default function CalendarPage() {
   const { t, lang } = useLanguage();
   const dateLocale = getDateLocale(lang);
   const { symbol: cs } = useCurrency();
+  const CT = calToolbarCopy(lang);
 
   // Realtime: invalidate appointments + booking-requests when DB changes.
   // Topic MUST end with ":<user_id>" so realtime.messages RLS allows the
@@ -409,13 +430,8 @@ export default function CalendarPage() {
   // --- Responsive grid sizing -------------------------------------------------
   // The time grid stretches to the available height; hour rows are sized from
   // the measured viewport so a normal working day fits without inner scrolling.
-  const [gridDensity, setGridDensity] = useState<"compact" | "comfortable">(() => {
-    if (typeof window === "undefined") return "comfortable";
-    return (localStorage.getItem("calendar.density") as "compact" | "comfortable") || "comfortable";
-  });
-  useEffect(() => {
-    try { localStorage.setItem("calendar.density", gridDensity); } catch { /* ignore */ }
-  }, [gridDensity]);
+  const gridDensity = calPrefs.density;
+  const gridMode = calPrefs.gridMode;
 
   const MIN_ROW_H = gridDensity === "compact" ? 32 : 44;
   const MAX_ROW_H = gridDensity === "compact" ? 56 : 88;
@@ -432,6 +448,12 @@ export default function CalendarPage() {
       const avail = el.clientHeight - headH;
       const rows = hours.length || 1;
       if (avail <= 0) return;
+      if (gridMode === "scroll") {
+        const fixed = gridDensity === "compact" ? 40 : 60;
+        setRowHeight(prev => (prev !== fixed ? fixed : prev));
+        setNeedsInnerScroll(fixed * rows > avail + 1);
+        return;
+      }
       const next = Math.min(MAX_ROW_H, Math.max(MIN_ROW_H, Math.floor(avail / rows)));
       setRowHeight(prev => (Math.abs(prev - next) >= 1 ? next : prev));
       setNeedsInnerScroll(next * rows > avail + 1);
@@ -446,7 +468,7 @@ export default function CalendarPage() {
       window.removeEventListener("resize", recalc);
       window.removeEventListener("orientationchange", recalc);
     };
-  }, [hours.length, MIN_ROW_H, MAX_ROW_H]);
+  }, [hours.length, MIN_ROW_H, MAX_ROW_H, gridMode, gridDensity]);
 
   // Start the viewport at the working day (fallback 08:00) — the user can still
   // scroll up to 00:00 and down to 24:00.
@@ -1361,6 +1383,12 @@ export default function CalendarPage() {
     for (const apt of unique) {
       if (activeStates.length && !activeStates.some(k => matchesCalendarState(apt, k))) continue;
       if (filters.status !== "all" && apt.status !== filters.status) continue;
+      const qf = calPrefs.filters;
+      if (qf.clientId !== "all" && apt.client_id !== qf.clientId) continue;
+      if (qf.status !== "all" && apt.status !== qf.status) continue;
+      if (qf.payment === "paid" && !isPaidApt(apt)) continue;
+      if (qf.payment === "awaiting" && !isAwaitingApt(apt)) continue;
+      if (qf.payment === "unpaid" && !matchesCalendarState(apt, "unpaid")) continue;
       if (filters.urgentOnly && !isUrgent(apt.id)) continue;
       if (filters.newOnly && !isNew(apt.id, apt.created_at)) continue;
 
@@ -1372,7 +1400,7 @@ export default function CalendarPage() {
       result.push(apt);
     }
     return result;
-  }, [appointments, filters]);
+  }, [appointments, filters, calPrefs.filters]);
 
   // Slots already covered by a real appointment — used to hide pending
   // booking requests that have already been converted into a session.
@@ -1942,198 +1970,20 @@ export default function CalendarPage() {
 
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex flex-nowrap items-center gap-2 shrink-0">
-          {/* Period navigation */}
-          <div className="flex items-center gap-1 rounded-xl border border-border bg-card p-1">
-            <Button
-              variant="ghost" size="icon" className="h-10 w-10 rounded-lg"
-              aria-label={t("calendar.prev") || "Previous"}
-              onClick={() => setCurrentDate(d => effectiveView === "month" ? addMonths(d, -1) : addDays(d, effectiveView === "day" ? -1 : -7))}
-            ><ChevronLeft className="h-4 w-4" /></Button>
-            <span className="px-2 text-sm font-semibold text-foreground whitespace-nowrap" aria-live="polite">
-              {effectiveView === "day"
-                ? format(currentDate, "EEE, MMM d, yyyy", { locale: dateLocale })
-                : effectiveView === "month"
-                  ? format(currentDate, "MMMM yyyy", { locale: dateLocale })
-                  : `${format(weekStart, "EEE, MMM d", { locale: dateLocale })} – ${format(addDays(weekStart, 6), "EEE, MMM d, yyyy", { locale: dateLocale })}`}
-            </span>
-            <Button
-              variant="ghost" size="icon" className="h-10 w-10 rounded-lg"
-              aria-label={t("calendar.next") || "Next"}
-              onClick={() => setCurrentDate(d => effectiveView === "month" ? addMonths(d, 1) : addDays(d, effectiveView === "day" ? 1 : 7))}
-            ><ChevronRight className="h-4 w-4" /></Button>
-          </div>
-
-          <Button variant="outline" className="h-10 rounded-xl" onClick={() => setCurrentDate(new Date())}>
-            {t("calendar.today") || "Today"}
-          </Button>
-          {!isMobile && (
-            <div role="tablist" aria-label="Calendar view" className="flex items-center gap-1 rounded-xl border border-border bg-card p-1">
-              {(["day", "week", "month"] as CalendarView[]).map(v => (
-                <button
-                  key={v}
-                  role="tab"
-                  aria-selected={view === v}
-                  onClick={() => setView(v)}
-                  className={cn(
-                    "h-8 px-4 text-xs font-semibold rounded-lg transition-colors capitalize",
-                    view === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {t(`calendar.view.${v}` as any) || v}
-                </button>
-              ))}
-            </div>
-          )}
-
-          </div>
-
-          <div className="flex flex-nowrap items-center gap-2 ml-auto shrink-0">
-            {/* Quick jumps */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline" size="icon"
-                  className={cn("h-10 w-10 rounded-xl relative", needsAttentionItems.length > 0 && "border-primary/50 text-primary")}
-                  aria-label={t("dashm.needsAttention")}
-                  onClick={() => goFromCalendar("/dashboard#needs-attention")}
-                >
-                  <AlertTriangle className="h-4 w-4" />
-                  {needsAttentionItems.length > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
-                      {needsAttentionItems.length}
-                    </span>
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{t("dashm.needsAttention")}</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline" size="icon" className="h-10 w-10 rounded-xl"
-                  aria-label={paymentsLabel}
-                  onClick={() => goFromCalendar("/payments")}
-                >
-                  <Wallet className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{paymentsLabel}</TooltipContent>
-            </Tooltip>
-
-            {/* Filters */}
-            <Popover>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline" size="icon"
-                      className={cn("h-10 w-10 rounded-xl relative", filtersActive && "border-primary text-primary")}
-                      aria-label={(t as any)("calendar.filters") || "Filters"}
-                    >
-                      <SlidersHorizontal className="h-4 w-4" />
-                      {filtersActive && <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-primary" />}
-                    </Button>
-                  </PopoverTrigger>
-                </TooltipTrigger>
-                <TooltipContent>{(t as any)("calendar.filters") || "Filters"}</TooltipContent>
-              </Tooltip>
-              <PopoverContent align="end" className="w-64 p-3 space-y-2">
-                <Label className="text-xs text-muted-foreground">{(t as any)("calendar.stateFilter") || "State"}</Label>
-                <div className="space-y-0.5">
-                  {SESSION_STATE_ORDER.map((k) => {
-                    const { labelKey: key, labelFallback: fallback, dot } = SESSION_STATE_STYLES[k];
-                    const checked = filters.states[k];
-                    return (
-                      <button
-                        key={k}
-                        type="button"
-                        role="checkbox"
-                        aria-checked={checked}
-                        onClick={() => setFilters(f => ({ ...f, states: { ...f.states, [k]: !f.states[k] } }))}
-                        className={cn(
-                          "w-full flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-sm transition-colors",
-                          checked ? "bg-muted font-medium" : "hover:bg-muted/50"
-                        )}
-                      >
-                        <span className={cn("h-4 w-4 shrink-0 rounded-full flex items-center justify-center", dot, !checked && "opacity-60")}>
-                          {checked && <Check className="h-3 w-3 text-background" strokeWidth={3} />}
-                        </span>
-                        <span className="leading-tight">{(t as any)(key) || fallback}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <Button variant="ghost" size="sm" className={cn("w-full", !filtersActive && "text-muted-foreground/60")} onClick={clearFilters} disabled={!filtersActive}>
-                  {(t as any)("common.clear") || "Clear"}
-                </Button>
-              </PopoverContent>
-
-            </Popover>
-
-            {/* Density toggle */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline" size="icon" className="h-10 w-10 rounded-xl hidden sm:inline-flex"
-                  aria-label={(t as any)("calendar.density") || "Row density"}
-                  aria-pressed={gridDensity === "compact"}
-                  onClick={() => setGridDensity(d => (d === "compact" ? "comfortable" : "compact"))}
-                >
-                  {gridDensity === "compact" ? <Rows3 className="h-4 w-4" /> : <Rows2 className="h-4 w-4" />}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {gridDensity === "compact"
-                  ? ((t as any)("calendar.densityComfortable") || "Comfortable rows")
-                  : ((t as any)("calendar.densityCompact") || "Compact rows")}
-                {needsInnerScroll ? ` · ${(t as any)("calendar.scrollHint") || "grid scrolls"}` : ""}
-              </TooltipContent>
-            </Tooltip>
-
-            {/* Persistent Settings entry */}
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline" size="icon" className="h-10 w-10 rounded-xl"
-                  aria-label={t("settings.calendarSettings") || "Calendar settings"}
-                  onClick={() => navigate("/calendar/settings")}
-                >
-                  <SettingsIcon className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{t("settings.calendarSettings") || "Calendar settings"}</TooltipContent>
-
-            </Tooltip>
-
-            {/* Incoming requests — always accessible, highlighted when new ones exist */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline" size="icon"
-                  className={cn(
-                    "h-10 w-10 rounded-xl relative",
-                    pendingRequests.length > 0 && "border-warning/50 text-warning",
-                  )}
-                  aria-label={t("booking.inbox")}
-                  onClick={() => setInboxOpen(true)}
-                >
-                  <Inbox className="h-4 w-4" />
-                  {pendingRequests.length > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-warning text-warning-foreground text-[10px] font-bold flex items-center justify-center">
-                      {pendingRequests.length}
-                    </span>
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{t("booking.inbox")}</TooltipContent>
-            </Tooltip>
-
+          <h1 className="mr-auto text-2xl font-bold tracking-tight text-foreground">{CT.title}</h1>
+          <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+            <Button variant="ghost" className="h-10 rounded-xl px-3 whitespace-nowrap" onClick={() => setUnpaidOpen(true)}>
+              <CreditCard className="h-4 w-4" />
+              <span>{CT.unpaid} · <span className="tabular-nums">{unpaidMeetings.length}</span></span>
+            </Button>
+            <span className="hidden sm:block h-5 w-px bg-border" aria-hidden="true" />
+            <Button variant="ghost" className="h-10 rounded-xl px-3 whitespace-nowrap" onClick={() => setInboxOpen(true)}>
+              <UserRound className="h-4 w-4" />
+              <span>{CT.requests} · <span className="tabular-nums">{pendingRequests.length}</span></span>
+            </Button>
             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
               <DialogTrigger asChild>
-                <Button><Plus className="h-4 w-4 mr-1" /> {t("calendar.newAppointment")}</Button>
+                <Button className="h-10 rounded-xl"><Plus className="h-4 w-4 mr-1" /> {CT.newRecord}</Button>
               </DialogTrigger>
               <DialogContent className={cn("flex max-h-[92vh] flex-col overflow-hidden max-w-[calc(100vw-1rem)] rounded-2xl p-0 mx-2 sm:mx-0", D.maxW)}>
                 <DialogHeader className={cn(D.headPad, "shrink-0 space-y-0 text-left")}>
@@ -2641,30 +2491,181 @@ export default function CalendarPage() {
           </div>
         </div>
 
-
-
-
-        {/* Compact weekly capacity row */}
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 px-0.5">
-          <p className="text-sm text-foreground">
-            <span className="font-bold tabular-nums">{fillRates.thisWeek.occupied} / {fillRates.thisWeek.slots}</span>{" "}
-            <span className="text-muted-foreground">{(t as any)("capacity.slots") || "slots"}</span>
-          </p>
-          <p className="text-sm text-muted-foreground tabular-nums">
-            <span className="font-semibold text-foreground">{fillRates.thisWeek.pct}%</span>{" "}
-            {(t as any)("capacity.filled") || "filled"}
-          </p>
-          <Progress
-            value={Math.min(fillRates.thisWeek.pct, 100)}
-            className={cn("h-1.5 flex-1 min-w-[140px] max-w-[560px]", fillRates.thisWeek.pct >= 100 ? "[&>div]:bg-destructive" : "")}
-          />
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="h-3 w-3 rounded-sm border border-border calendar-public-unavailable-swatch" aria-hidden="true" />
-            <span>{(t as any)("calendar.outsidePublicBookingLegend") || "Outside online booking hours"}</span>
+        {/* Client booking link */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-border bg-muted/40 px-4 py-2.5">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-foreground">{CT.linkTitle}</p>
+            <p className="text-xs text-muted-foreground">{CT.linkHint}</p>
           </div>
+          {bookingUrl ? (
+            <>
+              <div className="flex min-w-0 flex-1 items-center overflow-hidden rounded-xl border border-border bg-card sm:max-w-md">
+                <Link2 className="ml-3 h-4 w-4 shrink-0 text-muted-foreground" />
+                <span className="min-w-0 flex-1 truncate px-2 text-sm text-foreground">{bookingUrl.replace(/^https?:\/\//, "")}</span>
+                <Button
+                  type="button" variant="ghost" className="h-9 shrink-0 rounded-none border-l border-border"
+                  onClick={async () => {
+                    try { await navigator.clipboard.writeText(bookingUrl); toast({ title: CT.copied }); }
+                    catch { toast({ title: CT.copied }); }
+                  }}
+                >
+                  <Copy className="h-4 w-4" /> {CT.copy}
+                </Button>
+              </div>
+              <a href={bookingUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline">
+                {CT.view} <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </>
+          ) : (
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span>{CT.linkMissing}</span>
+              <Button variant="outline" size="sm" onClick={() => navigate("/calendar/settings")}>{CT.linkSetup}</Button>
+            </div>
+          )}
         </div>
 
+        {/* Navigation + View & filters */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Period navigation */}
+          <div className="flex items-center gap-1 rounded-xl border border-border bg-card p-1">
+            <Button
+              variant="ghost" size="icon" className="h-10 w-10 rounded-lg"
+              aria-label={t("calendar.prev") || "Previous"}
+              onClick={() => setCurrentDate(d => effectiveView === "month" ? addMonths(d, -1) : addDays(d, effectiveView === "day" ? -1 : -7))}
+            ><ChevronLeft className="h-4 w-4" /></Button>
+            <span className="px-2 text-sm font-semibold text-foreground whitespace-nowrap" aria-live="polite">
+              {effectiveView === "day"
+                ? format(currentDate, "EEE, MMM d, yyyy", { locale: dateLocale })
+                : effectiveView === "month"
+                  ? format(currentDate, "MMMM yyyy", { locale: dateLocale })
+                  : `${format(weekStart, "EEE, MMM d", { locale: dateLocale })} – ${format(addDays(weekStart, 6), "EEE, MMM d, yyyy", { locale: dateLocale })}`}
+            </span>
+            <Button
+              variant="ghost" size="icon" className="h-10 w-10 rounded-lg"
+              aria-label={t("calendar.next") || "Next"}
+              onClick={() => setCurrentDate(d => effectiveView === "month" ? addMonths(d, 1) : addDays(d, effectiveView === "day" ? 1 : 7))}
+            ><ChevronRight className="h-4 w-4" /></Button>
+          </div>
 
+          <Button variant="outline" className="h-10 rounded-xl" onClick={() => setCurrentDate(new Date())}>
+            {t("calendar.today") || "Today"}
+          </Button>
+          {!isMobile && (
+            <div role="tablist" aria-label="Calendar view" className="flex items-center gap-1 rounded-xl border border-border bg-card p-1">
+              {(["day", "week", "month"] as CalendarView[]).map(v => (
+                <button
+                  key={v}
+                  role="tab"
+                  aria-selected={view === v}
+                  onClick={() => setView(v)}
+                  className={cn(
+                    "h-8 px-4 text-xs rounded-lg transition-colors capitalize",
+                    view === v ? "bg-muted text-foreground font-bold" : "text-muted-foreground font-medium hover:text-foreground"
+                  )}
+                >
+                  {t(`calendar.view.${v}` as any) || v}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <Popover open={viewPanelOpen} onOpenChange={setViewPanelOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="ml-auto h-10 rounded-xl relative">
+                <SlidersHorizontal className="h-4 w-4" /> {CT.viewFilters}
+                {quickFilterCount > 0 && (
+                  <span className="ml-1 min-w-[20px] h-5 px-1.5 rounded-full bg-muted text-foreground text-xs font-bold inline-flex items-center justify-center">{quickFilterCount}</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" collisionPadding={12} className="w-[min(360px,calc(100vw-24px))] p-0">
+              <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+                <p className="text-sm font-semibold">{CT.viewFilters}</p>
+                <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={CT.close} onClick={() => setViewPanelOpen(false)}><XIcon className="h-4 w-4" /></Button>
+              </div>
+              <div className="space-y-3 px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{CT.viewGroup}</p>
+                {([
+                  { label: CT.density, value: calPrefs.density, opts: [["comfortable", CT.densityNormal], ["compact", CT.densityCompact]], set: (v: string) => updateCalPrefs({ density: v as any }) },
+                  { label: CT.grid, value: calPrefs.gridMode, opts: [["fit", CT.gridFit], ["scroll", CT.gridScroll]], set: (v: string) => updateCalPrefs({ gridMode: v as any }) },
+                ] as const).map((row) => (
+                  <div key={row.label} className="flex items-center justify-between gap-3">
+                    <span className="text-sm">{row.label}</span>
+                    <div className="flex rounded-lg border border-border p-0.5">
+                      {row.opts.map(([v, l]) => (
+                        <button key={v} type="button" aria-pressed={row.value === v} onClick={() => row.set(v)}
+                          className={cn("h-7 rounded-md px-2.5 text-xs whitespace-nowrap", row.value === v ? "bg-muted font-semibold text-foreground" : "text-muted-foreground hover:text-foreground")}>
+                          {l}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm">{CT.highlight}</p>
+                    <p className="text-xs text-muted-foreground">{CT.highlightHint}</p>
+                  </div>
+                  <Switch checked={calPrefs.highlightOutsideBooking} onCheckedChange={(v) => updateCalPrefs({ highlightOutsideBooking: v })} aria-label={CT.highlight} />
+                </div>
+              </div>
+              <div className="space-y-2.5 border-t border-border px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{CT.filtersGroup}</p>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">{CT.client}</Label>
+                  <Select value={calPrefs.filters.clientId} onValueChange={(v) => setQuickFilters({ clientId: v })}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{CT.allClients}</SelectItem>
+                      {activeClients.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">{CT.status}</Label>
+                    <Select value={calPrefs.filters.status} onValueChange={(v) => setQuickFilters({ status: v as any })}>
+                      <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{CT.allStatuses}</SelectItem>
+                        <SelectItem value="scheduled">{CT.stScheduled}</SelectItem>
+                        <SelectItem value="confirmed">{CT.stConfirmed}</SelectItem>
+                        <SelectItem value="completed">{CT.stCompleted}</SelectItem>
+                        <SelectItem value="cancelled">{CT.stCancelled}</SelectItem>
+                        <SelectItem value="no-show">{CT.stNoShow}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">{CT.payment}</Label>
+                    <Select value={calPrefs.filters.payment} onValueChange={(v) => setQuickFilters({ payment: v as any })}>
+                      <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{CT.allPayments}</SelectItem>
+                        <SelectItem value="paid">{CT.payPaid}</SelectItem>
+                        <SelectItem value="awaiting">{CT.payAwaiting}</SelectItem>
+                        <SelectItem value="unpaid">{CT.payUnpaid}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <Button variant="ghost" size="sm" className="w-full" disabled={quickFilterCount === 0} onClick={resetQuickFilters}>{CT.reset}</Button>
+              </div>
+              <div className="flex items-center justify-between gap-2 border-t border-border px-4 py-2.5 text-xs text-muted-foreground">
+                <span>{CT.autosave}</span>
+                <button type="button" className="font-medium text-primary hover:underline" onClick={() => navigate("/calendar/settings")}>{CT.settings}</button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {quickFilterCount > 0 && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground -mt-2">
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            <span>{CT.activeFilters(quickFilterCount)}</span>
+            <button type="button" className="font-medium text-primary hover:underline" onClick={resetQuickFilters}>{CT.reset}</button>
+          </div>
+        )}
 
         {effectiveView === "month" && (
           <div className="bg-card rounded-xl border border-border overflow-auto animate-fade-in flex-1 min-h-0">
@@ -2712,7 +2713,7 @@ export default function CalendarPage() {
                     )}
                     title={hasOutsidePublicBooking ? ((t as any)("calendar.outsidePublicBookingTooltip") || "Clients do not see this time in the public calendar. You can add your own event.") : undefined}
                   >
-                    {inMonth && outsidePublicBookingGaps.map((gap, gapIdx) => (
+                    {inMonth && calPrefs.highlightOutsideBooking && outsidePublicBookingGaps.map((gap, gapIdx) => (
                       <div
                         key={gapIdx}
                         className="pointer-events-none absolute inset-x-0 z-0 calendar-public-unavailable-band"
@@ -2893,7 +2894,7 @@ export default function CalendarPage() {
                             dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && canDropOnSlot(day, hour, dragAptId) && "bg-primary/15 ring-2 ring-primary/30 ring-inset",
                             dragOverSlot === `${format(day, "yyyy-MM-dd")}-${hour}` && dragAptId && !canDropOnSlot(day, hour, dragAptId) && "bg-destructive/10 ring-2 ring-destructive/30 ring-inset",
                           )}>
-                          {outsidePublicBookingGaps.map((gap, gapIdx) => (
+                          {calPrefs.highlightOutsideBooking && outsidePublicBookingGaps.map((gap, gapIdx) => (
                             <div
                               key={gapIdx}
                               className="pointer-events-none absolute inset-x-0 z-0 calendar-public-unavailable-band"
@@ -3016,6 +3017,35 @@ export default function CalendarPage() {
 
       </div>
 
+
+      <Sheet open={unpaidOpen} onOpenChange={setUnpaidOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{CT.unpaidTitle} · {unpaidMeetings.length}</SheetTitle>
+            <SheetDescription>{CT.unpaidHint}</SheetDescription>
+          </SheetHeader>
+          <div className="mt-4 space-y-2">
+            {unpaidMeetings.length === 0 ? (
+              <p className="py-10 text-center text-sm text-muted-foreground">{CT.unpaidEmpty}</p>
+            ) : unpaidMeetings.map((m) => (
+              <div key={m.apt.id} className="rounded-xl border border-border bg-card p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">{m.apt.clients?.name || m.apt.group_sessions?.groups?.name || "—"}</p>
+                    <p className="text-xs text-muted-foreground">{format(new Date(m.apt.scheduled_at), "d MMM yyyy, HH:mm", { locale: dateLocale })}</p>
+                  </div>
+                  <Button size="sm" variant="outline" className="shrink-0" onClick={() => { setUnpaidOpen(false); openSessionSheet(m.apt); }}>{CT.addPayment}</Button>
+                </div>
+                <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+                  <div><p className="text-muted-foreground">{CT.price}</p><p className="font-medium tabular-nums">{cs}{m.price.toLocaleString()}</p></div>
+                  <div><p className="text-muted-foreground">{CT.paid}</p><p className="font-medium tabular-nums">{cs}{m.paid.toLocaleString()}</p></div>
+                  <div><p className="text-muted-foreground">{CT.left}</p><p className="font-semibold tabular-nums text-destructive">{cs}{m.remaining.toLocaleString()}</p></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
 
       <Sheet open={inboxOpen} onOpenChange={setInboxOpen}>
 
