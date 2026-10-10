@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarDays, CheckCircle2, ChevronLeft, Clock, Globe, Loader2, MapPin, Mail, Building2 } from "lucide-react";
+import bookingRoom from "@/assets/booking-room.jpg";
+import { CalendarCheck, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock, Hourglass, Globe, Loader2, MapPin, Mail, Building2 } from "lucide-react";
 import { z } from "zod";
 import { toast } from "@/hooks/use-toast";
 import { describeError } from "@/lib/errorMessages";
@@ -30,6 +31,16 @@ type PageInfo = {
 };
 
 type Lang = "en" | "uk" | "fr" | "pl";
+
+const PICKER_COPY: Record<"en" | "uk" | "fr" | "pl", {
+  intro: string; selectDate: string; selectDateHint: string; selectTime: string; slotsFor: string;
+  today: string; available: (n: number) => string; yourTz: string; duration: string; continue: string;
+}> = {
+  en: { intro: "Choose a convenient date and time for your session. All times are shown in the specialist's time zone.", selectDate: "Select date", selectDateHint: "Choose a day with available time slots.", selectTime: "Select time", slotsFor: "Available time slots for", today: "Today", available: (n) => `${n} available time ${n === 1 ? "slot" : "slots"}`, yourTz: "Time zone:", duration: "Session duration:", continue: "Continue" },
+  uk: { intro: "Оберіть зручні дату й час. Час показано в часовому поясі спеціаліста.", selectDate: "Оберіть дату", selectDateHint: "Оберіть день із вільним часом.", selectTime: "Оберіть час", slotsFor: "Вільний час на", today: "Сьогодні", available: (n) => `Вільних слотів: ${n}`, yourTz: "Часовий пояс:", duration: "Тривалість:", continue: "Продовжити" },
+  fr: { intro: "Choisissez une date et une heure. Les horaires sont affichés dans le fuseau du spécialiste.", selectDate: "Choisir une date", selectDateHint: "Choisissez un jour avec des créneaux libres.", selectTime: "Choisir l'heure", slotsFor: "Créneaux disponibles le", today: "Aujourd'hui", available: (n) => `${n} créneau${n === 1 ? "" : "x"} disponible${n === 1 ? "" : "s"}`, yourTz: "Fuseau horaire :", duration: "Durée :", continue: "Continuer" },
+  pl: { intro: "Wybierz dogodną datę i godzinę. Godziny są w strefie czasowej specjalisty.", selectDate: "Wybierz datę", selectDateHint: "Wybierz dzień z wolnymi terminami.", selectTime: "Wybierz godzinę", slotsFor: "Wolne terminy na", today: "Dziś", available: (n) => `Wolne terminy: ${n}`, yourTz: "Strefa czasowa:", duration: "Czas trwania:", continue: "Dalej" },
+};
 function normLang(v: unknown): Lang {
   const s = String(v || "").toLowerCase().slice(0, 2);
   return s === "uk" || s === "fr" || s === "pl" ? (s as Lang) : "en";
@@ -351,6 +362,34 @@ export default function PublicBookingPage() {
     if (activeDay && !dayKeys.includes(activeDay) && dayKeys.length > 0) setActiveDay(dayKeys[0]);
   }, [dayKeys, activeDay]);
 
+  // Month calendar for the redesigned picker.
+  const [pendingSlot, setPendingSlot] = useState<string | null>(null);
+  const [viewMonth, setViewMonth] = useState<{ y: number; m: number }>(() => {
+    const d = new Date();
+    return { y: d.getFullYear(), m: d.getMonth() };
+  });
+  useEffect(() => {
+    if (!activeDay) return;
+    const [y, m] = activeDay.split("-").map(Number);
+    setViewMonth((v) => (v.y === y && v.m === m - 1 ? v : { y, m: m - 1 }));
+  }, [activeDay]);
+  const shiftMonth = (delta: number) =>
+    setViewMonth((v) => { const d = new Date(Date.UTC(v.y, v.m + delta, 1)); return { y: d.getUTCFullYear(), m: d.getUTCMonth() }; });
+  const monthCells = useMemo(() => {
+    const first = new Date(Date.UTC(viewMonth.y, viewMonth.m, 1));
+    const offset = (first.getUTCDay() + 6) % 7; // Monday first
+    return Array.from({ length: 42 }, (_, i) => {
+      const d = new Date(Date.UTC(viewMonth.y, viewMonth.m, 1 - offset + i));
+      return { key: d.toISOString().slice(0, 10), day: d.getUTCDate(), inMonth: d.getUTCMonth() === viewMonth.m };
+    }).filter((c, i, arr) => i < 35 || arr.slice(35).some((x) => x.inMonth));
+  }, [viewMonth]);
+  const weekdayLabels = useMemo(
+    () => Array.from({ length: 7 }, (_, i) => new Date(Date.UTC(2024, 0, 1 + i)).toLocaleDateString(intlLocale, { weekday: "short", timeZone: "UTC" })),
+    [intlLocale],
+  );
+  const todayKey = new Date().toLocaleDateString("en-CA", { timeZone: info?.timezone || undefined });
+  const X = PICKER_COPY[lang];
+
   async function getIpHash(): Promise<string | null> {
     try {
       const fingerprint = `${navigator.userAgent}|${navigator.language}|${screen.width}x${screen.height}`;
@@ -494,14 +533,15 @@ export default function PublicBookingPage() {
   const activeSlots = activeDay ? groupedByDay[activeDay]?.slots ?? [] : [];
 
   return (
-    <div className="min-h-screen bg-muted/30 py-8 px-4">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-background via-background to-primary/10 px-4 py-8">
+      <img src={bookingRoom} alt="" aria-hidden width={1024} height={768} className="pointer-events-none absolute right-0 top-0 hidden w-[38%] max-w-xl select-none opacity-90 [mask-image:radial-gradient(ellipse_at_top_right,black_45%,transparent_75%)] lg:block" />
       <SeoHead
         path="/book"
         title="Book a session — Solo .Bizz"
         description="Private booking link to choose a time with your practitioner."
         noindex
       />
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="relative mx-auto max-w-5xl space-y-6">
         <div className="flex justify-end">
           <Select value={lang} onValueChange={(v) => changeLang(v as Lang)}>
             <SelectTrigger className="h-8 w-auto gap-2 text-xs">
@@ -548,7 +588,7 @@ export default function PublicBookingPage() {
               </div>
             </div>
           )}
-          <h1 className="text-2xl font-semibold tracking-tight">Book a session with {info.display_name}</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Book a session with {info.display_name}</h1>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5" />
@@ -559,95 +599,136 @@ export default function PublicBookingPage() {
               {tzLabel}
             </span>
           </div>
+          <p className="mx-auto max-w-md text-sm text-muted-foreground">{X.intro}</p>
         </header>
 
         {!selectedSlot ? (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <CalendarDays className="h-4 w-4" />
-                {L.chooseTime}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {slotsLoading ? (
-                <div className="space-y-3">
-                  <div className="flex gap-2 overflow-hidden">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Skeleton key={i} className="h-16 w-20 rounded-md flex-shrink-0" />
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2">
-                    {Array.from({ length: 8 }).map((_, i) => (
-                      <Skeleton key={i} className="h-10 rounded-md" />
-                    ))}
-                  </div>
-                </div>
-              ) : dayKeys.length === 0 ? (
-                <div className="text-center py-10 space-y-2">
-                  <MapPin className="h-8 w-8 text-muted-foreground mx-auto opacity-50" />
-                  <p className="text-sm text-muted-foreground">{L.noSlots14}</p>
-                  <p className="text-xs text-muted-foreground">{L.contactDirect}</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
-                    {dayKeys.map((key) => {
-                      const isActive = key === activeDay;
-                      const g = groupedByDay[key];
-                      const d = new Date(`${key}T12:00:00Z`);
-                      const dayNum = d.toLocaleDateString(intlLocale, { day: "numeric", timeZone: tz });
-                      const dayWk = d.toLocaleDateString(intlLocale, { weekday: "short", timeZone: tz });
-                      return (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() => setActiveDay(key)}
-                          className={`flex-shrink-0 flex flex-col items-center justify-center w-16 h-16 rounded-lg border transition-colors ${
-                            isActive
-                              ? "bg-primary text-primary-foreground border-primary"
-                              : "bg-background hover:bg-accent border-border"
-                          }`}
-                          aria-pressed={isActive}
-                        >
-                          <span className="text-[10px] uppercase font-medium tracking-wide opacity-80">
-                            {dayWk}
-                          </span>
-                          <span className="text-lg font-semibold leading-tight">{dayNum}</span>
-                          <span className={`text-[10px] ${isActive ? "opacity-90" : "text-muted-foreground"}`}>
-                            {g.slots.length} {L.slot(g.slots.length)}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {activeSlots.length > 0 ? (
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                      {activeSlots.map((s) => (
-                        <Button
-                          key={s}
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="h-10"
-                          onClick={() => setSelectedSlot(s)}
-                        >
-                          {new Date(s).toLocaleTimeString(intlLocale, {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            timeZone: tz,
-                          })}
-                        </Button>
-                      ))}
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
+            {slotsLoading ? (
+              <div className="grid gap-6 p-6 md:grid-cols-2">
+                <Skeleton className="h-72 rounded-xl" />
+                <div className="grid grid-cols-3 gap-2 content-start">{Array.from({ length: 9 }).map((_, i) => <Skeleton key={i} className="h-12 rounded-lg" />)}</div>
+              </div>
+            ) : dayKeys.length === 0 ? (
+              <div className="space-y-2 py-14 text-center">
+                <CalendarDays className="mx-auto h-8 w-8 text-muted-foreground opacity-50" />
+                <p className="text-sm text-muted-foreground">{L.noSlots14}</p>
+                <p className="text-xs text-muted-foreground">{L.contactDirect}</p>
+              </div>
+            ) : (
+              <>
+                <div className="grid md:grid-cols-2">
+                  {/* Date */}
+                  <section className="p-5 sm:p-7 md:border-r md:border-border">
+                    <div className="flex items-start gap-3">
+                      <CalendarDays className="mt-0.5 h-5 w-5 text-primary" />
+                      <div>
+                        <h2 className="font-semibold text-foreground">{X.selectDate}</h2>
+                        <p className="text-sm text-muted-foreground">{X.selectDateHint}</p>
+                      </div>
                     </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground text-center py-6">{L.noTimesThisDay}</p>
-                  )}
+                    <div className="mt-5 flex items-center justify-between">
+                      <p className="font-semibold capitalize text-foreground">
+                        {new Date(Date.UTC(viewMonth.y, viewMonth.m, 15)).toLocaleDateString(intlLocale, { month: "long", year: "numeric", timeZone: "UTC" })}
+                      </p>
+                      <div className="flex gap-1">
+                        <Button type="button" variant="ghost" size="icon" aria-label="Previous month" onClick={() => shiftMonth(-1)}><ChevronLeft className="h-4 w-4" /></Button>
+                        <Button type="button" variant="ghost" size="icon" aria-label="Next month" onClick={() => shiftMonth(1)}><ChevronRight className="h-4 w-4" /></Button>
+                      </div>
+                    </div>
+                    <div className="mt-3 grid grid-cols-7 gap-y-1 text-center">
+                      {weekdayLabels.map((w) => <div key={w} className="pb-2 text-xs font-medium text-muted-foreground">{w}</div>)}
+                      {monthCells.map((cell) => {
+                        const has = !!groupedByDay[cell.key];
+                        const isActive = cell.key === activeDay;
+                        return (
+                          <div key={cell.key} className="flex justify-center">
+                            <button
+                              type="button"
+                              disabled={!has}
+                              onClick={() => { setActiveDay(cell.key); setPendingSlot(null); }}
+                              aria-pressed={isActive}
+                              className={`relative flex h-10 w-10 flex-col items-center justify-center rounded-full text-sm transition-colors ${
+                                isActive ? "bg-primary font-semibold text-primary-foreground shadow-md"
+                                  : has ? "font-medium text-foreground hover:bg-primary/10"
+                                  : cell.inMonth ? "text-muted-foreground/70" : "text-muted-foreground/40"
+                              }`}
+                            >
+                              {cell.day}
+                              {has && <span className={`absolute bottom-1 h-1 w-1 rounded-full ${isActive ? "bg-primary-foreground" : "bg-primary"}`} />}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {activeDay && (
+                      <div className="mt-5 flex items-center gap-3 rounded-xl bg-primary/10 p-3">
+                        <CalendarCheck className="h-5 w-5 text-primary" />
+                        <div className="text-sm">
+                          <p className="font-semibold text-foreground">
+                            {activeDay === todayKey ? `${X.today}, ` : ""}
+                            {new Date(`${activeDay}T12:00:00Z`).toLocaleDateString(intlLocale, { day: "numeric", month: "short", timeZone: "UTC" })}
+                          </p>
+                          <p className="text-muted-foreground">{X.available(activeSlots.length)}</p>
+                        </div>
+                      </div>
+                    )}
+                  </section>
+
+                  {/* Time */}
+                  <section className="border-t border-border p-5 sm:p-7 md:border-t-0">
+                    <div className="flex items-start gap-3">
+                      <Clock className="mt-0.5 h-5 w-5 text-primary" />
+                      <div>
+                        <h2 className="font-semibold text-foreground">{X.selectTime}</h2>
+                        {activeDay && (
+                          <p className="text-sm text-muted-foreground">
+                            {X.slotsFor}{" "}
+                            <span className="font-medium text-foreground">
+                              {new Date(`${activeDay}T12:00:00Z`).toLocaleDateString(intlLocale, { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })}
+                            </span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    {activeSlots.length > 0 ? (
+                      <div className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                        {activeSlots.map((s) => {
+                          const sel = s === pendingSlot;
+                          return (
+                            <button
+                              key={s}
+                              type="button"
+                              onClick={() => setPendingSlot(s)}
+                              aria-pressed={sel}
+                              className={`h-12 rounded-lg border text-sm font-semibold tabular-nums transition-colors ${
+                                sel ? "border-primary bg-primary/10 text-primary" : "border-border bg-background text-foreground hover:border-primary/50"
+                              }`}
+                            >
+                              {new Date(s).toLocaleTimeString(intlLocale, { hour: "2-digit", minute: "2-digit", timeZone: tz })}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="py-10 text-center text-sm text-muted-foreground">{L.noTimesThisDay}</p>
+                    )}
+                  </section>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+
+                <footer className="flex flex-col gap-4 border-t border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                    <span className="inline-flex items-center gap-2"><Globe className="h-4 w-4 text-primary" />{X.yourTz} <span className="text-foreground">{tzLabel}</span></span>
+                    <span className="hidden h-4 w-px bg-border sm:block" />
+                    <span className="inline-flex items-center gap-2"><Hourglass className="h-4 w-4 text-primary" />{X.duration} {L.minutes(info.session_duration_minutes)}</span>
+                  </div>
+                  <Button type="button" size="lg" className="rounded-full px-8" disabled={!pendingSlot} onClick={() => pendingSlot && setSelectedSlot(pendingSlot)}>
+                    {X.continue} <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </footer>
+              </>
+            )}
+          </div>
         ) : (
           <Card>
             <CardHeader className="space-y-3">
