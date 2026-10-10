@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFreeStarterMode, FREE_STARTER_CLIENT_LIMIT } from "@/hooks/useDemoWorkspace";
@@ -14,12 +14,15 @@ export function DemoBanner() {
   const { subscription } = useAuth();
   const { isFreeStarter, clientCount, limit } = useFreeStarterMode();
   const { t } = useLanguage();
+  const { pathname } = useLocation();
 
   const tx = (key: string, fallback: string) => {
     const value = t(key as any);
     return !value || value === key ? fallback : value;
   };
 
+  // Calendar keeps maximum space; plan management lives in the sidebar plan block.
+  if (pathname === "/calendar") return null;
   if (subscription.loading) return null;
 
   if (subscription.on_trial) return null;
