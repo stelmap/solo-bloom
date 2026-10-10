@@ -1,3 +1,4 @@
+import { ClientSourcesShareBlock } from "@/components/sources/SourceAnalytics";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
@@ -545,6 +546,7 @@ export default function PracticeOverviewPage() {
             </>
           )}
         </div>
+        <ClientSourcesShareBlock />
       </div>
     </AppLayout>
   );

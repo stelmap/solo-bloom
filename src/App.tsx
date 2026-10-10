@@ -54,6 +54,7 @@ const Dashboard = lazyWithReload(() => import("./pages/Dashboard"));
 const CalendarPage = lazyWithReload(() => import("./pages/CalendarPage"));
 const ClientsPage = lazyWithReload(() => import("./pages/ClientsPage"));
 const ClientDetailPage = lazyWithReload(() => import("./pages/ClientDetailPage"));
+const ClientSourcesPage = lazyWithReload(() => import("./pages/ClientSourcesPage"));
 const GroupsPage = lazyWithReload(() => import("./pages/GroupsPage"));
 const GroupDetailPage = lazyWithReload(() => import("./pages/GroupDetailPage"));
 const ServicesPage = lazyWithReload(() => import("./pages/ServicesPage"));
@@ -157,6 +158,8 @@ const App = () => {
                 <Route path="/calendar/settings" element={<ProtectedRoute><CalendarSettingsPage /></ProtectedRoute>} />
                 <Route path="/finances/settings" element={<ProtectedRoute><FinanceSettingsPage /></ProtectedRoute>} />
                 <Route path="/clients" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
+                <Route path="/clients/sources" element={<ProtectedRoute><ClientSourcesPage /></ProtectedRoute>} />
+                <Route path="/clients/sources/:id" element={<ProtectedRoute><ClientSourcesPage /></ProtectedRoute>} />
                 <Route path="/clients/:id" element={<ProtectedRoute><ClientDetailPage /></ProtectedRoute>} />
                 <Route path="/groups" element={<ProtectedRoute><GroupsPage /></ProtectedRoute>} />
                 <Route path="/groups/:id" element={<ProtectedRoute><GroupDetailPage /></ProtectedRoute>} />
