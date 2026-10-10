@@ -31,6 +31,16 @@ type PageInfo = {
 };
 
 type Lang = "en" | "uk" | "fr" | "pl";
+
+const PICKER_COPY: Record<"en" | "uk" | "fr" | "pl", {
+  intro: string; selectDate: string; selectDateHint: string; selectTime: string; slotsFor: string;
+  today: string; available: (n: number) => string; yourTz: string; duration: string; continue: string;
+}> = {
+  en: { intro: "Choose a convenient date and time for your session. All times are shown in the specialist's time zone.", selectDate: "Select date", selectDateHint: "Choose a day with available time slots.", selectTime: "Select time", slotsFor: "Available time slots for", today: "Today", available: (n) => `${n} available time ${n === 1 ? "slot" : "slots"}`, yourTz: "Time zone:", duration: "Session duration:", continue: "Continue" },
+  uk: { intro: "Оберіть зручні дату й час. Час показано в часовому поясі спеціаліста.", selectDate: "Оберіть дату", selectDateHint: "Оберіть день із вільним часом.", selectTime: "Оберіть час", slotsFor: "Вільний час на", today: "Сьогодні", available: (n) => `Вільних слотів: ${n}`, yourTz: "Часовий пояс:", duration: "Тривалість:", continue: "Продовжити" },
+  fr: { intro: "Choisissez une date et une heure. Les horaires sont affichés dans le fuseau du spécialiste.", selectDate: "Choisir une date", selectDateHint: "Choisissez un jour avec des créneaux libres.", selectTime: "Choisir l'heure", slotsFor: "Créneaux disponibles le", today: "Aujourd'hui", available: (n) => `${n} créneau${n === 1 ? "" : "x"} disponible${n === 1 ? "" : "s"}`, yourTz: "Fuseau horaire :", duration: "Durée :", continue: "Continuer" },
+  pl: { intro: "Wybierz dogodną datę i godzinę. Godziny są w strefie czasowej specjalisty.", selectDate: "Wybierz datę", selectDateHint: "Wybierz dzień z wolnymi terminami.", selectTime: "Wybierz godzinę", slotsFor: "Wolne terminy na", today: "Dziś", available: (n) => `Wolne terminy: ${n}`, yourTz: "Strefa czasowa:", duration: "Czas trwania:", continue: "Dalej" },
+};
 function normLang(v: unknown): Lang {
   const s = String(v || "").toLowerCase().slice(0, 2);
   return s === "uk" || s === "fr" || s === "pl" ? (s as Lang) : "en";
@@ -351,6 +361,34 @@ export default function PublicBookingPage() {
     if (!activeDay && dayKeys.length > 0) setActiveDay(dayKeys[0]);
     if (activeDay && !dayKeys.includes(activeDay) && dayKeys.length > 0) setActiveDay(dayKeys[0]);
   }, [dayKeys, activeDay]);
+
+  // Month calendar for the redesigned picker.
+  const [pendingSlot, setPendingSlot] = useState<string | null>(null);
+  const [viewMonth, setViewMonth] = useState<{ y: number; m: number }>(() => {
+    const d = new Date();
+    return { y: d.getFullYear(), m: d.getMonth() };
+  });
+  useEffect(() => {
+    if (!activeDay) return;
+    const [y, m] = activeDay.split("-").map(Number);
+    setViewMonth((v) => (v.y === y && v.m === m - 1 ? v : { y, m: m - 1 }));
+  }, [activeDay]);
+  const shiftMonth = (delta: number) =>
+    setViewMonth((v) => { const d = new Date(Date.UTC(v.y, v.m + delta, 1)); return { y: d.getUTCFullYear(), m: d.getUTCMonth() }; });
+  const monthCells = useMemo(() => {
+    const first = new Date(Date.UTC(viewMonth.y, viewMonth.m, 1));
+    const offset = (first.getUTCDay() + 6) % 7; // Monday first
+    return Array.from({ length: 42 }, (_, i) => {
+      const d = new Date(Date.UTC(viewMonth.y, viewMonth.m, 1 - offset + i));
+      return { key: d.toISOString().slice(0, 10), day: d.getUTCDate(), inMonth: d.getUTCMonth() === viewMonth.m };
+    }).filter((c, i, arr) => i < 35 || arr.slice(35).some((x) => x.inMonth));
+  }, [viewMonth]);
+  const weekdayLabels = useMemo(
+    () => Array.from({ length: 7 }, (_, i) => new Date(Date.UTC(2024, 0, 1 + i)).toLocaleDateString(intlLocale, { weekday: "short", timeZone: "UTC" })),
+    [intlLocale],
+  );
+  const todayKey = new Date().toLocaleDateString("en-CA", { timeZone: info?.timezone || undefined });
+  const X = PICKER_COPY[lang];
 
   async function getIpHash(): Promise<string | null> {
     try {
