@@ -1,3 +1,6 @@
+import { SourcePicker, type SourceValue } from "@/components/sources/SourcePicker";
+import { useSourceCopy } from "@/lib/clientSourcesCopy";
+import { Compass } from "lucide-react";
 import { prepaidBadgeClass } from "@/components/clients/PrepaidSessionsCard";
 import { usePrepaidSummaries } from "@/hooks/usePrepaidSessions";
 import { prepaidCopy } from "@/lib/prepaidSessions";
@@ -138,6 +141,7 @@ export default function ClientsPage() {
   const [emailError, setEmailError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState<{ name: string; phone: string; email: string; notes: string; telegram: string; communication_language: "" | "uk" | "ru" | "en" | "pl" | "fr" }>({ name: "", phone: "", email: "", notes: "", telegram: "", communication_language: "" });
+  const [acq, setAcq] = useState<SourceValue>({ source_id: null, campaign_id: null, referred_by_client_id: null, referred_by_name: null });
 
   const debouncedSearch = useDebouncedValue(search, 200);
   const counts = {
@@ -286,8 +290,9 @@ export default function ClientsPage() {
       return;
     }
     try {
-      await createClient.mutateAsync(form);
+      await createClient.mutateAsync({ ...form, ...acq });
       setForm({ name: "", phone: "", email: "", notes: "", telegram: "", communication_language: "" });
+      setAcq({ source_id: null, campaign_id: null, referred_by_client_id: null, referred_by_name: null });
       setEmailError(null);
       setOpen(false);
       toast({ title: t("toast.clientAdded") });
@@ -399,7 +404,10 @@ export default function ClientsPage() {
             <h1 className="text-2xl font-bold text-foreground">{t("clients.title")}</h1>
             <p className="text-muted-foreground mt-1">{t(`clients.count.${statusFilter}` as any, { count: counts[statusFilter] })}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" asChild>
+              <Link to="/clients/sources"><Compass className="h-4 w-4 mr-1" /> {sc("title")}</Link>
+            </Button>
             <Button variant="outline" onClick={() => {
               downloadCSV("clients.csv",
                 [t("csv.header.name"), t("csv.header.phone"), t("csv.header.email"), t("csv.header.notes")],
@@ -447,6 +455,7 @@ export default function ClientsPage() {
                   onChange={(v) => setForm(f => ({ ...f, communication_language: v }))}
                   required
                 />
+                <SourcePicker value={acq} onChange={setAcq} withReferral />
                 <Button onClick={handleCreate} className="w-full" disabled={createClient.isPending}>
                   {createClient.isPending ? t("common.adding") : t("clients.addClient")}
                 </Button>
