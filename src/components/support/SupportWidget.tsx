@@ -269,6 +269,8 @@ export function SupportWidget() {
     if (overlayOpen) return null;
     // Public booking pages are client-facing: no helpdesk launcher there.
     if (location.pathname.startsWith("/book/")) return null;
+    // Calendar: help is reached from the neutral "Help" item in the sidebar.
+    if (location.pathname === "/calendar") return null;
     return (
       <button
         ref={btnRef}

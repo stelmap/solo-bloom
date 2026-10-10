@@ -4,8 +4,10 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Calendar, Users, Scissors, DollarSign,
   TrendingDown, TrendingUp, Settings, Target, Menu, X, LogOut, BarChart3, UsersRound, ClipboardList,
-  Wallet, ChevronDown, Lock, ShieldCheck, Sparkles, BadgeCheck, PanelLeftOpen, PanelLeftClose,
+  Wallet, ChevronDown, Lock, ShieldCheck, Sparkles, BadgeCheck, PanelLeftOpen, PanelLeftClose, CircleHelp,
 } from "lucide-react";
+import { SUPPORT_OPEN_EVENT } from "@/lib/support";
+import { calToolbarCopy } from "@/lib/calendarToolbarCopy";
 import { cn } from "@/lib/utils";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -343,8 +345,16 @@ export function AppSidebar() {
     );
   };
 
+  const openHelp = () => { closeAll(); window.dispatchEvent(new CustomEvent(SUPPORT_OPEN_EVENT, { detail: {} })); };
+  const helpLabel = calToolbarCopy(lang).help;
   const FullFooter = () => (
-    <div className="p-4 border-t border-sidebar-border">
+    <>
+    <div className="px-3 pt-2 border-t border-sidebar-border">
+      <button type="button" onClick={openHelp} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors">
+        <CircleHelp className="h-4 w-4" /> {helpLabel}
+      </button>
+    </div>
+    <div className="p-4">
       <div className="flex items-center gap-3">
         <Link
           to="/settings/practice"
@@ -376,6 +386,7 @@ export function AppSidebar() {
         </button>
       </div>
     </div>
+    </>
   );
 
 
@@ -507,6 +518,7 @@ export function AppSidebar() {
             </TooltipContent>
           </Tooltip>
 
+          <RailButton icon={CircleHelp} label={helpLabel} active={false} onClick={openHelp} />
           <RailButton icon={LogOut} label={t("nav.signOut")} active={false} onClick={signOut} />
         </div>
       </aside>
