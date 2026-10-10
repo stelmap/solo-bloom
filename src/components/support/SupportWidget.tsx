@@ -60,7 +60,7 @@ export function SupportWidget() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const insideApp = useMemo(
-    () => Boolean(user) && !["/", "/auth"].includes(location.pathname),
+    () => Boolean(user) && !["/", "/auth"].includes(location.pathname) && !location.pathname.startsWith("/book/"),
     [user, location.pathname],
   );
 

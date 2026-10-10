@@ -33,13 +33,13 @@ type PageInfo = {
 type Lang = "en" | "uk" | "fr" | "pl";
 
 const PICKER_COPY: Record<"en" | "uk" | "fr" | "pl", {
-  intro: string; selectDate: string; selectDateHint: string; selectTime: string; slotsFor: string;
+  heading: string; intro: string; selectDate: string; selectDateHint: string; selectTime: string; slotsFor: string;
   today: string; available: (n: number) => string; yourTz: string; duration: string; continue: string;
 }> = {
-  en: { intro: "Choose a convenient date and time for your session. All times are shown in the specialist's time zone.", selectDate: "Select date", selectDateHint: "Choose a day with available time slots.", selectTime: "Select time", slotsFor: "Available time slots for", today: "Today", available: (n) => `${n} available time ${n === 1 ? "slot" : "slots"}`, yourTz: "Time zone:", duration: "Session duration:", continue: "Continue" },
-  uk: { intro: "Оберіть зручні дату й час. Час показано в часовому поясі спеціаліста.", selectDate: "Оберіть дату", selectDateHint: "Оберіть день із вільним часом.", selectTime: "Оберіть час", slotsFor: "Вільний час на", today: "Сьогодні", available: (n) => `Вільних слотів: ${n}`, yourTz: "Часовий пояс:", duration: "Тривалість:", continue: "Продовжити" },
-  fr: { intro: "Choisissez une date et une heure. Les horaires sont affichés dans le fuseau du spécialiste.", selectDate: "Choisir une date", selectDateHint: "Choisissez un jour avec des créneaux libres.", selectTime: "Choisir l'heure", slotsFor: "Créneaux disponibles le", today: "Aujourd'hui", available: (n) => `${n} créneau${n === 1 ? "" : "x"} disponible${n === 1 ? "" : "s"}`, yourTz: "Fuseau horaire :", duration: "Durée :", continue: "Continuer" },
-  pl: { intro: "Wybierz dogodną datę i godzinę. Godziny są w strefie czasowej specjalisty.", selectDate: "Wybierz datę", selectDateHint: "Wybierz dzień z wolnymi terminami.", selectTime: "Wybierz godzinę", slotsFor: "Wolne terminy na", today: "Dziś", available: (n) => `Wolne terminy: ${n}`, yourTz: "Strefa czasowa:", duration: "Czas trwania:", continue: "Dalej" },
+  en: { heading: "Choose a date and time", intro: "Choose a convenient date and time for your session. All times are shown in the specialist's time zone.", selectDate: "Select date", selectDateHint: "Choose a day with available time slots.", selectTime: "Select time", slotsFor: "Available time slots for", today: "Today", available: (n) => `${n} available time ${n === 1 ? "slot" : "slots"}`, yourTz: "Time zone:", duration: "Session duration:", continue: "Continue" },
+  uk: { heading: "Оберіть дату та час", intro: "Оберіть зручні дату й час. Час показано в часовому поясі спеціаліста.", selectDate: "Оберіть дату", selectDateHint: "Оберіть день із вільним часом.", selectTime: "Оберіть час", slotsFor: "Вільний час на", today: "Сьогодні", available: (n) => `Вільних слотів: ${n}`, yourTz: "Часовий пояс:", duration: "Тривалість:", continue: "Продовжити" },
+  fr: { heading: "Choisissez une date et une heure", intro: "Choisissez une date et une heure. Les horaires sont affichés dans le fuseau du spécialiste.", selectDate: "Choisir une date", selectDateHint: "Choisissez un jour avec des créneaux libres.", selectTime: "Choisir l'heure", slotsFor: "Créneaux disponibles le", today: "Aujourd'hui", available: (n) => `${n} créneau${n === 1 ? "" : "x"} disponible${n === 1 ? "" : "s"}`, yourTz: "Fuseau horaire :", duration: "Durée :", continue: "Continuer" },
+  pl: { heading: "Wybierz datę i godzinę", intro: "Wybierz dogodną datę i godzinę. Godziny są w strefie czasowej specjalisty.", selectDate: "Wybierz datę", selectDateHint: "Wybierz dzień z wolnymi terminami.", selectTime: "Wybierz godzinę", slotsFor: "Wolne terminy na", today: "Dziś", available: (n) => `Wolne terminy: ${n}`, yourTz: "Strefa czasowa:", duration: "Czas trwania:", continue: "Dalej" },
 };
 function normLang(v: unknown): Lang {
   const s = String(v || "").toLowerCase().slice(0, 2);
@@ -533,18 +533,38 @@ export default function PublicBookingPage() {
   const activeSlots = activeDay ? groupedByDay[activeDay]?.slots ?? [] : [];
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-background via-background to-primary/10 px-4 py-8">
-      <img src={bookingRoom} alt="" aria-hidden width={1024} height={768} className="pointer-events-none absolute right-0 top-0 hidden w-[38%] max-w-xl select-none opacity-90 [mask-image:radial-gradient(ellipse_at_top_right,black_45%,transparent_75%)] lg:block" />
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-background via-background to-primary/10 px-4 py-4 sm:py-6">
+      <img src={bookingRoom} alt="" aria-hidden width={1024} height={768} className="pointer-events-none absolute right-0 top-0 hidden w-[30%] max-w-md select-none opacity-70 [mask-image:radial-gradient(ellipse_at_top_right,black_40%,transparent_72%)] lg:block" />
       <SeoHead
         path="/book"
         title="Book a session — Solo .Bizz"
         description="Private booking link to choose a time with your practitioner."
         noindex
       />
-      <div className="relative mx-auto max-w-5xl space-y-6">
-        <div className="flex justify-end">
+      <div className="relative mx-auto max-w-[1080px] space-y-4">
+        <header className="flex items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-3">
+            {info.show_practice_profile !== false && info.avatar_url && (
+              <img src={info.avatar_url} alt={info.business_name || info.display_name} className="h-12 w-12 shrink-0 rounded-full border border-border object-cover shadow-sm" />
+            )}
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-foreground">
+                {(info.show_practice_profile !== false && info.business_name) || info.display_name}
+              </p>
+              {info.show_practice_profile !== false && (info.business_address || info.practice_email) && (
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+                  {info.business_address && (
+                    <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{info.business_address}</span>
+                  )}
+                  {info.practice_email && (
+                    <a href={`mailto:${info.practice_email}`} className="inline-flex items-center gap-1 hover:text-foreground"><Mail className="h-3 w-3" />{info.practice_email}</a>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
           <Select value={lang} onValueChange={(v) => changeLang(v as Lang)}>
-            <SelectTrigger className="h-8 w-auto gap-2 text-xs">
+            <SelectTrigger className="h-8 w-auto shrink-0 gap-2 text-xs">
               <Globe className="h-3.5 w-3.5" />
               <SelectValue />
             </SelectTrigger>
@@ -555,52 +575,8 @@ export default function PublicBookingPage() {
               <SelectItem value="pl">Polski</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-        <header className="text-center space-y-3">
-          {info.show_practice_profile !== false && (info.avatar_url || info.business_name || info.business_address || info.practice_email) && (
-            <div className="flex flex-col items-center gap-3 pb-2">
-              {info.avatar_url && (
-                <img
-                  src={info.avatar_url}
-                  alt={info.business_name || info.display_name}
-                  className="h-20 w-20 rounded-full object-cover border border-border shadow-sm"
-                />
-              )}
-              {info.business_name && (
-                <div className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground">
-                  <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                  {info.business_name}
-                </div>
-              )}
-              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                {info.business_address && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5" />
-                    {info.business_address}
-                  </span>
-                )}
-                {info.practice_email && (
-                  <a href={`mailto:${info.practice_email}`} className="inline-flex items-center gap-1.5 hover:text-foreground">
-                    <Mail className="h-3.5 w-3.5" />
-                    {info.practice_email}
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
-          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Book a session with {info.display_name}</h1>
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5" />
-              {L.minSession(info.session_duration_minutes)}
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Globe className="h-3.5 w-3.5" />
-              {tzLabel}
-            </span>
-          </div>
-          <p className="mx-auto max-w-md text-sm text-muted-foreground">{X.intro}</p>
         </header>
+        <h1 className="text-center text-xl font-bold tracking-tight text-foreground sm:text-2xl">{X.heading}</h1>
 
         {!selectedSlot ? (
           <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
@@ -619,7 +595,7 @@ export default function PublicBookingPage() {
               <>
                 <div className="grid md:grid-cols-2">
                   {/* Date */}
-                  <section className="p-5 sm:p-7 md:border-r md:border-border">
+                  <section className="p-4 sm:p-5 md:border-r md:border-border">
                     <div className="flex items-start gap-3">
                       <CalendarDays className="mt-0.5 h-5 w-5 text-primary" />
                       <div>
@@ -627,7 +603,7 @@ export default function PublicBookingPage() {
                         <p className="text-sm text-muted-foreground">{X.selectDateHint}</p>
                       </div>
                     </div>
-                    <div className="mt-5 flex items-center justify-between">
+                    <div className="mt-3 flex items-center justify-between">
                       <p className="font-semibold capitalize text-foreground">
                         {new Date(Date.UTC(viewMonth.y, viewMonth.m, 15)).toLocaleDateString(intlLocale, { month: "long", year: "numeric", timeZone: "UTC" })}
                       </p>
@@ -636,8 +612,8 @@ export default function PublicBookingPage() {
                         <Button type="button" variant="ghost" size="icon" aria-label="Next month" onClick={() => shiftMonth(1)}><ChevronRight className="h-4 w-4" /></Button>
                       </div>
                     </div>
-                    <div className="mt-3 grid grid-cols-7 gap-y-1 text-center">
-                      {weekdayLabels.map((w) => <div key={w} className="pb-2 text-xs font-medium text-muted-foreground">{w}</div>)}
+                    <div className="mt-1 grid grid-cols-7 gap-y-0.5 text-center">
+                      {weekdayLabels.map((w) => <div key={w} className="pb-1 text-xs font-medium text-muted-foreground">{w}</div>)}
                       {monthCells.map((cell) => {
                         const has = !!groupedByDay[cell.key];
                         const isActive = cell.key === activeDay;
@@ -648,7 +624,7 @@ export default function PublicBookingPage() {
                               disabled={!has}
                               onClick={() => { setActiveDay(cell.key); setPendingSlot(null); }}
                               aria-pressed={isActive}
-                              className={`relative flex h-10 w-10 flex-col items-center justify-center rounded-full text-sm transition-colors ${
+                              className={`relative flex h-9 w-9 flex-col items-center justify-center rounded-full text-sm transition-colors ${
                                 isActive ? "bg-primary font-semibold text-primary-foreground shadow-md"
                                   : has ? "font-medium text-foreground hover:bg-primary/10"
                                   : cell.inMonth ? "text-muted-foreground/70" : "text-muted-foreground/40"
@@ -662,7 +638,7 @@ export default function PublicBookingPage() {
                       })}
                     </div>
                     {activeDay && (
-                      <div className="mt-5 flex items-center gap-3 rounded-xl bg-primary/10 p-3">
+                      <div className="mt-3 flex items-center gap-3 rounded-xl bg-primary/10 px-3 py-2">
                         <CalendarCheck className="h-5 w-5 text-primary" />
                         <div className="text-sm">
                           <p className="font-semibold text-foreground">
@@ -676,7 +652,7 @@ export default function PublicBookingPage() {
                   </section>
 
                   {/* Time */}
-                  <section className="border-t border-border p-5 sm:p-7 md:border-t-0">
+                  <section className="border-t border-border p-4 sm:p-5 md:border-t-0">
                     <div className="flex items-start gap-3">
                       <Clock className="mt-0.5 h-5 w-5 text-primary" />
                       <div>
@@ -692,7 +668,7 @@ export default function PublicBookingPage() {
                       </div>
                     </div>
                     {activeSlots.length > 0 ? (
-                      <div className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                      <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4">
                         {activeSlots.map((s) => {
                           const sel = s === pendingSlot;
                           return (
@@ -701,7 +677,7 @@ export default function PublicBookingPage() {
                               type="button"
                               onClick={() => setPendingSlot(s)}
                               aria-pressed={sel}
-                              className={`h-12 rounded-lg border text-sm font-semibold tabular-nums transition-colors ${
+                              className={`h-10 rounded-lg border text-sm font-semibold tabular-nums transition-colors ${
                                 sel ? "border-primary bg-primary/10 text-primary" : "border-border bg-background text-foreground hover:border-primary/50"
                               }`}
                             >
@@ -716,7 +692,7 @@ export default function PublicBookingPage() {
                   </section>
                 </div>
 
-                <footer className="flex flex-col gap-4 border-t border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+                <footer className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-2"><Globe className="h-4 w-4 text-primary" />{X.yourTz} <span className="text-foreground">{tzLabel}</span></span>
                     <span className="hidden h-4 w-px bg-border sm:block" />
