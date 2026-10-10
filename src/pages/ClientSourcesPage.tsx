@@ -25,7 +25,7 @@ function SourceList() {
   const { fmt } = useCurrency();
   const navigate = useNavigate();
   const p = usePeriod("all");
-  const { rows, sources, nameOf } = useSourceRows(p.range);
+  const { rows, sources } = useSourceRows(p.range);
   const { data } = useSourceAnalyticsData();
   const [dialog, setDialog] = useState<{ open: boolean; source?: ClientSource | null }>({ open: false });
   const referrers = useMemo(() => referralCounts(data?.clients ?? []).slice(0, 5), [data]);
@@ -86,7 +86,6 @@ function SourceList() {
       )}
 
       <SourceDialog open={dialog.open} source={dialog.source} onOpenChange={(o) => setDialog({ open: o })} />
-      {nameOf("") /* keep hook stable */}
     </div>
   );
 }
