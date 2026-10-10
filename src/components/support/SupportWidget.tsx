@@ -264,36 +264,8 @@ export function SupportWidget() {
   };
 
   /* ---------- render ---------- */
-  if (!open) {
-    // Never sit on top of a drawer/modal: its actions must stay clickable.
-    if (overlayOpen) return null;
-    // Public booking pages are client-facing: no helpdesk launcher there.
-    if (location.pathname.startsWith("/book/")) return null;
-    // Calendar: help is reached from the neutral "Help" item in the sidebar.
-    if (location.pathname === "/calendar") return null;
-    return (
-      <button
-        ref={btnRef}
-        type="button"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={() => { drag.current = null; }}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openWith({}); } }}
-        aria-label={t("support.button")}
-        title={t("support.button")}
-        style={pos ? { left: pos.x, top: pos.y, right: "auto", bottom: "auto" } : undefined}
-        className={cn(
-          "fixed z-[55] flex touch-none select-none cursor-grab active:cursor-grabbing items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-lg transition-opacity hover:opacity-90",
-          !pos && "right-4",
-          !pos && (insideApp ? "bottom-20 lg:bottom-4 lg:right-[calc(1rem+15rem)]" : "bottom-4"),
-        )}
-      >
-        <LifeBuoy className="h-4 w-4" />
-        <span className="hidden sm:inline">{t("support.button")}</span>
-      </button>
-    );
-  }
+  // No floating launcher: the chat opens only from the "Help" menu item.
+  if (!open) return null;
 
   return (
     <div
