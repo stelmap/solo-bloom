@@ -83,7 +83,7 @@ export function AppSidebar() {
   useEffect(() => () => clearHoverTimer(), []);
   useEffect(() => { if (pinned) setHoverOpen(false); }, [pinned]);
   const { user, signOut, subscription } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const isTrial = !subscription.loading && subscription.on_trial && !subscription.subscribed;
   const { isFreeStarter, planCode } = useFreeStarterMode();
   const { has, loading: entLoading } = useEntitlements();
