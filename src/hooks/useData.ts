@@ -91,7 +91,7 @@ export function useCreateClient() {
   const assertCanWrite = useDemoWriteGuard();
   const { atClientLimit, planCode, limit } = useFreeStarterMode();
   return useMutation({
-    mutationFn: async (client: { name: string; phone?: string; email?: string; notes?: string; telegram?: string; communication_language?: string }) => {
+    mutationFn: async (client: { name: string; phone?: string; email?: string; notes?: string; telegram?: string; communication_language?: string; source_id?: string | null; campaign_id?: string | null; referred_by_client_id?: string | null; referred_by_name?: string | null }) => {
       assertCanWrite();
       if (atClientLimit) {
         throw new Error(planCode === "free" ? FREE_STARTER_LIMIT_ERROR : `${PLAN_CLIENT_LIMIT_ERROR}:${limit ?? ""}`);
@@ -115,7 +115,7 @@ export function useUpdateClient() {
   const { user } = useAuth();
   const assertCanWrite = useDemoWriteGuard();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; phone?: string; email?: string; notes?: string; telegram?: string; notification_preference?: string; confirmation_required?: boolean; pricing_mode?: string; base_price?: number | null; communication_language?: string | null; flexible_session_price?: boolean }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; name?: string; phone?: string; email?: string; notes?: string; telegram?: string; notification_preference?: string; confirmation_required?: boolean; pricing_mode?: string; base_price?: number | null; communication_language?: string | null; flexible_session_price?: boolean; source_id?: string | null; campaign_id?: string | null; referred_by_client_id?: string | null; referred_by_name?: string | null }) => {
       assertCanWrite();
       let priorFlexible: boolean | undefined;
       if (typeof (updates as any).flexible_session_price === "boolean") {
@@ -1788,6 +1788,8 @@ export function useCreateExpense() {
       recurring_start_date?: string | null;
       instance_status?: "planned" | "paid" | "cancelled";
       paid_date?: string | null;
+      source_id?: string | null;
+      campaign_id?: string | null;
     }) => {
       // Make sure the session is still valid — otherwise the insert is rejected
       // by row-level security with an opaque error instead of a re-login prompt.
@@ -1801,6 +1803,8 @@ export function useCreateExpense() {
         const row: any = attachDemoFlag({
           user_id: uid,
           category: expense.category,
+          source_id: expense.source_id ?? null,
+          campaign_id: expense.campaign_id ?? null,
           amount: expense.amount,
           date: expense.date,
           description: expense.description ?? null,
@@ -1824,6 +1828,8 @@ export function useCreateExpense() {
       const tpl: any = attachDemoFlag({
         user_id: uid,
         category: expense.category,
+          source_id: expense.source_id ?? null,
+          campaign_id: expense.campaign_id ?? null,
         amount: expense.amount,
         date: startDate,
         description: expense.description ?? null,
@@ -1847,6 +1853,8 @@ export function useCreateExpense() {
       const instanceRows = dates.map(d => attachDemoFlag({
         user_id: uid,
         category: expense.category,
+          source_id: expense.source_id ?? null,
+          campaign_id: expense.campaign_id ?? null,
         amount: expense.amount,
         date: d,
         description: expense.description ?? null,
@@ -1883,6 +1891,8 @@ export function useUpdateExpense() {
       description?: string;
       instance_status?: "planned" | "paid" | "cancelled";
       paid_date?: string | null;
+      source_id?: string | null;
+      campaign_id?: string | null;
     }) => {
       // Look up the row to know if it's an instance and find its template.
       const { data: target, error: lookupErr } = await supabase

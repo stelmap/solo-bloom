@@ -1,3 +1,5 @@
+import { SourcePicker, type SourceValue } from "@/components/sources/SourcePicker";
+import { useSourceCopy } from "@/lib/clientSourcesCopy";
 import { AppLayout } from "@/components/AppLayout";
 import { ListSkeleton } from "@/components/ListSkeleton";
 import { Button } from "@/components/ui/button";
@@ -49,6 +51,8 @@ export default function ExpensesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteScope, setDeleteScope] = useState<"single" | "future" | "series">("single");
   const [deleteIncludePaid, setDeleteIncludePaid] = useState(false);
+  const [acq, setAcq] = useState<SourceValue>({ source_id: null, campaign_id: null });
+  const sc = useSourceCopy();
   const [form, setForm] = useState<{
     category: string;
     amount: number;
@@ -138,6 +142,7 @@ export default function ExpensesPage() {
   };
 
   const startEdit = (exp: any, scope: "single" | "series") => {
+    setAcq({ source_id: exp.source_id ?? null, campaign_id: exp.campaign_id ?? null });
     setEditId(exp.id);
     setEditScope(scope);
     const rec: "one_time" | "monthly" | "yearly" = exp.is_template
@@ -156,6 +161,7 @@ export default function ExpensesPage() {
   };
 
   const openCreate = () => {
+    setAcq({ source_id: null, campaign_id: null });
     setEditId(null);
     const today = new Date().toISOString().split("T")[0];
     setForm({ category: "Other", amount: 0, date: today, description: "", recurrence: "one_time", recurring_start_date: today, instance_status: "planned" });
@@ -186,6 +192,8 @@ export default function ExpensesPage() {
             description: form.description,
             instance_status: form.instance_status,
             paid_date: form.instance_status === "paid" ? new Date().toISOString().split("T")[0] : null,
+            source_id: acq.source_id,
+            campaign_id: acq.campaign_id,
           });
         }
         toast({ title: t("toast.expenseUpdated") });
@@ -198,6 +206,8 @@ export default function ExpensesPage() {
           recurrence: form.recurrence,
           recurring_start_date: isRecurring ? form.recurring_start_date : null,
           instance_status: form.instance_status,
+          source_id: acq.source_id,
+          campaign_id: acq.campaign_id,
         });
         toast({ title: t("toast.expenseAdded") });
       }
@@ -305,6 +315,7 @@ export default function ExpensesPage() {
                 )}
 
                 <div className="space-y-2"><Label>{t("common.description")}</Label><Input placeholder={t("expenses.descriptionPlaceholder")} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
+                <SourcePicker value={acq} onChange={setAcq} title={sc("expenseLink")} />
 
                 <div className="space-y-2">
                   <Label>{t("common.status")}</Label>

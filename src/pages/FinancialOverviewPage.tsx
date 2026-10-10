@@ -1,3 +1,4 @@
+import { AcquisitionEfficiencyBlock } from "@/components/sources/SourceAnalytics";
 import { useState, useMemo, useEffect } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { useAllIncome, useAllExpenses, useAppointments, useTaxSettings, useExpectedPayments, useProfile } from "@/hooks/useData";
@@ -602,6 +603,7 @@ export default function FinancialOverviewPage() {
             </CollapsibleContent>
           </div>
         </Collapsible>
+        <AcquisitionEfficiencyBlock />
       </div>
 
       {/* Drill-down dialog */}
