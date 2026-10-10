@@ -104,6 +104,9 @@ export default function PlansPage() {
   // Manually entered Paddle discount code (any active code from the Paddle account).
   const [promoInput, setPromoInput] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
+  const [promoInfo, setPromoInfo] = useState<{ code: string; type: "percentage" | "flat"; amount: number; currency: string | null } | null>(null);
+  const [promoChecking, setPromoChecking] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
   // Plan whose personal discount Paddle could not apply (asks before full price).
   const [discountProblemPlanId, setDiscountProblemPlanId] = useState<string | null>(null);
 
@@ -157,6 +160,9 @@ export default function PlansPage() {
     personalDiscount: { en: "Your personal discount", fr: "Votre remise personnelle", uk: "Ваша персональна знижка", pl: "Twój osobisty rabat", ru: "Ваша персональная скидка" },
     mfaSecurity: { en: "MFA & data protection", fr: "MFA et protection des données", uk: "MFA та захист даних", pl: "MFA i ochrona danych", ru: "MFA и защита данных" },
     promoTitle: { en: "Have a promo code?", fr: "Vous avez un code promo ?", uk: "Маєте промокод?", pl: "Masz kod promocyjny?", ru: "Есть промокод?" },
+    promoAppliedOk: { en: "Promo code applied", fr: "Code promo appliqué", uk: "Промокод застосовано", pl: "Kod promocyjny zastosowany", ru: "Промокод применён" },
+    promoCheckFailed: { en: "Couldn't check the code right now. Please try again.", fr: "Impossible de vérifier le code pour le moment. Réessayez.", uk: "Не вдалося перевірити код. Спробуйте ще раз.", pl: "Nie udało się sprawdzić kodu. Spróbuj ponownie.", ru: "Не удалось проверить код. Попробуйте ещё раз." },
+    promoBelowMin: { en: "This code lowers the price below the minimum the payment provider can charge. Try another code or a longer billing period.", fr: "Ce code réduit le prix sous le minimum facturable par le prestataire de paiement. Essayez un autre code ou une période plus longue.", uk: "Цей код знижує ціну нижче мінімальної суми, яку може списати платіжна система. Спробуйте інший код або довший період.", pl: "Ten kod obniża cenę poniżej minimalnej kwoty, jaką może pobrać operator płatności. Spróbuj innego kodu lub dłuższego okresu.", ru: "Этот код снижает цену ниже минимальной суммы, которую может списать платёжная система. Попробуйте другой код или более длинный период." },
     promoPlaceholder: { en: "Enter code", fr: "Saisir le code", uk: "Введіть код", pl: "Wpisz kod", ru: "Введите код" },
     promoApply: { en: "Apply", fr: "Appliquer", uk: "Застосувати", pl: "Zastosuj", ru: "Применить" },
     promoRemove: { en: "Remove", fr: "Retirer", uk: "Прибрати", pl: "Usuń", ru: "Убрать" },
@@ -468,11 +474,19 @@ export default function PlansPage() {
           setSlowCheckout(false);
           setContinuing(false);
           setAppliedPromo(null);
+          setPromoInfo(null);
           toast({
             title: tr(COPY.promoInvalidTitle),
             description: tr(COPY.promoInvalidBody),
             variant: "destructive",
           });
+          return;
+        }
+        if (serverCode === "discount_below_minimum") {
+          window.clearTimeout(slowTimer);
+          setSlowCheckout(false);
+          setContinuing(false);
+          toast({ title: tr(COPY.promoInvalidTitle), description: tr(COPY.promoBelowMin), variant: "destructive" });
           return;
         }
         if (serverCode === "personal_discount_unavailable") {
@@ -756,11 +770,12 @@ export default function PlansPage() {
                       </div>
 
                       <div className="mt-3">
-                        {price && personalDiscount && personalDiscount.planCode === plan.code && personalDiscount.billingPeriod === period ? (() => {
+                        {price && ((promoInfo && (promoInfo.type === "percentage" || !promoInfo.currency || promoInfo.currency === price.currency)) || (personalDiscount && personalDiscount.planCode === plan.code && personalDiscount.billingPeriod === period)) ? (() => {
+                          const usedDiscount = (promoInfo && (promoInfo.type === "percentage" || !promoInfo.currency || promoInfo.currency === price.currency)) ? promoInfo : personalDiscount!;
                           const base = Number(price.price);
-                          const final = Math.max(0, personalDiscount.type === "percentage"
-                            ? base * (1 - personalDiscount.amount / 100)
-                            : base - personalDiscount.amount);
+                          const final = Math.max(0, usedDiscount.type === "percentage"
+                            ? base * (1 - usedDiscount.amount / 100)
+                            : base - usedDiscount.amount);
                           return (
                             <div className="space-y-1">
                               <div className="flex flex-wrap items-baseline gap-2">
@@ -769,14 +784,14 @@ export default function PlansPage() {
                                 <span className="text-sm text-muted-foreground line-through">{formatPrice(base, price.currency)}</span>
                               </div>
                               <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
-                                {tr(COPY.personalDiscount)} −{personalDiscount.type === "percentage"
-                                  ? `${personalDiscount.amount}%`
-                                  : formatPrice(personalDiscount.amount, price.currency)}
+                                {(promoInfo ? tr(COPY.discountLabel) : tr(COPY.personalDiscount))} −{usedDiscount.type === "percentage"
+                                  ? `${usedDiscount.amount}%`
+                                  : formatPrice(usedDiscount.amount, price.currency)}
                               </span>
                               <dl className="mt-2 space-y-0.5 rounded-lg border border-border bg-muted/40 p-2 text-xs">
                                 <div className="flex justify-between gap-2"><dt className="text-muted-foreground">{displayName}</dt><dd className="font-medium text-foreground">{billedLabel}</dd></div>
                                 <div className="flex justify-between gap-2"><dt className="text-muted-foreground">{tr(COPY.originalPrice)}</dt><dd className="text-foreground">{formatPrice(base, price.currency)} {price.currency}</dd></div>
-                                <div className="flex justify-between gap-2"><dt className="text-muted-foreground">{tr(COPY.discountLabel)} ({personalDiscount.code})</dt><dd className="text-foreground">−{formatPrice(Number((base - final).toFixed(2)), price.currency)}</dd></div>
+                                <div className="flex justify-between gap-2"><dt className="text-muted-foreground">{tr(COPY.discountLabel)} ({usedDiscount.code})</dt><dd className="text-foreground">−{formatPrice(Number((base - final).toFixed(2)), price.currency)}</dd></div>
                                 <div className="flex justify-between gap-2"><dt className="font-semibold text-foreground">{tr(COPY.finalPrice)}</dt><dd className="font-semibold text-foreground">{formatPrice(Number(final.toFixed(2)), price.currency)} {price.currency}</dd></div>
                                 <p className="pt-1 text-muted-foreground">{tr(COPY.taxNote)}</p>
                               </dl>
@@ -879,6 +894,7 @@ export default function PlansPage() {
                       variant="outline"
                       onClick={() => {
                         setAppliedPromo(null);
+                        setPromoInfo(null);
                         setPromoInput("");
                       }}
                     >
@@ -888,19 +904,38 @@ export default function PlansPage() {
                     <Button
                       type="button"
                       variant="outline"
-                      disabled={promoInput.trim().length < 3}
-                      onClick={() => setAppliedPromo(promoInput.trim().toUpperCase())}
+                      disabled={promoInput.trim().length < 3 || promoChecking}
+                      onClick={async () => {
+                        const code = promoInput.trim().toUpperCase();
+                        setPromoChecking(true);
+                        setPromoError(null);
+                        try {
+                          const { data } = await supabase.functions.invoke("create-checkout", { body: { preview: true, promoCode: code } });
+                          const promo = (data as any)?.promo;
+                          if (promo) {
+                            setAppliedPromo(code);
+                            setPromoInfo(promo);
+                          } else {
+                            setPromoError((data as any)?.code === "promo_check_failed" ? tr(COPY.promoCheckFailed) : tr(COPY.promoInvalidBody));
+                          }
+                        } catch {
+                          setPromoError(tr(COPY.promoCheckFailed));
+                        } finally {
+                          setPromoChecking(false);
+                        }
+                      }}
                     >
-                      {tr(COPY.promoApply)}
+                      {promoChecking ? <Loader2 className="h-4 w-4 animate-spin" /> : tr(COPY.promoApply)}
                     </Button>
                   )}
                 </div>
                 {appliedPromo && (
                   <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Check className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                    {tr(COPY.promoApplied)}
+                    {tr(COPY.promoAppliedOk)}{promoInfo ? ` · ${appliedPromo} · −${promoInfo.type === "percentage" ? `${promoInfo.amount}%` : `${promoInfo.amount} ${promoInfo.currency ?? ""}`}` : ""}
                   </p>
                 )}
+                {promoError && !appliedPromo && <p className="mt-2 text-xs text-destructive">{promoError}</p>}
               </div>
             )}
 

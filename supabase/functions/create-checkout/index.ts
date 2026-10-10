@@ -72,6 +72,30 @@ serve(async (req) => {
 
     // Preview: tell the plans page which personal (legacy) discount this
     // customer will get, so the final price is visible before paying.
+    // Validate a manually typed promo code so the plans page can show the
+    // discount before checkout (and reject unknown codes on "Apply").
+    if (body.preview && body.promoCode) {
+      const code = String(body.promoCode).trim().toUpperCase();
+      if (!/^[A-Z0-9_-]{3,40}$/.test(code)) return json({ promo: null, code: "invalid_promo_code" }, 200);
+      try {
+        const res = await paddleFetch<{ data: Array<{ code: string; type: string; amount: string; currency_code?: string | null }> }>(
+          `/discounts?code=${encodeURIComponent(code)}&status=active&per_page=1`,
+        );
+        const d = res.data?.[0];
+        if (!d) return json({ promo: null, code: "invalid_promo_code" }, 200);
+        return json({
+          promo: {
+            code,
+            type: d.type === "percentage" ? "percentage" : "flat",
+            amount: d.type === "percentage" ? Number(d.amount) : Number(d.amount) / 100,
+            currency: d.currency_code ?? null,
+          },
+        }, 200);
+      } catch {
+        return json({ promo: null, code: "promo_check_failed" }, 200);
+      }
+    }
+
     if (body.preview) {
       const own = LEGACY_DISCOUNTS[user.email.toLowerCase()];
       if (!own) return json({ discount: null }, 200);
@@ -218,12 +242,12 @@ serve(async (req) => {
       ...(campaignEligible ? { campaign: SUPPORT_UA_DISCOUNT_CODE } : {}),
     };
 
-    const createTxn = (withDiscount: string | null) => paddleFetch<{ data: { id: string; checkout?: { url?: string | null } } }>("/transactions", {
+    const createTxn = (withDiscount: string | null, withAddress = true) => paddleFetch<{ data: { id: string; checkout?: { url?: string | null } } }>("/transactions", {
       method: "POST",
       body: {
         items: [{ price_id: priceId, quantity: 1 }],
         customer_id: customerId,
-        ...(addressId ? { address_id: addressId } : {}),
+        ...(addressId && withAddress ? { address_id: addressId } : {}),
         ...(withDiscount ? { discount_id: withDiscount } : {}),
         custom_data: customData,
         // No explicit checkout.url: Paddle only accepts approved domains, and
@@ -240,13 +264,28 @@ serve(async (req) => {
       // block payment: retry at the current price without it. A personal
       // discount is never dropped silently (the customer confirms first).
       // A code the user typed is reported instead of silently dropped.
-      if (!discountId || manualCode) throw err;
-      if (usesPersonalDiscount) {
+      const msg = err instanceof Error ? err.message : String(err);
+      // Paddle may localise the price to a currency (e.g. UAH) where a flat
+      // discount leaves less than its minimum charge. Retry in the base
+      // currency (no address prefill) before giving up.
+      if (discountId && addressId && msg.includes("transaction_balance_less_than_charge_limit")) {
+        log("Below minimum in local currency, retrying without address", {});
+        try {
+          txn = await createTxn(discountId, false);
+        } catch (err2) {
+          throw err2;
+        }
+      } else if (!discountId || manualCode) throw err;
+      if (txn) {
+        // recovered above
+      } else if (usesPersonalDiscount) {
         log("Personal discount rejected by Paddle", { message: err instanceof Error ? err.message : String(err) });
         return personalDiscountUnavailable();
       }
-      log("Discount rejected, retrying without it", { message: err instanceof Error ? err.message : String(err) });
-      txn = await createTxn(null);
+      else {
+        log("Discount rejected, retrying without it", { message: msg });
+        txn = await createTxn(null);
+      }
     }
 
     const transactionId = txn.data.id;
