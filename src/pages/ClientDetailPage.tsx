@@ -1,3 +1,4 @@
+import { SourcePicker, type SourceValue } from "@/components/sources/SourcePicker";
 import { PrepaidSessionsCard } from "@/components/clients/PrepaidSessionsCard";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
@@ -100,6 +101,7 @@ export default function ClientDetailPage() {
   const isAdmin = user?.email?.toLowerCase() === "o.gilevich@gmail.com";
   const [noteText, setNoteText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [acq, setAcq] = useState<SourceValue>({ source_id: null, campaign_id: null });
   const [editForm, setEditForm] = useState<{ name: string; phone: string; email: string; notes: string; telegram: string; notification_preference: string; confirmation_required: boolean; pricing_mode: string; base_price: string; billing_address: string; billing_country: string; billing_tax_id: string; billing_company_name: string; communication_language: "" | ClientLanguage; flexible_session_price: boolean }>({ name: "", phone: "", email: "", notes: "", telegram: "", notification_preference: "no_reminder", confirmation_required: false, pricing_mode: "fixed", base_price: "", billing_address: "", billing_country: "", billing_tax_id: "", billing_company_name: "", communication_language: "", flexible_session_price: false });
   const [sessionApt, setSessionApt] = useState<any>(null);
   const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
@@ -327,6 +329,7 @@ export default function ClientDetailPage() {
   }
 
   const openEdit = () => {
+    setAcq({ source_id: (client as any).source_id ?? null, campaign_id: (client as any).campaign_id ?? null, referred_by_client_id: (client as any).referred_by_client_id ?? null, referred_by_name: (client as any).referred_by_name ?? null });
     setEditForm({
       name: client.name, phone: client.phone || "", email: client.email || "",
       notes: client.notes || "", telegram: (client as any).telegram || "",
@@ -376,6 +379,7 @@ export default function ClientDetailPage() {
         billing_company_name: editForm.billing_company_name || undefined,
         communication_language: editForm.communication_language || undefined,
         flexible_session_price: editForm.flexible_session_price,
+        ...acq,
       } as any);
 
       if (basePriceChanged) {
@@ -1099,6 +1103,7 @@ export default function ClientDetailPage() {
                   onChange={(v) => setEditForm(f => ({ ...f, communication_language: v }))}
                   required
                 />
+                <SourcePicker value={acq} onChange={setAcq} withReferral excludeClientId={client.id} />
               </div>
             </section>
 
