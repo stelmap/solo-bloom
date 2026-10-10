@@ -1785,16 +1785,6 @@ export default function CalendarPage() {
   }, []);
   const [needsOpen, setNeedsOpen] = useState(false);
 
-  const { data: bookingLink } = useQuery({
-    queryKey: ["booking-link-calendar"],
-    queryFn: async () => {
-      const { data } = await supabase.from("booking_links").select("*").maybeSingle();
-      return data as any;
-    },
-  });
-  const bookingHandle = (bookingLink?.slug as string) || (bookingLink?.token as string) || "";
-  const bookingUrl = bookingHandle && typeof window !== "undefined" ? `${window.location.origin}/book/${bookingHandle}` : "";
-
   // ---- Today schedule data (presentation only) ----
   const agendaDate = currentDate;
   const agendaSessions = (visibleAppointments as any[])
