@@ -534,7 +534,7 @@ export default function PublicBookingPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-background via-background to-primary/10 px-4 py-8">
-      <img src={bookingRoom} alt="" aria-hidden width={1024} height={768} className="pointer-events-none absolute right-0 top-0 hidden w-[38%] max-w-xl select-none opacity-90 [mask-image:linear-gradient(to_left,black_55%,transparent)] lg:block" />
+      <img src={bookingRoom} alt="" aria-hidden width={1024} height={768} className="pointer-events-none absolute right-0 top-0 hidden w-[38%] max-w-xl select-none opacity-90 [mask-image:radial-gradient(ellipse_at_top_right,black_45%,transparent_75%)] lg:block" />
       <SeoHead
         path="/book"
         title="Book a session — Solo .Bizz"
