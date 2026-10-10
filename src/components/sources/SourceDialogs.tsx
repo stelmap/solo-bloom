@@ -30,7 +30,7 @@ export function SourceDialog({ open, onOpenChange, source, onSaved }: {
       onSaved?.(s);
       onOpenChange(false);
     } catch (e) {
-      toast({ title: describeError(e).title ?? "Error", description: describeError(e).description, variant: "destructive" });
+      toast({ title: describeError(e), variant: "destructive" });
     }
   };
 
@@ -83,7 +83,7 @@ export function CampaignDialog({ open, onOpenChange, campaign, sourceId, sources
       await save.mutateAsync({ ...f, id: campaign?.id });
       onOpenChange(false);
     } catch (e) {
-      toast({ title: describeError(e).title ?? "Error", description: describeError(e).description, variant: "destructive" });
+      toast({ title: describeError(e), variant: "destructive" });
     }
   };
 
