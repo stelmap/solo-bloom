@@ -533,7 +533,7 @@ export default function PublicBookingPage() {
   const activeSlots = activeDay ? groupedByDay[activeDay]?.slots ?? [] : [];
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-background via-background to-primary/10 px-4 py-4 sm:py-6">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-background via-background to-primary/10 px-3 py-3 pb-28 sm:px-4 sm:py-6 sm:pb-6">
       <img src={bookingRoom} alt="" aria-hidden width={1024} height={768} className="pointer-events-none absolute right-0 top-0 hidden w-[30%] max-w-md select-none opacity-70 [mask-image:radial-gradient(ellipse_at_top_right,black_40%,transparent_72%)] lg:block" />
       <SeoHead
         path="/book"
@@ -542,10 +542,10 @@ export default function PublicBookingPage() {
         noindex
       />
       <div className="relative mx-auto max-w-[1080px] space-y-4">
-        <header className="flex items-center justify-between gap-4">
+        <header className="flex items-start justify-between gap-3 sm:items-center sm:gap-4">
           <div className="flex min-w-0 items-center gap-3">
             {info.show_practice_profile !== false && info.avatar_url && (
-              <img src={info.avatar_url} alt={info.business_name || info.display_name} className="h-12 w-12 shrink-0 rounded-full border border-border object-cover shadow-sm" />
+              <img src={info.avatar_url} alt={info.business_name || info.display_name} className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-full border border-border object-cover shadow-sm" />
             )}
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-foreground">
@@ -579,7 +579,7 @@ export default function PublicBookingPage() {
         <h1 className="text-center text-xl font-bold tracking-tight text-foreground sm:text-2xl">{X.heading}</h1>
 
         {!selectedSlot ? (
-          <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
+          <div className="relative overflow-visible sm:overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
             {slotsLoading ? (
               <div className="grid gap-6 p-6 md:grid-cols-2">
                 <Skeleton className="h-72 rounded-xl" />
@@ -612,7 +612,7 @@ export default function PublicBookingPage() {
                         <Button type="button" variant="ghost" size="icon" aria-label="Next month" onClick={() => shiftMonth(1)}><ChevronRight className="h-4 w-4" /></Button>
                       </div>
                     </div>
-                    <div className="mt-1 grid grid-cols-7 gap-y-0.5 text-center">
+                    <div className="mt-1 grid grid-cols-7 gap-y-1 sm:gap-y-0.5 text-center">
                       {weekdayLabels.map((w) => <div key={w} className="pb-1 text-xs font-medium text-muted-foreground">{w}</div>)}
                       {monthCells.map((cell) => {
                         const has = !!groupedByDay[cell.key];
@@ -624,7 +624,7 @@ export default function PublicBookingPage() {
                               disabled={!has}
                               onClick={() => { setActiveDay(cell.key); setPendingSlot(null); }}
                               aria-pressed={isActive}
-                              className={`relative flex h-9 w-9 flex-col items-center justify-center rounded-full text-sm transition-colors ${
+                              className={`relative flex h-11 w-11 sm:h-9 sm:w-9 flex-col items-center justify-center rounded-full text-sm transition-colors ${
                                 isActive ? "bg-primary font-semibold text-primary-foreground shadow-md"
                                   : has ? "font-medium text-foreground hover:bg-primary/10"
                                   : cell.inMonth ? "text-muted-foreground/70" : "text-muted-foreground/40"
@@ -668,7 +668,7 @@ export default function PublicBookingPage() {
                       </div>
                     </div>
                     {activeSlots.length > 0 ? (
-                      <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                      <div className="mt-4 grid grid-cols-3 gap-2 min-[400px]:grid-cols-4 md:grid-cols-3 lg:grid-cols-4">
                         {activeSlots.map((s) => {
                           const sel = s === pendingSlot;
                           return (
@@ -677,7 +677,7 @@ export default function PublicBookingPage() {
                               type="button"
                               onClick={() => setPendingSlot(s)}
                               aria-pressed={sel}
-                              className={`h-10 rounded-lg border text-sm font-semibold tabular-nums transition-colors ${
+                              className={`h-11 sm:h-10 rounded-lg border text-sm font-semibold tabular-nums transition-colors ${
                                 sel ? "border-primary bg-primary/10 text-primary" : "border-border bg-background text-foreground hover:border-primary/50"
                               }`}
                             >
@@ -692,13 +692,13 @@ export default function PublicBookingPage() {
                   </section>
                 </div>
 
-                <footer className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                <footer className="fixed inset-x-0 bottom-0 z-20 flex flex-col gap-2 border-t border-border bg-card/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_16px_hsl(var(--foreground)/0.08)] backdrop-blur sm:static sm:z-auto sm:gap-3 sm:bg-transparent sm:pb-3 sm:shadow-none sm:backdrop-blur-none sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:gap-y-2 sm:text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-2"><Globe className="h-4 w-4 text-primary" />{X.yourTz} <span className="text-foreground">{tzLabel}</span></span>
                     <span className="hidden h-4 w-px bg-border sm:block" />
                     <span className="inline-flex items-center gap-2"><Hourglass className="h-4 w-4 text-primary" />{X.duration} {L.minutes(info.session_duration_minutes)}</span>
                   </div>
-                  <Button type="button" size="lg" className="rounded-full px-8" disabled={!pendingSlot} onClick={() => pendingSlot && setSelectedSlot(pendingSlot)}>
+                  <Button type="button" size="lg" className="w-full rounded-full px-8 sm:w-auto" disabled={!pendingSlot} onClick={() => pendingSlot && setSelectedSlot(pendingSlot)}>
                     {X.continue} <ChevronRight className="h-4 w-4" />
                   </Button>
                 </footer>
@@ -743,7 +743,7 @@ export default function PublicBookingPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="first_name">{L.firstName}</Label>
                     <Input id="first_name" name="first_name" required maxLength={120} />
