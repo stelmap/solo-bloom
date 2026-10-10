@@ -342,7 +342,6 @@ export default function CalendarPage() {
   const { prefs: calPrefs, update: updateCalPrefs, setFilters: setQuickFilters, resetFilters: resetQuickFilters } = useCalendarPrefs(user?.id);
   const quickFilterCount = countActiveQuickFilters(calPrefs.filters);
   const { data: unpaidMeetings = [] } = useUnpaidMeetings();
-  const [unpaidOpen, setUnpaidOpen] = useState(false);
   const [viewPanelOpen, setViewPanelOpen] = useState(false);
   const { data: bookingLinkRow } = useQuery({
     queryKey: ["booking-link-url", user?.id],

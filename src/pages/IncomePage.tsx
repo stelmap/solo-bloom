@@ -436,7 +436,7 @@ export default function IncomePage() {
                     <div><p className="text-muted-foreground">{CT.left}</p><p className="font-semibold tabular-nums text-destructive">{cs}{m.remaining.toLocaleString()}</p></div>
                   </div>
                   <Button size="sm" className="shrink-0 whitespace-nowrap" disabled={!clientId} onClick={() => {
-                    setLinkedPrefill({ clientId, clientName: name, amount: m.remaining, date: new Date().toISOString().split("T")[0], payment_method: defaultMethodCode || "cash" });
+                    setLinkedPrefill({ clientId, clientName: name, amount: m.remaining, date: new Date().toISOString().split("T")[0], payment_method: defaultPayMethod || "cash" });
                     setLinkedOpen(true);
                   }}>{CT.addPayment}</Button>
                 </div>
