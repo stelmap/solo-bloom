@@ -267,6 +267,8 @@ export function SupportWidget() {
   if (!open) {
     // Never sit on top of a drawer/modal: its actions must stay clickable.
     if (overlayOpen) return null;
+    // Public booking pages are client-facing: no helpdesk launcher there.
+    if (location.pathname.startsWith("/book/")) return null;
     return (
       <button
         ref={btnRef}
