@@ -1056,6 +1056,39 @@ export type Database = {
         }
         Relationships: []
       }
+      client_sources: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          source_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          source_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          source_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       client_status_audit: {
         Row: {
           archive_comment: string | null
@@ -1100,6 +1133,7 @@ export type Database = {
           billing_company_name: string | null
           billing_country: string | null
           billing_tax_id: string | null
+          campaign_id: string | null
           communication_language: string | null
           confirmation_required: boolean
           created_at: string
@@ -1113,8 +1147,11 @@ export type Database = {
           phone: string | null
           prepaid_sessions_mode: boolean
           pricing_mode: string
+          referred_by_client_id: string | null
+          referred_by_name: string | null
           seed_batch_id: string | null
           seed_source: string | null
+          source_id: string | null
           status: string
           telegram: string | null
           telegram_chat_id: string | null
@@ -1136,6 +1173,7 @@ export type Database = {
           billing_company_name?: string | null
           billing_country?: string | null
           billing_tax_id?: string | null
+          campaign_id?: string | null
           communication_language?: string | null
           confirmation_required?: boolean
           created_at?: string
@@ -1149,8 +1187,11 @@ export type Database = {
           phone?: string | null
           prepaid_sessions_mode?: boolean
           pricing_mode?: string
+          referred_by_client_id?: string | null
+          referred_by_name?: string | null
           seed_batch_id?: string | null
           seed_source?: string | null
+          source_id?: string | null
           status?: string
           telegram?: string | null
           telegram_chat_id?: string | null
@@ -1172,6 +1213,7 @@ export type Database = {
           billing_company_name?: string | null
           billing_country?: string | null
           billing_tax_id?: string | null
+          campaign_id?: string | null
           communication_language?: string | null
           confirmation_required?: boolean
           created_at?: string
@@ -1185,8 +1227,11 @@ export type Database = {
           phone?: string | null
           prepaid_sessions_mode?: boolean
           pricing_mode?: string
+          referred_by_client_id?: string | null
+          referred_by_name?: string | null
           seed_batch_id?: string | null
           seed_source?: string | null
+          source_id?: string | null
           status?: string
           telegram?: string | null
           telegram_chat_id?: string | null
@@ -1198,7 +1243,29 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "clients_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_referred_by_client_id_fkey"
+            columns: ["referred_by_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "client_sources"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       data_access_audit: {
         Row: {
@@ -1536,6 +1603,7 @@ export type Database = {
       expenses: {
         Row: {
           amount: number
+          campaign_id: string | null
           category: string
           created_at: string
           date: string
@@ -1553,6 +1621,7 @@ export type Database = {
           recurring_start_date: string | null
           seed_batch_id: string | null
           seed_source: string | null
+          source_id: string | null
           tax_setting_id: string | null
           template_id: string | null
           updated_at: string
@@ -1560,6 +1629,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          campaign_id?: string | null
           category: string
           created_at?: string
           date?: string
@@ -1577,6 +1647,7 @@ export type Database = {
           recurring_start_date?: string | null
           seed_batch_id?: string | null
           seed_source?: string | null
+          source_id?: string | null
           tax_setting_id?: string | null
           template_id?: string | null
           updated_at?: string
@@ -1584,6 +1655,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          campaign_id?: string | null
           category?: string
           created_at?: string
           date?: string
@@ -1601,12 +1673,27 @@ export type Database = {
           recurring_start_date?: string | null
           seed_batch_id?: string | null
           seed_source?: string | null
+          source_id?: string | null
           tax_setting_id?: string | null
           template_id?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "expenses_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "client_sources"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "expenses_tax_setting_id_fkey"
             columns: ["tax_setting_id"]
@@ -2340,6 +2427,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      marketing_campaigns: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          id: string
+          name: string
+          notes: string | null
+          source_id: string
+          start_date: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          source_id: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          source_id?: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_campaigns_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "client_sources"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_corrections: {
         Row: {
