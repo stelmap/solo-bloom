@@ -24,6 +24,9 @@ import { ClientCombobox } from "@/components/income/ClientCombobox";
 import { INCOME_FLOW_COPY, INCOME_PAGE_COPY, normIncomeLang } from "@/lib/incomeFlowCopy";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useMemo, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useUnpaidMeetings } from "@/hooks/useUnpaidMeetings";
+import { calToolbarCopy } from "@/lib/calendarToolbarCopy";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -52,7 +55,7 @@ export default function IncomePage() {
 
   // Filters
   const initialRange = searchParams.get("range") || "month";
-  const initialTab = searchParams.get("tab") === "pending" ? "pending" : "income";
+  const initialTab = searchParams.get("filter") === "unpaid" ? "unpaid" : searchParams.get("tab") === "pending" ? "pending" : "income";
   const fromDashboard = searchParams.has("range") || searchParams.has("tab");
   const [dateRange, setDateRange] = useState(initialRange);
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -99,6 +102,9 @@ export default function IncomePage() {
   const { t, lang } = useLanguage();
   const IL = INCOME_FLOW_COPY[normIncomeLang(lang)];
   const IP = INCOME_PAGE_COPY[normIncomeLang(lang)];
+  const CT = calToolbarCopy(lang);
+  const qcUnpaid = useQueryClient();
+  const { data: unpaidMeetings = [], isLoading: unpaidLoading } = useUnpaidMeetings();
   const { symbol: cs } = useCurrency();
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -404,7 +410,39 @@ export default function IncomePage() {
 
 
 
+        <div className="flex flex-wrap gap-2" role="group" aria-label={CT.payment}>
+          <Button size="sm" variant={activeTab !== "unpaid" ? "default" : "outline"} className="rounded-full whitespace-nowrap" onClick={() => setActiveTab("income")}>{CT.allPayments}</Button>
+          <Button size="sm" variant={activeTab === "unpaid" ? "default" : "outline"} className="rounded-full whitespace-nowrap" onClick={() => setActiveTab("unpaid")}>{CT.unpaid} · <span className="tabular-nums">{unpaidMeetings.length}</span></Button>
+        </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsContent value="unpaid" className="space-y-2">
+            {unpaidLoading ? (
+              <ListSkeleton variant="table" count={6} />
+            ) : unpaidMeetings.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">{CT.unpaidEmpty}</p>
+            ) : unpaidMeetings.map((m) => {
+              const clientId = m.apt.client_id ?? m.apt.clients?.id;
+              const name = m.apt.clients?.name || m.apt.group_sessions?.groups?.name || "—";
+              return (
+                <div key={m.apt.id} className="rounded-xl border border-border bg-card p-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <div className="min-w-0 sm:w-56">
+                    <p className="truncate text-sm font-semibold text-foreground">{name}</p>
+                    <p className="text-xs text-muted-foreground">{format(new Date(m.apt.scheduled_at), "dd.MM.yyyy, HH:mm")}</p>
+                  </div>
+                  <div className="grid flex-1 grid-cols-3 gap-2 text-xs">
+                    <div><p className="text-muted-foreground">{CT.price}</p><p className="font-medium tabular-nums">{cs}{m.price.toLocaleString()}</p></div>
+                    <div><p className="text-muted-foreground">{CT.paid}</p><p className="font-medium tabular-nums">{cs}{m.paid.toLocaleString()}</p></div>
+                    <div><p className="text-muted-foreground">{CT.left}</p><p className="font-semibold tabular-nums text-destructive">{cs}{m.remaining.toLocaleString()}</p></div>
+                  </div>
+                  <Button size="sm" className="shrink-0 whitespace-nowrap" disabled={!clientId} onClick={() => {
+                    setLinkedPrefill({ clientId, clientName: name, amount: m.remaining, date: new Date().toISOString().split("T")[0], payment_method: defaultMethodCode || "cash" });
+                    setLinkedOpen(true);
+                  }}>{CT.addPayment}</Button>
+                </div>
+              );
+            })}
+          </TabsContent>
 
 
           <TabsContent value="income">
@@ -562,6 +600,8 @@ export default function IncomePage() {
             setLinkedOpen(o);
             if (!o) {
               setLinkedPrefill(null);
+              qcUnpaid.invalidateQueries({ queryKey: ["appointments"] });
+              qcUnpaid.invalidateQueries({ queryKey: ["expected-payments"] });
               setForm({ amount: 0, date: new Date().toISOString().split("T")[0], description: "", payment_method: "cash", client_id: "" });
             }
           }}

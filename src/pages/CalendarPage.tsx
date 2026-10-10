@@ -1962,7 +1962,7 @@ export default function CalendarPage() {
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="mr-auto text-2xl font-bold tracking-tight text-foreground">{CT.title}</h1>
           <div className="flex flex-wrap items-center gap-1 sm:gap-2">
-            <Button variant="ghost" className="h-10 rounded-xl px-3 whitespace-nowrap" onClick={() => setUnpaidOpen(true)}>
+            <Button variant="ghost" className="h-10 rounded-xl px-3 whitespace-nowrap" onClick={() => goFromCalendar("/payments?filter=unpaid")}>
               <CreditCard className="h-4 w-4" />
               <span>{CT.unpaid} · <span className="tabular-nums">{unpaidMeetings.length}</span></span>
             </Button>
@@ -3008,34 +3008,7 @@ export default function CalendarPage() {
       </div>
 
 
-      <Sheet open={unpaidOpen} onOpenChange={setUnpaidOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{CT.unpaidTitle} · {unpaidMeetings.length}</SheetTitle>
-            <SheetDescription>{CT.unpaidHint}</SheetDescription>
-          </SheetHeader>
-          <div className="mt-4 space-y-2">
-            {unpaidMeetings.length === 0 ? (
-              <p className="py-10 text-center text-sm text-muted-foreground">{CT.unpaidEmpty}</p>
-            ) : unpaidMeetings.map((m) => (
-              <div key={m.apt.id} className="rounded-xl border border-border bg-card p-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">{m.apt.clients?.name || m.apt.group_sessions?.groups?.name || "—"}</p>
-                    <p className="text-xs text-muted-foreground">{format(new Date(m.apt.scheduled_at), "d MMM yyyy, HH:mm", { locale: dateLocale })}</p>
-                  </div>
-                  <Button size="sm" variant="outline" className="shrink-0" onClick={() => { setUnpaidOpen(false); openSessionSheet(m.apt); }}>{CT.addPayment}</Button>
-                </div>
-                <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
-                  <div><p className="text-muted-foreground">{CT.price}</p><p className="font-medium tabular-nums">{cs}{m.price.toLocaleString()}</p></div>
-                  <div><p className="text-muted-foreground">{CT.paid}</p><p className="font-medium tabular-nums">{cs}{m.paid.toLocaleString()}</p></div>
-                  <div><p className="text-muted-foreground">{CT.left}</p><p className="font-semibold tabular-nums text-destructive">{cs}{m.remaining.toLocaleString()}</p></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </SheetContent>
-      </Sheet>
+
 
       <Sheet open={inboxOpen} onOpenChange={setInboxOpen}>
 
