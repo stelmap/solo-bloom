@@ -13,7 +13,7 @@ import { downloadCSV } from "@/lib/csvExport";
 import { useState, memo, useRef, useMemo, useEffect } from "react";
 import ExcelJS from "exceljs";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useClients, useCreateClient, useDeleteClient, useUnarchiveClient, useAppointments } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
@@ -129,6 +129,7 @@ export default function ClientsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const { t, lang } = useLanguage();
+  const sc = useSourceCopy();
   const { isFreeStarter, atClientLimit } = useFreeStarterMode();
   const isDemoMode = false; // Free Starter Mode allows all client edits — gating is now via paywall on creation only.
   const [paywallOpen, setPaywallOpen] = useState(false);
@@ -432,7 +433,7 @@ export default function ClientsPage() {
               >
                 <Plus className="h-4 w-4 mr-1" /> {t("clients.addClient")}
               </Button>
-            <DialogContent>
+            <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle>{t("clients.addClient")}</DialogTitle></DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2"><Label>{t("common.name")} *</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
