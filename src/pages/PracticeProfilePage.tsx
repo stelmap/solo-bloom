@@ -533,7 +533,7 @@ export default function PracticeProfilePage() {
                 <CurrencySelect label={`${L.currency} *`} savedLabel={L.saved} />
                 <div className="space-y-1.5">
                   <Label className="font-semibold text-sm">{L.language}<span className="text-destructive"> *</span></Label>
-                  <Select value={form.language} onValueChange={(v) => setForm((f) => ({ ...f, language: v }))}>
+                  <Select value={form.language} onValueChange={(v) => setForm((f) => ({ ...f, language: v as AppLanguage }))}>
                     <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="en">🇬🇧 English</SelectItem>
