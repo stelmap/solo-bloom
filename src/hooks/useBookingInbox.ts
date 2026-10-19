@@ -70,6 +70,8 @@ function invalidate(qc: ReturnType<typeof useQueryClient>) {
   qc.invalidateQueries({ queryKey: ["booking-requests"] });
   qc.invalidateQueries({ queryKey: ["booking-requests-count"] });
   qc.invalidateQueries({ queryKey: ["appointments"] });
+  qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
+  qc.invalidateQueries({ queryKey: ["client-appointments"] });
 }
 
 export function useConfirmBookingRequest() {

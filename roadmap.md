@@ -1,5 +1,10 @@
 # Roadmap
 
+## Calendar synchronization and interface language
+- [x] Diagnose and correct shared calendar/dashboard data, dates and updates.
+- [x] Preserve language choices and offer all languages before registration and in setup.
+- [x] Run regression tests and verify available browser flows.
+
 ## Support Ukrainian Psychotherapists campaign (50% off Solo & Pro)
 - [x] Campaign source of truth (`src/lib/supportUkraine.ts`) + eligibility hook
 - [x] Analytics events

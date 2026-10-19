@@ -223,7 +223,7 @@ export default function PracticeProfilePage() {
     phone: "",
     business_id: "",
     business_address: "",
-    language: "en",
+    language: lang,
     timezone: "",
   });
   const [isActive, setIsActive] = useState(false);
@@ -245,7 +245,7 @@ export default function PracticeProfilePage() {
       phone: p.phone || "",
       business_id: p.business_id || "",
       business_address: p.business_address || "",
-      language: p.language || "en",
+      language: p.language || lang,
       timezone: p.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
     };
     setForm(next);
@@ -533,7 +533,7 @@ export default function PracticeProfilePage() {
                 <CurrencySelect label={`${L.currency} *`} savedLabel={L.saved} />
                 <div className="space-y-1.5">
                   <Label className="font-semibold text-sm">{L.language}<span className="text-destructive"> *</span></Label>
-                  <Select value={form.language} onValueChange={(v) => setForm((f) => ({ ...f, language: v }))}>
+                  <Select value={form.language} onValueChange={(v) => setForm((f) => ({ ...f, language: v as AppLanguage }))}>
                     <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="en">🇬🇧 English</SelectItem>

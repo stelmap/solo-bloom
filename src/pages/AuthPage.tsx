@@ -6,11 +6,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { AppLanguage } from "@/i18n/translations";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { getStoredLang } from "@/i18n/LanguageContext";
+import { getStoredLang, setPreLoginLang } from "@/i18n/LanguageContext";
 import { track } from "@/lib/analytics";
 import { getFreshAccessToken } from "@/lib/checkoutAuth";
 import { getPostAuthRedirect } from "@/lib/authRedirect";
@@ -355,6 +357,18 @@ export default function AuthPage() {
         Main page
       </Link>
 
+      <div className="absolute top-4 right-4 z-50 w-36">
+        <Select value={lang} onValueChange={value => setPreLoginLang(value as AppLanguage)}>
+          <SelectTrigger aria-label="Language"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="uk">Українська</SelectItem>
+            <SelectItem value="en">English</SelectItem>
+            <SelectItem value="fr">Français</SelectItem>
+            <SelectItem value="pl">Polski</SelectItem>
+            <SelectItem value="ru">Русский</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       <h1 className="sr-only">Solo .Bizz — {t("auth.pageTitle")}</h1>
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 relative overflow-hidden" style={{ backgroundColor: "#071A2F" }}>
         <div className="absolute inset-0 bg-gradient-to-br from-[#071A2F] via-[#071A2F] to-[#040F1F]" />

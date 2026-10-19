@@ -25,6 +25,8 @@ import {
   typeColorClasses, typeDotClasses, statusOverlayClasses,
   type SessionKind,
 } from "@/lib/calendarVisuals";
+import { practiceClock, calendarDate, monthHiddenCount } from "@/lib/calendarClock";
+import { QueryFeedback } from "@/components/QueryFeedback";
 import { dedupeAppointmentsById } from "@/lib/calendarDedupe";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
@@ -308,11 +310,11 @@ export default function CalendarPage() {
   const appointmentsRange = useMemo(() => {
     // Quantize to month so week-navigation reuses the cached window
     const anchor = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const from = addDays(anchor, -60).toISOString();
-    const to = addDays(anchor, 240).toISOString();
+    const from = format(addDays(anchor, -60), "yyyy-MM-dd") + "T00:00:00Z";
+    const to = format(addDays(anchor, 240), "yyyy-MM-dd") + "T23:59:59.999Z";
     return { from, to };
   }, [currentDate.getFullYear(), currentDate.getMonth()]);
-  const { data: appointments = [] } = useAppointments(appointmentsRange);
+  const { data: appointments = [], isPending: appointmentsPending, error: appointmentsError, refetch: retryAppointments } = useAppointments(appointmentsRange);
   const { data: bookingRequests = [] } = useBookingRequests();
   const navigate = useNavigate();
 
@@ -382,30 +384,6 @@ export default function CalendarPage() {
   const dateLocale = getDateLocale(lang);
   const { symbol: cs } = useCurrency();
   const CT = calToolbarCopy(lang);
-
-  // Realtime: invalidate appointments + booking-requests when DB changes.
-  // Topic MUST end with ":<user_id>" so realtime.messages RLS allows the
-  // subscription. Row-level RLS on appointments/session_booking_requests
-  // already filters payloads to the owner, but topic scoping prevents another
-  // user from even subscribing to this user's channel.
-  useEffect(() => {
-    if (!user?.id) return;
-    const channel = supabase
-      .channel(`calendar-live:${user.id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "session_booking_requests", filter: `user_id=eq.${user.id}` }, () => {
-        qc.invalidateQueries({ queryKey: ["booking-requests"] });
-        qc.invalidateQueries({ queryKey: ["booking-requests-count"] });
-        qc.invalidateQueries({ queryKey: ["appointments"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "appointments", filter: `user_id=eq.${user.id}` }, () => {
-        qc.invalidateQueries({ queryKey: ["appointments"] });
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [qc, user?.id]);
-
-
-
 
   // Drag-and-drop state
   const [dragAptId, setDragAptId] = useState<string | null>(null);
@@ -1295,35 +1273,48 @@ export default function CalendarPage() {
   // Setup guide: jump to the day of a session the user should open themselves.
   // The guide never opens or changes the session for them.
   const focusAppointmentId = searchParams.get("focusAppointmentId");
+  const linkedId = deepLinkAppointmentId || focusAppointmentId;
+  const { data: linkedAppointment } = useQuery({
+    queryKey: ["appointments", "linked", user?.id, linkedId],
+    enabled: !!user && !!linkedId,
+    queryFn: async () => {
+      if (!linkedId) return null;
+      const { data, error } = await supabase.from("appointments")
+        .select("*, clients(name), services(name, price), group_sessions!appointments_group_session_id_fkey(id, group_id, groups(name))")
+        .eq("id", linkedId).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
   const handledFocusRef = useRef<string | null>(null);
   useEffect(() => {
     if (!focusAppointmentId) return;
     if (handledFocusRef.current === focusAppointmentId) return;
-    const apt = (appointments as any[]).find((a) => a.id === focusAppointmentId);
+    const apt = (appointments as any[]).find((a) => a.id === focusAppointmentId) || linkedAppointment;
     if (!apt) return;
     handledFocusRef.current = focusAppointmentId;
-    setCurrentDate(new Date(apt.scheduled_at));
+    setCurrentDate(calendarDate(apt.scheduled_at));
     toast({ title: t("onbj.focusHint") });
     const next = new URLSearchParams(searchParams);
     next.delete("focusAppointmentId");
     setSearchParams(next, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focusAppointmentId, appointments]);
+  }, [focusAppointmentId, appointments, linkedAppointment]);
 
   const handledDeepLinkRef = useRef<string | null>(null);
   useEffect(() => {
     if (!deepLinkAppointmentId) return;
     if (handledDeepLinkRef.current === deepLinkAppointmentId) return;
-    const apt = (appointments as any[]).find((a) => a.id === deepLinkAppointmentId);
+    const apt = (appointments as any[]).find((a) => a.id === deepLinkAppointmentId) || linkedAppointment;
     if (!apt) return; // wait until the appointment window loads
     handledDeepLinkRef.current = deepLinkAppointmentId;
-    setCurrentDate(new Date(apt.scheduled_at));
+    setCurrentDate(calendarDate(apt.scheduled_at));
     openSessionSheet(apt);
     const next = new URLSearchParams(searchParams);
     next.delete("appointmentId");
     setSearchParams(next, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deepLinkAppointmentId, appointments]);
+  }, [deepLinkAppointmentId, appointments, linkedAppointment]);
 
 
   const handleQuickDayOff = async (date: Date) => {
@@ -1485,7 +1476,7 @@ export default function CalendarPage() {
       totalSlots += slots;
       const dayStr = format(day, "yyyy-MM-dd");
       const dayApts = appointments.filter(
-        apt => toUTCDateStr(new Date(apt.scheduled_at)) === dayStr && apt.status !== "cancelled",
+        apt => toUTCDateStr(new Date(apt.scheduled_at)) === dayStr,
       );
       const bookedRaw = dayApts.length;
       const booked = Math.min(bookedRaw, slots);
@@ -1703,9 +1694,12 @@ export default function CalendarPage() {
               .eq("id", a.id);
           });
 
-        await Promise.all(updates);
-        // Invalidate appointments cache to reflect changes
-        qc.invalidateQueries({ queryKey: ["appointments"] });
+        const results = await Promise.all(updates);
+        for (const key of ["appointments", "dashboard-stats", "client-appointments"]) {
+          await qc.invalidateQueries({ queryKey: [key] });
+        }
+        const failed = results.find(result => result.error);
+        if (failed?.error) throw failed.error;
       }
       toast({ title: t("calendar.sessionMoved") });
     } catch (e: any) {
@@ -1763,8 +1757,7 @@ export default function CalendarPage() {
   const [addDayOffOpen, setAddDayOffOpen] = useState(false);
   const [newDayOffDate, setNewDayOffDate] = useState("");
   const [agendaOpen, setAgendaOpen] = useState(false);
-  // Live clock for the "now" highlight; scheduled_at is an absolute instant,
-  // so comparing to Date.now() is correct in any calendar time zone.
+  // Compare stored wall clocks with the current practice-timezone wall clock.
   const nowLabel = nowBadgeLabel(lang);
   const paymentsLabel = t("nav.payments");
   const goFromCalendar = (path: string) => {
@@ -1787,9 +1780,9 @@ export default function CalendarPage() {
   // ---- Today schedule data (presentation only) ----
   const agendaDate = currentDate;
   const agendaSessions = (visibleAppointments as any[])
-    .filter((a) => a.status !== "cancelled" && isSameDay(new Date(a.scheduled_at), agendaDate))
+    .filter((a) => a.status !== "cancelled" && toUTCDateStr(new Date(a.scheduled_at)) === format(agendaDate, "yyyy-MM-dd"))
     .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
-  const nowMs = Date.now();
+  const nowMs = practiceClock(profile?.timezone, liveNowMs).wallClockMs;
   const nextIdx = agendaSessions.findIndex((a) => new Date(a.scheduled_at).getTime() >= nowMs);
   const agendaNext = nextIdx >= 0 ? agendaSessions[nextIdx] : null;
 
@@ -2480,6 +2473,7 @@ export default function CalendarPage() {
           </div>
         </div>
 
+        <QueryFeedback pending={appointmentsPending} error={appointmentsError} retry={retryAppointments} />
         {/* Client booking link */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-border bg-muted/40 px-4 py-2.5">
           <div className="min-w-0">
@@ -2673,7 +2667,7 @@ export default function CalendarPage() {
                 const outsidePublicBookingGaps = publicBookingGapsForDay(day);
                 const hasOutsidePublicBooking = outsidePublicBookingGaps.length > 0;
                 const dayApts = visibleAppointments.filter(
-                  (apt) => toUTCDateStr(new Date(apt.scheduled_at)) === dayStr && apt.status !== "cancelled",
+                  (apt) => toUTCDateStr(new Date(apt.scheduled_at)) === dayStr,
                 );
                 const dayPending = visiblePendingRequests.filter(
                   (r) => toUTCDateStr(new Date(r.requested_slot_at)) === dayStr,
@@ -2750,10 +2744,12 @@ export default function CalendarPage() {
                           ⏳ {req.matched_client_name || req.first_name}
                         </div>
                       ))}
-                      {(dayApts.length + dayPending.length) > 4 && (
-                        <div className="text-[10px] text-muted-foreground px-1.5">
-                          +{dayApts.length + dayPending.length - 4} {(t as any)("calendar.more") || "more"}
-                        </div>
+                      {monthHiddenCount(dayApts.length, dayPending.length) > 0 && (
+                        <Button variant="ghost" size="sm" className="h-6 px-1.5 text-[10px]" onClick={e => {
+                          e.stopPropagation(); setCurrentDate(day); setView("day");
+                        }}>
+                          +{monthHiddenCount(dayApts.length, dayPending.length)} {t("calendar.more")}
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -2948,7 +2944,7 @@ export default function CalendarPage() {
                             const needsConfirmation = !isGroupEvt && client?.confirmation_required && evt.confirmation_status !== "confirmed";
                             const isConfirmed = !isGroupEvt && evt.confirmation_status === "confirmed";
                             const displayName = (isGroupEvt && groupName ? groupName : (evt as any).clients?.name) || "";
-                            const isNowEvt = isSessionInProgress(evt, liveNowMs);
+                            const isNowEvt = isSessionInProgress(evt, nowMs);
                             // Split slot horizontally so concurrent events don't overlap (each is visible & clickable)
                             const total = events.length;
                             const widthPct = 100 / total;

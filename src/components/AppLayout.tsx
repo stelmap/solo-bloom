@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { usePracticeLiveUpdates } from "@/hooks/usePracticeLiveUpdates";
 import { cn } from "@/lib/utils";
 import { useSidebarPinned } from "@/hooks/useSidebarPinned";
 import { AppSidebar } from "./AppSidebar";
@@ -15,6 +16,7 @@ export function AppLayout({ children, fluid = false }: { children: React.ReactNo
   // Content shifts only for the pinned sidebar; hover expansion floats above it.
   const sidebarOffset = pinned ? "lg:ml-[216px]" : "lg:ml-[68px]";
   useSoundReminder();
+  usePracticeLiveUpdates();
   useTaxAccrualSync();
 
   useEffect(() => {

@@ -354,6 +354,7 @@ export function useCompleteGroupSession() {
       INVALIDATE_GROUPS.forEach(k => qc.invalidateQueries({ queryKey: [k] }));
       qc.invalidateQueries({ queryKey: ["appointments"] });
       qc.invalidateQueries({ queryKey: ["income"] });
+      qc.invalidateQueries({ queryKey: ["income-all"] });
       qc.invalidateQueries({ queryKey: ["expected-payments"] });
       qc.invalidateQueries({ queryKey: ["client-credit-balance"] });
       qc.invalidateQueries({ queryKey: ["client-debt"] });
