@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { normalizePromoCode } from "./promoCode.ts";
 import {
   findDiscountIdByCode,
   getOrCreatePaddleCustomer,
@@ -70,13 +71,18 @@ serve(async (req) => {
       return json({ error: "Invalid request body." }, 400);
     }
 
+    const promoCodeSent = normalizePromoCode(body.promoCode);
+    if (body.promoCode != null && body.promoCode !== "" && !promoCodeSent) {
+      return json({ error: "This promo code is not valid.", promo: null, code: "invalid_promo_code" }, body.preview ? 200 : 400);
+    }
+
     // Preview: tell the plans page which personal (legacy) discount this
     // customer will get, so the final price is visible before paying.
     // Validate a manually typed promo code so the plans page can show the
     // discount before checkout (and reject unknown codes on "Apply").
     if (body.preview && body.promoCode) {
-      const code = String(body.promoCode).trim().toUpperCase();
-      if (!/^[A-Z0-9_-]{3,40}$/.test(code)) return json({ promo: null, code: "invalid_promo_code" }, 200);
+      const code = promoCodeSent;
+      if (!code) return json({ promo: null, code: "invalid_promo_code" }, 200);
       try {
         const res = await paddleFetch<{ data: Array<{ code: string; type: string; amount: string; currency_code?: string | null }> }>(
           `/discounts?code=${encodeURIComponent(code)}&status=active&per_page=1`,
@@ -160,7 +166,6 @@ serve(async (req) => {
     const profile = (profileResult.data as any) as { language?: string; business_country?: string } | null;
     const country = String(profile?.business_country ?? "").trim().toLowerCase();
     const profileLang = String(profile?.language ?? "").trim().toLowerCase();
-    const promoCodeSent = String(body.promoCode ?? "").trim().toUpperCase();
     const campaignEligible =
       ["ua", "ukr", "ukraine", "україна", "украина"].includes(country) ||
       profileLang === "uk" ||
@@ -194,10 +199,9 @@ serve(async (req) => {
     const usesPersonalDiscount = !!(legacyMatch && discountId);
 
     // Manually entered promo code: any active Paddle discount code works.
-    // Codes are 3–40 chars, letters/digits/dashes only — reject anything else
-    // before it reaches the Paddle API.
+    // Use the same validated code as the preview, including underscores.
     const manualCode =
-      promoCodeSent && promoCodeSent !== SUPPORT_UA_DISCOUNT_CODE && /^[A-Z0-9-]{3,40}$/.test(promoCodeSent)
+      promoCodeSent && promoCodeSent !== SUPPORT_UA_DISCOUNT_CODE
         ? promoCodeSent
         : null;
     if (!discountId && manualCode) {
