@@ -4,6 +4,7 @@ import {
   LanguageProvider,
   useLanguage,
   setPreLoginLang,
+  getStoredLang,
 } from "@/i18n/LanguageContext";
 
 let mockProfile: { language?: string } | null = null;
@@ -40,6 +41,26 @@ beforeEach(() => {
 });
 
 describe("preLoginLang priority during auth redirects", () => {
+  it.each(["uk", "en", "fr", "pl", "ru"])("detects supported browser language %s", code => {
+    Object.defineProperty(navigator, "languages", { value: [`${code}-XX`], configurable: true });
+    Object.defineProperty(navigator, "language", { value: `${code}-XX`, configurable: true });
+    expect(getStoredLang()).toBe(code);
+  });
+  it("falls back to Ukrainian for unsupported or unknown browser language", () => {
+    Object.defineProperty(navigator, "languages", { value: ["de-DE"], configurable: true });
+    Object.defineProperty(navigator, "language", { value: "de-DE", configurable: true });
+    expect(getStoredLang()).toBe("uk");
+    Object.defineProperty(navigator, "languages", { value: [], configurable: true });
+    Object.defineProperty(navigator, "language", { value: "", configurable: true });
+    expect(getStoredLang()).toBe("uk");
+  });
+  it("uses first supported browser preference and preserves valid legacy choice", () => {
+    Object.defineProperty(navigator, "languages", { value: ["de-DE", "fr-CA"], configurable: true });
+    expect(getStoredLang()).toBe("fr");
+    localStorage.setItem("app_lang", "invalid");
+    localStorage.setItem("landing_lang", "pl");
+    expect(getStoredLang()).toBe("pl");
+  });
   it("wins over browser default (de-DE)", async () => {
     Object.defineProperty(navigator, "language", { value: "de-DE", configurable: true });
     setPreLoginLang("uk");
