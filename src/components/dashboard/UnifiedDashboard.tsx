@@ -8,6 +8,8 @@ import {
   CheckCircle2, CalendarClock, Wallet, Briefcase, Link2, UserPlus, Check, Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { practiceClock, calendarDate } from "@/lib/calendarClock";
+import { QueryFeedback } from "@/components/QueryFeedback";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useAppointments, useAllIncome, useProfile, useClients, useServices, useWorkingSchedule } from "@/hooks/useData";
@@ -29,39 +31,6 @@ function pad(n: number) {
   return n.toString().padStart(2, "0");
 }
 
-/** Today's date (YYYY-MM-DD) in the therapist's configured timezone. */
-function todayInTimezone(tz?: string | null) {
-  try {
-    if (tz) {
-      const parts = new Intl.DateTimeFormat("en-CA", {
-        timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
-      }).format(new Date());
-      return parts; // en-CA gives YYYY-MM-DD
-    }
-  } catch {
-    /* fall through */
-  }
-  const d = new Date();
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
-/** Current minutes-since-midnight in the therapist's timezone. */
-function nowMinutesInTimezone(tz?: string | null) {
-  const d = new Date();
-  try {
-    if (tz) {
-      const f = new Intl.DateTimeFormat("en-GB", {
-        timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false,
-      }).format(d);
-      const [h, m] = f.split(":").map(Number);
-      return h * 60 + m;
-    }
-  } catch {
-    /* fall through */
-  }
-  return d.getHours() * 60 + d.getMinutes();
-}
-
 /** Wall-clock minutes of a stored appointment (stored as UTC wall clock). */
 function aptMinutes(iso: string) {
   const d = new Date(iso);
@@ -73,7 +42,7 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
   const { symbol: cs } = useCurrency();
   const navigate = useNavigate();
   const { data: profile } = useProfile();
-  const { data: allAppointments = [] } = useAppointments();
+  const { data: allAppointments = [], isPending: appointmentsPending, error: appointmentsError, refetch: retryAppointments } = useAppointments();
   const { data: allClients = [] } = useClients();
   const { data: services = [] } = useServices();
   const { data: workingSchedule = [] } = useWorkingSchedule();
@@ -103,7 +72,13 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
   const use12h = (profile as any)?.time_format === "12h";
   const tz = (profile as any)?.timezone as string | undefined;
 
-  const base = new Date();
+  const [clockInstant, setClockInstant] = useState(Date.now);
+  useEffect(() => {
+    const timer = window.setInterval(() => setClockInstant(Date.now()), 15_000);
+    return () => window.clearInterval(timer);
+  }, []);
+  const clock = practiceClock(tz, clockInstant);
+  const base = calendarDate(`${clock.dateKey}T00:00:00Z`);
   const monthStart = new Date(base.getFullYear(), base.getMonth() + monthOffset, 1);
   const monthEnd = new Date(base.getFullYear(), base.getMonth() + monthOffset + 1, 0);
   const monthKey = `${monthStart.getFullYear()}-${pad(monthStart.getMonth() + 1)}`;
@@ -132,8 +107,8 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
   );
 
   // ---- Today's schedule (therapist local timezone) ----
-  const todayKey = todayInTimezone(tz);
-  const nowMin = nowMinutesInTimezone(tz);
+  const todayKey = clock.dateKey;
+  const nowMin = clock.minutes;
 
   const todayLabel = useMemo(() => {
     try {
@@ -299,8 +274,9 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
             </p>
           </div>
 
+          <QueryFeedback pending={appointmentsPending} error={appointmentsError} retry={retryAppointments} />
           <ul className="px-5 sm:px-6 pb-4">
-            {todaySessions.length === 0 && (
+            {!appointmentsPending && !appointmentsError && todaySessions.length === 0 && (
               <li className="py-8 flex flex-col items-center text-center gap-3">
                 <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
                   <CalendarDays className="h-7 w-7 text-primary" />

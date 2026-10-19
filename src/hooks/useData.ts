@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { requireActiveSession } from "@/lib/sessionGuard";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateCapacity } from "@/lib/capacity";
+import { practiceClock, calendarDate } from "@/lib/calendarClock";
+import { fetchAllPages } from "@/lib/fetchAllPages";
 import { track } from "@/lib/analytics";
 import { getDemoActionMessage, useDemoMode, useDemoWriteGuard, useFreeStarterMode, FREE_STARTER_CLIENT_LIMIT } from "@/hooks/useDemoWorkspace";
 import { claimPaymentSlot, incomeDedupeKey } from "@/lib/incomeDedupe";
@@ -568,15 +570,14 @@ export function useAppointments(range?: { from?: string; to?: string }) {
   return useQuery({
     queryKey: ["appointments", user?.id, from ?? null, to ?? null],
     queryFn: async () => {
-      let q = supabase
-        .from("appointments")
-        .select("*, clients(name), services(name, price), group_sessions!appointments_group_session_id_fkey(id, group_id, groups(name))")
-        .order("scheduled_at", { ascending: true });
-      if (from) q = q.gte("scheduled_at", from);
-      if (to) q = q.lte("scheduled_at", to);
-      const { data, error } = await q;
-      if (error) throw error;
-      return data;
+      return fetchAllPages(async (offset, end) => {
+        let q = supabase.from("appointments")
+          .select("*, clients(name), services(name, price), group_sessions!appointments_group_session_id_fkey(id, group_id, groups(name))")
+          .order("scheduled_at", { ascending: true }).order("id", { ascending: true });
+        if (from) q = q.gte("scheduled_at", from);
+        if (to) q = q.lte("scheduled_at", to);
+        return await q.range(offset, end);
+      });
     },
     enabled: !!user,
     staleTime: STALE_SHORT,
@@ -2882,8 +2883,9 @@ function generateRecurringAppointments(rule: any, userId: string, maxWeeks = 12)
 // Dashboard stats
 export function useDashboardStats() {
   const { user } = useAuth();
-  const now = new Date();
-  const today = now.toISOString().split("T")[0];
+  const { data: savedProfile } = useProfile();
+  const today = practiceClock(savedProfile?.timezone).dateKey;
+  const now = calendarDate(`${today}T00:00:00Z`);
   const monthStart = today.substring(0, 7) + "-01";
 
   const dayOfWeek = now.getDay();
@@ -2895,9 +2897,10 @@ export function useDashboardStats() {
   const lastSunday = new Date(thisMonday);
   lastSunday.setDate(thisMonday.getDate() - 1);
 
-  const thisMondayStr = thisMonday.toISOString().split("T")[0];
-  const lastMondayStr = lastMonday.toISOString().split("T")[0];
-  const lastSundayStr = lastSunday.toISOString().split("T")[0];
+  const dateKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const thisMondayStr = dateKey(thisMonday);
+  const lastMondayStr = dateKey(lastMonday);
+  const lastSundayStr = dateKey(lastSunday);
 
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const daysPastInMonth = now.getDate();
@@ -2930,13 +2933,13 @@ export function useDashboardStats() {
         supabase.from("clients").select("id", { count: "exact", head: true }),
         supabase.from("appointments")
           .select("*, clients(name), services(name)")
-          .gte("scheduled_at", today + "T00:00:00")
-          .lt("scheduled_at", today + "T23:59:59")
+          .gte("scheduled_at", today + "T00:00:00Z")
+          .lt("scheduled_at", dateKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)) + "T00:00:00Z")
           .order("scheduled_at"),
         supabase.from("appointments")
           .select("id, client_id, status, scheduled_at")
-          .gte("scheduled_at", monthStart + "T00:00:00")
-          .lte("scheduled_at", monthEndStr + "T23:59:59"),
+          .gte("scheduled_at", monthStart + "T00:00:00Z")
+          .lte("scheduled_at", monthEndStr + "T23:59:59.999Z"),
         supabase.from("profiles")
           .select("working_days_per_week, sessions_per_day, default_duration")
           .eq("user_id", user!.id)
@@ -2968,8 +2971,8 @@ export function useDashboardStats() {
         supabase.from("clients")
           .select("id, archive_reason, archived_at")
           .eq("status", "archived")
-          .gte("archived_at", monthStart + "T00:00:00")
-          .lte("archived_at", monthEndStr + "T23:59:59"),
+          .gte("archived_at", monthStart + "T00:00:00Z")
+          .lte("archived_at", monthEndStr + "T23:59:59.999Z"),
         // Fallback for new clients: created this month
         supabase.from("clients").select("id, created_at"),
         // Active clients for "without next session" metric
@@ -3014,8 +3017,8 @@ export function useDashboardStats() {
 
       // Weekly capacity with real data
       const weekAptRes = await supabase.from("appointments").select("id, scheduled_at, status")
-        .gte("scheduled_at", thisMondayStr + "T00:00:00")
-        .lt("scheduled_at", new Date(thisMonday.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] + "T00:00:00");
+        .gte("scheduled_at", thisMondayStr + "T00:00:00Z")
+        .lt("scheduled_at", dateKey(new Date(thisMonday.getFullYear(), thisMonday.getMonth(), thisMonday.getDate() + 7)) + "T00:00:00Z");
       const weekAppointments = (weekAptRes.data ?? []).filter(a => a.status !== "cancelled");
       const bookedSlots = weekAppointments.length;
       const freeSlots = Math.max(capacity.weeklyCapacity - bookedSlots, 0);
@@ -3102,8 +3105,8 @@ export function useDashboardStats() {
           firstSessionByClient.set(a.client_id, a.scheduled_at);
         }
       }
-      const monthStartTs = new Date(monthStart + "T00:00:00").getTime();
-      const monthEndTs = new Date(monthEndStr + "T23:59:59").getTime();
+      const monthStartTs = new Date(monthStart + "T00:00:00Z").getTime();
+      const monthEndTs = new Date(monthEndStr + "T23:59:59.999Z").getTime();
       let newClientsThisMonth = 0;
       const clientsWithSession = new Set<string>();
       for (const [cid, firstAt] of firstSessionByClient) {
@@ -3136,8 +3139,8 @@ export function useDashboardStats() {
         .from("appointments")
         .select("price")
         .eq("status", "cancelled")
-        .gte("scheduled_at", monthStart + "T00:00:00")
-        .lte("scheduled_at", monthEndStr + "T23:59:59");
+        .gte("scheduled_at", monthStart + "T00:00:00Z")
+        .lte("scheduled_at", monthEndStr + "T23:59:59.999Z");
       const lostIncomeThisMonth = (cancelledMonthRes.data ?? [])
         .reduce((s: number, a: any) => s + Number(a.price ?? 0), 0);
 

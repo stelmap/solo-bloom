@@ -223,7 +223,7 @@ export default function PracticeProfilePage() {
     phone: "",
     business_id: "",
     business_address: "",
-    language: "en",
+    language: lang,
     timezone: "",
   });
   const [isActive, setIsActive] = useState(false);
@@ -245,7 +245,7 @@ export default function PracticeProfilePage() {
       phone: p.phone || "",
       business_id: p.business_id || "",
       business_address: p.business_address || "",
-      language: p.language || "en",
+      language: p.language || lang,
       timezone: p.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
     };
     setForm(next);

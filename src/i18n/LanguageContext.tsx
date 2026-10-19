@@ -15,7 +15,7 @@ function normalizeLang(value: string | null | undefined): AppLanguage | null {
 /**
  * Language is chosen from the visitor's browser preferences only — never from
  * IP or region. The first supported entry in navigator.languages wins;
- * English is the fallback. Russian is therefore only used when the browser
+ * Ukrainian is the fallback. Russian is therefore only used when the browser
  * itself asks for Russian (or the visitor picks it explicitly).
  */
 function getBrowserLang(): AppLanguage {
@@ -33,7 +33,7 @@ function getBrowserLang(): AppLanguage {
       if (tag.startsWith("en")) return "en";
     }
   } catch {}
-  return "en";
+  return "uk";
 }
 
 interface LanguageContextType {
@@ -70,7 +70,7 @@ export function translateFor(
 /** Read the language stored in localStorage (used before profile loads) */
 export function getStoredLang(): AppLanguage {
   try {
-    const stored = normalizeLang(localStorage.getItem(LANG_STORAGE_KEY) || localStorage.getItem("landing_lang"));
+    const stored = normalizeLang(localStorage.getItem(LANG_STORAGE_KEY)) || normalizeLang(localStorage.getItem("landing_lang"));
     if (stored) return stored;
   } catch {}
   return getBrowserLang();
@@ -143,7 +143,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Priority after login: explicit pre-login choice > saved profile > active/browser fallback.
-  const profileLang = profile?.language as AppLanguage | undefined;
+  const profileLang = normalizeLang(profile?.language);
   const lang: AppLanguage = preLoginLang || profileLang || storedLang;
 
   // Lazily fetch non-English locales on first use, then trigger a re-render.
