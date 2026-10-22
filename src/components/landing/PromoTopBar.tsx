@@ -29,8 +29,10 @@ export function PromoTopBar({ lang, onActivate, onContact }: Props) {
   const viewed = useRef(false);
 
   useEffect(() => {
-    if (isCampaignActive() && !isPromoBarDismissed()) setVisible(true);
-  }, []);
+    // Campaign retired: the bar now only offers "Contact us".
+    void isCampaignActive; void onActivate; void ArrowRight;
+    if (onContact && !isPromoBarDismissed()) setVisible(true);
+  }, [onContact]);
 
   useEffect(() => {
     if (!visible || viewed.current) return;
@@ -43,25 +45,10 @@ export function PromoTopBar({ lang, onActivate, onContact }: Props) {
   return (
     <div
       role="region"
-      aria-label={lt(lang, "promoBarText")}
+      aria-label={contactCtaLabel(lang)}
       className="relative z-[60] bg-secondary text-secondary-foreground"
     >
       <div className="page-container flex flex-wrap items-center justify-center gap-x-3 gap-y-2 py-2 text-center [padding-inline:clamp(40px,4vw,72px)]">
-        <span aria-hidden="true" className="inline-block h-3.5 w-5 overflow-hidden rounded-[2px]">
-          <span className="block h-1/2 bg-[hsl(214_85%_52%)]" />
-          <span className="block h-1/2 bg-[hsl(47_95%_55%)]" />
-        </span>
-        <strong className="text-xs font-semibold sm:text-sm">{lt(lang, "promoBarText")}</strong>
-        <button
-          type="button"
-          onClick={() => {
-            track("promo_activate_click", landingEventProps({ locale: lang, source_page: "/", placement: "top_bar" }));
-            onActivate();
-          }}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          {lt(lang, "promoBarCta")} <ArrowRight className="h-3.5 w-3.5" />
-        </button>
         {onContact && (
           <button
             type="button"
