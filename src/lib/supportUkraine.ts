@@ -43,11 +43,8 @@ export function resolveCampaignEligibility(input: {
   language?: string | null;
   promoCode?: string | null;
 }): CampaignEligibility {
-  if (isUkraineCountry(input.country)) return { eligible: true, reason: "country" };
-  if (isUkrainianLanguage(input.language)) return { eligible: true, reason: "language" };
-  if (normalizePromoCode(input.promoCode) === SUPPORT_UA_PROMO_CODE) {
-    return { eligible: true, reason: "promo_code" };
-  }
+  // Campaign retired: nobody is eligible any more.
+  void input;
   return { eligible: false, reason: null };
 }
 

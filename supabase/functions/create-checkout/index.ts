@@ -166,11 +166,9 @@ serve(async (req) => {
     const profile = (profileResult.data as any) as { language?: string; business_country?: string } | null;
     const country = String(profile?.business_country ?? "").trim().toLowerCase();
     const profileLang = String(profile?.language ?? "").trim().toLowerCase();
-    const campaignEligible =
-      ["ua", "ukr", "ukraine", "україна", "украина"].includes(country) ||
-      profileLang === "uk" ||
-      promoCodeSent === SUPPORT_UA_DISCOUNT_CODE ||
-      promoCodeSent === "SUPPORT_UA_PSYCHOTHERAPY_50";
+    // Support Ukraine campaign retired: no automatic discount.
+    void country; void profileLang;
+    const campaignEligible = false;
     log("Support Ukraine eligibility", { campaignEligible });
 
     // Legacy customers migrating from the previous provider keep their old

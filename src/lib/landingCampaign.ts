@@ -36,6 +36,8 @@ export const SUPPORT_UA_CAMPAIGN: CampaignConfig = {
 };
 
 export function isCampaignActive(now: Date = new Date()): boolean {
+  // Campaign retired: hide the banner and promo bar everywhere.
+  if (now) return false;
   if (!SUPPORT_UA_CAMPAIGN.endsAt) return true;
   return now.getTime() < new Date(SUPPORT_UA_CAMPAIGN.endsAt).getTime();
 }

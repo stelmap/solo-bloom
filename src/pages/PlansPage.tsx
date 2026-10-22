@@ -939,34 +939,6 @@ export default function PlansPage() {
               </div>
             )}
 
-            {/* Support Ukrainian Sole Practitioners — compact pill + promo code */}
-            <div className="mt-8 flex flex-col items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setPromoOpen((v) => !v)}
-                className="inline-flex items-center gap-2 max-w-full px-4 py-2 rounded-full border border-border bg-card text-sm text-foreground shadow-sm hover:border-primary/40 transition-colors"
-              >
-                <Heart className="h-4 w-4 text-sky-500 shrink-0" />
-                <span className="truncate">🇺🇦 {campaignText(lang, "campaignName")}</span>
-                <ChevronRight className={cn("h-4 w-4 text-muted-foreground shrink-0 transition-transform", promoOpen && "rotate-90")} />
-              </button>
-              <p className="text-xs text-muted-foreground text-center">
-                {campaignText(lang, "bannerDiscount")}
-              </p>
-              {promoOpen && (
-                <div className="mt-2 w-full max-w-xl p-5 rounded-2xl border border-border bg-card">
-                  <SupportUkrainePromoInput
-                    lang={lang}
-                    eligible={campaignEligible}
-                    planCode={orderedPlans[0]?.code ?? "solo"}
-                    onApply={applyPromoCode}
-                  />
-                  {campaignEligible && (
-                    <p className="mt-3 text-xs text-muted-foreground">{campaignText(lang, "renewalNotice")}</p>
-                  )}
-                </div>
-              )}
-            </div>
 
             {/* Trust row */}
             <div className="mt-10 pt-8 border-t border-border grid gap-6 sm:grid-cols-3 max-w-4xl mx-auto">
