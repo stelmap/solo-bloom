@@ -200,8 +200,12 @@ serve(async (req) => {
 
     // Manually entered promo code: any active Paddle discount code works.
     // Use the same validated code as the preview, including underscores.
+    // The Support Ukraine campaign codes (incl. the app's automatic alias) are
+    // handled by the campaign branch below, never as a manual Paddle code.
     const manualCode =
-      promoCodeSent && promoCodeSent !== SUPPORT_UA_DISCOUNT_CODE
+      promoCodeSent &&
+      promoCodeSent !== SUPPORT_UA_DISCOUNT_CODE &&
+      promoCodeSent !== "SUPPORT_UA_PSYCHOTHERAPY_50"
         ? promoCodeSent
         : null;
     if (!discountId && manualCode) {
