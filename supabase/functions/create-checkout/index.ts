@@ -206,6 +206,9 @@ serve(async (req) => {
       promoCodeSent !== "SUPPORT_UA_PSYCHOTHERAPY_50"
         ? promoCodeSent
         : null;
+    if (promoCodeSent === SUPPORT_UA_DISCOUNT_CODE || promoCodeSent === "SUPPORT_UA_PSYCHOTHERAPY_50") {
+      return json({ error: "This promo code is not valid.", code: "invalid_promo_code" }, body.preview ? 200 : 400);
+    }
     if (!discountId && manualCode) {
       try {
         discountId = await findDiscountIdByCode(manualCode);
