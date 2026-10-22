@@ -1642,9 +1642,7 @@ function LandingShell() {
         <meta property="og:url" content={canonicalUrl} />
         <script type="application/ld+json">{faqJsonLd}</script>
       </Helmet>
-      {isCampaignActive() && (
-        <PromoTopBar lang={lang} onActivate={activateOffer} onContact={() => setContactOpen(true)} />
-      )}
+      <PromoTopBar lang={lang} onActivate={activateOffer} onContact={() => setContactOpen(true)} />
       <ContactRequestDialog open={contactOpen} onOpenChange={setContactOpen} lang={lang} />
       <LandingNav />
       <main>
