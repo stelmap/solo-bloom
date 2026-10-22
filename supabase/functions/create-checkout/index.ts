@@ -80,6 +80,9 @@ serve(async (req) => {
     // customer will get, so the final price is visible before paying.
     // Validate a manually typed promo code so the plans page can show the
     // discount before checkout (and reject unknown codes on "Apply").
+    if (promoCodeSent === SUPPORT_UA_DISCOUNT_CODE || promoCodeSent === "SUPPORT_UA_PSYCHOTHERAPY_50") {
+      return json({ promo: null, error: "This promo code is not valid.", code: "invalid_promo_code" }, body.preview ? 200 : 400);
+    }
     if (body.preview && body.promoCode) {
       const code = promoCodeSent;
       if (!code) return json({ promo: null, code: "invalid_promo_code" }, 200);
@@ -166,11 +169,9 @@ serve(async (req) => {
     const profile = (profileResult.data as any) as { language?: string; business_country?: string } | null;
     const country = String(profile?.business_country ?? "").trim().toLowerCase();
     const profileLang = String(profile?.language ?? "").trim().toLowerCase();
-    const campaignEligible =
-      ["ua", "ukr", "ukraine", "україна", "украина"].includes(country) ||
-      profileLang === "uk" ||
-      promoCodeSent === SUPPORT_UA_DISCOUNT_CODE ||
-      promoCodeSent === "SUPPORT_UA_PSYCHOTHERAPY_50";
+    // Support Ukraine campaign retired: no automatic discount.
+    void country; void profileLang;
+    const campaignEligible = false;
     log("Support Ukraine eligibility", { campaignEligible });
 
     // Legacy customers migrating from the previous provider keep their old
@@ -208,6 +209,9 @@ serve(async (req) => {
       promoCodeSent !== "SUPPORT_UA_PSYCHOTHERAPY_50"
         ? promoCodeSent
         : null;
+    if (promoCodeSent === SUPPORT_UA_DISCOUNT_CODE || promoCodeSent === "SUPPORT_UA_PSYCHOTHERAPY_50") {
+      return json({ error: "This promo code is not valid.", code: "invalid_promo_code" }, body.preview ? 200 : 400);
+    }
     if (!discountId && manualCode) {
       try {
         discountId = await findDiscountIdByCode(manualCode);
