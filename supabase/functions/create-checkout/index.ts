@@ -80,6 +80,9 @@ serve(async (req) => {
     // customer will get, so the final price is visible before paying.
     // Validate a manually typed promo code so the plans page can show the
     // discount before checkout (and reject unknown codes on "Apply").
+    if (promoCodeSent === SUPPORT_UA_DISCOUNT_CODE || promoCodeSent === "SUPPORT_UA_PSYCHOTHERAPY_50") {
+      return json({ promo: null, error: "This promo code is not valid.", code: "invalid_promo_code" }, body.preview ? 200 : 400);
+    }
     if (body.preview && body.promoCode) {
       const code = promoCodeSent;
       if (!code) return json({ promo: null, code: "invalid_promo_code" }, 200);
