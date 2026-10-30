@@ -1,5 +1,10 @@
 # Roadmap
 
+## Excel client import
+- [ ] Add editable multi-row Excel paste with validation and localized feedback.
+- [ ] Save clients and opening balances atomically while preserving plan limits and export.
+- [ ] Run regression tests and verify the authenticated import flow.
+
 ## Meeting duration correction
 - [x] Synchronize new meeting times and preserve custom duration in all save paths.
 - [x] Allow clearable service duration and price fields; group meetings use the shared duration control.
