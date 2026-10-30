@@ -1,5 +1,10 @@
 # Roadmap
 
+## Meeting duration correction
+- [ ] Synchronize new meeting times and preserve custom duration in all save paths.
+- [ ] Allow clearable duration and price fields for services and groups.
+- [ ] Run duration regression tests and verify available authenticated flows.
+
 ## Calendar synchronization and interface language
 - [x] Diagnose and correct shared calendar/dashboard data, dates and updates.
 - [x] Preserve language choices and offer all languages before registration and in setup.
