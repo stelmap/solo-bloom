@@ -727,6 +727,12 @@ export default function CalendarPage() {
   const [endTimeOpen, setEndTimeOpen] = useState(false);
   const [endOverride, setEndOverride] = useState<string | null>(null);
   const [durationDraft, setDurationDraft] = useState("60");
+  useEffect(() => {
+    if (!createOpen) {
+      setDurationDraft("60");
+      setEndOverride(null);
+    }
+  }, [createOpen]);
   const toMinutes = timeMinutes;
   const applyStartTime = (value: string) => {
     setForm(f => ({ ...f, time: value }));
@@ -2630,7 +2636,7 @@ export default function CalendarPage() {
                     onClick={() => {
                       setForm((f) => ({ ...f, date: dayStr, time: f.time || "09:00" }));
                       setDurationDraft("60");
-                      setBlockEnd(addMinutesToTime(form.time || "09:00", 60));
+                      setBlockEnd(meetingEndTime(form.time || "09:00", 60));
                       setEndOverride(null);
                       const dow = day.getDay();
                       setRecurDays([dow === 0 ? 7 : dow]);
@@ -2811,7 +2817,7 @@ export default function CalendarPage() {
                             const timeStr = `${hour.toString().padStart(2, "0")}:00`;
                             setForm(f => ({ ...f, date: dateStr, time: timeStr }));
                             setDurationDraft("60");
-                            setBlockEnd(addMinutesToTime(timeStr, 60));
+                            setBlockEnd(meetingEndTime(timeStr, 60));
                             setEndOverride(null);
                             // Preselect the weekday for recurrence (1=Mon..7=Sun)
                             const dow = day.getDay();
