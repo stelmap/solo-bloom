@@ -1,5 +1,10 @@
 # Roadmap
 
+## Meeting duration correction
+- [x] Synchronize new meeting times and preserve custom duration in all save paths.
+- [x] Allow clearable service duration and price fields; group meetings use the shared duration control.
+- [x] Run duration regression tests and verify authenticated form entry and service initialization; saving/reopening real meetings remains unverified.
+
 ## Calendar synchronization and interface language
 - [x] Diagnose and correct shared calendar/dashboard data, dates and updates.
 - [x] Preserve language choices and offer all languages before registration and in setup.

@@ -1,3 +1,4 @@
+import { parseMeetingDuration, parseNonnegativePrice } from "@/lib/meetingDuration";
 import { AppLayout } from "@/components/AppLayout";
 import { ListSkeleton } from "@/components/ListSkeleton";
 import { Button } from "@/components/ui/button";
@@ -26,28 +27,35 @@ export default function ServicesPage() {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", duration_minutes: 60, price: 0 });
+  const [form, setForm] = useState({ name: "", duration_minutes: "60", price: "0" });
 
   const openEdit = (s: any) => {
     setEditId(s.id);
-    setForm({ name: s.name, duration_minutes: s.duration_minutes, price: Number(s.price) });
+    setForm({ name: s.name, duration_minutes: String(s.duration_minutes), price: String(s.price) });
     setOpen(true);
   };
 
   const openCreate = () => {
     setEditId(null);
-    setForm({ name: "", duration_minutes: 60, price: 0 });
+    setForm({ name: "", duration_minutes: "60", price: "0" });
     setOpen(true);
   };
 
   const handleSubmit = async () => {
     if (!form.name.trim()) return;
+    const duration = parseMeetingDuration(form.duration_minutes);
+    const price = parseNonnegativePrice(form.price);
+    if (duration === null || price === null) {
+      toast({ title: t("common.error"), description: t("errors.validation.invalidAmount"), variant: "destructive" });
+      return;
+    }
+    const payload = { ...form, duration_minutes: duration, price };
     try {
       if (editId) {
-        await updateService.mutateAsync({ id: editId, ...form });
+        await updateService.mutateAsync({ id: editId, ...payload });
         toast({ title: t("toast.serviceUpdated") });
       } else {
-        await createService.mutateAsync(form);
+        await createService.mutateAsync(payload);
         toast({ title: t("toast.serviceAdded") });
       }
       setOpen(false);
@@ -85,8 +93,8 @@ export default function ServicesPage() {
               <DialogHeader><DialogTitle>{editId ? t("services.editService") : t("services.addService")}</DialogTitle></DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2"><Label>{t("common.name")} *</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>{t("common.duration")}</Label><Input type="number" value={form.duration_minutes} onChange={e => setForm(f => ({ ...f, duration_minutes: parseInt(e.target.value) || 60 }))} /></div>
-                <div className="space-y-2"><Label>{t("calendar.price")} ({cs})</Label><Input type="number" step="0.01" value={form.price} onChange={e => setForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} /></div>
+                <div className="space-y-2"><Label>{t("common.duration")}</Label><Input type="number" inputMode="numeric" min={1} step={1} value={form.duration_minutes} onChange={e => setForm(f => ({ ...f, duration_minutes: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>{t("calendar.price")} ({cs})</Label><Input type="number" inputMode="decimal" min={0} step="0.01" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} /></div>
                 <Button onClick={handleSubmit} className="w-full" disabled={createService.isPending || updateService.isPending}>
                   {editId ? t("common.save") : t("services.addService")}
                 </Button>
