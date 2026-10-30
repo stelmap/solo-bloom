@@ -1,3 +1,5 @@
+import { MeetingDurationInput } from "@/components/MeetingDurationInput";
+import { parseMeetingDuration, meetingEndTime, durationFromEnd, serviceMeetingDuration } from "@/lib/meetingDuration";
 import { usePrepaidSummaries } from "@/hooks/usePrepaidSessions";
 import { prepaidCopy, prepaidStatus } from "@/lib/prepaidSessions";
 import { invalidatePrepaid } from "@/components/clients/PrepaidSessionsCard";
@@ -167,7 +169,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
 
 
   // Edit form
-  const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "", notes: "", price: 0, days_of_week: [1] as number[], interval_weeks: 1, price_override_reason: "" });
+  const [editForm, setEditForm] = useState({ client_id: "", service_id: "", date: "", time: "", duration_minutes: "60", notes: "", price: 0, days_of_week: [1] as number[], interval_weeks: 1, price_override_reason: "" });
 
   // Complete form
   const [amountPaid, setAmountPaid] = useState(0);
@@ -471,6 +473,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
     setEditForm({
       client_id: apt.client_id, service_id: apt.service_id,
       date: `${yyyy}-${mm}-${dd}`, time: `${hh}:${min}`,
+      duration_minutes: String(apt.duration_minutes),
       notes: apt.notes || "", price: Number(apt.price),
       days_of_week, interval_weeks,
       price_override_reason: (apt as any).price_override_reason || "",
@@ -479,6 +482,10 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
   };
 
   const handleSaveEdit = async () => {
+    if (parseMeetingDuration(editForm.duration_minutes) === null) {
+      toast({ title: t("common.error"), description: t("errors.validation.required"), variant: "destructive" });
+      return;
+    }
     if (apt.recurring_rule_id) {
       setRecurEditScopeOpen(true);
       return;
@@ -491,7 +498,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
       await updateAppointment.mutateAsync({
         id: apt.id, client_id: editForm.client_id, service_id: editForm.service_id,
         scheduled_at: `${editForm.date}T${editForm.time}:00Z`,
-        duration_minutes: service?.duration_minutes ?? 60,
+        duration_minutes: Number(editForm.duration_minutes),
         price: editForm.price, notes: editForm.notes || undefined,
         price_override_reason: overrideReason || undefined,
       });
@@ -525,7 +532,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
         await updateAppointment.mutateAsync({
           id: apt.id, client_id: editForm.client_id, service_id: editForm.service_id,
           scheduled_at: newScheduled.toISOString(),
-          duration_minutes: service?.duration_minutes ?? 60,
+          duration_minutes: Number(editForm.duration_minutes),
           price: editForm.price, notes: editForm.notes || undefined,
         });
       } else {
@@ -533,7 +540,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
           ruleId: apt.recurring_rule_id, scope, appointmentId: apt.id,
           updates: {
             client_id: editForm.client_id, service_id: editForm.service_id,
-            duration_minutes: service?.duration_minutes ?? 60,
+            ...(Number(editForm.duration_minutes) !== Number(apt.duration_minutes) ? { duration_minutes: Number(editForm.duration_minutes) } : {}),
             price: editForm.price, notes: editForm.notes || undefined,
           },
           deltaMs: deltaMs !== 0 ? deltaMs : undefined,
@@ -1531,7 +1538,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 <Label>{t("calendar.service")} *</Label>
                 <Select value={editForm.service_id} onValueChange={v => {
                   const svc = services.find(s => s.id === v);
-                  setEditForm(f => ({ ...f, service_id: v, price: Number(svc?.price ?? f.price) }));
+                  setEditForm(f => ({ ...f, service_id: v, duration_minutes: serviceMeetingDuration(svc), price: Number(svc?.price ?? f.price) }));
                 }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{s.name} — {cs}{Number(s.price).toFixed(0)}</SelectItem>)}</SelectContent>
@@ -1546,6 +1553,13 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 dateLabel={t("common.date")}
                 timeLabel={t("common.time")}
               />
+              <MeetingDurationInput id="edit-meeting-duration" value={editForm.duration_minutes}
+                onChange={value => setEditForm(f => ({ ...f, duration_minutes: value }))} />
+              <div className="space-y-2">
+                <Label htmlFor="edit-meeting-end">{({ uk: "Завершення", en: "End", ru: "Окончание", pl: "Koniec", fr: "Fin" }[lang] ?? "End")}</Label>
+                <Input id="edit-meeting-end" type="time" value={meetingEndTime(editForm.time, Number(editForm.duration_minutes))}
+                  onChange={event => setEditForm(f => ({ ...f, duration_minutes: String(durationFromEnd(f.time, event.target.value) ?? "") }))} />
+              </div>
               <div className="space-y-2">
                 <Label>{t("calendar.price")} ({cs})</Label>
                 <Input type="number" step="0.01" value={editForm.price} onChange={e => setEditForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} />

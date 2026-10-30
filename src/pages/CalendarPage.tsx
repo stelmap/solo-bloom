@@ -1,3 +1,5 @@
+import { MeetingDurationInput } from "@/components/MeetingDurationInput";
+import { durationFromEnd, meetingEndTime, parseMeetingDuration, parseNonnegativePrice, serviceMeetingDuration, timeMinutes } from "@/lib/meetingDuration";
 import { AppLayout } from "@/components/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -723,54 +725,27 @@ export default function CalendarPage() {
   const [blockEnd, setBlockEnd] = useState("10:00");
   const [startTimeOpen, setStartTimeOpen] = useState(false);
   const [endTimeOpen, setEndTimeOpen] = useState(false);
-  /** Manual override for the session end time (UI only — creation still uses service duration). */
   const [endOverride, setEndOverride] = useState<string | null>(null);
-  /** Quick-select duration in minutes (null = custom / no preset matches). */
-  const [durationPreset, setDurationPreset] = useState<number | null>(60);
-
-  const DURATION_PRESETS = [50, 60, 90, 120, 180];
-  const toMinutes = (t: string) => {
-    const [h, m] = (t || "").split(":").map(Number);
-    return Number.isFinite(h) && Number.isFinite(m) ? h * 60 + m : NaN;
+  const [durationDraft, setDurationDraft] = useState("60");
+  const toMinutes = timeMinutes;
+  const applyStartTime = (value: string) => {
+    setForm(f => ({ ...f, time: value }));
+    const duration = parseMeetingDuration(durationDraft);
+    const end = duration === null ? null : meetingEndTime(value, duration);
+    if (end) setBlockEnd(end);
+    setEndOverride(end);
   };
-  const addMinutesToTime = (t: string, mins: number) => {
-    const total = toMinutes(t) + mins;
-    if (!Number.isFinite(total)) return t;
-    const clamped = Math.min(total, 23 * 60 + 45);
-    return `${String(Math.floor(clamped / 60)).padStart(2, "0")}:${String(clamped % 60).padStart(2, "0")}`;
+  const applyEndTime = (value: string) => {
+    setBlockEnd(value);
+    setEndOverride(value);
+    setDurationDraft(String(durationFromEnd(form.time, value) ?? ""));
   };
-  const durationLabel = (mins: number) => {
-    if (mins < 60) return `${mins} ${L.durationMin}`;
-    const h = mins / 60;
-    const HOURS: Record<string, string> = { en: "h", uk: "год", ru: "ч", pl: "godz.", fr: "h" };
-    const unit = HOURS[lang as string] ?? "h";
-    return `${Number.isInteger(h) ? h : h.toFixed(1)} ${unit}`;
-  };
-  /** Apply a new start time, keeping the selected duration. */
-  const applyStartTime = (v: string) => {
-    setForm(f => ({ ...f, time: v }));
-    const nextEnd = durationPreset ? addMinutesToTime(v, durationPreset) : null;
-    if (nextEnd) {
-      setBlockEnd(nextEnd);
-      setEndOverride(nextEnd);
-    } else {
-      setEndOverride(null);
-    }
-  };
-  /** Apply a manually chosen end time and re-derive the duration preset. */
-  const applyEndTime = (v: string) => {
-    setBlockEnd(v);
-    setEndOverride(v);
-    const diff = toMinutes(v) - toMinutes(form.time);
-    setDurationPreset(DURATION_PRESETS.includes(diff) ? diff : null);
-  };
-  const applyDuration = (mins: number) => {
-    setDurationPreset(mins);
-    if (form.time) {
-      const nextEnd = addMinutesToTime(form.time, mins);
-      setBlockEnd(nextEnd);
-      setEndOverride(nextEnd);
-    }
+  const applyDuration = (value: string) => {
+    setDurationDraft(value);
+    const duration = parseMeetingDuration(value);
+    const end = duration === null ? null : meetingEndTime(form.time, duration);
+    if (end) setBlockEnd(end);
+    setEndOverride(end);
   };
 
   // Group session state
@@ -798,7 +773,7 @@ export default function CalendarPage() {
   const [qaServiceOpen, setQaServiceOpen] = useState(false);
   const [qaClient, setQaClient] = useState({ name: "", email: "", phone: "" });
   const [qaEmailError, setQaEmailError] = useState<string | null>(null);
-  const [qaService, setQaService] = useState({ name: "", duration_minutes: 60, price: 0 });
+  const [qaService, setQaService] = useState({ name: "", duration_minutes: "60", price: "0" });
 
   const handleQuickAddClient = async () => {
     const name = qaClient.name.trim();
@@ -829,7 +804,7 @@ export default function CalendarPage() {
 
   const handleQuickAddService = async () => {
     const name = qaService.name.trim();
-    if (!name || qaService.duration_minutes <= 0) return;
+    if (!name || parseMeetingDuration(qaService.duration_minutes) === null || parseNonnegativePrice(qaService.price) === null) return;
     try {
       const s: any = await createService.mutateAsync({
         name,
@@ -840,8 +815,9 @@ export default function CalendarPage() {
         prev ? [...prev, s] : [s],
       );
       setForm(f => ({ ...f, service_id: s.id }));
+      applyDuration(serviceMeetingDuration(s));
       setServiceError(false);
-      setQaService({ name: "", duration_minutes: 60, price: 0 });
+      setQaService({ name: "", duration_minutes: "60", price: "0" });
       setQaServiceOpen(false);
     } catch (e: any) {
       toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
@@ -887,23 +863,19 @@ export default function CalendarPage() {
   // time, duration preset or service duration) and recalculates on any change.
   const createValidation = useMemo(() => {
     if (!form.date || !form.time) return null;
-    const service = services.find(s => s.id === form.service_id);
-    const explicit = endOverride ? toMinutes(endOverride) - toMinutes(form.time) : NaN;
-    const duration = Number.isFinite(explicit) && explicit > 0
-      ? explicit
-      : (durationPreset ?? service?.duration_minutes ?? 60);
+    const duration = isBlockedTime ? durationFromEnd(form.time, blockEnd) : parseMeetingDuration(durationDraft);
+    if (duration === null) return null;
     return findConflict(form.date, form.time, duration);
-  }, [form.date, form.time, form.service_id, endOverride, durationPreset, services, appointments, pendingRequests, blockedRanges]);
-
+  }, [form.date, form.time, durationDraft, isBlockedTime, blockEnd, appointments, pendingRequests, blockedRanges]);
 
   const createAvailabilityNotice = useMemo(() => {
     if (isBlockedTime || !form.date || !form.time) return null;
-    const service = services.find(s => s.id === form.service_id);
-    const duration = service?.duration_minutes ?? durationPreset ?? 60;
+    const duration = parseMeetingDuration(durationDraft);
+    if (duration === null) return null;
     return isOutsidePublicBookingRange(new Date(`${form.date}T00:00:00`), form.time, duration)
       ? ((t as any)("calendar.outsidePublicBookingInfo") || "This time is not shown as available in your public calendar.")
       : null;
-  }, [isBlockedTime, form.date, form.time, form.service_id, services, durationPreset, isOutsidePublicBookingRange, t]);
+  }, [isBlockedTime, form.date, form.time, durationDraft, isOutsidePublicBookingRange, t]);
 
   const handleCreateBlockedTime = async () => {
     if (!form.date || !form.time || !blockEnd) return;
@@ -954,7 +926,7 @@ export default function CalendarPage() {
       await qc.invalidateQueries({ queryKey: ["days-off"] });
       setForm({ client_id: "", service_id: "", date: "", time: "09:00", notes: "" });
       setBlockEnd("10:00");
-      setDurationPreset(60);
+      setDurationDraft("60");
       setEndOverride(null);
       setIsBlockedTime(false);
       setIsRecurring(false);
@@ -1055,6 +1027,11 @@ export default function CalendarPage() {
     }
     submittingRef.current = true;
     try {
+    const duration = parseMeetingDuration(durationDraft);
+    if (duration === null || (endOverride !== null && endOverride !== meetingEndTime(form.time, duration))) {
+      toast({ title: t("common.error"), description: t("errors.validation.required"), variant: "destructive" });
+      return;
+    }
     // Validate service selection
     if (!form.service_id) {
       setServiceError(true);
@@ -1081,7 +1058,7 @@ export default function CalendarPage() {
             client_id: firstMember.client_id,
             service_id: form.service_id,
             scheduled_at: `${form.date}T${form.time}:00Z`,
-            duration_minutes: service?.duration_minutes ?? 60,
+            duration_minutes: duration,
             price: Number(service?.price ?? 0),
             notes: `[Group: ${groupName}] ${form.notes || ""}`.trim(),
           });
@@ -1113,7 +1090,7 @@ export default function CalendarPage() {
                 client_id: firstMember.client_id,
                 service_id: savedForm.service_id,
                 time: savedForm.time,
-                duration_minutes: service?.duration_minutes ?? 60,
+                duration_minutes: duration,
                 price: Number(service?.price ?? 0),
                 notes: savedNotes || undefined,
                 recurrence_type: "weekly",
@@ -1159,7 +1136,7 @@ export default function CalendarPage() {
             client_id: firstMember.client_id,
             service_id: form.service_id,
             scheduled_at: `${form.date}T${form.time}:00Z`,
-            duration_minutes: service?.duration_minutes ?? 60,
+            duration_minutes: duration,
             price: Number(service?.price ?? 0),
             notes: `[Group: ${groupName}] ${form.notes || ""}`.trim(),
           });
@@ -1193,7 +1170,7 @@ export default function CalendarPage() {
         const firstRecApt = await createAppointment.mutateAsync({
           client_id: form.client_id, service_id: form.service_id,
           scheduled_at: `${form.date}T${form.time}:00Z`,
-          duration_minutes: service?.duration_minutes ?? 60,
+          duration_minutes: duration,
           price: Number(service?.price ?? 0),
           notes: form.notes || undefined,
         });
@@ -1215,7 +1192,7 @@ export default function CalendarPage() {
           try {
             const result = await createRecurringRule.mutateAsync({
               client_id: savedForm.client_id, service_id: savedForm.service_id,
-              time: savedForm.time, duration_minutes: service?.duration_minutes ?? 60,
+              time: savedForm.time, duration_minutes: duration,
               price: Number(service?.price ?? 0), notes: savedForm.notes || undefined,
               recurrence_type: "weekly", interval_weeks: savedRecurInterval,
               days_of_week: savedRecurDays.length > 0 ? savedRecurDays : [new Date(savedForm.date).getDay() || 7],
@@ -1234,7 +1211,7 @@ export default function CalendarPage() {
         const newApt = await createAppointment.mutateAsync({
           client_id: form.client_id, service_id: form.service_id,
           scheduled_at: `${form.date}T${form.time}:00Z`,
-          duration_minutes: service?.duration_minutes ?? 60,
+          duration_minutes: duration,
           price: Number(service?.price ?? 0),
           notes: form.notes || undefined,
         });
@@ -2121,7 +2098,7 @@ export default function CalendarPage() {
                     ) : (
                       <>
                         <div className="flex flex-row gap-2">
-                          <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); setEndOverride(null); }}>
+                          <Select value={form.service_id} onValueChange={v => { setForm(f => ({ ...f, service_id: v })); setServiceError(false); applyDuration(serviceMeetingDuration(services.find(s => s.id === v))); }}>
                             <SelectTrigger
                               id="appt-service"
                               aria-required="true"
@@ -2148,16 +2125,12 @@ export default function CalendarPage() {
 
                   {/* Date / Start time / End time + Duration */}
                   {(() => {
-                    const svc = services.find(s => s.id === form.service_id);
-                    const durMin = Number(svc?.duration_minutes) || 60;
-                    let computedEnd = "";
-                    if (form.time) {
-                      const [hh, mm] = form.time.split(":").map(Number);
-                      const total = hh * 60 + mm + durMin;
-                      computedEnd = `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
-                    }
+                    const duration = parseMeetingDuration(durationDraft);
+                    const computedEnd = duration === null ? "" : meetingEndTime(form.time, duration);
                     const endValue = isBlockedTime ? blockEnd : (endOverride ?? computedEnd);
-                    const invalidRange = !!form.time && !!endValue && toMinutes(endValue) <= toMinutes(form.time);
+                    const invalidRange = isBlockedTime
+                      ? !!form.time && !!endValue && toMinutes(endValue) <= toMinutes(form.time)
+                      : duration === null;
                     return (
                       <>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -2214,32 +2187,9 @@ export default function CalendarPage() {
                         </div>
                       </div>
 
-                      {/* Duration quick-select */}
                       <div className="space-y-2 border-t border-border pt-3">
-                        <Label className="text-sm font-semibold text-foreground">{L.durationTitle}</Label>
-                        <div role="group" aria-label={L.durationTitle} className="flex flex-wrap gap-2">
-                          {DURATION_PRESETS.map(mins => {
-                            const active = durationPreset === mins;
-                            return (
-                              <button
-                                key={mins}
-                                type="button"
-                                aria-pressed={active}
-                                onClick={() => applyDuration(mins)}
-                                className={cn(
-                                  "h-10 flex-1 min-w-[84px] px-3 rounded-xl text-sm font-semibold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                                  active
-                                    ? "bg-primary text-primary-foreground border-primary"
-                                    : "bg-background text-foreground border-border hover:border-muted-foreground/60",
-                                )}
-                              >
-                                {durationLabel(mins)}
-                              </button>
-                            );
-                          })}
-                        </div>
-                        <p className="text-xs text-muted-foreground">{L.durationHint}</p>
-                        {invalidRange && (
+                        <MeetingDurationInput id="meeting-duration" value={durationDraft} onChange={applyDuration} />
+                        {invalidRange && isBlockedTime && (
                           <p role="alert" className="text-xs text-destructive">{L.endBeforeStart}</p>
                         )}
                       </div>
@@ -2448,21 +2398,21 @@ export default function CalendarPage() {
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
                           <Label>{L.serviceDuration} ({L.durationMin}) *</Label>
-                          <Input type="number" min={5} step={5} value={qaService.duration_minutes}
+                          <Input type="number" inputMode="numeric" min={1} step={1} value={qaService.duration_minutes}
                             onFocus={e => e.currentTarget.select()}
-                            onChange={e => setQaService(s => ({ ...s, duration_minutes: parseInt(e.target.value) || 0 }))} />
+                            onChange={e => setQaService(s => ({ ...s, duration_minutes: e.target.value }))} />
                         </div>
                         <div className="space-y-1.5">
                           <Label>{L.servicePrice} ({cs})</Label>
                           <Input type="number" min={0} step="0.01" value={qaService.price}
                             onFocus={e => e.currentTarget.select()}
-                            onChange={e => setQaService(s => ({ ...s, price: parseFloat(e.target.value) || 0 }))} />
+                            onChange={e => setQaService(s => ({ ...s, price: e.target.value }))} />
                         </div>
                       </div>
                     </div>
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setQaServiceOpen(false)}>{L.cancel}</Button>
-                      <Button onClick={handleQuickAddService} disabled={!qaService.name.trim() || qaService.duration_minutes <= 0 || createService.isPending}>
+                      <Button onClick={handleQuickAddService} disabled={!qaService.name.trim() || parseMeetingDuration(qaService.duration_minutes) === null || parseNonnegativePrice(qaService.price) === null || createService.isPending}>
                         {createService.isPending ? t("calendar.creating") : L.saveService}
                       </Button>
                     </DialogFooter>
@@ -2679,7 +2629,7 @@ export default function CalendarPage() {
                     key={i}
                     onClick={() => {
                       setForm((f) => ({ ...f, date: dayStr, time: f.time || "09:00" }));
-                      setDurationPreset(60);
+                      setDurationDraft("60");
                       setBlockEnd(addMinutesToTime(form.time || "09:00", 60));
                       setEndOverride(null);
                       const dow = day.getDay();
@@ -2860,7 +2810,7 @@ export default function CalendarPage() {
                             const dateStr = format(day, "yyyy-MM-dd");
                             const timeStr = `${hour.toString().padStart(2, "0")}:00`;
                             setForm(f => ({ ...f, date: dateStr, time: timeStr }));
-                            setDurationPreset(60);
+                            setDurationDraft("60");
                             setBlockEnd(addMinutesToTime(timeStr, 60));
                             setEndOverride(null);
                             // Preselect the weekday for recurrence (1=Mon..7=Sun)
