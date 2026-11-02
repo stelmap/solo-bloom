@@ -43,6 +43,13 @@
       "when": 1793649496454,
       "tag": "0005_excel_client_opening_balances",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793649557205,
+      "tag": "0006_opening_debt_prepaid_accounting",
+      "breakpoints": true
     }
   ]
 }
