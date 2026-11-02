@@ -36,6 +36,13 @@
       "when": 1792398340927,
       "tag": "0004_initialize_new_profile_language",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793649496454,
+      "tag": "0005_excel_client_opening_balances",
+      "breakpoints": true
     }
   ]
 }
