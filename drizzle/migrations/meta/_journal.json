@@ -64,6 +64,13 @@
       "when": 1793649719227,
       "tag": "0008_exclude_opening_payments_from_meeting_settlement",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793649801798,
+      "tag": "0009_protect_opening_debt_payment_consumption",
+      "breakpoints": true
     }
   ]
 }
