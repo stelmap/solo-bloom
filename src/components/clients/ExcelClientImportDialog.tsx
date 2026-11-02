@@ -42,7 +42,8 @@ export function ExcelClientImportDialog({ open, onOpenChange, onSuccess }: { ope
       if (rpcError) throw rpcError;
       await Promise.all(["clients", "plan-active-client-count", "client-credit-balance", "client-debt", "expected-payments", "dashboard-stats"].map(key => qc.invalidateQueries({ queryKey: [key] })));
       toast({ title: copy.success, description: `${data?.length ?? activeRows.length}` });
-      update([emptyImportRow()]); setErrorsVisible(false); onSuccess(); onOpenChange(false);
+      update([emptyImportRow()]); setErrorsVisible(false); onSuccess();
+      savingRef.current = false; onOpenChange(false);
     } catch (e) {
       const message = e && typeof e === "object" && "message" in e ? String(e.message) : "";
       setError(message.includes("CLIENT_LIMIT_REACHED") ? copy.limit : copy.failed);
