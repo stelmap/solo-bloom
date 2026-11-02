@@ -959,7 +959,7 @@ export default function ClientDetailPage() {
                     return (
                       <div key={d.id} className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2 text-sm">
                         <div>
-                          <p className="font-medium text-foreground">{apt?.service?.name ?? t("session.title")}</p>
+                          <p className="font-medium text-foreground">{d.kind === "opening" ? ({ uk: "Початкова заборгованість", en: "Opening debt", ru: "Начальная задолженность", pl: "Saldo początkowe długu", fr: "Dette initiale" }[lang] ?? "Opening debt") : apt?.service?.name ?? t("session.title")}</p>
                           <p className="text-xs text-muted-foreground">{dateStr}</p>
                         </div>
                         <div className="font-semibold text-destructive">{cs}{Number(d.amount).toFixed(2)}</div>
