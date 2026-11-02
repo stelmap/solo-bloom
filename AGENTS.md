@@ -7,3 +7,4 @@
 - Initialize only new profile languages from validated signup metadata; preserve existing profile preferences and keep manual pre-login selection explicit.
 - Checkout and discount preview share promoCode normalization; reject invalid supplied codes before creating a transaction so a displayed code is never silently omitted.
 - Meeting duration drafts use shared minute validation and end-time arithmetic; save the meeting's chosen duration, not its service default, and only propagate explicitly changed durations across a recurring series to preserve overrides.
+- Excel client imports use an idempotent atomic owner-scoped RPC; opening credits use orphan client credits and opening debts use a separate income-linked ledger, so imports never fabricate meetings or current revenue and debt payments never inflate prepaid balances.
