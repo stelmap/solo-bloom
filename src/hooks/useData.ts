@@ -1,3 +1,4 @@
+import { unallocatedDeposit } from "@/lib/clientExcelImport";
 import { useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -629,7 +630,7 @@ export function useCreateAppointment() {
       return data;
     },
     // Analytics: a session/appointment was scheduled
-    onSuccess: () => { track("session_created"); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { track("session_created"); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL, "client-debt", "client-income", "client-credit-balance"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }
 
@@ -1440,7 +1441,15 @@ export function useExpectedPayments() {
         })
         .filter((r) => r.amount > 0);
 
-      const merged = [...individualRows, ...groupRows];
+      const { data: opening, error: openingError } = await supabase.from("client_opening_debt_balances").select("*, clients(name)").gt("amount", 0);
+      if (openingError) throw openingError;
+      const openingRows = (opening ?? []).map(d => ({
+        id: d.id, kind: "opening" as const, appointment_id: null, group_session_payment_id: null,
+        client_id: d.client_id, amount: Number(d.amount), original_amount: Number(d.original_amount),
+        status: "pending" as const, clients: d.clients,
+        appointments: { scheduled_at: d.created_at, status: "opening", services: { name: "" } },
+      }));
+      const merged = [...individualRows, ...groupRows, ...openingRows];
       merged.sort((a, b) => {
         const ad = a.appointments?.scheduled_at ?? "";
         const bd = b.appointments?.scheduled_at ?? "";
@@ -1464,11 +1473,17 @@ export function useMarkExpectedPaymentPaid() {
       amount: number;
       paymentMethod: string;
       paymentDate?: string;
-      kind?: "individual" | "group";
+      kind?: "individual" | "group" | "opening";
       groupSessionPaymentId?: string | null;
     }) => {
       const today = new Date().toISOString().split("T")[0];
       const payDate = paymentDate || today;
+
+      if (kind === "opening") {
+        const { error } = await supabase.rpc("pay_client_opening_debt", { p_debt_id: id, p_method: paymentMethod, p_date: payDate });
+        if (error) throw error;
+        return;
+      }
 
       // ── Group session participant debt ─────────────────────────────────
       if (kind === "group" && groupSessionPaymentId) {
@@ -3593,6 +3608,10 @@ export function useClientCreditBalance(clientId: string | undefined) {
         allocByIncome[r.income_id] = (allocByIncome[r.income_id] || 0) + Number(r.allocated_amount || 0);
       }
 
+      const { data: openingPayments, error: openingPayError } = await supabase.from("client_opening_debt_payments").select("income_id, amount");
+      if (openingPayError) throw openingPayError;
+      const openingByIncome = new Map((openingPayments ?? []).map(p => [p.income_id, Number(p.amount)]));
+
       // Sum unspent remainder of each confirmed deposit. €0 withdrawal audit
       // rows already carry balance_before/balance_after — we don't add their
       // amount (0) and rely on allocations to reflect the movement they made.
@@ -3611,7 +3630,7 @@ export function useClientCreditBalance(clientId: string | undefined) {
           !activeFutureApt.has(inc.appointment_id)
             ? amount
             : 0;
-        const remaining = Math.max(0, amount - explicit - virtualAlloc);
+        const remaining = unallocatedDeposit(amount, explicit + virtualAlloc, openingByIncome.get(inc.id) ?? 0);
         prepaid += remaining;
       }
 
@@ -3858,7 +3877,9 @@ export function useClientDebt(clientId: string | undefined) {
         .eq("status", "pending")
         .order("created_at", { ascending: true });
       if (error) throw error;
-      const rows = (data ?? []) as any[];
+      const { data: opening, error: openingError } = await supabase.from("client_opening_debt_balances").select("*").eq("client_id", clientId ?? "").gt("amount", 0);
+      if (openingError) throw openingError;
+      const rows = [...(data ?? []), ...(opening ?? []).map(d => ({ ...d, kind: "opening", appointment_id: null, appointment: null }))] as any[];
       const total = rows.reduce((s, r) => s + Number(r.amount || 0), 0);
       return { total, items: rows };
     },

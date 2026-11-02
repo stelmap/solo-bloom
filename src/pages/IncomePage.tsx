@@ -1,3 +1,4 @@
+import { clientImportCopy } from "@/lib/clientExcelImportCopy";
 import { BackToCalendar } from "@/components/BackToCalendar";
 import { AppLayout } from "@/components/AppLayout";
 import { ListSkeleton } from "@/components/ListSkeleton";
@@ -163,6 +164,7 @@ export default function IncomePage() {
     else list = [...list].sort((a, b) => at(b) - at(a));
     return list;
   }, [expectedPayments, q, clientFilter, sortKey]);
+  const openingDebts = filteredExpected.filter(ep => ep.kind === "opening");
   const pendingTotal = filteredExpected.reduce((s: number, ep: any) => s + Number(ep.amount), 0);
 
 
@@ -412,14 +414,19 @@ export default function IncomePage() {
 
         <div className="flex flex-wrap gap-2" role="group" aria-label={CT.payment}>
           <Button size="sm" variant={activeTab !== "unpaid" ? "default" : "outline"} className="rounded-full whitespace-nowrap" onClick={() => setActiveTab("income")}>{CT.allPayments}</Button>
-          <Button size="sm" variant={activeTab === "unpaid" ? "default" : "outline"} className="rounded-full whitespace-nowrap" onClick={() => setActiveTab("unpaid")}>{CT.unpaid} · <span className="tabular-nums">{unpaidMeetings.length}</span></Button>
+          <Button size="sm" variant={activeTab === "unpaid" ? "default" : "outline"} className="rounded-full whitespace-nowrap" onClick={() => setActiveTab("unpaid")}>{CT.unpaid} · <span className="tabular-nums">{unpaidMeetings.length + openingDebts.length}</span></Button>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsContent value="unpaid" className="space-y-2">
+            {openingDebts.map(d => <div key={d.id} className="rounded-md border border-border bg-card p-3 flex flex-wrap items-center justify-between gap-3">
+              <div><p className="font-semibold text-sm">{d.clients?.name}</p><p className="text-xs text-muted-foreground">{clientImportCopy(lang).opening}</p></div>
+              <p className="font-semibold tabular-nums">{cs}{Number(d.amount).toLocaleString()}</p>
+              <Button size="sm" onClick={() => openRecordPayment(d)}>{CT.addPayment}</Button>
+            </div>)}
             {unpaidLoading ? (
               <ListSkeleton variant="table" count={6} />
-            ) : unpaidMeetings.length === 0 ? (
+            ) : unpaidMeetings.length === 0 && openingDebts.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">{CT.unpaidEmpty}</p>
             ) : unpaidMeetings.map((m) => {
               const clientId = m.apt.client_id ?? m.apt.clients?.id;
