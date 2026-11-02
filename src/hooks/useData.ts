@@ -1637,7 +1637,7 @@ export function useMarkExpectedPaymentPaid() {
 
       );
     },
-    onSuccess: (_d, vars) => { track("payment_marked_paid", { payment_method: vars.paymentMethod }); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: async (_d, vars) => { track("payment_marked_paid", { payment_method: vars.paymentMethod }); await Promise.all([...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL, "client-debt", "client-income", "client-credit-balance"].map(k => qc.invalidateQueries({ queryKey: [k] }))); },
   });
 }
 
