@@ -5,6 +5,13 @@ export type ImportField = typeof importFields[number];
 export type ImportDraft = Record<ImportField, string>;
 export const emptyImportRow = (): ImportDraft => ({ name: "", phone: "", email: "", price: "", prepayment: "", debt: "" });
 
+export function netOpeningBalance(prepayment: number, debt: number) {
+  const difference = Math.round(prepayment * 100) - Math.round(debt * 100);
+  return { prepayment: Math.max(difference, 0) / 100, debt: Math.max(-difference, 0) / 100 };
+}
+
+export const unallocatedDeposit = (amount: number, meetingAllocations: number, openingDebtPayment: number) => Math.max(0, amount - meetingAllocations - openingDebtPayment);
+
 const money = z.string().transform(v => v.trim().replace(/[\s\u00a0\u202f]/g, "").replace(",", "."))
   .refine(v => v === "" || /^\d+(\.\d{1,2})?$/.test(v), "amount")
   .transform(v => v === "" ? 0 : Number(v))

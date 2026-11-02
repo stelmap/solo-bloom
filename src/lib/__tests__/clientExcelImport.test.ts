@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { emptyImportRow, importRowSchema, parseExcelPaste, pasteImportRows } from "../clientExcelImport";
+import { emptyImportRow, importRowSchema, parseExcelPaste, pasteImportRows, netOpeningBalance, unallocatedDeposit } from "../clientExcelImport";
 
 describe("Excel client import", () => {
+  it("nets historical debt against prepayment", () => {
+    expect(netOpeningBalance(1400, 300)).toEqual({ prepayment: 1100, debt: 0 });
+    expect(netOpeningBalance(300, 1400)).toEqual({ prepayment: 0, debt: 1100 });
+    expect(netOpeningBalance(40, 40)).toEqual({ prepayment: 0, debt: 0 });
+  });
+  it("does not treat opening-debt payments as new prepaid credit", () => expect(unallocatedDeposit(300, 0, 300)).toBe(0));
   it("pastes multiple clients with all six fields", () => {
     const rows = pasteImportRows([emptyImportRow()], "Олена\t+380501234567\tolena@example.com\t700\t1400\t300\r\nІрина\t\t\t0\t0\t0", 0, 0);
     expect(rows).toHaveLength(2);

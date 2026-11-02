@@ -915,6 +915,27 @@ export type Database = {
         }
         Relationships: []
       }
+      client_import_batches: {
+        Row: {
+          client_ids: string[]
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          client_ids?: string[]
+          created_at?: string
+          id: string
+          user_id: string
+        }
+        Update: {
+          client_ids?: string[]
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       client_language_audit: {
         Row: {
           actor_id: string | null
@@ -1016,6 +1037,84 @@ export type Database = {
             columns: ["supervision_id"]
             isOneToOne: false
             referencedRelation: "supervisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_opening_debt_payments: {
+        Row: {
+          amount: number
+          debt_id: string
+          id: string
+          income_id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          debt_id: string
+          id?: string
+          income_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          debt_id?: string
+          id?: string
+          income_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_opening_debt_payments_debt_id_fkey"
+            columns: ["debt_id"]
+            isOneToOne: false
+            referencedRelation: "client_opening_debt_balances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_opening_debt_payments_debt_id_fkey"
+            columns: ["debt_id"]
+            isOneToOne: false
+            referencedRelation: "client_opening_debts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_opening_debt_payments_income_id_fkey"
+            columns: ["income_id"]
+            isOneToOne: true
+            referencedRelation: "income"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_opening_debts: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          original_amount: number
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          original_amount: number
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          original_amount?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_opening_debts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
             referencedColumns: ["id"]
           },
         ]
@@ -4044,6 +4143,41 @@ export type Database = {
           },
         ]
       }
+      client_opening_debt_balances: {
+        Row: {
+          amount: number | null
+          client_id: string | null
+          created_at: string | null
+          id: string | null
+          original_amount: number | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: never
+          client_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          original_amount?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: never
+          client_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          original_amount?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_opening_debts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       _gdpr_decrypt: { Args: { cipher: string }; Returns: string }
@@ -4410,6 +4544,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      import_excel_clients: {
+        Args: { p_language: string; p_request_id: string; p_rows: Json }
+        Returns: string[]
+      }
       link_booking_request_client: {
         Args: { p_client_id: string; p_id: string }
         Returns: undefined
@@ -4446,6 +4584,10 @@ export type Database = {
           source_queue: string
         }
         Returns: number
+      }
+      pay_client_opening_debt: {
+        Args: { p_date: string; p_debt_id: string; p_method: string }
+        Returns: string
       }
       prepaid_sessions_balance: {
         Args: { p_client_id: string }

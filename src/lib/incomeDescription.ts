@@ -1,4 +1,5 @@
 /** Localizes system-generated English income descriptions (stored in DB) at render time. */
+import { clientImportCopy } from "@/lib/clientExcelImportCopy";
 const RE = /^(Backfilled: )?([\d.,]+) deducted from prepayment balance for session on ([^.]+?\d)\.(?: Balance before: ([\d.,-]+)\. Balance after: ([\d.,-]+)\.)?$/;
 
 const T: Record<string, (a: string, d: string, b?: string, c?: string) => string> = {
@@ -14,6 +15,7 @@ export function isPrepaymentDeduction(desc?: string | null): boolean {
 
 export function localizeIncomeDescription(desc: string | null | undefined, lang: string): string {
   if (!desc) return "";
+  if (desc === "Opening debt payment") return clientImportCopy(lang).opening;
   const m = desc.trim().match(RE);
   const fn = T[lang];
   if (!m || !fn) return desc;

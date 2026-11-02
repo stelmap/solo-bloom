@@ -1,4 +1,5 @@
 import { SourcePicker, type SourceValue } from "@/components/sources/SourcePicker";
+import { clientImportCopy } from "@/lib/clientExcelImportCopy";
 import { PrepaidSessionsCard } from "@/components/clients/PrepaidSessionsCard";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
@@ -959,7 +960,7 @@ export default function ClientDetailPage() {
                     return (
                       <div key={d.id} className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2 text-sm">
                         <div>
-                          <p className="font-medium text-foreground">{apt?.service?.name ?? t("session.title")}</p>
+                          <p className="font-medium text-foreground">{d.kind === "opening" ? clientImportCopy(lang).opening : apt?.service?.name ?? t("session.title")}</p>
                           <p className="text-xs text-muted-foreground">{dateStr}</p>
                         </div>
                         <div className="font-semibold text-destructive">{cs}{Number(d.amount).toFixed(2)}</div>

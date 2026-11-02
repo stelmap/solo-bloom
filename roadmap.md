@@ -1,9 +1,9 @@
 # Roadmap
 
 ## Excel client import
-- [ ] Add editable multi-row Excel paste with validation and localized feedback.
-- [ ] Save clients and opening balances atomically while preserving plan limits and export.
-- [ ] Run regression tests and verify the authenticated import flow.
+- [x] Add editable multi-row Excel paste with validation and localized feedback.
+- [x] Save clients and opening balances atomically while preserving plan limits and export.
+- [x] Run 10 regression tests; verify authenticated import, validation, opening balances and test debt payment; remove test records.
 
 ## Meeting duration correction
 - [x] Synchronize new meeting times and preserve custom duration in all save paths.

@@ -36,6 +36,41 @@
       "when": 1792398340927,
       "tag": "0004_initialize_new_profile_language",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793649496454,
+      "tag": "0005_excel_client_opening_balances",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793649557205,
+      "tag": "0006_opening_debt_prepaid_accounting",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793649671176,
+      "tag": "0007_client_import_owner_plain_uuid",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793649719227,
+      "tag": "0008_exclude_opening_payments_from_meeting_settlement",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793649801798,
+      "tag": "0009_protect_opening_debt_payment_consumption",
+      "breakpoints": true
     }
   ]
 }
