@@ -1,9 +1,9 @@
 # Roadmap
 
 ## Invoice register
-- [ ] Add Finances → Registers → Invoices, preserving existing records and numbering.
-- [ ] Automatically create invoices for successfully saved payments with or without a meeting; remove meeting-level creation.
-- [ ] Test invoice creation rules and verify the authenticated register and payment flow.
+- [x] Add Finances → Registers → Invoices, preserving existing records and numbering.
+- [x] Automatically create invoices for successfully saved payments with or without a meeting; remove meeting-level creation.
+- [x] Verify 16 unit tests plus authenticated invoice integration tests; verify manual payment → register → PDF in the browser and clean temporary records. Physical printing and meeting-completion UI are not end-to-end verified.
 
 ## Excel client import
 - [x] Add editable multi-row Excel paste with validation and localized feedback.
