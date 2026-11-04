@@ -14,6 +14,8 @@ import { filterInvoiceRegister, invoiceRegisterCopy } from "@/lib/invoiceRegiste
 import { loadSignatureAssetFromPath } from "@/lib/invoiceSignature";
 import { useToast } from "@/hooks/use-toast";
 import { describeError } from "@/lib/errorMessages";
+import { pmCopy } from "@/components/payments/paymentMethodsCopy";
+import { storedMethodLabel } from "@/hooks/usePaymentMethods";
 
 export default function InvoiceRegisterPage() {
   const { t, lang } = useLanguage();
@@ -36,7 +38,7 @@ export default function InvoiceRegisterPage() {
     for (const allocation of invoice.income?.income_session_allocations ?? []) {
       links.set(allocation.appointment_id, allocation.appointments?.scheduled_at || invoice.session_date);
     }
-    return [...links].map(([id, date]) => <Link key={id} className="text-primary underline underline-offset-4 whitespace-nowrap" to={`/calendar?date=${date.slice(0, 10)}&appointment=${id}`}>{date.slice(0, 10)}</Link>);
+    return [...links].map(([id, date]) => <Link key={id} className="text-primary underline underline-offset-4 whitespace-nowrap" to={`/calendar?date=${date.slice(0, 10)}&appointmentId=${id}`}>{date.slice(0, 10)}</Link>);
   };
   const pdf = async (invoice: any, print: boolean) => {
     // Open synchronously so a browser's popup blocker doesn't prevent printing.
@@ -75,7 +77,7 @@ export default function InvoiceRegisterPage() {
         <Input type="date" className="w-auto max-w-full" aria-label={t("common.date") + " ≤"} value={to} onChange={e => setTo(e.target.value)} />
         <span className="text-sm text-muted-foreground">{rows.length}</span>
       </div>
-      {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : isError ? <Button variant="outline" onClick={() => void refetch()}>{t("common.retry")}</Button> : !rows.length ? <p className="py-12 text-muted-foreground">{copy.empty}</p> :
+      {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : isError ? <Button variant="outline" onClick={() => void refetch()}>{t("common.error")} · ↻</Button> : !rows.length ? <p className="py-12 text-muted-foreground">{copy.empty}</p> :
         <div className="overflow-x-auto"><table className="w-full text-sm text-left">
           <thead className="border-b border-border text-muted-foreground"><tr>{[t("invoice.title"), t("common.date"), t("nav.clients"), copy.meeting, t("common.amount"), ""].map((label, i) => <th key={i} className="px-3 py-3 font-medium whitespace-nowrap">{label}</th>)}</tr></thead>
           <tbody>{rows.map((invoice: any) => <tr key={invoice.id} className="border-b border-border">
@@ -102,9 +104,9 @@ export default function InvoiceRegisterPage() {
             <dt className="text-muted-foreground">{t("nav.services")}</dt><dd>{selected.service_name}</dd>
             <dt className="text-muted-foreground">{copy.meeting}</dt><dd className="flex flex-col gap-1">{meetingLinks(selected).length ? meetingLinks(selected) : copy.noMeeting}</dd>
             <dt className="text-muted-foreground">{t("common.amount")}</dt><dd className="font-semibold">{money(selected)}</dd>
-            <dt className="text-muted-foreground">{t("invoice.vat")}</dt><dd>{selected.vat_rate}% · {selected.vat_amount} {selected.currency}</dd>
-            <dt className="text-muted-foreground">{t("pm.title")}</dt><dd>{selected.payment_method ? t(`pm.${selected.payment_method}`) === `pm.${selected.payment_method}` ? selected.payment_method : t(`pm.${selected.payment_method}`) : "—"}</dd>
-            <dt className="text-muted-foreground">{t("common.date")}</dt><dd>{selected.payment_date || "—"}</dd>
+            <dt className="text-muted-foreground">VAT</dt><dd>{selected.vat_rate}% · {selected.vat_amount} {selected.currency}</dd>
+            <dt className="text-muted-foreground">{pmCopy(lang).label}</dt><dd>{storedMethodLabel(selected, t)}</dd>
+            <dt className="text-muted-foreground">{t("common.paymentDate")}</dt><dd>{selected.payment_date || "—"}</dd>
           </dl>
           <div className="flex gap-3"><Button disabled={busy} onClick={() => void pdf(selected, false)}><Download className="mr-2 h-4 w-4" />PDF</Button><Button variant="outline" disabled={busy} onClick={() => void pdf(selected, true)}><Printer className="mr-2 h-4 w-4" />{copy.print}</Button></div>
         </div>}
