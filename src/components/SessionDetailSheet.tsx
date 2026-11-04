@@ -10,7 +10,6 @@ import { useDefaultPaymentMethodCode } from "@/hooks/usePaymentMethods";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { InvoiceButton } from "@/components/InvoiceButton";
 import { ClientPicker } from "@/components/ClientPicker";
 import { DateTimePicker, DatePicker } from "@/components/ui/date-time-picker";
 import { format } from "date-fns";
@@ -1016,7 +1015,7 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                     <Zap className="h-4 w-4" />
                     {({ uk: "Швидкі дії", ru: "Быстрые действия", pl: "Szybkie akcje", fr: "Actions rapides" } as Record<string, string>)[lang] ?? "Quick actions"}
                   </h3>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     {canSendReminder && clientRequiresConfirmation && (
                       <Button variant="outline" onClick={handleSendReminder} disabled={sendingReminder}
                         className="h-auto min-h-11 whitespace-normal rounded-xl bg-card px-3 py-2 text-xs font-medium text-foreground hover:bg-accent-soft">
@@ -1031,12 +1030,6 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                         {sendingReminder ? "..." : t("confirmation.sendReminder")}
                       </Button>
                     )}
-                    <InvoiceButton
-                      part="button"
-                      appointment={apt}
-                      client={clients.find(c => c.id === apt.client_id)}
-                      service={services.find(s => s.id === apt.service_id)}
-                    />
                   </div>
                 </section>
               )}
@@ -1130,19 +1123,6 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                 </div>
               )}
 
-              {/* Invoice */}
-              {apt.status === "completed" && !isGroupSession && (
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-1.5">
-                    <FileText className="h-3.5 w-3.5" /> {t("invoice.title")}
-                  </Label>
-                  <InvoiceButton
-                    appointment={apt}
-                    client={clients.find(c => c.id === apt.client_id)}
-                    service={services.find(s => s.id === apt.service_id)}
-                  />
-                </div>
-              )}
 
               {/* Previous session notes */}
               {previousNotes && (previousNotes.session_summary || previousNotes.homework_text || previousNotes.transference || previousNotes.has_homework) && (
@@ -1413,12 +1393,6 @@ export function SessionDetailSheet({ appointment: apt, open, onOpenChange, use12
                       </div>
                     );
                   })()}
-                  <InvoiceButton
-                    part="list"
-                    appointment={apt}
-                    client={clients.find(c => c.id === apt.client_id)}
-                    service={services.find(s => s.id === apt.service_id)}
-                  />
                 </div>
               )}
 

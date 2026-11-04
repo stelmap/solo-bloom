@@ -2,20 +2,22 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
+import { fetchAllPages } from "@/lib/fetchAllPages";
 
 export function useInvoices() {
   const { user } = useAuth();
   return useQuery({
     queryKey: ["invoices", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("invoices" as any)
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data as any[];
+      if (!user) return [];
+      return fetchAllPages<any>((from, to) => supabase
+        .from("invoices")
+        .select("*, appointments(scheduled_at), income:income_id(income_session_allocations(appointment_id, appointments(scheduled_at)))")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false }).order("id", { ascending: false }).range(from, to));
     },
     enabled: !!user,
+    refetchOnMount: "always",
   });
 }
 

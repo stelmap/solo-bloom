@@ -8,3 +8,4 @@
 - Checkout and discount preview share promoCode normalization; reject invalid supplied codes before creating a transaction so a displayed code is never silently omitted.
 - Meeting duration drafts use shared minute validation and end-time arithmetic; save the meeting's chosen duration, not its service default, and only propagate explicitly changed durations across a recurring series to preserve overrides.
 - Excel client imports use an idempotent atomic owner-scoped RPC; opening credits use orphan client credits and opening debts use a separate income-linked ledger, so imports never fabricate meetings or current revenue and debt payments never inflate prepaid balances.
+- Invoice creation is atomic with confirmed incoming payments, deduplicated by income ID; preserve the existing numbering function and snapshot payment details, and exclude internal prepaid withdrawals to avoid duplicate invoices.

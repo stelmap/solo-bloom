@@ -1,4 +1,5 @@
 import { SUPERVISION_UI_ENABLED } from "@/lib/featureVisibility";
+import { invoiceRegisterCopy } from "@/lib/invoiceRegister";
 import { BrandName } from "@/components/BrandName";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -50,6 +51,7 @@ const navItems: NavItem[] = [
       { icon: TrendingUp, labelKey: "nav.financialOverview", path: "/finances/overview" },
       { icon: TrendingDown, labelKey: "nav.expenses", path: "/finances/expenses" },
       { icon: ShieldCheck, labelKey: "nav.paymentAudit", path: "/finances/payment-audit" },
+      { icon: ClipboardList, labelKey: "registers", path: "/finances/registers/invoices" },
       { icon: Target, labelKey: "nav.breakeven", path: "/finances/breakeven" },
       { icon: Settings, labelKey: "nav.financeSettings", path: "/finances/settings" },
     ],
@@ -242,7 +244,7 @@ export function AppSidebar() {
                       )}
                     >
                       <child.icon className="h-4 w-4 shrink-0" />
-                      {t(child.labelKey)}
+                      {child.labelKey === "registers" ? invoiceRegisterCopy[lang].registers : t(child.labelKey)}
                     </Link>
                   );
                 })}
