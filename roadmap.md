@@ -1,5 +1,10 @@
 # Roadmap
 
+## Invoice register
+- [ ] Add Finances → Registers → Invoices, preserving existing records and numbering.
+- [ ] Automatically create invoices for successfully saved payments with or without a meeting; remove meeting-level creation.
+- [ ] Test invoice creation rules and verify the authenticated register and payment flow.
+
 ## Excel client import
 - [x] Add editable multi-row Excel paste with validation and localized feedback.
 - [x] Save clients and opening balances atomically while preserving plan limits and export.
