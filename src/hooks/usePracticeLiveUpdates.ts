@@ -9,7 +9,7 @@ export function usePracticeLiveUpdates() {
   useEffect(() => {
     if (!user?.id) return;
     const refresh = () => {
-      for (const key of ["appointments", "client-appointments", "dashboard-stats", "booking-requests", "booking-requests-count", "income", "income-all", "expected-payments"])
+      for (const key of ["appointments", "client-appointments", "dashboard-stats", "booking-requests", "booking-requests-count", "income", "income-all", "expected-payments", "invoices"])
         void qc.invalidateQueries({ queryKey: [key] });
     };
     const channel = supabase.channel(`practice-live:${user.id}`);

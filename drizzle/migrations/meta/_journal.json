@@ -71,6 +71,13 @@
       "when": 1793649801798,
       "tag": "0009_protect_opening_debt_payment_consumption",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793826638871,
+      "tag": "0010_automatic_payment_invoice_register",
+      "breakpoints": true
     }
   ]
 }
