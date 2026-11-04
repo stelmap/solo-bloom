@@ -2388,6 +2388,7 @@ export type Database = {
           created_at: string
           currency: string
           id: string
+          income_id: string | null
           invoice_date: string
           invoice_number: string
           language: string
@@ -2426,6 +2427,7 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          income_id?: string | null
           invoice_date?: string
           invoice_number: string
           language?: string
@@ -2464,6 +2466,7 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          income_id?: string | null
           invoice_date?: string
           invoice_number?: string
           language?: string
@@ -2502,6 +2505,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_income_id_fkey"
+            columns: ["income_id"]
+            isOneToOne: false
+            referencedRelation: "income"
             referencedColumns: ["id"]
           },
         ]
