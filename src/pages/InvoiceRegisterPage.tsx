@@ -70,7 +70,7 @@ export default function InvoiceRegisterPage() {
   return <AppLayout>
     <div className="space-y-6">
       <FinanceSubnav />
-      <header><p className="text-sm text-muted-foreground mb-1">{copy.registers}</p><h1 className="text-2xl font-semibold">{copy.title}</h1></header>
+      <header><h1 className="text-2xl font-semibold">{copy.title}</h1></header>
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative w-full sm:w-72"><Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><Input className="pl-9" value={search} onChange={e => setSearch(e.target.value)} placeholder={copy.search} aria-label={copy.search} /></div>
         <Input type="date" className="w-auto max-w-full" aria-label={t("common.date") + " ≥"} value={from} onChange={e => setFrom(e.target.value)} />
