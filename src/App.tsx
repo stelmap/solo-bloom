@@ -95,6 +95,7 @@ const AdminDomainsPage = lazyWithReload(() => import("./pages/AdminDomainsPage")
 const AdminAnalyticsPage = lazyWithReload(() => import("./pages/AdminAnalyticsPage"));
 const AdminTestsPage = lazyWithReload(() => import("./pages/AdminTestsPage"));
 const AdminSupportPage = lazyWithReload(() => import("./pages/AdminSupportPage"));
+const AdminReferralPayoutsPage = lazyWithReload(() => import("./pages/AdminReferralPayoutsPage"));
 const ServerUpdatePage = lazyWithReload(() => import("./pages/ServerUpdatePage"));
 const OAuthConsentPage = lazyWithReload(() => import("./pages/OAuthConsentPage"));
 const AgreementTemplatesPage = lazyWithReload(() => import("./pages/AgreementTemplatesPage"));
@@ -204,6 +205,7 @@ const App = () => {
                 <Route path="/admin/analytics" element={<ProtectedRoute><AdminAnalyticsPage /></ProtectedRoute>} />
                 <Route path="/admin/tests" element={<ProtectedRoute><AdminTestsPage /></ProtectedRoute>} />
                 <Route path="/admin/support" element={<ProtectedRoute><AdminSupportPage /></ProtectedRoute>} />
+                <Route path="/admin/referral-payouts" element={<ProtectedRoute><AdminReferralPayoutsPage /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>

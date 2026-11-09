@@ -1,6 +1,7 @@
 import { SUPERVISION_UI_ENABLED } from "@/lib/featureVisibility";
 import { invoiceRegisterCopy } from "@/lib/invoiceRegister";
 import { referralNavLabel } from "@/lib/referralCopy";
+import { adminReferralCopy } from "@/lib/adminReferralCopy";
 import { BrandName } from "@/components/BrandName";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -146,6 +147,7 @@ export function AppSidebar() {
       { icon: ShieldCheck, label: "Reviews", path: "/admin/reviews" },
       { icon: ShieldCheck, label: "Subscriptions", path: "/admin/subscriptions" },
       { icon: ShieldCheck, label: "Support", path: "/admin/support" },
+      { icon: Wallet, label: adminReferralCopy[lang].title, path: "/admin/referral-payouts" },
     ];
     if (user?.email?.toLowerCase() === "o.gilevich@gmail.com") {
       items.push(
@@ -154,7 +156,7 @@ export function AppSidebar() {
       );
     }
     return items;
-  }, [isAdmin, user?.email]);
+  }, [isAdmin, user?.email, lang]);
 
   const planLabel =
     planCode === "pro" ? "Pro Practice"
