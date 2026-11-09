@@ -110,99 +110,99 @@ export function InvoiceDetailsDialog({ invoice, onClose, onPdf, onDelete, busy }
   const doc = (print: boolean) => { if (dirty) { toast({ title: c.saveFirst }); return; } onPdf(current, print); };
 
   return <Dialog open={!!invoice} onOpenChange={open => { if (!open) requestClose(); }}>
-    <DialogContent className="flex max-h-[92dvh] w-[calc(100vw-1.5rem)] max-w-md flex-col gap-0 overflow-hidden p-0 sm:p-0 sm:rounded-2xl">
+    <DialogContent aria-describedby={undefined} className="flex max-h-[calc(100dvh-1.5rem)] w-[calc(100vw-1.5rem)] max-w-[416px] flex-col gap-0 overflow-hidden rounded-xl bg-card p-0 text-card-foreground sm:p-0 sm:rounded-xl">
       {current && <>
-        <div className="flex-1 space-y-4 overflow-y-auto px-5 pb-4 pt-5">
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 pb-3 pt-4">
           <div className="space-y-1 pr-8">
             <div className="flex items-center gap-2">
-              <DialogTitle className="text-xl font-bold">{c.title}</DialogTitle>
+              <DialogTitle className="text-lg font-bold tracking-normal">{c.title}</DialogTitle>
               <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusClass}`}>{status === "paid" && <Check className="h-3 w-3" />}{c[status]}</span>
             </div>
             {editingNumber
               ? <Input autoFocus value={draft.invoice_number} onChange={e => setDraft(d => ({ ...d, invoice_number: e.target.value }))} onKeyDown={e => { if (e.key === "Enter") setEditingNumber(false); }} aria-label={c.editNumber} className="h-10 text-lg font-bold" />
-              : <button type="button" onClick={() => setEditingNumber(true)} className="flex items-center gap-2 text-left text-2xl font-bold" aria-label={c.editNumber}>
+              : <Button variant="ghost" onClick={() => setEditingNumber(true)} className="h-auto max-w-full justify-start gap-2 whitespace-normal p-0 text-left text-xl font-bold hover:bg-transparent" aria-label={c.editNumber}>
                   <span className="break-all">#{draft.invoice_number}</span><Pencil className="h-4 w-4 shrink-0 text-muted-foreground" />
-                </button>}
+                </Button>}
           </div>
 
-          <div className="grid grid-cols-1 gap-3 rounded-xl border border-border p-3 sm:grid-cols-[1fr_auto]">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted"><User className="h-4 w-4" /></span>
+          <div className="grid grid-cols-[minmax(0,1fr)_136px] gap-2 rounded-lg border border-border bg-accent-soft/30 p-2.5 max-[359px]:grid-cols-1">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft"><User className="h-4 w-4" /></span>
               <div className="min-w-0">
                 {current.client_id
-                  ? <Link to={`/clients/${current.client_id}`} className="inline-flex items-center gap-1 font-semibold text-primary hover:underline">{current.client_name}<ChevronRight className="h-4 w-4" /></Link>
+                  ? <Link to={`/clients/${current.client_id}`} className="inline-flex max-w-full items-center gap-1 text-sm font-semibold text-state-confirmed hover:underline"><span className="truncate">{current.client_name}</span><ChevronRight className="h-4 w-4 shrink-0" /></Link>
                   : <p className="font-semibold">{current.client_name}</p>}
-                {current.client_email && <p className="truncate text-sm text-muted-foreground">{current.client_email}</p>}
+                {current.client_email && <p className="truncate text-xs text-muted-foreground" title={current.client_email}>{current.client_email}</p>}
               </div>
             </div>
-            <div className="flex items-center gap-3 border-t border-border pt-3 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
-              <CalendarDays className="h-5 w-5 shrink-0 text-muted-foreground" />
-              <label className="space-y-0.5">
+            <div className="flex min-w-0 items-center gap-2 border-l border-border pl-2 max-[359px]:border-l-0 max-[359px]:border-t max-[359px]:pl-0 max-[359px]:pt-2">
+              <CalendarDays className="h-5 w-5 shrink-0" />
+              <label className="min-w-0 space-y-0.5">
                 <span className="block text-xs text-muted-foreground">{c.invoiceDate}</span>
-                <Input type="date" value={draft.invoice_date} onChange={e => setDraft(d => ({ ...d, invoice_date: e.target.value }))} className="h-8 w-[9.5rem] px-2 font-semibold" />
+                <Input aria-label={c.invoiceDate} type="date" value={draft.invoice_date} onChange={e => setDraft(d => ({ ...d, invoice_date: e.target.value }))} className="h-6 min-w-0 border-0 bg-transparent p-0 text-xs font-semibold shadow-none" />
               </label>
             </div>
           </div>
 
-          <div className="flex items-start gap-3 rounded-xl bg-muted/60 p-3">
+          <div className="flex items-start gap-3 rounded-lg border border-accent-soft-border bg-accent-soft/60 p-2.5">
             <Link2 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
             <div className="min-w-0 text-sm">
               {meetings.length ? meetings.map(m => <div key={m.id}>
-                <p>{c.source}: <Link to={`/calendar?date=${m.date.slice(0, 10)}&appointmentId=${m.id}`} className="inline-flex items-center font-semibold text-primary hover:underline">{c.meeting}<ChevronRight className="h-4 w-4" /></Link></p>
-                <p className="text-muted-foreground">{fmtMeeting(m.date)} — {current.service_name}</p>
+                <p>{c.source}: <Link to={`/calendar?date=${m.date.slice(0, 10)}&appointmentId=${m.id}`} className="inline-flex items-center font-semibold text-state-confirmed hover:underline">{c.meeting}<ChevronRight className="h-4 w-4" /></Link></p>
+                <p className="text-xs text-muted-foreground">{fmtMeeting(m.date)} — {current.service_name}</p>
               </div>) : current.income_id ? <>
-                <p>{c.source}: <Link to={`/payments?range=all&incomeId=${current.income_id}`} className="inline-flex items-center font-semibold text-primary hover:underline">{c.finance}<ChevronRight className="h-4 w-4" /></Link></p>
-                <p className="text-muted-foreground">{current.payment_date || current.session_date} — {c.payment}{current.service_name ? ` · ${current.service_name}` : ""}</p>
+                <p>{c.source}: <Link to={`/payments?range=all&incomeId=${current.income_id}`} className="inline-flex items-center font-semibold text-state-confirmed hover:underline">{c.finance}<ChevronRight className="h-4 w-4" /></Link></p>
+                <p className="text-xs text-muted-foreground">{current.payment_date || current.session_date} — {c.payment}{current.service_name ? ` · ${current.service_name}` : ""}</p>
               </> : <p>{c.source}: <span className="font-semibold">{c.manual}</span></p>}
             </div>
           </div>
 
-          <section className="space-y-2 border-t border-border pt-3">
+          <section className="space-y-1.5">
             <h3 className="font-semibold">{c.services} (1)</h3>
-            <div className="flex items-start justify-between gap-3 rounded-xl border border-border p-3">
-              <p className="min-w-0 text-sm font-semibold">{current.service_name}</p>
+            <div className="flex items-start justify-between gap-3 rounded-lg border border-border px-3 py-2">
+              <p className="min-w-0 text-xs font-semibold">{current.service_name}</p>
               <div className="shrink-0 text-right text-sm">
-                <p className="text-muted-foreground">1 × {fmt(current.net_amount)}</p>
+                <p className="text-xs text-muted-foreground">1 × {fmt(current.net_amount)}</p>
                 <p className="font-semibold">{fmt(current.net_amount)}</p>
               </div>
             </div>
           </section>
 
-          <section className="space-y-2 border-t border-border pt-3">
+          <section className="space-y-2">
             <h3 className="font-semibold">{c.pay}</h3>
-            <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 text-sm">
+            <div className="grid grid-cols-[minmax(0,auto)_minmax(0,1fr)] items-center gap-x-3 gap-y-2 text-xs max-[359px]:grid-cols-1">
               <span className="flex items-center gap-2 whitespace-nowrap"><CreditCard className="h-4 w-4 text-muted-foreground" />{c.method}</span>
               <Select value={draft.payment_method || undefined} onValueChange={v => setDraft(d => ({ ...d, payment_method: v }))}>
-                <SelectTrigger className="h-9"><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectTrigger aria-label={c.method} className="h-7 min-w-0 bg-card text-xs"><SelectValue placeholder="—" /></SelectTrigger>
                 <SelectContent>{methodOptions.map(o => <SelectItem key={o.code} value={o.code}>{o.label}</SelectItem>)}</SelectContent>
               </Select>
               <span className="flex items-center gap-2 whitespace-nowrap"><CalendarDays className="h-4 w-4 text-muted-foreground" />{c.payDate}</span>
-              <Input type="date" className="h-9" value={draft.payment_date} onChange={e => setDraft(d => ({ ...d, payment_date: e.target.value }))} />
+              <Input aria-label={c.payDate} type="date" className="h-7 min-w-0 bg-card text-xs" value={draft.payment_date} onChange={e => setDraft(d => ({ ...d, payment_date: e.target.value }))} />
             </div>
           </section>
 
-          <div className="flex items-center justify-between gap-3 rounded-xl bg-primary/10 p-4">
-            <div>
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg bg-primary/10 px-3 py-2">
+            <div className="min-w-0">
               <p className="font-semibold">{c.total}</p>
               <p className="text-xs text-muted-foreground">{c.sum}: {fmt(current.net_amount)} | VAT ({Number(current.vat_rate)}%): {fmt(current.vat_amount)}</p>
             </div>
             <p className="whitespace-nowrap text-xl font-bold">{fmt(current.total_amount)}</p>
           </div>
 
-          <label className="block space-y-1 border-t border-border pt-3">
+          <label className="block space-y-1 border-t border-border pt-2">
             <span className="flex items-center gap-2 text-sm font-semibold"><FileText className="h-4 w-4 text-muted-foreground" />{c.note}</span>
-            <Textarea rows={2} value={draft.payment_note} placeholder="—" onChange={e => setDraft(d => ({ ...d, payment_note: e.target.value }))} />
+            <Textarea rows={1} className="min-h-8 resize-none border-0 bg-transparent px-1 py-1 text-xs shadow-none" value={draft.payment_note} placeholder="—" onChange={e => setDraft(d => ({ ...d, payment_note: e.target.value }))} />
           </label>
         </div>
 
-        <div className="flex gap-2 border-t border-border bg-background px-5 py-3">
-          <Button className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90" disabled={saving || !dirty} onClick={() => void save()}>
-            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}{c.save}
+        <div className="flex shrink-0 gap-2 border-t border-border bg-card px-4 py-3">
+          <Button className="h-9 min-w-0 flex-1 px-2" disabled={saving} onClick={() => void save()}>
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}{c.save}
           </Button>
-          <Button variant="outline" disabled={busy} onClick={() => doc(false)}><Download className="mr-1.5 h-4 w-4" />PDF</Button>
-          <Button variant="outline" disabled={busy} onClick={() => doc(true)}><Printer className="mr-1.5 h-4 w-4" /><span className="hidden sm:inline">{c.print}</span></Button>
+          <Button variant="outline" className="h-9 px-3" disabled={busy} onClick={() => doc(false)}><Download className="h-4 w-4" />PDF</Button>
+          <Button variant="outline" className="h-9 px-3" aria-label={c.print} disabled={busy} onClick={() => doc(true)}><Printer className="h-4 w-4" /><span className="max-[359px]:hidden">{c.print}</span></Button>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild><Button variant="outline" size="icon" aria-label="…"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild><Button variant="outline" size="icon" className="h-9 w-9 shrink-0" aria-label="…"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem className="text-destructive" onClick={() => onDelete(current)}><Trash2 className="mr-2 h-4 w-4" />{c.del}</DropdownMenuItem>
             </DropdownMenuContent>
