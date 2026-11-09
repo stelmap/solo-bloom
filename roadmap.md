@@ -1,5 +1,9 @@
 # Roadmap
 
+## Admin referral payouts
+- [x] Add admin-only payout review, approval, rejection and external-transfer confirmation.
+- [x] Verify approval → Paid, rejection, required transfer confirmation, terminal-state protection, anonymous denial and referral history read-back with temporary records; clean all test payouts. No money transferred.
+
 ## Invoice register
 - [x] Add Finances → Registers → Invoices, preserving existing records and numbering.
 - [x] Automatically create invoices for successfully saved payments with or without a meeting; remove meeting-level creation.
