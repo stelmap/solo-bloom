@@ -17,7 +17,6 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { checkIsAdmin } from '@/lib/sessionGuard';
-import { fetchAllPages } from '@/lib/fetchAllPages';
 import { adminReferralCopy } from '@/lib/adminReferralCopy';
 import { canReviewPayout, payoutReviewError, type ReviewAction } from '@/lib/referralPayoutReview';
 import type { Tables } from '@/integrations/supabase/types';
@@ -33,11 +32,16 @@ export default function AdminReferralPayoutsPage() {
   const admin = useQuery({ queryKey: ['admin-access', user?.id], queryFn: checkIsAdmin, enabled: !!user });
   const q = useQuery({
     queryKey: ['admin-referral-payouts', user?.id], enabled: admin.data === true,
-    queryFn: () => fetchAllPages<Row>(async (from, to) => {
-      const { data, error } = await supabase.rpc('admin_list_referral_payouts', { p_offset: from, p_limit: Math.min(to - from + 1, 100) });
-      const result = data as unknown as { rows: Row[] } | null;
-      return { data: result?.rows ?? null, error };
-    }),
+    queryFn: async () => {
+      const all: Row[] = [];
+      for (let offset = 0; ; offset += 100) {
+        const { data, error } = await supabase.rpc('admin_list_referral_payouts', { p_offset: offset, p_limit: 100 });
+        if (error) throw error;
+        const result = data as unknown as { rows: Row[] };
+        all.push(...result.rows);
+        if (result.rows.length < 100) return all;
+      }
+    },
   });
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
