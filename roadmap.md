@@ -1,5 +1,9 @@
 # Roadmap
 
+## Admin referral payouts
+- [ ] Add admin-only payout review, approval, rejection and external-transfer confirmation.
+- [ ] Verify access restrictions, status updates and referral balance/history read-back without sending money.
+
 ## Invoice register
 - [x] Add Finances → Registers → Invoices, preserving existing records and numbering.
 - [x] Automatically create invoices for successfully saved payments with or without a meeting; remove meeting-level creation.
