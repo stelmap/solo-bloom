@@ -112,7 +112,7 @@ export function InvoiceDetailsDialog({ invoice, onClose, onPdf, onDelete, busy }
   return <Dialog open={!!invoice} onOpenChange={open => { if (!open) requestClose(); }}>
     <DialogContent aria-describedby={undefined} className="flex max-h-[calc(100dvh_-_1.5rem)] w-[calc(100vw_-_1.5rem)] max-w-[416px] flex-col gap-0 overflow-hidden rounded-xl bg-card p-0 text-card-foreground sm:p-0 sm:rounded-xl">
       {current && <>
-        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 pb-3 pt-4">
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 pb-3 pt-4 [&_.rounded-lg]:rounded-[8px] [&_input]:rounded-[6px] [&_[role=combobox]]:rounded-[6px]">
           <div className="space-y-1 pr-8">
             <div className="flex items-center gap-2">
               <DialogTitle className="text-lg font-bold tracking-normal">{c.title}</DialogTitle>
@@ -181,12 +181,10 @@ export function InvoiceDetailsDialog({ invoice, onClose, onPdf, onDelete, busy }
             </div>
           </section>
 
-          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg bg-primary/10 px-3 py-2">
-            <div className="min-w-0">
-              <p className="font-semibold">{c.total}</p>
-              <p className="text-xs text-muted-foreground">{c.sum}: {fmt(current.net_amount)} | VAT ({Number(current.vat_rate)}%): {fmt(current.vat_amount)}</p>
-            </div>
-            <p className="whitespace-nowrap text-xl font-bold">{fmt(current.total_amount)}</p>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-1 rounded-lg bg-primary/10 px-3 py-2">
+            <p className="text-sm font-semibold">{c.total}</p>
+            <p className="whitespace-nowrap text-lg font-bold">{fmt(current.total_amount)}</p>
+            <p className="col-span-2 text-xs text-muted-foreground">{c.sum}: {fmt(current.net_amount)} | VAT ({Number(current.vat_rate)}%): {fmt(current.vat_amount)}</p>
           </div>
 
           <label className="block space-y-1 border-t border-border pt-2">
@@ -195,7 +193,7 @@ export function InvoiceDetailsDialog({ invoice, onClose, onPdf, onDelete, busy }
           </label>
         </div>
 
-        <div className="flex shrink-0 gap-2 border-t border-border bg-card px-4 py-3">
+        <div className="flex shrink-0 gap-2 border-t border-border bg-card px-4 py-3 [&_button]:rounded-[6px]">
           <Button className="h-9 min-w-0 flex-1 px-2" disabled={saving} onClick={() => void save()}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}{c.save}
           </Button>
