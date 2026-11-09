@@ -181,7 +181,7 @@ export function InvoiceDetailsDialog({ invoice, onClose, onPdf, onDelete, busy }
             </div>
           </section>
 
-          <div className="flex items-center justify-between gap-3 rounded-xl bg-accent/10 p-4">
+          <div className="flex items-center justify-between gap-3 rounded-xl bg-primary/10 p-4">
             <div>
               <p className="font-semibold">{c.total}</p>
               <p className="text-xs text-muted-foreground">{c.sum}: {fmt(current.net_amount)} | VAT ({Number(current.vat_rate)}%): {fmt(current.vat_amount)}</p>
@@ -196,7 +196,7 @@ export function InvoiceDetailsDialog({ invoice, onClose, onPdf, onDelete, busy }
         </div>
 
         <div className="flex gap-2 border-t border-border bg-background px-5 py-3">
-          <Button className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90" disabled={saving || !dirty} onClick={() => void save()}>
+          <Button className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90" disabled={saving || !dirty} onClick={() => void save()}>
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}{c.save}
           </Button>
           <Button variant="outline" disabled={busy} onClick={() => doc(false)}><Download className="mr-1.5 h-4 w-4" />PDF</Button>

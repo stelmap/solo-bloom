@@ -5,7 +5,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { FinanceSubnav } from "@/components/finance/FinanceSubnav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { InvoiceDetailsDialog } from "@/components/finance/InvoiceDetailsDialog";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { useInvoices, useDeleteInvoice } from "@/hooks/useInvoices";
 import { useProfile } from "@/hooks/useData";
@@ -14,8 +14,6 @@ import { filterInvoiceRegister, invoiceRegisterCopy } from "@/lib/invoiceRegiste
 import { loadSignatureAssetFromPath } from "@/lib/invoiceSignature";
 import { useToast } from "@/hooks/use-toast";
 import { describeError } from "@/lib/errorMessages";
-import { pmCopy } from "@/components/payments/paymentMethodsCopy";
-import { storedMethodLabel } from "@/hooks/usePaymentMethods";
 
 export default function InvoiceRegisterPage() {
   const { t, lang } = useLanguage();
@@ -93,25 +91,7 @@ export default function InvoiceRegisterPage() {
           </tr>)}</tbody>
         </table></div>}
     </div>
-    <Dialog open={!!selected} onOpenChange={open => { if (!open) setSelected(null); }}>
-      <DialogContent className="max-w-xl max-h-[90dvh] overflow-y-auto">
-        <DialogHeader><DialogTitle>{selected?.invoice_number}</DialogTitle></DialogHeader>
-        {selected && <div className="space-y-5">
-          <div><p className="font-semibold">{selected.provider_business_name || selected.provider_name}</p><p>{selected.provider_address}</p><p>{selected.provider_business_id}</p><p>{selected.provider_email}</p></div>
-          <div><p className="font-semibold">{selected.client_billing_company || selected.client_name}</p><p>{selected.client_email}</p><p>{selected.client_billing_address}</p><p>{selected.client_billing_tax_id}</p></div>
-          <dl className="grid grid-cols-2 gap-3 text-sm">
-            <dt className="text-muted-foreground">{t("common.date")}</dt><dd>{selected.invoice_date}</dd>
-            <dt className="text-muted-foreground">{t("nav.services")}</dt><dd>{selected.service_name}</dd>
-            <dt className="text-muted-foreground">{copy.meeting}</dt><dd className="flex flex-col gap-1">{meetingLinks(selected).length ? meetingLinks(selected) : copy.noMeeting}</dd>
-            <dt className="text-muted-foreground">{t("common.amount")}</dt><dd className="font-semibold">{money(selected)}</dd>
-            <dt className="text-muted-foreground">VAT</dt><dd>{selected.vat_rate}% · {selected.vat_amount} {selected.currency}</dd>
-            <dt className="text-muted-foreground">{pmCopy(lang).label}</dt><dd>{storedMethodLabel(selected, t)}</dd>
-            <dt className="text-muted-foreground">{t("common.paymentDate")}</dt><dd>{selected.payment_date || "—"}</dd>
-          </dl>
-          <div className="flex gap-3"><Button disabled={busy} onClick={() => void pdf(selected, false)}><Download className="mr-2 h-4 w-4" />PDF</Button><Button variant="outline" disabled={busy} onClick={() => void pdf(selected, true)}><Printer className="mr-2 h-4 w-4" />{copy.print}</Button></div>
-        </div>}
-      </DialogContent>
-    </Dialog>
-    <ConfirmDeleteDialog open={!!deleteTarget} onOpenChange={open => { if (!open) setDeleteTarget(null); }} title={t("invoice.deleteTitle")} description={t("invoice.deleteConfirm")} loading={remove.isPending} onConfirm={async () => { if (!deleteTarget) return; try { await remove.mutateAsync(deleteTarget.id); setDeleteTarget(null); } catch (error) { toast({ title: t("common.error"), description: describeError(error instanceof Error ? error.message : "Error"), variant: "destructive" }); } }} />
+    <InvoiceDetailsDialog invoice={selected} busy={busy} onClose={() => setSelected(null)} onPdf={(inv, print) => void pdf(inv, print)} onDelete={inv => setDeleteTarget(inv)} />
+    <ConfirmDeleteDialog open={!!deleteTarget} onOpenChange={open => { if (!open) setDeleteTarget(null); }} title={t("invoice.deleteTitle")} description={t("invoice.deleteConfirm")} loading={remove.isPending} onConfirm={async () => { if (!deleteTarget) return; try { await remove.mutateAsync(deleteTarget.id); if (selected?.id === deleteTarget.id) setSelected(null); setDeleteTarget(null); } catch (error) { toast({ title: t("common.error"), description: describeError(error instanceof Error ? error.message : "Error"), variant: "destructive" }); } }} />
   </AppLayout>;
 }
