@@ -5,7 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Calendar, Users, Scissors, DollarSign,
   TrendingDown, TrendingUp, Settings, Target, Menu, X, LogOut, BarChart3, UsersRound, ClipboardList,
-  Wallet, ChevronDown, Lock, ShieldCheck, Sparkles, BadgeCheck, PanelLeftOpen, PanelLeftClose, CircleHelp,
+  Wallet, UserPlus, ChevronDown, Lock, ShieldCheck, Sparkles, BadgeCheck, PanelLeftOpen, PanelLeftClose, CircleHelp,
 } from "lucide-react";
 import { SUPPORT_OPEN_EVENT } from "@/lib/support";
 import { calToolbarCopy } from "@/lib/calendarToolbarCopy";
@@ -57,6 +57,7 @@ const navItems: NavItem[] = [
     ],
   },
   ...(SUPERVISION_UI_ENABLED ? [{ kind: "leaf" as const, icon: ClipboardList, labelKey: "nav.supervision", path: "/supervision" }] : []),
+  { kind: "leaf", icon: UserPlus, labelKey: "referral" as TranslationKey, path: "/referral" },
   { kind: "leaf", icon: Settings, labelKey: "nav.settings", path: "/settings" },
 ];
 

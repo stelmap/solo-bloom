@@ -3,6 +3,7 @@ import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
 import { initTheme } from "@/hooks/useTheme";
+import { captureReferralFromUrl } from "@/lib/referral";
 
 // Recover from stale-chunk errors after a deploy (cached index.html points to
 // an old asset hash). Reload once so the browser fetches the fresh index.html.
@@ -59,6 +60,7 @@ window.addEventListener("load", () => {
 
 // Apply persisted theme before render to avoid flash
 initTheme();
+captureReferralFromUrl();
 
 createRoot(document.getElementById("root")!).render(
   <HelmetProvider>
