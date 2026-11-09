@@ -85,6 +85,9 @@ export default function IncomePage() {
     return { dateFrom: undefined as string | undefined, dateTo: undefined as string | undefined, intervalStart: undefined as Date | undefined, intervalEnd: undefined as Date | undefined };
   }, [dateRange]);
 
+  const focusIncomeId = searchParams.get("incomeId");
+  useEffect(() => { if (!focusIncomeId) return; const id = setInterval(() => { const el = document.getElementById(`income-${focusIncomeId}`); if (el) { el.scrollIntoView({ block: "center" }); clearInterval(id); } }, 300); const stop = setTimeout(() => clearInterval(id), 8000); return () => { clearInterval(id); clearTimeout(stop); }; }, [focusIncomeId]);
+
   // Reset to first page when filter changes
   useEffect(() => { setPage(0); }, [dateFrom, dateTo]);
 
@@ -474,7 +477,7 @@ export default function IncomePage() {
                     </thead>
                     <tbody>
                       {filtered.map((entry: any) => (
-                        <tr key={entry.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors group">
+                        <tr key={entry.id} id={`income-${entry.id}`} className={`border-b border-border last:border-0 hover:bg-muted/30 transition-colors group ${searchParams.get("incomeId") === entry.id ? "bg-primary/10 ring-1 ring-inset ring-primary" : ""}`}>
                           <td className="p-4 text-sm text-muted-foreground">{entry.date}</td>
                           <td className="p-4 text-sm font-medium text-foreground">
                             {entry.source === "appointment"
