@@ -138,6 +138,41 @@ serve(async (req) => {
           log("Subscription persisted", { userId, status, subscriptionId });
         } else {
           log("Transaction completed", { userId, subscriptionId });
+          // Referral program: commission for the referrer + credit for own subscription.
+          try {
+            const totals = data.details?.totals ?? {};
+            const net = (Number(totals.total ?? 0) - Number(totals.tax ?? 0)) / 100;
+            if (data.id && net > 0) {
+              const { data: refRes, error: refErr } = await supabaseAdmin.rpc("record_referral_payment", {
+                p_user: userId,
+                p_payment_id: String(data.id),
+                p_net_amount: Math.round(net * 100) / 100,
+                p_currency: String(data.currency_code ?? "EUR"),
+                p_paid_at: data.billed_at ?? data.updated_at ?? new Date().toISOString(),
+                p_period_start: data.billing_period?.starts_at ?? null,
+                p_period_end: data.billing_period?.ends_at ?? null,
+              });
+              log("Referral processed", { refRes, refErr: refErr?.message });
+            }
+          } catch (e) {
+            log("Referral error", { error: e instanceof Error ? e.message : String(e) });
+          }
+        }
+        break;
+      }
+      case "adjustment.created":
+      case "adjustment.updated": {
+        const data = (event.data ?? {}) as Record<string, any>;
+        const isRefund = ["refund", "chargeback", "chargeback_reverse"].includes(String(data.action)) && data.action !== "chargeback_reverse";
+        if (isRefund && data.status === "approved" && data.transaction_id && data.id) {
+          const totals = data.totals ?? {};
+          const net = (Number(totals.total ?? 0) - Number(totals.tax ?? 0)) / 100;
+          const { error } = await supabaseAdmin.rpc("record_referral_refund", {
+            p_payment_id: String(data.transaction_id),
+            p_refund_id: String(data.id),
+            p_refund_net: net > 0 ? Math.round(net * 100) / 100 : null,
+          });
+          log("Referral refund processed", { id: data.id, error: error?.message });
         }
         break;
       }
