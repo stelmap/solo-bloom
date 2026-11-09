@@ -58,7 +58,7 @@ export default function ReferralProgramPage() {
   });
   const d = q.data;
   const cur = d?.balances.currency ?? "EUR";
-  const money = (v: number, currency = cur) => new Intl.NumberFormat(locale, { style: "currency", currency, minimumFractionDigits: Number(v) % 1 ? 2 : 0, maximumFractionDigits: 2 }).format(Number(v) || 0);
+  const money = (v: number, currency = cur) => new Intl.NumberFormat(locale, { style: "currency", currency, currencyDisplay: "narrowSymbol", minimumFractionDigits: Number(v) % 1 ? 2 : 0, maximumFractionDigits: 2 }).format(Number(v) || 0);
   const date = (v: string) => new Date(v).toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" });
   const url = d?.code ? `${ORIGIN}/?ref=${d.code}` : "";
 
