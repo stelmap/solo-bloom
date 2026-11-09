@@ -3046,6 +3046,7 @@ export type Database = {
       }
       referral_payouts: {
         Row: {
+          admin_note: string | null
           amount: number
           approved_by: string | null
           currency: string
@@ -3060,6 +3061,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          admin_note?: string | null
           amount: number
           approved_by?: string | null
           currency?: string
@@ -3074,6 +3076,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          admin_note?: string | null
           amount?: number
           approved_by?: string | null
           currency?: string
@@ -4468,6 +4471,10 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      admin_list_referral_payouts: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: Json
+      }
       admin_list_review_history: {
         Args: { p_review_id: string }
         Returns: {
@@ -4544,6 +4551,16 @@ export type Database = {
           updated_at: string
           user_id: string
         }[]
+      }
+      admin_review_referral_payout: {
+        Args: {
+          p_expected_status: string
+          p_id: string
+          p_note?: string
+          p_reference?: string
+          p_status: string
+        }
+        Returns: undefined
       }
       admin_set_referral_payout_status: {
         Args: { p_id: string; p_reference?: string; p_status: string }
