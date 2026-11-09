@@ -66,6 +66,7 @@ const CostEfficiencyPage = lazyWithReload(() => import("./pages/CostEfficiencyPa
 const PracticeOverviewPage = lazyWithReload(() => import("./pages/PracticeOverviewPage"));
 const PaymentAuditPage = lazyWithReload(() => import("./pages/PaymentAuditPage"));
 const InvoiceRegisterPage = lazyWithReload(() => import("./pages/InvoiceRegisterPage"));
+const ReferralProgramPage = lazyWithReload(() => import("./pages/ReferralProgramPage"));
 const SettingsPage = lazyWithReload(() => import("./pages/SettingsPage"));
 const PracticeProfilePage = lazyWithReload(() => import("./pages/PracticeProfilePage"));
 const CalendarSettingsPage = lazyWithReload(() => import("./pages/CalendarSettingsPage"));
@@ -176,6 +177,7 @@ const App = () => {
                 <Route path="/finances/breakeven" element={<ProtectedRoute><BreakevenPage /></ProtectedRoute>} />
                 <Route path="/finances/payment-audit" element={<ProtectedRoute><PaymentAuditPage /></ProtectedRoute>} />
                 <Route path="/finances/registers/invoices" element={<ProtectedRoute><InvoiceRegisterPage /></ProtectedRoute>} />
+                <Route path="/referral" element={<ProtectedRoute><ReferralProgramPage /></ProtectedRoute>} />
 
                 {/* Backwards-compatible redirects from old top-level routes */}
                 <Route path="/income" element={<RedirectKeepQuery to="/payments" />} />
