@@ -2952,6 +2952,212 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_audit: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          created_at: string
+          details: Json
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+        }
+        Relationships: []
+      }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referral_ledger: {
+        Row: {
+          amount: number
+          base_amount: number | null
+          created_at: string
+          currency: string
+          entry_type: string
+          id: string
+          note: string | null
+          occurred_at: string
+          referrer_user_id: string
+          relationship_id: string | null
+          source_ref: string
+        }
+        Insert: {
+          amount: number
+          base_amount?: number | null
+          created_at?: string
+          currency?: string
+          entry_type: string
+          id?: string
+          note?: string | null
+          occurred_at?: string
+          referrer_user_id: string
+          relationship_id?: string | null
+          source_ref: string
+        }
+        Update: {
+          amount?: number
+          base_amount?: number | null
+          created_at?: string
+          currency?: string
+          entry_type?: string
+          id?: string
+          note?: string | null
+          occurred_at?: string
+          referrer_user_id?: string
+          relationship_id?: string | null
+          source_ref?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_ledger_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "referral_relationships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_payouts: {
+        Row: {
+          amount: number
+          approved_by: string | null
+          currency: string
+          id: string
+          payout_details: string
+          payout_method: string
+          processed_at: string | null
+          referrer_user_id: string
+          requested_at: string
+          status: string
+          transaction_reference: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          approved_by?: string | null
+          currency?: string
+          id?: string
+          payout_details: string
+          payout_method: string
+          processed_at?: string | null
+          referrer_user_id: string
+          requested_at?: string
+          status?: string
+          transaction_reference?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          approved_by?: string | null
+          currency?: string
+          id?: string
+          payout_details?: string
+          payout_method?: string
+          processed_at?: string | null
+          referrer_user_id?: string
+          requested_at?: string
+          status?: string
+          transaction_reference?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      referral_program_settings: {
+        Row: {
+          attribution_days: number
+          commission_percent: number
+          id: number
+          min_payout: number
+          reward_months: number
+          updated_at: string
+        }
+        Insert: {
+          attribution_days?: number
+          commission_percent?: number
+          id?: number
+          min_payout?: number
+          reward_months?: number
+          updated_at?: string
+        }
+        Update: {
+          attribution_days?: number
+          commission_percent?: number
+          id?: number
+          min_payout?: number
+          reward_months?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      referral_relationships: {
+        Row: {
+          code: string
+          commission_percent: number
+          created_at: string
+          id: string
+          link_opened_at: string | null
+          referred_user_id: string
+          referrer_user_id: string
+          registered_at: string
+          reward_ends_at: string
+          reward_months: number
+          reward_starts_at: string
+        }
+        Insert: {
+          code: string
+          commission_percent: number
+          created_at?: string
+          id?: string
+          link_opened_at?: string | null
+          referred_user_id: string
+          referrer_user_id: string
+          registered_at: string
+          reward_ends_at: string
+          reward_months: number
+          reward_starts_at: string
+        }
+        Update: {
+          code?: string
+          commission_percent?: number
+          created_at?: string
+          id?: string
+          link_opened_at?: string | null
+          referred_user_id?: string
+          referrer_user_id?: string
+          registered_at?: string
+          reward_ends_at?: string
+          reward_months?: number
+          reward_starts_at?: string
+        }
+        Relationships: []
+      }
       review_status_history: {
         Row: {
           action: string
@@ -4193,6 +4399,18 @@ export type Database = {
       _gdpr_decrypt: { Args: { cipher: string }; Returns: string }
       _gdpr_encrypt: { Args: { plain: string }; Returns: string }
       _gdpr_key: { Args: never; Returns: string }
+      _referral_balances: { Args: { p_user: string }; Returns: Json }
+      _referral_own_charge: {
+        Args: { p_user: string }
+        Returns: {
+          billing_period: string
+          currency: string
+          period_end: string
+          period_start: string
+          plan_name: string
+          price: number
+        }[]
+      }
       add_prepaid_sessions: {
         Args: {
           p_amount: number
@@ -4326,6 +4544,10 @@ export type Database = {
           updated_at: string
           user_id: string
         }[]
+      }
+      admin_set_referral_payout_status: {
+        Args: { p_id: string; p_reference?: string; p_status: string }
+        Returns: undefined
       }
       admin_set_review_reply: {
         Args: { p_reply: string; p_review_id: string }
@@ -4464,6 +4686,7 @@ export type Database = {
         Returns: number
       }
       backfill_group_expected_payments: { Args: never; Returns: number }
+      cancel_referral_payout: { Args: { p_id: string }; Returns: undefined }
       check_client_revenue_consistency: {
         Args: never
         Returns: {
@@ -4473,6 +4696,10 @@ export type Database = {
           issue: string
           via_appointment_total: number
         }[]
+      }
+      claim_referral: {
+        Args: { p_code: string; p_opened_at?: string }
+        Returns: string
       }
       cleanup_demo_workspace: { Args: { p_user_id: string }; Returns: Json }
       client_notes_decrypt_own: { Args: { p_note_id: string }; Returns: string }
@@ -4536,6 +4763,8 @@ export type Database = {
             Returns: string
           }
       get_auth_email_language: { Args: { _email: string }; Returns: string }
+      get_my_referral_code: { Args: never; Returns: string }
+      get_my_referral_dashboard: { Args: never; Returns: Json }
       get_session_confirmation: {
         Args: { p_token: string }
         Returns: {
@@ -4685,8 +4914,32 @@ export type Database = {
         Args: { p_appointment_id: string }
         Returns: undefined
       }
+      record_referral_payment: {
+        Args: {
+          p_currency: string
+          p_net_amount: number
+          p_paid_at: string
+          p_payment_id: string
+          p_period_end?: string
+          p_period_start?: string
+          p_user: string
+        }
+        Returns: Json
+      }
+      record_referral_refund: {
+        Args: {
+          p_payment_id: string
+          p_refund_id: string
+          p_refund_net: number
+        }
+        Returns: number
+      }
       record_user_activity: { Args: never; Returns: Json }
       regenerate_booking_link_token: { Args: never; Returns: string }
+      request_referral_payout: {
+        Args: { p_amount: number; p_details: string; p_method: string }
+        Returns: string
+      }
       seed_demo_workspace: { Args: { p_user_id: string }; Returns: Json }
       set_booking_link_slug: { Args: { p_slug: string }; Returns: string }
       settle_client_debts_from_overpayment: {
