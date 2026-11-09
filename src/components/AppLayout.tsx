@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { usePracticeLiveUpdates } from "@/hooks/usePracticeLiveUpdates";
+import { claimStoredReferral } from "@/lib/referral";
 import { cn } from "@/lib/utils";
 import { useSidebarPinned } from "@/hooks/useSidebarPinned";
 import { AppSidebar } from "./AppSidebar";
@@ -17,6 +18,7 @@ export function AppLayout({ children, fluid = false }: { children: React.ReactNo
   const sidebarOffset = pinned ? "lg:ml-[216px]" : "lg:ml-[68px]";
   useSoundReminder();
   usePracticeLiveUpdates();
+  useEffect(() => { claimStoredReferral().catch(() => {}); }, []);
   useTaxAccrualSync();
 
   useEffect(() => {

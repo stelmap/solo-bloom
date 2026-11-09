@@ -1,11 +1,12 @@
 import { SUPERVISION_UI_ENABLED } from "@/lib/featureVisibility";
 import { invoiceRegisterCopy } from "@/lib/invoiceRegister";
+import { referralNavLabel } from "@/lib/referralCopy";
 import { BrandName } from "@/components/BrandName";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Calendar, Users, Scissors, DollarSign,
   TrendingDown, TrendingUp, Settings, Target, Menu, X, LogOut, BarChart3, UsersRound, ClipboardList,
-  Wallet, ChevronDown, Lock, ShieldCheck, Sparkles, BadgeCheck, PanelLeftOpen, PanelLeftClose, CircleHelp,
+  Wallet, UserPlus, ChevronDown, Lock, ShieldCheck, Sparkles, BadgeCheck, PanelLeftOpen, PanelLeftClose, CircleHelp,
 } from "lucide-react";
 import { SUPPORT_OPEN_EVENT } from "@/lib/support";
 import { calToolbarCopy } from "@/lib/calendarToolbarCopy";
@@ -57,6 +58,7 @@ const navItems: NavItem[] = [
     ],
   },
   ...(SUPERVISION_UI_ENABLED ? [{ kind: "leaf" as const, icon: ClipboardList, labelKey: "nav.supervision", path: "/supervision" }] : []),
+  { kind: "leaf", icon: UserPlus, labelKey: "referral" as TranslationKey, path: "/referral" },
   { kind: "leaf", icon: Settings, labelKey: "nav.settings", path: "/settings" },
 ];
 
@@ -86,6 +88,7 @@ export function AppSidebar() {
   useEffect(() => { if (pinned) setHoverOpen(false); }, [pinned]);
   const { user, signOut, subscription } = useAuth();
   const { t, lang } = useLanguage();
+  const navLabel = (k: TranslationKey) => (k === ("referral" as TranslationKey) ? referralNavLabel[lang] : t(k));
   const isTrial = !subscription.loading && subscription.on_trial && !subscription.subscribed;
   const { isFreeStarter, planCode } = useFreeStarterMode();
   const { has, loading: entLoading } = useEntitlements();
@@ -206,7 +209,7 @@ export function AppSidebar() {
               )}
             >
               <item.icon className="h-4.5 w-4.5 shrink-0" />
-              <span className="flex-1 truncate">{t(item.labelKey)}</span>
+              <span className="flex-1 truncate">{navLabel(item.labelKey)}</span>
             </Link>
           );
         }
@@ -224,7 +227,7 @@ export function AppSidebar() {
               aria-expanded={groupOpen}
             >
               <item.icon className="h-4.5 w-4.5 shrink-0" />
-              <span className="flex-1 text-left">{t(item.labelKey)}</span>
+              <span className="flex-1 text-left">{navLabel(item.labelKey)}</span>
               <ChevronDown className={cn("h-4 w-4 transition-transform shrink-0", groupOpen ? "rotate-0" : "-rotate-90")} />
             </button>
             {groupOpen && (
@@ -476,7 +479,7 @@ export function AppSidebar() {
               <RailButton
                 key={item.path}
                 icon={item.icon}
-                label={t(item.labelKey)}
+                label={navLabel(item.labelKey)}
                 active={isExactActive(item.path)}
                 to={item.path}
               />
@@ -484,7 +487,7 @@ export function AppSidebar() {
               <RailButton
                 key={item.basePath}
                 icon={item.icon}
-                label={t(item.labelKey)}
+                label={navLabel(item.labelKey)}
                 active={isGroupActive(item.basePath)}
                 onClick={() => {
                   setOpenGroups((m) => ({ ...m, [item.basePath]: true }));
