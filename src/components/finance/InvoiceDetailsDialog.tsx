@@ -110,7 +110,7 @@ export function InvoiceDetailsDialog({ invoice, onClose, onPdf, onDelete, busy }
   const doc = (print: boolean) => { if (dirty) { toast({ title: c.saveFirst }); return; } onPdf(current, print); };
 
   return <Dialog open={!!invoice} onOpenChange={open => { if (!open) requestClose(); }}>
-    <DialogContent className="flex max-h-[92dvh] w-[calc(100vw-1.5rem)] max-w-md flex-col gap-0 overflow-hidden p-0 sm:rounded-2xl">
+    <DialogContent className="flex max-h-[92dvh] w-[calc(100vw-1.5rem)] max-w-md flex-col gap-0 overflow-hidden p-0 sm:p-0 sm:rounded-2xl">
       {current && <>
         <div className="flex-1 space-y-4 overflow-y-auto px-5 pb-4 pt-5">
           <div className="space-y-1 pr-8">
