@@ -1,5 +1,9 @@
 # Roadmap
 
+## Referral end-to-end test
+- [x] Sign up through the owner's referral link and confirm the test email.
+- [ ] Verify the referral row in the owner's referral page, approve a temporary payout, and remove temporary test records.
+
 ## Admin referral payouts
 - [x] Add admin-only recipient bank details for each payout; 10 tests passed and authenticated saving/read-back verified on desktop and phone. Temporary payout removed; no transfers.
 - [x] Add admin-only payout review, approval, rejection and external-transfer confirmation.
