@@ -20,6 +20,7 @@ import { checkIsAdmin } from '@/lib/sessionGuard';
 import { adminReferralCopy } from '@/lib/adminReferralCopy';
 import { canReviewPayout, payoutReviewError, type ReviewAction } from '@/lib/referralPayoutReview';
 import type { Tables } from '@/integrations/supabase/types';
+import { bankDetailsCopy, validBankDetails, type BankDraft } from '@/lib/referralBankDetails';
 
 type Row = Tables<'referral_payouts'> & { full_name: string | null; email: string | null };
 
@@ -27,6 +28,7 @@ export default function AdminReferralPayoutsPage() {
   const { user, loading } = useAuth();
   const { lang } = useLanguage();
   const c = adminReferralCopy[lang];
+  const b = bankDetailsCopy[lang];
   const { toast } = useToast();
   const qc = useQueryClient();
   const admin = useQuery({ queryKey: ['admin-access', user?.id], queryFn: checkIsAdmin, enabled: !!user });
@@ -52,6 +54,31 @@ export default function AdminReferralPayoutsPage() {
   const [note, setNote] = useState('');
   const [transferred, setTransferred] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [bankDraft, setBankDraft] = useState<BankDraft>({ accountHolder: '', bankName: '', accountNumber: '', swiftBic: '' });
+  const bankQuery = useQuery({
+    queryKey: ['admin-payout-bank', selected?.id], enabled: !!selected && admin.data === true,
+    queryFn: async () => {
+      if (!selected) return null;
+      const { data, error } = await supabase.from('referral_payout_bank_details').select('*').eq('payout_id', selected.id).maybeSingle();
+      if (error) throw error;
+      setBankDraft({ accountHolder: data?.account_holder ?? selected.full_name ?? '', bankName: data?.bank_name ?? '', accountNumber: data?.account_number ?? '', swiftBic: data?.swift_bic ?? '' });
+      return data;
+    },
+    staleTime: 0,
+  });
+  const bankMutation = useMutation({
+    mutationFn: async () => {
+      if (!selected || !validBankDetails(bankDraft)) throw new Error('invalid_bank_details');
+      const { error } = await supabase.rpc('admin_save_referral_bank_details', {
+        p_id: selected.id, p_expected_status: selected.status, p_account_holder: bankDraft.accountHolder,
+        p_bank_name: bankDraft.bankName, p_account_number: bankDraft.accountNumber, p_swift_bic: bankDraft.swiftBic,
+        p_expected_updated_at: bankQuery.data?.updated_at ?? null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: async () => { await bankQuery.refetch(); toast({ title: b.saved }); },
+    onError: () => toast({ title: b.error, variant: 'destructive' }),
+  });
   const money = (r: Row) => new Intl.NumberFormat(lang, { style: 'currency', currency: r.currency }).format(r.amount);
   const date = (value: string | null) => value ? new Date(value).toLocaleString(lang) : '—';
   const rows = (q.data ?? []).filter(r => (filter === 'all' || r.status === filter) && `${r.full_name ?? ''} ${r.email ?? ''} ${r.id}`.toLowerCase().includes(search.trim().toLowerCase()));
@@ -81,6 +108,7 @@ export default function AdminReferralPayoutsPage() {
     onError: (e) => { setFormError(errorText(e)); void qc.invalidateQueries({ queryKey: ['admin-referral-payouts'] }); },
   });
   const open = (r: Row) => {
+    setBankDraft({ accountHolder: '', bankName: '', accountNumber: '', swiftBic: '' });
     setSelected(r); setAction(r.status === 'processing' ? 'paid' : 'processing');
     setReference(r.transaction_reference ?? ''); setNote(r.admin_note ?? ''); setTransferred(false); setFormError(null);
   };
@@ -116,10 +144,19 @@ export default function AdminReferralPayoutsPage() {
         </Table></div>
         <div className="flex items-center justify-end gap-3"><Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(page - 1)}>{c.prev}</Button><span className="text-sm text-muted-foreground">{page + 1} / {pages}</span><Button variant="outline" size="sm" disabled={page >= pages - 1} onClick={() => setPage(page + 1)}>{c.next}</Button></div>
       </>}
-      <Dialog open={!!selected} onOpenChange={value => { if (!value && !mutation.isPending) setSelected(null); }}><DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
+      <Dialog open={!!selected} onOpenChange={value => { if (!value && !mutation.isPending && !bankMutation.isPending) setSelected(null); }}><DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
         <DialogHeader><DialogTitle>{c.review}</DialogTitle><DialogDescription>{selected ? `${selected.full_name || selected.email || selected.referrer_user_id} · ${money(selected)}` : ''}</DialogDescription></DialogHeader>
         {selected && <div className="space-y-4">
           <dl className="grid grid-cols-2 gap-3 text-sm"><div><dt className="text-muted-foreground">{c.status}</dt><dd>{c.states[selected.status]}</dd></div><div><dt className="text-muted-foreground">{c.requested}</dt><dd>{date(selected.requested_at)}</dd></div><div className="col-span-2"><dt className="text-muted-foreground">{c.details} · {selected.payout_method}</dt><dd className="select-text break-all rounded-md bg-muted p-3 font-mono">{selected.payout_details}</dd></div></dl>
+          <section className="space-y-3 border-y border-border py-4">
+            <h2 className="font-semibold">{b.title}</h2>
+            {bankQuery.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : bankQuery.isError ? <div role="alert"><p className="text-sm text-destructive">{b.error}</p><Button variant="outline" onClick={() => void bankQuery.refetch()}>{c.retry}</Button></div> : <>
+              <div className="grid gap-3 sm:grid-cols-2">{([
+                ['accountHolder', b.holder, 200], ['bankName', b.bank, 200], ['accountNumber', b.account, 80], ['swiftBic', b.bic, 15],
+              ] as const).map(([key, label, max]) => <div key={key} className="space-y-1"><Label htmlFor={`bank-${key}`}>{label}</Label><Input id={`bank-${key}`} autoComplete="off" maxLength={max} value={bankDraft[key]} disabled={!active || bankMutation.isPending || mutation.isPending} onChange={e => setBankDraft(d => ({ ...d, [key]: e.target.value }))} /></div>)}</div>
+              {active && <Button variant="outline" disabled={bankMutation.isPending || mutation.isPending || !validBankDetails(bankDraft)} onClick={() => bankMutation.mutate()}>{bankMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{b.save}</Button>}
+            </>}
+          </section>
           {active ? <>
             <div className="flex flex-wrap gap-2">{(['processing','paid','rejected'] as ReviewAction[]).filter(a => canReviewPayout(selected.status,a)).map(a => <Button key={a} disabled={mutation.isPending} variant={action === a ? 'default' : 'outline'} onClick={() => { setAction(a); setFormError(null); }} aria-pressed={action === a}>{a === 'processing' ? c.approve : a === 'paid' ? c.paid : c.reject}</Button>)}</div>
             {action === 'paid' && <><div className="space-y-2"><Label htmlFor="payout-reference">{c.reference} *</Label><Input id="payout-reference" maxLength={200} value={reference} disabled={mutation.isPending} onChange={e => setReference(e.target.value)} /></div><div className="flex items-start gap-2"><Checkbox id="payout-transferred" checked={transferred} disabled={mutation.isPending} onCheckedChange={v => setTransferred(v === true)} /><Label htmlFor="payout-transferred" className="leading-5">{c.transferred}</Label></div></>}
@@ -127,7 +164,7 @@ export default function AdminReferralPayoutsPage() {
             {formError && <p role="alert" className="text-sm text-destructive">{formError}</p>}
           </> : <dl className="space-y-2 text-sm"><dt className="text-muted-foreground">{c.processed}</dt><dd>{date(selected.processed_at)}</dd><dt className="text-muted-foreground">{c.reference}</dt><dd className="break-all">{selected.transaction_reference || '—'}</dd><dt className="text-muted-foreground">{c.note}</dt><dd className="whitespace-pre-wrap break-words">{selected.admin_note || '—'}</dd></dl>}
         </div>}
-        <DialogFooter><Button variant="outline" disabled={mutation.isPending} onClick={() => setSelected(null)}>{c.cancel}</Button>{active && <Button disabled={mutation.isPending || !!payoutReviewError(selected?.status ?? '', action, reference, note, transferred)} onClick={() => mutation.mutate()}>{mutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}{c.save}</Button>}</DialogFooter>
+        <DialogFooter><Button variant="outline" disabled={mutation.isPending || bankMutation.isPending} onClick={() => setSelected(null)}>{c.cancel}</Button>{active && <Button disabled={mutation.isPending || bankMutation.isPending || !!payoutReviewError(selected?.status ?? '', action, reference, note, transferred)} onClick={() => mutation.mutate()}>{mutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}{c.save}</Button>}</DialogFooter>
       </DialogContent></Dialog>
     </div>
   </AppLayout>;

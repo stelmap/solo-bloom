@@ -11,3 +11,4 @@
 - Invoice creation is atomic with confirmed incoming payments, deduplicated by income ID; preserve the existing numbering function and snapshot payment details, and exclude internal prepaid withdrawals to avoid duplicate invoices.
 - Referral rewards live in an append-only ledger computed by DB functions (commissions from the Paddle webhook, refund reversals, own-subscription credits, payout reservations); never store an editable balance, so totals stay auditable and idempotent per payment.
 - Admin payout changes use server-validated RPCs with expected-status checks, row locking and audit events; Paid requires an external transfer reference and final states cannot be edited, preventing duplicate payout bookkeeping.
+- Recipient bank details are stored separately with admin-only reads and version-checked RPC writes; keep account numbers out of audit events to avoid exposing sensitive transfer information.

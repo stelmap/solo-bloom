@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Admin referral payouts
+- [x] Add admin-only recipient bank details for each payout; 10 tests passed and authenticated saving/read-back verified on desktop and phone. Temporary payout removed; no transfers.
 - [x] Add admin-only payout review, approval, rejection and external-transfer confirmation.
 - [x] Verify approval → Paid, rejection, required transfer confirmation, terminal-state protection, anonymous denial and referral history read-back with temporary records; clean all test payouts. No money transferred.
 

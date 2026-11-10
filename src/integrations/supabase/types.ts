@@ -3044,6 +3044,44 @@ export type Database = {
           },
         ]
       }
+      referral_payout_bank_details: {
+        Row: {
+          account_holder: string
+          account_number: string
+          bank_name: string
+          payout_id: string
+          swift_bic: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          account_holder: string
+          account_number: string
+          bank_name: string
+          payout_id: string
+          swift_bic?: string
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          account_holder?: string
+          account_number?: string
+          bank_name?: string
+          payout_id?: string
+          swift_bic?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_payout_bank_details_payout_id_fkey"
+            columns: ["payout_id"]
+            isOneToOne: true
+            referencedRelation: "referral_payouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referral_payouts: {
         Row: {
           admin_note: string | null
@@ -4559,6 +4597,18 @@ export type Database = {
           p_note?: string
           p_reference?: string
           p_status: string
+        }
+        Returns: undefined
+      }
+      admin_save_referral_bank_details: {
+        Args: {
+          p_account_holder: string
+          p_account_number: string
+          p_bank_name: string
+          p_expected_status: string
+          p_expected_updated_at?: string
+          p_id: string
+          p_swift_bic?: string
         }
         Returns: undefined
       }
