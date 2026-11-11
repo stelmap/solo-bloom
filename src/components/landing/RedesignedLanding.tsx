@@ -16,7 +16,7 @@ import calendarAsset from '@/assets/practice-calendar-overview.png.asset.json';
 import DemoWorkspace from '@/components/demo/DemoWorkspace';
 import { publicDemoCopy } from '@/lib/publicDemoCopy';
 const calendar = calendarAsset.url;
-import booking from '@/assets/product-booking.png.asset.json';
+import booking from '@/assets/booking-date-time-picker.png.asset.json';
 
 const languages: AppLanguage[] = ['uk','en','pl','fr','ru'];
 const screens = [
