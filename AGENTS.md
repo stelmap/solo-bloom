@@ -12,3 +12,4 @@
 - Referral rewards live in an append-only ledger computed by DB functions (commissions from the Paddle webhook, refund reversals, own-subscription credits, payout reservations); never store an editable balance, so totals stay auditable and idempotent per payment.
 - Admin payout changes use server-validated RPCs with expected-status checks, row locking and audit events; Paid requires an external transfer reference and final states cannot be edited, preventing duplicate payout bookkeeping.
 - Recipient bank details are stored separately with admin-only reads and version-checked RPC writes; keep account numbers out of audit events to avoid exposing sensitive transfer information.
+- Resolve new-account access through the owner-scoped versioned practice-access RPC; keep app trials separate from Paddle subscriptions and enforce restricted writes with database triggers, preserving legacy access.

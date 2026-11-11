@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePracticeAccess } from './usePracticeAccess';
 
 export type FeatureCode = "operational_access" | "financial_access" | "premium_access";
 
@@ -38,6 +39,7 @@ const PRICE_TO_PLAN_CODE: Record<string, "solo" | "pro"> = {
  */
 export function useEntitlements(): EntitlementsState {
   const { user, subscription } = useAuth();
+  const access = usePracticeAccess();
 
   const { data, isLoading } = useQuery({
     queryKey: ["entitlements", user?.id],
@@ -108,6 +110,15 @@ export function useEntitlements(): EntitlementsState {
     codes.add("operational_access");
   }
 
+  if (access.data?.policy_version === 2) {
+    codes.clear();
+    // Expired accounts retain read/export access, but server triggers reject writes.
+    codes.add('operational_access');
+    if (access.data.has_pro || !access.data.can_write) {
+      codes.add('financial_access');
+      codes.add('premium_access');
+    }
+  }
   const has = (code: FeatureCode) => codes.has(code);
 
   return {

@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useFreeStarterMode, FREE_STARTER_CLIENT_LIMIT } from "@/hooks/useDemoWorkspace";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { usePracticeAccess } from '@/hooks/usePracticeAccess';
 
 /**
  * Persistent banner shown at the top of authenticated pages.
@@ -13,7 +14,8 @@ import { useLanguage } from "@/i18n/LanguageContext";
 export function DemoBanner() {
   const { subscription } = useAuth();
   const { isFreeStarter, clientCount, limit } = useFreeStarterMode();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const access = usePracticeAccess();
   const { pathname } = useLocation();
 
   const tx = (key: string, fallback: string) => {
@@ -21,6 +23,18 @@ export function DemoBanner() {
     return !value || value === key ? fallback : value;
   };
 
+  if (access.data?.policy_version === 2) {
+    const a = access.data;
+    if (a.can_write && !a.on_trial) return null;
+    const copy = {
+      en: ['Pro trial', 'Trial ended · your data is preserved. Viewing and export remain available.', 'View plans'],
+      uk: ['Пробний Pro', 'Пробний період завершено · дані збережено. Перегляд і експорт доступні.', 'Обрати тариф'],
+      ru: ['Пробный Pro', 'Пробный период завершён · данные сохранены. Просмотр и экспорт доступны.', 'Выбрать тариф'],
+      pl: ['Okres próbny Pro', 'Okres próbny zakończony · dane zachowane. Podgląd i eksport są dostępne.', 'Wybierz plan'],
+      fr: ['Essai Pro', 'Essai terminé · données conservées. Consultation et export disponibles.', 'Voir les offres'],
+    }[lang];
+    return <div className="border-b bg-card px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-sm"><span>{a.on_trial ? `${copy[0]} · ${new Intl.DateTimeFormat(lang).format(new Date(a.trial_ends_at ?? ''))}` : copy[1]}</span><Button asChild size="sm"><Link to="/plans">{copy[2]}</Link></Button></div>;
+  }
   // Calendar keeps maximum space; plan management lives in the sidebar plan block.
   if (pathname === "/calendar") return null;
   if (subscription.loading) return null;
