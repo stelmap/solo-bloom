@@ -72,7 +72,7 @@ export default function RedesignedLanding({ updatesOnly = false }: { updatesOnly
           <div className="mt-8 pb-8 md:mt-10 md:pb-10">{picture(calendar,c('calendar'),true)}</div>
         </div>
       </section>
-      <section aria-label={c('features')} className="border-b bg-background">
+      <section id="features" aria-label={c('features')} className="scroll-mt-24 border-b bg-background">
         <ul className="offer-container grid grid-cols-1 py-5 text-foreground sm:grid-cols-3 sm:py-7">
           {([{key:'lessRoutine',icon:ListChecks},{key:'clearPayments',icon:CreditCard},{key:'clientBookingLink',icon:Link2}] as const).map(({key,icon:Icon},i) => <li key={key} className={`flex min-w-0 items-center justify-center gap-3 px-4 py-3 text-center text-sm font-semibold md:text-base ${i > 0 ? 'border-t border-border sm:border-l sm:border-t-0' : ''}`}><Icon aria-hidden="true" className="size-6 shrink-0 text-primary" /><span>{c(key)}</span></li>)}
         </ul>
