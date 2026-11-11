@@ -13,3 +13,4 @@
 - Admin payout changes use server-validated RPCs with expected-status checks, row locking and audit events; Paid requires an external transfer reference and final states cannot be edited, preventing duplicate payout bookkeeping.
 - Recipient bank details are stored separately with admin-only reads and version-checked RPC writes; keep account numbers out of audit events to avoid exposing sensitive transfer information.
 - Resolve new-account access through the owner-scoped versioned practice-access RPC; keep app trials separate from Paddle subscriptions and enforce restricted writes with database triggers, preserving legacy access.
+- Keep public offer copy and pricing in the landing-offer module and isolated public pages; use actual product screenshots with private details excluded.
