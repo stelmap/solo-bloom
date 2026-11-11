@@ -1,3 +1,4 @@
+import { PaymentRegistryTable } from "@/components/payments/PaymentRegistryTable";
 import { clientImportCopy } from "@/lib/clientExcelImportCopy";
 import { BackToCalendar } from "@/components/BackToCalendar";
 import { AppLayout } from "@/components/AppLayout";
@@ -463,42 +464,18 @@ export default function IncomePage() {
               <p className="text-muted-foreground text-center py-8">{t("income.noIncome")}</p>
             ) : (
               <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border">
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.date")}</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.description")}</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.amount")}</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground whitespace-nowrap">{pmCopy(lang).label}</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t("common.source")}</th>
-                        <th className="p-4 w-10"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filtered.map((entry: any) => (
-                        <tr key={entry.id} id={`income-${entry.id}`} className={`border-b border-border last:border-0 hover:bg-muted/30 transition-colors group ${searchParams.get("incomeId") === entry.id ? "bg-primary/10 ring-1 ring-inset ring-primary" : ""}`}>
-                          <td className="p-4 text-sm text-muted-foreground">{entry.date}</td>
-                          <td className="p-4 text-sm font-medium text-foreground">
-                            {entry.source === "appointment"
-                              ? `${entry.appointments?.clients?.name} — ${entry.appointments?.services?.name}`
-                              : localizeIncomeDescription(entry.description, lang) || t("income.manualEntry")}
-                          </td>
-                          <td className="p-4 text-sm font-semibold text-foreground">{cs}{Number(entry.amount).toFixed(2)}</td>
-                          <td className="p-4 text-sm text-foreground whitespace-nowrap">{storedMethodLabel(entry, t)}</td>
-                          <td className="p-4"><Badge variant={entry.source === "appointment" ? "default" : "secondary"} className="text-xs">{entry.source === "appointment" ? t("income.appointment") : isPrepaymentDeduction(entry.description) ? (PREPAY_LABEL[lang] ?? PREPAY_LABEL.en) : t("income.manual")}</Badge></td>
-                          <td className="p-4">
-                            {entry.source !== "appointment" && (
-                              <button onClick={() => setDeleteId(entry.id)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100">
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <PaymentRegistryTable
+                  labels={[t("common.date"), t("common.description"), t("common.amount"), pmCopy(lang).label, t("common.source")]}
+                  focusId={searchParams.get("incomeId")}
+                  onDelete={setDeleteId}
+                  rows={filtered.map((entry: any) => ({
+                    id: entry.id, date: entry.date,
+                    description: entry.source === "appointment" ? `${entry.appointments?.clients?.name} — ${entry.appointments?.services?.name}` : localizeIncomeDescription(entry.description, lang) || t("income.manualEntry"),
+                    amount: `${cs}${Number(entry.amount).toFixed(2)}`, method: storedMethodLabel(entry, t),
+                    source: <Badge variant={entry.source === "appointment" ? "default" : "secondary"} className="text-xs">{entry.source === "appointment" ? t("income.appointment") : isPrepaymentDeduction(entry.description) ? (PREPAY_LABEL[lang] ?? PREPAY_LABEL.en) : t("income.manual")}</Badge>,
+                    canDelete: entry.source !== "appointment",
+                  }))}
+                />
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between p-4 border-t border-border">
                     <p className="text-sm text-muted-foreground">{page * pageSize + 1}–{Math.min((page + 1) * pageSize, totalCount)} / {totalCount}</p>

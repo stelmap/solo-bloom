@@ -50,6 +50,7 @@ import NotFound from "./pages/NotFound";
 const RedirectKeepQuery = ({ to }: { to: string }) => { const l = useLocation(); return <Navigate to={to + l.search + l.hash} replace />; };
 const AuthPage = lazyWithReload(() => import("./pages/AuthPage"));
 const ProductUpdatesPage = lazyWithReload(() => import('./pages/ProductUpdatesPage'));
+const DemoWorkspace = lazyWithReload(() => import('./components/demo/DemoWorkspace'));
 const ResetPasswordPage = lazyWithReload(() => import("./pages/ResetPasswordPage"));
 const Dashboard = lazyWithReload(() => import("./pages/Dashboard"));
 const CalendarPage = lazyWithReload(() => import("./pages/CalendarPage"));
@@ -143,6 +144,8 @@ const App = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/updates" element={<ProductUpdatesPage />} />
+                <Route path="/demo" element={<DemoWorkspace />} />
+                <Route path="/demo/:module" element={<DemoWorkspace />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />

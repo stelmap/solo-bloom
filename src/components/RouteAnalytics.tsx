@@ -14,6 +14,7 @@ export function RouteAnalytics() {
 
   useEffect(() => {
     const path = location.pathname;
+    if (path === '/demo' || path.startsWith('/demo/')) return;
     if (lastPath.current === path) return;
     lastPath.current = path;
     track("website_page_view", {

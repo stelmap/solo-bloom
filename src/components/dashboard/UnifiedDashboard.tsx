@@ -1,3 +1,4 @@
+import { MonthlyIncomeSummary } from "@/components/dashboard/MonthlyIncomeSummary";
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -592,51 +593,7 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
           </section>
 
           <section className="bg-card border border-border rounded-[20px] shadow-card px-5 py-5">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="h-9 w-9 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
-                  <DollarSign className="h-4 w-4 text-success" />
-                </div>
-                <div className="min-w-0">
-                  <h2 className="text-base font-semibold text-foreground truncate">{t("dashm.incomeThisMonth")}</h2>
-                  <p className="text-xs text-muted-foreground truncate">{rangeLabel}</p>
-                </div>
-              </div>
-              <div className="text-right shrink-0">
-                <p className="text-2xl font-bold tabular-nums text-foreground">{cs}{expectedIncome.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">{t("dashm.expectedIncome")}</p>
-              </div>
-            </div>
-            <div className="mt-5">
-              <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
-                <div className={`h-full rounded-full bg-success transition-all ${progressBar > 0 ? "min-w-[4px]" : ""}`} style={{ width: `${progressBar}%` }} />
-              </div>
-              <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground tabular-nums">
-                <span>{cs}0</span>
-                <span>{cs}{expectedIncome.toLocaleString()}</span>
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground text-right">{t("dashm.monthGoal")}</p>
-            </div>
-            {(
-              <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
-                {income === 0 && expectedIncome === 0 ? (
-                  <p className="text-xs text-muted-foreground inline-flex items-center gap-1.5">
-                    <AlertCircle className="h-3.5 w-3.5 text-warning" />
-                    {t("dashe.noFinance")}
-                  </p>
-                ) : (
-                  <p className="text-xs text-muted-foreground tabular-nums">
-                    <span className="font-semibold text-foreground">{cs}{income.toLocaleString()}</span> {t("dashm.received")} · {progress}%
-                  </p>
-                )}
-                <button
-                  onClick={() => navigate("/finances")}
-                  className="self-start rounded-xl bg-primary text-primary-foreground px-4 py-2 text-xs font-semibold hover:opacity-90 transition-opacity"
-                >
-                  {t("dashm.openFinances")}
-                </button>
-              </div>
-            )}
+            <MonthlyIncomeSummary expected={expectedIncome} actual={income} symbol={cs} rangeLabel={rangeLabel} onOpen={() => navigate("/finances")} />
             {derived.unpaidTotal > 0 && (
               <p className="mt-4 text-xs text-muted-foreground inline-flex items-center gap-1.5">
                 <AlertCircle className="h-3.5 w-3.5 text-warning" />
