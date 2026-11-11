@@ -66,7 +66,10 @@ export function useDemoMode() {
 
 /** @deprecated No-op. Free Starter Mode allows all writes. */
 export function useDemoWriteGuard() {
-  return () => {};
+  const access = usePracticeAccess();
+  return () => {
+    if (access.data?.policy_version === 2 && !access.data.can_write) throw new Error('SUBSCRIPTION_REQUIRED');
+  };
 }
 
 /**

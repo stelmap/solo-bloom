@@ -42,12 +42,13 @@ const navItems: NavItem[] = [
   { kind: "leaf", icon: Users, labelKey: "nav.clients", path: "/clients" },
   { kind: "leaf", icon: DollarSign, labelKey: "nav.payments", path: "/payments" },
   { kind: "leaf", icon: Scissors, labelKey: "nav.services", path: "/services" },
-  { kind: "leaf", icon: UsersRound, labelKey: "nav.groups", path: "/groups" },
+  { kind: "leaf", icon: UsersRound, labelKey: "nav.groups", path: "/groups", requires: 'financial_access' },
   {
     kind: "group",
     icon: Wallet,
     labelKey: "nav.finances",
     basePath: "/finances",
+    requires: 'financial_access',
     children: [
       { icon: BarChart3, labelKey: "nav.practiceOverview", path: "/finances" },
       { icon: TrendingUp, labelKey: "nav.financialOverview", path: "/finances/overview" },
