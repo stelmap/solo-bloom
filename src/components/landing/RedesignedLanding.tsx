@@ -34,7 +34,7 @@ export default function RedesignedLanding({ updatesOnly = false }: { updatesOnly
   const [expanded, setExpanded] = useState<{image: string; title: string} | null>(null);
   const pricingRef = useRef<HTMLElement>(null);
   const [period, setPeriod] = useState<BillingPeriod>('monthly');
-  const eur = (n: number) => new Intl.NumberFormat(lang === 'en' ? 'en-IE' : lang, { style: 'currency', currency: 'EUR' }).format(n);
+  const eur = (n: number) => new Intl.NumberFormat(lang === 'en' ? 'en-IE' : lang, { style: 'currency', currency: 'EUR', currencyDisplay: 'narrowSymbol' }).format(n);
   const c = (key: OfferKey) => oc(lang, key);
   const eventProps = { locale: lang, redesign_version: '2026-11', source_page: '/' };
   useEffect(() => {
