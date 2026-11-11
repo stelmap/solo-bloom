@@ -1,76 +1,51 @@
-# Client Language as Single Source of Truth
+# New subscription rules, then the landing redesign
 
-Rework the app so **Client Card → Client Language** drives every client-facing document, email and notification. Remove language selection from Information Agreement creation and any implicit derivation from country/browser/interface.
+## 1. Subscription rules
 
-## Phase 1 — Client profile field
+Apply the new offer to accounts created after the rollout:
 
-- DB migration: add `clients.communication_language TEXT` (nullable during backfill, no default). Allowed values enforced by trigger: `uk | ru | en | pl`.
-- Add "Client language" field to:
-  - Create Client dialog (`ClientsPage.tsx`)
-  - Edit Client form (`ClientDetailPage.tsx`)
-  - Client Card details display
-- Placed next to/after Country, with localized help text (uk/ru/en/pl/fr).
-- Required on create + edit. Save blocked with localized validation.
-- On existing clients without a value: show badge **"Мову клієнта не вибрано"** in Client Card + client list.
-- Add filter chip in Clients list (uk / ru / en / pl / not selected).
-- Audit events: `CLIENT_LANGUAGE_SET`, `CLIENT_LANGUAGE_CHANGED` (previous, new, actor, client, timestamp) via existing `client_status_audit`-style table (new `client_language_audit` or reuse pattern).
+- **Solo — €12/month:** Dashboard, Calendar, Clients, Payments, Services, Public Booking Link and unlimited clients.
+- **Pro — €24/month:** everything in Solo plus Groups, Supervision, advanced Finance, Income and Expenses, Payment Audit, Invoice Registry, Break-even Analysis and Financial Settings.
+- **14-day trial:** access to all released Pro features, once per new account, starting after email confirmation. No card required and no automatic charge. Choosing a paid subscription opens the existing Paddle checkout.
+- After the trial expires without payment, preserve all records and allow viewing/exporting existing data; require a paid plan for new entries or changes. Keep account settings and billing accessible.
+- Professional Public Page and Document Management remain clearly marked **Coming soon**, not included as released functionality.
 
-## Phase 2 — Central language resolver
+### Protect existing customers
 
-- New file `src/lib/clientCommunicationLanguage.ts`:
-  - `resolveClientCommunicationLanguage(clientId): 'uk'|'ru'|'en'|'pl'`
-  - Throws typed error `CLIENT_LANGUAGE_MISSING` when null/unsupported.
-- Edge-function equivalent in `supabase/functions/_shared/client-language.ts` used by all send functions.
-- Reusable UI helper `<MissingClientLanguageGuard/>` — blocks action, shows message + **"Відкрити картку клієнта"** button.
+- Preserve existing accounts' current access, client records, payments, subscriptions and personal recurring discounts; do not restart trials or downgrade existing customers automatically.
+- Keep existing quarterly/yearly billing options and prices unchanged. The redesigned landing highlights the requested monthly prices.
+- Keep historical invoices and referral rewards unchanged. Trial access is not a paid subscription and produces no referral commission.
+- Do not change Paddle's environment or run real payments during testing.
 
-## Phase 3 — Information Agreement
+## 2. Landing page
 
-- Remove any "document language" selector from the Create Agreement flow (`ClientAgreementsCard.tsx` / agreement creation dialog).
-- On create:
-  1. Call resolver.
-  2. Look up active `agreement_templates` where `language = client.communication_language`.
-  3. If none → block with "Немає активного шаблону цією мовою" + actions to Templates / Client card.
-  4. Snapshot language into `agreement_instances.language`, `agreement_revisions.language`, `agreement_invitations.language`.
-- Public flow (`PublicAgreementPage`, OTP request/verify functions) already reads snapshot language — verify + fix any place still using interface language.
-- Handle Client Language change while an unaccepted invitation exists: show modal offering **Keep** / **Revoke & recreate**.
-- Accepted documents remain immutable.
+- Compact sticky header with Features, How It Works, Pricing, What's New, Log In and trial CTA; compact mobile navigation and all five language choices.
+- Replace the existing collage with the requested concise headline and supporting text, trial/pricing buttons, and a large genuine Calendar screenshot with fictional sample data.
+- Interactive Calendar, Clients, Payments and Dashboard tabs with a stable screenshot frame, concise value/benefit copy and accessible image enlargement.
+- Three-step workflow and a realistic public-booking preview, clearly separate from the planned Professional Public Page.
+- Only two paid pricing cards, Solo and Pro; show the trial as a temporary introduction, not a third plan. Add a collapsible comparison matching the implemented access rules.
+- Six concise expandable FAQ answers, existing legal/contact information, and verified social links only. Do not invent an Instagram address if no verified account can be found.
+- Separate What's New page with Released, In Progress and Planned sections; publish dates only when confirmed.
+- Fully localized Ukrainian, English, Polish, French and Russian copy and valid title, description, canonical and language metadata.
 
-## Phase 4 — Notifications wired to client language
+## 3. Analytics and verification
 
-Update each send site to call the resolver and pass `language` to the template:
+- Reuse existing privacy-aware analytics, with a redesign version marker for before/after comparison.
+- Track page and pricing views, hero CTA, preview tabs, screenshot expansion, booking-preview interaction and registration start/completion.
+- Add concrete tests for the €12/€24 offer, unlimited clients, exact 14-day expiry, one trial per account, plan-specific access and preserved legacy access.
+- Check signup → email confirmation → trial access; expiry → retained records → paid-plan prompt; and paid access without performing a real money transfer.
+- Check landing navigation, all preview tabs, lightbox, pricing comparison, FAQ, registration CTA and layouts on desktop, tablet and mobile.
 
-- `send-transactional-email` invocations from:
-  - `agreement-otp-request`, `agreement-invitation` (OTP + invite emails)
-  - `send-session-reminders`
-  - Session created / rescheduled / cancelled by therapist / cancelled by client / confirmation (find call sites in `useData.ts`, `SessionDetailSheet.tsx`, `BookingDialog.tsx`)
-  - Invoice sent / payment reminder (where present)
-- All React Email templates already accept a `locale` prop — extend where missing (uk/ru/en/pl variants).
-- Internal therapist notifications keep using therapist interface language.
+## Technical approach
 
-## Phase 5 — Placeholders, dates, services
+- Introduce a server-authoritative versioned access policy, keeping trial grants separate from Paddle subscription state and preserving existing accounts through a recorded legacy policy.
+- Use additive database changes, explicit grants and owner-scoped policies. Enforce restricted writes on the server as well as the interface; UI hiding alone is insufficient.
+- Resolve plans from the existing plan/price mapping, including Paddle IDs; remove new-policy reliance on old hardcoded price IDs and unconditional financial access.
+- Update registration, entitlement reads, subscription synchronization, client-limit checks and restricted module access together so the landing promise matches real behavior.
+- Keep public redesign components and localized copy isolated from the authenticated workspace. Capture genuine product screens with anonymized sample data; never publish actual client or contact information.
 
-- Central placeholder resolver validates required fields before send; blocks on missing.
-- Date formatting helper uses locale map `uk→uk-UA`, `ru→ru`, `en→en-GB`, `pl→pl-PL`.
-- Service name: if selected service lacks a translated `name_<lang>`, prompt therapist to provide it and block send. (Add `service_translations` table or JSON column `services.name_i18n`.)
+## Rollout order
 
-## Phase 6 — Migration & tests
-
-- Backfill: mark existing clients as `NULL` (no guessing). No automatic assignment.
-- Vitest: resolver, blocking behaviour, snapshot correctness.
-- Playwright e2e: create client without language → blocked; create Ukrainian client → agreement is uk; change language mid-invite → warning modal.
-- Register new suites in `src/lib/testRegistry.ts`.
-
-## Technical notes
-
-- Language code column, not display strings. Localized names rendered from i18n dictionaries in all 5 interface locales.
-- No CHECK constraint with dynamic list — use trigger for validation (per project rules).
-- `agreement_instances.language` already exists; verify & reuse rather than adding new columns where possible (will confirm via `supabase--read_query` before migration).
-- Audit uses existing `data_access_audit` / `client_status_audit` patterns.
-
-## Deliverables reported after implementation
-
-Migration summary, changed client fields, connected communication types, template structure, count of legacy clients missing language, new automated tests, and any client-facing notifications still not wired.
-
----
-
-This is a large multi-phase change touching DB schema, ~15 edge functions, agreement flow, notifications, and UI. Approve to proceed, or tell me to start with a subset (e.g. Phase 1+3 only).
+1. Implement and verify subscription rules and existing-customer protections.
+2. Implement the landing redesign against those verified rules.
+3. Finish end-to-end checks before publishing.
