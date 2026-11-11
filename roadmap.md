@@ -1,5 +1,10 @@
 # Roadmap
 
+## Landing hero refinement
+- [x] Replace the main headline and subtitle in all five languages; restore the centered dark-blue presentation.
+- [x] Preserve the current single calendar screenshot and add three concise benefits with orange icons and responsive separators.
+- [x] Verify the Ukrainian hero and screenshot enlargement at 1280×1800, 1014×634 and 390×844; no horizontal overflow or runtime errors, 7 demo regression tests passed.
+
 ## Public interactive demo
 - [x] Replace only the main landing image with the supplied calendar screenshot, preserving layout and enlargement.
 - [x] Add visitor-local Calendar, Clients, Payments and Dashboard demo modules using shared production UI, linked synthetic records and reset/expiry.
