@@ -238,6 +238,8 @@ export type AnalyticsEvent =
   | "promo_activate_click"
   | "hero_primary_cta_click"
   | "hero_product_tab_click"
+  | "screenshot_expanded"
+  | "public_booking_demo_interaction"
   | "pricing_plan_select"
   | "stripe_checkout_started"
   | "stripe_checkout_completed"

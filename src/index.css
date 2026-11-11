@@ -1,5 +1,10 @@
 /* Inter is loaded via <link> in index.html so it does not block CSS parsing. */
 
+.offer-page { font-family: 'Manrope', var(--font-sans); letter-spacing: 0; }
+.offer-container { width: min(100% - 40px, 1180px); margin-inline: auto; }
+.offer-page * { letter-spacing: 0; }
+.product-shot img { max-height: 640px; object-fit: contain; }
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
