@@ -51,6 +51,10 @@ const CLIENT_LIMIT_BY_CODE: Record<string, number | null> = {
   medium: 20,
 };
 
+const RENEWAL_AMOUNT: Record<string, string> = {
+  en: "Renewal amount", uk: "Сума продовження", pl: "Kwota odnowienia", fr: "Montant du renouvellement", ru: "Сумма продления",
+};
+
 type ResolvedPlan = {
   planName: string | null;
   planCode: string | null;
@@ -297,6 +301,13 @@ export function SubscriptionSection() {
                 </Field>
                 <Field label={t("sub.detailsRenewal")} muted={!subscription.subscription_end}>
                   {dateValue}
+                </Field>
+                <Field label={RENEWAL_AMOUNT[lang] ?? RENEWAL_AMOUNT.en} muted={resolved.price == null || subscription.cancel_at_period_end}>
+                  {subscription.cancel_at_period_end
+                    ? "—"
+                    : resolved.price != null
+                      ? formatEuro(resolved.price * (1 - (subscription.discount_percent ?? 0) / 100))
+                      : t("sub.awaitingPaymentData")}
                 </Field>
                 <Field label={t("sub.detailsClientLimit")}>
                   <span className="inline-flex items-center gap-1.5">
