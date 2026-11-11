@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePracticeAccess } from './usePracticeAccess';
 
 import { translations, type Language } from "@/i18n/translations";
 
@@ -65,7 +66,10 @@ export function useDemoMode() {
 
 /** @deprecated No-op. Free Starter Mode allows all writes. */
 export function useDemoWriteGuard() {
-  return () => {};
+  const access = usePracticeAccess();
+  return () => {
+    if (access.data?.policy_version === 2 && !access.data.can_write) throw new Error('SUBSCRIPTION_REQUIRED');
+  };
 }
 
 /**
@@ -77,6 +81,7 @@ export function useDemoWriteGuard() {
  */
 export function useFreeStarterMode() {
   const { user, subscription } = useAuth();
+  const access = usePracticeAccess();
   const isPaid = subscription.subscribed || subscription.on_trial;
   const isFreeStarter = !!user?.id && !subscription.loading && !isPaid;
 
@@ -100,7 +105,7 @@ export function useFreeStarterMode() {
   });
 
   const resolvedPlanCode: string = planCode ?? (isPaid ? "pro" : "free");
-  const limit: number | null =
+  const limit: number | null = access.data?.policy_version === 2 ? null :
     resolvedPlanCode === "free" ? FREE_STARTER_CLIENT_LIMIT
     : resolvedPlanCode === "solo" ? 20
     : null; // pro / legacy → unlimited
@@ -127,8 +132,8 @@ export function useFreeStarterMode() {
   const atClientLimit = limit !== null && clientCount >= limit;
 
   return {
-    isFreeStarter,
-    planCode: resolvedPlanCode,
+    isFreeStarter: access.data?.policy_version === 2 ? false : isFreeStarter,
+    planCode: access.data?.policy_version === 2 ? access.data.plan_code : resolvedPlanCode,
     clientCount,
     limit,
     atClientLimit,

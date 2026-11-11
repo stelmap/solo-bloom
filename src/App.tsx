@@ -49,6 +49,7 @@ import NotFound from "./pages/NotFound";
 // Lazy loaded (behind auth or rarely visited)
 const RedirectKeepQuery = ({ to }: { to: string }) => { const l = useLocation(); return <Navigate to={to + l.search + l.hash} replace />; };
 const AuthPage = lazyWithReload(() => import("./pages/AuthPage"));
+const ProductUpdatesPage = lazyWithReload(() => import('./pages/ProductUpdatesPage'));
 const ResetPasswordPage = lazyWithReload(() => import("./pages/ResetPasswordPage"));
 const Dashboard = lazyWithReload(() => import("./pages/Dashboard"));
 const CalendarPage = lazyWithReload(() => import("./pages/CalendarPage"));
@@ -141,6 +142,7 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<AuthPage />} />
+                <Route path="/updates" element={<ProductUpdatesPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />

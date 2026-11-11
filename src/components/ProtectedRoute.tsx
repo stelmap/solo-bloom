@@ -3,6 +3,8 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useProfile } from "@/hooks/useData";
 import { useAutoSeedDemo } from "@/hooks/useDemoWorkspace";
 import { useIdleTimeout } from "@/hooks/useIdleTimeout";
+import { usePracticeAccess } from '@/hooks/usePracticeAccess';
+import { requiredPlanForPath } from '@/lib/practiceAccess';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, isRecovery } = useAuth();
@@ -10,6 +12,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // pages already render skeletons while their own data resolves.
   const { data: profile } = useProfile();
   const location = useLocation();
+  const access = usePracticeAccess();
   // Seed a demo workspace on first login for unpaid users with no real data
   useAutoSeedDemo();
   // GDPR: auto sign-out on inactivity (configurable in Settings → Security)
@@ -41,5 +44,9 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/settings/practice?setup=1" replace />;
   }
 
+  if (access.isLoading) return <div className="min-h-screen bg-background" />;
+  if (access.data?.policy_version === 2 && access.data.can_write && !access.data.has_pro && requiredPlanForPath(location.pathname) === 'pro') {
+    return <Navigate to="/plans?upgrade=pro" replace />;
+  }
   return <>{children}</>;
 }

@@ -1,4 +1,5 @@
 import { BrandName, BrandText } from "@/components/BrandName";
+import RedesignedLanding from '@/components/landing/RedesignedLanding';
 import { AboutOverlay } from "@/components/landing/AboutOverlay";
 import { ContactRequestDialog, contactCtaLabel } from "@/components/landing/ContactRequestDialog";
 import { useState, useRef, useCallback, createContext, useContext, useEffect, type ReactNode, useMemo } from "react";
@@ -1599,16 +1600,7 @@ export function LandingSEO() {
 // ── Page ──────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
-  useEffect(() => {
-    track("landing_view");
-  }, []);
-
-  return (
-    <LandingLangProvider>
-      <LandingSEO />
-      <LandingShell />
-    </LandingLangProvider>
-  );
+  return <RedesignedLanding />;
 }
 
 /** Inner shell: has access to the landing language context. */

@@ -24,6 +24,8 @@ import { describeError } from "@/lib/errorMessages";
 import { BrandName } from "@/components/BrandName";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { askSupport } from "@/lib/support";
+import { usePracticeAccess } from '@/hooks/usePracticeAccess';
+import { oc, soloFeatureKeys } from '@/lib/landingOfferCopy';
 
 type Plan = {
   id: string;
@@ -84,6 +86,8 @@ export default function PlansPage() {
   const { toast } = useToast();
   const { user, subscription, subscriptionError } = useAuth();
   const { t, lang } = useLanguage();
+  const practiceAccess = usePracticeAccess();
+  const newPolicy = practiceAccess.data?.policy_version === 2;
   const qc = useQueryClient();
   const { data: hasDemoData } = useHasDemoData();
   const {
@@ -247,15 +251,15 @@ export default function PlansPage() {
   const periodSuffix: Record<BillingPeriod, string> = { monthly: t("plans.month" as any), quarterly: t("plans.threeMonths" as any), yearly: t("plans.year" as any) };
   // Bullet order mirrors the landing pricing cards exactly.
   const planFeatures: Record<string, string[]> = {
-    solo: [tr(COPY.solo.f6), tr(COPY.solo.f3), tr(COPY.solo.f4), tr(COPY.solo.f7), tr(COPY.solo.f8), tr(COPY.mfaSecurity), tr(COPY.solo.f5)],
-    pro: [tr(COPY.pro.f5), tr(COPY.pro.f6), tr(COPY.pro.f7), tr(COPY.pro.f8), tr(COPY.pro.f3), tr(COPY.pro.f4), tr(COPY.mfaSecurity)],
+    solo: newPolicy ? soloFeatureKeys.map(k => oc(lang,k)) : [tr(COPY.solo.f6), tr(COPY.solo.f3), tr(COPY.solo.f4), tr(COPY.solo.f7), tr(COPY.solo.f8), tr(COPY.mfaSecurity), tr(COPY.solo.f5)],
+    pro: newPolicy ? oc(lang,'proFeatures').split('|') : [tr(COPY.pro.f5), tr(COPY.pro.f6), tr(COPY.pro.f7), tr(COPY.pro.f8), tr(COPY.pro.f3), tr(COPY.pro.f4), tr(COPY.mfaSecurity)],
   };
   const planNames: Record<string, string> = {
     solo: tr(COPY.solo.name),
     pro: tr(COPY.pro.name),
   };
   const planPills: Record<string, string> = {
-    solo: tr(COPY.solo.pill),
+    solo: newPolicy ? oc(lang,'unlimited') : tr(COPY.solo.pill),
     pro: tr(COPY.pro.pill),
   };
   const planBadges: Record<string, string> = {
@@ -672,9 +676,9 @@ export default function PlansPage() {
                 <p className="text-muted-foreground">{t("plans.loadingNone")}</p>
               </div>
             ) : (
-              <div className="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto items-stretch pt-4">
+              <div className={cn('grid gap-5 max-w-6xl mx-auto items-stretch pt-4', newPolicy ? 'md:grid-cols-2' : 'md:grid-cols-3')}>
                 {/* Free Starter card */}
-                <div className="relative p-6 rounded-2xl bg-card border border-border flex flex-col">
+                {!newPolicy && <div className="relative p-6 rounded-2xl bg-card border border-border flex flex-col">
                   <h3 className="text-lg font-semibold text-foreground">{tr(COPY.free.name)}</h3>
 
                   <div className="mt-3 flex items-baseline gap-1">
@@ -702,7 +706,7 @@ export default function PlansPage() {
                   <p className="mt-6 text-xs text-muted-foreground text-center">
                     {tr(COPY.free.availableByDefault)}
                   </p>
-                </div>
+                </div>}
 
 
                 {orderedPlans.map((plan) => {

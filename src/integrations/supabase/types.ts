@@ -2751,6 +2751,38 @@ export type Database = {
         }
         Relationships: []
       }
+      practice_access_policies: {
+        Row: {
+          created_at: string
+          policy_version: number
+          trial_ends_at: string | null
+          trial_started_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          policy_version?: number
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          policy_version?: number
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_access_policies_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -4830,6 +4862,7 @@ export type Database = {
             Returns: string
           }
       get_auth_email_language: { Args: { _email: string }; Returns: string }
+      get_my_practice_access: { Args: never; Returns: Json }
       get_my_referral_code: { Args: never; Returns: string }
       get_my_referral_dashboard: { Args: never; Returns: Json }
       get_session_confirmation: {
@@ -4895,6 +4928,7 @@ export type Database = {
         Args: { p_date: string; p_debt_id: string; p_method: string }
         Returns: string
       }
+      practice_access_state: { Args: { p_user_id: string }; Returns: Json }
       prepaid_sessions_balance: {
         Args: { p_client_id: string }
         Returns: number

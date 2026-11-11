@@ -1,10 +1,13 @@
 # Roadmap
 
 ## Subscription rules and landing redesign
-- [ ] Agree the safe rollout of Solo/Pro entitlements and a 14-day full-feature trial before changing subscriptions.
-- [ ] Implement and test the approved rules, preserving existing accounts, historical payments and personal discounts.
-- [ ] Redesign the landing page in five languages with real anonymized screenshots, previews, pricing, FAQ, updates and analytics.
-- [ ] Verify registration, trial expiry, paid access and landing interactions on desktop and mobile.
+- [x] Agree the safe rollout of Solo/Pro entitlements and a 14-day full-feature trial before changing subscriptions.
+- [x] Add versioned access, confirmation-triggered trial, restricted write triggers and new-account plan presentation; 31 regression tests passed.
+- [x] Add localized landing, product previews, image enlargement, two pricing cards, comparison, FAQ, updates and analytics.
+- [x] Verify desktop/mobile landing tabs, enlargement, comparison, FAQ and registration navigation without runtime errors or horizontal overflow.
+- [ ] Complete authenticated new-account signup/confirmation, expiry/write-denial and paid-plan checks; these flows have not been exercised end-to-end.
+- [ ] Finish screenshot refresh/localized samples and verification of social accounts; Instagram URL has not been supplied or verified.
+- [ ] Review all privileged payment/booking paths and server-side plan enforcement before publishing the changed offer.
 
 ## Referral end-to-end test
 - [x] Sign up through the owner's referral link and confirm the test email.

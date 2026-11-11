@@ -32,7 +32,7 @@ export function EntitlementGate({ feature, children, redirect = false }: Props) 
     );
   }
 
-  if (!has(feature) && !isFreeStarter) {
+  if (!has(feature)) {
     if (redirect) {
       return <Navigate to="/plans" replace state={{ from: location.pathname, feature }} />;
     }
