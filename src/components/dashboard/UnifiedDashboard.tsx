@@ -174,8 +174,16 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
     () => (monthIncomeRows as any[]).reduce((s, r) => s + Number(r.amount ?? 0), 0),
     [monthIncomeRows],
   );
-  const expectedIncome = income + derived.unpaidTotal;
-  const goal = Math.max(expectedIncome, income, 1);
+  // Potential income: value of every non-cancelled meeting this month (paid and unpaid).
+  const expectedIncome = useMemo(() => {
+    const svc = new Map((services as any[]).map((s: any) => [s.id, Number(s.price ?? 0)]));
+    return monthApts.reduce((s: number, a: any) => {
+      if (a.status === "cancelled") return s;
+      const price = a.price != null ? Number(a.price) : Number(svc.get(a.service_id) ?? 0);
+      return s + (Number.isFinite(price) ? price : 0);
+    }, 0);
+  }, [monthApts, services]);
+  const goal = Math.max(expectedIncome, 1);
   const progress = Math.min(100, Math.round((income / goal) * 100));
   const capacity = Number(stats?.maxMonthlyCapacity ?? 0);
   const occupancy = capacity > 0 ? Math.round((derived.totalSessions / capacity) * 100) : 0;
@@ -606,12 +614,18 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
               </div>
               <p className="mt-1 text-xs text-muted-foreground text-right">{t("dashm.monthGoal")}</p>
             </div>
-            {income === 0 && expectedIncome === 0 && (
+            {(
               <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
-                <p className="text-xs text-muted-foreground inline-flex items-center gap-1.5">
-                  <AlertCircle className="h-3.5 w-3.5 text-warning" />
-                  {t("dashe.noFinance")}
-                </p>
+                {income === 0 && expectedIncome === 0 ? (
+                  <p className="text-xs text-muted-foreground inline-flex items-center gap-1.5">
+                    <AlertCircle className="h-3.5 w-3.5 text-warning" />
+                    {t("dashe.noFinance")}
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground tabular-nums">
+                    <span className="font-semibold text-foreground">{cs}{income.toLocaleString()}</span> {t("dashm.received")} · {progress}%
+                  </p>
+                )}
                 <button
                   onClick={() => navigate("/finances")}
                   className="self-start rounded-xl bg-primary text-primary-foreground px-4 py-2 text-xs font-semibold hover:opacity-90 transition-opacity"
