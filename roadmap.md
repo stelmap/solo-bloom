@@ -1,5 +1,12 @@
 # Roadmap
 
+## Real public product experience
+Implementation delegated to the separate “Real interactive product experience” draft; main-app changes await draft completion and review.
+- [ ] Reuse actual Calendar, Clients/Profile, Payments, Dashboard and Public Booking screens with isolated server-backed visitor workspaces.
+- [ ] Remove hero screenshot, preserve headline/benefits and connect five module entry points to the full workspace.
+- [ ] Preserve production behavior, block external notifications/payments, implement session expiry and visitor-only reset.
+- [ ] Verify the complete client → meeting → payment → dashboard → booking → reset flow and cross-visitor/production isolation before marking complete.
+
 ## Landing hero refinement
 - [x] Replace the main headline and subtitle in all five languages; restore the centered dark-blue presentation.
 - [x] Preserve the current single calendar screenshot and add three concise benefits with orange icons and responsive separators.
