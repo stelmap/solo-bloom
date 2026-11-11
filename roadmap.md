@@ -1,5 +1,11 @@
 # Roadmap
 
+## Subscription rules and landing redesign
+- [ ] Agree the safe rollout of Solo/Pro entitlements and a 14-day full-feature trial before changing subscriptions.
+- [ ] Implement and test the approved rules, preserving existing accounts, historical payments and personal discounts.
+- [ ] Redesign the landing page in five languages with real anonymized screenshots, previews, pricing, FAQ, updates and analytics.
+- [ ] Verify registration, trial expiry, paid access and landing interactions on desktop and mobile.
+
 ## Referral end-to-end test
 - [x] Sign up through the owner's referral link and confirm the test email.
 - [x] Verify automatic attribution and registered/€0 row in the owner's referral page; approve a temporary €10 payout to Processing and read back in both admin and owner history. Remove test account, referral, payout and test approval audit. No paid subscription or money transfer tested.
