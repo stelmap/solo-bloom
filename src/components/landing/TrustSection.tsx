@@ -252,7 +252,7 @@ export function TrustSection({
     };
   }, []);
 
-  const slideCount = c.cards.length + reviews.length;
+  const slideCount = Math.max(1, reviews.length);
 
   const syncEdges = useCallback(() => {
     const el = scrollerRef.current;
@@ -312,39 +312,21 @@ export function TrustSection({
               ref={scrollerRef}
               className="invisible-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto overflow-y-hidden scroll-smooth pb-2 motion-reduce:scroll-auto"
             >
-              {c.cards.map((card, i) => (
-                <article
-                  key={card.name}
+              {reviews.length === 0 ? (
+                <button
+                  type="button"
                   data-slide
-                  className="flex w-full shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm sm:w-[calc((100%-20px)/2)] lg:w-[calc((100%-40px)/3)]"
+                  onClick={() => setReviewOpen(true)}
+                  className="flex min-h-[260px] w-full shrink-0 snap-start flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-primary/30 bg-card p-8 text-center transition-colors hover:border-primary/60 hover:bg-primary/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <img
-                    src={IMAGES[i]}
-                    alt={card.alt}
-                    width={800}
-                    height={600}
-                    loading="lazy"
-                    decoding="async"
-                    className="aspect-[16/9] w-full object-cover"
-                  />
-                  <div className="flex flex-1 flex-col p-6">
-                    <Stars className="mb-3 text-primary" />
-                    <p className="flex-1 text-sm leading-relaxed text-foreground/90">{card.text}</p>
-                    <div className="mt-5 border-t border-border pt-4">
-                      <div className="text-sm font-semibold text-foreground">{card.name}</div>
-                      <div className="text-xs text-muted-foreground">{card.role}</div>
-                      <span
-                        className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700"
-                        title={c.verifiedHint}
-                      >
-                        <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-                        {c.verified}
-                        <span className="sr-only"> — {c.verifiedHint}</span>
-                      </span>
-                    </div>
-                  </div>
-                </article>
-              ))}
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <MessageSquare className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <span className="text-base font-semibold text-foreground">{c.reviewCtaTitle}</span>
+                  <span className="max-w-md text-sm text-muted-foreground">{c.reviewCtaText}</span>
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary">{c.reviewCtaButton}<ArrowRight className="h-4 w-4" aria-hidden="true" /></span>
+                </button>
+              ) : null}
 
               {reviews.map((r) => (
                 <article
