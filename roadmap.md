@@ -1,5 +1,11 @@
 # Roadmap
 
+## Public interactive demo
+- [ ] Replace only the main landing image with the supplied calendar screenshot, preserving layout and enlargement.
+- [ ] Add visitor-local Calendar, Clients, Payments and Dashboard demo modules using shared production UI, linked synthetic records and reset/expiry.
+- [ ] Replace static feature previews with module entry points; preserve registration, billing and production data.
+- [ ] Verify client → meeting → payment → dashboard, reset, visitor isolation and desktop/mobile layouts.
+
 ## Subscription rules and landing redesign
 - [x] Agree the safe rollout of Solo/Pro entitlements and a 14-day full-feature trial before changing subscriptions.
 - [x] Add versioned access, confirmation-triggered trial, restricted write triggers and new-account plan presentation; 31 regression tests passed.
