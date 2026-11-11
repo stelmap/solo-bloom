@@ -1,3 +1,4 @@
+import { isBillingPeriod, periodPricing } from "@/lib/subscriptionPricing";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -98,7 +99,15 @@ export default function PlansPage() {
   const [loading, setLoading] = useState(true);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [prices, setPrices] = useState<PlanPrice[]>([]);
-  const [period, setPeriod] = useState<BillingPeriod>("yearly");
+  const [period, setPeriod] = useState<BillingPeriod>(() => {
+    const fromUrl = searchParams.get("period");
+    if (isBillingPeriod(fromUrl)) return fromUrl;
+    try {
+      const saved = JSON.parse(localStorage.getItem("preferred_subscription") ?? "null");
+      if (isBillingPeriod(saved?.period)) return saved.period;
+    } catch { /* ignore */ }
+    return "monthly";
+  });
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [continuing, setContinuing] = useState(false);
   const [slowCheckout, setSlowCheckout] = useState(false);
