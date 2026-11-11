@@ -140,6 +140,17 @@
   .glass-card {
     @apply bg-card/80 backdrop-blur-sm border border-border/50 shadow-sm;
   }
+  .sidebar-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #64748B transparent;
+    scrollbar-gutter: stable;
+  }
+  .sidebar-scrollbar::-webkit-scrollbar { width: 6px; }
+  .sidebar-scrollbar::-webkit-scrollbar-button { display: none; height: 0; }
+  .sidebar-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar-scrollbar::-webkit-scrollbar-thumb { background: #64748B; border-radius: 9999px; }
+  .sidebar-scrollbar::-webkit-scrollbar-thumb:hover { background: #8192AA; }
+  .sidebar-scrollbar::-webkit-scrollbar-thumb:active { background: #A3B1C6; }
   .invisible-scrollbar {
     scrollbar-width: none;
     -ms-overflow-style: none;

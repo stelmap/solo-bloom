@@ -194,7 +194,7 @@ export function AppSidebar() {
 
   /* ---------------- full nav (labels) ---------------- */
   const FullNav = () => (
-    <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+    <nav className="flex-1 min-h-0 p-3 pr-1 space-y-1 overflow-y-auto overflow-x-hidden sidebar-scrollbar">
       {visibleNavItems.map((item) => {
         if (item.kind === "leaf") {
           const isActive = isExactActive(item.path);
