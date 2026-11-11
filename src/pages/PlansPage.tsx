@@ -1,3 +1,4 @@
+import { isBillingPeriod, periodPricing } from "@/lib/subscriptionPricing";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -98,7 +99,15 @@ export default function PlansPage() {
   const [loading, setLoading] = useState(true);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [prices, setPrices] = useState<PlanPrice[]>([]);
-  const [period, setPeriod] = useState<BillingPeriod>("yearly");
+  const [period, setPeriod] = useState<BillingPeriod>(() => {
+    const fromUrl = searchParams.get("period");
+    if (isBillingPeriod(fromUrl)) return fromUrl;
+    try {
+      const saved = JSON.parse(localStorage.getItem("preferred_subscription") ?? "null");
+      if (isBillingPeriod(saved?.period)) return saved.period;
+    } catch { /* ignore */ }
+    return "monthly";
+  });
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [continuing, setContinuing] = useState(false);
   const [slowCheckout, setSlowCheckout] = useState(false);
@@ -175,6 +184,7 @@ export default function PlansPage() {
     promoInvalidBody: { en: "Check the code and try again, or continue without it.", fr: "Vérifiez le code et réessayez, ou continuez sans lui.", uk: "Перевірте код і спробуйте ще раз або продовжте без нього.", pl: "Sprawdź kod i spróbuj ponownie lub kontynuuj bez niego.", ru: "Проверьте код и попробуйте снова или продолжите без него." },
     billedMonthly: { en: "Billed monthly", fr: "Facturé mensuellement", uk: "Оплата щомісяця", pl: "Rozliczane co miesiąc", ru: "Оплата ежемесячно" },
     billedQuarterly: { en: "Billed every 3 months", fr: "Facturé tous les 3 mois", uk: "Оплата раз на 3 місяці", pl: "Rozliczane co 3 miesiące", ru: "Оплата раз в 3 месяца" },
+    savingsLabel: { en: "Save", fr: "Économie", uk: "Економія", pl: "Oszczędzasz", ru: "Экономия" },
     billedYearly: { en: "Billed yearly", fr: "Facturé annuellement", uk: "Оплата раз на рік", pl: "Rozliczane co rok", ru: "Оплата раз в год" },
     docsNote: {
       en: "*Client document management is in development. Informed consent is already available.",
@@ -825,6 +835,18 @@ export default function PlansPage() {
                             ? `${billedLabel} · ≈ ${formatPrice(Number(equivPerMonth.toFixed(2)), price.currency)} / ${periodSuffix["monthly"]}`
                             : billedLabel}
                       </p>
+                      {price && period !== "monthly" && !(campaignEligible && isCampaignPlan(plan.code)) && (() => {
+                        const monthly = priceFor(plan.id, "monthly");
+                        if (!monthly) return null;
+                        const pr = periodPricing(Number(monthly.price), period);
+                        const savings = Number((pr.original - Number(price.price)).toFixed(2));
+                        if (savings <= 0) return null;
+                        return (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            <s>{formatPrice(pr.original, price.currency)}</s> · {tr(COPY.savingsLabel)} {formatPrice(savings, price.currency)}
+                          </p>
+                        );
+                      })()}
 
                       {pill && (
                         <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/60 border border-border">

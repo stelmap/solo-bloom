@@ -86,3 +86,9 @@ Implementation delegated to the separate “Real interactive product experience�
 - [x] Support Ukraine 50% discount ported (`SUPPORTUA50`); no trial (already removed)
 - [x] `/checkout` overlay page, billing settings + e2e test on Paddle
 - [ ] Switch `PADDLE_ENVIRONMENT` to `production` and rerun `paddle-setup` after Paddle verification
+
+## Billing periods (Month / Quarter −10% / Year −20%)
+- [x] New quarterly/yearly prices in database and Paddle; old prices kept for existing subscribers only.
+- [x] Home page switch with total, crossed-out price, savings and monthly equivalent; plans page defaults to Month and keeps the period chosen before sign-up.
+- [x] Subscription screen shows renewal amount.
+- [ ] In-app plan/period change applied at next renewal (approved policy) — needs a scheduled renewal-time switch; not built yet.
