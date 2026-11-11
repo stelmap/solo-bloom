@@ -183,8 +183,9 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
       return s + (Number.isFinite(price) ? price : 0);
     }, 0);
   }, [monthApts, services]);
-  const goal = Math.max(expectedIncome, 1);
-  const progress = Math.min(100, Math.round((income / goal) * 100));
+  // Target and Actual are independent: completing/paying a meeting only moves Actual.
+  const progress = expectedIncome > 0 ? Math.round((income / expectedIncome) * 100) : 0;
+  const progressBar = Math.min(100, progress);
   const capacity = Number(stats?.maxMonthlyCapacity ?? 0);
   const occupancy = capacity > 0 ? Math.round((derived.totalSessions / capacity) * 100) : 0;
   const totalDebt = Number(stats?.outstandingBalance ?? 0);
@@ -599,13 +600,13 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
                 </div>
               </div>
               <div className="text-right shrink-0">
-                <p className="text-2xl font-bold tabular-nums text-foreground">{cs}{expectedIncome.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">{t("dashm.expectedIncome")}</p>
+                <p className="text-2xl font-bold tabular-nums text-foreground">{cs}{income.toLocaleString()} <span className="text-muted-foreground font-semibold">/ {cs}{expectedIncome.toLocaleString()}</span></p>
+                <p className="text-xs text-muted-foreground">{progress}% · {t("dashm.monthGoal")}</p>
               </div>
             </div>
             <div className="mt-5">
               <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
-                <div className="h-full rounded-full bg-success transition-all" style={{ width: `${progress}%` }} />
+                <div className="h-full rounded-full bg-success transition-all" style={{ width: `${progressBar}%` }} />
               </div>
               <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground tabular-nums">
                 <span>{cs}0</span>
