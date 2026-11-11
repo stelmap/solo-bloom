@@ -261,7 +261,7 @@ export default function PlansPage() {
   const periodSuffix: Record<BillingPeriod, string> = { monthly: t("plans.month" as any), quarterly: t("plans.threeMonths" as any), yearly: t("plans.year" as any) };
   // Bullet order mirrors the landing pricing cards exactly.
   const planFeatures: Record<string, string[]> = {
-    solo: newPolicy ? soloFeatureKeys.map(k => oc(lang,k)) : [tr(COPY.solo.f6), tr(COPY.solo.f3), tr(COPY.solo.f4), tr(COPY.solo.f7), tr(COPY.solo.f8), tr(COPY.mfaSecurity), tr(COPY.solo.f5)],
+    solo: newPolicy ? oc(lang,'soloFeatures').split('|') : [tr(COPY.solo.f6), tr(COPY.solo.f3), tr(COPY.solo.f4), tr(COPY.solo.f7), tr(COPY.solo.f8), tr(COPY.mfaSecurity), tr(COPY.solo.f5)],
     pro: newPolicy ? oc(lang,'proFeatures').split('|') : [tr(COPY.pro.f5), tr(COPY.pro.f6), tr(COPY.pro.f7), tr(COPY.pro.f8), tr(COPY.pro.f3), tr(COPY.pro.f4), tr(COPY.mfaSecurity)],
   };
   const planNames: Record<string, string> = {
