@@ -5,6 +5,7 @@ export const invoiceRegisterCopy: Record<AppLanguage, { registers: string; title
   en: { registers: "Invoices", title: "Invoices", search: "Number or client", empty: "No invoices yet", meeting: "Meeting", noMeeting: "No meeting", view: "View", print: "Print" },
   ru: { registers: "Счета", title: "Счета", search: "Номер или клиент", empty: "Счетов пока нет", meeting: "Встреча", noMeeting: "Без встречи", view: "Просмотреть", print: "Печать" },
   pl: { registers: "Faktury", title: "Faktury", search: "Numer lub klient", empty: "Brak faktur", meeting: "Spotkanie", noMeeting: "Bez spotkania", view: "Podgląd", print: "Drukuj" },
+  de: { registers: "Rechnungen", title: "Rechnungen", search: "Nummer oder Kunde", empty: "Noch keine Rechnungen", meeting: "Termin", noMeeting: "Kein Termin", view: "Anzeigen", print: "Drucken" },
   fr: { registers: "Factures", title: "Factures", search: "Numéro ou client", empty: "Aucune facture", meeting: "Rendez-vous", noMeeting: "Sans rendez-vous", view: "Afficher", print: "Imprimer" },
 };
 

@@ -114,7 +114,7 @@ const NEW_COPY: Record<LangKey, {
   summaryWillCreate: string; summaryWillCreateGroup: string;
   doesNotRepeat: string; repeatHint: string; repeatUntil: string; repeatLabel: string;
 }> = {
-  en: {
+en: {
     noClientsYet: "No clients yet. Add your first client to create a session.",
     addNewClient: "Add new client",
     noServicesYet: "No services yet. Add your first service to continue.",
@@ -268,6 +268,37 @@ const NEW_COPY: Record<LangKey, {
     blockedSummary: "Zostanie zablokowane:", blockedCreated: "Zablokowany czas zapisany",
     timeAvailableAgain: "Czas jest znów dostępny", blockDeleted: "Blokada usunięta", undo: "Cofnij",
     doesNotRepeat: "Nie powtarza się", repeatHint: "Pozostaw puste, aby powtarzać bez daty zakończenia.", repeatUntil: "Powtarzaj do", repeatLabel: "Powtarzaj wizytę",
+  },
+  de: {
+    noClientsYet: "Noch keine Kunden. Fügen Sie Ihren ersten Kunden hinzu, um einen Termin zu erstellen.",
+    addNewClient: "Neuen Kunden hinzufügen",
+    noServicesYet: "Noch keine Dienstleistungen. Fügen Sie Ihre erste Dienstleistung hinzu, um fortzufahren.",
+    addNewService: "Neue Dienstleistung hinzufügen",
+    createFirstTitle: "Erstellen Sie Ihren ersten Termin",
+    createFirstDesc: "Fügen Sie einen Kunden hinzu, wählen Sie eine Dienstleistung, legen Sie Datum und Uhrzeit fest und speichern Sie.",
+    stepAddClient: "Kunden hinzufügen", stepAddService: "Dienstleistung hinzufügen",
+    stepDateTime: "Datum & Uhrzeit wählen", stepSave: "Termin speichern",
+    disabledHint: "Füllen Sie die Pflichtfelder aus, um einen Termin zu erstellen.",
+    qaClientTitle: "Neuen Kunden hinzufügen", qaServiceTitle: "Neue Dienstleistung hinzufügen",
+    clientName: "Name", clientEmail: "E-Mail (optional)", clientPhone: "Telefon (optional)",
+    serviceName: "Name", serviceDuration: "Dauer", servicePrice: "Preis",
+    saveClient: "Kunden speichern", saveService: "Dienstleistung speichern", cancel: "Abbrechen",
+    durationMin: "Min.",
+    durationTitle: "Dauer", durationHint: "Endzeit wird automatisch aktualisiert", endBeforeStart: "Endzeit muss nach der Startzeit liegen.",
+    modalSubtitle: "Einen Einzel- oder Gruppentermin planen",
+    sessionTypeLabel: "Termintyp",
+    individualSession: "Einzeltermin", groupSession: "Gruppentermin",
+    participants: "Teilnehmer",
+    notesPlaceholder: "Kurze Notiz zum Termin hinzufügen",
+    notesGroupPlaceholder: "Notiz zum Gruppentermin hinzufügen",
+    ctaIndividual: "Termin erstellen", ctaGroup: "Gruppentermin erstellen",
+    summaryWillCreate: "Wird Termin erstellen:",
+    summaryWillCreateGroup: "Wird Gruppentermin erstellen:",
+    blockedTime: "Blockierte Zeit", blockedStart: "Startzeit", blockedEnd: "Endzeit",
+    ctaBlocked: "Blockierte Zeit speichern", blockedHint: "Wählen Sie ein Datum und einen Zeitraum zum Blockieren.",
+    blockedSummary: "Wird blockiert:", blockedCreated: "Blockierte Zeit gespeichert",
+    timeAvailableAgain: "Zeit ist wieder verfügbar", blockDeleted: "Blockierte Zeit gelöscht", undo: "Rückgängig",
+    doesNotRepeat: "Wiederholt sich nicht", repeatHint: "Leer lassen, um ohne Enddatum zu wiederholen.", repeatUntil: "Wiederholen bis", repeatLabel: "Termin wiederholen",
   },
 };
 

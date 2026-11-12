@@ -1576,6 +1576,14 @@ const SEO_META: Record<AppLanguage, { title: string; description: string; ogTitl
     ogLocale: "ru_RU",
     htmlLang: "ru",
   },
+  de: {
+    title: "Solo .Bizz — Praxisverwaltung für Therapeuten und Coaches",
+    description: "Termine, Klienten, Zahlungen und Finanzen Ihrer Praxis an einem Ort. 14 Tage kostenlos testen.",
+    ogTitle: "Solo .Bizz — Ihre Praxis an einem Ort",
+    ogDesc: "Kalender, Klienten, Zahlungen und Berichte für selbstständige Fachleute.",
+    ogLocale: "de_DE",
+    htmlLang: "de",
+  },
 };
 
 function setMeta(selector: string, attr: "content", value: string) {

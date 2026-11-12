@@ -31,6 +31,15 @@ const LABELS: Record<AppLanguage, { rights: string; nav: string; terms: string; 
     refund: "Polityka zwrotów", guide: "Jak zacząć praktykę",
     settings: "Ustawienia cookie",
   },
+  de: {
+    rights: "Alle Rechte vorbehalten.",
+    nav: "Rechtliche Links",
+    terms: "Allgemeine Geschäftsbedingungen",
+    privacy: "Datenschutzerklärung",
+    cookies: "Cookie-Richtlinie",
+    refund: "Rückerstattungsrichtlinie", guide: "Praxis gründen",
+    settings: "Cookie-Einstellungen",
+  },
   fr: {
     rights: "Tous droits réservés.",
     nav: "Liens juridiques",
