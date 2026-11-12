@@ -8,6 +8,8 @@ import { cookiesRu } from "./ru";
 
 export const COOKIES_CONTENT: Record<AppLanguage, LegalDoc> = {
   en: cookiesEn,
+  // German legal text is not yet reviewed; show the English version.
+  de: cookiesEn,
   uk: cookiesUk,
   pl: cookiesPl,
   fr: cookiesFr,

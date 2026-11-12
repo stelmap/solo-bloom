@@ -8,6 +8,8 @@ import { refundRu } from "./ru";
 
 export const REFUND_CONTENT: Record<AppLanguage, LegalDoc> = {
   en: refundEn,
+  // German legal text is not yet reviewed; show the English version.
+  de: refundEn,
   uk: refundUk,
   pl: refundPl,
   fr: refundFr,

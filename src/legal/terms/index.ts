@@ -8,6 +8,8 @@ import { termsRu } from "./ru";
 
 export const TERMS_CONTENT: Record<AppLanguage, LegalDoc> = {
   en: termsEn,
+  // German legal text is not yet reviewed; show the English version.
+  de: termsEn,
   uk: termsUk,
   pl: termsPl,
   fr: termsFr,

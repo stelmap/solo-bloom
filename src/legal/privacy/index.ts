@@ -8,6 +8,8 @@ import { privacyRu } from "./ru";
 
 export const PRIVACY_CONTENT: Record<AppLanguage, LegalDoc> = {
   en: privacyEn,
+  // German legal text is not yet reviewed; show the English version.
+  de: privacyEn,
   uk: privacyUk,
   pl: privacyPl,
   fr: privacyFr,
