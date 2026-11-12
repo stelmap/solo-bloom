@@ -648,13 +648,14 @@ function useLandingLang() {
   return useContext(LandingLangContext);
 }
 
-const LANG_CYCLE: AppLanguage[] = ["en", "fr", "uk", "ru", "pl"];
+const LANG_CYCLE: AppLanguage[] = ["en", "fr", "uk", "ru", "pl", "de"];
 
 /** Language options offered in the header dropdown. */
 const LANG_OPTIONS: { code: AppLanguage; native: string; short: string; flag: string }[] = [
   { code: "uk", native: "Українська", short: "UA", flag: "🇺🇦" },
   { code: "en", native: "English", short: "EN", flag: "🇬🇧" },
   { code: "pl", native: "Polski", short: "PL", flag: "🇵🇱" },
+  { code: "de", native: "Deutsch", short: "DE", flag: "🇩🇪" },
   { code: "fr", native: "Français", short: "FR", flag: "🇫🇷" },
   { code: "ru", native: "Русский", short: "RU", flag: "🇷🇺" },
 ];
@@ -665,6 +666,7 @@ const SELECT_LANGUAGE_LABEL: Record<AppLanguage, string> = {
   pl: "Wybierz język",
   fr: "Choisir la langue",
   ru: "Выбрать язык",
+  de: "Sprache wählen",
 };
 
 // Russian overrides for the most-visible landing copy. Any key missing here

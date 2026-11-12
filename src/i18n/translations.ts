@@ -8,7 +8,7 @@ export type Language = "en" | "uk" | "fr" | "pl";
  *  Copy maps are still typed against `Language` (en/uk/fr/pl); when the user
  *  picks "ru" those pages render the English fallback while the main app
  *  dictionary serves Russian via translateFor(). */
-export type AppLanguage = Language | "ru";
+export type AppLanguage = Language | "ru" | "de";
 export type TranslationDict = Record<string, string>;
 // Kept as `string` (not `keyof typeof en`) to preserve historical behaviour:
 // callers may reference keys that don't yet have a translation entry, and
@@ -26,6 +26,7 @@ const loaders: Record<AppLanguage, () => Promise<{ default: Record<string, strin
   fr: () => import("./locales/fr"),
   pl: () => import("./locales/pl"),
   ru: () => import("./locales/ru"),
+  de: () => import("./locales/de"),
 };
 
 /**

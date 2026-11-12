@@ -79,7 +79,7 @@ import { isValidOptionalEmail } from "@/lib/validateEmail";
 
 const DAY_KEYS = ["day.mon", "day.tue", "day.wed", "day.thu", "day.fri", "day.sat", "day.sun"] as const;
 
-type LangKey = "en" | "uk" | "ru" | "fr" | "pl";
+type LangKey = "en" | "uk" | "ru" | "fr" | "pl" | "de";
 type BookingAvailabilityRule = {
   weekday?: number | null;
   is_enabled?: boolean | null;
@@ -769,7 +769,7 @@ export default function CalendarPage() {
   const [recurEndDate, setRecurEndDate] = useState("");
 
   // Localized copy for new empty-state / onboarding UI inside the create modal
-  const L = NEW_COPY[(["en", "uk", "ru", "fr", "pl"].includes(lang as any) ? lang : "en") as LangKey];
+  const L = NEW_COPY[(["en", "uk", "ru", "fr", "pl", "de"].includes(lang as any) ? lang : "en") as LangKey];
 
   // Quick-add nested dialogs (open from inside the create-session modal,
   // form state is preserved because it lives in the parent component).
