@@ -16,6 +16,7 @@ import calendarAsset from '@/assets/practice-calendar-overview.png.asset.json';
 import ukrainianCalendarAsset from '@/assets/calendar-ukrainian-overview.png.asset.json';
 import englishCalendarAsset from '@/assets/calendar-english-overview.png.asset.json';
 import russianCalendarAsset from '@/assets/calendar-russian-overview.png.asset.json';
+import frenchCalendarAsset from '@/assets/calendar-french-overview.png.asset.json';
 import DemoWorkspace from '@/components/demo/DemoWorkspace';
 import { publicDemoCopy } from '@/lib/publicDemoCopy';
 const calendar = calendarAsset.url;
@@ -76,7 +77,7 @@ export default function RedesignedLanding({ updatesOnly = false }: { updatesOnly
           <p className="mx-auto mt-5 max-w-3xl text-pretty text-base leading-relaxed text-secondary-foreground/85 md:text-lg">{c('intro')}</p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">{trial('hero')}<Button variant="outline" size="lg" asChild className="h-12 rounded-lg border-secondary-foreground/40 bg-transparent text-secondary-foreground hover:bg-secondary-foreground/10 hover:text-secondary-foreground"><a href="#pricing">{c('seePricing')}</a></Button></div>
           <p className="mt-4 text-xs text-secondary-foreground/75">{c('trialNote')}</p>
-          <div className="mt-8 pb-8 md:mt-10 md:pb-10"><div className="overflow-hidden rounded-xl border border-border bg-background text-foreground shadow-2xl">{lang === 'uk' || lang === 'en' || lang === 'ru' ? picture(lang === 'uk' ? ukrainianCalendarAsset.url : lang === 'ru' ? russianCalendarAsset.url : englishCalendarAsset.url, c('calendar'), true) : <DemoWorkspace embeddedModule="calendar" />}</div></div>
+          <div className="mt-8 pb-8 md:mt-10 md:pb-10"><div className="overflow-hidden rounded-xl border border-border bg-background text-foreground shadow-2xl">{lang === 'uk' || lang === 'en' || lang === 'ru' || lang === 'fr' ? picture(lang === 'uk' ? ukrainianCalendarAsset.url : lang === 'ru' ? russianCalendarAsset.url : lang === 'fr' ? frenchCalendarAsset.url : englishCalendarAsset.url, c('calendar'), true) : <DemoWorkspace embeddedModule="calendar" />}</div></div>
         </div>
       </section>
       <section id="features" aria-label={c('features')} className="scroll-mt-24 border-b bg-background">
