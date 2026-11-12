@@ -50,7 +50,7 @@ export async function openPaddleCheckout(transactionId: string, lang: string, h:
   handlers = h;
   completed = false;
   // Paddle has no Ukrainian locale; fall back to English for it.
-  const locale = ["en", "pl", "fr", "ru"].includes(lang) ? lang : "en";
+  const locale = ["en", "pl", "fr", "ru", "de"].includes(lang) ? lang : "en";
   paddle.Checkout.open({
     transactionId,
     settings: { locale, displayMode: "overlay", variant: "one-page" },

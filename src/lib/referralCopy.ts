@@ -1,7 +1,7 @@
 import type { AppLanguage } from "@/i18n/translations";
 
 export const referralNavLabel: Record<AppLanguage, string> = {
-  uk: "Реферальна програма", en: "Referral program", ru: "Реферальная программа", pl: "Program poleceń", fr: "Programme de parrainage",
+  uk: "Реферальна програма", en: "Referral program", ru: "Реферальная программа", pl: "Program poleceń", de: "Empfehlungsprogramm", fr: "Programme de parrainage",
 };
 
 const uk = {
@@ -108,6 +108,45 @@ const pl: ReferralCopy = {
   coverage: "Pokrycie własnej licencji", referrals: "Moi poleceni", payouts: "Historia wypłat", requestPayout: "Zamów wypłatę", how: "Jak to działa",
 };
 
+const de: ReferralCopy = {
+  ...en,
+  title: "Empfehlungsprogramm", subtitle: "Laden Sie Kollegen ein und erhalten Sie Vergütungen für deren Abonnements.",
+  invited: "Eingeladen", invitedTip: "Eindeutige Nutzer, die sich über Ihren Link registriert haben.",
+  active: "Aktive Empfehlungen", activeTip: "Eingeladene Nutzer mit aktivem kostenpflichtigen Abonnement.",
+  earned: "Verdient", earnedTip: "Alle bestätigten Vergütungen abzüglich Rückerstattungen.",
+  withdrawable: "Zur Auszahlung verfügbar", withdrawableTip: "Was nach Deckung Ihres Abonnements, Rücklagen und früheren Auszahlungen verbleibt.",
+  toCover: "Bis zur Lizenzdeckung", toCoverTip: "Betrag, der noch benötigt wird, um Ihr Abonnement in diesem Zeitraum zu decken.",
+  rules: (p, m) => `Erhalten Sie ${p}% von jedem erfolgreich bezahlten Abonnement eines eingeladenen Nutzers für ${m} Monate. Vergütungen decken zuerst Ihr eigenes Solo .Bizz-Abonnement. Das verbleibende Guthaben kann ausgezahlt werden.`,
+  rulesLead: "So funktioniert die Vergütung:", myLink: "Mein Empfehlungslink", copy: "Kopieren", copied: "Link kopiert", invite: "Freund einladen", share: "Teilen:",
+  inviteTitle: "Freund einladen", inviteText: (url) => `Hallo! Ich führe meine Praxis in Solo .Bizz — Kalender, Klienten und Zahlungen an einem Ort. Testen Sie es kostenlos über meinen Link: ${url}`,
+  copyMessage: "Nachricht kopieren", messageCopied: "Nachricht kopiert",
+  coverage: "Deckung der eigenen Lizenz", tariff: "Tarif", perPeriod: { monthly: "Monat", quarterly: "Quartal", yearly: "Jahr" },
+  covered: (a, b) => `${a} von ${b} gedeckt`, remaining: "Noch zu decken", fullyCovered: "Ihr Abonnement ist durch Empfehlungsvergütungen gedeckt.",
+  surplus: "Zur Auszahlung verfügbar", noEarnings: "Laden Sie Kollegen ein, um die Kosten Ihres Abonnements zu decken.",
+  noSubscription: "Sie haben kein aktives kostenpflichtiges Abonnement — alle Vergütungen stehen zur Auszahlung bereit.", coverageNote: "Auszahlungen werden möglich, sobald die Vergütungen Ihr Abonnement übersteigen.",
+  referrals: "Meine Empfehlungen", search: "Nach Name suchen", allStatuses: "Alle Status",
+  colUser: "Nutzer", colDate: "Registriert", colStatus: "Status", colPlan: "Tarif", colEarned: "Verdient", colPeriod: "Vergütungszeitraum", sortDate: "Nach Datum", sortEarned: "Nach Verdienst",
+  status: { registered: "Registriert", awaiting_payment: "Wartet auf erste Zahlung", active: "Aktives Abonnement", paused: "Pausiertes Abonnement", canceled: "Gekündigtes Abonnement", reward_ended: "Vergütungszeitraum beendet" },
+  noReferrals: "Noch keine Empfehlungen. Teilen Sie Ihren Link, um Ihren ersten Kollegen einzuladen.",
+  details: "Empfehlungsdetails", percent: "Vergütungssatz", rewardPeriod: "Vergütungszeitraum", remainingEligibility: "Verbleibende Dauer", history: "Vergütungsverlauf", noHistory: "Noch keine Vergütungen", days: "Tage",
+  entry: { commission: "Provision", reversal: "Rückerstattung", subscription_credit: "Abonnement-Gutschrift", adjustment: "Korrektur" },
+  payouts: "Auszahlungsverlauf", requestPayout: "Auszahlung anfordern", noPayouts: "Noch keine Auszahlungen.", colAmount: "Betrag", colMethod: "Methode",
+  payoutStatus: { pending: "Wartet auf Genehmigung", processing: "In Bearbeitung", paid: "Ausgezahlt", rejected: "Abgelehnt", cancelled: "Storniert" },
+  method: { bank_card: "Auf Bankkarte", iban: "IBAN", paypal: "PayPal" },
+  available: "Verfügbar", amount: "Betrag", details2: "Auszahlungsdaten (Kartennummer, IBAN oder PayPal-E-Mail)", submit: "Anfrage senden", cancel: "Abbrechen", cancelRequest: "Anfrage stornieren",
+  minPayout: (v) => `Mindestauszahlungsbetrag ist ${v}.`, payoutCreated: "Auszahlung angefordert. Guthaben ist bis zur Überprüfung reserviert.",
+  payoutNote: "Ein Finanzadministrator genehmigt Auszahlungen manuell. „Ausgezahlt“ erscheint erst nach der tatsächlichen Überweisung.",
+  how: "So funktioniert es",
+  steps: [
+    ["Teilen Sie Ihren Link", "Kopieren Sie Ihren persönlichen Link und senden Sie ihn an Kollegen."],
+    ["Kollege registriert sich", "Er folgt Ihrem Link und erstellt ein Solo .Bizz-Konto."],
+    ["Die Empfehlung wird verknüpft", "Nach der Registrierung speichert das System die Verknüpfung zwischen Ihren Konten."],
+    ["Sie erhalten % des Abonnements", "Erhalten Sie während des Vergütungszeitraums einen Anteil an jedem bezahlten Abonnement."],
+  ],
+  error: "Daten konnten nicht geladen werden.", retry: "Erneut versuchen",
+  errors: { insufficient_balance: "Betrag übersteigt das verfügbare Guthaben.", below_minimum: "Betrag liegt unter dem Minimum.", invalid_amount: "Ungültiger Betrag.", invalid_details: "Geben Sie Auszahlungsdaten an.", invalid_method: "Wählen Sie eine Methode." },
+};
+
 const fr: ReferralCopy = {
   ...en,
   title: "Programme de parrainage", subtitle: "Invitez vos collègues et soyez récompensé pour leurs abonnements.",
@@ -117,4 +156,4 @@ const fr: ReferralCopy = {
   coverage: "Couverture de votre licence", referrals: "Mes filleuls", payouts: "Historique des paiements", requestPayout: "Demander un paiement", how: "Comment ça marche",
 };
 
-export const referralCopy: Record<AppLanguage, ReferralCopy> = { uk, en, ru, pl, fr };
+export const referralCopy: Record<AppLanguage, ReferralCopy> = { uk, en, ru, pl, de, fr };

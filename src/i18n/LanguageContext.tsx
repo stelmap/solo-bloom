@@ -8,7 +8,7 @@ const PRE_LOGIN_LANG_KEY = "pre_login_lang";
 const LANG_CHANGE_EVENT = "app_lang_change";
 
 function normalizeLang(value: string | null | undefined): AppLanguage | null {
-  if (value === "uk" || value === "fr" || value === "en" || value === "pl" || value === "ru") return value;
+  if (value === "uk" || value === "fr" || value === "en" || value === "pl" || value === "ru" || value === "de") return value;
   return null;
 }
 
@@ -30,6 +30,7 @@ function getBrowserLang(): AppLanguage {
       if (tag.startsWith("pl")) return "pl";
       if (tag.startsWith("fr")) return "fr";
       if (tag.startsWith("ru")) return "ru";
+      if (tag.startsWith("de")) return "de";
       if (tag.startsWith("en")) return "en";
     }
   } catch {}

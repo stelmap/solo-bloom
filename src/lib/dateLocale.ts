@@ -1,4 +1,4 @@
-import { fr, pl, uk, ru, enUS, type Locale } from "date-fns/locale";
+import { fr, pl, uk, ru, de, enUS, type Locale } from "date-fns/locale";
 import { format as fnsFormat } from "date-fns";
 import type { Language } from "@/i18n/translations";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -13,6 +13,8 @@ export function getDateLocale(lang: Language | string | undefined): Locale {
       return uk;
     case "ru":
       return ru;
+    case "de":
+      return de;
     default:
       return enUS;
   }

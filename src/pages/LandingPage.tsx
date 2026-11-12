@@ -648,13 +648,14 @@ function useLandingLang() {
   return useContext(LandingLangContext);
 }
 
-const LANG_CYCLE: AppLanguage[] = ["en", "fr", "uk", "ru", "pl"];
+const LANG_CYCLE: AppLanguage[] = ["en", "fr", "uk", "ru", "pl", "de"];
 
 /** Language options offered in the header dropdown. */
 const LANG_OPTIONS: { code: AppLanguage; native: string; short: string; flag: string }[] = [
   { code: "uk", native: "Українська", short: "UA", flag: "🇺🇦" },
   { code: "en", native: "English", short: "EN", flag: "🇬🇧" },
   { code: "pl", native: "Polski", short: "PL", flag: "🇵🇱" },
+  { code: "de", native: "Deutsch", short: "DE", flag: "🇩🇪" },
   { code: "fr", native: "Français", short: "FR", flag: "🇫🇷" },
   { code: "ru", native: "Русский", short: "RU", flag: "🇷🇺" },
 ];
@@ -665,6 +666,7 @@ const SELECT_LANGUAGE_LABEL: Record<AppLanguage, string> = {
   pl: "Wybierz język",
   fr: "Choisir la langue",
   ru: "Выбрать язык",
+  de: "Sprache wählen",
 };
 
 // Russian overrides for the most-visible landing copy. Any key missing here
@@ -1573,6 +1575,14 @@ const SEO_META: Record<AppLanguage, { title: string; description: string; ogTitl
     ogDesc: "Клиенты, сеансы, оплаты и доход в одном месте. Создано для психологов, терапевтов, коучей и репетиторов.",
     ogLocale: "ru_RU",
     htmlLang: "ru",
+  },
+  de: {
+    title: "Solo .Bizz — Praxisverwaltung für Therapeuten und Coaches",
+    description: "Termine, Klienten, Zahlungen und Finanzen Ihrer Praxis an einem Ort. 14 Tage kostenlos testen.",
+    ogTitle: "Solo .Bizz — Ihre Praxis an einem Ort",
+    ogDesc: "Kalender, Klienten, Zahlungen und Berichte für selbstständige Fachleute.",
+    ogLocale: "de_DE",
+    htmlLang: "de",
   },
 };
 

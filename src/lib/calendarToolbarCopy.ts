@@ -6,7 +6,7 @@ export type CalToolbarCopy = {
   grid: string; gridFit: string; gridScroll: string; highlight: string; highlightHint: string;
   filtersGroup: string; client: string; allClients: string; status: string; allStatuses: string;
   payment: string; allPayments: string; payPaid: string; payAwaiting: string; payUnpaid: string;
-  reset: string; autosave: string; settings: string; activeFilters: (n: number) => string; close: string;
+  reset: string; autosave: string; settings: string; activeFilters: (n) => string; close: string;
   stScheduled: string; stConfirmed: string; stCompleted: string; stCancelled: string; stNoShow: string;
   unpaidTitle: string; unpaidHint: string; unpaidEmpty: string; price: string; paid: string; left: string; addPayment: string;
   help: string;
@@ -60,6 +60,18 @@ const pl: CalToolbarCopy = {
   unpaidTitle: "Nieopłacone spotkania", unpaidHint: "Zakończone spotkania z kwotą do zapłaty", unpaidEmpty: "Brak nieopłaconych spotkań", price: "Cena", paid: "Zapłacono", left: "Pozostało", addPayment: "Dodaj płatność",
   help: "Pomoc",
 };
+const de: CalToolbarCopy = {
+  title: "Kalender", unpaid: "Unbezahlt", requests: "Buchungsanfragen", newRecord: "Neuer Termin",
+  linkTitle: "Buchungslink für Kunden", linkHint: "Senden Sie ihn an einen Kunden, damit er einen Termin wählen kann", copy: "Kopieren", copied: "Link kopiert", view: "Vorschau", linkMissing: "Noch kein Buchungslink vorhanden", linkSetup: "Einrichten",
+  viewFilters: "Ansicht & Filter", viewGroup: "Ansicht", density: "Termindichte", densityNormal: "Normal", densityCompact: "Kompakt",
+  grid: "Kalenderraster", gridFit: "Anpassen", gridScroll: "Scrollen", highlight: "Zeiten außerhalb der Online-Buchung hervorheben", highlightHint: "Ändert nur die Hervorhebung – Termine bleiben sichtbar",
+  filtersGroup: "Filter", client: "Kunde", allClients: "Alle Kunden", status: "Terminstatus", allStatuses: "Alle Status",
+  payment: "Zahlung", allPayments: "Alle", payPaid: "Bezahlt", payAwaiting: "Zahlung ausstehend", payUnpaid: "Unbezahlt",
+  reset: "Filter zurücksetzen", autosave: "Änderungen werden automatisch gespeichert", settings: "Kalendereinstellungen", activeFilters: (n) => `${n} ${n === 1 ? "aktiver Filter" : "aktive Filter"}`, close: "Schließen",
+  stScheduled: "Geplant", stConfirmed: "Bestätigt", stCompleted: "Abgeschlossen", stCancelled: "Storniert", stNoShow: "Nicht erschienen",
+  unpaidTitle: "Unbezahlte Termine", unpaidHint: "Abgeschlossene Termine mit noch offenem Betrag", unpaidEmpty: "Keine unbezahlten Termine", price: "Preis", paid: "Bezahlt", left: "Verbleibend", addPayment: "Zahlung erfassen",
+  help: "Hilfe",
+};
 const fr: CalToolbarCopy = {
   title: "Calendrier", unpaid: "Impayés", requests: "Demandes de rendez-vous", newRecord: "Nouveau rendez-vous",
   linkTitle: "Lien de réservation clients", linkHint: "Envoyez-le à un client pour qu'il choisisse un horaire", copy: "Copier", copied: "Lien copié", view: "Aperçu", linkMissing: "Aucun lien de réservation", linkSetup: "Configurer",
@@ -73,5 +85,5 @@ const fr: CalToolbarCopy = {
   help: "Aide",
 };
 
-const ALL: Record<string, CalToolbarCopy> = { uk, ru, en, pl, fr };
+const ALL: Record<string, CalToolbarCopy> = { uk, ru, en, pl, de, fr };
 export const calToolbarCopy = (lang: string): CalToolbarCopy => ALL[lang] ?? en;

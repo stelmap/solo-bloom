@@ -365,6 +365,7 @@ export default function AuthPage() {
             <SelectItem value="en">English</SelectItem>
             <SelectItem value="fr">Français</SelectItem>
             <SelectItem value="pl">Polski</SelectItem>
+            <SelectItem value="de">Deutsch</SelectItem>
             <SelectItem value="ru">Русский</SelectItem>
           </SelectContent>
         </Select>
