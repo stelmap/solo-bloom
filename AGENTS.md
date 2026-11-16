@@ -16,3 +16,4 @@
 - Resolve new-account access through the owner-scoped versioned practice-access RPC; keep app trials separate from Paddle subscriptions and enforce restricted writes with database triggers, preserving legacy access.
 - Keep public offer copy and pricing in the landing-offer module and isolated public pages; use actual product screenshots with private details excluded.
 - Public product demo uses only synthetic sessionStorage state with expiry; shared presentation components accept data/callbacks and never import authenticated data hooks, preventing production reads, writes and integrations.
+- Plan feature composition lives only in src/lib/planFeatures.ts (PRO = SOLO + Pro features, period-agnostic); grandfathered access uses explicit expiring legacy_plan_grants read by practice_access_state, never registration date, so plan relabels cannot drop granted access.
