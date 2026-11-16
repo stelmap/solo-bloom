@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { ArrowRight, CalendarDays, Users, CreditCard, LayoutDashboard, Check, Menu, Maximize2, Link2, X, Youtube, Facebook, Globe, ListChecks, CircleUserRound, Euro, BarChart3 } from 'lucide-react';
 import { BrandName } from '@/components/BrandName';
