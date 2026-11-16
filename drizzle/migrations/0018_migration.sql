@@ -1,0 +1,2 @@
+REVOKE EXECUTE ON FUNCTION public.check_client_revenue_consistency() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.backfill_group_expected_payments() FROM PUBLIC, anon, authenticated;
