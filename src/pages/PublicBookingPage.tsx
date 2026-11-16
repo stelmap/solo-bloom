@@ -463,6 +463,14 @@ export default function PublicBookingPage() {
     const row = Array.isArray(data) ? data[0] : (data as any);
     setDone({ requiresApproval: !!row?.requires_approval });
 
+    // Notify the specialist in the background; never block or fail the booking.
+    if (row?.request_id) {
+      supabase.functions
+        .invoke("send-booking-owner-notification", { body: { requestId: row.request_id } })
+        .then(({ error }) => { if (error) console.warn("owner booking email failed", error); })
+        .catch((e) => console.warn("owner booking email failed", e));
+    }
+
     // If the booking was auto-confirmed (link mode = auto and the client matched
     // an existing profile), trigger the confirmation email immediately. Manual
     // mode emails are sent by the therapist from the Booking Inbox on approval.
