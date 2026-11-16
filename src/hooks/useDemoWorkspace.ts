@@ -133,7 +133,7 @@ export function useFreeStarterMode() {
 
   return {
     isFreeStarter: access.data?.policy_version === 2 ? false : isFreeStarter,
-    planCode: access.data?.policy_version === 2 ? access.data.plan_code : resolvedPlanCode,
+    planCode: access.data?.policy_version === 2 || access.data?.legacy_grant ? access.data.plan_code : resolvedPlanCode,
     clientCount,
     limit,
     atClientLimit,

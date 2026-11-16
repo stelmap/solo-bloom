@@ -12,6 +12,8 @@ export type PaddleSyncInput = {
   paddlePriceId?: string | null;
   periodStart?: string | null;
   periodEnd?: string | null;
+  /** Raw Paddle status from webhooks (active, trialing, past_due, paused, canceled). */
+  status?: string | null;
 };
 
 const PRO_FEATURES = ["premium_access", "financial_access", "operational_access"];
@@ -24,6 +26,29 @@ const BASE_FEATURES = ["financial_access", "operational_access"];
  */
 export async function syncSubscriptionRecords(supabaseAdmin: any, input: PaddleSyncInput): Promise<void> {
   const { userId } = input;
+
+  // Webhook says past_due / paused / canceled: keep the Paddle ids, price and
+  // paid-through date so access lasts exactly until that date (enforced by
+  // practice_access_state), instead of wiping the row.
+  if (input.status && ["past_due", "paused", "canceled"].includes(input.status)) {
+    const priceRes = input.paddlePriceId
+      ? await supabaseAdmin.from("plan_prices").select("id, plan_id").eq("paddle_price_id", input.paddlePriceId).maybeSingle()
+      : { data: null };
+    const patch: Record<string, unknown> = { status: input.status, updated_at: new Date().toISOString() };
+    if (input.subscriptionId) patch.paddle_subscription_id = input.subscriptionId;
+    if (input.customerId) patch.paddle_customer_id = input.customerId;
+    if ((priceRes.data as any)?.id) { patch.current_price_id = (priceRes.data as any).id; patch.current_plan_id = (priceRes.data as any).plan_id; }
+    if (input.periodStart) patch.current_period_start = input.periodStart;
+    if (input.periodEnd) patch.current_period_end = input.periodEnd;
+    await supabaseAdmin.from("subscriptions").update(patch).eq("user_id", userId);
+    const { data: row } = await supabaseAdmin.from("subscriptions").select("current_period_end").eq("user_id", userId).maybeSingle();
+    const until = (row as any)?.current_period_end;
+    const end = until && new Date(until) > new Date() ? until : new Date().toISOString();
+    await supabaseAdmin.from("entitlements").update({ active_until: end, ...(end === until ? {} : { is_active: false }) })
+      .eq("user_id", userId).in("source_type", ["paddle", "stripe"]).eq("is_active", true);
+    console.log(`[PADDLE-SYNC] Status ${input.status}; access until ${end}`);
+    return;
+  }
 
   if (!input.subscribed) {
     // Legacy (pre-Paddle) subscribers are invisible to Paddle. Their access and
