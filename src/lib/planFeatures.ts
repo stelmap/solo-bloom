@@ -6,9 +6,9 @@ export type PlanTier = "solo" | "pro";
 
 export const SOLO_FEATURES = [
   "dashboard", "calendar", "appointments", "online_booking", "clients",
-  "services", "payments", "practice_management",
+  "services", "payments", "practice_management", "public_profile",
 ] as const;
-export const PRO_ONLY_FEATURES = ["finances", "groups", "supervisions", "public_profile"] as const;
+export const PRO_ONLY_FEATURES = ["finances", "groups", "supervisions"] as const;
 
 export type Feature = (typeof SOLO_FEATURES)[number] | (typeof PRO_ONLY_FEATURES)[number];
 

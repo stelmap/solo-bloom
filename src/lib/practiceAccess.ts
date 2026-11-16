@@ -10,6 +10,7 @@ export interface PracticeAccess {
   trial_ends_at: string | null;
   legacy_grant?: boolean;
   legacy_until?: string | null;
+  payment_grace_until?: string | null;
 }
 
 export function trialIsActive(start: string | null, now: number): boolean {
@@ -23,4 +24,14 @@ import { featureForPath, PRO_ONLY_FEATURES } from './planFeatures';
 export function requiredPlanForPath(path: string): 'solo' | 'pro' | null {
   const f = featureForPath(path);
   return f && (PRO_ONLY_FEATURES as readonly string[]).includes(f) ? 'pro' : null;
+}
+export const PAYMENT_GRACE_DAYS = 10;
+
+/** Pages a blocked (no licence) account can still open. */
+export function isLicenseExemptPath(path: string): boolean {
+  return ['/plans', '/checkout', '/purchase-success', '/reset-password'].some((p) => path.startsWith(p));
+}
+
+export function needsLicense(access: Pick<PracticeAccess, 'plan_code'> | null | undefined, isAdmin: boolean): boolean {
+  return !!access && access.plan_code === 'expired' && !isAdmin;
 }
