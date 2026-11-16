@@ -8,6 +8,8 @@ export interface PracticeAccess {
   client_limit: number | null;
   on_trial: boolean;
   trial_ends_at: string | null;
+  legacy_grant?: boolean;
+  legacy_until?: string | null;
 }
 
 export function trialIsActive(start: string | null, now: number): boolean {
@@ -16,7 +18,9 @@ export function trialIsActive(start: string | null, now: number): boolean {
   return now >= startMs && now < startMs + SUBSCRIPTION_OFFER.trialDays * 86400000;
 }
 
+import { featureForPath, PRO_ONLY_FEATURES } from './planFeatures';
+
 export function requiredPlanForPath(path: string): 'solo' | 'pro' | null {
-  if (path.startsWith('/finances') || path.startsWith('/groups') || path === '/supervision') return 'pro';
-  return null;
+  const f = featureForPath(path);
+  return f && (PRO_ONLY_FEATURES as readonly string[]).includes(f) ? 'pro' : null;
 }

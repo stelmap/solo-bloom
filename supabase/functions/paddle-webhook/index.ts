@@ -91,7 +91,10 @@ serve(async (req) => {
       case "subscription.canceled":
       case "subscription.paused":
       case "subscription.resumed":
-      case "transaction.completed": {
+      case "subscription.past_due":
+      case "subscription.trialing":
+      case "transaction.completed":
+      case "transaction.payment_failed": {
         const data = (event.data ?? {}) as Record<string, any>;
         const isSubscriptionEvent = String(event.event_type).startsWith("subscription.");
         const subscriptionId: string | null = isSubscriptionEvent
@@ -126,6 +129,7 @@ serve(async (req) => {
           const status = String(data.status ?? "");
           const active = status === "active" || status === "trialing";
           await syncSubscriptionRecords(supabaseAdmin, {
+            status,
             userId,
             subscribed: active,
             onTrial: status === "trialing",
@@ -136,6 +140,10 @@ serve(async (req) => {
             periodEnd: data.current_billing_period?.ends_at ?? null,
           });
           log("Subscription persisted", { userId, status, subscriptionId });
+        } else if (event.event_type === "transaction.payment_failed") {
+          // Paddle retries the charge and moves the subscription to past_due;
+          // that subscription event carries the access change.
+          log("Payment failed", { userId, subscriptionId, transaction: data.id });
         } else {
           log("Transaction completed", { userId, subscriptionId });
           // Referral program: commission for the referrer + credit for own subscription.
