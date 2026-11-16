@@ -19,6 +19,7 @@ import { template as accountDeletedFinal } from './account-deleted-final.tsx'
 import { template as agreementInvitation } from './agreement-invitation.tsx'
 import { template as reviewAdminNotification } from './review-admin-notification.tsx'
 import { template as reviewStatusUpdate } from './review-status-update.tsx'
+import { template as bookingOwnerNotification } from './booking-owner-notification.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'session-reminder': sessionReminder,
@@ -31,4 +32,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'agreement-invitation': agreementInvitation,
   'review-admin-notification': reviewAdminNotification,
   'review-status-update': reviewStatusUpdate,
+  'booking-owner-notification': bookingOwnerNotification,
 }
