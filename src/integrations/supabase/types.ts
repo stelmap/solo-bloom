@@ -2549,6 +2549,36 @@ export type Database = {
         }
         Relationships: []
       }
+      license_requests: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       lifecycle_settings: {
         Row: {
           cron_enabled: boolean

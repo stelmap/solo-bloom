@@ -51,6 +51,16 @@ export async function syncSubscriptionRecords(supabaseAdmin: any, input: PaddleS
   }
 
   if (!input.subscribed) {
+    // A pull that finds no active Paddle subscription must not cut short a
+    // failed-payment grace period (10 days after the paid-through date).
+    const { data: cur } = await supabaseAdmin
+      .from("subscriptions").select("status, current_period_end").eq("user_id", userId).maybeSingle();
+    const c = cur as any;
+    if (c?.status === "past_due" && c.current_period_end &&
+        new Date(c.current_period_end).getTime() + 10 * 86400000 > Date.now()) {
+      console.log("[PADDLE-SYNC] Grace period kept");
+      return;
+    }
     // Legacy (pre-Paddle) subscribers are invisible to Paddle. Their access and
     // migration banner must survive a Paddle "no subscription found" result.
     const { data: legacy } = await supabaseAdmin

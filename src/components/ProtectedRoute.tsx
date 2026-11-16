@@ -4,7 +4,11 @@ import { useProfile } from "@/hooks/useData";
 import { useAutoSeedDemo } from "@/hooks/useDemoWorkspace";
 import { useIdleTimeout } from "@/hooks/useIdleTimeout";
 import { usePracticeAccess } from '@/hooks/usePracticeAccess';
-import { requiredPlanForPath } from '@/lib/practiceAccess';
+import { requiredPlanForPath, needsLicense, isLicenseExemptPath } from '@/lib/practiceAccess';
+import { useEffect, useState } from 'react';
+import { checkIsAdmin } from '@/lib/sessionGuard';
+import { LicenseRequiredScreen } from './LicenseRequiredScreen';
+import { PaymentGraceBanner } from './PaymentGraceBanner';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, isRecovery } = useAuth();
@@ -17,6 +21,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   useAutoSeedDemo();
   // GDPR: auto sign-out on inactivity (configurable in Settings → Security)
   useIdleTimeout();
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  useEffect(() => { if (user) void checkIsAdmin().then(setIsAdmin); else setIsAdmin(null); }, [user]);
 
   if (loading) {
     return <div className="min-h-screen bg-background" aria-hidden="true" />;
@@ -48,5 +54,10 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (access.data?.policy_version === 2 && access.data.can_write && !access.data.has_pro && requiredPlanForPath(location.pathname) === 'pro') {
     return <Navigate to="/plans?upgrade=pro" replace />;
   }
-  return <>{children}</>;
+  if (needsLicense(access.data, isAdmin === true) && !isLicenseExemptPath(location.pathname)) {
+    if (isAdmin === null) return <div className="min-h-screen bg-background" />;
+    return <LicenseRequiredScreen />;
+  }
+  const graceUntil = access.data?.payment_grace_until;
+  return <>{graceUntil && <PaymentGraceBanner until={graceUntil} />}{children}</>;
 }

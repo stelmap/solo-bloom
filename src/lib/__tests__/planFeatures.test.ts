@@ -9,8 +9,11 @@ describe("plan features", () => {
   it("Solo has calendar, clients, booking and payments", () => {
     for (const f of ["calendar", "clients", "online_booking", "payments"] as const) expect(hasFeature(solo, f)).toBe(true);
   });
-  it("Solo lacks finances, groups, supervisions and public profile", () => {
-    for (const f of ["finances", "groups", "supervisions", "public_profile"] as const) expect(hasFeature(solo, f)).toBe(false);
+  it("Solo lacks finances, groups and supervisions", () => {
+    for (const f of ["finances", "groups", "supervisions"] as const) expect(hasFeature(solo, f)).toBe(false);
+  });
+  it("Solo keeps the public therapist page", () => {
+    expect(hasFeature(solo, "public_profile")).toBe(true);
   });
   it("Pro includes every Solo feature plus Pro features", () => {
     for (const f of SOLO_FEATURES) expect(PLAN_FEATURES.pro.has(f)).toBe(true);
@@ -23,5 +26,23 @@ describe("plan features", () => {
     expect(requiredPlanForPath("/supervision")).toBe("pro");
     expect(requiredPlanForPath("/calendar")).toBe(null);
     expect(requiredPlanForPath("/payments")).toBe(null);
+  });
+});
+
+import { needsLicense, isLicenseExemptPath } from "../practiceAccess";
+describe("licence required", () => {
+  it("blocks accounts without a paid plan, trial or grant", () => {
+    expect(needsLicense({ plan_code: "expired" }, false)).toBe(true);
+  });
+  it("does not block paid, trial, legacy-granted or admin accounts", () => {
+    expect(needsLicense({ plan_code: "solo" }, false)).toBe(false);
+    expect(needsLicense({ plan_code: "pro" }, false)).toBe(false);
+    expect(needsLicense({ plan_code: "trial" }, false)).toBe(false);
+    expect(needsLicense({ plan_code: "expired" }, true)).toBe(false);
+  });
+  it("keeps plans and checkout reachable", () => {
+    expect(isLicenseExemptPath("/plans")).toBe(true);
+    expect(isLicenseExemptPath("/checkout")).toBe(true);
+    expect(isLicenseExemptPath("/calendar")).toBe(false);
   });
 });
