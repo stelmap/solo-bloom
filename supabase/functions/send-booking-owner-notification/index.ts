@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     if (error) return json({ error: error.message }, 400)
     if (!r) return json({ error: 'booking_request_not_found' }, 404)
     if (Date.now() - new Date(r.created_at).getTime() > 60 * 60 * 1000) return json({ error: 'too_old' }, 409)
-    if (!['pending', 'confirmed'].includes(r.status)) return json({ skipped: 'status', status: r.status })
+    if (!['pending', 'confirmed', 'needs_linking'].includes(r.status)) return json({ skipped: 'status', status: r.status })
 
     const [{ data: owner }, { data: profile }, apptRes] = await Promise.all([
       sb.auth.admin.getUserById(r.user_id),
