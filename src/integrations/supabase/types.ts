@@ -2516,6 +2516,39 @@ export type Database = {
           },
         ]
       }
+      legacy_plan_grants: {
+        Row: {
+          created_at: string
+          expires_at: string
+          granted_at: string
+          id: string
+          legacy_customer: boolean
+          plan_code: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          granted_at?: string
+          id?: string
+          legacy_customer?: boolean
+          plan_code: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          granted_at?: string
+          id?: string
+          legacy_customer?: boolean
+          plan_code?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       lifecycle_settings: {
         Row: {
           cron_enabled: boolean
