@@ -88,7 +88,8 @@ export default function PlansPage() {
   const { user, subscription, subscriptionError } = useAuth();
   const { t, lang } = useLanguage();
   const practiceAccess = usePracticeAccess();
-  const newPolicy = practiceAccess.data?.policy_version === 2;
+  // Every account sees the same Solo/Pro offer as the landing page.
+  const newPolicy = true;
   const qc = useQueryClient();
   const { data: hasDemoData } = useHasDemoData();
   const {
