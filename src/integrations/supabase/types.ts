@@ -2647,6 +2647,75 @@ export type Database = {
           },
         ]
       }
+      paddle_subscription_event_state: {
+        Row: {
+          last_event_id: string
+          last_occurred_at: string
+          subscription_id: string
+          updated_at: string
+        }
+        Insert: {
+          last_event_id: string
+          last_occurred_at: string
+          subscription_id: string
+          updated_at?: string
+        }
+        Update: {
+          last_event_id?: string
+          last_occurred_at?: string
+          subscription_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      paddle_webhook_events: {
+        Row: {
+          attempts: number
+          customer_id: string | null
+          error: string | null
+          event_id: string
+          event_type: string
+          id: string
+          occurred_at: string | null
+          payload: Json
+          processed_at: string | null
+          received_at: string
+          status: string
+          subscription_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          attempts?: number
+          customer_id?: string | null
+          error?: string | null
+          event_id: string
+          event_type: string
+          id?: string
+          occurred_at?: string | null
+          payload: Json
+          processed_at?: string | null
+          received_at?: string
+          status?: string
+          subscription_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          attempts?: number
+          customer_id?: string | null
+          error?: string | null
+          event_id?: string
+          event_type?: string
+          id?: string
+          occurred_at?: string | null
+          payload?: Json
+          processed_at?: string | null
+          received_at?: string
+          status?: string
+          subscription_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       payment_corrections: {
         Row: {
           appointment_id: string
@@ -4858,6 +4927,14 @@ export type Database = {
           issue: string
           via_appointment_total: number
         }[]
+      }
+      claim_paddle_subscription_event: {
+        Args: {
+          p_event_id: string
+          p_occurred_at: string
+          p_subscription_id: string
+        }
+        Returns: boolean
       }
       claim_referral: {
         Args: { p_code: string; p_opened_at?: string }

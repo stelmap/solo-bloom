@@ -68,7 +68,7 @@ serve(async (req) => {
     return new Response("Invalid signature", { status: 400, headers: corsHeaders });
   }
 
-  let event: { event_type?: string; event_id?: string; data?: Record<string, unknown> };
+  let event: { event_type?: string; event_id?: string; occurred_at?: string; data?: Record<string, unknown> };
   try {
     event = JSON.parse(rawBody);
   } catch {
@@ -83,6 +83,49 @@ serve(async (req) => {
     { auth: { persistSession: false } },
   );
 
+  if (!event.event_id || !event.event_type) {
+    return new Response("Missing event id", { status: 400, headers: corsHeaders });
+  }
+  const eventId = event.event_id;
+  const ed = (event.data ?? {}) as Record<string, any>;
+  const isSubEvent = event.event_type.startsWith("subscription.");
+  const logSubId: string | null = (isSubEvent ? ed.id : ed.subscription_id) ?? null;
+
+  // Durable log + duplicate protection.
+  const { data: inserted, error: insErr } = await supabaseAdmin
+    .from("paddle_webhook_events")
+    .upsert({
+      event_id: eventId,
+      event_type: event.event_type,
+      occurred_at: event.occurred_at ?? null,
+      subscription_id: logSubId,
+      customer_id: ed.customer_id ?? null,
+      payload: event as any,
+    }, { onConflict: "event_id", ignoreDuplicates: true })
+    .select("id");
+  if (insErr) {
+    log("Event log insert failed", { error: insErr.message });
+    return new Response("Log failure", { status: 500, headers: corsHeaders });
+  }
+  if (!inserted || inserted.length === 0) {
+    const { data: prev } = await supabaseAdmin
+      .from("paddle_webhook_events").select("status, attempts").eq("event_id", eventId).maybeSingle();
+    if (prev && prev.status !== "failed" && prev.status !== "received") {
+      log("Duplicate event ignored", { id: eventId, status: prev.status });
+      return new Response(JSON.stringify({ received: true, duplicate: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+      });
+    }
+    await supabaseAdmin.from("paddle_webhook_events")
+      .update({ attempts: (prev?.attempts ?? 1) + 1, status: "received", error: null }).eq("event_id", eventId);
+  }
+
+  const finish = (status: string, extra: Record<string, unknown> = {}) =>
+    supabaseAdmin.from("paddle_webhook_events")
+      .update({ status, processed_at: new Date().toISOString(), ...extra }).eq("event_id", eventId);
+
+  let outcome = "processed";
+  let resolvedUser: string | null = null;
   try {
     switch (event.event_type) {
       case "subscription.created":
@@ -116,7 +159,23 @@ serve(async (req) => {
 
         if (!userId) {
           log("Could not resolve user; skipping", { type: event.event_type, subscriptionId, customerId });
+          outcome = "skipped_no_user";
           break;
+        }
+        resolvedUser = userId;
+
+        // Out-of-order protection: never let an older subscription event overwrite a newer one.
+        if (isSubscriptionEvent && subscriptionId) {
+          const occurred = event.occurred_at ?? data.updated_at ?? new Date().toISOString();
+          const { data: fresh, error: claimErr } = await supabaseAdmin.rpc("claim_paddle_subscription_event", {
+            p_subscription_id: subscriptionId, p_event_id: eventId, p_occurred_at: occurred,
+          });
+          if (claimErr) throw new Error(`claim failed: ${claimErr.message}`);
+          if (!fresh) {
+            log("Stale subscription event ignored", { id: eventId, subscriptionId, occurred });
+            outcome = "skipped_stale";
+            break;
+          }
         }
 
         // Invalidate the subscription cache so the next entitlement check is fresh.
@@ -186,10 +245,16 @@ serve(async (req) => {
       }
       default:
         log("Unhandled event type", { type: event.event_type });
+        outcome = "ignored";
     }
   } catch (err) {
-    log("Handler error", { error: err instanceof Error ? err.message : String(err) });
+    const msg = err instanceof Error ? err.message : String(err);
+    log("Handler error", { error: msg });
+    await finish("failed", { error: msg.slice(0, 1000), user_id: resolvedUser });
+    // Non-2xx makes Paddle retry; the log lets the retry run again safely.
+    return new Response("Processing failed", { status: 500, headers: corsHeaders });
   }
+  await finish(outcome, { user_id: resolvedUser });
 
   return new Response(JSON.stringify({ received: true }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },

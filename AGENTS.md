@@ -17,3 +17,4 @@
 - Keep public offer copy and pricing in the landing-offer module and isolated public pages; use actual product screenshots with private details excluded.
 - Public product demo uses only synthetic sessionStorage state with expiry; shared presentation components accept data/callbacks and never import authenticated data hooks, preventing production reads, writes and integrations.
 - Plan feature composition lives only in src/lib/planFeatures.ts (PRO = SOLO + Pro features, period-agnostic); grandfathered access uses explicit expiring legacy_plan_grants read by practice_access_state, never registration date, so plan relabels cannot drop granted access.
+- Paddle webhooks are logged durably in paddle_webhook_events (unique event_id) and subscription events are applied only if newer than the last applied one per subscription, so duplicates and late retries cannot roll back status; failures return 500 so Paddle retries.
