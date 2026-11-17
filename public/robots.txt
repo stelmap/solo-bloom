@@ -14,5 +14,24 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /auth
+Disallow: /dashboard
+Disallow: /calendar
+Disallow: /clients
+Disallow: /groups
+Disallow: /services
+Disallow: /finances
+Disallow: /payments
+Disallow: /income
+Disallow: /expenses
+Disallow: /referral
+Disallow: /settings
+Disallow: /booking-inbox
+Disallow: /supervision
+Disallow: /plans
+Disallow: /checkout
+Disallow: /reset-password
+Disallow: /confirm-session
+Disallow: /agreement/
+Disallow: /server-update
 
 Sitemap: https://solo-bizz.com/sitemap.xml

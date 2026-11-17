@@ -9,6 +9,7 @@
     <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/?lang=uk" />
     <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/?lang=fr" />
     <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/?lang=ru" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/" />
   </url>
   <url>
@@ -45,11 +46,6 @@
     <loc>https://solo-bizz.com/refund-policy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://solo-bizz.com/auth</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
   </url>
   <!-- therapist-profiles:start -->
   <url>

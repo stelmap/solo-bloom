@@ -2,11 +2,14 @@
 
 > Solo .Bizz is a calm, all-in-one CRM and finance tracker for psychologists, therapists, coaches and tutors running solo practices. Manage clients, sessions, payments and income in one place.
 
-Solo .Bizz helps solo practitioners replace spreadsheets and scattered tools with a single workspace for client records, session scheduling, payment tracking and income/expense reporting. There is a permanent Free Starter plan (up to 5 active clients) plus paid Solo Practice and Pro Practice plans billed monthly, quarterly or yearly.
+Solo .Bizz helps solo practitioners replace spreadsheets and scattered tools with a single workspace for client records, session scheduling, payment tracking and income/expense reporting. Paid plans: Solo (€12/month) and Pro (€24/month), billed monthly, quarterly (10% off) or yearly (20% off); new accounts get a 14-day free trial with Pro features. Payments are processed by Paddle. Specialists can also publish a public profile page with online booking.
 
 ## Pages
 
 - [Home](/): Product overview, features, pricing and FAQ.
+- [About](/about): Who runs Solo .Bizz and how to contact us.
+- [Start a private practice](/guides/start-private-practice): Practical guide for new practitioners.
+- [Refund Policy](/refund-policy): Cancellations and refunds.
 - [Careers](/careers): Open roles at Solo .Bizz.
 - [Privacy Policy](/privacy): How we collect, use, store and protect personal data.
 - [Terms & Conditions](/terms): Terms of use, plans, billing and acceptable use.
