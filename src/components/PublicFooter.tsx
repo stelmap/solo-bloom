@@ -60,6 +60,8 @@ const LABELS: Record<AppLanguage, { rights: string; nav: string; terms: string; 
   },
 };
 
+const ABOUT_LABEL: Record<string, string> = { uk: "Про нас", en: "About", pl: "O nas", de: "Über uns", fr: "À propos", ru: "О нас" };
+
 export function PublicFooter() {
   const { lang } = useLanguage();
   const l = LABELS[lang] ?? LABELS.en;
@@ -72,6 +74,9 @@ export function PublicFooter() {
         </p>
 
         <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2" aria-label={l.nav}>
+          <Link to="/about" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            {ABOUT_LABEL[lang] ?? ABOUT_LABEL.en}
+          </Link>
           <Link to="/guides/start-private-practice" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             {l.guide}
           </Link>

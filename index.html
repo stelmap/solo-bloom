@@ -43,6 +43,7 @@
     <link rel="alternate" hreflang="fr" href="https://solo-bizz.com/?lang=fr" />
     <link rel="alternate" hreflang="pl" href="https://solo-bizz.com/?lang=pl" />
     <link rel="alternate" hreflang="ru" href="https://solo-bizz.com/?lang=ru" />
+    <link rel="alternate" hreflang="de" href="https://solo-bizz.com/?lang=de" />
     <link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/" />
 
     <!-- Open Graph -->
@@ -98,7 +99,9 @@
         "@type": "Organization",
         "name": "Solo .Bizz",
         "url": "https://solo-bizz.com/",
-        "logo": "https://solo-bizz.com/favicon.ico",
+        "@id": "https://solo-bizz.com/#organization",
+        "alternateName": ["Solo.Bizz", "SoloBizz", "Solo Bizz"],
+        "logo": "https://solo-bizz.com/logo.png",
         "address": {
           "@type": "PostalAddress",
           "streetAddress": "Gwiaździsta 16",
@@ -116,6 +119,18 @@
         "sameAs": ["https://t.me/solobizzcontact"]
       }
     </script>
+    <!-- JSON-LD: WebSite (site name shown by Google) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "@id": "https://solo-bizz.com/#website",
+        "name": "Solo .Bizz",
+        "alternateName": ["Solo.Bizz", "SoloBizz", "solo-bizz.com"],
+        "url": "https://solo-bizz.com/",
+        "publisher": { "@id": "https://solo-bizz.com/#organization" }
+      }
+    </script>
     <!-- JSON-LD: LocalBusiness (physical office) -->
     <script type="application/ld+json">
       {
@@ -123,7 +138,7 @@
         "@type": "ProfessionalService",
         "name": "Solo .Bizz",
         "url": "https://solo-bizz.com/",
-        "image": "https://solo-bizz.com/favicon.ico",
+        "image": "https://solo-bizz.com/logo.png",
         "telephone": "+48572600256",
         "email": "info@solo-bizz.com",
         "priceRange": "€",
