@@ -26,3 +26,4 @@
 - Public marketing and legal translations use explicit query-language URLs with English at the original path; emit hreflang only for distinct available translations to avoid ambiguous crawler content.
 - Reuse the approved Terms operator line and provider disclosures when composing other legal documents; preserve refund-right sections and keep missing jurisdiction input in the roadmap, not public placeholders.
 - Mark static fallback metadata as Helmet-managed so per-route tags replace rather than duplicate it.
+- Booking confirmation email allows server-verified request owners to approve/retry without an age limit; anonymous triggers retain a ten-minute window, stored recipients and idempotency to prevent public email abuse.

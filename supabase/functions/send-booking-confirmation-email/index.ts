@@ -1,6 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 import { sendAppEmail } from '../_shared/transactional-email-templates/send-and-log.ts'
+import { canTriggerBookingConfirmation } from './trigger-access.ts'
 
 /**
  * Sends the booking-confirmation email for one booking request. The recipient
@@ -33,9 +34,17 @@ Deno.serve(async (req) => {
       .maybeSingle()
     if (reqErr) return json({ error: 'lookup_failed' }, 400)
     if (!request?.email) return json({ error: 'booking_request_not_found' }, 404)
-    // Only the booker, right after submitting, may trigger this; content is
-    // built from stored data, never from the caller.
-    if (Date.now() - new Date(request.created_at).getTime() > 10 * 60 * 1000) return json({ error: 'too_old' }, 409)
+    // Manual approval/retry may happen much later. Verify the caller with Auth,
+    // never trust a caller-supplied owner ID or an unverified JWT payload.
+    const authHeader = req.headers.get('Authorization')
+    let verifiedUserId: string | undefined
+    if (authHeader?.startsWith('Bearer ')) {
+      const { data, error } = await supabase.auth.getUser(authHeader.slice(7))
+      if (!error) verifiedUserId = data.user?.id
+    }
+    // Public auto-confirmation retains its short window; stored recipients,
+    // permitted statuses and the delivery idempotency key remain unchanged.
+    if (!canTriggerBookingConfirmation(request, verifiedUserId)) return json({ error: 'too_old' }, 409)
     if (!['pending', 'confirmed', 'needs_linking'].includes(request.status)) return json({ skipped: 'status' })
     const { data: owner } = await supabase.from('profiles')
       .select('full_name, business_name, language').eq('user_id', request.user_id).maybeSingle()
