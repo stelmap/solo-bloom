@@ -65,7 +65,7 @@ export default function AdminPaddleEventsPage() {
     return (q.data ?? []).filter((r) => {
       const k = summary(r).kind;
       if (kind !== 'all' && k !== kind) return false;
-      if (status !== 'all' && r.status !== status) return false;
+      if (status !== 'all' && !r.status.startsWith(status)) return false;
       if (!s) return true;
       return [r.event_type, r.subscription_id, r.customer_id, r.event_id, names.data?.[r.user_id ?? '']].some((v) => v?.toLowerCase().includes(s));
     });
@@ -97,6 +97,7 @@ export default function AdminPaddleEventsPage() {
                 <SelectItem value="processed">Processed</SelectItem>
                 <SelectItem value="skipped">Skipped</SelectItem>
                 <SelectItem value="failed">Failed</SelectItem>
+                <SelectItem value="ignored">Ignored</SelectItem>
                 <SelectItem value="received">Received</SelectItem>
               </SelectContent>
             </Select>
