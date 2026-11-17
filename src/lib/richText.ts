@@ -46,3 +46,21 @@ export function noteToPlainText(value?: string | null): string {
   el.innerHTML = sanitizeNoteHtml(raw);
   return (el.textContent ?? "").trim();
 }
+
+/** Public-profile HTML: note tags plus safe links (http, https, mailto) that open in a new tab. */
+export function sanitizeProfileHtml(html: string): string {
+  const clean = DOMPurify.sanitize(html ?? "", {
+    ALLOWED_TAGS: [...ALLOWED_TAGS, "a"],
+    ALLOWED_ATTR: ["class", "href", "target", "rel"],
+    FORBID_ATTR: ["style", "onerror", "onclick"],
+    ALLOWED_URI_REGEXP: /^(?:https?:|mailto:)/i,
+  });
+  const box = document.createElement("div");
+  box.innerHTML = clean;
+  box.querySelectorAll("a").forEach((a) => {
+    if (!a.getAttribute("href")) { a.replaceWith(...Array.from(a.childNodes)); return; }
+    a.setAttribute("target", "_blank");
+    a.setAttribute("rel", "noopener noreferrer nofollow");
+  });
+  return box.innerHTML;
+}

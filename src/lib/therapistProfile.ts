@@ -1,4 +1,4 @@
-import { sanitizeNoteHtml } from "@/lib/richText";
+import { sanitizeProfileHtml as sanitizeNoteHtml } from "@/lib/richText";
 
 export const THERAPIST_FILES_BUCKET = "therapist-profile-files";
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
@@ -92,7 +92,7 @@ type Copy = Record<string, string>;
 export const TP_COPY: Record<TPLang, Copy> = {
   en: {
     trialUntil: "Free trial until {d}", proOnly: "The public profile is now part of the Pro plan. Your draft is saved; upgrade to show it to clients again.", upgrade: "See plans",
-    tabPractice: "Practice profile", tabAbout: "About me", editor: "Profile editor", draft: "Draft", published: "Published", unpublishedChanges: "Unpublished changes",
+    publishCheckbox: "Publish my professional profile", saveChanges: "Save changes", tabPractice: "Practice settings", tabAbout: "About me", editor: "Profile editor", draft: "Draft", published: "Published", unpublishedChanges: "Unpublished changes",
     photo: "Photo", uploadPhoto: "Upload photo", replacePhoto: "Replace photo", removePhoto: "Remove", cropTitle: "Crop photo", zoom: "Zoom", horizontal: "Horizontal", vertical: "Vertical", apply: "Apply", cancel: "Cancel",
     firstName: "First name", lastName: "Last name", patronymic: "Patronymic (optional)", proTitle: "Professional title", proTitlePh: "e.g. Psychotherapist",
     location: "Practice location", city: "City", address: "Office address", online: "Online", offline: "In person",
@@ -108,7 +108,7 @@ export const TP_COPY: Record<TPLang, Copy> = {
   },
   uk: {
     trialUntil: "Безкоштовний тріал до {d}", proOnly: "Публічний профіль тепер входить у тариф Pro. Чернетку збережено; оновіть тариф, щоб знову показувати його клієнтам.", upgrade: "Переглянути тарифи",
-    tabPractice: "Профіль практики", tabAbout: "Про мене", editor: "Редактор профілю", draft: "Чернетка", published: "Опубліковано", unpublishedChanges: "Є неопубліковані зміни",
+    publishCheckbox: "Публікувати мій профіль", saveChanges: "Зберегти зміни", tabPractice: "Налаштування практики", tabAbout: "Про мене", editor: "Редактор профілю", draft: "Чернетка", published: "Опубліковано", unpublishedChanges: "Є неопубліковані зміни",
     photo: "Фотографія", uploadPhoto: "Завантажити фото", replacePhoto: "Замінити фото", removePhoto: "Видалити", cropTitle: "Кадрування фото", zoom: "Масштаб", horizontal: "По горизонталі", vertical: "По вертикалі", apply: "Застосувати", cancel: "Скасувати",
     firstName: "Ім'я", lastName: "Прізвище", patronymic: "По батькові (необов'язково)", proTitle: "Професійний титул", proTitlePh: "напр. Психотерапевт",
     location: "Місце практики", city: "Місто", address: "Адреса кабінету", online: "Онлайн", offline: "Офлайн",
@@ -124,7 +124,7 @@ export const TP_COPY: Record<TPLang, Copy> = {
   },
   pl: {
     trialUntil: "Darmowy okres próbny do {d}", proOnly: "Profil publiczny jest teraz w planie Pro. Szkic jest zapisany; zmień plan, aby znów pokazać go klientom.", upgrade: "Zobacz plany",
-    tabPractice: "Profil praktyki", tabAbout: "O mnie", editor: "Edytor profilu", draft: "Szkic", published: "Opublikowano", unpublishedChanges: "Nieopublikowane zmiany",
+    publishCheckbox: "Publikuj mój profil zawodowy", saveChanges: "Zapisz zmiany", tabPractice: "Ustawienia praktyki", tabAbout: "O mnie", editor: "Edytor profilu", draft: "Szkic", published: "Opublikowano", unpublishedChanges: "Nieopublikowane zmiany",
     photo: "Zdjęcie", uploadPhoto: "Prześlij zdjęcie", replacePhoto: "Zmień zdjęcie", removePhoto: "Usuń", cropTitle: "Kadrowanie zdjęcia", zoom: "Powiększenie", horizontal: "W poziomie", vertical: "W pionie", apply: "Zastosuj", cancel: "Anuluj",
     firstName: "Imię", lastName: "Nazwisko", patronymic: "Drugie imię (opcjonalnie)", proTitle: "Tytuł zawodowy", proTitlePh: "np. Psychoterapeuta",
     location: "Miejsce praktyki", city: "Miasto", address: "Adres gabinetu", online: "Online", offline: "Stacjonarnie",
@@ -140,7 +140,7 @@ export const TP_COPY: Record<TPLang, Copy> = {
   },
   de: {
     trialUntil: "Kostenlos testen bis {d}", proOnly: "Das öffentliche Profil ist jetzt Teil von Pro. Ihr Entwurf bleibt gespeichert; upgraden Sie, um ihn wieder anzuzeigen.", upgrade: "Pläne ansehen",
-    tabPractice: "Praxisprofil", tabAbout: "Über mich", editor: "Profil-Editor", draft: "Entwurf", published: "Veröffentlicht", unpublishedChanges: "Unveröffentlichte Änderungen",
+    publishCheckbox: "Mein berufliches Profil veröffentlichen", saveChanges: "Änderungen speichern", tabPractice: "Praxiseinstellungen", tabAbout: "Über mich", editor: "Profil-Editor", draft: "Entwurf", published: "Veröffentlicht", unpublishedChanges: "Unveröffentlichte Änderungen",
     photo: "Foto", uploadPhoto: "Foto hochladen", replacePhoto: "Foto ersetzen", removePhoto: "Entfernen", cropTitle: "Foto zuschneiden", zoom: "Zoom", horizontal: "Horizontal", vertical: "Vertikal", apply: "Übernehmen", cancel: "Abbrechen",
     firstName: "Vorname", lastName: "Nachname", patronymic: "Zweiter Vorname (optional)", proTitle: "Berufsbezeichnung", proTitlePh: "z. B. Psychotherapeutin",
     location: "Praxisort", city: "Stadt", address: "Praxisadresse", online: "Online", offline: "Vor Ort",
@@ -156,7 +156,7 @@ export const TP_COPY: Record<TPLang, Copy> = {
   },
   fr: {
     trialUntil: "Essai gratuit jusqu'au {d}", proOnly: "Le profil public fait désormais partie de Pro. Votre brouillon est conservé ; passez à Pro pour l'afficher à nouveau.", upgrade: "Voir les offres",
-    tabPractice: "Profil du cabinet", tabAbout: "À propos", editor: "Éditeur du profil", draft: "Brouillon", published: "Publié", unpublishedChanges: "Modifications non publiées",
+    publishCheckbox: "Publier mon profil professionnel", saveChanges: "Enregistrer", tabPractice: "Paramètres du cabinet", tabAbout: "À propos", editor: "Éditeur du profil", draft: "Brouillon", published: "Publié", unpublishedChanges: "Modifications non publiées",
     photo: "Photo", uploadPhoto: "Importer une photo", replacePhoto: "Remplacer la photo", removePhoto: "Supprimer", cropTitle: "Recadrer la photo", zoom: "Zoom", horizontal: "Horizontal", vertical: "Vertical", apply: "Appliquer", cancel: "Annuler",
     firstName: "Prénom", lastName: "Nom", patronymic: "Deuxième prénom (facultatif)", proTitle: "Titre professionnel", proTitlePh: "ex. Psychothérapeute",
     location: "Lieu de pratique", city: "Ville", address: "Adresse du cabinet", online: "En ligne", offline: "En présentiel",
@@ -172,7 +172,7 @@ export const TP_COPY: Record<TPLang, Copy> = {
   },
   ru: {
     trialUntil: "Бесплатный триал до {d}", proOnly: "Публичный профиль теперь входит в тариф Pro. Черновик сохранён; обновите тариф, чтобы снова показывать его клиентам.", upgrade: "Посмотреть тарифы",
-    tabPractice: "Профиль практики", tabAbout: "Обо мне", editor: "Редактор профиля", draft: "Черновик", published: "Опубликовано", unpublishedChanges: "Есть неопубликованные изменения",
+    publishCheckbox: "Публиковать мой профиль", saveChanges: "Сохранить изменения", tabPractice: "Настройки практики", tabAbout: "Обо мне", editor: "Редактор профиля", draft: "Черновик", published: "Опубликовано", unpublishedChanges: "Есть неопубликованные изменения",
     photo: "Фотография", uploadPhoto: "Загрузить фото", replacePhoto: "Заменить фото", removePhoto: "Удалить", cropTitle: "Кадрирование фото", zoom: "Масштаб", horizontal: "По горизонтали", vertical: "По вертикали", apply: "Применить", cancel: "Отмена",
     firstName: "Имя", lastName: "Фамилия", patronymic: "Отчество (необязательно)", proTitle: "Профессиональный титул", proTitlePh: "напр. Психотерапевт",
     location: "Место практики", city: "Город", address: "Адрес кабинета", online: "Онлайн", offline: "Офлайн",

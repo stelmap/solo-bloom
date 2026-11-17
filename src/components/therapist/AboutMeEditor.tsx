@@ -32,6 +32,7 @@ export function AboutMeEditor({ lang, bookingActive }: { lang: TPLang; bookingAc
   const qc = useQueryClient();
   const [p, setP] = useState<TherapistProfileData>(emptyProfile());
   const [dirty, setDirty] = useState(false);
+  const [publishOn, setPublishOn] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
   const [tag, setTag] = useState("");
@@ -47,7 +48,8 @@ export function AboutMeEditor({ lang, bookingActive }: { lang: TPLang; bookingAc
       return data;
     },
   });
-  useEffect(() => { if (q.data !== undefined && !dirty) setP(q.data ? normalizeProfile(q.data.draft) : emptyProfile()); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [q.data]);
+  useEffect(() => { if (q.data !== undefined && !dirty) setPublishOn(!!q.data?.is_published);
+    if (q.data !== undefined && !dirty) setP(q.data ? normalizeProfile(q.data.draft) : emptyProfile()); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [q.data]);
 
   const urls = useSignedUrls([p.photo, ...p.documents.map((d) => d.path)].filter(Boolean) as string[]);
   const set = (patch: Partial<TherapistProfileData>) => { setP((x) => ({ ...x, ...patch })); setDirty(true); };
@@ -60,8 +62,9 @@ export function AboutMeEditor({ lang, bookingActive }: { lang: TPLang; bookingAc
     return path;
   };
 
-  const save = async (mode: "draft" | "publish" | "unpublish") => {
+  const save = async (forced?: "draft" | "publish" | "unpublish") => {
     if (!user) return;
+    const mode = forced ?? (publishOn && gate.allowed ? "publish" : "unpublish");
     if (mode === "publish" && !p.first_name.trim()) { toast({ title: C.nameRequired, variant: "destructive" }); return; }
     setBusy(mode);
     try {
@@ -142,10 +145,8 @@ export function AboutMeEditor({ lang, bookingActive }: { lang: TPLang; bookingAc
           {gate.trial && <Badge variant="outline" className="border-primary text-primary">{C.trialUntil.replace("{d}", trialEnd)}</Badge>}
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => void save("draft")} disabled={!!busy}>{busy === "draft" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{C.saveDraft}</Button>
           <Button variant="outline" onClick={() => setPreview(true)}><Eye className="mr-2 h-4 w-4" />{C.preview}</Button>
-          {isPub && <Button variant="ghost" onClick={() => void save("unpublish")} disabled={!!busy}>{C.unpublish}</Button>}
-          <Button onClick={() => void save("publish")} disabled={!!busy || !gate.allowed}>{busy === "publish" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{isPub ? C.update : C.publish}</Button>
+          <Button onClick={() => void save()} disabled={!!busy}>{busy && busy !== "photo" && busy !== "docs" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{C.saveChanges}</Button>
         </div>
       </div>
       {!gate.allowed && (
@@ -154,6 +155,10 @@ export function AboutMeEditor({ lang, bookingActive }: { lang: TPLang; bookingAc
           <Button asChild size="sm"><Link to="/plans">{C.upgrade}</Link></Button>
         </div>
       )}
+      <label className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 text-sm font-medium">
+        <Checkbox checked={publishOn} disabled={!gate.allowed} onCheckedChange={(v) => { setPublishOn(!!v); setDirty(true); }} />
+        {C.publishCheckbox}
+      </label>
       <p className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">{C.publicNote}{!bookingActive && <> {C.needLink}</>}</p>
 
       <div className="space-y-6 rounded-xl border border-border bg-card p-5">
@@ -194,9 +199,9 @@ export function AboutMeEditor({ lang, bookingActive }: { lang: TPLang; bookingAc
         </div>
 
         <div className="space-y-2"><h3 className="text-sm font-semibold">{C.about}</h3>
-          <RichTextEditor value={p.about_html} onChange={(h) => set({ about_html: h })} placeholder={C.aboutPh} minHeight="10rem" /></div>
+          <RichTextEditor allowLinks value={p.about_html} onChange={(h) => set({ about_html: h })} placeholder={C.aboutPh} minHeight="10rem" /></div>
         <div className="space-y-2"><h3 className="text-sm font-semibold">{C.education}</h3>
-          <RichTextEditor value={p.education_html} onChange={(h) => set({ education_html: h })} minHeight="8rem" /></div>
+          <RichTextEditor allowLinks value={p.education_html} onChange={(h) => set({ education_html: h })} minHeight="8rem" /></div>
 
         <div className="space-y-2"><h3 className="text-sm font-semibold">{C.expertise}</h3>
           <div className="flex flex-wrap gap-2">{p.expertise.map((x) => (

@@ -12,13 +12,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
-import { noteToHtml, sanitizeNoteHtml } from "@/lib/richText";
+import { noteToHtml, sanitizeNoteHtml as sanitizeNotes, sanitizeProfileHtml } from "@/lib/richText";
+import { Link2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useState } from "react";
 
 export const richTextContentClass = cn(
   "text-sm leading-relaxed text-foreground",
   "[&_p]:my-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1",
   "[&_li]:my-0.5 [&_li>p]:my-0 [&_s]:line-through [&_u]:underline",
   "[&_mark]:bg-primary/20 [&_mark]:text-foreground [&_mark]:rounded-sm [&_mark]:px-0.5",
+  "[&_a]:text-primary [&_a]:underline",
   "[&_h1]:text-lg [&_h1]:font-semibold [&_h1]:my-2",
   "[&_h2]:text-base [&_h2]:font-semibold [&_h2]:my-2",
   "[&_h3]:text-sm [&_h3]:font-semibold [&_h3]:my-1.5",
@@ -35,6 +40,8 @@ type Props = {
   /** Height of the scrollable writing area. */
   minHeight?: string;
   autoFocus?: boolean;
+  /** Allow safe hyperlinks (public profile text). */
+  allowLinks?: boolean;
 };
 
 function ToolbarToggle({
@@ -60,8 +67,20 @@ function ToolbarToggle({
   );
 }
 
-function Toolbar({ editor, disabled }: { editor: Editor; disabled?: boolean }) {
-  const { t } = useLanguage();
+function Toolbar({ editor, disabled, allowLinks }: { editor: Editor; disabled?: boolean; allowLinks?: boolean }) {
+  const { t, lang } = useLanguage();
+  const [linkOpen, setLinkOpen] = useState(false);
+  const [href, setHref] = useState("");
+  const LL = LINK_COPY[(String(lang).slice(0, 2) as keyof typeof LINK_COPY)] ?? LINK_COPY.en;
+  const applyLink = () => {
+    let v = href.trim();
+    if (v && !/^(https?:|mailto:)/i.test(v)) v = v.includes("@") && !v.includes("/") ? `mailto:${v}` : `https://${v}`;
+    const chain = editor.chain().focus().extendMarkRange("link");
+    if (!v) chain.unsetLink().run();
+    else if (editor.state.selection.empty && !editor.isActive("link")) chain.insertContent({ type: "text", text: href.trim(), marks: [{ type: "link", attrs: { href: v } }] }).run();
+    else chain.setLink({ href: v }).run();
+    setLinkOpen(false);
+  };
   const blockValue = editor.isActive("heading", { level: 1 })
     ? "h1"
     : editor.isActive("heading", { level: 2 })
@@ -151,20 +170,37 @@ function Toolbar({ editor, disabled }: { editor: Editor; disabled?: boolean }) {
           onClick={() => editor.chain().focus().toggleStrike().run()}>
           <Strikethrough className="h-4 w-4" />
         </ToolbarToggle>
+        {allowLinks && (
+          <Popover open={linkOpen} onOpenChange={(o) => { setLinkOpen(o); if (o) setHref(editor.getAttributes("link").href ?? ""); }}>
+            <PopoverTrigger asChild>
+              <Button type="button" variant={editor.isActive("link") ? "secondary" : "ghost"} size="sm" className="h-8 w-8 p-0" aria-label={LL.link} disabled={disabled}>
+                <Link2 className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 space-y-2">
+              <Input autoFocus placeholder="https://…" value={href} aria-label={LL.link} onChange={(e) => setHref(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyLink(); } }} />
+              <div className="flex justify-end gap-2">
+                {editor.isActive("link") && <Button type="button" size="sm" variant="ghost" onClick={() => { editor.chain().focus().extendMarkRange("link").unsetLink().run(); setLinkOpen(false); }}>{LL.remove}</Button>}
+                <Button type="button" size="sm" onClick={applyLink}>{LL.apply}</Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
       </div>
     </TooltipProvider>
   );
 }
 
 export function RichTextEditor({
-  value, onChange, onBlur, placeholder, disabled, className, minHeight = "180px", autoFocus,
+  value, onChange, onBlur, placeholder, disabled, className, minHeight = "180px", autoFocus, allowLinks,
 }: Props) {
+  const sanitizeNoteHtml = allowLinks ? sanitizeProfileHtml : sanitizeNotes;
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ heading: { levels: [1, 2, 3] }, link: false }),
+      StarterKit.configure({ heading: { levels: [1, 2, 3] }, link: allowLinks ? { openOnClick: false, autolink: true, protocols: ["mailto"], HTMLAttributes: { target: "_blank", rel: "noopener noreferrer nofollow" } } : false }),
       Highlight,
     ],
-    content: noteToHtml(value),
+    content: allowLinks ? sanitizeProfileHtml(value ?? "") : noteToHtml(value),
     editable: !disabled,
     autofocus: autoFocus ? "end" : false,
     editorProps: {
@@ -190,7 +226,7 @@ export function RichTextEditor({
   // keep external updates (e.g. loaded from server) in sync
   useEffect(() => {
     if (!editor) return;
-    const next = noteToHtml(value);
+    const next = allowLinks ? sanitizeProfileHtml(value ?? "") : noteToHtml(value);
     const current = editor.isEmpty ? "" : sanitizeNoteHtml(editor.getHTML());
     if (next !== current && !editor.isFocused) {
       editor.commands.setContent(next, { emitUpdate: false });
@@ -205,7 +241,7 @@ export function RichTextEditor({
 
   return (
     <div className={cn("rounded-md border border-input bg-background overflow-hidden focus-within:ring-1 focus-within:ring-ring", className)}>
-      <Toolbar editor={editor} disabled={disabled} />
+      <Toolbar editor={editor} disabled={disabled} allowLinks={allowLinks} />
       <div className="relative">
         {editor.isEmpty && placeholder && (
           <p className="pointer-events-none absolute left-3 top-2 text-sm text-muted-foreground pr-3">
@@ -226,3 +262,12 @@ export function RichTextView({ value, className }: { value?: string | null; clas
     />
   );
 }
+
+const LINK_COPY = {
+  en: { link: "Link", apply: "Apply", remove: "Remove link" },
+  uk: { link: "Посилання", apply: "Застосувати", remove: "Прибрати посилання" },
+  pl: { link: "Link", apply: "Zastosuj", remove: "Usuń link" },
+  de: { link: "Link", apply: "Übernehmen", remove: "Link entfernen" },
+  fr: { link: "Lien", apply: "Appliquer", remove: "Supprimer le lien" },
+  ru: { link: "Ссылка", apply: "Применить", remove: "Убрать ссылку" },
+};
