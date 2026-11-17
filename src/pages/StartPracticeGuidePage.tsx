@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { SeoHead } from "@/components/SeoHead";
 import { PublicFooter } from "@/components/PublicFooter";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { Helmet } from 'react-helmet-async';
+import { useSearchParams } from 'react-router-dom';
+import { localizedPath } from '@/lib/publicLanguage';
 
 type Step = { title: string; body: string[] };
 type Copy = {
@@ -122,7 +125,7 @@ const UK: Copy = {
     },
     {
       q: "Скільки коштує почати з Solo .Bizz?",
-      a: "Безкоштовний план до 5 клієнтів, картка не потрібна. Далі — Solo для практики до 20 клієнтів і Pro без обмеження кількості.",
+      a: "Нові акаунти отримують 14 днів із функціями Pro безкоштовно, без картки. Далі — Solo за €12 на місяць або Pro за €24 на місяць. Обидва тарифи мають необмежену кількість клієнтів і відрізняються функціями.",
     },
   ],
   ctaTitle: "Зробіть перший крок сьогодні",
@@ -230,7 +233,7 @@ const EN: Copy = {
     },
     {
       q: "What does it cost to start with Solo .Bizz?",
-      a: "A free plan for up to 5 clients, no card required. Then Solo for practices up to 20 clients, and Pro with no client limit.",
+      a: "New accounts get 14 days with Pro features free, without a card. Then choose Solo at €12/month or Pro at €24/month. Both plans have unlimited clients and differ by features.",
     },
   ],
   ctaTitle: "Take the first step today",
@@ -244,7 +247,9 @@ const EN: Copy = {
 const COPY: Record<string, Copy> = { uk: UK, ru: UK, en: EN, pl: EN, fr: EN };
 
 export default function StartPracticeGuidePage() {
-  const { lang } = useLanguage();
+  const { lang: selected } = useLanguage();
+  const [params] = useSearchParams();
+  const lang = params.get('lang') === 'uk' ? 'uk' : 'en';
   const c = COPY[lang] ?? EN;
 
   const jsonLd = [
@@ -270,16 +275,17 @@ export default function StartPracticeGuidePage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SeoHead
-        path="/guides/start-private-practice"
+        path={localizedPath('/guides/start-private-practice', lang)}
         title={c.seoTitle}
         description={c.seoDescription}
         jsonLd={jsonLd}
       />
+      <Helmet htmlAttributes={{ lang }}>{(['en', 'uk'] as const).map(l => <link key={l} rel="alternate" hrefLang={l} href={`https://solo-bizz.com${localizedPath('/guides/start-private-practice', l)}`} />)}<link rel="alternate" hrefLang="x-default" href="https://solo-bizz.com/guides/start-private-practice" /></Helmet>
 
       <header className="flex h-16 items-center border-b border-border px-4 sm:px-6">
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between">
-          <Link to="/" className="text-lg font-bold text-foreground"><BrandName /></Link>
-          <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+          <Link to={localizedPath('/', selected)} className="text-lg font-bold text-foreground"><BrandName /></Link>
+          <Link to={localizedPath('/', selected)} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" /> {c.back}
           </Link>
         </div>

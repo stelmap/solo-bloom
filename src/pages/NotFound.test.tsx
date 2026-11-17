@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import NotFound from "./NotFound";
 
 vi.mock("@/components/SeoHead", () => ({ SeoHead: () => null }));
+vi.mock('@/i18n/LanguageContext', () => ({ setStoredLang: vi.fn(), useLanguage: () => ({ lang: 'en', t: (key: string) => key }) }));
 
 describe("404 recovery", () => {
   it("navigates to the existing homepage without preserving the missing path or query", () => {

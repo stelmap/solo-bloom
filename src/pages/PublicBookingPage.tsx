@@ -14,6 +14,8 @@ import { CalendarCheck, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, C
 import { z } from "zod";
 import { toast } from "@/hooks/use-toast";
 import { describeError } from "@/lib/errorMessages";
+import { getStoredLang, setStoredLang } from '@/i18n/LanguageContext';
+import { PUBLIC_NAV_COPY } from '@/lib/publicLanguage';
 import { SeoHead } from "@/components/SeoHead";
 import { TherapistProfileView } from "@/components/therapist/TherapistProfileView";
 import { TP_COPY, normalizeProfile, type TherapistProfileData } from "@/lib/therapistProfile";
@@ -32,20 +34,22 @@ type PageInfo = {
   avatar_url?: string | null;
 };
 
-type Lang = "en" | "uk" | "fr" | "pl";
+type Lang = "en" | "uk" | "fr" | "pl" | "de" | "ru";
 
-const PICKER_COPY: Record<"en" | "uk" | "fr" | "pl", {
+const PICKER_COPY: Record<Lang, {
   heading: string; intro: string; selectDate: string; selectDateHint: string; selectTime: string; slotsFor: string;
   today: string; available: (n: number) => string; yourTz: string; duration: string; continue: string;
 }> = {
-  en: { heading: "Choose a date and time", intro: "Choose a convenient date and time for your session. All times are shown in the specialist's time zone.", selectDate: "Select date", selectDateHint: "Choose a day with available time slots.", selectTime: "Select time", slotsFor: "Available time slots for", today: "Today", available: (n) => `${n} available time ${n === 1 ? "slot" : "slots"}`, yourTz: "Time zone:", duration: "Session duration:", continue: "Continue" },
+  de: { heading: "Datum und Uhrzeit wählen", intro: "Wählen Sie einen Termin. Alle Zeiten werden in der Zeitzone der Fachperson angezeigt.", selectDate: "Datum wählen", selectDateHint: "Wählen Sie einen Tag mit freien Terminen.", selectTime: "Uhrzeit wählen", slotsFor: "Freie Termine für", today: "Heute", available: (n) => `${n} freie Termine`, yourTz: "Zeitzone:", duration: "Dauer:", continue: "Weiter" },
+  ru: { heading: "Выберите дату и время", intro: "Выберите удобные дату и время. Время указано в часовом поясе специалиста.", selectDate: "Выберите дату", selectDateHint: "Выберите день со свободным временем.", selectTime: "Выберите время", slotsFor: "Свободное время на", today: "Сегодня", available: (n) => `Свободных мест: ${n}`, yourTz: "Часовой пояс:", duration: "Длительность:", continue: "Продолжить" },
+  en: { heading: "Choose a date and time", intro: "Choose a convenient date and time for your meeting. All times are shown in the specialist's time zone.", selectDate: "Select date", selectDateHint: "Choose a day with available time slots.", selectTime: "Select time", slotsFor: "Available time slots for", today: "Today", available: (n) => `${n} available time ${n === 1 ? "slot" : "slots"}`, yourTz: "Time zone:", duration: "Meeting duration:", continue: "Continue" },
   uk: { heading: "Оберіть дату та час", intro: "Оберіть зручні дату й час. Час показано в часовому поясі спеціаліста.", selectDate: "Оберіть дату", selectDateHint: "Оберіть день із вільним часом.", selectTime: "Оберіть час", slotsFor: "Вільний час на", today: "Сьогодні", available: (n) => `Вільних слотів: ${n}`, yourTz: "Часовий пояс:", duration: "Тривалість:", continue: "Продовжити" },
   fr: { heading: "Choisissez une date et une heure", intro: "Choisissez une date et une heure. Les horaires sont affichés dans le fuseau du spécialiste.", selectDate: "Choisir une date", selectDateHint: "Choisissez un jour avec des créneaux libres.", selectTime: "Choisir l'heure", slotsFor: "Créneaux disponibles le", today: "Aujourd'hui", available: (n) => `${n} créneau${n === 1 ? "" : "x"} disponible${n === 1 ? "" : "s"}`, yourTz: "Fuseau horaire :", duration: "Durée :", continue: "Continuer" },
   pl: { heading: "Wybierz datę i godzinę", intro: "Wybierz dogodną datę i godzinę. Godziny są w strefie czasowej specjalisty.", selectDate: "Wybierz datę", selectDateHint: "Wybierz dzień z wolnymi terminami.", selectTime: "Wybierz godzinę", slotsFor: "Wolne terminy na", today: "Dziś", available: (n) => `Wolne terminy: ${n}`, yourTz: "Strefa czasowa:", duration: "Czas trwania:", continue: "Dalej" },
 };
 function normLang(v: unknown): Lang {
   const s = String(v || "").toLowerCase().slice(0, 2);
-  return s === "uk" || s === "fr" || s === "pl" ? (s as Lang) : "en";
+  return s === "uk" || s === "fr" || s === "pl" || s === "de" || s === "ru" ? (s as Lang) : "en";
 }
 
 const COPY: Record<Lang, {
@@ -67,24 +71,84 @@ const COPY: Record<Lang, {
   checkForm: string;
   takenTitle: string; takenDesc: string; couldNotBook: string;
 }> = {
+  de: {
+    invalid: "Dieser Buchungslink ist ungültig oder wurde deaktiviert.",
+    inactive: "Dieser Buchungslink ist nicht mehr aktiv. Kontaktieren Sie die Fachperson direkt.",
+    thankYou: "Vielen Dank!",
+    requestReceived: "Ihre Terminanfrage wurde registriert. Sie erhalten eine E-Mail, sobald die Fachperson sie bestätigt.",
+    sessionConfirmed: "Ihre Terminanfrage wurde registriert. Sie erhalten eine E-Mail, sobald die Fachperson sie bestätigt.",
+    minSession: (n) => `Termin: ${n} Min.`,
+    chooseTime: "Uhrzeit wählen",
+    noSlots14: "Keine freien Termine in den nächsten 14 Tagen.",
+    contactDirect: "Kontaktieren Sie die Fachperson direkt, um einen Termin zu vereinbaren.",
+    slot: (n) => n === 1 ? "Termin" : "Termine",
+    noTimesThisDay: "An diesem Tag sind keine Termine frei.",
+    changeTime: "Uhrzeit ändern",
+    yourSession: "Ihr Termin",
+    minutes: (n) => `${n} Minuten`,
+    yourDetails: "Ihre Angaben",
+    firstName: "Vorname *",
+    lastName: "Nachname",
+    email: "E-Mail *",
+    phone: "Telefon (optional)",
+    comment: "Kommentar (optional)",
+    consent: "Ich stimme der Verarbeitung meiner personenbezogenen Daten zur Vereinbarung dieses Termins zu.",
+    confirmBooking: "Buchung bestätigen",
+    requestBooking: "Termin anfragen",
+    manualNote: "Die Fachperson prüft und bestätigt Ihre Anfrage per E-Mail.",
+    checkForm: "Bitte prüfen Sie die Formularfelder.",
+    takenTitle: "Dieser Termin wurde gerade gebucht",
+    takenDesc: "Bitte wählen Sie einen anderen freien Termin.",
+    couldNotBook: "Buchung nicht möglich",
+  },
+  ru: {
+    invalid: "Эта ссылка для записи недействительна или отключена.",
+    inactive: "Эта ссылка больше не активна. Свяжитесь со специалистом напрямую.",
+    thankYou: "Спасибо!",
+    requestReceived: "Ваш запрос на встречу зарегистрирован. Вы получите письмо, когда специалист подтвердит запись.",
+    sessionConfirmed: "Ваш запрос на встречу зарегистрирован. Вы получите письмо, когда специалист подтвердит запись.",
+    minSession: (n) => `Встреча ${n} мин`,
+    chooseTime: "Выберите время",
+    noSlots14: "Нет свободного времени в ближайшие 14 дней.",
+    contactDirect: "Свяжитесь со специалистом напрямую, чтобы договориться о времени.",
+    slot: (_n) => "мест",
+    noTimesThisDay: "В этот день нет свободного времени.",
+    changeTime: "Изменить время",
+    yourSession: "Ваша встреча",
+    minutes: (n) => `${n} минут`,
+    yourDetails: "Ваши данные",
+    firstName: "Имя *",
+    lastName: "Фамилия",
+    email: "Email *",
+    phone: "Телефон (необязательно)",
+    comment: "Комментарий (необязательно)",
+    consent: "Я согласен на обработку моих персональных данных для организации этой встречи.",
+    confirmBooking: "Подтвердить запись",
+    requestBooking: "Запросить запись",
+    manualNote: "Специалист рассмотрит и подтвердит ваш запрос по электронной почте.",
+    checkForm: "Проверьте поля формы.",
+    takenTitle: "Это время только что заняли",
+    takenDesc: "Выберите другое свободное время.",
+    couldNotBook: "Не удалось записаться",
+  },
   en: {
     invalid: "This booking link is not valid or has been disabled.",
     inactive: "This booking link is no longer active. Please contact the specialist directly.",
     thankYou: "Thank you!",
     requestReceived: "Your booking request has been registered. You'll receive a confirmation email once the specialist approves it.",
     sessionConfirmed: "Your booking request has been registered. You'll receive a confirmation email once the specialist approves it.",
-    minSession: (n) => `${n} min session`,
+    minSession: (n) => `${n} min meeting`,
     chooseTime: "Choose a time",
     noSlots14: "No available slots in the next 14 days.",
     contactDirect: "Please contact the specialist directly to arrange a time.",
     slot: (n) => (n === 1 ? "slot" : "slots"),
     noTimesThisDay: "No times available on this day.",
     changeTime: "Change time",
-    yourSession: "Your session",
+    yourSession: "Your meeting",
     minutes: (n) => `${n} minutes`,
     yourDetails: "Your details",
     firstName: "First name *", lastName: "Last name", email: "Email *", phone: "Phone (optional)", comment: "Comment (optional)",
-    consent: "I consent to the processing of my personal data for the purpose of arranging this session.",
+    consent: "I consent to the processing of my personal data for the purpose of arranging this meeting.",
     confirmBooking: "Confirm booking", requestBooking: "Request booking",
     manualNote: "The specialist will review and confirm your request via email.",
     checkForm: "Please check the form fields.",
@@ -94,20 +158,20 @@ const COPY: Record<Lang, {
     invalid: "Це посилання для бронювання недійсне або вимкнене.",
     inactive: "Це посилання більше не активне. Будь ласка, зверніться до спеціаліста безпосередньо.",
     thankYou: "Дякуємо!",
-    requestReceived: "Ваш запит на сеанс зареєстровано. Ви отримаєте лист із підтвердженням після того, як спеціаліст підтвердить запис.",
-    sessionConfirmed: "Ваш запит на сеанс зареєстровано. Ви отримаєте лист із підтвердженням після того, як спеціаліст підтвердить запис.",
-    minSession: (n) => `Сеанс ${n} хв`,
+    requestReceived: "Ваш запит на зустріч зареєстровано. Ви отримаєте лист із підтвердженням після того, як спеціаліст підтвердить запис.",
+    sessionConfirmed: "Ваш запит на зустріч зареєстровано. Ви отримаєте лист із підтвердженням після того, як спеціаліст підтвердить запис.",
+    minSession: (n) => `Зустріч ${n} хв`,
     chooseTime: "Оберіть час",
     noSlots14: "Немає доступних слотів у найближчі 14 днів.",
     contactDirect: "Будь ласка, зверніться до спеціаліста безпосередньо, щоб домовитися про час.",
     slot: (_n) => "слотів",
     noTimesThisDay: "На цей день немає доступного часу.",
     changeTime: "Змінити час",
-    yourSession: "Ваш сеанс",
+    yourSession: "Ваша зустріч",
     minutes: (n) => `${n} хвилин`,
     yourDetails: "Ваші дані",
     firstName: "Ім'я *", lastName: "Прізвище", email: "Email *", phone: "Телефон (необов'язково)", comment: "Коментар (необов'язково)",
-    consent: "Я погоджуюся на обробку моїх персональних даних для організації цього сеансу.",
+    consent: "Я погоджуюся на обробку моїх персональних даних для організації цієї зустрічі.",
     confirmBooking: "Підтвердити бронювання", requestBooking: "Запросити бронювання",
     manualNote: "Спеціаліст перегляне та підтвердить ваш запит електронною поштою.",
     checkForm: "Будь ласка, перевірте поля форми.",
@@ -161,7 +225,7 @@ const COPY: Record<Lang, {
   },
 };
 
-const LOCALE_MAP: Record<Lang, string> = { en: "en-US", uk: "uk-UA", fr: "fr-FR", pl: "pl-PL" };
+const LOCALE_MAP: Record<Lang, string> = { en: "en-US", uk: "uk-UA", fr: "fr-FR", pl: "pl-PL", de: "de-DE", ru: "ru-RU" };
 
 const formSchema = z.object({
   first_name: z.string().trim().min(1).max(120),
@@ -208,20 +272,14 @@ export default function PublicBookingPage() {
   const [done, setDone] = useState<{ requiresApproval: boolean } | null>(null);
   const [langOverride, setLangOverride] = useState<Lang | null>(null);
 
-  // Resolve language: URL param > manual override > browser > therapist default > 'en'
+  // Resolve language: URL parameter > manual override > existing app/browser preference.
   const urlLang = searchParams.get("lang");
-  const browserLang = useMemo<Lang | null>(() => {
-    if (typeof navigator === "undefined") return null;
-    const candidate = String(navigator.language || "").toLowerCase().slice(0, 2);
-    return candidate === "uk" || candidate === "fr" || candidate === "pl" || candidate === "en"
-      ? (candidate as Lang)
-      : null;
-  }, []);
   const lang: Lang = urlLang
     ? normLang(urlLang)
-    : langOverride ?? browserLang ?? (info?.language ? normLang(info.language) : "en");
+    : langOverride ?? normLang(getStoredLang());
   const L = COPY[lang];
   const intlLocale = LOCALE_MAP[lang];
+  useEffect(() => { setStoredLang(lang); }, [lang]);
 
   function changeLang(next: Lang) {
     setLangOverride(next);
@@ -230,17 +288,6 @@ export default function PublicBookingPage() {
     setSearchParams(params, { replace: true });
   }
 
-  // noindex
-  useEffect(() => {
-    const meta = document.createElement("meta");
-    meta.name = "robots";
-    meta.content = "noindex,nofollow";
-    document.head.appendChild(meta);
-    return () => {
-      document.head.removeChild(meta);
-    };
-  }, []);
-
   useEffect(() => {
     if (!token) return;
     let active = true;
@@ -248,10 +295,10 @@ export default function PublicBookingPage() {
       const { data, error } = await supabase.rpc("public_get_booking_page", { p_token: token });
       if (!active) return;
       if (error || !data || (Array.isArray(data) && data.length === 0)) {
-        setError(COPY.en.invalid);
+        setError("invalid");
       } else {
         const row = (Array.isArray(data) ? data[0] : data) as PageInfo;
-        if (!row.is_active) setError(COPY[normLang(row.language)].inactive);
+        if (!row.is_active) setError("inactive");
         else setInfo(row);
       }
       setLoading(false);
@@ -533,8 +580,9 @@ export default function PublicBookingPage() {
   if (error || !info) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
+        <SeoHead lang={lang} path={`/book/${token ?? ""}`} title={`${L.requestBooking} — Solo .Bizz`} description={X.intro} noindex />
         <Card className="max-w-md w-full">
-          <CardContent className="pt-6 text-center text-muted-foreground">{error}</CardContent>
+          <CardContent className="pt-6 text-center text-muted-foreground">{error === "inactive" ? L.inactive : error === "invalid" || !info ? L.invalid : error}</CardContent>
         </Card>
       </div>
     );
@@ -543,6 +591,7 @@ export default function PublicBookingPage() {
   if (done) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
+        <SeoHead lang={lang} path={`/book/${token ?? ""}`} title={`${L.requestBooking} — Solo .Bizz`} description={X.intro} noindex />
         <Card className="max-w-md w-full">
           <CardContent className="pt-8 pb-8 text-center">
             <CheckCircle2 className="mx-auto h-12 w-12 text-primary mb-3" />
@@ -562,9 +611,10 @@ export default function PublicBookingPage() {
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-background via-background to-primary/10 px-3 py-3 pb-28 sm:px-4 sm:py-6 sm:pb-6">
       <img src={bookingRoom} alt="" aria-hidden width={1024} height={768} className="pointer-events-none absolute right-0 top-0 hidden w-[30%] max-w-md select-none opacity-70 [mask-image:radial-gradient(ellipse_at_top_right,black_40%,transparent_72%)] lg:block" />
       <SeoHead
-        path="/book"
-        title="Book a session — Solo .Bizz"
-        description="Private booking link to choose a time with your practitioner."
+        lang={lang}
+        path={`/book/${token ?? ""}`}
+        title={`${L.requestBooking} — Solo .Bizz`}
+        description={X.intro}
         noindex
       />
       <div className="relative mx-auto max-w-[1080px] space-y-4">
@@ -599,6 +649,8 @@ export default function PublicBookingPage() {
               <SelectItem value="uk">Українська</SelectItem>
               <SelectItem value="fr">Français</SelectItem>
               <SelectItem value="pl">Polski</SelectItem>
+              <SelectItem value="de">Deutsch</SelectItem>
+              <SelectItem value="ru">Русский</SelectItem>
             </SelectContent>
           </Select>
         </header>
@@ -645,8 +697,8 @@ export default function PublicBookingPage() {
                         {new Date(Date.UTC(viewMonth.y, viewMonth.m, 15)).toLocaleDateString(intlLocale, { month: "long", year: "numeric", timeZone: "UTC" })}
                       </p>
                       <div className="flex gap-1">
-                        <Button type="button" variant="ghost" size="icon" aria-label="Previous month" onClick={() => shiftMonth(-1)}><ChevronLeft className="h-4 w-4" /></Button>
-                        <Button type="button" variant="ghost" size="icon" aria-label="Next month" onClick={() => shiftMonth(1)}><ChevronRight className="h-4 w-4" /></Button>
+                        <Button type="button" variant="ghost" size="icon" aria-label={PUBLIC_NAV_COPY[lang].previous} onClick={() => shiftMonth(-1)}><ChevronLeft className="h-4 w-4" /></Button>
+                        <Button type="button" variant="ghost" size="icon" aria-label={PUBLIC_NAV_COPY[lang].next} onClick={() => shiftMonth(1)}><ChevronRight className="h-4 w-4" /></Button>
                       </div>
                     </div>
                     <div className="mt-1 grid grid-cols-7 gap-y-1 sm:gap-y-0.5 text-center">

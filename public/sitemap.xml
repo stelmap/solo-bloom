@@ -1,91 +1,199 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://solo-bizz.com/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/" />
     <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/?lang=uk" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/?lang=fr" />
     <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/?lang=fr" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/?lang=ru" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/" />
   </url>
   <url>
-    <loc>https://solo-bizz.com/guides/start-private-practice</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://solo-bizz.com/?lang=uk</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/" />
+  </url>
+  <url>
+    <loc>https://solo-bizz.com/?lang=pl</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/" />
+  </url>
+  <url>
+    <loc>https://solo-bizz.com/?lang=de</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/" />
+  </url>
+  <url>
+    <loc>https://solo-bizz.com/?lang=fr</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/" />
+  </url>
+  <url>
+    <loc>https://solo-bizz.com/?lang=ru</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/" />
+  </url>
+  <url>
+    <loc>https://solo-bizz.com/updates</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/updates" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/updates?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/updates?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/updates?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/updates?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/updates?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/updates" />
+  </url>
+  <url>
+    <loc>https://solo-bizz.com/updates?lang=uk</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/updates" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/updates?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/updates?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/updates?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/updates?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/updates?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/updates" />
+  </url>
+  <url>
+    <loc>https://solo-bizz.com/updates?lang=pl</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/updates" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/updates?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/updates?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/updates?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/updates?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/updates?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/updates" />
+  </url>
+  <url>
+    <loc>https://solo-bizz.com/updates?lang=de</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/updates" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/updates?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/updates?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/updates?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/updates?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/updates?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/updates" />
+  </url>
+  <url>
+    <loc>https://solo-bizz.com/updates?lang=fr</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/updates" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/updates?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/updates?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/updates?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/updates?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/updates?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/updates" />
+  </url>
+  <url>
+    <loc>https://solo-bizz.com/updates?lang=ru</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/updates" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/updates?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/updates?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/updates?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/updates?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/updates?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/updates" />
   </url>
   <url>
     <loc>https://solo-bizz.com/about</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/about" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/about?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/about?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/about?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/about?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/about?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/about" />
   </url>
   <url>
-    <loc>https://solo-bizz.com/careers</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <loc>https://solo-bizz.com/about?lang=uk</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/about" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/about?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/about?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/about?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/about?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/about?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/about" />
   </url>
   <url>
-    <loc>https://solo-bizz.com/privacy</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/privacy" />
-    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/privacy?lang=uk" />
-    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/privacy?lang=pl" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/privacy?lang=fr" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/privacy?lang=ru" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/privacy" />
+    <loc>https://solo-bizz.com/about?lang=pl</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/about" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/about?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/about?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/about?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/about?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/about?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/about" />
   </url>
   <url>
-    <loc>https://solo-bizz.com/privacy?lang=uk</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/privacy" />
-    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/privacy?lang=uk" />
-    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/privacy?lang=pl" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/privacy?lang=fr" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/privacy?lang=ru" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/privacy" />
+    <loc>https://solo-bizz.com/about?lang=de</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/about" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/about?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/about?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/about?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/about?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/about?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/about" />
   </url>
   <url>
-    <loc>https://solo-bizz.com/privacy?lang=pl</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/privacy" />
-    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/privacy?lang=uk" />
-    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/privacy?lang=pl" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/privacy?lang=fr" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/privacy?lang=ru" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/privacy" />
+    <loc>https://solo-bizz.com/about?lang=fr</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/about" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/about?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/about?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/about?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/about?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/about?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/about" />
   </url>
   <url>
-    <loc>https://solo-bizz.com/privacy?lang=fr</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/privacy" />
-    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/privacy?lang=uk" />
-    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/privacy?lang=pl" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/privacy?lang=fr" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/privacy?lang=ru" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/privacy" />
+    <loc>https://solo-bizz.com/about?lang=ru</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/about" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/about?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/about?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/about?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/about?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/about?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/about" />
   </url>
   <url>
-    <loc>https://solo-bizz.com/privacy?lang=ru</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/privacy" />
-    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/privacy?lang=uk" />
-    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/privacy?lang=pl" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/privacy?lang=fr" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/privacy?lang=ru" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/privacy" />
+    <loc>https://solo-bizz.com/guides/start-private-practice</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/guides/start-private-practice" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/guides/start-private-practice?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/guides/start-private-practice" />
+  </url>
+  <url>
+    <loc>https://solo-bizz.com/guides/start-private-practice?lang=uk</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/guides/start-private-practice" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/guides/start-private-practice?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/guides/start-private-practice" />
   </url>
   <url>
     <loc>https://solo-bizz.com/terms</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/terms" />
     <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/terms?lang=uk" />
     <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/terms?lang=pl" />
@@ -95,8 +203,6 @@
   </url>
   <url>
     <loc>https://solo-bizz.com/terms?lang=uk</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/terms" />
     <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/terms?lang=uk" />
     <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/terms?lang=pl" />
@@ -106,8 +212,6 @@
   </url>
   <url>
     <loc>https://solo-bizz.com/terms?lang=pl</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/terms" />
     <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/terms?lang=uk" />
     <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/terms?lang=pl" />
@@ -117,8 +221,6 @@
   </url>
   <url>
     <loc>https://solo-bizz.com/terms?lang=fr</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/terms" />
     <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/terms?lang=uk" />
     <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/terms?lang=pl" />
@@ -128,8 +230,6 @@
   </url>
   <url>
     <loc>https://solo-bizz.com/terms?lang=ru</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/terms" />
     <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/terms?lang=uk" />
     <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/terms?lang=pl" />
@@ -138,64 +238,52 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/terms" />
   </url>
   <url>
-    <loc>https://solo-bizz.com/cookie-policy</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/cookie-policy" />
-    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/cookie-policy?lang=uk" />
-    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/cookie-policy?lang=pl" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/cookie-policy?lang=fr" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/cookie-policy?lang=ru" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/cookie-policy" />
+    <loc>https://solo-bizz.com/privacy</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/privacy?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/privacy?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/privacy?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/privacy?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/privacy" />
   </url>
   <url>
-    <loc>https://solo-bizz.com/cookie-policy?lang=uk</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/cookie-policy" />
-    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/cookie-policy?lang=uk" />
-    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/cookie-policy?lang=pl" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/cookie-policy?lang=fr" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/cookie-policy?lang=ru" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/cookie-policy" />
+    <loc>https://solo-bizz.com/privacy?lang=uk</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/privacy?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/privacy?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/privacy?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/privacy?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/privacy" />
   </url>
   <url>
-    <loc>https://solo-bizz.com/cookie-policy?lang=pl</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/cookie-policy" />
-    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/cookie-policy?lang=uk" />
-    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/cookie-policy?lang=pl" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/cookie-policy?lang=fr" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/cookie-policy?lang=ru" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/cookie-policy" />
+    <loc>https://solo-bizz.com/privacy?lang=pl</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/privacy?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/privacy?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/privacy?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/privacy?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/privacy" />
   </url>
   <url>
-    <loc>https://solo-bizz.com/cookie-policy?lang=fr</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/cookie-policy" />
-    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/cookie-policy?lang=uk" />
-    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/cookie-policy?lang=pl" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/cookie-policy?lang=fr" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/cookie-policy?lang=ru" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/cookie-policy" />
+    <loc>https://solo-bizz.com/privacy?lang=fr</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/privacy?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/privacy?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/privacy?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/privacy?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/privacy" />
   </url>
   <url>
-    <loc>https://solo-bizz.com/cookie-policy?lang=ru</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/cookie-policy" />
-    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/cookie-policy?lang=uk" />
-    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/cookie-policy?lang=pl" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/cookie-policy?lang=fr" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/cookie-policy?lang=ru" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/cookie-policy" />
+    <loc>https://solo-bizz.com/privacy?lang=ru</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/privacy?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/privacy?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/privacy?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/privacy?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/privacy" />
   </url>
   <url>
     <loc>https://solo-bizz.com/refund-policy</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/refund-policy" />
     <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/refund-policy?lang=uk" />
     <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/refund-policy?lang=pl" />
@@ -205,8 +293,6 @@
   </url>
   <url>
     <loc>https://solo-bizz.com/refund-policy?lang=uk</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/refund-policy" />
     <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/refund-policy?lang=uk" />
     <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/refund-policy?lang=pl" />
@@ -216,8 +302,6 @@
   </url>
   <url>
     <loc>https://solo-bizz.com/refund-policy?lang=pl</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/refund-policy" />
     <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/refund-policy?lang=uk" />
     <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/refund-policy?lang=pl" />
@@ -227,8 +311,6 @@
   </url>
   <url>
     <loc>https://solo-bizz.com/refund-policy?lang=fr</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/refund-policy" />
     <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/refund-policy?lang=uk" />
     <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/refund-policy?lang=pl" />
@@ -238,8 +320,6 @@
   </url>
   <url>
     <loc>https://solo-bizz.com/refund-policy?lang=ru</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/refund-policy" />
     <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/refund-policy?lang=uk" />
     <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/refund-policy?lang=pl" />
@@ -247,6 +327,52 @@
     <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/refund-policy?lang=ru" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/refund-policy" />
   </url>
+  <url>
+    <loc>https://solo-bizz.com/cookie-policy</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/cookie-policy" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/cookie-policy?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/cookie-policy?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/cookie-policy?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/cookie-policy?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/cookie-policy" />
+  </url>
+  <url>
+    <loc>https://solo-bizz.com/cookie-policy?lang=uk</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/cookie-policy" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/cookie-policy?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/cookie-policy?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/cookie-policy?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/cookie-policy?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/cookie-policy" />
+  </url>
+  <url>
+    <loc>https://solo-bizz.com/cookie-policy?lang=pl</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/cookie-policy" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/cookie-policy?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/cookie-policy?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/cookie-policy?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/cookie-policy?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/cookie-policy" />
+  </url>
+  <url>
+    <loc>https://solo-bizz.com/cookie-policy?lang=fr</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/cookie-policy" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/cookie-policy?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/cookie-policy?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/cookie-policy?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/cookie-policy?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/cookie-policy" />
+  </url>
+  <url>
+    <loc>https://solo-bizz.com/cookie-policy?lang=ru</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/cookie-policy" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/cookie-policy?lang=uk" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/cookie-policy?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/cookie-policy?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/cookie-policy?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/cookie-policy" />
+  </url>
+  <url><loc>https://solo-bizz.com/careers</loc></url>
   <!-- therapist-profiles:start -->
   <url>
     <loc>https://solo-bizz.com/therapist/olga-stelmakh</loc>

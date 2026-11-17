@@ -2,6 +2,7 @@ import { BrandName } from "@/components/BrandName";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { AppLanguage } from "@/i18n/translations";
+import { localizedPath } from '@/lib/publicLanguage';
 
 const LABELS: Record<AppLanguage, { rights: string; nav: string; terms: string; privacy: string; cookies: string; refund: string; guide: string; settings: string }> = {
   en: {
@@ -74,22 +75,22 @@ export function PublicFooter() {
         </p>
 
         <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2" aria-label={l.nav}>
-          <Link to="/about" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <Link to={localizedPath('/about', lang)} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             {ABOUT_LABEL[lang] ?? ABOUT_LABEL.en}
           </Link>
-          <Link to="/guides/start-private-practice" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <Link to={localizedPath('/guides/start-private-practice', lang === 'uk' ? 'uk' : 'en')} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             {l.guide}
           </Link>
-          <Link to="/terms" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <Link to={localizedPath('/terms', lang === 'de' ? 'en' : lang)} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             {l.terms}
           </Link>
-          <Link to="/privacy" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <Link to={localizedPath('/privacy', lang === 'de' ? 'en' : lang)} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             {l.privacy}
           </Link>
-          <Link to="/cookie-policy" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <Link to={localizedPath('/cookie-policy', lang === 'de' ? 'en' : lang)} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             {l.cookies}
           </Link>
-          <Link to="/refund-policy" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <Link to={localizedPath('/refund-policy', lang === 'de' ? 'en' : lang)} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             {l.refund}
           </Link>
           <button

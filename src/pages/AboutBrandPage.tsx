@@ -5,6 +5,9 @@ import { SeoHead } from "@/components/SeoHead";
 import { PublicFooter } from "@/components/PublicFooter";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { Helmet } from 'react-helmet-async';
+import { useSearchParams } from 'react-router-dom';
+import { localizedPath, publicLanguage, PUBLIC_LANGUAGES } from '@/lib/publicLanguage';
 
 type Copy = { back: string; title: string; lead: string; whatTitle: string; what: string; whoTitle: string; who: string; nameTitle: string; name: string; contactTitle: string; cta: string };
 
@@ -36,22 +39,25 @@ const JSON_LD = {
 };
 
 export default function AboutBrandPage() {
-  const { lang } = useLanguage();
+  const { lang: stored } = useLanguage();
+  const [params] = useSearchParams();
+  const lang = publicLanguage(params.get('lang')) ?? 'en';
   const t = COPY[lang] ?? COPY.en;
   const sections = [[t.whatTitle, t.what], [t.whoTitle, t.who], [t.nameTitle, t.name]];
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SeoHead
-        path="/about"
-        title="About Solo .Bizz — practice management for independent practitioners"
-        description="Solo .Bizz is the official workspace at solo-bizz.com for psychologists, therapists, coaches and tutors: calendar, clients, payments and invoices."
+        path={localizedPath('/about', lang)}
+        title={t.title}
+        description={t.lead}
         jsonLd={JSON_LD}
       />
+      <Helmet htmlAttributes={{ lang }}>{PUBLIC_LANGUAGES.map(l => <link key={l} rel="alternate" hrefLang={l} href={`https://solo-bizz.com${localizedPath('/about', l)}`} />)}<link rel="alternate" hrefLang="x-default" href="https://solo-bizz.com/about" /></Helmet>
       <header className="border-b border-border px-4 sm:px-6 h-16 flex items-center">
         <div className="max-w-5xl mx-auto w-full flex items-center justify-between">
-          <Link to="/" className="text-lg font-bold text-foreground"><BrandName /></Link>
-          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+          <Link to={localizedPath('/', stored)} className="text-lg font-bold text-foreground"><BrandName /></Link>
+          <Link to={localizedPath('/', stored)} className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
             <ArrowLeft className="h-4 w-4" /> {t.back}
           </Link>
         </div>

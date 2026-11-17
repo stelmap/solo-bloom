@@ -5,8 +5,9 @@ import { privacyUk } from "./uk";
 import { privacyPl } from "./pl";
 import { privacyFr } from "./fr";
 import { privacyRu } from "./ru";
+import { currentLegalContent } from '../currentLegalContent';
 
-export const PRIVACY_CONTENT: Record<AppLanguage, LegalDoc> = {
+export const PRIVACY_CONTENT: Record<AppLanguage, LegalDoc> = currentLegalContent({
   en: privacyEn,
   // German legal text is not yet reviewed; show the English version.
   de: privacyEn,
@@ -14,4 +15,4 @@ export const PRIVACY_CONTENT: Record<AppLanguage, LegalDoc> = {
   pl: privacyPl,
   fr: privacyFr,
   ru: privacyRu,
-};
+}, 'privacy');

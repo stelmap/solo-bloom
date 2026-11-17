@@ -9,6 +9,7 @@ import { SeoHead } from "@/components/SeoHead";
 import { BrandName } from "@/components/BrandName";
 import { TherapistProfileView } from "@/components/therapist/TherapistProfileView";
 import { fullName, normalizeProfile, tpLang, type TherapistProfileData } from "@/lib/therapistProfile";
+import { PUBLIC_NAV_COPY } from '@/lib/publicLanguage';
 
 const NOT_FOUND: Record<string, string> = {
   en: "This profile is not available.", uk: "Цей профіль недоступний.", pl: "Ten profil jest niedostępny.",
@@ -45,20 +46,16 @@ export default function PublicTherapistProfilePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10 px-3 py-6 sm:px-4">
-      <SeoHead path={`/therapist/${slug}`} title={title || "Solo .Bizz"} description={desc || title} jsonLd={{
+      <SeoHead ogType="profile" twitterCard="summary" path={`/therapist/${slug}`} title={title || "Solo .Bizz"} description={desc || title} jsonLd={{
         "@context": "https://schema.org", "@type": "Person", name, jobTitle: state.profile.title || undefined,
         description: desc || undefined, url: `https://solo-bizz.com/therapist/${slug}`,
         knowsAbout: state.profile.expertise.length ? state.profile.expertise : undefined,
       }} />
-      <Helmet>
-        <meta property="og:type" content="profile" />
-        <meta name="twitter:card" content="summary" />
-      </Helmet>
       <div className="mx-auto max-w-[900px] space-y-6">
         <div className="flex justify-end">
           <label className="flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-xs font-semibold">
-            <Globe className="h-4 w-4" /><span className="sr-only">Language</span>
-            <select aria-label="Language" value={lang} onChange={(e) => choose(e.target.value)} className="bg-transparent uppercase">
+            <Globe className="h-4 w-4" /><span className="sr-only">{PUBLIC_NAV_COPY[lang].language}</span>
+            <select aria-label={PUBLIC_NAV_COPY[lang].language} value={lang} onChange={(e) => choose(e.target.value)} className="bg-transparent uppercase">
               {(["uk", "en", "pl", "de", "fr", "ru"] as const).map((l) => <option key={l} value={l}>{l.toUpperCase()}</option>)}
             </select>
           </label>

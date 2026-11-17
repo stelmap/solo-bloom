@@ -1,9 +1,16 @@
 # Roadmap
 
+## Consolidated QA — 17 November 2026
+- [x] Localized 404 recovery, booking labels/errors and German cookie notice; existing synthetic calendar language interactions checked. Exact authenticated-calendar reuse remains blocked on separate draft; static booking screenshot is not localized.
+- [x] Reconciled operator identity across five legal translations and preserved refund terms; missing jurisdiction details remain operator/legal input below.
+- [x] Deduplicated rendered metadata, aligned marketing/legal canonical/hreflang and current social previews; external social-crawler/cache checks await publication authorization.
+- [x] Shared crawler rules and 42 canonical sitemap URLs verified in preview; production verification awaits approved publication. HTTP 404 status is unavailable in this client-side SPA hosting architecture.
+- [x] Executed available REG-01–15 checks and 32 tests; scope/evidence/partial results in docs/qa-fixes-2026-11-17.md. No deployment or customer/billing/security changes; cross-tenant authentication checks not exercised.
+
 ## Legal content consistency
 - [x] Correct Terms in EN/UK/PL/FR/RU: unlimited clients for both plans, remove unfinished governing-law clauses and use the owner-confirmed name; all five preview pages verified, 10 plan-feature tests passed, no billing changes. Required analytics disclosures included; not published.
 - [ ] Operator/legal owner must supply approved explicit governing-law and competent-court wording, full registered address and any required registration identifier. The name alone does not confirm these details; do not invent them or publish placeholders.
-- [ ] Privacy controller identity reconciliation awaits the remaining operator details and a dedicated five-language privacy-content update.
+- [x] Privacy controller identity reconciled with owner-confirmed Terms name in five languages; no new registration or jurisdiction details invented.
 
 ## Real public product experience
 Implementation delegated to the separate “Real interactive product experience” draft; main-app changes await draft completion and review.
