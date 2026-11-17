@@ -149,6 +149,7 @@ export function AppSidebar() {
       { icon: ShieldCheck, label: "Subscriptions", path: "/admin/subscriptions" },
       { icon: ShieldCheck, label: "Support", path: "/admin/support" },
       { icon: ShieldCheck, label: "License requests", path: "/admin/license-requests" },
+      { icon: ShieldCheck, label: "Paddle events", path: "/admin/paddle-events" },
       { icon: Wallet, label: adminReferralCopy[lang].title, path: "/admin/referral-payouts" },
     ];
     if (user?.email?.toLowerCase() === "o.gilevich@gmail.com") {
