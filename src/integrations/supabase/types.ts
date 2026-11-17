@@ -5233,6 +5233,13 @@ export type Database = {
         Args: { p_slug: string }
         Returns: Json
       }
+      public_list_therapist_profile_slugs: {
+        Args: never
+        Returns: {
+          published_at: string
+          slug: string
+        }[]
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
