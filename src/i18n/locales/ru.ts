@@ -414,7 +414,6 @@ export default {
   "settings.reminderTime": "Время напоминания",
   "settings.subscription": "Подписка",
   "settings.manageBilling": "Управление оплатой",
-  "settings.comingSoon": "Интеграция Stripe скоро будет доступна",
   "settings.saved": "Настройки сохранены",
   "settings.1hBefore": "За 1 час",
   "settings.3hBefore": "За 3 часа",

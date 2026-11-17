@@ -357,7 +357,6 @@ export default {
   "settings.reminderTime": "Czas przypomnienia",
   "settings.subscription": "Subskrypcja",
   "settings.manageBilling": "Zarządzaj płatnościami",
-  "settings.comingSoon": "Integracja ze Stripe wkrótce",
   "settings.saved": "Ustawienia zapisane",
   "language.dialogTitle": "Wybierz język aplikacji",
   "language.dialogDescription": "Wybierz język, którego chcesz używać w aplikacji.",

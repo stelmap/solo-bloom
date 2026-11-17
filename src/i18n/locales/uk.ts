@@ -355,7 +355,6 @@ export default {
   "settings.reminderTime": "Час нагадування",
   "settings.subscription": "Підписка",
   "settings.manageBilling": "Керування оплатою",
-  "settings.comingSoon": "Інтеграція зі Stripe скоро",
   "settings.saved": "Налаштування збережено",
   "language.dialogTitle": "Оберіть мову застосунку",
   "language.dialogDescription": "Виберіть мову, якою ви хочете користуватися в застосунку.",

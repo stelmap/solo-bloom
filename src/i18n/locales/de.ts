@@ -352,7 +352,6 @@ export default {
   "settings.reminderTime": "Erinnerungszeitpunkt",
   "settings.subscription": "Abonnement",
   "settings.manageBilling": "Abrechnung verwalten",
-  "settings.comingSoon": "Stripe-Integration folgt in Kürze",
   "settings.saved": "Einstellungen gespeichert",
   "language.dialogTitle": "App-Sprache wählen",
   "language.dialogDescription": "Wählen Sie die Sprache aus, die Sie in der Anwendung verwenden möchten.",

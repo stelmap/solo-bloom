@@ -355,7 +355,6 @@ export default {
   "settings.reminderTime": "Reminder Time",
   "settings.subscription": "Subscription",
   "settings.manageBilling": "Manage Billing",
-  "settings.comingSoon": "Stripe integration coming soon",
   "settings.saved": "Settings saved",
   "language.dialogTitle": "Choose application language",
   "language.dialogDescription": "Select the language you want to use in the application.",
