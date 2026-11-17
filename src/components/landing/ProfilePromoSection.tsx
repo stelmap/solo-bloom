@@ -31,7 +31,7 @@ export function ProfilePromoSection({ lang, onCta }: { lang: AppLanguage; onCta?
   const t = COPY[lang] ?? COPY.en;
   const items = [[Search, t.b1t, t.b1], [GraduationCap, t.b2t, t.b2], [Share2, t.b3t, t.b3], [CalendarCheck, t.b4t, t.b4]] as const;
   return (
-    <section id="profile" className="scroll-mt-24 bg-muted/40 py-16 md:py-24">
+    <section id="profile" className="scroll-mt-24 bg-muted/40 py-12 md:py-16">
       <div className="offer-container grid items-center gap-12 lg:grid-cols-2">
         <div>
           <p className="text-xs font-bold uppercase text-primary">{t.tag}</p>
