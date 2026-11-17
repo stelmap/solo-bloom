@@ -1,5 +1,10 @@
 # Roadmap
 
+## Legal content consistency
+- [x] Correct Terms in EN/UK/PL/FR/RU: unlimited clients for both plans, remove unfinished governing-law clauses and use the owner-confirmed name; all five preview pages verified, 10 plan-feature tests passed, no billing changes. Required analytics disclosures included; not published.
+- [ ] Operator/legal owner must supply approved explicit governing-law and competent-court wording, full registered address and any required registration identifier. The name alone does not confirm these details; do not invent them or publish placeholders.
+- [ ] Privacy controller identity reconciliation awaits the remaining operator details and a dedicated five-language privacy-content update.
+
 ## Real public product experience
 Implementation delegated to the separate “Real interactive product experience” draft; main-app changes await draft completion and review.
 - [ ] Reuse actual Calendar, Clients/Profile, Payments, Dashboard and Public Booking screens with isolated server-backed visitor workspaces.

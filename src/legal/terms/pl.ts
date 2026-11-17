@@ -1,17 +1,17 @@
 import type { LegalDoc } from "@/legal/types";
-import { LEGAL_LAST_UPDATED } from "@/legal/types";
+import { TERMS_LAST_UPDATED } from "@/legal/types";
 
 export const termsPl: LegalDoc = {
   back: "Powrót na stronę główną",
   title: "Regulamin",
-  updated: LEGAL_LAST_UPDATED.pl,
+  updated: TERMS_LAST_UPDATED.pl,
   intro:
     "Niniejszy Regulamin określa zasady korzystania ze strony i aplikacji Solo .Bizz. Prosimy o zapoznanie się z nim przed założeniem konta.",
   sections: [
     {
       h: "1. Kto świadczy usługę",
       body: [
-        "Solo .Bizz jest prowadzony przez **Olhę Stelmakh, jednoosobową działalność gospodarczą (FOP)**, zarejestrowaną we Lwowie, Ukraina. Kontakt: info@solo-bizz.com.",
+        "Solo .Bizz jest prowadzony przez **Stelmakh Olga Volodymyrivna, przedsiębiorczynię indywidualną (FOP)**, zarejestrowaną we Lwowie, Ukraina. Kontakt: info@solo-bizz.com.",
         "Zakładając konto lub korzystając z Solo .Bizz, akceptujesz ten Regulamin. Jeśli go nie akceptujesz, prosimy nie korzystać z usługi.",
       ],
     },
@@ -55,7 +55,7 @@ export const termsPl: LegalDoc = {
     {
       h: "5. Plany i ceny",
       body: [
-        "Solo .Bizz oferuje płatne plany subskrypcyjne (Solo i Pro) oraz 14-dniowy bezpłatny okres próbny dla nowych kont. Plany różnią się przede wszystkim liczbą aktywnych klientów i zakresem funkcji.",
+        "Solo .Bizz oferuje płatne plany subskrypcyjne (Solo i Pro) oraz 14-dniowy bezpłatny okres próbny dla nowych kont. Oba plany obejmują nieograniczoną liczbę klientów i różnią się zakresem funkcji, a nie liczbą obsługiwanych klientów.",
         "Aktualne plany, ceny, okresy rozliczeniowe, waluty i obowiązujące rabaty są prezentowane w sekcji cennika na stronie oraz w aplikacji przed potwierdzeniem zakupu. Ceny mogą się zmieniać; dla danego okresu obowiązuje cena widoczna w momencie zakupu.",
         { type: "link", to: "/#pricing", label: "Zobacz aktualne plany i ceny" },
       ],
@@ -155,13 +155,15 @@ export const termsPl: LegalDoc = {
       body: [
         "Solo .Bizz korzysta z dostawców zewnętrznych: infrastruktury chmurowej i hostingu, Paddle do płatności, dostawcy poczty transakcyjnej, dostawców analityki oraz — jeśli z nich korzystasz — logowania Google i powiadomień Telegram.",
         "Do ich usług stosują się ich własne warunki, a my nie odpowiadamy za ich samodzielne działania lub zaniechania.",
+        "Lovable zbiera dla nas dane analityczne odwiedzin: odwiedzane strony, źródła odesłań, kraj, przeglądarkę, system operacyjny, typ urządzenia, czas na stronie, szybkość ładowania stron, błędy oraz kliknięcia przycisków i linków. Nie używa plików cookie, niczego nie zapisuje na urządzeniach odwiedzających, nie przechowuje adresów IP i nie identyfikuje odwiedzających. Dane te są rejestrowane dla każdego odwiedzającego; obecny baner cookie nie przekazuje wyborów dotyczących zgody do analityki Lovable. Szczegółowe dane są przechowywane przez 90 dni, a dzienne podsumowania przez rok.",
+        { type: "link", to: "https://lovable.dev/privacy", label: "Polityka prywatności Lovable wyjaśnia sposób przetwarzania tych danych" },
+        "Pozostałe narzędzia przetwarzają dane odrębnie: logowanie zapisuje dane konta i sesji u naszego dostawcy uwierzytelniania w chmurze oraz tokeny sesji w przeglądarce; Google otrzymuje dane logowania, jeśli wybierzesz logowanie Google. Paddle otrzymuje dane zakupu i płatności. Dostawca poczty otrzymuje adresy odbiorców i treść wiadomości, a Telegram dane połączonego czatu i powiadomienia, jeśli jest połączony. Po zgodzie analitycznej PostHog otrzymuje zdarzenia użycia i nagrania sesji z maskowaniem danych oraz może zapisywać identyfikatory w przeglądarce; Plerdy otrzymuje interakcje ze stroną i dane map ciepła oraz może zapisywać identyfikatory w przeglądarce. Po zgodzie marketingowej Meta otrzymuje wyświetlenia stron i dane pomiaru reklam przez Meta Pixel, który może zapisywać identyfikatory reklamowe. Przeglądarka przechowuje również język i preferencje zgody cookie; Google otrzymuje dane połączenia podczas dostarczania czcionek strony.",
       ],
     },
     {
       h: "16. Prawo właściwe i spory",
       body: [
-        "Regulamin podlega prawu miejsca siedziby operatora Solo .Bizz, bez uszczerbku dla bezwzględnie obowiązujących przepisów konsumenckich w kraju Twojego zamieszkania.",
-        "**Uzupełnienie:** prawo właściwe i właściwe sądy zostaną wskazane tutaj po potwierdzeniu danych podmiotu prawnego operatora. Konsumenci mogą również skorzystać z platformy internetowego rozstrzygania sporów Komisji Europejskiej.",
+        "Regulamin nie ogranicza bezwzględnie obowiązujących praw ochrony konsumentów ani prawa do dochodzenia roszczeń na podstawie obowiązujących przepisów.",
         "Zawsze staramy się najpierw rozwiązać spór bezpośrednio — pisz na info@solo-bizz.com.",
       ],
     },

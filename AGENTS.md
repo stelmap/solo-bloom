@@ -22,3 +22,4 @@
 - Therapist "About me" profiles keep an owner-only draft and a separate published copy plus an allow-list of published file paths; visitors read only via the booking-token RPC and storage policy on that list, so drafts and unpublished files never leak.
 - "About me" visibility is gated server-side by therapist_profile_allowed (global trial cutoff, then Pro via practice_access_state) and mirrored client-side by aboutProfileAccess, so the public RPC and file policy enforce it even if the UI is bypassed.
 - Public therapist profile URLs (/therapist/:slug) use a permanent unique slug reserved once by ensure_my_therapist_profile_slug on first publish; the public slug RPC returns only published, allowed content plus the existing booking key, so no second booking system exists.
+- Legal document revisions use document-specific dates when only one document changes, so unchanged policies are not falsely presented as revised.

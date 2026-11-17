@@ -30,3 +30,12 @@ export const LEGAL_LAST_UPDATED = {
 
 /** Version identifiers referenced by the documents themselves. */
 export const LEGAL_VERSION = "2026-09-21";
+
+/** Terms-only revision; other legal documents retain their own release date. */
+export const TERMS_LAST_UPDATED = {
+  en: "Last updated: November 17, 2026",
+  uk: "Останнє оновлення: 17 листопада 2026 р.",
+  pl: "Ostatnia aktualizacja: 17 listopada 2026 r.",
+  fr: "Dernière mise à jour : 17 novembre 2026",
+  ru: "Последнее обновление: 17 ноября 2026 г.",
+} as const;

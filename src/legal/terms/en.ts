@@ -1,17 +1,17 @@
 import type { LegalDoc } from "@/legal/types";
-import { LEGAL_LAST_UPDATED } from "@/legal/types";
+import { TERMS_LAST_UPDATED } from "@/legal/types";
 
 export const termsEn: LegalDoc = {
   back: "Back to home",
   title: "Terms & Conditions",
-  updated: LEGAL_LAST_UPDATED.en,
+  updated: TERMS_LAST_UPDATED.en,
   intro:
     "These Terms & Conditions govern your use of the Solo .Bizz website and application. Please read them before creating an account.",
   sections: [
     {
       h: "1. Who provides the service",
       body: [
-        "Solo .Bizz is operated by **Olha Volodymyrivna Stelmakh, individual entrepreneur (FOP)**, registered in Lviv, Ukraine. Contact: info@solo-bizz.com.",
+        "Solo .Bizz is operated by **Stelmakh Olga Volodymyrivna, individual entrepreneur (FOP)**, registered in Lviv, Ukraine. Contact: info@solo-bizz.com.",
         "By creating an account or using Solo .Bizz you accept these Terms. If you do not accept them, please do not use the service.",
       ],
     },
@@ -55,7 +55,7 @@ export const termsEn: LegalDoc = {
     {
       h: "5. Plans and pricing",
       body: [
-        "Solo .Bizz offers paid subscription plans (Solo and Pro), with a 14-day free trial for new accounts. Plans differ mainly by the number of active clients and the features included.",
+        "Solo .Bizz offers paid subscription plans (Solo and Pro), with a 14-day free trial for new accounts. Both plans include unlimited clients and differ by the features included, not by client capacity.",
         "Current plans, prices, billing periods, currencies and any active discounts are shown on the pricing section of our website and in the app before you confirm a purchase. Prices may change; the price shown at the time of purchase applies to that billing cycle.",
         { type: "link", to: "/#pricing", label: "View current plans and pricing" },
       ],
@@ -155,13 +155,15 @@ export const termsEn: LegalDoc = {
       body: [
         "Solo .Bizz relies on third-party providers, including cloud infrastructure and hosting providers, Paddle for payments, our transactional email provider, analytics providers and — where you choose to use them — Google sign-in and Telegram notifications.",
         "Their own terms apply to their services, and we are not responsible for their independent acts or omissions.",
+        "Lovable collects visitor analytics for us: pages visited, referral sources, country, browser, operating system, device type, time on site, page loading speed, errors and clicks on buttons and links. It uses no cookies, stores nothing on visitors’ devices, does not keep IP addresses and does not identify visitors. This data is recorded for every visitor; the current cookie banner does not pass consent choices to Lovable’s analytics. Detailed data is kept for 90 days and daily summaries for one year.",
+        { type: "link", to: "https://lovable.dev/privacy", label: "Lovable’s privacy policy explains how it handles this data" },
+        "Other tools have separate data practices: sign-in stores account and session information with our cloud authentication provider and session tokens in your browser; Google receives sign-in information if you choose Google sign-in. Paddle receives purchase and payment information. Our email provider receives recipient addresses and message content, and Telegram receives linked chat information and notifications when connected. After analytics consent, PostHog receives usage events and masked session recordings and may store browser identifiers; Plerdy receives website interactions and heatmap data and may store browser identifiers. After marketing consent, Meta receives page-view and advertising measurement data through Meta Pixel, which may store advertising identifiers. Your browser also stores language and cookie-consent preferences; Google receives connection information when serving the site’s fonts.",
       ],
     },
     {
       h: "16. Governing law and disputes",
       body: [
-        "These Terms are governed by the law applicable at the place of establishment of the Solo .Bizz operator, without prejudice to mandatory consumer protection rules in your country of residence.",
-        "**Note for completeness:** the governing law and competent courts will be stated explicitly here once the operator's legal entity details are confirmed. Consumers may also use the European Commission's online dispute resolution platform.",
+        "Nothing in these Terms limits mandatory consumer protection rights or rights to seek remedies available under applicable law.",
         "We will always try to resolve disputes directly first — write to info@solo-bizz.com.",
       ],
     },

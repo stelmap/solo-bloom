@@ -1,17 +1,17 @@
 import type { LegalDoc } from "@/legal/types";
-import { LEGAL_LAST_UPDATED } from "@/legal/types";
+import { TERMS_LAST_UPDATED } from "@/legal/types";
 
 export const termsFr: LegalDoc = {
   back: "Retour à l'accueil",
   title: "Conditions générales",
-  updated: LEGAL_LAST_UPDATED.fr,
+  updated: TERMS_LAST_UPDATED.fr,
   intro:
     "Ces Conditions générales régissent l'utilisation du site et de l'application Solo .Bizz. Merci de les lire avant de créer un compte.",
   sections: [
     {
       h: "1. Qui fournit le service",
       body: [
-        "Solo .Bizz est exploité par **Olha Stelmakh, entrepreneure individuelle (FOP)**, immatriculée à Lviv, Ukraine. Contact : info@solo-bizz.com.",
+        "Solo .Bizz est exploité par **Stelmakh Olga Volodymyrivna, entrepreneure individuelle (FOP)**, immatriculée à Lviv, Ukraine. Contact : info@solo-bizz.com.",
         "En créant un compte ou en utilisant Solo .Bizz, vous acceptez ces Conditions. Si vous ne les acceptez pas, n'utilisez pas le service.",
       ],
     },
@@ -55,7 +55,7 @@ export const termsFr: LegalDoc = {
     {
       h: "5. Formules et tarifs",
       body: [
-        "Solo .Bizz propose des abonnements payants (Solo et Pro) et un essai gratuit de 14 jours pour les nouveaux comptes. Les formules diffèrent principalement par le nombre de clients actifs et les fonctionnalités incluses.",
+        "Solo .Bizz propose des abonnements payants (Solo et Pro) et un essai gratuit de 14 jours pour les nouveaux comptes. Les deux formules incluent un nombre illimité de clients et diffèrent par les fonctionnalités incluses, et non par leur capacité en nombre de clients.",
         "Les formules, tarifs, périodicités, devises et remises en vigueur sont affichés dans la section tarifs du site et dans l'application avant la confirmation de l'achat. Les prix peuvent évoluer ; le prix affiché au moment de l'achat s'applique au cycle de facturation concerné.",
         { type: "link", to: "/#pricing", label: "Voir les formules et tarifs actuels" },
       ],
@@ -155,13 +155,15 @@ export const termsFr: LegalDoc = {
       body: [
         "Solo .Bizz s'appuie sur des prestataires tiers : infrastructure cloud et hébergement, Paddle pour les paiements, notre prestataire d'e-mails transactionnels, des services d'analyse et — si vous les utilisez — la connexion Google et les notifications Telegram.",
         "Leurs propres conditions s'appliquent à leurs services et nous ne répondons pas de leurs actes ou omissions indépendants.",
+        "Lovable collecte pour nous des données d’analyse des visites : pages consultées, sources de provenance, pays, navigateur, système d’exploitation, type d’appareil, temps passé sur le site, vitesse de chargement, erreurs et clics sur les boutons et liens. Cette analyse n’utilise aucun cookie, ne stocke rien sur les appareils des visiteurs, ne conserve pas les adresses IP et n’identifie pas les visiteurs. Ces données sont enregistrées pour chaque visiteur ; le bandeau cookie actuel ne transmet pas les choix de consentement à l’analyse Lovable. Les données détaillées sont conservées pendant 90 jours et les résumés quotidiens pendant un an.",
+        { type: "link", to: "https://lovable.dev/privacy", label: "La politique de confidentialité de Lovable explique le traitement de ces données" },
+        "Les autres outils ont leurs propres pratiques : la connexion conserve les données de compte et de session auprès de notre fournisseur d’authentification cloud et les jetons de session dans votre navigateur ; Google reçoit des données de connexion si vous choisissez la connexion Google. Paddle reçoit les données d’achat et de paiement. Notre fournisseur d’e-mails reçoit les adresses des destinataires et le contenu des messages, et Telegram les données du chat associé et les notifications lorsqu’il est connecté. Après consentement analytique, PostHog reçoit les événements d’utilisation et des enregistrements de session avec masquage des données et peut conserver des identifiants dans le navigateur ; Plerdy reçoit les interactions avec le site et les données de cartes de chaleur et peut conserver des identifiants dans le navigateur. Après consentement marketing, Meta reçoit les vues de pages et les données de mesure publicitaire via Meta Pixel, qui peut conserver des identifiants publicitaires. Le navigateur conserve aussi la langue et les préférences de consentement cookie ; Google reçoit des informations de connexion lors de la fourniture des polices du site.",
       ],
     },
     {
       h: "16. Droit applicable et litiges",
       body: [
-        "Ces Conditions sont régies par le droit du lieu d'établissement de l'exploitant de Solo .Bizz, sans préjudice des règles impératives de protection des consommateurs de votre pays de résidence.",
-        "**Précision :** le droit applicable et les tribunaux compétents seront indiqués ici une fois les informations légales de l'exploitant confirmées. Les consommateurs peuvent aussi recourir à la plateforme de règlement en ligne des litiges de la Commission européenne.",
+        "Ces Conditions ne limitent ni les droits impératifs de protection des consommateurs ni le droit aux recours disponibles en vertu de la législation applicable.",
         "Nous cherchons toujours d'abord une solution directe — écrivez à info@solo-bizz.com.",
       ],
     },
