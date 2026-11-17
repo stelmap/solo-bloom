@@ -1,32 +1,33 @@
 import { test, expect, request } from "@playwright/test";
 
 /**
- * Verifies the apex domain solo-bizz.com permanently redirects to
- * https://www.solo-bizz.com and that the canonical host serves the app.
+ * Verifies www redirects to the primary apex domain and that the
+ * primary domain serves the app; hosting chooses the redirect status.
  *
  * Skipped automatically when running against a non-production base URL
  * (e.g. local Vite preview) since the redirect lives at the hosting layer.
  */
-const APEX_HTTPS = "https://solo-bizz.com/";
-const APEX_HTTP = "http://solo-bizz.com/";
-const CANONICAL = "https://www.solo-bizz.com/";
+const WWW_HTTPS = "https://www.solo-bizz.com/";
+const WWW_HTTP = "http://www.solo-bizz.com/";
+const CANONICAL = "https://solo-bizz.com/";
 
 const shouldRun =
   process.env.RUN_APEX_REDIRECT_TEST === "1" ||
   (process.env.PLAYWRIGHT_BASE_URL ?? "").includes("solo-bizz.com");
 
-test.describe("Apex domain redirect", () => {
+test.describe("Primary domain redirect", () => {
   test.skip(!shouldRun, "Set RUN_APEX_REDIRECT_TEST=1 to run against production DNS.");
 
-  for (const url of [APEX_HTTPS, APEX_HTTP]) {
+  for (const url of [WWW_HTTPS, WWW_HTTP]) {
     test(`${url} -> ${CANONICAL} (3xx)`, async () => {
       const ctx = await request.newContext({ ignoreHTTPSErrors: true });
       const res = await ctx.get(url, { maxRedirects: 0 });
       expect([301, 302, 307, 308]).toContain(res.status());
       const location = res.headers()["location"];
       expect(location).toBeTruthy();
-      const target = new URL(location!, url);
-      expect(target.hostname).toBe("www.solo-bizz.com");
+      if (!location) throw new Error("Missing primary-domain redirect destination");
+      const target = new URL(location, url);
+      expect(target.hostname).toBe("solo-bizz.com");
       expect(target.protocol).toBe("https:");
       await ctx.dispose();
     });
