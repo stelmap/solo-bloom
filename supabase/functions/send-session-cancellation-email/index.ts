@@ -2,6 +2,9 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 import { sendAppEmail } from '../_shared/transactional-email-templates/send-and-log.ts'
 
+const LANGS = ['uk', 'en', 'pl', 'de', 'fr', 'ru']
+const txt = (v: unknown, n: number) => typeof v === 'string' ? v.replace(/[\u0000-\u001f\u007f<>]/g, ' ').replace(/https?:\/\/\S+/gi, '').replace(/\s+/g, ' ').trim().slice(0, n) || undefined : undefined
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -30,21 +33,21 @@ Deno.serve(async (req) => {
     // Recipient is derived from the therapist's own appointment (RLS scoped).
     const { data: apt, error: aptErr } = await supabase
       .from('appointments')
-      .select('id, client_id, clients(name, email)')
+      .select('id, client_id, scheduled_at, clients(name, email)')
       .eq('id', appointmentId)
       .maybeSingle()
-    if (aptErr) return json({ error: aptErr.message }, 400)
+    if (aptErr) return json({ error: 'lookup_failed' }, 400)
     const client = (apt as any)?.clients
     if (!client?.email) return json({ error: 'client_has_no_email' }, 400)
 
     const result = await sendAppEmail('session-cancellation', client.email, {
       idempotencyKey: `session-cancel-${appointmentId}`,
       templateData: {
-        clientName: body?.clientName ?? client.name,
-        sessionDate: body?.sessionDate,
-        sessionTime: body?.sessionTime,
-        cancellationReason: body?.cancellationReason,
-        language: body?.language ?? 'en',
+        clientName: client.name,
+        sessionDate: txt(body?.sessionDate, 60),
+        sessionTime: txt(body?.sessionTime, 30),
+        cancellationReason: txt(body?.cancellationReason, 300),
+        language: LANGS.includes(body?.language) ? body.language : 'en',
       },
     })
     return json(result)

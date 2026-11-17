@@ -155,9 +155,17 @@ Deno.serve(async (req) => {
       const { data } = await admin.auth.getUser(authHeader.replace('Bearer ', ''))
       userId = data.user?.id ?? null
     }
+    // The AI assistant is metered: only signed-in users may use it, and only
+    // on their own conversations.
+    if (!userId) return json({ error: 'sign_in_required' }, 401)
 
     const action = clean(body.action, 40) ?? 'chat'
     const conversationId = clean(body.conversationId, 64)
+    if (conversationId) {
+      const { data: owned } = await admin.from('support_conversations')
+        .select('id').eq('id', conversationId).eq('user_id', userId).maybeSingle()
+      if (!owned) return json({ error: 'conversation_not_found' }, 404)
+    }
 
     /* ---------------- feedback ---------------- */
     if (action === 'feedback') {
@@ -166,7 +174,7 @@ Deno.serve(async (req) => {
       await admin.from('support_conversations').update({
         feedback: helpful ? 'helpful' : 'not_helpful',
         feedback_comment: clean(body.comment, 1000),
-      }).eq('id', conversationId)
+      }).eq('id', conversationId).eq('user_id', userId)
       return json({ ok: true })
     }
 
@@ -197,7 +205,7 @@ Deno.serve(async (req) => {
       if (error) return json({ error: 'report_failed' }, 500)
 
       await admin.from('support_conversations')
-        .update({ escalated: true }).eq('id', conversationId)
+        .update({ escalated: true }).eq('id', conversationId).eq('user_id', userId)
       return json({ ok: true, issueId: issue.id })
     }
 

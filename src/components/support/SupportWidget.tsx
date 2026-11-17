@@ -119,6 +119,18 @@ export function SupportWidget() {
     if (!question || sending) return;
     setInput("");
     setMessages((prev) => [...prev, { role: "user", content: question }]);
+    if (!user) {
+      const SIGN_IN: Record<string, string> = {
+        uk: "Щоб скористатися помічником, увійдіть в акаунт. Або напишіть нам: info@solo-bizz.com",
+        en: "Please sign in to use the assistant, or email us at info@solo-bizz.com",
+        pl: "Zaloguj się, aby skorzystać z asystenta, lub napisz do nas: info@solo-bizz.com",
+        de: "Bitte melden Sie sich an, um den Assistenten zu nutzen, oder schreiben Sie an info@solo-bizz.com",
+        fr: "Connectez-vous pour utiliser l'assistant, ou écrivez-nous à info@solo-bizz.com",
+        ru: "Чтобы воспользоваться помощником, войдите в аккаунт или напишите нам: info@solo-bizz.com",
+      };
+      setMessages((prev) => [...prev, { role: "assistant", content: SIGN_IN[lang] ?? SIGN_IN.en }]);
+      return;
+    }
     setSending(true);
     setFeedbackGiven(false);
     try {

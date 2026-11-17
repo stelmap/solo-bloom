@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => null)
-    const requestId = typeof body?.requestId === 'string' ? body.requestId : null
+    const requestId = typeof body?.requestId === 'string' && /^[0-9a-f-]{36}$/i.test(body.requestId) ? body.requestId : null
     if (!requestId) return json({ error: 'requestId is required' }, 400)
 
     const supabase = createClient(
@@ -28,11 +28,20 @@ Deno.serve(async (req) => {
     )
     const { data: request, error: reqErr } = await supabase
       .from('session_booking_requests')
-      .select('id, email, first_name, last_name, status')
+      .select('id, user_id, email, first_name, last_name, status, created_at, requested_slot_at')
       .eq('id', requestId)
       .maybeSingle()
-    if (reqErr) return json({ error: reqErr.message }, 400)
+    if (reqErr) return json({ error: 'lookup_failed' }, 400)
     if (!request?.email) return json({ error: 'booking_request_not_found' }, 404)
+    // Only the booker, right after submitting, may trigger this; content is
+    // built from stored data, never from the caller.
+    if (Date.now() - new Date(request.created_at).getTime() > 10 * 60 * 1000) return json({ error: 'too_old' }, 409)
+    if (!['pending', 'confirmed', 'needs_linking'].includes(request.status)) return json({ skipped: 'status' })
+    const { data: owner } = await supabase.from('profiles')
+      .select('full_name, business_name, language').eq('user_id', request.user_id).maybeSingle()
+    const LOC: Record<string, string> = { uk: 'uk-UA', en: 'en-GB', pl: 'pl-PL', de: 'de-DE', fr: 'fr-FR', ru: 'ru-RU' }
+    const reqLang = typeof body?.language === 'string' && LOC[body.language] ? body.language : (LOC[(owner as any)?.language ?? ''] ? (owner as any).language : 'en')
+    const slot = new Date(request.requested_slot_at)
 
     const fallbackName =
       `${request.first_name ?? ''}${request.last_name ? ' ' + request.last_name : ''}`.trim() || 'Client'
@@ -40,12 +49,11 @@ Deno.serve(async (req) => {
     const result = await sendAppEmail('booking-confirmation', request.email, {
       idempotencyKey: `booking-confirm-${request.id}`,
       templateData: {
-        clientName: body?.clientName ?? fallbackName,
-        specialistName: body?.specialistName,
-        sessionDate: body?.sessionDate,
-        sessionTime: body?.sessionTime,
-        serviceName: body?.serviceName,
-        language: body?.language ?? 'en',
+        clientName: fallbackName,
+        specialistName: (owner as any)?.full_name || (owner as any)?.business_name || undefined,
+        sessionDate: slot.toLocaleDateString(LOC[reqLang], { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }),
+        sessionTime: slot.toLocaleTimeString(LOC[reqLang], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }),
+        language: reqLang,
       },
     })
     return json(result)

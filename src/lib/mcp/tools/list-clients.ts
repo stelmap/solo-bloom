@@ -30,8 +30,12 @@ export default defineTool({
       .order("name", { ascending: true })
       .limit(limit ?? 50);
     if (search && search.trim()) {
-      const s = `%${search.trim()}%`;
-      q = q.or(`name.ilike.${s},email.ilike.${s}`);
+      // Strip PostgREST filter syntax so the value can only be a search term.
+      const term = search.trim().replace(/[,()*%\\:."']/g, " ").replace(/\s+/g, " ").slice(0, 100);
+      if (term) {
+        const s = `%${term}%`;
+        q = q.or(`name.ilike."${s}",email.ilike."${s}"`);
+      }
     }
     const { data, error } = await q;
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };

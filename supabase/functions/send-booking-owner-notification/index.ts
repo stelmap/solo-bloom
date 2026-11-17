@@ -25,9 +25,9 @@ Deno.serve(async (req) => {
     const { data: r, error } = await sb.from('session_booking_requests')
       .select('id, user_id, appointment_id, first_name, last_name, email, phone, comment, requested_slot_at, duration_minutes, status, created_at')
       .eq('id', requestId).maybeSingle()
-    if (error) return json({ error: error.message }, 400)
+    if (error) return json({ error: 'lookup_failed' }, 400)
     if (!r) return json({ error: 'booking_request_not_found' }, 404)
-    if (Date.now() - new Date(r.created_at).getTime() > 60 * 60 * 1000) return json({ error: 'too_old' }, 409)
+    if (Date.now() - new Date(r.created_at).getTime() > 10 * 60 * 1000) return json({ error: 'too_old' }, 409)
     if (!['pending', 'confirmed', 'needs_linking'].includes(r.status)) return json({ skipped: 'status', status: r.status })
 
     const [{ data: owner }, { data: profile }, apptRes] = await Promise.all([

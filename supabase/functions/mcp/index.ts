@@ -31,8 +31,11 @@ var list_clients_default = defineTool({
     }
     let q = supabaseForUser(ctx).from("clients").select("id, name, email, phone, status, notes, base_price, created_at").eq("status", status ?? "active").order("name", { ascending: true }).limit(limit ?? 50);
     if (search && search.trim()) {
-      const s = `%${search.trim()}%`;
-      q = q.or(`name.ilike.${s},email.ilike.${s}`);
+      const term = search.trim().replace(/[,()*%\\:."']/g, " ").replace(/\s+/g, " ").slice(0, 100);
+      if (term) {
+        const s = `%${term}%`;
+        q = q.or(`name.ilike."${s}",email.ilike."${s}"`);
+      }
     }
     const { data, error } = await q;
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };

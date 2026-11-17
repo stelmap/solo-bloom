@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
         language,
         verification_status: verificationStatus,
         verified_user_id: verifiedUserId,
-        verified_records_count: recordsCount,
+        verified_records_count: 0,
         verification_checked_at: new Date().toISOString(),
         moderation_status: 'pending',
         ip_hash: ipHash,

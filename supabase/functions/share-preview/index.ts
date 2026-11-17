@@ -23,7 +23,7 @@ type P = Record<string, unknown>;
 async function photoUrl(p: P | null, fallback?: unknown): Promise<string | null> {
   const path = p && typeof p.photo === "string" ? p.photo : null;
   if (path) {
-    const { data } = await admin.storage.from("therapist-profile-files").createSignedUrl(path, 60 * 60 * 24 * 30);
+    const { data } = await admin.storage.from("therapist-profile-files").createSignedUrl(path, 60 * 60);
     if (data?.signedUrl) return data.signedUrl;
   }
   return typeof fallback === "string" && fallback.startsWith("https://") ? fallback : null;
