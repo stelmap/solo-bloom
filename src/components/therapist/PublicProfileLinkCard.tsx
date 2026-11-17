@@ -4,17 +4,18 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
-import { TP_COPY, profileUrl, type TPLang } from "@/lib/therapistProfile";
+import { TP_COPY, profileShareUrl, profileUrl, type TPLang } from "@/lib/therapistProfile";
 
 export function PublicProfileLinkCard({ lang, slug, published }: { lang: TPLang; slug: string | null; published: boolean }) {
   const C = TP_COPY[lang];
   const { toast } = useToast();
   const url = published && slug ? profileUrl(slug) : "";
+  const share = published && slug ? profileShareUrl(slug) : "";
   const copy = async (hint?: string) => {
-    await navigator.clipboard.writeText(url);
+    await navigator.clipboard.writeText(share);
     toast({ title: C.linkCopied, description: hint });
   };
-  const e = encodeURIComponent(url);
+  const e = encodeURIComponent(share);
   const targets: [string, string][] = [
     ["Facebook", `https://www.facebook.com/sharer/sharer.php?u=${e}`],
     ["LinkedIn", `https://www.linkedin.com/sharing/share-offsite/?url=${e}`],
@@ -41,7 +42,7 @@ export function PublicProfileLinkCard({ lang, slug, published }: { lang: TPLang;
             <DropdownMenu>
               <DropdownMenuTrigger asChild><Button size="sm"><Share2 className="mr-2 h-4 w-4" />{C.share}</Button></DropdownMenuTrigger>
               <DropdownMenuContent align="start">
-                {nativeShare && <DropdownMenuItem onClick={() => void navigator.share({ url }).catch(() => undefined)}>{C.share}…</DropdownMenuItem>}
+                {nativeShare && <DropdownMenuItem onClick={() => void navigator.share({ url: share }).catch(() => undefined)}>{C.share}…</DropdownMenuItem>}
                 {targets.map(([name, href]) => (
                   <DropdownMenuItem key={name} asChild><a href={href} target="_blank" rel="noopener noreferrer">{name}</a></DropdownMenuItem>
                 ))}

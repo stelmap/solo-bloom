@@ -204,3 +204,9 @@ export function profileSlugBase(p: Pick<TherapistProfileData, "first_name" | "la
   return latin.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 50);
 }
 export const profileUrl = (slug: string) => `https://solo-bizz.com/therapist/${slug}`;
+
+const SHARE_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/share-preview`;
+/** Link that shows a personalized preview card in social apps, then opens the profile. */
+export const profileShareUrl = (slug: string) => `${SHARE_BASE}?p=${encodeURIComponent(slug)}`;
+/** Same for the public booking link. */
+export const bookingShareUrl = (handle: string) => `${SHARE_BASE}?b=${encodeURIComponent(handle)}`;

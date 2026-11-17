@@ -1,3 +1,4 @@
+import { bookingShareUrl } from "@/lib/therapistProfile";
 import { MeetingDurationInput } from "@/components/MeetingDurationInput";
 import { durationFromEnd, meetingEndTime, parseMeetingDuration, parseNonnegativePrice, serviceMeetingDuration, timeMinutes } from "@/lib/meetingDuration";
 import { AppLayout } from "@/components/AppLayout";
@@ -1902,7 +1903,7 @@ export default function CalendarPage() {
               <Button
                 variant="outline" size="sm" className="flex-1 min-w-[8rem] justify-center px-2"
                 onClick={() => {
-                  navigator.clipboard.writeText(bookingUrl);
+                  navigator.clipboard.writeText(bookingShareUrl(bookingHandle));
                   toast({ title: (t as any)("common.copied") || "Copied" });
                 }}
               >
@@ -2475,7 +2476,7 @@ export default function CalendarPage() {
                 <Button
                   type="button" variant="ghost" className="h-9 shrink-0 rounded-none border-l border-border"
                   onClick={async () => {
-                    try { await navigator.clipboard.writeText(bookingUrl); toast({ title: CT.copied }); }
+                    try { await navigator.clipboard.writeText(bookingShareUrl(bookingHandle)); toast({ title: CT.copied }); }
                     catch { toast({ title: CT.copied }); }
                   }}
                 >

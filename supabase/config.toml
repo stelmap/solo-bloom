@@ -57,3 +57,5 @@ project_id = "rxculneqqaziutulnocs"
     verify_jwt = false
   [functions.notify-review-status]
     verify_jwt = true
+  [functions.share-preview]
+    verify_jwt = false

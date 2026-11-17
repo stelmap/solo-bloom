@@ -1,3 +1,4 @@
+import { bookingShareUrl } from "@/lib/therapistProfile";
 import { MonthlyIncomeSummary } from "@/components/dashboard/MonthlyIncomeSummary";
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -61,7 +62,7 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
       navigate("/settings/practice");
       return;
     }
-    navigator.clipboard?.writeText(bookingUrl).then(
+    navigator.clipboard?.writeText(bookingShareUrl(bookingHandle)).then(
       () => toast({ title: t("dashe.linkCopied"), description: bookingUrl }),
       () => navigate("/settings/practice"),
     );

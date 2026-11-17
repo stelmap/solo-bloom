@@ -1,3 +1,4 @@
+import { bookingShareUrl } from "@/lib/therapistProfile";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -613,7 +614,7 @@ export function PublicBookingSection() {
                   size="icon"
                   aria-label={L.linkCopied}
                   onClick={() => {
-                    navigator.clipboard.writeText(url);
+                    navigator.clipboard.writeText(bookingShareUrl(handle));
                     toast({ title: L.linkCopied });
                   }}
                 >
