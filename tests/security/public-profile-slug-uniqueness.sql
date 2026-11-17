@@ -1,0 +1,10 @@
+begin;
+select set_config('app.therapist_slug_write','on',true);
+insert into public.therapist_public_profiles(user_id, slug) values ('00000000-0000-0000-0000-000000000001','anna-nowak');
+savepoint s;
+insert into public.therapist_public_profiles(user_id, slug) values ('00000000-0000-0000-0000-000000000002','ANNA-NOWAK');
+rollback to s;
+select 'flag off: user cannot pick a slug';
+select set_config('app.therapist_slug_write','off',true);
+insert into public.therapist_public_profiles(user_id, slug) values ('00000000-0000-0000-0000-000000000003','squatted') returning slug is null;
+rollback;
