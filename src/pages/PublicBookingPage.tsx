@@ -15,6 +15,8 @@ import { z } from "zod";
 import { toast } from "@/hooks/use-toast";
 import { describeError } from "@/lib/errorMessages";
 import { SeoHead } from "@/components/SeoHead";
+import { TherapistProfileView } from "@/components/therapist/TherapistProfileView";
+import { TP_COPY, normalizeProfile, type TherapistProfileData } from "@/lib/therapistProfile";
 
 type PageInfo = {
   display_name: string;
@@ -178,6 +180,22 @@ export default function PublicBookingPage() {
   const { token } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const [info, setInfo] = useState<PageInfo | null>(null);
+  const [aboutProfile, setAboutProfile] = useState<TherapistProfileData | null>(null);
+  const view = searchParams.get("view") === "about" && aboutProfile ? "about" : "book";
+  const setView = (v: "about" | "book") => {
+    const params = new URLSearchParams(searchParams);
+    if (v === "about") params.set("view", "about"); else params.delete("view");
+    setSearchParams(params, { replace: false });
+    window.scrollTo({ top: 0 });
+  };
+  useEffect(() => {
+    if (!token) return;
+    let on = true;
+    void supabase.rpc("public_get_therapist_profile", { p_token: token }).then(({ data }) => {
+      if (on && data) setAboutProfile(normalizeProfile(data));
+    });
+    return () => { on = false; };
+  }, [token]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [slots, setSlots] = useState<string[]>([]);
@@ -584,6 +602,17 @@ export default function PublicBookingPage() {
             </SelectContent>
           </Select>
         </header>
+        {aboutProfile && (
+          <nav className="flex justify-center gap-1 rounded-full border border-border bg-card p-1 w-fit mx-auto" aria-label="Profile">
+            {(["book", "about"] as const).map((v) => (
+              <Button key={v} size="sm" variant={view === v ? "default" : "ghost"} className="rounded-full" onClick={() => setView(v)} aria-current={view === v ? "page" : undefined}>
+                {v === "book" ? TP_COPY[lang].bookingNav : TP_COPY[lang].aboutNav}
+              </Button>
+            ))}
+          </nav>
+        )}
+        {view === "about" && aboutProfile && <TherapistProfileView profile={aboutProfile} lang={lang} onBook={() => setView("book")} />}
+        <div className={view === "about" ? "hidden" : "space-y-4"}>
         <h1 className="text-center text-xl font-bold tracking-tight text-foreground sm:text-2xl">{X.heading}</h1>
 
         {!selectedSlot ? (
@@ -790,6 +819,7 @@ export default function PublicBookingPage() {
             </CardContent>
           </Card>
         )}
+        </div>
       </div>
     </div>
   );

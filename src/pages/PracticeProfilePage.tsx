@@ -23,6 +23,9 @@ import { AppLanguage } from "@/i18n/translations";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ImageIcon, Loader2, Copy, ExternalLink, X } from "lucide-react";
 import { describeError } from "@/lib/errorMessages";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AboutMeEditor } from "@/components/therapist/AboutMeEditor";
+import { TP_COPY, tpLang } from "@/lib/therapistProfile";
 
 type Lang = "en" | "uk" | "ru" | "fr" | "pl";
 const normLang = (v: unknown): Lang => {
@@ -484,6 +487,14 @@ export default function PracticeProfilePage() {
           </div>
         </div>
 
+        <Tabs defaultValue={new URLSearchParams(window.location.search).get("tab") === "about" ? "about" : "practice"}>
+          {!setupMode && (
+            <TabsList>
+              <TabsTrigger value="practice">{TP_COPY[tpLang(lang)].tabPractice}</TabsTrigger>
+              <TabsTrigger value="about">{TP_COPY[tpLang(lang)].tabAbout}</TabsTrigger>
+            </TabsList>
+          )}
+          <TabsContent value="practice" forceMount className="data-[state=inactive]:hidden">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
           {/* LEFT — practice data */}
           <div className="bg-card rounded-xl border border-border p-5 space-y-4">
@@ -611,6 +622,11 @@ export default function PracticeProfilePage() {
             />
           </div>
         </div>
+          </TabsContent>
+          <TabsContent value="about">
+            <AboutMeEditor lang={tpLang(lang)} bookingActive={!!link?.is_active} />
+          </TabsContent>
+        </Tabs>
 
         {touched && (Object.keys(form) as (keyof typeof form)[]).some((k) => fieldError(k)) && (
           <p className="text-xs text-destructive">{L.incomplete}</p>
