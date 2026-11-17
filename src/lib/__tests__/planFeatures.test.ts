@@ -46,3 +46,14 @@ describe("licence required", () => {
     expect(isLicenseExemptPath("/calendar")).toBe(false);
   });
 });
+
+import { aboutProfileAccess } from "../planFeatures";
+describe("About me profile trial", () => {
+  it("is free for everyone until 17 May 2027", () => {
+    expect(aboutProfileAccess({ has_pro: false, can_write: true }, new Date("2027-05-17T23:00:00Z")).allowed).toBe(true);
+  });
+  it("is Pro only from 18 May 2027", () => {
+    expect(aboutProfileAccess({ has_pro: false, can_write: true }, new Date("2027-05-18T00:00:01Z")).allowed).toBe(false);
+    expect(aboutProfileAccess({ has_pro: true, can_write: true }, new Date("2027-05-18T00:00:01Z")).allowed).toBe(true);
+  });
+});

@@ -17,11 +17,17 @@ import {
   MAX_FILE_BYTES, THERAPIST_FILES_BUCKET, TP_COPY, cropSquare, detectFileKind, emptyProfile, normalizeProfile, toPublished,
   type TPLang, type TherapistProfileData,
 } from "@/lib/therapistProfile";
+import { Link } from "react-router-dom";
+import { usePracticeAccess } from "@/hooks/usePracticeAccess";
+import { ABOUT_PROFILE_TRIAL_END, aboutProfileAccess } from "@/lib/planFeatures";
 import { TherapistProfileView, useSignedUrls } from "./TherapistProfileView";
 
 export function AboutMeEditor({ lang, bookingActive }: { lang: TPLang; bookingActive: boolean }) {
   const C = TP_COPY[lang];
   const { user } = useAuth();
+  const { data: access } = usePracticeAccess();
+  const gate = aboutProfileAccess(access as any);
+  const trialEnd = new Date(ABOUT_PROFILE_TRIAL_END.getTime() - 1).toLocaleDateString(lang, { day: "numeric", month: "long", year: "numeric" });
   const { toast } = useToast();
   const qc = useQueryClient();
   const [p, setP] = useState<TherapistProfileData>(emptyProfile());
@@ -133,14 +139,21 @@ export function AboutMeEditor({ lang, bookingActive }: { lang: TPLang; bookingAc
           <h2 className="text-lg font-semibold">{C.editor}</h2>
           <Badge variant={isPub ? "default" : "secondary"}>{isPub ? C.published : C.draft}</Badge>
           {changed && <Badge variant="outline">{C.unpublishedChanges}</Badge>}
+          {gate.trial && <Badge variant="outline" className="border-primary text-primary">{C.trialUntil.replace("{d}", trialEnd)}</Badge>}
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => void save("draft")} disabled={!!busy}>{busy === "draft" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{C.saveDraft}</Button>
           <Button variant="outline" onClick={() => setPreview(true)}><Eye className="mr-2 h-4 w-4" />{C.preview}</Button>
           {isPub && <Button variant="ghost" onClick={() => void save("unpublish")} disabled={!!busy}>{C.unpublish}</Button>}
-          <Button onClick={() => void save("publish")} disabled={!!busy}>{busy === "publish" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{isPub ? C.update : C.publish}</Button>
+          <Button onClick={() => void save("publish")} disabled={!!busy || !gate.allowed}>{busy === "publish" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{isPub ? C.update : C.publish}</Button>
         </div>
       </div>
+      {!gate.allowed && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/40 bg-primary/5 p-3 text-sm">
+          <span>{C.proOnly}</span>
+          <Button asChild size="sm"><Link to="/plans">{C.upgrade}</Link></Button>
+        </div>
+      )}
       <p className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">{C.publicNote}{!bookingActive && <> {C.needLink}</>}</p>
 
       <div className="space-y-6 rounded-xl border border-border bg-card p-5">

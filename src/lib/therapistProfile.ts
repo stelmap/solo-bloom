@@ -91,6 +91,7 @@ export const tpLang = (v: unknown): TPLang => {
 type Copy = Record<string, string>;
 export const TP_COPY: Record<TPLang, Copy> = {
   en: {
+    trialUntil: "Free trial until {d}", proOnly: "The public profile is now part of the Pro plan. Your draft is saved; upgrade to show it to clients again.", upgrade: "See plans",
     tabPractice: "Practice profile", tabAbout: "About me", editor: "Profile editor", draft: "Draft", published: "Published", unpublishedChanges: "Unpublished changes",
     photo: "Photo", uploadPhoto: "Upload photo", replacePhoto: "Replace photo", removePhoto: "Remove", cropTitle: "Crop photo", zoom: "Zoom", horizontal: "Horizontal", vertical: "Vertical", apply: "Apply", cancel: "Cancel",
     firstName: "First name", lastName: "Last name", patronymic: "Patronymic (optional)", proTitle: "Professional title", proTitlePh: "e.g. Psychotherapist",
@@ -106,6 +107,7 @@ export const TP_COPY: Record<TPLang, Copy> = {
     book: "Book an appointment", aboutNav: "About me", bookingNav: "Booking", previewTitle: "Profile preview", close: "Close", openDoc: "Open document", format: "Format",
   },
   uk: {
+    trialUntil: "Безкоштовний тріал до {d}", proOnly: "Публічний профіль тепер входить у тариф Pro. Чернетку збережено; оновіть тариф, щоб знову показувати його клієнтам.", upgrade: "Переглянути тарифи",
     tabPractice: "Профіль практики", tabAbout: "Про мене", editor: "Редактор профілю", draft: "Чернетка", published: "Опубліковано", unpublishedChanges: "Є неопубліковані зміни",
     photo: "Фотографія", uploadPhoto: "Завантажити фото", replacePhoto: "Замінити фото", removePhoto: "Видалити", cropTitle: "Кадрування фото", zoom: "Масштаб", horizontal: "По горизонталі", vertical: "По вертикалі", apply: "Застосувати", cancel: "Скасувати",
     firstName: "Ім'я", lastName: "Прізвище", patronymic: "По батькові (необов'язково)", proTitle: "Професійний титул", proTitlePh: "напр. Психотерапевт",
@@ -121,6 +123,7 @@ export const TP_COPY: Record<TPLang, Copy> = {
     book: "Записатися на зустріч", aboutNav: "Про мене", bookingNav: "Запис", previewTitle: "Попередній перегляд", close: "Закрити", openDoc: "Відкрити документ", format: "Формат",
   },
   pl: {
+    trialUntil: "Darmowy okres próbny do {d}", proOnly: "Profil publiczny jest teraz w planie Pro. Szkic jest zapisany; zmień plan, aby znów pokazać go klientom.", upgrade: "Zobacz plany",
     tabPractice: "Profil praktyki", tabAbout: "O mnie", editor: "Edytor profilu", draft: "Szkic", published: "Opublikowano", unpublishedChanges: "Nieopublikowane zmiany",
     photo: "Zdjęcie", uploadPhoto: "Prześlij zdjęcie", replacePhoto: "Zmień zdjęcie", removePhoto: "Usuń", cropTitle: "Kadrowanie zdjęcia", zoom: "Powiększenie", horizontal: "W poziomie", vertical: "W pionie", apply: "Zastosuj", cancel: "Anuluj",
     firstName: "Imię", lastName: "Nazwisko", patronymic: "Drugie imię (opcjonalnie)", proTitle: "Tytuł zawodowy", proTitlePh: "np. Psychoterapeuta",
@@ -136,6 +139,7 @@ export const TP_COPY: Record<TPLang, Copy> = {
     book: "Umów spotkanie", aboutNav: "O mnie", bookingNav: "Rezerwacja", previewTitle: "Podgląd profilu", close: "Zamknij", openDoc: "Otwórz dokument", format: "Forma",
   },
   de: {
+    trialUntil: "Kostenlos testen bis {d}", proOnly: "Das öffentliche Profil ist jetzt Teil von Pro. Ihr Entwurf bleibt gespeichert; upgraden Sie, um ihn wieder anzuzeigen.", upgrade: "Pläne ansehen",
     tabPractice: "Praxisprofil", tabAbout: "Über mich", editor: "Profil-Editor", draft: "Entwurf", published: "Veröffentlicht", unpublishedChanges: "Unveröffentlichte Änderungen",
     photo: "Foto", uploadPhoto: "Foto hochladen", replacePhoto: "Foto ersetzen", removePhoto: "Entfernen", cropTitle: "Foto zuschneiden", zoom: "Zoom", horizontal: "Horizontal", vertical: "Vertikal", apply: "Übernehmen", cancel: "Abbrechen",
     firstName: "Vorname", lastName: "Nachname", patronymic: "Zweiter Vorname (optional)", proTitle: "Berufsbezeichnung", proTitlePh: "z. B. Psychotherapeutin",
@@ -151,6 +155,7 @@ export const TP_COPY: Record<TPLang, Copy> = {
     book: "Termin buchen", aboutNav: "Über mich", bookingNav: "Buchung", previewTitle: "Profilvorschau", close: "Schließen", openDoc: "Dokument öffnen", format: "Format",
   },
   fr: {
+    trialUntil: "Essai gratuit jusqu'au {d}", proOnly: "Le profil public fait désormais partie de Pro. Votre brouillon est conservé ; passez à Pro pour l'afficher à nouveau.", upgrade: "Voir les offres",
     tabPractice: "Profil du cabinet", tabAbout: "À propos", editor: "Éditeur du profil", draft: "Brouillon", published: "Publié", unpublishedChanges: "Modifications non publiées",
     photo: "Photo", uploadPhoto: "Importer une photo", replacePhoto: "Remplacer la photo", removePhoto: "Supprimer", cropTitle: "Recadrer la photo", zoom: "Zoom", horizontal: "Horizontal", vertical: "Vertical", apply: "Appliquer", cancel: "Annuler",
     firstName: "Prénom", lastName: "Nom", patronymic: "Deuxième prénom (facultatif)", proTitle: "Titre professionnel", proTitlePh: "ex. Psychothérapeute",
@@ -166,6 +171,7 @@ export const TP_COPY: Record<TPLang, Copy> = {
     book: "Prendre rendez-vous", aboutNav: "À propos", bookingNav: "Réservation", previewTitle: "Aperçu du profil", close: "Fermer", openDoc: "Ouvrir le document", format: "Format",
   },
   ru: {
+    trialUntil: "Бесплатный триал до {d}", proOnly: "Публичный профиль теперь входит в тариф Pro. Черновик сохранён; обновите тариф, чтобы снова показывать его клиентам.", upgrade: "Посмотреть тарифы",
     tabPractice: "Профиль практики", tabAbout: "Обо мне", editor: "Редактор профиля", draft: "Черновик", published: "Опубликовано", unpublishedChanges: "Есть неопубликованные изменения",
     photo: "Фотография", uploadPhoto: "Загрузить фото", replacePhoto: "Заменить фото", removePhoto: "Удалить", cropTitle: "Кадрирование фото", zoom: "Масштаб", horizontal: "По горизонтали", vertical: "По вертикали", apply: "Применить", cancel: "Отмена",
     firstName: "Имя", lastName: "Фамилия", patronymic: "Отчество (необязательно)", proTitle: "Профессиональный титул", proTitlePh: "напр. Психотерапевт",

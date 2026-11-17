@@ -32,3 +32,10 @@ export function featureForPath(path: string): Feature | null {
   if (path.startsWith("/supervision")) return "supervisions";
   return null;
 }
+
+/** "About me" public profile: free for everyone until this moment, then Pro only. */
+export const ABOUT_PROFILE_TRIAL_END = new Date("2027-05-18T00:00:00Z");
+export function aboutProfileAccess(access: AccessLike | null | undefined, now: Date = new Date()) {
+  const trial = now < ABOUT_PROFILE_TRIAL_END;
+  return { allowed: trial || !!access?.has_pro, trial };
+}

@@ -5270,6 +5270,10 @@ export type Database = {
         Args: { p_client_id: string }
         Returns: Json
       }
+      therapist_profile_allowed: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
       user_has_demo_data: { Args: { p_user_id: string }; Returns: boolean }
       withdraw_from_prepayment_for_appointment: {
         Args: {
