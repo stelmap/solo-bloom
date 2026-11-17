@@ -2551,28 +2551,43 @@ export type Database = {
       }
       license_requests: {
         Row: {
+          admin_note: string | null
           created_at: string
           email: string
+          granted_plan: string | null
+          granted_until: string | null
           id: string
           message: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           status: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          admin_note?: string | null
           created_at?: string
           email: string
+          granted_plan?: string | null
+          granted_until?: string | null
           id?: string
           message?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string
           updated_at?: string
           user_id?: string
         }
         Update: {
+          admin_note?: string | null
           created_at?: string
           email?: string
+          granted_plan?: string | null
+          granted_until?: string | null
           id?: string
           message?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -4753,6 +4768,36 @@ export type Database = {
           updated_at: string
           user_id: string
         }[]
+      }
+      admin_review_license_request: {
+        Args: {
+          p_action: string
+          p_expected_status: string
+          p_id: string
+          p_note?: string
+          p_plan?: string
+          p_until?: string
+        }
+        Returns: {
+          admin_note: string | null
+          created_at: string
+          email: string
+          granted_plan: string | null
+          granted_until: string | null
+          id: string
+          message: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "license_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       admin_review_referral_payout: {
         Args: {
