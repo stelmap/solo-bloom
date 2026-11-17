@@ -44,7 +44,7 @@ export function ProfilePromoSection({ lang, onCta }: { lang: AppLanguage; onCta?
           </ul>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg" className="rounded-lg"><Link to="/auth?mode=signup&trial=1" onClick={() => onCta?.('profile_create')}>{t.cta}<ArrowRight className="size-4" /></Link></Button>
-            <Button asChild size="lg" variant="outline" className="rounded-lg"><a href={EXAMPLE_PROFILE_URL} target="_blank" rel="noopener noreferrer" onClick={() => onCta?.('profile_example')}>{t.example}</a></Button>
+            <Button asChild size="lg" variant="outline" className="rounded-lg"><a href={`${EXAMPLE_PROFILE_URL}?lang=${lang}`} target="_blank" rel="noopener noreferrer" onClick={() => onCta?.('profile_example')}>{t.example}</a></Button>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">{t.note}</p>
         </div>

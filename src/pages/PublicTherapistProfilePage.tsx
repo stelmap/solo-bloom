@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Globe } from "lucide-react";
+import { getPreLoginLang } from "@/i18n/LanguageContext";
 import { Helmet } from "react-helmet-async";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +18,8 @@ const NOT_FOUND: Record<string, string> = {
 export default function PublicTherapistProfilePage() {
   const { slug = "" } = useParams();
   const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
+  const [pick, setPick] = useState<string | null>(() => params.get("lang") || getPreLoginLang() || (() => { try { return localStorage.getItem("landing_lang"); } catch { return null; } })());
   const [state, setState] = useState<{ profile: TherapistProfileData; booking: string; lang: string } | null | "missing">(null);
 
   useEffect(() => {
@@ -31,9 +35,10 @@ export default function PublicTherapistProfilePage() {
 
   const browser = typeof navigator !== "undefined" ? navigator.language : "en";
   if (state === null) return <div className="flex min-h-screen items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
-  if (state === "missing") return <><SeoHead path={`/therapist/${slug}`} title="Solo .Bizz" description={NOT_FOUND.en} noindex /><div className="flex min-h-screen items-center justify-center p-6 text-muted-foreground">{NOT_FOUND[tpLang(browser)]}</div></>;
+  if (state === "missing") return <><SeoHead path={`/therapist/${slug}`} title="Solo .Bizz" description={NOT_FOUND.en} noindex /><div className="flex min-h-screen items-center justify-center p-6 text-muted-foreground">{NOT_FOUND[tpLang(pick || browser)]}</div></>;
 
-  const lang = tpLang(browser || state.lang);
+  const lang = tpLang(pick || browser || state.lang);
+  const choose = (v: string) => { setPick(v); const n = new URLSearchParams(params); n.set("lang", v); setParams(n, { replace: true }); };
   const name = fullName(state.profile);
   const title = [name, state.profile.title].filter(Boolean).join(" — ");
   const desc = state.profile.about_html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160) || state.profile.expertise.join(", ");
@@ -50,7 +55,15 @@ export default function PublicTherapistProfilePage() {
         <meta name="twitter:card" content="summary" />
       </Helmet>
       <div className="mx-auto max-w-[900px] space-y-6">
-        <TherapistProfileView profile={state.profile} lang={lang} onBook={() => navigate(`/book/${state.booking}`)} />
+        <div className="flex justify-end">
+          <label className="flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-xs font-semibold">
+            <Globe className="h-4 w-4" /><span className="sr-only">Language</span>
+            <select aria-label="Language" value={lang} onChange={(e) => choose(e.target.value)} className="bg-transparent uppercase">
+              {(["uk", "en", "pl", "de", "fr", "ru"] as const).map((l) => <option key={l} value={l}>{l.toUpperCase()}</option>)}
+            </select>
+          </label>
+        </div>
+        <TherapistProfileView profile={state.profile} lang={lang} onBook={() => navigate(`/book/${state.booking}?lang=${lang}`)} />
         <p className="text-center text-xs text-muted-foreground"><BrandName /></p>
       </div>
     </div>
