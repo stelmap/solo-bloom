@@ -31,7 +31,7 @@ export default function PublicTherapistProfilePage() {
 
   const browser = typeof navigator !== "undefined" ? navigator.language : "en";
   if (state === null) return <div className="flex min-h-screen items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
-  if (state === "missing") return <div className="flex min-h-screen items-center justify-center p-6 text-muted-foreground">{NOT_FOUND[tpLang(browser)]}</div>;
+  if (state === "missing") return <><SeoHead path={`/therapist/${slug}`} title="Solo .Bizz" description={NOT_FOUND.en} noindex /><div className="flex min-h-screen items-center justify-center p-6 text-muted-foreground">{NOT_FOUND[tpLang(browser)]}</div></>;
 
   const lang = tpLang(browser || state.lang);
   const name = fullName(state.profile);
@@ -40,7 +40,11 @@ export default function PublicTherapistProfilePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10 px-3 py-6 sm:px-4">
-      <SeoHead path={`/therapist/${slug}`} title={title || "Solo .Bizz"} description={desc || title} />
+      <SeoHead path={`/therapist/${slug}`} title={title || "Solo .Bizz"} description={desc || title} jsonLd={{
+        "@context": "https://schema.org", "@type": "Person", name, jobTitle: state.profile.title || undefined,
+        description: desc || undefined, url: `https://solo-bizz.com/therapist/${slug}`,
+        knowsAbout: state.profile.expertise.length ? state.profile.expertise : undefined,
+      }} />
       <Helmet>
         <meta property="og:type" content="profile" />
         <meta name="twitter:card" content="summary" />
