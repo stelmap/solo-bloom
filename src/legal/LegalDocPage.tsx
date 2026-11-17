@@ -1,8 +1,10 @@
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { ArrowLeft } from "lucide-react";
 import { PublicFooter } from "@/components/PublicFooter";
 import { SeoHead } from "@/components/SeoHead";
-import { useLanguage } from "@/i18n/LanguageContext";
+import { useLanguage, setPreLoginLang } from "@/i18n/LanguageContext";
 import type { AppLanguage } from "@/i18n/translations";
 import type { LegalBlock, LegalDoc } from "@/legal/types";
 
@@ -84,12 +86,32 @@ type Props = {
 };
 
 export function LegalDocPage({ path, seoTitle, seoDescription, content }: Props) {
-  const { lang } = useLanguage();
+  const { lang, setLang } = useLanguage();
+  const location = useLocation();
+  // Skip languages that only reuse the English text (e.g. German until reviewed).
+  const available = (Object.keys(content) as AppLanguage[]).filter((l) => l === "en" || content[l] !== content.en);
+  // ?lang= selects a language-specific URL; the plain path stays English so
+  // existing links keep working.
+  useEffect(() => {
+    const q = new URLSearchParams(location.search).get("lang") as AppLanguage | null;
+    if (q && available.includes(q) && q !== lang) { setPreLoginLang(q); setLang(q); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
   const doc = content[lang] ?? content.en;
+  const seoLang: AppLanguage = available.includes(lang) ? lang : "en";
+  const urlFor = (l: AppLanguage) => (l === "en" ? path : `${path}?lang=${l}`);
+  const firstText = [doc.intro, ...doc.sections.flatMap((x) => x.body)].find((b) => typeof b === "string") as string | undefined;
+  const plainDesc = (firstText ?? "").replace(/\*\*/g, "").replace(/\s+/g, " ").trim();
+  const localDesc = seoLang === "en" ? seoDescription : plainDesc.length > 155 ? plainDesc.slice(0, 154).trimEnd() + "…" : plainDesc || seoDescription;
+  const localTitle = seoLang === "en" ? seoTitle : `${doc.title} — Solo .Bizz`;
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <SeoHead path={path} title={seoTitle} description={seoDescription} />
+      <SeoHead path={urlFor(seoLang)} title={localTitle} description={localDesc} />
+      <Helmet htmlAttributes={{ lang: seoLang }}>
+        {available.map((l) => <link key={l} rel="alternate" hrefLang={l} href={`https://solo-bizz.com${urlFor(l)}`} />)}
+        <link rel="alternate" hrefLang="x-default" href={`https://solo-bizz.com${path}`} />
+      </Helmet>
       <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
         <Link to="/" className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> {doc.back}
