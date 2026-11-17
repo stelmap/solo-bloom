@@ -100,6 +100,7 @@ const AdminSupportPage = lazyWithReload(() => import("./pages/AdminSupportPage")
 const AdminReferralPayoutsPage = lazyWithReload(() => import("./pages/AdminReferralPayoutsPage"));
 const AdminLicenseRequestsPage = lazyWithReload(() => import("./pages/AdminLicenseRequestsPage"));
 const AdminPaddleEventsPage = lazyWithReload(() => import("./pages/AdminPaddleEventsPage"));
+const PublicTherapistProfilePage = lazyWithReload(() => import("./pages/PublicTherapistProfilePage"));
 const ServerUpdatePage = lazyWithReload(() => import("./pages/ServerUpdatePage"));
 const OAuthConsentPage = lazyWithReload(() => import("./pages/OAuthConsentPage"));
 const AgreementTemplatesPage = lazyWithReload(() => import("./pages/AgreementTemplatesPage"));
@@ -157,6 +158,7 @@ const App = () => {
                 <Route path="/guides/start-private-practice" element={<StartPracticeGuidePage />} />
                 <Route path="/confirm-session" element={<ConfirmSessionPage />} />
                 <Route path="/book/:token" element={<PublicBookingPage />} />
+                <Route path="/therapist/:slug" element={<PublicTherapistProfilePage />} />
                 <Route path="/agreement/:token" element={<PublicAgreementPage />} />
                 <Route path="/server-update" element={<ServerUpdatePage />} />
                 <Route path="/checkout" element={<CheckoutPage />} />

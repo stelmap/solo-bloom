@@ -183,6 +183,13 @@
       "when": 1794930560087,
       "tag": "0025_therapist_profile_trial_gate",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1794932646317,
+      "tag": "0026_therapist_profile_slug",
+      "breakpoints": true
     }
   ]
 }

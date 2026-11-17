@@ -15,8 +15,9 @@ import { useToast } from "@/hooks/use-toast";
 import { describeError } from "@/lib/errorMessages";
 import {
   MAX_FILE_BYTES, THERAPIST_FILES_BUCKET, TP_COPY, cropSquare, detectFileKind, emptyProfile, normalizeProfile, toPublished,
-  type TPLang, type TherapistProfileData,
+  type TPLang, type TherapistProfileData, profileSlugBase,
 } from "@/lib/therapistProfile";
+import { PublicProfileLinkCard } from "./PublicProfileLinkCard";
 import { Link } from "react-router-dom";
 import { usePracticeAccess } from "@/hooks/usePracticeAccess";
 import { ABOUT_PROFILE_TRIAL_END, aboutProfileAccess } from "@/lib/planFeatures";
@@ -76,6 +77,7 @@ export function AboutMeEditor({ lang, bookingActive }: { lang: TPLang; bookingAc
       if (mode === "unpublish") row.is_published = false;
       const { error } = await supabase.from("therapist_public_profiles").upsert(row as any, { onConflict: "user_id" });
       if (error) throw error;
+      if (mode === "publish") await supabase.rpc("ensure_my_therapist_profile_slug", { p_base: profileSlugBase(p) });
       setDirty(false);
       await qc.invalidateQueries({ queryKey: ["therapist-profile", user.id] });
       toast({ title: mode === "publish" ? C.publishedOk : mode === "unpublish" ? C.unpublishedOk : C.saved });
@@ -137,6 +139,7 @@ export function AboutMeEditor({ lang, bookingActive }: { lang: TPLang; bookingAc
 
   return (
     <div className="space-y-4">
+      <PublicProfileLinkCard lang={lang} slug={isPub && gate.allowed && bookingActive ? q.data?.slug ?? null : null} published={isPub && gate.allowed && bookingActive} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold">{C.editor}</h2>

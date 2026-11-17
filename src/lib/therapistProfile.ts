@@ -91,6 +91,7 @@ export const tpLang = (v: unknown): TPLang => {
 type Copy = Record<string, string>;
 export const TP_COPY: Record<TPLang, Copy> = {
   en: {
+    linkTitle: "Your public profile", notPublished: "Not published", publishToShare: "Publish the profile to share the link", copyLink: "Copy link", linkCopied: "Link copied", viewProfile: "View profile", share: "Share", instagramHint: "Copy the link and add it to your Instagram bio",
     trialUntil: "Free trial until {d}", proOnly: "The public profile is now part of the Pro plan. Your draft is saved; upgrade to show it to clients again.", upgrade: "See plans",
     publishCheckbox: "Publish my professional profile", saveChanges: "Save changes", tabPractice: "Practice settings", tabAbout: "About me", editor: "Profile editor", draft: "Draft", published: "Published", unpublishedChanges: "Unpublished changes",
     photo: "Photo", uploadPhoto: "Upload photo", replacePhoto: "Replace photo", removePhoto: "Remove", cropTitle: "Crop photo", zoom: "Zoom", horizontal: "Horizontal", vertical: "Vertical", apply: "Apply", cancel: "Cancel",
@@ -107,6 +108,7 @@ export const TP_COPY: Record<TPLang, Copy> = {
     book: "Book an appointment", aboutNav: "About me", bookingNav: "Booking", previewTitle: "Profile preview", close: "Close", openDoc: "Open document", format: "Format",
   },
   uk: {
+    linkTitle: "Ваш публічний профіль", notPublished: "Не опубліковано", publishToShare: "Опублікуйте профіль, щоб поділитися посиланням", copyLink: "Копіювати посилання", linkCopied: "Посилання скопійовано", viewProfile: "Переглянути профіль", share: "Поділитися", instagramHint: "Скопіюйте посилання та додайте його в біографію Instagram",
     trialUntil: "Безкоштовний тріал до {d}", proOnly: "Публічний профіль тепер входить у тариф Pro. Чернетку збережено; оновіть тариф, щоб знову показувати його клієнтам.", upgrade: "Переглянути тарифи",
     publishCheckbox: "Публікувати мій профіль", saveChanges: "Зберегти зміни", tabPractice: "Налаштування практики", tabAbout: "Про мене", editor: "Редактор профілю", draft: "Чернетка", published: "Опубліковано", unpublishedChanges: "Є неопубліковані зміни",
     photo: "Фотографія", uploadPhoto: "Завантажити фото", replacePhoto: "Замінити фото", removePhoto: "Видалити", cropTitle: "Кадрування фото", zoom: "Масштаб", horizontal: "По горизонталі", vertical: "По вертикалі", apply: "Застосувати", cancel: "Скасувати",
@@ -123,6 +125,7 @@ export const TP_COPY: Record<TPLang, Copy> = {
     book: "Записатися на зустріч", aboutNav: "Про мене", bookingNav: "Запис", previewTitle: "Попередній перегляд", close: "Закрити", openDoc: "Відкрити документ", format: "Формат",
   },
   pl: {
+    linkTitle: "Twój profil publiczny", notPublished: "Nieopublikowany", publishToShare: "Opublikuj profil, aby udostępnić link", copyLink: "Kopiuj link", linkCopied: "Link skopiowany", viewProfile: "Zobacz profil", share: "Udostępnij", instagramHint: "Skopiuj link i dodaj go do bio na Instagramie",
     trialUntil: "Darmowy okres próbny do {d}", proOnly: "Profil publiczny jest teraz w planie Pro. Szkic jest zapisany; zmień plan, aby znów pokazać go klientom.", upgrade: "Zobacz plany",
     publishCheckbox: "Publikuj mój profil zawodowy", saveChanges: "Zapisz zmiany", tabPractice: "Ustawienia praktyki", tabAbout: "O mnie", editor: "Edytor profilu", draft: "Szkic", published: "Opublikowano", unpublishedChanges: "Nieopublikowane zmiany",
     photo: "Zdjęcie", uploadPhoto: "Prześlij zdjęcie", replacePhoto: "Zmień zdjęcie", removePhoto: "Usuń", cropTitle: "Kadrowanie zdjęcia", zoom: "Powiększenie", horizontal: "W poziomie", vertical: "W pionie", apply: "Zastosuj", cancel: "Anuluj",
@@ -139,6 +142,7 @@ export const TP_COPY: Record<TPLang, Copy> = {
     book: "Umów spotkanie", aboutNav: "O mnie", bookingNav: "Rezerwacja", previewTitle: "Podgląd profilu", close: "Zamknij", openDoc: "Otwórz dokument", format: "Forma",
   },
   de: {
+    linkTitle: "Ihr öffentliches Profil", notPublished: "Nicht veröffentlicht", publishToShare: "Veröffentlichen Sie das Profil, um den Link zu teilen", copyLink: "Link kopieren", linkCopied: "Link kopiert", viewProfile: "Profil ansehen", share: "Teilen", instagramHint: "Kopieren Sie den Link und fügen Sie ihn in Ihre Instagram-Bio ein",
     trialUntil: "Kostenlos testen bis {d}", proOnly: "Das öffentliche Profil ist jetzt Teil von Pro. Ihr Entwurf bleibt gespeichert; upgraden Sie, um ihn wieder anzuzeigen.", upgrade: "Pläne ansehen",
     publishCheckbox: "Mein berufliches Profil veröffentlichen", saveChanges: "Änderungen speichern", tabPractice: "Praxiseinstellungen", tabAbout: "Über mich", editor: "Profil-Editor", draft: "Entwurf", published: "Veröffentlicht", unpublishedChanges: "Unveröffentlichte Änderungen",
     photo: "Foto", uploadPhoto: "Foto hochladen", replacePhoto: "Foto ersetzen", removePhoto: "Entfernen", cropTitle: "Foto zuschneiden", zoom: "Zoom", horizontal: "Horizontal", vertical: "Vertikal", apply: "Übernehmen", cancel: "Abbrechen",
@@ -155,6 +159,7 @@ export const TP_COPY: Record<TPLang, Copy> = {
     book: "Termin buchen", aboutNav: "Über mich", bookingNav: "Buchung", previewTitle: "Profilvorschau", close: "Schließen", openDoc: "Dokument öffnen", format: "Format",
   },
   fr: {
+    linkTitle: "Votre profil public", notPublished: "Non publié", publishToShare: "Publiez le profil pour partager le lien", copyLink: "Copier le lien", linkCopied: "Lien copié", viewProfile: "Voir le profil", share: "Partager", instagramHint: "Copiez le lien et ajoutez-le à votre bio Instagram",
     trialUntil: "Essai gratuit jusqu'au {d}", proOnly: "Le profil public fait désormais partie de Pro. Votre brouillon est conservé ; passez à Pro pour l'afficher à nouveau.", upgrade: "Voir les offres",
     publishCheckbox: "Publier mon profil professionnel", saveChanges: "Enregistrer", tabPractice: "Paramètres du cabinet", tabAbout: "À propos", editor: "Éditeur du profil", draft: "Brouillon", published: "Publié", unpublishedChanges: "Modifications non publiées",
     photo: "Photo", uploadPhoto: "Importer une photo", replacePhoto: "Remplacer la photo", removePhoto: "Supprimer", cropTitle: "Recadrer la photo", zoom: "Zoom", horizontal: "Horizontal", vertical: "Vertical", apply: "Appliquer", cancel: "Annuler",
@@ -171,6 +176,7 @@ export const TP_COPY: Record<TPLang, Copy> = {
     book: "Prendre rendez-vous", aboutNav: "À propos", bookingNav: "Réservation", previewTitle: "Aperçu du profil", close: "Fermer", openDoc: "Ouvrir le document", format: "Format",
   },
   ru: {
+    linkTitle: "Ваш публичный профиль", notPublished: "Не опубликовано", publishToShare: "Опубликуйте профиль, чтобы поделиться ссылкой", copyLink: "Копировать ссылку", linkCopied: "Ссылка скопирована", viewProfile: "Посмотреть профиль", share: "Поделиться", instagramHint: "Скопируйте ссылку и добавьте её в био Instagram",
     trialUntil: "Бесплатный триал до {d}", proOnly: "Публичный профиль теперь входит в тариф Pro. Черновик сохранён; обновите тариф, чтобы снова показывать его клиентам.", upgrade: "Посмотреть тарифы",
     publishCheckbox: "Публиковать мой профиль", saveChanges: "Сохранить изменения", tabPractice: "Настройки практики", tabAbout: "Обо мне", editor: "Редактор профиля", draft: "Черновик", published: "Опубликовано", unpublishedChanges: "Есть неопубликованные изменения",
     photo: "Фотография", uploadPhoto: "Загрузить фото", replacePhoto: "Заменить фото", removePhoto: "Удалить", cropTitle: "Кадрирование фото", zoom: "Масштаб", horizontal: "По горизонтали", vertical: "По вертикали", apply: "Применить", cancel: "Отмена",
@@ -187,3 +193,14 @@ export const TP_COPY: Record<TPLang, Copy> = {
     book: "Записаться на встречу", aboutNav: "Обо мне", bookingNav: "Запись", previewTitle: "Предпросмотр", close: "Закрыть", openDoc: "Открыть документ", format: "Формат",
   },
 };
+
+const TRANSLIT: Record<string, string> = {
+  а:"a",б:"b",в:"v",г:"h",ґ:"g",д:"d",е:"e",є:"ye",ж:"zh",з:"z",и:"y",і:"i",ї:"yi",й:"i",к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",с:"s",т:"t",у:"u",ф:"f",х:"kh",ц:"ts",ч:"ch",ш:"sh",щ:"shch",ь:"",ю:"yu",я:"ya",ё:"yo",ы:"y",э:"e",ъ:"",
+};
+/** Readable URL base from the therapist's name (Cyrillic transliterated, accents removed). */
+export function profileSlugBase(p: Pick<TherapistProfileData, "first_name" | "last_name">): string {
+  const raw = `${p.first_name} ${p.last_name}`.toLowerCase();
+  const latin = Array.from(raw).map((ch) => TRANSLIT[ch] ?? ch).join("").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ł/g, "l");
+  return latin.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 50);
+}
+export const profileUrl = (slug: string) => `https://solo-bizz.com/therapist/${slug}`;

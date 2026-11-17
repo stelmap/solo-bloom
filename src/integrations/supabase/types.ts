@@ -4270,6 +4270,7 @@ export type Database = {
           published: Json | null
           published_at: string | null
           published_files: string[]
+          slug: string | null
           updated_at: string
           user_id: string
         }
@@ -4280,6 +4281,7 @@ export type Database = {
           published?: Json | null
           published_at?: string | null
           published_files?: string[]
+          slug?: string | null
           updated_at?: string
           user_id: string
         }
@@ -4290,6 +4292,7 @@ export type Database = {
           published?: Json | null
           published_at?: string | null
           published_files?: string[]
+          slug?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -5073,6 +5076,10 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: undefined
       }
+      ensure_my_therapist_profile_slug: {
+        Args: { p_base: string }
+        Returns: string
+      }
       generate_invoice_number:
         | { Args: { p_user_id: string }; Returns: string }
         | {
@@ -5222,6 +5229,10 @@ export type Database = {
         }[]
       }
       public_get_therapist_profile: { Args: { p_token: string }; Returns: Json }
+      public_get_therapist_profile_by_slug: {
+        Args: { p_slug: string }
+        Returns: Json
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
