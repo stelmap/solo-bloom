@@ -96,6 +96,11 @@ export function LegalDocPage({ path, seoTitle, seoDescription, content }: Props)
         </Link>
         <h1 className="text-2xl font-bold text-foreground sm:text-3xl">{doc.title}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{doc.updated}</p>
+        {!content[lang] && lang === "de" ? (
+          <p className="mt-4 rounded-md border border-border bg-muted px-3 py-2 text-sm text-muted-foreground">
+            Dieses Dokument ist derzeit nur auf Englisch verfügbar. Eine geprüfte deutsche Fassung folgt.
+          </p>
+        ) : null}
         {doc.intro ? <p className="mt-6 leading-relaxed text-muted-foreground">{renderInline(doc.intro)}</p> : null}
 
         <div className="mt-10 space-y-8 text-foreground/90">

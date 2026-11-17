@@ -17,9 +17,9 @@ export const refundEn: LegalDoc = {
       ],
     },
     {
-      h: "2. Free plan and trial use",
+      h: "2. Free trial",
       body: [
-        "Solo .Bizz has a free plan with no card required. We recommend using it to check that the service fits your practice before you pay.",
+        "New accounts get a 14-day free trial with Pro features, with no payment method required. We recommend using it to check that the service fits your practice before you pay. To keep using Solo .Bizz after the trial, choose a paid Solo or Pro subscription.",
       ],
     },
     {

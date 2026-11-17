@@ -55,7 +55,7 @@ export const termsFr: LegalDoc = {
     {
       h: "5. Formules et tarifs",
       body: [
-        "Solo .Bizz propose une formule gratuite et des abonnements payants. Les formules diffèrent principalement par le nombre de clients actifs et les fonctionnalités incluses.",
+        "Solo .Bizz propose des abonnements payants (Solo et Pro) et un essai gratuit de 14 jours pour les nouveaux comptes. Les formules diffèrent principalement par le nombre de clients actifs et les fonctionnalités incluses.",
         "Les formules, tarifs, périodicités, devises et remises en vigueur sont affichés dans la section tarifs du site et dans l'application avant la confirmation de l'achat. Les prix peuvent évoluer ; le prix affiché au moment de l'achat s'applique au cycle de facturation concerné.",
         { type: "link", to: "/#pricing", label: "Voir les formules et tarifs actuels" },
       ],
@@ -68,7 +68,7 @@ export const termsFr: LegalDoc = {
           "le paiement s'effectue via la fenêtre de paiement Paddle et un moyen de paiement est enregistré lors de l'achat ;",
           "l'abonnement se renouvelle automatiquement à la fin de chaque période jusqu'à résiliation ;",
           "le renouvellement est prélevé sur le moyen de paiement enregistré ;",
-          "aucune période d'essai gratuite n'est proposée actuellement — si elle est introduite, sa durée et ses conditions seront indiquées avant l'achat ;",
+          "les nouveaux comptes bénéficient d'un essai gratuit de 14 jours avec les fonctionnalités Pro ; aucun moyen de paiement n'est demandé pour l'essai et rien n'est facturé tant que vous ne souscrivez pas d'abonnement payant ;",
           "nous ne conservons pas vos données de carte complètes : elles sont gérées par Paddle ;",
           "en cas d'échec de paiement, l'accès aux fonctions payantes peut être limité jusqu'au règlement.",
         ],

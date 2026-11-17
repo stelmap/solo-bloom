@@ -17,9 +17,9 @@ export const refundPl: LegalDoc = {
       ],
     },
     {
-      h: "2. Plan bezpłatny",
+      h: "2. Bezpłatny okres próbny",
       body: [
-        "Solo .Bizz ma bezpłatny plan bez podawania karty. Zalecamy sprawdzenie w nim, czy usługa pasuje do Twojej praktyki, zanim zapłacisz.",
+        "Nowe konta otrzymują 14-dniowy bezpłatny okres próbny z funkcjami Pro, bez podawania metody płatności. Zalecamy sprawdzenie w nim, czy usługa pasuje do Twojej praktyki, zanim zapłacisz. Aby korzystać z Solo .Bizz po okresie próbnym, wybierz płatną subskrypcję Solo lub Pro.",
       ],
     },
     {

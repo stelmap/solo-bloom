@@ -77,7 +77,7 @@ export default function AboutBrandPage() {
               <ul className="mt-3 space-y-2 text-muted-foreground">
                 <li className="flex items-center gap-2"><Mail className="h-4 w-4 text-primary" /><a href="mailto:info@solo-bizz.com" className="hover:text-foreground">info@solo-bizz.com</a></li>
                 <li className="flex items-center gap-2"><Send className="h-4 w-4 text-primary" /><a href="https://t.me/solobizzcontact" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">Telegram</a></li>
-                <li className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" />Gwiaździsta 16, 53-413 Wrocław, PL</li>
+                <li className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" />Office: Gwiaździsta 16, 53-413 Wrocław, PL</li>
               </ul>
             </section>
           </div>

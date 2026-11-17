@@ -17,9 +17,9 @@ export const refundFr: LegalDoc = {
       ],
     },
     {
-      h: "2. Offre gratuite",
+      h: "2. Essai gratuit",
       body: [
-        "Solo .Bizz propose une offre gratuite sans carte bancaire. Nous vous conseillons de l'utiliser pour vérifier que le service convient à votre pratique avant de payer.",
+        "Les nouveaux comptes bénéficient d'un essai gratuit de 14 jours avec les fonctionnalités Pro, sans moyen de paiement. Nous vous conseillons de l'utiliser pour vérifier que le service convient à votre pratique avant de payer. Pour continuer à utiliser Solo .Bizz après l'essai, choisissez un abonnement payant Solo ou Pro.",
       ],
     },
     {

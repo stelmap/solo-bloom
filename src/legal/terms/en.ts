@@ -55,7 +55,7 @@ export const termsEn: LegalDoc = {
     {
       h: "5. Plans and pricing",
       body: [
-        "Solo .Bizz offers a free plan and paid subscription plans. Plans differ mainly by the number of active clients and the features included.",
+        "Solo .Bizz offers paid subscription plans (Solo and Pro), with a 14-day free trial for new accounts. Plans differ mainly by the number of active clients and the features included.",
         "Current plans, prices, billing periods, currencies and any active discounts are shown on the pricing section of our website and in the app before you confirm a purchase. Prices may change; the price shown at the time of purchase applies to that billing cycle.",
         { type: "link", to: "/#pricing", label: "View current plans and pricing" },
       ],
@@ -68,7 +68,7 @@ export const termsEn: LegalDoc = {
           "you pay through the Paddle checkout and a payment method is collected at purchase;",
           "the subscription renews automatically at the end of each billing period until you cancel;",
           "renewal is charged to the payment method on file;",
-          "no free trial is currently offered — if a trial is introduced, its length and conditions will be shown before purchase;",
+          "new accounts get a 14-day free trial with Pro features; no payment method is collected for the trial, and nothing is charged unless you start a paid subscription;",
           "we do not store your full card details; they are handled by Paddle;",
           "if a payment fails, access to paid features may be limited until payment succeeds.",
         ],

@@ -55,7 +55,7 @@ export const termsPl: LegalDoc = {
     {
       h: "5. Plany i ceny",
       body: [
-        "Solo .Bizz oferuje plan bezpłatny oraz płatne plany subskrypcyjne. Plany różnią się przede wszystkim liczbą aktywnych klientów i zakresem funkcji.",
+        "Solo .Bizz oferuje płatne plany subskrypcyjne (Solo i Pro) oraz 14-dniowy bezpłatny okres próbny dla nowych kont. Plany różnią się przede wszystkim liczbą aktywnych klientów i zakresem funkcji.",
         "Aktualne plany, ceny, okresy rozliczeniowe, waluty i obowiązujące rabaty są prezentowane w sekcji cennika na stronie oraz w aplikacji przed potwierdzeniem zakupu. Ceny mogą się zmieniać; dla danego okresu obowiązuje cena widoczna w momencie zakupu.",
         { type: "link", to: "/#pricing", label: "Zobacz aktualne plany i ceny" },
       ],
@@ -68,7 +68,7 @@ export const termsPl: LegalDoc = {
           "płatność realizowana jest w oknie płatności Paddle, a metoda płatności jest zapisywana przy zakupie;",
           "subskrypcja odnawia się automatycznie na koniec każdego okresu, dopóki jej nie anulujesz;",
           "odnowienie jest pobierane z zapisanej metody płatności;",
-          "obecnie nie oferujemy bezpłatnego okresu próbnego — jeśli zostanie wprowadzony, jego warunki i długość pokażemy przed zakupem;",
+          "nowe konta otrzymują 14-dniowy bezpłatny okres próbny z funkcjami Pro; metoda płatności nie jest do niego wymagana i nic nie jest pobierane, dopóki nie rozpoczniesz płatnej subskrypcji;",
           "nie przechowujemy pełnych danych karty — obsługuje je Paddle;",
           "w razie nieudanej płatności dostęp do funkcji płatnych może zostać ograniczony do czasu opłacenia.",
         ],

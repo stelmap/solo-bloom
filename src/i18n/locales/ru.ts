@@ -569,7 +569,7 @@ export default {
   "sub.detailsEnds": "Доступ заканчивается",
   "sub.detailsTrialEnds": "Конец пробного периода",
   "sub.cancelSubscription": "Отменить подписку",
-  "sub.cancelConfirm": "Вы будете перенаправлены в Stripe для отмены. Доступ сохранится до конца оплаченного периода.",
+  "sub.cancelConfirm": "Вы будете перенаправлены в Paddle для отмены. Доступ сохранится до конца оплаченного периода.",
   "sub.noActiveTitle": "Активной подписки нет",
   "sub.noActiveDesc": "Выберите тариф, чтобы открыть все функции.",
   "sub.viewPlans": "Посмотреть тарифы",
@@ -582,7 +582,7 @@ export default {
   "sub.planSummaryClientsLimit": "до {count} активных клиентов",
   "sub.planSummaryUnlimited": "неограниченное число активных клиентов",
   "sub.planSummaryFullAccess": "полный доступ ко всем функциям Solo .Bizz",
-  "sub.planSummaryStripe": "оплата через Paddle",
+  "sub.planSummaryPaddle": "оплата через Paddle",
   "sub.clientsUnlimited": "Без ограничений",
   "sub.clientsUpTo": "до {count}",
 
