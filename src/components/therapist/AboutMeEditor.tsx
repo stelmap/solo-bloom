@@ -33,7 +33,6 @@ export function AboutMeEditor({ lang, bookingActive }: { lang: TPLang; bookingAc
   const qc = useQueryClient();
   const [p, setP] = useState<TherapistProfileData>(emptyProfile());
   const [dirty, setDirty] = useState(false);
-  const [publishOn, setPublishOn] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
   const [tag, setTag] = useState("");
@@ -49,7 +48,7 @@ export function AboutMeEditor({ lang, bookingActive }: { lang: TPLang; bookingAc
       return data;
     },
   });
-  useEffect(() => { if (q.data !== undefined && !dirty) setPublishOn(!!q.data?.is_published);
+  useEffect(() => {
     if (q.data !== undefined && !dirty) setP(q.data ? normalizeProfile(q.data.draft) : emptyProfile()); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [q.data]);
 
   const urls = useSignedUrls([p.photo, ...p.documents.map((d) => d.path)].filter(Boolean) as string[]);
@@ -65,7 +64,7 @@ export function AboutMeEditor({ lang, bookingActive }: { lang: TPLang; bookingAc
 
   const save = async (forced?: "draft" | "publish" | "unpublish") => {
     if (!user) return;
-    const mode = forced ?? (publishOn && gate.allowed ? "publish" : "unpublish");
+    const mode = forced ?? (q.data?.is_published && gate.allowed ? "publish" : "draft");
     if (mode === "publish" && !p.first_name.trim()) { toast({ title: C.nameRequired, variant: "destructive" }); return; }
     setBusy(mode);
     try {
@@ -139,17 +138,21 @@ export function AboutMeEditor({ lang, bookingActive }: { lang: TPLang; bookingAc
 
   return (
     <div className="space-y-4">
-      <PublicProfileLinkCard lang={lang} slug={isPub && gate.allowed && bookingActive ? q.data?.slug ?? null : null} published={isPub && gate.allowed && bookingActive} />
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold">{C.editor}</h2>
-          <Badge variant={isPub ? "default" : "secondary"}>{isPub ? C.published : C.draft}</Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="text-lg font-semibold">{C.about}</h2>
+          <Badge className={isPub ? "border-transparent bg-success text-success-foreground hover:bg-success" : "border-transparent bg-muted text-muted-foreground hover:bg-muted"}>{isPub ? C.published : C.notPublished}</Badge>
           {changed && <Badge variant="outline">{C.unpublishedChanges}</Badge>}
           {gate.trial && <Badge variant="outline" className="border-primary text-primary">{C.trialUntil.replace("{d}", trialEnd)}</Badge>}
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => setPreview(true)}><Eye className="mr-2 h-4 w-4" />{C.preview}</Button>
-          <Button onClick={() => void save()} disabled={!!busy}>{busy && busy !== "photo" && busy !== "docs" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{C.saveChanges}</Button>
+          <Button variant="ghost" size="sm" className="h-9" onClick={() => setPreview(true)}><Eye className="mr-2 h-4 w-4" />{C.preview}</Button>
+          {isPub ? (
+            <Button variant="outline" size="sm" className="h-9" disabled={!!busy} onClick={() => { if (window.confirm(`${C.unpublish}?`)) void save("unpublish"); }}>{busy === "unpublish" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{C.unpublish}</Button>
+          ) : (
+            <Button size="sm" className="h-9" disabled={!!busy || !gate.allowed} onClick={() => void save("publish")}>{busy === "publish" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{C.publish}</Button>
+          )}
+          <Button variant={isPub ? "default" : "outline"} size="sm" className="h-9" disabled={!!busy} onClick={() => void save(isPub && gate.allowed ? "publish" : "draft")}>{busy === "draft" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{C.saveChanges}</Button>
         </div>
       </div>
       {!gate.allowed && (
@@ -158,11 +161,8 @@ export function AboutMeEditor({ lang, bookingActive }: { lang: TPLang; bookingAc
           <Button asChild size="sm"><Link to="/plans">{C.upgrade}</Link></Button>
         </div>
       )}
-      <label className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 text-sm font-medium">
-        <Checkbox checked={publishOn} disabled={!gate.allowed} onCheckedChange={(v) => { setPublishOn(!!v); setDirty(true); }} />
-        {C.publishCheckbox}
-      </label>
-      <p className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">{C.publicNote}{!bookingActive && <> {C.needLink}</>}</p>
+      <PublicProfileLinkCard lang={lang} slug={q.data?.slug ?? null} published={isPub && gate.allowed && bookingActive} />
+      {!bookingActive && <p className="text-xs text-muted-foreground">{C.needLink}</p>}
 
       <div className="space-y-6 rounded-xl border border-border bg-card p-5">
         <div className="flex flex-col gap-5 sm:flex-row">

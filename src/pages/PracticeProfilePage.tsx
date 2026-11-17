@@ -36,7 +36,7 @@ const normLang = (v: unknown): Lang => {
 
 const COPY: Record<Lang, Record<string, string>> = {
   en: {
-    title: "Practice profile",
+    title: "Practice Profile Editor",
     subtitle: "Used in public booking, invoices and everywhere your practice is shown.",
     identity: "Identity",
     emblem: "Practice emblem", optional: "(optional)",
@@ -68,7 +68,7 @@ const COPY: Record<Lang, Record<string, string>> = {
     requiredNote: "* Required fields", saveAndGo: "Save and go to calendar", publicInfo: "Clients see on your booking page: practice name, therapist name, email, emblem and your free slots. Phone, tax ID and address are not shown.", required: "Required field", invalidPhone: "Enter a valid phone number, e.g. +380 50 123 4567", invalidTaxId: "Use letters, digits, spaces, \"-\", \"/\" or \".\" (2–40 characters)", invalidEmail: "Enter a valid email", setupTitle: "Welcome! Set up your practice", setupSubtitle: "Fill in the required fields — then you can start working in the calendar.",
   },
   uk: {
-    title: "Профіль практики",
+    title: "Редактор профілю практики",
     subtitle: "Використовується в публічному записі, рахунках і всюди, де показано вашу практику.",
     identity: "Ідентичність",
     emblem: "Емблема практики", optional: "(необов'язково)",
@@ -100,7 +100,7 @@ const COPY: Record<Lang, Record<string, string>> = {
     requiredNote: "* Обов’язкові поля", saveAndGo: "Зберегти та перейти до календаря", publicInfo: "Клієнти бачать на сторінці запису: назву практики, ім’я терапевта, email, емблему та вільні слоти. Телефон, податковий номер і адреса не показуються.", required: "Обов’язкове поле", invalidPhone: "Введіть коректний номер, напр. +380 50 123 4567", invalidTaxId: "Лише літери, цифри, пробіли, «-», «/» або «.» (2–40 символів)", invalidEmail: "Введіть коректний email", setupTitle: "Вітаємо! Налаштуйте вашу практику", setupSubtitle: "Заповніть обов’язкові поля — після цього можна працювати з календарем.",
   },
   ru: {
-    title: "Профиль практики",
+    title: "Редактор профиля практики",
     subtitle: "Используется в публичной записи, счетах и везде, где показана ваша практика.",
     identity: "Идентичность",
     emblem: "Эмблема практики", optional: "(необязательно)",
@@ -132,7 +132,7 @@ const COPY: Record<Lang, Record<string, string>> = {
     requiredNote: "* Обязательные поля", saveAndGo: "Сохранить и перейти к календарю", publicInfo: "Клиенты видят на странице записи: название практики, имя терапевта, email, эмблему и свободные слоты. Телефон, налоговый номер и адрес не показываются.", required: "Обязательное поле", invalidPhone: "Введите корректный номер, напр. +380 50 123 4567", invalidTaxId: "Только буквы, цифры, пробелы, «-», «/» или «.» (2–40 символов)", invalidEmail: "Введите корректный email", setupTitle: "Добро пожаловать! Настройте вашу практику", setupSubtitle: "Заполните обязательные поля — после этого можно работать с календарём.",
   },
   fr: {
-    title: "Profil du cabinet",
+    title: "Éditeur du profil du cabinet",
     subtitle: "Utilisé pour la réservation publique, les factures et partout où votre cabinet apparaît.",
     identity: "Identité",
     emblem: "Emblème du cabinet", optional: "(facultatif)",
@@ -164,7 +164,7 @@ const COPY: Record<Lang, Record<string, string>> = {
     requiredNote: "* Champs obligatoires", saveAndGo: "Enregistrer et aller au calendrier", publicInfo: "Vos clients voient sur la page de réservation : nom du cabinet, nom du thérapeute, email, emblème et créneaux libres. Téléphone, numéro fiscal et adresse ne sont pas affichés.", required: "Champ obligatoire", invalidPhone: "Saisissez un numéro valide, ex. +33 6 12 34 56 78", invalidTaxId: "Lettres, chiffres, espaces, « - », « / » ou « . » (2 à 40 caractères)", invalidEmail: "Saisissez un email valide", setupTitle: "Bienvenue ! Configurez votre cabinet", setupSubtitle: "Remplissez les champs obligatoires, puis commencez à travailler dans le calendrier.",
   },
   pl: {
-    title: "Profil praktyki",
+    title: "Edytor profilu praktyki",
     subtitle: "Używany w publicznej rezerwacji, fakturach i wszędzie, gdzie widoczna jest praktyka.",
     identity: "Tożsamość",
     emblem: "Emblemat praktyki", optional: "(opcjonalnie)",
