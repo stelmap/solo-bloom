@@ -4262,6 +4262,39 @@ export type Database = {
         }
         Relationships: []
       }
+      therapist_public_profiles: {
+        Row: {
+          created_at: string
+          draft: Json
+          is_published: boolean
+          published: Json | null
+          published_at: string | null
+          published_files: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          draft?: Json
+          is_published?: boolean
+          published?: Json | null
+          published_at?: string | null
+          published_files?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          draft?: Json
+          is_published?: boolean
+          published?: Json | null
+          published_at?: string | null
+          published_files?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_activity_events: {
         Row: {
           anonymous_id: string | null
@@ -5072,6 +5105,10 @@ export type Database = {
         Args: { p_language: string; p_request_id: string; p_rows: Json }
         Returns: string[]
       }
+      is_published_therapist_file: {
+        Args: { p_name: string }
+        Returns: boolean
+      }
       link_booking_request_client: {
         Args: { p_client_id: string; p_id: string }
         Returns: undefined
@@ -5184,6 +5221,7 @@ export type Database = {
           timezone: string
         }[]
       }
+      public_get_therapist_profile: { Args: { p_token: string }; Returns: Json }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {

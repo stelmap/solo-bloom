@@ -169,6 +169,13 @@
       "when": 1794928944847,
       "tag": "0023_admin_license_request_review",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1794929914916,
+      "tag": "0024_therapist_public_profiles",
+      "breakpoints": true
     }
   ]
 }
