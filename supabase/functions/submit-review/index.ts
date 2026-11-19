@@ -97,8 +97,13 @@ Deno.serve(async (req) => {
     let verifiedUserId: string | null = null
     let recordsCount = 0
     try {
-      const { data: list } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 })
-      const match = list?.users?.find((u) => (u.email ?? '').toLowerCase() === email)
+      // Only a signed-in caller can be verified, and only for their own
+      // confirmed account email. A typed email alone never grants verification.
+      const authHeader = req.headers.get('Authorization') ?? ''
+      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
+      const { data: authData } = token ? await supabase.auth.getUser(token) : { data: { user: null } }
+      const caller = authData?.user ?? null
+      const match = caller && caller.email_confirmed_at && (caller.email ?? '').toLowerCase() === email ? caller : null
       if (match) {
         verifiedUserId = match.id
         const { data: lifecycle } = await supabase
