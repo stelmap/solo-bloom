@@ -205,8 +205,9 @@ export function profileSlugBase(p: Pick<TherapistProfileData, "first_name" | "la
 }
 export const profileUrl = (slug: string) => `https://solo-bizz.com/therapist/${slug}`;
 
-const SHARE_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/share-preview`;
-/** Link that shows a personalized preview card in social apps, then opens the profile. */
-export const profileShareUrl = (slug: string) => `${SHARE_BASE}?p=${encodeURIComponent(slug)}`;
-/** Same for the public booking link. */
-export const bookingShareUrl = (handle: string) => `${SHARE_BASE}?b=${encodeURIComponent(handle)}`;
+/**
+ * Copy/share links must always be clean public solo-bizz.com URLs.
+ * The backend function domain serves HTML as plain text, so its URL showed raw HTML to visitors.
+ */
+export const profileShareUrl = (slug: string) => profileUrl(encodeURIComponent(slug));
+export const bookingShareUrl = (handle: string) => `https://solo-bizz.com/book/${encodeURIComponent(handle)}`;
