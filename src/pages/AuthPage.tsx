@@ -1,3 +1,4 @@
+import { legalPath } from "@/lib/publicLanguage";
 import { BrandName } from "@/components/BrandName";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
@@ -492,9 +493,9 @@ export default function AuthPage() {
                   {mode === "signup" && (
                     <p className="text-center text-xs leading-relaxed text-muted-foreground">
                       {legalAck[0]}{" "}
-                      <Link to="/terms" className="text-primary hover:underline">{legalAck[1]}</Link>{" "}
+                      <Link to={legalPath("/terms", lang)} className="text-primary hover:underline">{legalAck[1]}</Link>{" "}
                       {legalAck[2]}{" "}
-                      <Link to="/privacy" className="text-primary hover:underline">{legalAck[3]}</Link>
+                      <Link to={legalPath("/privacy", lang)} className="text-primary hover:underline">{legalAck[3]}</Link>
                       {legalAck[4]}
                     </p>
                   )}

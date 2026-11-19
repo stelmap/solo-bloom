@@ -1,3 +1,4 @@
+import { legalPath } from "@/lib/publicLanguage";
 import { BrandName, BrandText } from "@/components/BrandName";
 import RedesignedLanding from '@/components/landing/RedesignedLanding';
 import { AboutOverlay } from "@/components/landing/AboutOverlay";
@@ -1513,10 +1514,10 @@ function LandingFooter({ onContact }: { onContact: () => void }) {
             © {new Date().getFullYear()} <BrandName className="font-semibold" />. {T.rights}
           </p>
           <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-            <Link to="/terms" className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.terms}</Link>
-            <Link to="/privacy" className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.privacy}</Link>
-            <Link to="/cookie-policy" className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.cookies}</Link>
-            <Link to="/refund-policy" className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.refund}</Link>
+            <Link to={legalPath("/terms", lang)} className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.terms}</Link>
+            <Link to={legalPath("/privacy", lang)} className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.privacy}</Link>
+            <Link to={legalPath("/cookie-policy", lang)} className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.cookies}</Link>
+            <Link to={legalPath("/refund-policy", lang)} className="text-xs text-secondary-foreground/80 hover:text-secondary-foreground">{T.refund}</Link>
             <button
               type="button"
               onClick={() => {

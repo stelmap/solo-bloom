@@ -27,3 +27,8 @@ export const PUBLIC_NAV_COPY = {
   fr: { title: 'Page introuvable', heading: 'Cette page s’est égarée', before: 'Nous n’avons pas trouvé', after: 'Elle a peut-être été déplacée, renommée ou n’a jamais existé.', home: 'Retour à l’accueil', back: 'Retour', jump: 'Ou accéder à :', language: 'Langue', previous: 'Mois précédent', next: 'Mois suivant', cookies: 'Politique de cookies', cookieSettings: 'Paramètres des cookies' },
   ru: { title: 'Страница не найдена', heading: 'Эта страница потерялась', before: 'Не удалось найти', after: 'Возможно, её переместили, переименовали или она никогда не существовала.', home: 'На главную', back: 'Назад', jump: 'Или перейти к:', language: 'Язык', previous: 'Предыдущий месяц', next: 'Следующий месяц', cookies: 'Политика cookie', cookieSettings: 'Настройки cookie' },
 } satisfies Record<AppLanguage, Record<string, string>>;
+/** Legal link that keeps the visitor's language when a translation exists. */
+export function legalPath(path: string, lang: string): string {
+  const l = LEGAL_LANGUAGES.includes(lang as AppLanguage) ? (lang as AppLanguage) : 'en';
+  return localizedPath(path, l);
+}

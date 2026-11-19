@@ -1,3 +1,4 @@
+import { legalPath } from "@/lib/publicLanguage";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -459,7 +460,7 @@ export function ContactRequestDialog({ open, onOpenChange, lang, placement = "To
               <Checkbox id="cr-consent" checked={consent} onCheckedChange={(v) => setConsent(v === true)} className="mt-0.5" />
               <Label htmlFor="cr-consent" className="text-xs font-normal leading-relaxed text-muted-foreground">
                 {t.consent}{" "}
-                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                <a href={legalPath("/privacy", lang)} target="_blank" rel="noopener noreferrer" className="text-primary underline">
                   {t.privacy}
                 </a>
                 .

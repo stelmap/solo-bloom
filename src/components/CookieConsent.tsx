@@ -1,3 +1,4 @@
+import { legalPath } from "@/lib/publicLanguage";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -135,11 +136,11 @@ export function CookieConsent() {
             </p>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">
               {tr("body")}{" "}
-              <Link to="/privacy" className="underline hover:text-foreground">
+              <Link to={legalPath("/privacy", lang)} className="underline hover:text-foreground">
                 {tr("privacyLink")}
               </Link>
               {" · "}
-              <Link to="/cookie-policy" className="underline hover:text-foreground">
+              <Link to={legalPath("/cookie-policy", lang)} className="underline hover:text-foreground">
                 {tr("cookiesLink")}
               </Link>
               .
