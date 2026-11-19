@@ -210,4 +210,4 @@ export const profileUrl = (slug: string) => `https://solo-bizz.com/therapist/${s
  * The backend function domain serves HTML as plain text, so its URL showed raw HTML to visitors.
  */
 export const profileShareUrl = (slug: string) => profileUrl(encodeURIComponent(slug));
-export const bookingShareUrl = (handle: string) => `https://solo-bizz.com/book/${encodeURIComponent(handle)}`;
+export const bookingShareUrl = (handle: string) => `${window.location.origin}/book/${encodeURIComponent(handle)}`;
