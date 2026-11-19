@@ -2,6 +2,7 @@ import { bookingShareUrl } from "@/lib/therapistProfile";
 import { MeetingDurationInput } from "@/components/MeetingDurationInput";
 import { durationFromEnd, meetingEndTime, parseMeetingDuration, parseNonnegativePrice, serviceMeetingDuration, timeMinutes } from "@/lib/meetingDuration";
 import { AppLayout } from "@/components/AppLayout";
+import { blockedRangeAfterStartChange } from "@/lib/blockedTimeRange";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -768,6 +769,15 @@ export default function CalendarPage() {
   const toMinutes = timeMinutes;
   const applyStartTime = (value: string) => {
     setForm(f => ({ ...f, time: value }));
+    if (isBlockedTime) {
+      // Keep the chosen end of an unavailable block; moving the start must not
+      // push the end later (e.g. 11:00–13:00 silently becoming 11:00–15:00).
+      const next = blockedRangeAfterStartChange(value, blockEnd);
+      setBlockEnd(next.end);
+      setEndOverride(next.end);
+      if (next.duration !== null) setDurationDraft(String(next.duration));
+      return;
+    }
     const duration = parseMeetingDuration(durationDraft);
     const end = duration === null ? null : meetingEndTime(value, duration);
     if (end) setBlockEnd(end);
