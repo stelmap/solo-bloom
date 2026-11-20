@@ -30,10 +30,10 @@ const WEEKDAY_KEYS = [
 type Interval = { start: string; end: string };
 type DayState = { is_enabled: boolean; intervals: Interval[] };
 
-type Lang = "en" | "uk" | "ru" | "fr" | "pl";
+type Lang = "en" | "uk" | "ru" | "fr" | "pl" | "de";
 const normLang = (v: unknown): Lang => {
   const s = String(v || "en").toLowerCase();
-  return (["en", "uk", "ru", "fr", "pl"].includes(s) ? s : "en") as Lang;
+  return (["en", "uk", "ru", "fr", "pl", "de"].includes(s) ? s : "en") as Lang;
 };
 
 const COPY: Record<Lang, {
@@ -146,6 +146,31 @@ const COPY: Record<Lang, {
     errOrder: "L'heure de début doit précéder l'heure de fin",
     errOverlap: "Les créneaux ne peuvent pas se chevaucher",
     errEmpty: "Les jours activés doivent avoir au moins un créneau",
+  },
+  de: {
+    cardTitle: "Öffentlicher Buchungslink",
+    cardDesc: "Teilen Sie einen Link, über den Klienten eine Sitzung buchen können. Sie sehen nur freie Zeiten – niemals private Kalenderdaten.",
+    enable: "Online-Buchung aktivieren",
+    displayName: "Anzeigename (für Klienten sichtbar)",
+    displayNamePh: "Ihr Name oder Ihre Praxis",
+    customHandle: "Eigene Adresse (optional)",
+    handleHelp: "3–40 Zeichen: Kleinbuchstaben, Ziffern, Bindestriche. Leer lassen, um den automatisch erzeugten Link zu nutzen.",
+    handlePh: "ihr-name",
+    mode: "Buchungsmodus",
+    modeManual: "Manuelle Bestätigung (empfohlen)",
+    modeAuto: "Automatisch bestätigen (nur bekannte Klienten)",
+    timezone: "Zeitzone (für Klienten sichtbar)",
+    timezoneHelp: "Alle Buchungszeiten auf der öffentlichen Seite werden in dieser Zeitzone angezeigt.",
+    tzPh: "z. B. Europe/Berlin",
+    yourLink: "Ihr Buchungslink",
+    linkCopied: "Link kopiert",
+    linkRegenerated: "Link neu erstellt. Der alte Link funktioniert nicht mehr.",
+    regenerateConfirm: "Link neu erstellen? Der alte Link funktioniert dann sofort nicht mehr.",
+    addBlock: "Zeitblock hinzufügen",
+    removeBlock: "Zeitblock entfernen",
+    errOrder: "Die Startzeit muss vor der Endzeit liegen",
+    errOverlap: "Zeitblöcke dürfen sich nicht überschneiden",
+    errEmpty: "Aktivierte Tage brauchen mindestens einen Zeitblock",
   },
   pl: {
     cardTitle: "Publiczny link do rezerwacji",

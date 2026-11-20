@@ -28,10 +28,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AboutMeEditor } from "@/components/therapist/AboutMeEditor";
 import { TP_COPY, tpLang } from "@/lib/therapistProfile";
 
-type Lang = "en" | "uk" | "ru" | "fr" | "pl";
+type Lang = "en" | "uk" | "ru" | "fr" | "pl" | "de";
 const normLang = (v: unknown): Lang => {
   const s = String(v || "en").toLowerCase();
-  return (["en", "uk", "ru", "fr", "pl"].includes(s) ? s : "en") as Lang;
+  return (["en", "uk", "ru", "fr", "pl", "de"].includes(s) ? s : "en") as Lang;
 };
 
 const COPY: Record<Lang, Record<string, string>> = {
@@ -162,6 +162,38 @@ const COPY: Record<Lang, Record<string, string>> = {
     incomplete: "Complétez les champs surlignés pour terminer la configuration.",
     back: "Paramètres", close: "Fermer",
     requiredNote: "* Champs obligatoires", saveAndGo: "Enregistrer et aller au calendrier", publicInfo: "Vos clients voient sur la page de réservation : nom du cabinet, nom du thérapeute, email, emblème et créneaux libres. Téléphone, numéro fiscal et adresse ne sont pas affichés.", required: "Champ obligatoire", invalidPhone: "Saisissez un numéro valide, ex. +33 6 12 34 56 78", invalidTaxId: "Lettres, chiffres, espaces, « - », « / » ou « . » (2 à 40 caractères)", invalidEmail: "Saisissez un email valide", setupTitle: "Bienvenue ! Configurez votre cabinet", setupSubtitle: "Remplissez les champs obligatoires, puis commencez à travailler dans le calendrier.",
+  },
+  de: {
+    title: "Praxisprofil bearbeiten",
+    subtitle: "Wird für Online-Buchung, Rechnungen und überall dort verwendet, wo Ihre Praxis angezeigt wird.",
+    identity: "Identität",
+    emblem: "Praxislogo", optional: "(optional)",
+    upload: "Logo hochladen", replace: "Logo ersetzen", remove: "Entfernen",
+    uploadHint: "PNG, JPG oder SVG · max. 2 MB",
+    practiceName: "Name der Praxis", practiceNamePh: "z. B. Praxis für Psychotherapie",
+    therapistName: "Name der Fachperson", therapistNamePh: "z. B. Olga Stelmakh",
+    contact: "Kontakt- und Rechtsdaten",
+    email: "E-Mail", phone: "Telefon",
+    legalName: "Firmen- / Rechtsname", taxId: "Steuernummer / USt-ID", taxIdPh: "z. B. DE123456789",
+    address: "Geschäftsadresse",
+    regional: "Regionale Einstellungen",
+    currency: "Währung", language: "Sprache", timezone: "Zeitzone",
+    booking: "Online-Buchung",
+    enable: "Online-Buchung aktivieren",
+    enableDesc: "Klienten können freie Termine über Ihren persönlichen Link buchen.",
+    link: "Ihr Buchungslink",
+    linkDesc: "Wird automatisch aus Ihrem Praxisprofil erstellt.",
+    mode: "Buchungsmodus",
+    modeManual: "Manuelle Bestätigung (empfohlen)",
+    modeAuto: "Automatische Bestätigung (nur bekannte Klienten)",
+    copied: "Link kopiert",
+    regenerate: "Neu erstellen",
+    regenerateConfirm: "Link neu erstellen? Der alte Link funktioniert dann sofort nicht mehr.",
+    regenerated: "Link neu erstellt. Der alte Link funktioniert nicht mehr.",
+    save: "Profil speichern", saving: "Wird gespeichert…", saved: "Gespeichert",
+    incomplete: "Füllen Sie die markierten Felder aus, um die Einrichtung abzuschließen.",
+    back: "Einstellungen", close: "Schließen",
+    requiredNote: "* Pflichtfelder", saveAndGo: "Speichern und zum Kalender", publicInfo: "Klienten sehen auf Ihrer Buchungsseite: Praxisname, Name der Fachperson, E-Mail, Logo und freie Termine. Telefon, Steuernummer und Adresse werden nicht angezeigt.", required: "Pflichtfeld", invalidPhone: "Geben Sie eine gültige Telefonnummer ein, z. B. +49 151 23456789", invalidTaxId: "Buchstaben, Ziffern, Leerzeichen, „-“, „/“ oder „.“ (2–40 Zeichen)", invalidEmail: "Geben Sie eine gültige E-Mail ein", setupTitle: "Willkommen! Richten Sie Ihre Praxis ein", setupSubtitle: "Füllen Sie die Pflichtfelder aus – dann können Sie im Kalender arbeiten.",
   },
   pl: {
     title: "Edytor profilu praktyki",
@@ -553,6 +585,7 @@ export default function PracticeProfilePage() {
                       <SelectItem value="ru">🇷🇺 Русский</SelectItem>
                       <SelectItem value="fr">🇫🇷 Français</SelectItem>
                       <SelectItem value="pl">🇵🇱 Polski</SelectItem>
+                      <SelectItem value="de">🇩🇪 Deutsch</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
