@@ -34,7 +34,8 @@ function fmt(s: string) {
 }
 
 export function BookingInboxPanel({ className }: { className?: string }) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const U = (en: string, uk: string) => (lang === "uk" ? uk : en);
   const { data: rows = [], isLoading, refetch, isFetching } = useBookingRequests();
   const { data: services = [] } = useServices();
   const { data: clients = [] } = useClients();
@@ -197,9 +198,9 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       <header className="px-4 py-3 border-b border-border flex items-center gap-2">
         <Inbox className="h-4 w-4 text-primary" />
         <div className="flex-1 min-w-0">
-          <h2 className="text-sm font-semibold text-foreground">Booking inbox</h2>
+          <h2 className="text-sm font-semibold text-foreground">{U("Booking inbox", "Запити на запис")}</h2>
           <p className="text-xs text-muted-foreground">
-            {pending.length === 0 ? "No pending requests" : `${pending.length} pending`}
+            {pending.length === 0 ? U("No pending requests", "Немає нових запитів") : `${pending.length} ${U("pending", "очікує")}`}
           </p>
         </div>
         <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Refresh" onClick={() => refetch()} disabled={isFetching}>
@@ -222,13 +223,13 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       )}>
         {isLoading && (
           <div className="text-center text-sm text-muted-foreground py-6">
-            <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> Loading…
+            <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> {U("Loading…", "Завантаження…")}
           </div>
         )}
         {!isLoading && pending.length === 0 && (
           <div className="text-center text-sm text-muted-foreground py-8">
             <Inbox className="h-6 w-6 mx-auto mb-2 opacity-40" />
-            You're all caught up.
+            {U("You're all caught up.", "Усі запити опрацьовано.")}
           </div>
         )}
         {pending.map((r) => (
@@ -241,11 +242,11 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                 <p className="text-sm font-medium text-foreground truncate">
                   {r.first_name} {r.last_name ?? ""}
                 </p>
-                <p className="text-xs text-muted-foreground">{fmt(r.requested_slot_at)} · {r.duration_minutes}m</p>
+                <p className="text-xs text-muted-foreground">{fmt(r.requested_slot_at)} · {r.duration_minutes} {U("m", "хв")}</p>
               </div>
               {r.status === "needs_linking" && (
                 <span className="text-[10px] font-semibold uppercase tracking-wide rounded bg-orange-500/15 text-orange-700 dark:text-orange-400 px-1.5 py-0.5">
-                  Link
+                  {U("Link", "Привʼязати")}
                 </span>
               )}
             </div>
@@ -261,7 +262,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                 </div>
               )}
               {r.matched_client_name && (
-                <p className="text-foreground/80">Matched: {r.matched_client_name}</p>
+                <p className="text-foreground/80">{U("Matched", "Збіг")}: {r.matched_client_name}</p>
               )}
             </div>
             {r.comment && (
@@ -274,11 +275,11 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                 <>
                   <Button size="sm" variant="outline" className="h-7 px-2 gap-1"
                     onClick={() => { setLinkingFor(r); setLinkClientId(""); }}>
-                    <UserPlus className="h-3 w-3" /> Link
+                    <UserPlus className="h-3 w-3" /> {U("Link", "Привʼязати")}
                   </Button>
                   <Button size="sm" variant="outline" className="h-7 px-2 gap-1"
                     onClick={() => openCreateClient(r)}>
-                    <UserPlus className="h-3 w-3" /> Create new
+                    <UserPlus className="h-3 w-3" /> {U("Create new", "Створити нового")}
                   </Button>
                 </>
               )}
@@ -288,7 +289,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                   setConfirmClientId(r.client_id ?? "");
                   setConfirmServiceId((services as any[])[0]?.id ?? "");
                 }}>
-                <CheckCircle2 className="h-3 w-3" /> Approve
+                <CheckCircle2 className="h-3 w-3" /> {U("Approve", "Підтвердити")}
               </Button>
               <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => handleDecline(r)}>
                 <XCircle className="h-3.5 w-3.5" />
@@ -301,7 +302,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
         {recentlyConfirmed.length > 0 && (
           <div className="pt-3 mt-2 border-t border-border space-y-2">
             <p className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground px-1">
-              Recently confirmed
+              {U("Recently confirmed", "Нещодавно підтверджені")}
             </p>
             {recentlyConfirmed.map((r) => {
               const sent = r.confirmation_email_status === "sent";
@@ -316,14 +317,14 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                       {r.first_name} {r.last_name ?? ""}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {fmt(r.requested_slot_at)} · {r.duration_minutes}m
+                      {fmt(r.requested_slot_at)} · {r.duration_minutes} {U("m", "хв")}
                     </p>
                   </div>
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     {sent ? (
                       <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
                         <MailCheck className="h-3.5 w-3.5" />
-                        Confirmation email: sent
+                        {U("Confirmation email: sent", "Лист-підтвердження: надіслано")}
                       </span>
                     ) : failed ? (
                       <span
@@ -331,12 +332,12 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                         title={r.confirmation_email_error ?? undefined}
                       >
                         <MailX className="h-3.5 w-3.5" />
-                        Confirmation email: failed
+                        {U("Confirmation email: failed", "Лист-підтвердження: помилка")}
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                         <Mail className="h-3.5 w-3.5" />
-                        Email status unknown
+                        {U("Email status unknown", "Статус листа невідомий")}
                       </span>
                     )}
                     <Button
@@ -346,7 +347,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                       onClick={() => resendConfirmationEmail(r)}
                     >
                       <Send className="h-3 w-3" />
-                      {failed ? "Retry email" : "Resend"}
+                      {failed ? U("Retry email", "Надіслати ще раз") : U("Resend", "Надіслати повторно")}
                     </Button>
                   </div>
                 </div>
@@ -360,17 +361,17 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       <Dialog open={!!linkingFor} onOpenChange={(o) => !o && setLinkingFor(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Attach client to request</DialogTitle>
+            <DialogTitle>{U("Attach client to request", "Привʼязати клієнта до запиту")}</DialogTitle>
             <DialogDescription>
-              {linkingFor && (<>Requester: <strong>{linkingFor.first_name} {linkingFor.last_name ?? ""}</strong> ({linkingFor.email})</>)}
+              {linkingFor && (<>{U("Requester", "Заявник")}: <strong>{linkingFor.first_name} {linkingFor.last_name ?? ""}</strong> ({linkingFor.email})</>)}
             </DialogDescription>
           </DialogHeader>
           <ClientPicker clients={(clients as any[]).filter((c: any) => c.status !== "archived")} value={linkClientId} onChange={setLinkClientId} />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setLinkingFor(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setLinkingFor(null)}>{U("Cancel", "Скасувати")}</Button>
             <Button disabled={!linkClientId || link.isPending} onClick={handleLink}>
               {link.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Link client
+              {U("Link client", "Привʼязати клієнта")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -380,15 +381,15 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       <Dialog open={!!confirmingFor} onOpenChange={(o) => !o && setConfirmingFor(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm booking</DialogTitle>
+            <DialogTitle>{U("Confirm booking", "Підтвердити запис")}</DialogTitle>
             <DialogDescription>
-              {confirmingFor && (<>Create an appointment on <strong>{fmt(confirmingFor.requested_slot_at)}</strong>.</>)}
+              {confirmingFor && (<>{U("Create an appointment on", "Створити зустріч на")} <strong>{fmt(confirmingFor.requested_slot_at)}</strong>.</>)}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             {confirmingFor && !confirmingFor.client_id && (
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">Client</label>
+                <label className="text-xs text-muted-foreground">{U("Client", "Клієнт")}</label>
                 <ClientPicker clients={(clients as any[]).filter((c: any) => c.status !== "archived")} value={confirmClientId} onChange={setConfirmClientId} />
                 <Button
                   size="sm"
@@ -400,14 +401,14 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                     openCreateClient(req);
                   }}
                 >
-                  <UserPlus className="h-3.5 w-3.5" /> New client
+                  <UserPlus className="h-3.5 w-3.5" /> {U("New client", "Новий клієнт")}
                 </Button>
               </div>
             )}
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">Service</label>
+              <label className="text-xs text-muted-foreground">{U("Service", "Послуга")}</label>
               <Select value={confirmServiceId} onValueChange={setConfirmServiceId}>
-                <SelectTrigger><SelectValue placeholder="Pick a service" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={U("Pick a service", "Оберіть послугу")} /></SelectTrigger>
                 <SelectContent>
                   {(services as any[]).map((s) => (
                     <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
@@ -417,7 +418,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmingFor(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setConfirmingFor(null)}>{U("Cancel", "Скасувати")}</Button>
             <Button disabled={confirm.isPending} onClick={() => confirmingFor && handleConfirm(confirmingFor)}>
               {confirm.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Confirm booking
@@ -430,7 +431,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       <Dialog open={!!creatingFor} onOpenChange={(o) => !o && setCreatingFor(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create new client from request</DialogTitle>
+            <DialogTitle>{U("Create new client from request", "Створити клієнта з запиту")}</DialogTitle>
             <DialogDescription>
               Pre-filled from the booking request. Review and edit before saving.
               If a client with this email already exists, it will be linked instead of duplicated.
@@ -438,7 +439,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">Name</label>
+              <label className="text-xs text-muted-foreground">{U("Name", "Імʼя")}</label>
               <Input value={newClientName} onChange={(e) => setNewClientName(e.target.value)} />
             </div>
             <div className="space-y-1">
@@ -446,16 +447,16 @@ export function BookingInboxPanel({ className }: { className?: string }) {
               <Input type="email" value={newClientEmail} onChange={(e) => setNewClientEmail(e.target.value)} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">Phone</label>
+              <label className="text-xs text-muted-foreground">{U("Phone", "Телефон")}</label>
               <Input value={newClientPhone} onChange={(e) => setNewClientPhone(e.target.value)} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">Notes</label>
+              <label className="text-xs text-muted-foreground">{U("Notes", "Нотатки")}</label>
               <Input value={newClientNotes} onChange={(e) => setNewClientNotes(e.target.value)} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreatingFor(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setCreatingFor(null)}>{U("Cancel", "Скасувати")}</Button>
             <Button disabled={createClient.isPending || link.isPending} onClick={handleCreateClientAndLink}>
               {(createClient.isPending || link.isPending) ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Save client
