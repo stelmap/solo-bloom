@@ -4,6 +4,7 @@
 - [x] Use the same participant-level debt rows for the Unpaid list, count, filters and expected total; signed-in view now shows 1 participant owing €100 rather than 60 group parents; 7 tests passed, no real payment recorded.
 
 ## Pre-marketing corrections — 20 November 2026
+- [x] Replace patched calendar screenshot text with aligned high-resolution lettering across six languages; retain existing grid and meeting positions without changing the working calendar.
 - [x] Replace fictional-franchise names in six existing calendar screenshots, set their unpaid counter to 3, translate controls/meeting labels and Ukrainian month abbreviation; interactive demo now starts with exactly 3 outstanding meetings (tested), without production-calendar changes.
 - [x] Translate registration home link, warm up introductory copy in six languages, correct Solo feature wording and use a brand mission in the footer.
 - [x] Remove only q45265656 and replace PSU with the requested professional title in the owner's draft/published profile through the authenticated owner API; public read-back verified.
