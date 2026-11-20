@@ -67,6 +67,9 @@ const navItems: NavItem[] = [
 const railItemBase =
   "flex items-center gap-3 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-0";
 
+// Survives nav remounts (hover, expanding a group) so the menu never jumps back to the top.
+let sidebarScrollTop = 0;
+
 export function AppSidebar() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -197,7 +200,12 @@ export function AppSidebar() {
 
   /* ---------------- full nav (labels) ---------------- */
   const FullNav = () => (
-    <nav className="flex-1 min-h-0 p-3 pr-1 space-y-1 overflow-y-auto overflow-x-hidden sidebar-scrollbar">
+    <nav
+      ref={(el) => { if (el && el.scrollTop !== sidebarScrollTop) el.scrollTop = sidebarScrollTop; }}
+      onScroll={(e) => { sidebarScrollTop = e.currentTarget.scrollTop; }}
+      onWheel={(e) => e.stopPropagation()}
+      className="flex-1 min-h-0 p-3 pr-1 space-y-1 overflow-y-scroll overflow-x-hidden overscroll-contain sidebar-scrollbar"
+    >
       {visibleNavItems.map((item) => {
         if (item.kind === "leaf") {
           const isActive = isExactActive(item.path);
