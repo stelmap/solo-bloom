@@ -8,6 +8,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 import {
   useAllIncome, useAllExpenses, useAppointments, useClients, useExpectedPayments, useProfile,
 } from "@/hooks/useData";
+import { unpaidPaymentRows } from "@/lib/unpaidPaymentRows";
 import { cn } from "@/lib/utils";
 import {
   ArrowRight, ChevronRight, TrendingUp, TrendingDown, Wallet, Receipt,
@@ -184,7 +185,7 @@ export default function PracticeOverviewPage() {
 
   /* ── Needs attention ────────────────────────────────────────────── */
   const totalDebt = (expectedPayments as any[]).reduce((s, ep) => s + Number(ep.amount || 0), 0);
-  const unpaidCount = (expectedPayments as any[]).length;
+  const unpaidCount = unpaidPaymentRows(expectedPayments as any[]).length;
 
   const clientsWithoutNext = useMemo(() => {
     const future = new Set(

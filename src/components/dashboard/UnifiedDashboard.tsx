@@ -14,7 +14,8 @@ import { practiceClock, calendarDate } from "@/lib/calendarClock";
 import { QueryFeedback } from "@/components/QueryFeedback";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
-import { useAppointments, useAllIncome, useProfile, useClients, useServices, useWorkingSchedule } from "@/hooks/useData";
+import { useAppointments, useAllIncome, useProfile, useClients, useServices, useWorkingSchedule, useExpectedPayments } from "@/hooks/useData";
+import { unpaidPaymentRows } from "@/lib/unpaidPaymentRows";
 import { useBookingLink, usePracticeProfileStatus } from "@/hooks/usePracticeProfile";
 import { toast } from "@/hooks/use-toast";
 import { formatScheduledTime } from "@/lib/timeFormat";
@@ -222,9 +223,20 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
 
 
 
-  const recentUnpaid = derived.unpaid
+  // Same participant-level ledger as Payments → Unpaid, so dashboards never disagree.
+  const { data: expectedDebts = [] } = useExpectedPayments();
+  const ledgerUnpaid = unpaidPaymentRows(expectedDebts as any[]).map(({ debt, remaining }: any) => ({
+    id: debt.id,
+    appointment_id: debt.appointment_id,
+    name: debt.clients?.name ?? debt.group_sessions?.groups?.name ?? "—",
+    service: debt.services?.name ?? debt.group_sessions?.groups?.name ?? "—",
+    scheduled_at: debt.scheduled_at ?? debt.appointments?.scheduled_at ?? debt.group_sessions?.appointments?.scheduled_at ?? null,
+    remaining,
+  }));
+  const unpaidTotalAll = Math.round(ledgerUnpaid.reduce((s, r) => s + r.remaining, 0) * 100) / 100;
+  const recentUnpaid = ledgerUnpaid
     .slice()
-    .sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime())
+    .sort((a, b) => new Date(b.scheduled_at ?? 0).getTime() - new Date(a.scheduled_at ?? 0).getTime())
     .slice(0, 5);
 
   return (
@@ -560,22 +572,19 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
                   {recentUnpaid.map((a) => (
                     <li
                       key={a.id}
-                      onClick={() => navigate(`/calendar?appointmentId=${a.id}`)}
+                      onClick={() => a.appointment_id ? navigate(`/calendar?appointmentId=${a.appointment_id}`) : navigate("/payments?tab=pending&range=all")}
                       className="flex items-center gap-3 px-5 py-3.5 cursor-pointer hover:bg-muted/50 transition-colors"
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-foreground truncate">
-                          {(a.group_session_id
-                            ? a.group_sessions?.groups?.name ?? a.clients?.name
-                            : a.clients?.name ?? a.group_sessions?.groups?.name) ?? "—"}
+                          {a.name}
                         </p>
                         <p className="text-xs text-muted-foreground truncate">
-                          {a.services?.name ?? "—"} ·{" "}
-                          {new Intl.DateTimeFormat(lang, { day: "2-digit", month: "2-digit" }).format(new Date(a.scheduled_at))}
+                          {a.service}{a.scheduled_at ? ` · ${new Intl.DateTimeFormat(lang, { day: "2-digit", month: "2-digit" }).format(new Date(a.scheduled_at))}` : ""}
                         </p>
                       </div>
                       <p className="text-sm font-bold tabular-nums text-foreground shrink-0">
-                        {cs}{Number(a.price ?? 0).toLocaleString()}
+                        {cs}{a.remaining.toLocaleString()}
                       </p>
                       <span className="shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full border border-destructive/30 text-destructive">
                         {t("ops.unpaid")}
@@ -586,7 +595,7 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
                 <div className="px-5 py-3.5 border-t border-border flex items-center justify-between">
                   <span className="text-sm font-semibold text-foreground">{t("dashm.totalDue")}</span>
                   <span className="text-base font-bold tabular-nums text-foreground">
-                    {cs}{derived.unpaidTotal.toLocaleString()}
+                    {cs}{unpaidTotalAll.toLocaleString()}
                   </span>
                 </div>
               </>
@@ -595,10 +604,10 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
 
           <section className="bg-card border border-border rounded-[20px] shadow-card px-5 py-5">
             <MonthlyIncomeSummary expected={expectedIncome} actual={income} symbol={cs} rangeLabel={rangeLabel} onOpen={() => navigate("/finances")} />
-            {derived.unpaidTotal > 0 && (
+            {unpaidTotalAll > 0 && (
               <p className="mt-4 text-xs text-muted-foreground inline-flex items-center gap-1.5">
                 <AlertCircle className="h-3.5 w-3.5 text-warning" />
-                {t("dashm.pendingHint", { amount: `${cs}${derived.unpaidTotal.toLocaleString()}` })}
+                {t("dashm.pendingHint", { amount: `${cs}${unpaidTotalAll.toLocaleString()}` })}
               </p>
             )}
 

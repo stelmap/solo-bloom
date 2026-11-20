@@ -49,7 +49,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { useCalendarPrefs, countActiveQuickFilters } from "@/hooks/useCalendarPrefs";
-import { useUnpaidMeetings } from "@/hooks/useUnpaidMeetings";
+import { useExpectedPayments } from "@/hooks/useData";
+import { unpaidPaymentRows } from "@/lib/unpaidPaymentRows";
 import { calToolbarCopy } from "@/lib/calendarToolbarCopy";
 import { isPaid as isPaidApt, isAwaiting as isAwaitingApt } from "@/lib/paymentClassifiers";
 import { CreditCard, Link2, UserRound } from "lucide-react";
@@ -378,7 +379,9 @@ export default function CalendarPage() {
   const { user } = useAuth();
   const { prefs: calPrefs, update: updateCalPrefs, setFilters: setQuickFilters, resetFilters: resetQuickFilters } = useCalendarPrefs(user?.id);
   const quickFilterCount = countActiveQuickFilters(calPrefs.filters);
-  const { data: unpaidMeetings = [] } = useUnpaidMeetings();
+  const { data: expectedDebts = [] } = useExpectedPayments();
+  // Same participant-level ledger as Payments → Unpaid, so counts always match.
+  const unpaidMeetings = useMemo(() => unpaidPaymentRows(expectedDebts as any[]), [expectedDebts]);
   const [viewPanelOpen, setViewPanelOpen] = useState(false);
   const { data: bookingLinkRow } = useQuery({
     queryKey: ["booking-link-url", user?.id],
