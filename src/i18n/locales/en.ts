@@ -539,7 +539,7 @@ export default {
   "auth.yourName": "Your name",
   "auth.accountCreated": "Account created!",
   "auth.checkEmail": "Check your email to verify your account.",
-  "auth.heroText": "For solo business owners. No bloat. No cross-feature confusion. Just the tool you need.",
+  "auth.heroText": "For those who work with people independently. Less routine, more time for clients.",
   "auth.cloudBased": "Cloud-based",
   "auth.simple": "Simple",
   "auth.easyToUse": "Easy to use",

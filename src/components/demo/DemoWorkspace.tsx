@@ -45,7 +45,13 @@ export function DemoWorkspace({ embeddedModule }: { embeddedModule?: string }) {
   useEffect(() => { const timer = window.setTimeout(() => setState(seedDemo()), Math.max(0, state.expiresAt - Date.now())); return () => clearTimeout(timer); }, [state.expiresAt]);
   useEffect(() => { setFilter('all'); setSearch(''); }, [module]);
   const go = (next: string) => navigate(`/demo/${next}`);
-  const name = (id: string) => state.clients.find(c => c.id === id)?.name ?? '—';
+  const name = (id: string) => {
+    const names = { uk: ['Анна К.', 'Марко Т.', 'Олена М.', 'Софія Л.'], ru: ['Анна К.', 'Марк Т.', 'Елена М.', 'София Л.'], pl: ['Anna K.', 'Marek T.', 'Ewa M.', 'Zofia L.'] };
+    const seeded = ['Anna K.', 'Mark T.', 'Elena M.', 'Sophie L.'];
+    const client = state.clients.find(c => c.id === id);
+    const i = seeded.indexOf(client?.name ?? '');
+    return i >= 0 && /^demo-client-\d$/.test(id) && lang in names ? names[lang as keyof typeof names][i] : client?.name ?? '—';
+  };
   const service = (id: string) => id === 'demo-service-0' ? c.consultation : id === 'demo-service-1' ? c.followup : state.services.find(s => s.id === id)?.name ?? '—';
   const date = format(day, 'yyyy-MM-dd');
   const openMeeting = (m?: DemoMeeting, selectedDate = date) => { const draft = m ?? { id: crypto.randomUUID(), client_id: state.clients[0]?.id ?? '', service_id: state.services[0]?.id ?? '', date: selectedDate, time: '10:00', duration: 60, price: 60 }; setMeeting(draft); setDuration(String(draft.duration)); setError(''); };

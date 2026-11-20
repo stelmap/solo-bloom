@@ -1,4 +1,4 @@
-import { legalPath } from "@/lib/publicLanguage";
+import { legalPath, localizedPath, PUBLIC_NAV_COPY } from "@/lib/publicLanguage";
 import { BrandName } from "@/components/BrandName";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
@@ -353,9 +353,9 @@ export default function AuthPage() {
         title="Sign in or create your Solo .Bizz account"
         description="Sign in to your Solo .Bizz workspace or create a free account to manage clients, sessions, payments and income for your solo practice."
       />
-      <Link to="/" className="absolute top-4 left-4 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sidebar-background/80 hover:bg-sidebar-background text-sm font-medium text-sidebar-foreground hover:text-sidebar-primary-foreground transition-colors">
+      <Link to={localizedPath('/', lang)} className="absolute top-4 left-4 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sidebar-background/80 hover:bg-sidebar-background text-sm font-medium text-sidebar-foreground hover:text-sidebar-primary-foreground transition-colors">
         <ArrowLeft className="h-4 w-4" />
-        Main page
+        {PUBLIC_NAV_COPY[lang].home}
       </Link>
 
       <div className="absolute top-4 right-4 z-50 w-36">

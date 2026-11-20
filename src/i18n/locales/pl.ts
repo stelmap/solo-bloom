@@ -552,7 +552,7 @@ export default {
   "auth.yourName": "Twoje imię",
   "auth.accountCreated": "Konto utworzone!",
   "auth.checkEmail": "Sprawdź swoją skrzynkę e-mail, aby zweryfikować konto.",
-  "auth.heroText": "Dla właścicieli jednoosobowych firm. Bez zbędnych funkcji. Bez problemów z obsługą. Tylko narzędzie, którego potrzebujesz.",
+  "auth.heroText": "Dla tych, którzy samodzielnie pracują z ludźmi. Mniej rutyny, więcej czasu dla klientów.",
   "auth.cloudBased": "W chmurze",
   "auth.simple": "Proste",
   "auth.easyToUse": "Łatwe w użyciu",

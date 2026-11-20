@@ -4,8 +4,11 @@ const now = Date.UTC(2026, 10, 11, 12);
 describe('isolated public workspace', () => {
   it('starts with paid, unpaid, partial and prepaid examples', () => {
     const s = seedDemo(now);
-    expect(s.meetings.map(m => demoMeetingBalance(s, m).status)).toEqual(['paid', 'unpaid', 'partial']);
+    expect(s.meetings.map(m => demoMeetingBalance(s, m).status)).toEqual(['paid', 'unpaid', 'partial', 'unpaid']);
     expect(s.payments.find(p => p.meeting_id === null)?.amount).toBe(120);
+  });
+  it('starts with exactly three meetings still needing payment', () => {
+    expect(demoMetrics(seedDemo(now), '2026-11').unpaid).toBe(3);
   });
   it('keeps visitors independent', () => {
     const a = seedDemo(now), b = seedDemo(now);
@@ -21,7 +24,7 @@ describe('isolated public workspace', () => {
   it('links creation and payment to dashboard metrics', () => {
     let s = seedDemo(now);
     s = saveDemoMeeting(s, { ...s.meetings[0], id: 'new-meeting', duration: 50, price: 100 });
-    expect(demoMetrics(s, '2026-11').potential).toBe(280);
+    expect(demoMetrics(s, '2026-11').potential).toBe(340);
     s = saveDemoPayment(s, { id: 'new-payment', client_id: s.clients[0].id, meeting_id: 'new-meeting', date: '2026-11-11', amount: 40, confirmed: true });
     expect(demoMetrics(s, '2026-11').actual).toBe(240);
     expect(demoMeetingBalance(s, s.meetings.find(m => m.id === 'new-meeting') ?? s.meetings[0]).remaining).toBe(60);
@@ -30,7 +33,7 @@ describe('isolated public workspace', () => {
     const s = seedDemo(now);
     const edited = saveDemoPayment(s, { ...s.payments[0], confirmed: false });
     expect(demoMetrics(edited, '2026-11').actual).toBe(140);
-    expect(demoMetrics(edited, '2026-11').potential).toBe(180);
+    expect(demoMetrics(edited, '2026-11').potential).toBe(240);
   });
   it('rejects payments for another client meeting', () => {
     const s = seedDemo(now);

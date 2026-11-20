@@ -6,6 +6,7 @@
 // as event/user properties. Identify users by their internal Supabase user ID only.
 
 import posthog from "posthog-js";
+import { campaignAttribution, clearCampaignAttribution } from './campaignAttribution';
 
 const POSTHOG_KEY = "phc_vfqFKQL2ZpD9oo4XRNgDAesH8ayrWvZF6DUTLyhGkjrn";
 // PostHog EU ingestion endpoint. The custom reverse-proxy domain
@@ -57,6 +58,7 @@ function hasAnalyticsConsent(): boolean {
 /** Stop capturing after the visitor withdraws analytics consent. */
 export function disableAnalytics(): void {
   enabled = false;
+  if (typeof window !== 'undefined') clearCampaignAttribution(window.sessionStorage);
   if (!initialized) return;
   try {
     posthog.opt_out_capturing();
@@ -422,12 +424,14 @@ export function onFeatureFlagsLoaded(cb: () => void): () => void {
 
 export function track(event: AnalyticsEvent, props: BaseEventProps = {}): void {
   if (!initialized) initAnalytics();
+  const campaign = typeof window === 'undefined' ? {} : campaignAttribution(window.location.search, hasAnalyticsConsent(), window.sessionStorage);
   const enriched: BaseEventProps = {
     device_type: deviceType(),
     source_page: typeof window !== "undefined" ? window.location.pathname : undefined,
     locale: typeof navigator !== "undefined" ? navigator.language : undefined,
     subscription_status: subscriptionStatus,
     environment,
+    ...campaign,
     ...props,
   };
   recordDiagnostic(event, enriched);
@@ -471,11 +475,11 @@ async function persistEventToSupabase(event: string, props: BaseEventProps): Pro
       browser: navigator.userAgent.split(") ").pop() ?? null,
       source: document.referrer ? new URL(document.referrer).hostname : "direct",
       referrer: document.referrer || null,
-      utm_source: sp.get("utm_source"),
-      utm_medium: sp.get("utm_medium"),
-      utm_campaign: sp.get("utm_campaign"),
-      utm_content: sp.get("utm_content"),
-      utm_term: sp.get("utm_term"),
+      utm_source: props.utm_source ?? sp.get("utm_source"),
+      utm_medium: props.utm_medium ?? sp.get("utm_medium"),
+      utm_campaign: props.utm_campaign ?? sp.get("utm_campaign"),
+      utm_content: props.utm_content ?? sp.get("utm_content"),
+      utm_term: props.utm_term ?? sp.get("utm_term"),
       anonymous_id: anonymousId,
       session_id: sessionId,
     });

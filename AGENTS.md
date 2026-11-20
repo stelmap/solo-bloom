@@ -27,3 +27,5 @@
 - Reuse the approved Terms operator line and provider disclosures when composing other legal documents; preserve refund-right sections and keep missing jurisdiction input in the roadmap, not public placeholders.
 - Mark static fallback metadata as Helmet-managed so per-route tags replace rather than duplicate it.
 - Booking confirmation email allows server-verified request owners to approve/retry without an age limit; anonymous triggers retain a ten-minute window, stored recipients and idempotency to prevent public email abuse.
+- Preserve only allow-listed UTM campaign labels in sessionStorage after analytics consent and clear them on withdrawal, so registration attribution survives navigation without retaining private URL parameters.
+- Landing specialist previews read only the public slug RPC and published-file storage policy, so marketing never exposes drafts or invents a specialist biography.

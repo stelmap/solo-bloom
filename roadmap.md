@@ -1,5 +1,20 @@
 # Roadmap
 
+## Pre-marketing corrections — 20 November 2026
+- [x] Replace fictional-franchise names in six existing calendar screenshots, set their unpaid counter to 3, translate controls/meeting labels and Ukrainian month abbreviation; interactive demo now starts with exactly 3 outstanding meetings (tested), without production-calendar changes.
+- [x] Translate registration home link, warm up introductory copy in six languages, correct Solo feature wording and use a brand mission in the footer.
+- [x] Remove only q45265656 and replace PSU with the requested professional title in the owner's draft/published profile through the authenticated owner API; public read-back verified.
+- [x] Add owner-confirmed Instagram https://www.instagram.com/olga_solobizz/ and verify its footer link.
+- [ ] Threads still awaits an official URL.
+- [ ] Add genuine approved testimonials, photos and featured public profiles — awaiting owner content/consent; do not invent endorsements.
+- [x] Replace fictitious landing specialist with the existing published Olga profile and actual permitted photo; center the lone approved review instead of fabricating additional endorsements.
+- [x] Confirm EU database region from hosted project information and add narrow client-record storage statement linked to Privacy; no blanket GDPR compliance guarantee.
+- [ ] Honest public usage statistic awaits a reliable active/non-test definition and owner approval; raw account/appointment totals are not a trustworthy marketing number.
+- [x] Audit existing six language-specific query URLs, reciprocal hreflang and page metadata; preserve these indexed links and existing sitemap mechanism (lastmod is profile published_at, not build time).
+- [ ] Server-rendered public pages and same-domain personalized crawler previews await explicit approval of framework migration; do not repeat the raw-HTML helper-link regression. Dedicated /uk-style paths are held with this stage to avoid duplicate canonical URLs.
+- [x] Prepare six 1200×630 brand preview assets, connect them to rendered metadata, and add consent-respecting registration UTM retention with 5 tests; campaign URLs documented in docs/pre-marketing-2026-11-20.md. Actual registration was not submitted.
+- [x] Verify six-language metadata/images/profile preview, signup return link, localized demo modes/dialog and desktop/mobile layout; 17 unit tests passed and current build OK. Vite lacks asset proxy, so browser validation resolved immutable assets through published asset handler. Frontend not published; owner profile correction already live.
+
 ## Consolidated QA — 17 November 2026
 - [x] Localized 404 recovery, booking labels/errors and German cookie notice; existing synthetic calendar language interactions checked. Exact authenticated-calendar reuse remains blocked on separate draft; static booking screenshot is not localized.
 - [x] Reconciled operator identity across five legal translations and preserved refund terms; missing jurisdiction details remain operator/legal input below.

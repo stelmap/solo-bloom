@@ -332,7 +332,7 @@ export function TrustSection({
                 <article
                   key={r.id}
                   data-slide
-                  className="flex w-full shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm sm:w-[calc((100%-20px)/2)] lg:w-[calc((100%-40px)/3)]"
+                  className={`flex w-full shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm ${reviews.length > 1 ? 'sm:w-[calc((100%-20px)/2)]' : 'mx-auto max-w-2xl'} ${reviews.length > 2 ? 'lg:w-[calc((100%-40px)/3)]' : ''}`}
                 >
                   <div className="flex flex-1 flex-col p-6">
                     <Stars className="mb-3 text-primary" value={r.rating} />
@@ -371,7 +371,7 @@ export function TrustSection({
               ))}
             </div>
 
-            <div className="mt-4 flex items-center justify-center gap-4 lg:justify-end">
+            <div className={`${reviews.length > 1 ? 'flex' : 'hidden'} mt-4 items-center justify-center gap-4 lg:justify-end`}>
               <div className="flex items-center gap-1.5 lg:hidden" aria-hidden="true">
                 {Array.from({ length: slideCount }).map((_, i) => (
                   <span key={i} className={`h-1.5 rounded-full transition-all ${i === page ? "w-6 bg-primary" : "w-2.5 bg-border"}`} />

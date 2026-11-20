@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Search, GraduationCap, Share2, CalendarCheck, MapPin, Award, CircleUserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { AppLanguage } from '@/i18n/translations';
+import { PublishedProfilePreview } from './PublishedProfilePreview';
 
 type T = Record<'tag'|'title'|'sub'|'b1t'|'b1'|'b2t'|'b2'|'b3t'|'b3'|'b4t'|'b4'|'cta'|'example'|'note'|'pName'|'pTitle'|'pCity'|'pEdu'|'pEduText'|'pCerts'|'pBook'|'pAbout', string>;
 const COPY: Record<AppLanguage, T> = {
@@ -48,17 +49,7 @@ export function ProfilePromoSection({ lang, onCta }: { lang: AppLanguage; onCta?
           </div>
           <p className="mt-4 text-xs text-muted-foreground">{t.note}</p>
         </div>
-        <div aria-hidden="true" className="mx-auto w-full max-w-md rounded-2xl border bg-card p-6 shadow-xl">
-          <div className="flex items-center gap-4">
-            <div className="flex size-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/30 to-primary/10 text-primary"><CircleUserRound className="size-12" /></div>
-            <div><p className="text-xl font-bold">{t.pName}</p><p className="text-sm text-primary">{t.pTitle}</p><p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="size-3" />{t.pCity}</p></div>
-          </div>
-          <p className="mt-5 text-sm text-muted-foreground">{t.pAbout}</p>
-          <div className="mt-5 rounded-lg bg-muted/60 p-3"><p className="flex items-center gap-2 text-xs font-semibold"><GraduationCap className="size-4 text-primary" />{t.pEdu}</p><p className="mt-1 text-sm">{t.pEduText}</p></div>
-          <p className="mt-5 text-xs font-semibold">{t.pCerts}</p>
-          <div className="mt-2 grid grid-cols-3 gap-2">{[0, 1, 2].map((i) => <div key={i} className="flex aspect-[4/3] items-center justify-center rounded-md border bg-background"><Award className="size-6 text-primary/70" /></div>)}</div>
-          <div className="mt-6 flex h-11 items-center justify-center gap-2 rounded-lg bg-primary text-sm font-semibold text-primary-foreground"><CalendarCheck className="size-4" />{t.pBook}</div>
-        </div>
+        <PublishedProfilePreview lang={lang} />
       </div>
     </section>
   );

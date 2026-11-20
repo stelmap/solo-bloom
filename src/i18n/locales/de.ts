@@ -536,7 +536,7 @@ export default {
   "auth.yourName": "Ihr Name",
   "auth.accountCreated": "Konto erstellt!",
   "auth.checkEmail": "Überprüfen Sie Ihre E-Mails, um Ihr Konto zu bestätigen.",
-  "auth.heroText": "Für Solo-Selbstständige. Kein Ballast. Keine unübersichtlichen Funktionen. Genau das Tool, das Sie brauchen.",
+  "auth.heroText": "Für alle, die selbstständig mit Menschen arbeiten. Weniger Routine, mehr Zeit für Klienten.",
   "auth.cloudBased": "Cloudbasiert",
   "auth.simple": "Einfach",
   "auth.easyToUse": "Leicht zu bedienen",

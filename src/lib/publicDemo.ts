@@ -1,6 +1,6 @@
 import { parseMeetingDuration, parseNonnegativePrice } from './meetingDuration';
 
-export const DEMO_STORAGE_KEY = 'solo-bizz-public-demo-v1';
+export const DEMO_STORAGE_KEY = 'solo-bizz-public-demo-v2';
 export const DEMO_TTL_MS = 2 * 60 * 60 * 1000;
 export interface DemoClient { id: string; name: string; email: string; phone: string; notes: string; status: 'active' | 'archived' }
 export interface DemoService { id: string; name: string; duration_minutes: number; price: number }
@@ -11,9 +11,9 @@ export function seedDemo(now = Date.now()): DemoState {
   const date = new Date(now).toISOString().slice(0, 10);
   const tomorrow = new Date(now + 86400000).toISOString().slice(0, 10);
   return { version: 1, expiresAt: now + DEMO_TTL_MS,
-    clients: ['Alex Morgan', 'Jamie Parker', 'Robin Taylor', 'Sam Rivera'].map((name, i) => ({ id: `demo-client-${i}`, name, email: `client${i + 1}@example.invalid`, phone: '', notes: '', status: 'active' })),
+    clients: ['Anna K.', 'Mark T.', 'Elena M.', 'Sophie L.'].map((name, i) => ({ id: `demo-client-${i}`, name, email: `client${i + 1}@example.invalid`, phone: '', notes: '', status: 'active' })),
     services: [{ id: 'demo-service-0', name: 'Consultation', duration_minutes: 60, price: 60 }, { id: 'demo-service-1', name: 'Follow-up', duration_minutes: 45, price: 45 }],
-    meetings: [0, 1, 2].map(i => ({ id: `demo-meeting-${i}`, client_id: `demo-client-${i}`, service_id: 'demo-service-0', date: i === 1 && tomorrow.slice(0, 7) === date.slice(0, 7) ? tomorrow : date, time: `${10 + i * 2}:00`, duration: 60, price: 60 })),
+    meetings: [0, 1, 2, 3].map(i => ({ id: `demo-meeting-${i}`, client_id: `demo-client-${i}`, service_id: 'demo-service-0', date: i === 1 && tomorrow.slice(0, 7) === date.slice(0, 7) ? tomorrow : date, time: `${10 + i * 2}:00`, duration: 60, price: 60 })),
     payments: [{ id: 'demo-payment-0', client_id: 'demo-client-0', meeting_id: 'demo-meeting-0', date, amount: 60, confirmed: true }, { id: 'demo-payment-1', client_id: 'demo-client-2', meeting_id: 'demo-meeting-2', date, amount: 20, confirmed: true }, { id: 'demo-payment-2', client_id: 'demo-client-3', meeting_id: null, date, amount: 120, confirmed: true }],
   };
 }
