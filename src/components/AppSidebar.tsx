@@ -562,9 +562,9 @@ export function AppSidebar() {
         onMouseEnter={() => clearHoverTimer()}
         onMouseLeave={() => scheduleHover(false)}
       >
-        <FullHeader pinned={pinned} onToggle={() => setPinned(!pinned)} />
-        <FullNav />
-        <FullFooter />
+        {FullHeader({ pinned, onToggle: () => setPinned(!pinned) })}
+        {FullNav()}
+        {FullFooter()}
       </aside>
 
       {/* Mobile drawer */}
@@ -575,9 +575,9 @@ export function AppSidebar() {
         )}
         aria-hidden={!mobileOpen}
       >
-        <FullHeader onToggle={() => setMobileOpen(false)} />
-        <FullNav />
-        <FullFooter />
+        {FullHeader({ onToggle: () => setMobileOpen(false) })}
+        {FullNav()}
+        {FullFooter()}
       </aside>
     </TooltipProvider>
   );
