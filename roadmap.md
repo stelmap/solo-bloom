@@ -5,7 +5,7 @@
 - [x] Translate registration home link, warm up introductory copy in six languages, correct Solo feature wording and use a brand mission in the footer.
 - [x] Remove only q45265656 and replace PSU with the requested professional title in the owner's draft/published profile through the authenticated owner API; public read-back verified.
 - [x] Add owner-confirmed Instagram https://www.instagram.com/olga_solobizz/ and verify its footer link.
-- [ ] Threads still awaits an official URL.
+- [x] Add owner-confirmed Threads https://www.threads.com/@olga_solobizz alongside Instagram.
 - [ ] Add genuine approved testimonials, photos and featured public profiles — awaiting owner content/consent; do not invent endorsements.
 - [x] Replace fictitious landing specialist with the existing published Olga profile and actual permitted photo; center the lone approved review instead of fabricating additional endorsements.
 - [x] Confirm EU database region from hosted project information and add narrow client-record storage statement linked to Privacy; no blanket GDPR compliance guarantee.
