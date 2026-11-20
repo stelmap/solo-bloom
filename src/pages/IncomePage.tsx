@@ -27,7 +27,7 @@ import { INCOME_FLOW_COPY, INCOME_PAGE_COPY, normIncomeLang } from "@/lib/income
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useMemo, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useUnpaidMeetings } from "@/hooks/useUnpaidMeetings";
+import { unpaidPaymentRows } from "@/lib/unpaidPaymentRows";
 import { calToolbarCopy } from "@/lib/calendarToolbarCopy";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -109,7 +109,6 @@ export default function IncomePage() {
   const IP = INCOME_PAGE_COPY[normIncomeLang(lang)];
   const CT = calToolbarCopy(lang);
   const qcUnpaid = useQueryClient();
-  const { data: unpaidMeetings = [], isLoading: unpaidLoading } = useUnpaidMeetings();
   const { symbol: cs } = useCurrency();
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -169,6 +168,8 @@ export default function IncomePage() {
     return list;
   }, [expectedPayments, q, clientFilter, sortKey]);
   const openingDebts = filteredExpected.filter(ep => ep.kind === "opening");
+  const unpaidMeetings = unpaidPaymentRows(filteredExpected);
+  const unpaidLoading = epLoading;
   const pendingTotal = filteredExpected.reduce((s: number, ep: any) => s + Number(ep.amount), 0);
 
 
@@ -433,13 +434,13 @@ export default function IncomePage() {
             ) : unpaidMeetings.length === 0 && openingDebts.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">{CT.unpaidEmpty}</p>
             ) : unpaidMeetings.map((m) => {
-              const clientId = m.apt.client_id ?? m.apt.clients?.id;
-              const name = m.apt.clients?.name || m.apt.group_sessions?.groups?.name || "—";
+              const clientId = m.debt.client_id;
+              const name = m.debt.clients?.name || "—";
               return (
-                <div key={m.apt.id} className="rounded-xl border border-border bg-card p-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div key={m.debt.id} className="rounded-xl border border-border bg-card p-3 flex flex-col gap-3 sm:flex-row sm:items-center">
                   <div className="min-w-0 sm:w-56">
                     <p className="truncate text-sm font-semibold text-foreground">{name}</p>
-                    <p className="text-xs text-muted-foreground">{format(new Date(m.apt.scheduled_at), "dd.MM.yyyy, HH:mm")}</p>
+                    <p className="text-xs text-muted-foreground">{m.debt.appointments?.scheduled_at ? format(parseISO(m.debt.appointments.scheduled_at.slice(0, 19)), "dd.MM.yyyy, HH:mm") : "—"}</p>
                   </div>
                   <div className="grid flex-1 grid-cols-3 gap-2 text-xs">
                     <div><p className="text-muted-foreground">{CT.price}</p><p className="font-medium tabular-nums">{cs}{m.price.toLocaleString()}</p></div>
@@ -447,8 +448,7 @@ export default function IncomePage() {
                     <div><p className="text-muted-foreground">{CT.left}</p><p className="font-semibold tabular-nums text-destructive">{cs}{m.remaining.toLocaleString()}</p></div>
                   </div>
                   <Button size="sm" className="shrink-0 whitespace-nowrap" disabled={!clientId} onClick={() => {
-                    setLinkedPrefill({ clientId, clientName: name, amount: m.remaining, date: new Date().toISOString().split("T")[0], payment_method: defaultPayMethod || "cash" });
-                    setLinkedOpen(true);
+                    openRecordPayment(m.debt);
                   }}>{CT.addPayment}</Button>
                 </div>
               );

@@ -1372,6 +1372,7 @@ export function useExpectedPayments() {
           return {
             id: a.id,
             kind: "individual" as const,
+            price: Number(a.price),
             appointment_id: a.id,
             group_session_payment_id: null as string | null,
             client_id: a.client_id,
@@ -1421,11 +1422,12 @@ export function useExpectedPayments() {
         .map((p) => {
           const apt = p.group_sessions?.appointments;
           const outstanding = p.expected_payment_id && epAmountById.has(p.expected_payment_id)
-            ? epAmountById.get(p.expected_payment_id)!
+            ? (epAmountById.get(p.expected_payment_id) ?? Number(p.amount))
             : Number(p.amount);
           return {
             id: `gsp:${p.id}`,
             kind: "group" as const,
+            price: Number(p.amount),
             appointment_id: p.group_sessions?.appointment_id ?? null,
             group_session_payment_id: p.id as string,
             client_id: p.client_id,

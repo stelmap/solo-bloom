@@ -29,3 +29,4 @@
 - Booking confirmation email allows server-verified request owners to approve/retry without an age limit; anonymous triggers retain a ten-minute window, stored recipients and idempotency to prevent public email abuse.
 - Preserve only allow-listed UTM campaign labels in sessionStorage after analytics consent and clear them on withdrawal, so registration attribution survives navigation without retaining private URL parameters.
 - Landing specialist previews read only the public slug RPC and published-file storage policy, so marketing never exposes drafts or invents a specialist biography.
+- Payments Unpaid rows and totals use the same expected-payment ledger, including participant-level group debts, so group parent appointments never inflate unpaid counts.
