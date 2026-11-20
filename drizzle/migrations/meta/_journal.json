@@ -211,6 +211,13 @@
       "when": 1795082501973,
       "tag": "0029_booking_overlap_lock",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1795205042570,
+      "tag": "0030_migration",
+      "breakpoints": true
     }
   ]
 }
