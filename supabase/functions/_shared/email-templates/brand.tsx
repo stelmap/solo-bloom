@@ -1,18 +1,9 @@
 /// <reference types="npm:@types/react@18.3.1" />
 
 /**
- * Shared Solo .Bizz brand shell for ALL outgoing emails (auth + transactional).
- *
- * Visual language (matches solobizz_email_templates.html):
- *   - Dark navy header band with "Solo" + orange "Bizz" wordmark.
- *   - Orange gradient hero icon + bold white headline + muted subtitle.
- *   - White body with DM Sans / system body type.
- *   - Pill-shaped orange CTA gradient button.
- *   - Light gray footer band with brand line.
- *
- * Email-client safe: all styles inline, no external CSS, no SVG-only layout
- * (the wave is a thin colored bar fallback inside table layout). The Body
- * background stays #ffffff — required by Lovable transactional rules.
+ * Shared compact light shell for account emails. Uses the welcome palette,
+ * email-safe tables and inline styles, without font-dependent symbol icons.
+ * Verification content and delivery remain the responsibility of each sender.
  */
 
 import * as React from 'npm:react@18.3.1'
@@ -23,25 +14,27 @@ import {
   Head,
   Heading,
   Html,
+  Link,
   Preview,
   Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
+import { WELCOME_THEME, WEBSITE_URL, SUPPORT_EMAIL } from './welcome-content.ts'
 
 export const BRAND = {
   navy: '#0D1526',
   navySoft: '#141824',
-  orange: '#FF6B00',
+  orange: WELCOME_THEME.orange,
   orange2: '#FF8C3A',
-  white: '#ffffff',
-  ink: '#111827',
-  text: '#374151',
-  textSoft: '#6B7280',
-  muted: '#9CA3AF',
-  rule: '#F0F2F5',
-  surface: '#F5F6F8',
-  footerBg: '#ECEEF2',
-  border: '#E8EAEE',
+  white: WELCOME_THEME.white,
+  ink: WELCOME_THEME.ink,
+  text: WELCOME_THEME.text,
+  textSoft: WELCOME_THEME.text,
+  muted: WELCOME_THEME.muted,
+  rule: WELCOME_THEME.rule,
+  surface: WELCOME_THEME.lavender,
+  footerBg: WELCOME_THEME.white,
+  border: WELCOME_THEME.rule,
   green: '#16A34A',
   greenBg: '#F0FDF4',
   red: '#DC2626',
@@ -57,7 +50,7 @@ export const styles = {
   main: { backgroundColor: '#ffffff', margin: 0, padding: 0, fontFamily: fontStack },
   wrapper: {
     backgroundColor: BRAND.footerBg,
-    padding: '24px 12px',
+    padding: '16px 8px',
     fontFamily: fontStack,
   },
   card: {
@@ -65,28 +58,29 @@ export const styles = {
     borderRadius: '16px',
     overflow: 'hidden',
     margin: '0 auto',
-    maxWidth: '600px',
+    maxWidth: '640px',
+    width: '100%',
     border: `1px solid ${BRAND.rule}`,
   },
   header: {
-    backgroundColor: BRAND.navy,
-    padding: '28px 36px 22px',
+    backgroundColor: BRAND.surface,
+    padding: '20px 24px 12px',
   },
   wordmark: { fontSize: '22px', lineHeight: 1, margin: 0 },
-  wordmarkSolo: { color: BRAND.white, fontWeight: 700 },
+  wordmarkSolo: { color: BRAND.ink, fontWeight: 700 },
   wordmarkBizz: { color: BRAND.orange, fontWeight: 800 },
   tagline: {
-    color: '#8090b0',
+    color: BRAND.textSoft,
     fontSize: '10px',
-    letterSpacing: '1.4px',
+    letterSpacing: 0,
     textTransform: 'uppercase' as const,
     margin: '10px 0 0',
     fontWeight: 600,
   },
   hero: {
-    backgroundColor: BRAND.navy,
-    padding: '8px 36px 32px',
-    textAlign: 'center' as const,
+    backgroundColor: BRAND.surface,
+    padding: '0 24px 20px',
+    textAlign: 'left' as const,
   },
   heroIcon: {
     display: 'inline-block',
@@ -95,25 +89,24 @@ export const styles = {
     lineHeight: '60px',
     borderRadius: '16px',
     background: `linear-gradient(135deg, ${BRAND.orange} 0%, ${BRAND.orange2} 100%)`,
-    color: BRAND.white,
-    fontSize: '26px',
+    color: BRAND.ink,
+    fontSize: '24px',
     margin: '0 auto 18px',
     textAlign: 'center' as const,
   },
   heroTitle: {
-    color: BRAND.white,
-    fontSize: '26px',
+    color: BRAND.ink,
+    fontSize: '24px',
     fontWeight: 800,
-    letterSpacing: '-0.3px',
+    letterSpacing: 0,
     lineHeight: 1.2,
     margin: '0 0 8px',
   },
   heroSub: {
-    color: '#8090b0',
+    color: BRAND.text,
     fontSize: '14px',
     lineHeight: 1.55,
-    margin: '0 auto',
-    maxWidth: '360px',
+    margin: 0,
   },
   divider: {
     height: '8px',
@@ -122,9 +115,9 @@ export const styles = {
     lineHeight: 0,
     fontSize: 0,
   },
-  body: { padding: '32px 36px 28px', backgroundColor: BRAND.white },
+  body: { padding: '20px 24px', backgroundColor: BRAND.white },
   paragraph: {
-    fontSize: '15px',
+    fontSize: '14px',
     color: BRAND.text,
     lineHeight: 1.7,
     margin: '0 0 14px',
@@ -139,19 +132,19 @@ export const styles = {
     fontSize: '12px',
     color: BRAND.muted,
     lineHeight: 1.5,
-    margin: '18px 0 0',
+    margin: '14px 0 0',
   },
-  ctaWrap: { textAlign: 'center' as const, margin: '24px 0 18px' },
+  ctaWrap: { textAlign: 'center' as const, margin: '16px 0', backgroundColor: WELCOME_THEME.peach, padding: '14px 8px', borderRadius: '12px' },
   button: {
     display: 'inline-block',
-    background: `linear-gradient(135deg, ${BRAND.orange} 0%, ${BRAND.orange2} 100%)`,
+    backgroundColor: BRAND.orange,
     color: BRAND.white,
     fontSize: '14px',
     fontWeight: 700,
-    padding: '14px 36px',
+    padding: '14px 22px',
     borderRadius: '11px',
     textDecoration: 'none',
-    letterSpacing: '0.3px',
+    letterSpacing: 0,
   },
   buttonOutline: {
     display: 'inline-block',
@@ -163,7 +156,7 @@ export const styles = {
     borderRadius: '11px',
     border: `2px solid ${BRAND.orange}`,
     textDecoration: 'none',
-    letterSpacing: '0.3px',
+    letterSpacing: 0,
   },
   infoBox: {
     backgroundColor: BRAND.surface,
@@ -205,16 +198,17 @@ export const styles = {
     lineHeight: 1.55,
   },
   codeBox: {
-    backgroundColor: BRAND.navy,
-    color: BRAND.white,
+    backgroundColor: WELCOME_THEME.peach,
+    color: BRAND.ink,
     fontFamily: "'SFMono-Regular', Menlo, Consolas, monospace",
     fontSize: '28px',
     fontWeight: 700,
-    letterSpacing: '8px',
+    letterSpacing: 0,
     textAlign: 'center' as const,
-    padding: '22px 16px',
+    padding: '18px 12px',
     borderRadius: '12px',
-    margin: '20px 0',
+    margin: '16px 0',
+    overflowWrap: 'anywhere' as const,
   },
   detailRow: {
     backgroundColor: BRAND.surface,
@@ -226,7 +220,7 @@ export const styles = {
     fontSize: '11px',
     color: BRAND.muted,
     fontWeight: 600,
-    letterSpacing: '0.6px',
+    letterSpacing: 0,
     textTransform: 'uppercase' as const,
     margin: 0,
   },
@@ -245,8 +239,8 @@ export const styles = {
   footer: {
     backgroundColor: BRAND.footerBg,
     borderTop: `1px solid ${BRAND.border}`,
-    padding: '18px 36px 22px',
-    textAlign: 'center' as const,
+    padding: '16px 24px 20px',
+    textAlign: 'left' as const,
   },
   footerText: {
     fontSize: '12px',
@@ -273,15 +267,14 @@ interface ShellProps {
 }
 
 /**
- * SoloBizzShell — the outer email frame all Solo .Bizz emails share.
- * Pass the localized preview, hero icon/title/subtitle, and the body
+ * SoloBizzShell — the outer account email frame.
+ * Pass the localized preview, title/subtitle, and the body
  * paragraphs as children. Pass a localized footer node if needed.
  */
 export const SoloBizzShell: React.FC<ShellProps> = ({
   lang = 'en',
   dir = 'ltr',
   preview,
-  icon,
   title,
   subtitle,
   tagline = 'Business · Manager',
@@ -289,7 +282,7 @@ export const SoloBizzShell: React.FC<ShellProps> = ({
   footer,
 }) => (
   <Html lang={lang} dir={dir}>
-    <Head />
+    <Head><meta charSet="utf-8" /><meta name="color-scheme" content="light" /><meta name="supported-color-schemes" content="light" /></Head>
     <Preview>{preview}</Preview>
     <Body style={styles.main}>
       <Section style={styles.wrapper}>
@@ -304,19 +297,22 @@ export const SoloBizzShell: React.FC<ShellProps> = ({
           </Section>
           {/* Hero */}
           <Section style={styles.hero}>
-            <Text style={styles.heroIcon}>{icon}</Text>
             <Heading style={styles.heroTitle}>{title}</Heading>
             {subtitle ? <Text style={styles.heroSub}>{subtitle}</Text> : null}
           </Section>
-          <Section style={styles.divider}>&nbsp;</Section>
           {/* Body */}
           <Section style={styles.body}>{children}</Section>
           {/* Footer */}
           <Section style={styles.footer}>
             {footer ?? (
-              <Text style={styles.footerText}>
-                © {new Date().getUTCFullYear()} Solo .Bizz · solo-bizz.com
-              </Text>
+              <>
+                <Heading style={styles.wordmark}><span style={styles.wordmarkSolo}>Solo</span><span style={styles.wordmarkBizz}> .Bizz</span></Heading>
+                <Text style={{ ...styles.footerText, marginTop: '10px' }}>
+                  <Link href={`mailto:${SUPPORT_EMAIL}`} style={{ ...styles.footerLink, color: BRAND.orange }}>{SUPPORT_EMAIL}</Link><br />
+                  <Link href={WEBSITE_URL} style={styles.footerLink}>solo-bizz.com</Link><br />
+                  © {new Date().getUTCFullYear()} Solo .Bizz
+                </Text>
+              </>
             )}
           </Section>
         </Container>

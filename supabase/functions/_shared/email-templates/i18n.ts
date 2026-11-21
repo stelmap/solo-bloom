@@ -1,21 +1,22 @@
 /**
  * Shared translations for ALL Solo .Bizz outgoing emails (auth + transactional).
  *
- * Supported languages: English (en, default), Ukrainian (uk), Polish (pl),
- * French (fr). Add new languages by extending the `Lang` type and providing
+ * Supported languages: English (en, default), Ukrainian (uk), Russian (ru),
+ * Polish (pl), German (de), French (fr). Extend the `Lang` type and provide
  * a full block.
  */
 
-export type Lang = 'en' | 'uk' | 'ru' | 'pl' | 'fr'
+export type Lang = 'en' | 'uk' | 'ru' | 'pl' | 'de' | 'fr'
 
 export function normalizeLang(value: unknown): Lang {
-  if (value === 'uk' || value === 'ru' || value === 'pl' || value === 'en' || value === 'fr') return value
+  if (value === 'uk' || value === 'ru' || value === 'pl' || value === 'en' || value === 'de' || value === 'fr') return value
   if (typeof value === 'string') {
     const lower = value.toLowerCase()
     if (lower.startsWith('uk') || lower === 'ua') return 'uk'
     if (lower.startsWith('ru')) return 'ru'
     if (lower.startsWith('pl')) return 'pl'
     if (lower.startsWith('fr')) return 'fr'
+    if (lower.startsWith('de')) return 'de'
   }
   return 'en'
 }
@@ -496,7 +497,59 @@ const fr: LangStrings = {
   },
 }
 
-const STRINGS: Record<Lang, LangStrings> = { en, uk, ru, pl, fr }
+const de: LangStrings = {
+  signup: {
+    preview: 'Bestätigen Sie Ihre E-Mail-Adresse', tagline: TAGLINE,
+    heroTitle: 'Bestätigen Sie Ihre E-Mail-Adresse', heroSub: 'Nur noch ein Schritt zu Ihrer Praxis.',
+    greeting: 'Willkommen', intro: (siteName) => `Vielen Dank für Ihre Registrierung bei ${siteName}. Bestätigen Sie Ihre E-Mail-Adresse, um Ihr Konto zu aktivieren.`,
+    signingInAs: 'Angemeldet als', cta: 'E-Mail bestätigen',
+    ignore: 'Wenn Sie kein Konto erstellt haben, können Sie diese E-Mail ignorieren.',
+    features: {
+      calendar: 'Kalender', calendarDesc: 'Termine, Buchungen und Erinnerungen',
+      finance: 'Finanzen', financeDesc: 'Umsatz und Margen auf einen Blick',
+      metrics: 'Praxiskennzahlen', metricsDesc: 'Datenbasierte Entscheidungen',
+    },
+  },
+  magicLink: {
+    preview: 'Ihr Anmeldelink ist bereit', tagline: TAGLINE,
+    heroTitle: 'Ihr Anmeldelink', heroSub: 'Mit einem Klick zurück in Ihre Praxis.',
+    body: (siteName) => `Klicken Sie unten auf die Schaltfläche, um sich bei ${siteName} anzumelden. Dieser Link läuft in Kürze ab.`,
+    cta: 'Anmelden', ignore: 'Wenn Sie diesen Link nicht angefordert haben, können Sie diese E-Mail ignorieren.',
+  },
+  recovery: {
+    preview: 'Setzen Sie Ihr Passwort zurück', tagline: TAGLINE,
+    heroTitle: 'Passwort zurücksetzen', heroSub: 'Geben Sie den folgenden Code in der App ein, um fortzufahren.',
+    intro: 'Wir haben eine Anfrage zum Zurücksetzen Ihres Passworts erhalten. Geben Sie den folgenden Code in der App ein, um fortzufahren.',
+    helper: 'Dieser Code kann nur einmal verwendet werden und läuft in Kürze ab. Wenn Sie das Zurücksetzen nicht angefordert haben, können Sie diese E-Mail ignorieren — Ihr Passwort wird nicht geändert.',
+    ctaFallback: 'Solo .Bizz öffnen',
+  },
+  invite: {
+    preview: 'Sie wurden zu Solo .Bizz eingeladen', tagline: TAGLINE,
+    heroTitle: 'Sie wurden eingeladen', heroSub: 'Treten Sie Ihrem Team bei Solo .Bizz bei.',
+    body: (siteName) => `Sie wurden eingeladen, ${siteName} beizutreten. Klicken Sie unten auf die Schaltfläche, um die Einladung anzunehmen und Ihr Konto zu erstellen.`,
+    cta: 'Einladung annehmen', ignore: 'Wenn Sie diese Einladung nicht erwartet haben, können Sie diese E-Mail ignorieren.',
+  },
+  emailChange: {
+    preview: 'Bestätigen Sie die Änderung Ihrer E-Mail-Adresse', tagline: TAGLINE,
+    heroTitle: 'E-Mail-Änderung bestätigen', heroSub: 'Eine kurze Bestätigung schützt Ihr Konto.',
+    body: (email, newEmail) => `Sie haben beantragt, Ihre E-Mail-Adresse von ${email} auf ${newEmail} zu ändern.`,
+    confirmIntro: 'Klicken Sie unten auf die Schaltfläche, um diese Änderung zu bestätigen:',
+    cta: 'E-Mail-Änderung bestätigen', warning: 'Wenn Sie diese Änderung nicht angefordert haben, sichern Sie bitte sofort Ihr Konto.',
+  },
+  reauthentication: {
+    preview: 'Ihr Bestätigungscode', tagline: TAGLINE,
+    heroTitle: 'Identität bestätigen', heroSub: 'Bestätigen Sie Ihre Identität mit dem folgenden Code.',
+    intro: 'Bestätigen Sie Ihre Identität mit dem folgenden Code:',
+    footer: 'Dieser Code läuft in Kürze ab. Wenn Sie ihn nicht angefordert haben, können Sie diese E-Mail ignorieren.',
+  },
+  footer: { brandLine: '© Solo .Bizz · solo-bizz.com', ignoreNote: 'Wenn Sie kein Konto erstellt haben, können Sie diese E-Mail ignorieren.', contact: 'info@solo-bizz.com' },
+  subjects: {
+    signup: 'Bestätigen Sie Ihre E-Mail-Adresse', invite: 'Sie wurden eingeladen', magiclink: 'Ihr Anmeldelink',
+    recovery: 'Passwort zurücksetzen', email_change: 'Bestätigen Sie Ihre neue E-Mail-Adresse', reauthentication: 'Ihr Bestätigungscode',
+  },
+}
+
+const STRINGS: Record<Lang, LangStrings> = { en, uk, ru, pl, de, fr }
 
 export function getStrings(lang: Lang | string | undefined | null): LangStrings {
   return STRINGS[normalizeLang(lang)]

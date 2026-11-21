@@ -1,5 +1,10 @@
 # Roadmap
 
+## Remaining account email design — 21 November 2026
+- [x] Apply the corrected light visual system to password reset, invitations, sign-in links, email changes and verification codes; preserve each message's purpose and secure links/codes, with all six languages including German.
+- [x] Render/check 60 desktop/phone versions, preserve action destinations, leading-zero codes and old/new addresses in five regression tests; sample action opens the supplied destination in a new tab. Deploy the existing account-email handler.
+- [ ] Verify delivered Gmail/Outlook/Apple Mail messages — native Send test and mailbox evidence required; no agent test-send action available.
+
 ## Welcome confirmation email — 21 November 2026
 - [x] Replace font-dependent symbols with nine HTTPS PNG icons, compact hero/CTA/spacing and hide the instructions button until configured; deployed and checked 12 browser layouts.
 - [x] Reproduce and fix multibyte corruption in the preview renderer; six-language Unicode regression test passes. SDK production rendering remains unchanged and delivered MIME still needs verification.
