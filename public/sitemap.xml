@@ -2,62 +2,72 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://solo-bizz.com/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/" />
-    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/?lang=uk" />
-    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/?lang=pl" />
-    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/?lang=de" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/?lang=fr" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/en/" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/uk/" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/pl/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/de/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/fr/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/ru/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/" />
   </url>
   <url>
-    <loc>https://solo-bizz.com/?lang=uk</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/" />
-    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/?lang=uk" />
-    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/?lang=pl" />
-    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/?lang=de" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/?lang=fr" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/?lang=ru" />
+    <loc>https://solo-bizz.com/en/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/en/" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/uk/" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/pl/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/de/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/fr/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/ru/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/" />
   </url>
   <url>
-    <loc>https://solo-bizz.com/?lang=pl</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/" />
-    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/?lang=uk" />
-    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/?lang=pl" />
-    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/?lang=de" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/?lang=fr" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/?lang=ru" />
+    <loc>https://solo-bizz.com/uk/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/en/" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/uk/" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/pl/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/de/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/fr/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/ru/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/" />
   </url>
   <url>
-    <loc>https://solo-bizz.com/?lang=de</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/" />
-    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/?lang=uk" />
-    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/?lang=pl" />
-    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/?lang=de" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/?lang=fr" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/?lang=ru" />
+    <loc>https://solo-bizz.com/pl/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/en/" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/uk/" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/pl/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/de/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/fr/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/ru/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/" />
   </url>
   <url>
-    <loc>https://solo-bizz.com/?lang=fr</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/" />
-    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/?lang=uk" />
-    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/?lang=pl" />
-    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/?lang=de" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/?lang=fr" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/?lang=ru" />
+    <loc>https://solo-bizz.com/de/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/en/" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/uk/" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/pl/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/de/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/fr/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/ru/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/" />
   </url>
   <url>
-    <loc>https://solo-bizz.com/?lang=ru</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/" />
-    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/?lang=uk" />
-    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/?lang=pl" />
-    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/?lang=de" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/?lang=fr" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/?lang=ru" />
+    <loc>https://solo-bizz.com/fr/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/en/" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/uk/" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/pl/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/de/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/fr/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/ru/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/" />
+  </url>
+  <url>
+    <loc>https://solo-bizz.com/ru/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://solo-bizz.com/en/" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://solo-bizz.com/uk/" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://solo-bizz.com/pl/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://solo-bizz.com/de/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://solo-bizz.com/fr/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://solo-bizz.com/ru/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://solo-bizz.com/" />
   </url>
   <url>

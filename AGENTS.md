@@ -23,7 +23,8 @@
 - "About me" visibility is gated server-side by therapist_profile_allowed (global trial cutoff, then Pro via practice_access_state) and mirrored client-side by aboutProfileAccess, so the public RPC and file policy enforce it even if the UI is bypassed.
 - Public therapist profile URLs (/therapist/:slug) use a permanent unique slug reserved once by ensure_my_therapist_profile_slug on first publish; the public slug RPC returns only published, allowed content plus the existing booking key, so no second booking system exists.
 - Legal document revisions use document-specific dates when only one document changes, so unchanged policies are not falsely presented as revised.
-- Public marketing and legal translations use explicit query-language URLs with English at the original path; emit hreflang only for distinct available translations to avoid ambiguous crawler content.
+- Landing translations use explicit language-prefix URLs with a fixed English root fallback; other marketing and legal pages retain query-language URLs, so existing links remain valid.
+- Generate only seven static landing HTML files from the existing shared React landing at build time; keep private/session-bound reads in browser effects and the SPA fallback intact, so crawlers see localized content without a framework migration.
 - Reuse the approved Terms operator line and provider disclosures when composing other legal documents; preserve refund-right sections and keep missing jurisdiction input in the roadmap, not public placeholders.
 - Mark static fallback metadata as Helmet-managed so per-route tags replace rather than duplicate it.
 - Booking confirmation email allows server-verified request owners to approve/retry without an age limit; anonymous triggers retain a ten-minute window, stored recipients and idempotency to prevent public email abuse.

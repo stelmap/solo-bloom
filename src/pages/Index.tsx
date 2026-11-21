@@ -1,7 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { getPostAuthRedirect } from "@/lib/authRedirect";
 import { Navigate } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 
 // Lazy-load the landing page so authenticated users hitting /dashboard
 // (or any other route) don't pay the cost of the marketing bundle.
@@ -9,6 +9,7 @@ const LandingPage = lazy(() => import("./LandingPage"));
 
 export default function Index() {
   const { user, loading } = useAuth();
+  useEffect(() => { if (!loading && user) document.getElementById('landing-prerender')?.remove(); }, [loading, user]);
 
   // If the URL contains an OAuth callback fragment (access_token / code /
   // error from the provider), wait for Supabase to consume it and for the

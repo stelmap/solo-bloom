@@ -1,5 +1,13 @@
 # Roadmap
 
+## Multilingual landing SEO — 21 November 2026
+- [x] Reuse the existing landing for /uk/, /en/, /pl/, /de/, /fr/, /ru/, keeping legal and application URLs unchanged.
+- [x] Generate seven crawler-readable HTML files with reciprocal metadata and six new navy 1200×630 branded previews from shared components; production-emission test passed.
+- [x] Preserve legacy query links through client navigation and retain campaign parameters/section anchors; OAuth callbacks are not rewritten.
+- [ ] HTTP 301/308 legacy query redirects need request-level hosting support; current static hosting cannot route by query, so legacy social crawlers still see the English fallback before JavaScript.
+- [x] Validate six-language raw HTML and browser layout, 390/768 widths, URL switching, image dimensions/access and sitemap; 24 tests passed. All nine acceptance statuses documented.
+- [ ] Publish and verify production/social validators — awaiting explicit publication authorization.
+
 ## Unpaid Payments mismatch
 - [x] Use the same participant-level debt rows for the Unpaid list, count, filters and expected total; signed-in view now shows 1 participant owing €100 rather than 60 group parents; 7 tests passed, no real payment recorded.
 
@@ -15,7 +23,7 @@
 - [x] Confirm EU database region from hosted project information and add narrow client-record storage statement linked to Privacy; no blanket GDPR compliance guarantee.
 - [ ] Honest public usage statistic awaits a reliable active/non-test definition and owner approval; raw account/appointment totals are not a trustworthy marketing number.
 - [x] Audit existing six language-specific query URLs, reciprocal hreflang and page metadata; preserve these indexed links and existing sitemap mechanism (lastmod is profile published_at, not build time).
-- [ ] Server-rendered public pages and same-domain personalized crawler previews await explicit approval of framework migration; do not repeat the raw-HTML helper-link regression. Dedicated /uk-style paths are held with this stage to avoid duplicate canonical URLs.
+- [ ] Same-domain personalized therapist/booking crawler previews remain a separate server-rendering stage; landing-only static rendering and /uk-style paths are now requested for 21 November.
 - [x] Prepare six 1200×630 brand preview assets, connect them to rendered metadata, and add consent-respecting registration UTM retention with 5 tests; campaign URLs documented in docs/pre-marketing-2026-11-20.md. Actual registration was not submitted.
 - [x] Verify six-language metadata/images/profile preview, signup return link, localized demo modes/dialog and desktop/mobile layout; 17 unit tests passed and current build OK. Vite lacks asset proxy, so browser validation resolved immutable assets through published asset handler. Frontend not published; owner profile correction already live.
 

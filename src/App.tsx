@@ -44,6 +44,7 @@ function lazyWithReload<T extends ComponentType<any>>(
 
 // Eagerly loaded (landing — needed immediately for SEO/LCP)
 import Index from "./pages/Index";
+import { PUBLIC_LANGUAGES } from '@/lib/publicLanguage';
 import NotFound from "./pages/NotFound";
 
 // Lazy loaded (behind auth or rarely visited)
@@ -146,6 +147,7 @@ const App = () => {
             <Suspense fallback={<PageFallback />}>
               <Routes>
                 <Route path="/" element={<Index />} />
+                {PUBLIC_LANGUAGES.map(lang => <Route key={lang} path={`/${lang}`} element={<Index />} />)}
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/updates" element={<ProductUpdatesPage />} />
                 <Route path="/demo" element={<DemoWorkspace />} />

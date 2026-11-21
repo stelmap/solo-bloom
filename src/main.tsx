@@ -4,6 +4,7 @@ import App from "./App.tsx";
 import "./index.css";
 import { initTheme } from "@/hooks/useTheme";
 import { captureReferralFromUrl } from "@/lib/referral";
+import { landingPathLanguage } from '@/lib/landingRoutes';
 
 // Recover from stale-chunk errors after a deploy (cached index.html points to
 // an old asset hash). Reload once so the browser fetches the fresh index.html.
@@ -62,7 +63,13 @@ window.addEventListener("load", () => {
 initTheme();
 captureReferralFromUrl();
 
-createRoot(document.getElementById("root")!).render(
+// Root HTML is also the hosting fallback for private routes: never display its marketing snapshot there.
+if (window.location.pathname !== '/' && !landingPathLanguage(window.location.pathname)) {
+  document.getElementById('landing-prerender')?.remove();
+}
+const root = document.getElementById('root');
+if (!root) throw new Error('Application root is missing');
+createRoot(root).render(
   <HelmetProvider>
     <App />
   </HelmetProvider>
