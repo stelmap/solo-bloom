@@ -1,5 +1,9 @@
 # Roadmap
 
+## Calendar screenshot names and titles — 21 November 2026
+- [x] Localize names and meeting/group titles in German, Polish, French and Russian screenshot assets only; preserve Ukrainian/English and the real calendar.
+- [x] Verify readable text, desktop/mobile display and enlargement in all four languages (eight browser checks); current build OK, changes remain in preview.
+
 ## Booking inbox localization correction — 21 November 2026
 - [x] Verify published inbox page/panel in all six languages without changing requests.
 - [x] Localize the panel, page, dialogs and notifications through shared app dictionaries; preserve all booking actions.
