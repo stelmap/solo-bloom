@@ -34,3 +34,4 @@
 - Payments Unpaid rows and totals use the same expected-payment ledger, including participant-level group debts, so group parent appointments never inflate unpaid counts.
 
 - Booking inbox page and calendar panel use the shared app translation dictionaries and active language for wall-clock formatting, so every supported language covers the same controls without per-screen fallbacks.
+- Testimonial translations are keyed by the approved review ID and exact original text; render them only for fetched approved reviews and fall back to the original after edits, preventing stale or fabricated endorsements.

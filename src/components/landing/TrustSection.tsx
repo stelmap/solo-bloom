@@ -3,6 +3,7 @@ import { ArrowRight, ChevronLeft, ChevronRight, MessageSquare, ShieldCheck, Star
 import { supabase } from "@/integrations/supabase/client";
 import { ReviewDialog } from "@/components/landing/ReviewDialog";
 import type { AppLanguage } from "@/i18n/translations";
+import { translatedTestimonial } from "@/lib/testimonialTranslations";
 import psychologistImg from "@/assets/trust-psychologist.jpg";
 import teacherImg from "@/assets/trust-teacher.jpg";
 import consultantImg from "@/assets/trust-consultant.jpg";
@@ -364,7 +365,7 @@ export function TrustSection({
                 >
                   <div className="flex flex-1 flex-col p-6">
                     <Stars className="mb-3 text-primary" value={r.rating} />
-                    <p className="flex-1 whitespace-pre-line text-sm leading-relaxed text-foreground/90">{r.body}</p>
+                    <p className="flex-1 whitespace-pre-line text-sm leading-relaxed text-foreground/90">{translatedTestimonial(r, lang).body}</p>
                     {r.admin_reply ? (
                       <div className="mt-4 rounded-xl bg-muted/60 p-4">
                         <div className="text-xs font-semibold text-foreground">{c.replyLabel}</div>
@@ -374,7 +375,7 @@ export function TrustSection({
                     <div className="mt-5 border-t border-border pt-4">
                       <div className="text-sm font-semibold text-foreground">{r.display_name}</div>
                       <div className="text-xs text-muted-foreground">
-                        {r.profession}
+                        {translatedTestimonial(r, lang).profession}
                         {r.plan && PLAN_LABEL[r.plan] ? ` · ${PLAN_LABEL[r.plan]}` : ""}
                       </div>
                       <div className="text-xs text-muted-foreground">

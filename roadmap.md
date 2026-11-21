@@ -1,5 +1,9 @@
 # Roadmap
 
+## Genuine testimonial translations — 21 November 2026
+- [x] Translate the existing approved user review into six languages without adding invented reviews or changing the stored original.
+- [x] Verify all six languages display the real review and submitted name; two source-protection tests passed, build OK; changes remain in preview.
+
 ## Calendar screenshot names and titles — 21 November 2026
 - [x] Localize names and meeting/group titles in German, Polish, French and Russian screenshot assets only; preserve Ukrainian/English and the real calendar.
 - [x] Verify readable text, desktop/mobile display and enlargement in all four languages (eight browser checks); current build OK, changes remain in preview.
