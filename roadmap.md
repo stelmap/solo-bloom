@@ -1,12 +1,15 @@
 # Roadmap
 
+## Published application localization QA — 21 November 2026
+- [x] Check published deployment, signed-in booking inbox/panel, calendar, practice/About me editor, public review form and booking-link settings in all six languages; mobile booking/About me checked at 390×844. No production records changed; details in docs/published-localization-qa-2026-11-21.md.
+
 ## Multilingual landing SEO — 21 November 2026
 - [x] Reuse the existing landing for /uk/, /en/, /pl/, /de/, /fr/, /ru/, keeping legal and application URLs unchanged.
 - [x] Generate seven crawler-readable HTML files with reciprocal metadata and six new navy 1200×630 branded previews from shared components; production-emission test passed.
 - [x] Preserve legacy query links through client navigation and retain campaign parameters/section anchors; OAuth callbacks are not rewritten.
 - [ ] HTTP 301/308 legacy query redirects need request-level hosting support; current static hosting cannot route by query, so legacy social crawlers still see the English fallback before JavaScript.
 - [x] Validate six-language raw HTML and browser layout, 390/768 widths, URL switching, image dimensions/access and sitemap; 24 tests passed. All nine acceptance statuses documented.
-- [ ] Confirm deployment and verify all six production language pages — publication requested twice on 21 November 2026; fixed development-build/production JSX runtime mismatch and passed 24 tests. Last production browser check still served the old bundle with 404 on all six paths; deployment completion remains unconfirmed. Basic security checks passed; social-platform validators remain a separate follow-up.
+- [x] Confirm deployment and verify all six production language pages — all six localized landing pages opened successfully on solo-bizz.com during subsequent signed-in localization QA. Basic security checks passed; social-platform validators remain a separate follow-up.
 
 ## Unpaid Payments mismatch
 - [x] Use the same participant-level debt rows for the Unpaid list, count, filters and expected total; signed-in view now shows 1 participant owing €100 rather than 60 group parents; 7 tests passed, no real payment recorded.
