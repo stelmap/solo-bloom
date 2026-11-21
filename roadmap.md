@@ -3,7 +3,8 @@
 ## Facebook landing preview diagnosis — 21 November 2026
 - [x] Compared 32 raw production responses: legacy ?lang=uk serves English without an HTTP redirect, while all six path pages return correct UTF-8 metadata; no user-agent differences or broken Cyrillic observed.
 - [x] Replaced six generic brand cards with versioned 1200×630 captures of the real localized hero; all six images and initial preview metadata verified. Publication requested; production verification follows.
-- [ ] Confirm production publication: the follow-up check still returned old image URLs; publication completion remains unconfirmed.
+- [x] Confirm production publication: follow-up production checks now return the new versioned hero images for all six languages; every public image returns HTTP 200 at 1200×630. Both Ukrainian browser URLs reach the current /uk/ page.
+- [x] Rechecked the uploaded P0 brief and Meta screenshot: screenshot references the old Ukrainian card; independently verified current production HTML and the rendered destination, without mistaking crawler probes for actual Facebook cache verification.
 - [ ] Fix server-level legacy query redirects — blocked by static hosting query-routing support; Facebook refresh and actual card verification require an authorised Facebook session. Details: docs/facebook-preview-2026-11-21.md.
 
 ## Landing calendar client names — 21 November 2026

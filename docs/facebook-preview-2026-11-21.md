@@ -57,7 +57,11 @@ This task is not DONE. Use `https://solo-bizz.com/uk/` for Ukrainian sharing whi
 
 ### Publication check
 
-Publication was requested. A subsequent direct check of all six production language pages still returned the previous `brand-share-*.jpg` image URLs, so deployment completion is not confirmed. The old legacy query still returned English. Do not attribute this to Facebook cache: the new metadata has not yet been confirmed on the live site itself.
+The first follow-up returned old assets. A later independent production check after the uploaded P0 brief confirmed publication: all six language paths return HTTP 200, their matching initial document language and the new versioned `landing-hero-share-*-20261121.png` image URLs to `facebookexternalhit/1.1`. All six images load publicly with HTTP 200, decode as 1200×630 PNGs, and are 96–176 KB. Both `/uk/` and `/?lang=uk` were exercised in a fresh production browser; each ends on `/uk/`, with Ukrainian document language, the current Ukrainian headline and new image metadata. The actual first-screen screenshot and public Ukrainian share image were visually inspected.
+
+The uploaded Meta screenshot shows a previous scrape using `brand-share-uk.jpg`, not the currently published image. It verifies Meta fetched `/uk/?utm_source=facebook&utm_medium=pinned` successfully; it does not establish what Meta currently fetches for `/?lang=uk`. That query was rechecked independently and still returns English initial HTML with HTTP 200 and no server redirect. Browser navigation alone cannot satisfy the query URL's crawler requirement.
+
+The user was asked to refresh `/uk/` with Scrape Again and supply the resulting screenshot, since no authorised Facebook session is available here. No Facebook preview screenshot was fabricated, and an app screenshot is not presented as a Facebook result. No further app changes or publication were necessary for the already-live images. Acceptance remains incomplete until the actual refreshed Facebook card/click and request-level legacy redirect are verified.
 ## Exact new image URLs
 
 - uk: https://solo-bizz.com/__l5e/assets-v1/448d19ef-cf3a-4d10-9539-4bdef4b140d2/landing-hero-share-uk-20261121.png
