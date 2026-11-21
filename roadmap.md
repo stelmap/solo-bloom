@@ -1,9 +1,10 @@
 # Roadmap
 
 ## Facebook landing preview diagnosis — 21 November 2026
-- [ ] Compare raw production HTML for root, legacy language query and all six canonical language paths across browser/Facebook crawler user agents; inspect actual images and encoding.
-- [ ] Correct confirmed preview-image defects using the existing landing design and verify all six images/metadata.
-- [ ] Verify production and Facebook Sharing Debugger; server-level legacy query redirects require hosting support, and Facebook refresh requires an authorised Facebook session if its debugger is gated.
+- [x] Compared 32 raw production responses: legacy ?lang=uk serves English without an HTTP redirect, while all six path pages return correct UTF-8 metadata; no user-agent differences or broken Cyrillic observed.
+- [x] Replaced six generic brand cards with versioned 1200×630 captures of the real localized hero; all six images and initial preview metadata verified. Publication requested; production verification follows.
+- [ ] Confirm production publication: the follow-up check still returned old image URLs; publication completion remains unconfirmed.
+- [ ] Fix server-level legacy query redirects — blocked by static hosting query-routing support; Facebook refresh and actual card verification require an authorised Facebook session. Details: docs/facebook-preview-2026-11-21.md.
 
 ## Landing calendar client names — 21 November 2026
 - [x] Localize remaining English/Ukrainian client names in screenshot assets; retain the existing German, Polish, French and Russian localized names and all real client data.
