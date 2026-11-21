@@ -6,7 +6,7 @@
 - [x] Preserve legacy query links through client navigation and retain campaign parameters/section anchors; OAuth callbacks are not rewritten.
 - [ ] HTTP 301/308 legacy query redirects need request-level hosting support; current static hosting cannot route by query, so legacy social crawlers still see the English fallback before JavaScript.
 - [x] Validate six-language raw HTML and browser layout, 390/768 widths, URL switching, image dimensions/access and sitemap; 24 tests passed. All nine acceptance statuses documented.
-- [ ] Publish and verify production/social validators — awaiting explicit publication authorization.
+- [ ] Publish and verify all six production language pages — publication authorized on 21 November 2026; refresh security checks first. Social-platform validators remain a separate follow-up.
 
 ## Unpaid Payments mismatch
 - [x] Use the same participant-level debt rows for the Unpaid list, count, filters and expected total; signed-in view now shows 1 participant owing €100 rather than 60 group parents; 7 tests passed, no real payment recorded.
