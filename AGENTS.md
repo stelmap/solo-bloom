@@ -39,3 +39,4 @@
 - Localize landing calendar client names only in language-specific screenshot asset pointers, never in client records, so presentation changes cannot alter practice data.
 - Share-preview signs photos only as an anonymous visitor under the published-file storage policy, so forged profile paths cannot bypass file ownership or publication.
 - Confirmation tokens lock the appointment before the confirmation row and accept only scheduled/confirmed meetings; lookup uses the same status gate so cancellation revokes old links immediately.
+- Landing share images are versioned 1200×630 browser captures of the shared localized hero with fonts loaded; language-path static HTML supplies their initial metadata without JavaScript.
