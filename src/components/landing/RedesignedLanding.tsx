@@ -19,7 +19,7 @@ import { SUBSCRIPTION_OFFER } from '@/lib/practiceAccess';
 import { track } from '@/lib/analytics';
 import calendarAsset from '@/assets/calendar-week-de.png.asset.json';
 import ukrainianCalendarAsset from '@/assets/calendar-week-uk.png.asset.json';
-import englishCalendarAsset from '@/assets/calendar-week-en.png.asset.json';
+import englishCalendarAsset from '@/assets/calendar-english-owner.png.asset.json';
 import russianCalendarAsset from '@/assets/calendar-week-ru.png.asset.json';
 import frenchCalendarAsset from '@/assets/calendar-week-fr.png.asset.json';
 import polishCalendarAsset from '@/assets/calendar-week-pl.png.asset.json';
