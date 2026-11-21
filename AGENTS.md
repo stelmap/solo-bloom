@@ -37,3 +37,5 @@
 - Testimonial translations are keyed by the approved review ID and exact original text; render them only for fetched approved reviews and fall back to the original after edits, preventing stale or fabricated endorsements.
 - Shared booking links use the active interface language in a validated lang query parameter, and Copy/Preview use the same URL; legacy links without that parameter retain visitor language detection.
 - Localize landing calendar client names only in language-specific screenshot asset pointers, never in client records, so presentation changes cannot alter practice data.
+- Share-preview signs photos only as an anonymous visitor under the published-file storage policy, so forged profile paths cannot bypass file ownership or publication.
+- Confirmation tokens lock the appointment before the confirmation row and accept only scheduled/confirmed meetings; lookup uses the same status gate so cancellation revokes old links immediately.

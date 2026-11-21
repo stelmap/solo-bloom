@@ -218,6 +218,13 @@
       "when": 1795205042570,
       "tag": "0030_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1795275469548,
+      "tag": "0031_revoke_confirmation_for_terminal_meetings",
+      "breakpoints": true
     }
   ]
 }

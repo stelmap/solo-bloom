@@ -7,7 +7,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 const SITE = "https://solo-bizz.com";
 const URL_ = Deno.env.get("SUPABASE_URL")!;
 const anon = createClient(URL_, Deno.env.get("SUPABASE_ANON_KEY")!, { auth: { persistSession: false } });
-const admin = createClient(URL_, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const KEY = /^[a-zA-Z0-9_-]{1,80}$/;
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
@@ -23,7 +22,9 @@ type P = Record<string, unknown>;
 async function photoUrl(p: P | null, fallback?: unknown): Promise<string | null> {
   const path = p && typeof p.photo === "string" ? p.photo : null;
   if (path) {
-    const { data } = await admin.storage.from("therapist-profile-files").createSignedUrl(path, 60 * 60);
+    // Sign as a public visitor: storage enforces the published-file allow-list,
+    // owner path and profile access gate, even for a forged published.photo.
+    const { data } = await anon.storage.from("therapist-profile-files").createSignedUrl(path, 60 * 60);
     if (data?.signedUrl) return data.signedUrl;
   }
   return typeof fallback === "string" && fallback.startsWith("https://") ? fallback : null;
