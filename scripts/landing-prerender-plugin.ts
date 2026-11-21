@@ -1,5 +1,4 @@
 import { createServer, loadEnv, type Plugin, type ViteDevServer } from 'vite';
-import react from '@vitejs/plugin-react-swc';
 import path from 'node:path';
 
 type RenderedLanding = { body: string; head: string; htmlAttributes: string };
@@ -42,7 +41,10 @@ export function landingPrerenderPlugin(): Plugin {
       if (!entry || entry.type !== 'asset') throw new Error('Missing landing HTML build template');
       const template = String(entry.source);
       const server = await createServer({
-        configFile: false, root, mode, plugins: [react()],
+        configFile: false, root, mode,
+        // SSR can run with NODE_ENV=production during a development-mode build.
+        // Always emit production-compatible JSX, never React's dev-only jsxDEV.
+        esbuild: { jsx: 'automatic', jsxDev: false },
         server: { middlewareMode: true, hmr: false }, appType: 'custom',
         resolve: { alias: { '@': path.resolve(root, 'src') }, dedupe: ['react', 'react-dom', 'react/jsx-runtime'] },
         define: Object.fromEntries(Object.entries(loadEnv(mode, root, 'VITE_')).map(([key, value]) => [`import.meta.env.${key}`, JSON.stringify(value)])),

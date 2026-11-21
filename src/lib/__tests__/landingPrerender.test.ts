@@ -5,6 +5,10 @@ import { landingPrerenderPlugin } from '../../../scripts/landing-prerender-plugi
 describe('production landing emission', () => {
   it('emits only the root plus six public languages and keeps application scripts', async () => {
     const plugin = landingPrerenderPlugin();
+    // Publishing also runs development-mode builds with NODE_ENV=production.
+    if (typeof plugin.configResolved === 'function') {
+      plugin.configResolved({ root: process.cwd(), mode: 'development' } as never);
+    }
     const entry = { type: 'asset', source: '<html lang="en"><head><meta charset="UTF-8"><title>fallback</title><meta data-rh="true" name="description" content="fallback"></head><body><div id="root"></div><script type="module" src="/assets/application.js"></script></body></html>' };
     const emitted: {fileName: string; source: string}[] = [];
     const generate = plugin.generateBundle;
