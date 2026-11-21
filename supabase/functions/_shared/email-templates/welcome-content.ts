@@ -4,6 +4,20 @@ export const SETUP_GUIDE_URL: string | undefined = undefined
 export const WEBSITE_URL = 'https://solo-bizz.com'
 export const SUPPORT_EMAIL = 'info@solo-bizz.com'
 
+export const WELCOME_FEATURE_ICONS = [
+  `${WEBSITE_URL}/__l5e/assets-v1/7c8a460b-0fa6-4dc3-b828-6a9f26905f5a/welcome-calendar.png`,
+  `${WEBSITE_URL}/__l5e/assets-v1/c49873f7-f2fb-40e3-9a41-e56bdc0adb76/welcome-clients.png`,
+  `${WEBSITE_URL}/__l5e/assets-v1/c0518add-9e27-45c5-a88e-c229d8c4afcc/welcome-payments.png`,
+  `${WEBSITE_URL}/__l5e/assets-v1/28e310a8-22f0-43c8-b7d4-c521d098c24c/welcome-finances.png`,
+  `${WEBSITE_URL}/__l5e/assets-v1/60dcbcf5-c71e-4bca-85a6-4ebf337d240e/welcome-groups.png`,
+  `${WEBSITE_URL}/__l5e/assets-v1/5520ac65-ff36-4ca8-a998-48a82881326e/welcome-profile.png`,
+]
+export const WELCOME_VALUE_ICONS = [
+  `${WEBSITE_URL}/__l5e/assets-v1/d2781941-9339-470c-b66d-5d5e900d6c5b/welcome-growth.png`,
+  `${WEBSITE_URL}/__l5e/assets-v1/a6bdf106-e52e-40b7-8a66-dec04c72f7bc/welcome-routine.png`,
+  `${WEBSITE_URL}/__l5e/assets-v1/b6028336-8433-4c54-af6c-bfc18f83a496/welcome-finances-orange.png`,
+]
+
 export function welcomeLanguage(value: unknown): WelcomeLanguage {
   if (typeof value !== 'string') return 'en'
   const code = value.toLowerCase().split(/[-_]/)[0]

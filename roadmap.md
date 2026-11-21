@@ -1,9 +1,11 @@
 # Roadmap
 
 ## Welcome confirmation email — 21 November 2026
+- [x] Replace font-dependent symbols with nine HTTPS PNG icons, compact hero/CTA/spacing and hide the instructions button until configured; deployed and checked 12 browser layouts.
+- [x] Reproduce and fix multibyte corruption in the preview renderer; six-language Unicode regression test passes. SDK production rendering remains unchanged and delivered MIME still needs verification.
 - [x] Replace only the signup confirmation design with a white/lavender/peach reference-based email, real localized product screenshot, six features, three benefits and footer; preserve SDK verification/delivery and other templates.
 - [x] Render and visually inspect all six languages on desktop/mobile (12 cases), validate activation link/new-window behavior, run 13 tests and deploy the existing auth handler; unsigned live requests remain rejected (401).
-- [ ] Send real test confirmation and verify account activation — awaiting test recipient; Gmail/Outlook/Apple Mail rendering requires mailbox/client access, browser previews alone do not verify these clients.
+- [ ] Send real test confirmation and verify account activation — recipient provided; native Send test must be used in More → Emails (no available agent send action); delivered MIME/Gmail/Outlook/Apple Mail require the original message or client access.
 - [ ] Activate the setup instructions link — awaiting the owner's video URL; do not invent a destination.
 
 ## Facebook landing preview diagnosis — 21 November 2026
