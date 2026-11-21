@@ -1,5 +1,12 @@
 # Roadmap
 
+## Керування терапевтичними групами — 21 листопада 2026
+- [ ] Розширити наявні групи: тип, інструкції, ціна, ліміт, публікація, збереження історії при архівації/видаленні.
+- [ ] Додати захищену реєстрацію, підтвердження, список очікування та атомарне перенесення/копіювання груп.
+- [ ] Повторно використати календар і платежі; зберігати відвідуваність та активну роботу окремо для кожної зустрічі.
+- [ ] Додати листи учасникам, матеріали за захищеними посиланнями та історію надсилань.
+- [ ] Перевірити збереження після перезавантаження, правила оплати, приватність і ключові дії на телефоні.
+
 ## Remaining account email design — 21 November 2026
 - [x] Apply the corrected light visual system to password reset, invitations, sign-in links, email changes and verification codes; preserve each message's purpose and secure links/codes, with all six languages including German.
 - [x] Render/check 60 desktop/phone versions, preserve action destinations, leading-zero codes and old/new addresses in five regression tests; sample action opens the supplied destination in a new tab. Deploy the existing account-email handler.
