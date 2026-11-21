@@ -1,5 +1,9 @@
 # Roadmap
 
+## Landing calendar client names — 21 November 2026
+- [x] Localize remaining English/Ukrainian client names in screenshot assets; retain the existing German, Polish, French and Russian localized names and all real client data.
+- [x] All six landing images loaded on desktop/mobile (12 checks), enlargement worked, and no horizontal overflow or runtime errors occurred; changes remain in preview.
+
 ## Public booking link localization — 21 November 2026
 - [x] Preserve the active language in Copy/Preview links across Calendar, Dashboard, Profile and booking settings; keep all six public-page languages and existing booking behavior.
 - [x] Seven link tests passed; selected a real available slot and opened the localized client form in all six languages without submitting requests; build OK, changes remain in preview.
