@@ -21,7 +21,7 @@ import calendarAsset from '@/assets/calendar-week-de.png.asset.json';
 import ukrainianCalendarAsset from '@/assets/calendar-ukrainian-owner.png.asset.json';
 import englishCalendarAsset from '@/assets/calendar-english-owner.png.asset.json';
 import russianCalendarAsset from '@/assets/calendar-russian-owner.png.asset.json';
-import frenchCalendarAsset from '@/assets/calendar-week-fr.png.asset.json';
+import frenchCalendarAsset from '@/assets/calendar-french-owner.png.asset.json';
 import polishCalendarAsset from '@/assets/calendar-week-pl.png.asset.json';
 const calendar = calendarAsset.url;
 import { TrustSection } from '@/components/landing/TrustSection';
