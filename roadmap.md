@@ -1,5 +1,11 @@
 # Roadmap
 
+## Booking inbox localization correction — 21 November 2026
+- [x] Verify published inbox page/panel in all six languages without changing requests.
+- [x] Localize the panel, page, dialogs and notifications through shared app dictionaries; preserve all booking actions.
+- [x] Verify signed-in preview with real requests and confirmation dialogs in all six languages; 18 tests passed, details in docs/booking-inbox-localization-2026-11-21.md.
+- [ ] Publish corrected translations and recheck solo-bizz.com — awaiting owner publication permission.
+
 ## Published application localization QA — 21 November 2026
 - [x] Check published deployment, signed-in booking inbox/panel, calendar, practice/About me editor, public review form and booking-link settings in all six languages; mobile booking/About me checked at 390×844. No production records changed; details in docs/published-localization-qa-2026-11-21.md.
 

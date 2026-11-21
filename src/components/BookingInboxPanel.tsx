@@ -15,7 +15,6 @@ import {
   type BookingRequestRow,
 } from "@/hooks/useBookingInbox";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import {
   Loader2, Mail, Phone, CheckCircle2, XCircle, UserPlus,
   RefreshCw, Inbox, ChevronDown, ChevronUp, MailCheck, MailX, Send,
@@ -29,13 +28,10 @@ import { formatWallClock } from "@/lib/timeFormat";
 
 // Booking slots are stored as wall-clock times labelled UTC — render them in
 // UTC so the inbox matches the public booking page, calendar and emails.
-function fmt(s: string) {
-  return formatWallClock(s);
-}
 
 export function BookingInboxPanel({ className }: { className?: string }) {
   const { t, lang } = useLanguage();
-  const U = (en: string, uk: string) => (lang === "uk" ? uk : en);
+  const fmt = (s: string) => formatWallClock(s, lang);
   const { data: rows = [], isLoading, refetch, isFetching } = useBookingRequests();
   const { data: services = [] } = useServices();
   const { data: clients = [] } = useClients();
@@ -130,9 +126,9 @@ export function BookingInboxPanel({ className }: { className?: string }) {
   async function handleDecline(req: BookingRequestRow) {
     try {
       await decline.mutateAsync({ id: req.id, reason: "cancelled_therapist" });
-      toast({ title: "Declined" });
+      toast({ title: t("bookingInbox.toastDeclined") });
     } catch (e: any) {
-      toast({ title: "Could not decline", description: describeError(e.message), variant: "destructive" });
+      toast({ title: t("bookingInbox.toastCouldNotUpdate"), description: describeError(e.message), variant: "destructive" });
     }
   }
 
@@ -140,10 +136,10 @@ export function BookingInboxPanel({ className }: { className?: string }) {
     if (!linkingFor || !linkClientId) return;
     try {
       await link.mutateAsync({ id: linkingFor.id, client_id: linkClientId });
-      toast({ title: "Client linked" });
+      toast({ title: t("bookingInbox.toastLinked") });
       setLinkingFor(null); setLinkClientId("");
     } catch (e: any) {
-      toast({ title: "Could not link", description: describeError(e.message), variant: "destructive" });
+      toast({ title: t("bookingInbox.toastCouldNotLink"), description: describeError(e.message), variant: "destructive" });
     }
   }
 
@@ -159,7 +155,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
     if (!creatingFor) return;
     const email = newClientEmail.trim().toLowerCase();
     if (!newClientName.trim() || !email) {
-      toast({ title: "Name and email are required", variant: "destructive" });
+      toast({ title: t("bookingInbox.toastNameEmailReq"), variant: "destructive" });
       return;
     }
     try {
@@ -178,8 +174,8 @@ export function BookingInboxPanel({ className }: { className?: string }) {
 
       await link.mutateAsync({ id: creatingFor.id, client_id: clientId });
       toast({
-        title: existing ? "Linked to existing client" : "Client created and linked",
-        description: existing ? `Matched ${existing.name} by email` : undefined,
+        title: existing ? t("bookingInbox.toastLinkedExisting") : t("bookingInbox.toastCreated"),
+        description: existing ? t("bookingInbox.toastMatchedBy", { name: existing.name }) : undefined,
       });
       // Continue straight into confirmation so the appointment is created too.
       const req = creatingFor;
@@ -188,7 +184,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       setConfirmClientId(clientId);
       setConfirmServiceId((services as any[])[0]?.id ?? "");
     } catch (e: any) {
-      toast({ title: "Could not create client", description: describeError(e.message), variant: "destructive" });
+      toast({ title: t("bookingInbox.toastCouldNotCreate"), description: describeError(e.message), variant: "destructive" });
     }
   }
 
@@ -198,19 +194,19 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       <header className="px-4 py-3 border-b border-border flex items-center gap-2">
         <Inbox className="h-4 w-4 text-primary" />
         <div className="flex-1 min-w-0">
-          <h2 className="text-sm font-semibold text-foreground">{U("Booking inbox", "Запити на запис")}</h2>
+          <h2 className="text-sm font-semibold text-foreground">{t("bookingInbox.title")}</h2>
           <p className="text-xs text-muted-foreground">
-            {pending.length === 0 ? U("No pending requests", "Немає нових запитів") : `${pending.length} ${U("pending", "очікує")}`}
+            {pending.length === 0 ? t("bookingInbox.noPending") : t("bookingInbox.pendingCount", { count: pending.length })}
           </p>
         </div>
-        <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Refresh" onClick={() => refetch()} disabled={isFetching}>
+        <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={t("bookingInbox.refresh")} onClick={() => refetch()} disabled={isFetching}>
           <RefreshCw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} />
         </Button>
         <Button
           variant="ghost"
           size="icon"
           className="h-7 w-7 lg:hidden"
-          aria-label={collapsedMobile ? "Expand" : "Collapse"}
+          aria-label={t(collapsedMobile ? "bookingInbox.expand" : "bookingInbox.collapse")}
           onClick={() => setCollapsedMobile((v) => !v)}
         >
           {collapsedMobile ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
@@ -223,13 +219,13 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       )}>
         {isLoading && (
           <div className="text-center text-sm text-muted-foreground py-6">
-            <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> {U("Loading…", "Завантаження…")}
+            <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> {t("bookingInbox.loading")}
           </div>
         )}
         {!isLoading && pending.length === 0 && (
           <div className="text-center text-sm text-muted-foreground py-8">
             <Inbox className="h-6 w-6 mx-auto mb-2 opacity-40" />
-            {U("You're all caught up.", "Усі запити опрацьовано.")}
+            {t("bookingInbox.caughtUp")}
           </div>
         )}
         {pending.map((r) => (
@@ -242,11 +238,11 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                 <p className="text-sm font-medium text-foreground truncate">
                   {r.first_name} {r.last_name ?? ""}
                 </p>
-                <p className="text-xs text-muted-foreground">{fmt(r.requested_slot_at)} · {r.duration_minutes} {U("m", "хв")}</p>
+                <p className="text-xs text-muted-foreground">{fmt(r.requested_slot_at)} · {t("bookingInbox.minutes", { count: r.duration_minutes })}</p>
               </div>
               {r.status === "needs_linking" && (
                 <span className="text-[10px] font-semibold uppercase tracking-wide rounded bg-orange-500/15 text-orange-700 dark:text-orange-400 px-1.5 py-0.5">
-                  {U("Link", "Привʼязати")}
+                  {t("bookingInbox.actLink")}
                 </span>
               )}
             </div>
@@ -262,7 +258,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                 </div>
               )}
               {r.matched_client_name && (
-                <p className="text-foreground/80">{U("Matched", "Збіг")}: {r.matched_client_name}</p>
+                <p className="text-foreground/80">{t("bookingInbox.matched")}: {r.matched_client_name}</p>
               )}
             </div>
             {r.comment && (
@@ -275,11 +271,11 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                 <>
                   <Button size="sm" variant="outline" className="h-7 px-2 gap-1"
                     onClick={() => { setLinkingFor(r); setLinkClientId(""); }}>
-                    <UserPlus className="h-3 w-3" /> {U("Link", "Привʼязати")}
+                    <UserPlus className="h-3 w-3" /> {t("bookingInbox.actLink")}
                   </Button>
                   <Button size="sm" variant="outline" className="h-7 px-2 gap-1"
                     onClick={() => openCreateClient(r)}>
-                    <UserPlus className="h-3 w-3" /> {U("Create new", "Створити нового")}
+                    <UserPlus className="h-3 w-3" /> {t("bookingInbox.actCreateNew")}
                   </Button>
                 </>
               )}
@@ -289,9 +285,9 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                   setConfirmClientId(r.client_id ?? "");
                   setConfirmServiceId((services as any[])[0]?.id ?? "");
                 }}>
-                <CheckCircle2 className="h-3 w-3" /> {U("Approve", "Підтвердити")}
+                <CheckCircle2 className="h-3 w-3" /> {t("bookingInbox.actConfirm")}
               </Button>
-              <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => handleDecline(r)}>
+              <Button size="sm" variant="ghost" className="h-7 px-2" aria-label={t("bookingInbox.toastDeclined")} onClick={() => handleDecline(r)}>
                 <XCircle className="h-3.5 w-3.5" />
               </Button>
             </div>
@@ -302,7 +298,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
         {recentlyConfirmed.length > 0 && (
           <div className="pt-3 mt-2 border-t border-border space-y-2">
             <p className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground px-1">
-              {U("Recently confirmed", "Нещодавно підтверджені")}
+              {t("bookingInbox.recentlyConfirmed")}
             </p>
             {recentlyConfirmed.map((r) => {
               const sent = r.confirmation_email_status === "sent";
@@ -317,14 +313,14 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                       {r.first_name} {r.last_name ?? ""}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {fmt(r.requested_slot_at)} · {r.duration_minutes} {U("m", "хв")}
+                      {fmt(r.requested_slot_at)} · {t("bookingInbox.minutes", { count: r.duration_minutes })}
                     </p>
                   </div>
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     {sent ? (
                       <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
                         <MailCheck className="h-3.5 w-3.5" />
-                        {U("Confirmation email: sent", "Лист-підтвердження: надіслано")}
+                        {t("bookingInbox.emailStatusSent")}
                       </span>
                     ) : failed ? (
                       <span
@@ -332,12 +328,12 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                         title={r.confirmation_email_error ?? undefined}
                       >
                         <MailX className="h-3.5 w-3.5" />
-                        {U("Confirmation email: failed", "Лист-підтвердження: помилка")}
+                        {t("bookingInbox.emailStatusFailed")}
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                         <Mail className="h-3.5 w-3.5" />
-                        {U("Email status unknown", "Статус листа невідомий")}
+                        {t("bookingInbox.emailStatusUnknown")}
                       </span>
                     )}
                     <Button
@@ -347,7 +343,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                       onClick={() => resendConfirmationEmail(r)}
                     >
                       <Send className="h-3 w-3" />
-                      {failed ? U("Retry email", "Надіслати ще раз") : U("Resend", "Надіслати повторно")}
+                      {failed ? t("bookingInbox.retryEmail") : t("bookingInbox.resend")}
                     </Button>
                   </div>
                 </div>
@@ -361,17 +357,17 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       <Dialog open={!!linkingFor} onOpenChange={(o) => !o && setLinkingFor(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{U("Attach client to request", "Привʼязати клієнта до запиту")}</DialogTitle>
+            <DialogTitle>{t("bookingInbox.linkTitle")}</DialogTitle>
             <DialogDescription>
-              {linkingFor && (<>{U("Requester", "Заявник")}: <strong>{linkingFor.first_name} {linkingFor.last_name ?? ""}</strong> ({linkingFor.email})</>)}
+              {linkingFor && (<>{t("bookingInbox.requesterLbl")} <strong>{linkingFor.first_name} {linkingFor.last_name ?? ""}</strong> ({linkingFor.email})</>)}
             </DialogDescription>
           </DialogHeader>
           <ClientPicker clients={(clients as any[]).filter((c: any) => c.status !== "archived")} value={linkClientId} onChange={setLinkClientId} />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setLinkingFor(null)}>{U("Cancel", "Скасувати")}</Button>
+            <Button variant="outline" onClick={() => setLinkingFor(null)}>{t("bookingInbox.cancel")}</Button>
             <Button disabled={!linkClientId || link.isPending} onClick={handleLink}>
               {link.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              {U("Link client", "Привʼязати клієнта")}
+              {t("bookingInbox.linkBtn")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -381,15 +377,15 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       <Dialog open={!!confirmingFor} onOpenChange={(o) => !o && setConfirmingFor(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{U("Confirm booking", "Підтвердити запис")}</DialogTitle>
+            <DialogTitle>{t("bookingInbox.confirmTitle")}</DialogTitle>
             <DialogDescription>
-              {confirmingFor && (<>{U("Create an appointment on", "Створити зустріч на")} <strong>{fmt(confirmingFor.requested_slot_at)}</strong>.</>)}
+              {confirmingFor && t("bookingInbox.confirmDesc", { slot: fmt(confirmingFor.requested_slot_at) })}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             {confirmingFor && !confirmingFor.client_id && (
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">{U("Client", "Клієнт")}</label>
+                <label className="text-xs text-muted-foreground">{t("bookingInbox.clientLbl")}</label>
                 <ClientPicker clients={(clients as any[]).filter((c: any) => c.status !== "archived")} value={confirmClientId} onChange={setConfirmClientId} />
                 <Button
                   size="sm"
@@ -401,14 +397,14 @@ export function BookingInboxPanel({ className }: { className?: string }) {
                     openCreateClient(req);
                   }}
                 >
-                  <UserPlus className="h-3.5 w-3.5" /> {U("New client", "Новий клієнт")}
+                  <UserPlus className="h-3.5 w-3.5" /> {t("bookingInbox.newClient")}
                 </Button>
               </div>
             )}
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">{U("Service", "Послуга")}</label>
+              <label className="text-xs text-muted-foreground">{t("bookingInbox.serviceLbl")}</label>
               <Select value={confirmServiceId} onValueChange={setConfirmServiceId}>
-                <SelectTrigger><SelectValue placeholder={U("Pick a service", "Оберіть послугу")} /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("bookingInbox.pickService")} /></SelectTrigger>
                 <SelectContent>
                   {(services as any[]).map((s) => (
                     <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
@@ -418,10 +414,10 @@ export function BookingInboxPanel({ className }: { className?: string }) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmingFor(null)}>{U("Cancel", "Скасувати")}</Button>
+            <Button variant="outline" onClick={() => setConfirmingFor(null)}>{t("bookingInbox.cancel")}</Button>
             <Button disabled={confirm.isPending} onClick={() => confirmingFor && handleConfirm(confirmingFor)}>
               {confirm.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Confirm booking
+              {t("bookingInbox.confirmBtn")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -431,35 +427,34 @@ export function BookingInboxPanel({ className }: { className?: string }) {
       <Dialog open={!!creatingFor} onOpenChange={(o) => !o && setCreatingFor(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{U("Create new client from request", "Створити клієнта з запиту")}</DialogTitle>
+            <DialogTitle>{t("bookingInbox.createTitle")}</DialogTitle>
             <DialogDescription>
-              Pre-filled from the booking request. Review and edit before saving.
-              If a client with this email already exists, it will be linked instead of duplicated.
+              {t("bookingInbox.createPrefill")} {t("bookingInbox.createDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">{U("Name", "Імʼя")}</label>
+              <label className="text-xs text-muted-foreground">{t("bookingInbox.nameLbl")}</label>
               <Input value={newClientName} onChange={(e) => setNewClientName(e.target.value)} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">Email</label>
+              <label className="text-xs text-muted-foreground">{t("bookingInbox.emailLbl")}</label>
               <Input type="email" value={newClientEmail} onChange={(e) => setNewClientEmail(e.target.value)} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">{U("Phone", "Телефон")}</label>
+              <label className="text-xs text-muted-foreground">{t("bookingInbox.phoneLbl")}</label>
               <Input value={newClientPhone} onChange={(e) => setNewClientPhone(e.target.value)} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">{U("Notes", "Нотатки")}</label>
+              <label className="text-xs text-muted-foreground">{t("bookingInbox.notesLbl")}</label>
               <Input value={newClientNotes} onChange={(e) => setNewClientNotes(e.target.value)} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreatingFor(null)}>{U("Cancel", "Скасувати")}</Button>
+            <Button variant="outline" onClick={() => setCreatingFor(null)}>{t("bookingInbox.cancel")}</Button>
             <Button disabled={createClient.isPending || link.isPending} onClick={handleCreateClientAndLink}>
               {(createClient.isPending || link.isPending) ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Save client
+              {t("bookingInbox.saveClient")}
             </Button>
           </DialogFooter>
         </DialogContent>

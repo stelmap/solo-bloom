@@ -32,3 +32,5 @@
 - Preserve only allow-listed UTM campaign labels in sessionStorage after analytics consent and clear them on withdrawal, so registration attribution survives navigation without retaining private URL parameters.
 - Landing specialist previews read only the public slug RPC and published-file storage policy, so marketing never exposes drafts or invents a specialist biography.
 - Payments Unpaid rows and totals use the same expected-payment ledger, including participant-level group debts, so group parent appointments never inflate unpaid counts.
+
+- Booking inbox page and calendar panel use the shared app translation dictionaries and active language for wall-clock formatting, so every supported language covers the same controls without per-screen fallbacks.
