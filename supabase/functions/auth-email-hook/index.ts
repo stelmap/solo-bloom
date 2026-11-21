@@ -9,6 +9,7 @@ import { EmailChangeEmail } from '../_shared/email-templates/email-change.tsx'
 import { ReauthenticationEmail } from '../_shared/email-templates/reauthentication.tsx'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { getSubject, normalizeLang, type Lang } from '../_shared/email-templates/i18n.ts'
+import { welcomeLanguage, type WelcomeLanguage } from '../_shared/email-templates/welcome-content.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -46,6 +47,7 @@ const SAMPLE_DATA: Record<string, object> = {
     siteUrl: SAMPLE_PROJECT_URL,
     recipient: SAMPLE_EMAIL,
     confirmationUrl: SAMPLE_PROJECT_URL,
+    language: 'uk',
   },
   magiclink: {
     siteName: SITE_NAME,
@@ -130,12 +132,12 @@ const admin = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 )
 
-async function resolveLang(email?: string | null): Promise<Lang> {
+async function resolveLang(email?: string | null, signup = false): Promise<Lang | WelcomeLanguage> {
   if (!email) return 'en'
   try {
     const { data, error } = await admin.rpc('get_auth_email_language', { _email: email })
     if (error) return 'en'
-    return normalizeLang(data)
+    return signup ? welcomeLanguage(data) : normalizeLang(data)
   } catch (_e) {
     return 'en'
   }
@@ -150,7 +152,7 @@ const handler = createAuthEmailHandler({
   sendUrl: Deno.env.get('LOVABLE_SEND_URL'),
   emails: {
     signup: async (data) => {
-      const language = await resolveLang(data.email)
+      const language = await resolveLang(data.email, true)
       return {
         subject: getSubject('signup', language),
         element: React.createElement(SignupEmail, {

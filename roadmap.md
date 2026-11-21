@@ -1,5 +1,11 @@
 # Roadmap
 
+## Welcome confirmation email — 21 November 2026
+- [x] Replace only the signup confirmation design with a white/lavender/peach reference-based email, real localized product screenshot, six features, three benefits and footer; preserve SDK verification/delivery and other templates.
+- [x] Render and visually inspect all six languages on desktop/mobile (12 cases), validate activation link/new-window behavior, run 13 tests and deploy the existing auth handler; unsigned live requests remain rejected (401).
+- [ ] Send real test confirmation and verify account activation — awaiting test recipient; Gmail/Outlook/Apple Mail rendering requires mailbox/client access, browser previews alone do not verify these clients.
+- [ ] Activate the setup instructions link — awaiting the owner's video URL; do not invent a destination.
+
 ## Facebook landing preview diagnosis — 21 November 2026
 - [x] Compared 32 raw production responses: legacy ?lang=uk serves English without an HTTP redirect, while all six path pages return correct UTF-8 metadata; no user-agent differences or broken Cyrillic observed.
 - [x] Replaced six generic brand cards with versioned 1200×630 captures of the real localized hero; all six images and initial preview metadata verified. Publication requested; production verification follows.

@@ -40,3 +40,4 @@
 - Share-preview signs photos only as an anonymous visitor under the published-file storage policy, so forged profile paths cannot bypass file ownership or publication.
 - Confirmation tokens lock the appointment before the confirmation row and accept only scheduled/confirmed meetings; lookup uses the same status gate so cancellation revokes old links immediately.
 - Landing share images are versioned 1200×630 browser captures of the shared localized hero with fonts loaded; language-path static HTML supplies their initial metadata without JavaScript.
+- Signup email presentation has its own six-language light template and optional HTTPS setup-guide configuration; preserve SDK verification/delivery and other auth templates so welcome redesigns cannot change authentication behavior.
