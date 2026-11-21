@@ -392,7 +392,6 @@ export default function CalendarPage() {
     },
   });
   const bookingHandle = bookingLinkRow?.slug || bookingLinkRow?.token || "";
-  const bookingUrl = bookingHandle ? `${window.location.origin}/book/${bookingHandle}` : "";
   const { data: bookingAvailability = [] } = useQuery({
     queryKey: ["booking-availability-rules", user?.id],
     enabled: !!user?.id,
@@ -419,6 +418,7 @@ export default function CalendarPage() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const { t, lang } = useLanguage();
+  const bookingUrl = bookingHandle ? bookingShareUrl(bookingHandle, lang) : "";
   const dateLocale = getDateLocale(lang);
   const { symbol: cs } = useCurrency();
   const CT = calToolbarCopy(lang);
@@ -1916,7 +1916,7 @@ export default function CalendarPage() {
               <Button
                 variant="outline" size="sm" className="flex-1 min-w-[8rem] justify-center px-2"
                 onClick={() => {
-                  navigator.clipboard.writeText(bookingShareUrl(bookingHandle));
+                  navigator.clipboard.writeText(bookingUrl);
                   toast({ title: (t as any)("common.copied") || "Copied" });
                 }}
               >
@@ -2489,7 +2489,7 @@ export default function CalendarPage() {
                 <Button
                   type="button" variant="ghost" className="h-9 shrink-0 rounded-none border-l border-border"
                   onClick={async () => {
-                    try { await navigator.clipboard.writeText(bookingShareUrl(bookingHandle)); toast({ title: CT.copied }); }
+                    try { await navigator.clipboard.writeText(bookingUrl); toast({ title: CT.copied }); }
                     catch { toast({ title: CT.copied }); }
                   }}
                 >

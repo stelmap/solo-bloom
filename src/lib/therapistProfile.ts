@@ -1,4 +1,5 @@
 import { sanitizeProfileHtml as sanitizeNoteHtml } from "@/lib/richText";
+import type { AppLanguage } from '@/i18n/translations';
 
 export const THERAPIST_FILES_BUCKET = "therapist-profile-files";
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
@@ -210,4 +211,4 @@ export const profileUrl = (slug: string) => `https://solo-bizz.com/therapist/${s
  * The backend function domain serves HTML as plain text, so its URL showed raw HTML to visitors.
  */
 export const profileShareUrl = (slug: string) => profileUrl(encodeURIComponent(slug));
-export const bookingShareUrl = (handle: string) => `${window.location.origin}/book/${encodeURIComponent(handle)}`;
+export const bookingShareUrl = (handle: string, language?: AppLanguage) => `${window.location.origin}/book/${encodeURIComponent(handle)}${language ? `?lang=${language}` : ''}`;

@@ -516,7 +516,7 @@ export function PublicBookingSection() {
   };
 
   const handle = slug || link?.token || "";
-  const url = handle ? `${window.location.origin}/book/${handle}` : "";
+  const url = handle ? bookingShareUrl(handle, ctxLang) : "";
 
   const setDay = (wd: number, patch: Partial<DayState>) => {
     setDays((prev) => {
@@ -639,7 +639,7 @@ export function PublicBookingSection() {
                   size="icon"
                   aria-label={L.linkCopied}
                   onClick={() => {
-                    navigator.clipboard.writeText(bookingShareUrl(handle));
+                    navigator.clipboard.writeText(url);
                     toast({ title: L.linkCopied });
                   }}
                 >

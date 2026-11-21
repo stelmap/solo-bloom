@@ -35,3 +35,4 @@
 
 - Booking inbox page and calendar panel use the shared app translation dictionaries and active language for wall-clock formatting, so every supported language covers the same controls without per-screen fallbacks.
 - Testimonial translations are keyed by the approved review ID and exact original text; render them only for fetched approved reviews and fall back to the original after edits, preventing stale or fabricated endorsements.
+- Shared booking links use the active interface language in a validated lang query parameter, and Copy/Preview use the same URL; legacy links without that parameter retain visitor language detection.

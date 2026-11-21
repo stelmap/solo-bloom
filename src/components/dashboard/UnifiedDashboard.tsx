@@ -56,14 +56,14 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
   const hasServices = (services as any[]).length > 0;
   const hasWorkingHours = (workingSchedule as any[]).some((d: any) => d.is_working);
   const bookingHandle = ((bookingLink as any)?.slug || (bookingLink as any)?.token || "") as string;
-  const bookingUrl = bookingHandle ? `${window.location.origin}/book/${bookingHandle}` : "";
+  const bookingUrl = bookingHandle ? bookingShareUrl(bookingHandle, lang) : "";
 
   const shareBookingLink = () => {
     if (!bookingUrl) {
       navigate("/settings/practice");
       return;
     }
-    navigator.clipboard?.writeText(bookingShareUrl(bookingHandle)).then(
+    navigator.clipboard?.writeText(bookingUrl).then(
       () => toast({ title: t("dashe.linkCopied"), description: bookingUrl }),
       () => navigate("/settings/practice"),
     );

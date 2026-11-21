@@ -349,7 +349,7 @@ export default function PracticeProfilePage() {
   }, []);
 
   const handle = ((link as any)?.slug as string) || (link as any)?.token || "";
-  const url = handle ? `${window.location.origin}/book/${handle}` : "";
+  const url = handle ? bookingShareUrl(handle, lang) : "";
 
   const setupMode = (profile as any)?.profile_setup_completed === false && !(profile as any)?.onboarding_state?.setupSkipped;
   const closeSetup = async () => {
@@ -624,7 +624,7 @@ export default function PracticeProfilePage() {
               <div className="flex items-center gap-2">
                 <Input readOnly value={url} className="flex-1 min-w-0 font-mono text-xs h-10" />
                 <Button type="button" variant="outline" size="icon" aria-label={L.copied} className="h-10 w-10 shrink-0" disabled={!url}
-                  onClick={() => { navigator.clipboard.writeText(bookingShareUrl(handle)); toast({ title: L.copied }); }}>
+                  onClick={() => { navigator.clipboard.writeText(url); toast({ title: L.copied }); }}>
                   <Copy className="h-4 w-4" />
                 </Button>
                 <Button type="button" variant="outline" size="icon" className="h-10 w-10 shrink-0" asChild disabled={!url}>

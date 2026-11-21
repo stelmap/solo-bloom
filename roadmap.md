@@ -1,5 +1,9 @@
 # Roadmap
 
+## Public booking link localization — 21 November 2026
+- [x] Preserve the active language in Copy/Preview links across Calendar, Dashboard, Profile and booking settings; keep all six public-page languages and existing booking behavior.
+- [x] Seven link tests passed; selected a real available slot and opened the localized client form in all six languages without submitting requests; build OK, changes remain in preview.
+
 ## Genuine testimonial translations — 21 November 2026
 - [x] Translate the existing approved user review into six languages without adding invented reviews or changing the stored original.
 - [x] Verify all six languages display the real review and submitted name; two source-protection tests passed, build OK; changes remain in preview.

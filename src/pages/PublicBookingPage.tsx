@@ -183,18 +183,18 @@ const COPY: Record<Lang, {
     thankYou: "Merci !",
     requestReceived: "Votre demande de réservation a été enregistrée. Vous recevrez un email de confirmation dès que le spécialiste l'aura validée.",
     sessionConfirmed: "Votre demande de réservation a été enregistrée. Vous recevrez un email de confirmation dès que le spécialiste l'aura validée.",
-    minSession: (n) => `Séance de ${n} min`,
+    minSession: (n) => `Rendez-vous de ${n} min`,
     chooseTime: "Choisir un horaire",
     noSlots14: "Aucun créneau disponible dans les 14 prochains jours.",
     contactDirect: "Veuillez contacter le spécialiste directement pour fixer un rendez-vous.",
     slot: (n) => (n === 1 ? "créneau" : "créneaux"),
     noTimesThisDay: "Aucun horaire disponible ce jour-là.",
     changeTime: "Changer l'horaire",
-    yourSession: "Votre séance",
+    yourSession: "Votre rendez-vous",
     minutes: (n) => `${n} minutes`,
     yourDetails: "Vos coordonnées",
     firstName: "Prénom *", lastName: "Nom", email: "Email *", phone: "Téléphone (optionnel)", comment: "Commentaire (optionnel)",
-    consent: "Je consens au traitement de mes données personnelles aux fins de l'organisation de cette séance.",
+    consent: "Je consens au traitement de mes données personnelles aux fins de l'organisation de ce rendez-vous.",
     confirmBooking: "Confirmer la réservation", requestBooking: "Demander une réservation",
     manualNote: "Le spécialiste examinera et confirmera votre demande par email.",
     checkForm: "Veuillez vérifier les champs du formulaire.",
@@ -206,18 +206,18 @@ const COPY: Record<Lang, {
     thankYou: "Dziękujemy!",
     requestReceived: "Twoja prośba o rezerwację została zarejestrowana. Otrzymasz email z potwierdzeniem, gdy specjalista ją zatwierdzi.",
     sessionConfirmed: "Twoja prośba o rezerwację została zarejestrowana. Otrzymasz email z potwierdzeniem, gdy specjalista ją zatwierdzi.",
-    minSession: (n) => `Sesja ${n} min`,
+    minSession: (n) => `Spotkanie ${n} min`,
     chooseTime: "Wybierz termin",
     noSlots14: "Brak dostępnych terminów w ciągu najbliższych 14 dni.",
     contactDirect: "Skontaktuj się ze specjalistą bezpośrednio, aby umówić termin.",
     slot: (n) => (n === 1 ? "termin" : "terminów"),
     noTimesThisDay: "Brak dostępnych godzin tego dnia.",
     changeTime: "Zmień termin",
-    yourSession: "Twoja sesja",
+    yourSession: "Twoje spotkanie",
     minutes: (n) => `${n} minut`,
     yourDetails: "Twoje dane",
     firstName: "Imię *", lastName: "Nazwisko", email: "Email *", phone: "Telefon (opcjonalnie)", comment: "Komentarz (opcjonalnie)",
-    consent: "Wyrażam zgodę na przetwarzanie moich danych osobowych w celu organizacji tej sesji.",
+    consent: "Wyrażam zgodę na przetwarzanie moich danych osobowych w celu organizacji tego spotkania.",
     confirmBooking: "Potwierdź rezerwację", requestBooking: "Poproś o rezerwację",
     manualNote: "Specjalista przejrzy i potwierdzi Twoją prośbę przez email.",
     checkForm: "Sprawdź pola formularza.",
@@ -640,7 +640,7 @@ export default function PublicBookingPage() {
             </div>
           </div>
           <Select value={lang} onValueChange={(v) => changeLang(v as Lang)}>
-            <SelectTrigger className="h-8 w-auto shrink-0 gap-2 text-xs">
+            <SelectTrigger aria-label={PUBLIC_NAV_COPY[lang].language} className="h-8 w-auto shrink-0 gap-2 text-xs">
               <Globe className="h-3.5 w-3.5" />
               <SelectValue />
             </SelectTrigger>
@@ -655,7 +655,7 @@ export default function PublicBookingPage() {
           </Select>
         </header>
         {aboutProfile && (
-          <nav className="flex justify-center gap-1 rounded-full border border-border bg-card p-1 w-fit mx-auto" aria-label="Profile">
+          <nav className="flex justify-center gap-1 rounded-full border border-border bg-card p-1 w-fit mx-auto" aria-label={TP_COPY[lang].aboutNav}>
             {(["book", "about"] as const).map((v) => (
               <Button key={v} size="sm" variant={view === v ? "default" : "ghost"} className="rounded-full" onClick={() => setView(v)} aria-current={view === v ? "page" : undefined}>
                 {v === "book" ? TP_COPY[lang].bookingNav : TP_COPY[lang].aboutNav}
