@@ -229,7 +229,7 @@ export function UnifiedDashboard({ stats, clientsWithoutNextSessionCount, onOpen
     id: debt.id,
     appointment_id: debt.appointment_id,
     name: debt.clients?.name ?? debt.group_sessions?.groups?.name ?? "—",
-    service: debt.services?.name ?? debt.group_sessions?.groups?.name ?? "—",
+    service: (debt as any).appointments?.services?.name || "—",
     scheduled_at: debt.scheduled_at ?? debt.appointments?.scheduled_at ?? debt.group_sessions?.appointments?.scheduled_at ?? null,
     remaining,
   }));
