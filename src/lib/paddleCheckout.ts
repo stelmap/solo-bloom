@@ -31,6 +31,7 @@ function getPaddle() {
           } else if (event?.name === "checkout.error") {
             handlers.onError?.();
           } else if (event?.name === "checkout.closed" && !completed) {
+            window.__lovableEvents?.track?.("project.checkout_closed_without_purchase", {});
             handlers.onClosed?.();
           }
         },

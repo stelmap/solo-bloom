@@ -14,7 +14,17 @@ export function usePracticeAccess() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_my_practice_access');
       if (error) throw error;
-      return data as unknown as PracticeAccess;
+      const access = data as unknown as PracticeAccess;
+      if (access?.on_trial && access.trial_ends_at && user) {
+        const key = `trial-start-tracked:${user.id}:${access.trial_ends_at}`;
+        try {
+          if (!localStorage.getItem(key)) {
+            localStorage.setItem(key, '1');
+            window.__lovableEvents?.track?.('project.trial_started', {});
+          }
+        } catch { /* storage unavailable */ }
+      }
+      return access;
     },
   });
 }

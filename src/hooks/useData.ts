@@ -629,6 +629,7 @@ export function useCreateAppointment() {
       if (error) throw error;
       return data;
     },
+    onError: () => { window.__lovableEvents?.track?.("project.meeting_save_failed", { action: "create" }); },
     // Analytics: a session/appointment was scheduled
     onSuccess: () => { track("session_created"); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL, "client-debt", "client-income", "client-credit-balance"].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
@@ -666,6 +667,7 @@ export function useUpdateAppointment() {
         await (supabase as any).rpc("recalc_my_appointment_payment_status", { p_appointment_id: id });
       }
     },
+    onError: () => { window.__lovableEvents?.track?.("project.meeting_save_failed", { action: "update" }); },
     onSuccess: () => { track("session_updated"); [...INVALIDATE_APPOINTMENTS, ...INVALIDATE_FINANCIAL].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
   });
 }

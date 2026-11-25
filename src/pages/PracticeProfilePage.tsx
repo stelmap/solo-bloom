@@ -624,7 +624,7 @@ export default function PracticeProfilePage() {
               <div className="flex items-center gap-2">
                 <Input readOnly value={url} className="flex-1 min-w-0 font-mono text-xs h-10" />
                 <Button type="button" variant="outline" size="icon" aria-label={L.copied} className="h-10 w-10 shrink-0" disabled={!url}
-                  onClick={() => { navigator.clipboard.writeText(url); toast({ title: L.copied }); }}>
+                  onClick={() => { navigator.clipboard.writeText(url); window.__lovableEvents?.track?.("project.booking_link_copied", { source: "practice_profile" }); toast({ title: L.copied }); }}>
                   <Copy className="h-4 w-4" />
                 </Button>
                 <Button type="button" variant="outline" size="icon" className="h-10 w-10 shrink-0" asChild disabled={!url}>

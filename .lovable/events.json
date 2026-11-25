@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "events": {
+    "project.booking_link_copied": {
+      "event_schema_version": 1,
+      "description": "A practitioner copied their public booking link.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "enum": [
+              "booking_settings",
+              "practice_profile",
+              "calendar",
+              "calendar_preview"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "source"
+        ],
+        "type": "object"
+      }
+    },
+    "project.booking_link_opened": {
+      "event_schema_version": 1,
+      "description": "A visitor opened an active public booking page via a booking link.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      }
+    },
+    "project.checkout_closed_without_purchase": {
+      "event_schema_version": 1,
+      "description": "The payment checkout was closed before a purchase completed.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      }
+    },
+    "project.meeting_save_failed": {
+      "event_schema_version": 1,
+      "description": "Creating or updating a meeting failed to save.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "create",
+              "update"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "type": "object"
+      }
+    },
+    "project.public_profile_published": {
+      "event_schema_version": 1,
+      "description": "A practitioner successfully published their public professional profile.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      }
+    },
+    "project.trial_started": {
+      "event_schema_version": 1,
+      "description": "First time a signed-in account is seen on an active trial in this browser.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      }
+    }
+  }
+}

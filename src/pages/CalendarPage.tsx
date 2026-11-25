@@ -1917,6 +1917,7 @@ export default function CalendarPage() {
                 variant="outline" size="sm" className="flex-1 min-w-[8rem] justify-center px-2"
                 onClick={() => {
                   navigator.clipboard.writeText(bookingUrl);
+                  window.__lovableEvents?.track?.("project.booking_link_copied", { source: "calendar" });
                   toast({ title: (t as any)("common.copied") || "Copied" });
                 }}
               >
@@ -2489,7 +2490,7 @@ export default function CalendarPage() {
                 <Button
                   type="button" variant="ghost" className="h-9 shrink-0 rounded-none border-l border-border"
                   onClick={async () => {
-                    try { await navigator.clipboard.writeText(bookingUrl); toast({ title: CT.copied }); }
+                    try { await navigator.clipboard.writeText(bookingUrl); window.__lovableEvents?.track?.("project.booking_link_copied", { source: "calendar_preview" }); toast({ title: CT.copied }); }
                     catch { toast({ title: CT.copied }); }
                   }}
                 >

@@ -640,6 +640,7 @@ export function PublicBookingSection() {
                   aria-label={L.linkCopied}
                   onClick={() => {
                     navigator.clipboard.writeText(url);
+                    window.__lovableEvents?.track?.("project.booking_link_copied", { source: "booking_settings" });
                     toast({ title: L.linkCopied });
                   }}
                 >

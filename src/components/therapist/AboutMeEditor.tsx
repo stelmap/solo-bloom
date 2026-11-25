@@ -78,6 +78,7 @@ export function AboutMeEditor({ lang, bookingActive }: { lang: TPLang; bookingAc
       if (error) throw error;
       if (mode === "publish") await supabase.rpc("ensure_my_therapist_profile_slug", { p_base: profileSlugBase(p) });
       setDirty(false);
+      if (mode === "publish") window.__lovableEvents?.track?.("project.public_profile_published", {});
       await qc.invalidateQueries({ queryKey: ["therapist-profile", user.id] });
       toast({ title: mode === "publish" ? C.publishedOk : mode === "unpublish" ? C.unpublishedOk : C.saved });
       if (mode === "publish" && !bookingActive) toast({ title: C.needLink });

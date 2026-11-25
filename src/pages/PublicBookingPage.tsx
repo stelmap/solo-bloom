@@ -299,7 +299,7 @@ export default function PublicBookingPage() {
       } else {
         const row = (Array.isArray(data) ? data[0] : data) as PageInfo;
         if (!row.is_active) setError("inactive");
-        else setInfo(row);
+        else { setInfo(row); window.__lovableEvents?.track?.("project.booking_link_opened", {}); }
       }
       setLoading(false);
     })();
