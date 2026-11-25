@@ -5250,6 +5250,7 @@ export type Database = {
         Args: { p_language: string; p_request_id: string; p_rows: Json }
         Returns: string[]
       }
+      is_published_group_image: { Args: { p_name: string }; Returns: boolean }
       is_published_therapist_file: {
         Args: { p_name: string }
         Returns: boolean

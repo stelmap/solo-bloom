@@ -239,6 +239,13 @@
       "when": 1795612520630,
       "tag": "0033_group_registration_form",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1795612761841,
+      "tag": "0034_bind_group_image_reads_to_owner",
+      "breakpoints": true
     }
   ]
 }
