@@ -27,7 +27,7 @@ export default function PublicGroupSignupPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    supabase.rpc("public_get_group_registration" as any, { _token: token }).then(({ data }) => setInfo(data ?? null));
+    supabase.rpc("public_get_group_registration" as any, { _token: token }).then(({ data }) => { setInfo(data ?? null); if (data) window.__lovableEvents?.track?.("project.group_signup_page_viewed", {}); });
   }, [token]);
 
   const submit = async (e: React.FormEvent) => {
@@ -38,7 +38,10 @@ export default function PublicGroupSignupPage() {
     });
     setBusy(false);
     if (error) { setError(error.message.includes("NOT_AVAILABLE") ? g.unavailable : error.message.includes("EMAIL") ? g.email : error.message); return; }
-    setResult((data as any)?.status ?? "pending");
+    const st = (data as any)?.status ?? "pending";
+    window.__lovableEvents?.track?.("project.group_application_submitted", { status: st });
+    if (st === "waitlisted") window.__lovableEvents?.track?.("project.group_application_waitlisted", { source: "auto_full" });
+    setResult(st);
   };
 
   const fmt = (iso: string) => new Intl.DateTimeFormat(lang, { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }).format(new Date(iso));

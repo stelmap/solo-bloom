@@ -53,6 +53,89 @@
         "type": "object"
       }
     },
+    "project.group_application_confirmed": {
+      "event_schema_version": 1,
+      "description": "The practitioner confirmed a group application.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      }
+    },
+    "project.group_application_rejected": {
+      "event_schema_version": 1,
+      "description": "The practitioner rejected a group application.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      }
+    },
+    "project.group_application_submitted": {
+      "event_schema_version": 1,
+      "description": "A visitor successfully submitted a group application.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "type": "object"
+      }
+    },
+    "project.group_application_waitlisted": {
+      "event_schema_version": 1,
+      "description": "A group application went to the waitlist, automatically when full or manually by the practitioner.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "enum": [
+              "auto_full",
+              "manual"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "source"
+        ],
+        "type": "object"
+      }
+    },
+    "project.group_signup_page_viewed": {
+      "event_schema_version": 1,
+      "description": "A visitor opened an available public group registration page.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      }
+    },
     "project.meeting_save_failed": {
       "event_schema_version": 1,
       "description": "Creating or updating a meeting failed to save.",

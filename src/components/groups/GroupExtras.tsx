@@ -141,6 +141,9 @@ export function GroupRegistrationsCard({ group }: { group: any }) {
   const act = async (id: string, decision: "confirm" | "reject" | "waitlist") => {
     try {
       await decide.mutateAsync({ id, decision });
+      if (decision === "confirm") window.__lovableEvents?.track?.("project.group_application_confirmed", {});
+      else if (decision === "reject") window.__lovableEvents?.track?.("project.group_application_rejected", {});
+      else window.__lovableEvents?.track?.("project.group_application_waitlisted", { source: "manual" });
       if (notify) {
         await supabase.functions.invoke("send-group-email", { body: { kind: "decision", registrationId: id, language: lang } });
       }
