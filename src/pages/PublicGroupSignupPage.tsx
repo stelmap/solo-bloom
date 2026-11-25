@@ -10,6 +10,10 @@ import { Users, CheckCircle2, CalendarDays } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { groupsText } from "@/i18n/groupsExtra";
 import { BrandName } from "@/components/BrandName";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { groupFormText } from "@/i18n/groupFormText";
+import { normalizeForm } from "@/lib/groupForm";
 
 const LANGS = ["uk", "en", "pl", "de", "fr", "ru"];
 
@@ -25,6 +29,14 @@ export default function PublicGroupSignupPage() {
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const tf = groupFormText(lang);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const custom = info?.form ? normalizeForm(info.form, { name: g.yourName, email: g.email }) : null;
+  useEffect(() => {
+    if (!info?.image_path) { setImageUrl(null); return; }
+    supabase.storage.from("group-form-images").createSignedUrl(info.image_path, 3600).then(({ data }) => setImageUrl(data?.signedUrl ?? null));
+  }, [info?.image_path]);
 
   useEffect(() => {
     supabase.rpc("public_get_group_registration" as any, { _token: token }).then(({ data }) => { setInfo(data ?? null); if (data) window.__lovableEvents?.track?.("project.group_signup_page_viewed", {}); });
@@ -33,11 +45,13 @@ export default function PublicGroupSignupPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true); setError(null);
-    const { data, error } = await supabase.rpc("public_submit_group_registration" as any, {
-      _token: token, _name: form.name, _email: form.email, _phone: form.phone, _message: form.message,
-    });
+    const { data, error } = custom
+      ? await supabase.rpc("public_submit_group_registration_v2" as any, { _token: token, _name: form.name, _email: form.email, _answers: answers })
+      : await supabase.rpc("public_submit_group_registration" as any, {
+        _token: token, _name: form.name, _email: form.email, _phone: form.phone, _message: form.message,
+      });
     setBusy(false);
-    if (error) { setError(error.message.includes("NOT_AVAILABLE") ? g.unavailable : error.message.includes("EMAIL") ? g.email : error.message); return; }
+    if (error) { setError(error.message.includes("NOT_AVAILABLE") ? g.unavailable : error.message.includes("EMAIL") ? g.email : error.message.includes("REQUIRED_MISSING") ? tf.errSave : error.message); return; }
     const st = (data as any)?.status ?? "pending";
     window.__lovableEvents?.track?.("project.group_application_submitted", { status: st });
     if (st === "waitlisted") window.__lovableEvents?.track?.("project.group_application_waitlisted", { source: "auto_full" });
@@ -55,6 +69,7 @@ export default function PublicGroupSignupPage() {
           <div className="bg-card border border-border rounded-xl p-6 text-center text-muted-foreground">{g.unavailable}</div>
         ) : (
           <div className="bg-card border border-border rounded-xl p-6 space-y-5">
+            {imageUrl && <img src={imageUrl} alt="" className="w-full max-h-56 object-cover rounded-lg -mt-1" />}
             <div className="flex items-start gap-3">
               <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0"><Users className="h-5 w-5" /></div>
               <div>
@@ -79,10 +94,24 @@ export default function PublicGroupSignupPage() {
               <form onSubmit={submit} className="space-y-3">
                 <h2 className="font-semibold">{g.applyTitle}</h2>
                 {info.is_full && <p className="text-sm text-warning">{g.full}</p>}
+                {custom ? custom.fields.map(fd => {
+                  const id = `fld-${fd.id}`;
+                  const lbl = <Label htmlFor={id}>{fd.label}{fd.required ? " *" : ""}</Label>;
+                  const hint = fd.hint ? <p className="text-xs text-muted-foreground">{fd.hint}</p> : null;
+                  if (fd.id === "name") return <div key={fd.id} className="space-y-1.5">{lbl}<Input id={id} required maxLength={200} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>;
+                  if (fd.id === "email") return <div key={fd.id} className="space-y-1.5">{lbl}<Input id={id} required type="email" maxLength={255} value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>;
+                  const val = answers[fd.id] ?? "";
+                  const set = (v: string) => setAnswers(a => ({ ...a, [fd.id]: v }));
+                  if (fd.type === "checkbox") return <div key={fd.id} className="space-y-1"><label className="flex items-start gap-2 text-sm"><Checkbox id={id} checked={val === "true"} onCheckedChange={v => set(v ? "true" : "false")} required={fd.required} /><span>{fd.label}{fd.required ? " *" : ""}</span></label>{hint}</div>;
+                  if (fd.type === "dropdown") return <div key={fd.id} className="space-y-1.5">{lbl}<Select value={val} onValueChange={set}><SelectTrigger id={id}><SelectValue placeholder={tf.choose} /></SelectTrigger><SelectContent>{(fd.options ?? []).map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent></Select>{hint}</div>;
+                  if (fd.type === "long") return <div key={fd.id} className="space-y-1.5">{lbl}<Textarea id={id} rows={3} required={fd.required} maxLength={2000} value={val} onChange={e => set(e.target.value)} />{hint}</div>;
+                  return <div key={fd.id} className="space-y-1.5">{lbl}<Input id={id} required={fd.required} maxLength={500} value={val} onChange={e => set(e.target.value)} />{hint}</div>;
+                }) : (<>
                 <div className="space-y-1.5"><Label>{g.yourName} *</Label><Input required maxLength={200} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
-                <div className="space-y-1.5"><Label>{g.email} *</Label><Input required type="email" maxLength={255} value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
-                <div className="space-y-1.5"><Label>{g.phone}</Label><Input maxLength={50} value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
-                <div className="space-y-1.5"><Label>{g.note}</Label><Textarea rows={3} maxLength={2000} value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} /></div>
+                  <div className="space-y-1.5"><Label>{g.email} *</Label><Input required type="email" maxLength={255} value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
+                  <div className="space-y-1.5"><Label>{g.phone}</Label><Input maxLength={50} value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
+                  <div className="space-y-1.5"><Label>{g.note}</Label><Textarea rows={3} maxLength={2000} value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} /></div>
+                </>)}
                 {error && <p className="text-sm text-destructive">{error}</p>}
                 <Button type="submit" className="w-full" disabled={busy}>{g.submit}</Button>
                 <p className="text-xs text-muted-foreground text-center">{g.privacy}</p>

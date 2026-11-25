@@ -1293,9 +1293,12 @@ export default function CalendarPage() {
   useEffect(() => {
     if (searchParams.get("new") !== "1") return;
     setForm((f) => ({ ...f, date: f.date || format(new Date(), "yyyy-MM-dd"), time: f.time || "09:00" }));
+    const presetGroup = searchParams.get("groupId");
+    if (presetGroup) { setIsGroupSession(true); setGroupId(presetGroup); }
     setCreateOpen(true);
     const next = new URLSearchParams(searchParams);
     next.delete("new");
+    next.delete("groupId");
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
   // Setup guide: jump to the day of a session the user should open themselves.

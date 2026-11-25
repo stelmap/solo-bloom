@@ -31,7 +31,11 @@ import { describeError } from "@/lib/errorMessages";
 import { GroupSettingsFields, GroupPublicationCard, GroupRegistrationsCard, GroupMessageDialog, settingsFromGroup, settingsToPatch, type GroupSettingsForm } from "@/components/groups/GroupExtras";
 import { groupsText } from "@/i18n/groupsExtra";
 import { useCreateGroup, useUpdateSupervisionParticipation } from "@/hooks/useGroups";
-import { Archive, CopyPlus, Mail } from "lucide-react";
+import { Archive, CopyPlus, Mail, Plus } from "lucide-react";
+import { GroupFormEditorCard, GroupFinanceCard } from "@/components/groups/GroupFormEditor";
+import { groupFormText } from "@/i18n/groupFormText";
+import { uniqueConfirmedParticipants } from "@/lib/groupForm";
+import { useGroupRegistrations } from "@/hooks/useGroups";
 
 export default function GroupDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -39,6 +43,7 @@ export default function GroupDetailPage() {
   const { toast } = useToast();
   const { t, lang } = useLanguage();
   const gx = groupsText(lang);
+  const gf = groupFormText(lang);
   const createGroup = useCreateGroup();
   const [settings, setSettings] = useState<GroupSettingsForm>(settingsFromGroup(null));
   const [messageOpen, setMessageOpen] = useState(false);
@@ -49,6 +54,7 @@ export default function GroupDetailPage() {
   const { data: sessions = [] } = useGroupSessions(id);
   const { data: allAttendance = [] } = useGroupAllAttendance(id);
   const { data: allClients = [] } = useClients();
+  const { data: regs = [] } = useGroupRegistrations(id);
   const updateGroup = useUpdateGroup();
   const deleteGroup = useDeleteGroup();
   const addMember = useAddGroupMember();
@@ -235,6 +241,7 @@ export default function GroupDetailPage() {
         </div>
 
         <GroupPublicationCard group={group} />
+        <GroupFormEditorCard group={group} />
         <GroupRegistrationsCard group={group} />
 
         {/* Members Section */}
@@ -281,7 +288,10 @@ export default function GroupDetailPage() {
         <div className="bg-card rounded-xl border border-border p-5">
           <div className="flex items-center gap-2 mb-4">
             <Calendar className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold">{t("groups.sessions")} ({sessions.length})</h2>
+            <h2 className="text-lg font-semibold flex-1">{t("groups.sessions")} ({sessions.length})</h2>
+            <Button size="sm" disabled={group.lifecycle_status !== "active" || members.length === 0} onClick={() => navigate(`/calendar?new=1&groupId=${group.id}`)}>
+              <Plus className="h-4 w-4 mr-1" />{gf.addSession}
+            </Button>
           </div>
           {sessions.length === 0 ? (
             <p className="text-muted-foreground text-sm text-center py-4">{t("groups.noSessions")}</p>
@@ -311,6 +321,8 @@ export default function GroupDetailPage() {
             </div>
           )}
         </div>
+
+        <GroupFinanceCard groupId={group.id} applications={regs.length} confirmedPeople={uniqueConfirmedParticipants(regs)} />
 
         {/* Analytics Section */}
         <div className="bg-card rounded-xl border border-border p-5">

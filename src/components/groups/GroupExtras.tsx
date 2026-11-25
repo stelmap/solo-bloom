@@ -191,6 +191,9 @@ export function GroupRegistrationsCard({ group }: { group: any }) {
                     <Badge variant={STATUS_VARIANT[r.status]} className="text-xs">{(g as any)[r.status]}</Badge></p>
                   <p className="text-xs text-muted-foreground truncate">{r.email}{r.phone ? ` · ${r.phone}` : ""} · {format(new Date(r.submitted_at), "dd.MM.yyyy HH:mm")}</p>
                   {r.message && <p className="text-xs text-foreground/80 mt-1 whitespace-pre-line">{r.message}</p>}
+                  {Array.isArray(r.answers) && r.answers.filter((a: any) => a.value).map((a: any) => (
+                    <p key={a.id} className="text-xs text-foreground/80 mt-0.5 whitespace-pre-line"><span className="text-muted-foreground">{a.label}:</span> {a.type === "checkbox" ? "✓" : a.value}</p>
+                  ))}
                 </div>
               </div>
               {(r.status === "pending" || r.status === "waitlisted") && (

@@ -2018,6 +2018,7 @@ export type Database = {
       }
       group_registrations: {
         Row: {
+          answers: Json | null
           client_id: string | null
           created_at: string
           decision_at: string | null
@@ -2036,6 +2037,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          answers?: Json | null
           client_id?: string | null
           created_at?: string
           decision_at?: string | null
@@ -2054,6 +2056,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          answers?: Json | null
           client_id?: string | null
           created_at?: string
           decision_at?: string | null
@@ -2262,6 +2265,8 @@ export type Database = {
           participant_instructions: string | null
           price_amount: number | null
           publication_status: string
+          registration_form: Json | null
+          registration_image_path: string | null
           registration_token: string
           seed_batch_id: string | null
           seed_source: string | null
@@ -2287,6 +2292,8 @@ export type Database = {
           participant_instructions?: string | null
           price_amount?: number | null
           publication_status?: string
+          registration_form?: Json | null
+          registration_image_path?: string | null
           registration_token?: string
           seed_batch_id?: string | null
           seed_source?: string | null
@@ -2312,6 +2319,8 @@ export type Database = {
           participant_instructions?: string | null
           price_amount?: number | null
           publication_status?: string
+          registration_form?: Json | null
+          registration_image_path?: string | null
           registration_token?: string
           seed_batch_id?: string | null
           seed_source?: string | null
@@ -5378,6 +5387,10 @@ export type Database = {
           _phone: string
           _token: string
         }
+        Returns: Json
+      }
+      public_submit_group_registration_v2: {
+        Args: { _answers: Json; _email: string; _name: string; _token: string }
         Returns: Json
       }
       read_email_batch: {
