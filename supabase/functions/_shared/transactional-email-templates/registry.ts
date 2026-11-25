@@ -21,6 +21,7 @@ import { template as reviewAdminNotification } from './review-admin-notification
 import { template as reviewStatusUpdate } from './review-status-update.tsx'
 import { template as bookingOwnerNotification } from './booking-owner-notification.tsx'
 import { template as licenseRequestNotification } from './license-request-notification.tsx'
+import { template as groupMessage } from './group-message.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'session-reminder': sessionReminder,
@@ -35,4 +36,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'review-status-update': reviewStatusUpdate,
   'booking-owner-notification': bookingOwnerNotification,
   'license-request-notification': licenseRequestNotification,
+  'group-message': groupMessage,
 }

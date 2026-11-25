@@ -225,6 +225,13 @@
       "when": 1795275469548,
       "tag": "0031_revoke_confirmation_for_terminal_meetings",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1795605984261,
+      "tag": "0032_groups_registrations",
+      "breakpoints": true
     }
   ]
 }

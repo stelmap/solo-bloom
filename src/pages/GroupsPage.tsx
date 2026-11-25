@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { describeError } from "@/lib/errorMessages";
+import { groupsText } from "@/i18n/groupsExtra";
 
 const GroupCard = memo(({ group, onNavigate, inactive }: { group: any; onNavigate: (id: string) => void; inactive?: boolean }) => (
   <div
@@ -46,7 +47,7 @@ export default function GroupsPage() {
   const createGroup = useCreateGroup();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [open, setOpen] = useState(false);
@@ -58,7 +59,7 @@ export default function GroupsPage() {
   const filtered = useMemo(() => {
     let result = groups;
     if (statusFilter !== "all") {
-      result = result.filter(g => g.status === statusFilter);
+      result = statusFilter === "archived" ? result.filter(g => g.lifecycle_status === "archived") : result.filter(g => g.status === statusFilter && g.lifecycle_status !== "archived");
     }
     if (debouncedSearch) {
       result = result.filter(g => g.name.toLowerCase().includes(debouncedSearch.toLowerCase()));
@@ -149,6 +150,7 @@ export default function GroupsPage() {
               <SelectItem value="all">{t("filter.all")}</SelectItem>
               <SelectItem value="active">{t("groups.active")}</SelectItem>
               <SelectItem value="inactive">{t("groups.inactive")}</SelectItem>
+              <SelectItem value="archived">{groupsText(lang).archived}</SelectItem>
             </SelectContent>
           </Select>
         </div>

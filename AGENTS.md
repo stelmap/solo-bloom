@@ -42,3 +42,5 @@
 - Landing share images are versioned 1200×630 browser captures of the shared localized hero with fonts loaded; language-path static HTML supplies their initial metadata without JavaScript.
 - Signup email has its own six-language light presentation and optional HTTPS guide; the other account emails share a compact light shell, preserving per-event content, secure links/codes and SDK verification/delivery.
 - Auth previews render synchronously to avoid the legacy React Email stream decoder corrupting multibyte Unicode; email icons are immutable HTTPS PNGs rather than font-dependent symbols.
+- Group applications live in group_registrations (owner-only RLS); visitors read/submit only via token RPCs for published active groups, and confirm/transfer go through owner-checked RPCs that never delete prior applications, so history and privacy are preserved.
+- Group deletion is logical (lifecycle_status/deleted_at); meetings, attendance, payments and applications are never removed by deleting a group.

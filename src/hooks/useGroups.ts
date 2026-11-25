@@ -19,6 +19,7 @@ export function useGroups() {
       const { data, error } = await supabase
         .from("groups" as any)
         .select("*")
+        .neq("lifecycle_status", "deleted")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as any[];
@@ -135,7 +136,7 @@ export function useCreateGroup() {
   const { user } = useAuth();
   const { isDemoMode } = useDemoMode();
   return useMutation({
-    mutationFn: async (group: { name: string; description?: string; status?: string }) => {
+    mutationFn: async (group: { name: string; description?: string; status?: string } & Record<string, any>) => {
       const { data, error } = await supabase
         .from("groups" as any)
         .insert(attachDemoFlag({ ...group, user_id: user!.id }, isDemoMode))
@@ -152,7 +153,7 @@ export function useUpdateGroup() {
   const qc = useQueryClient();
   const assertCanWrite = useDemoWriteGuard();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; description?: string; status?: string; bill_present?: boolean; bill_absent?: boolean }) => {
+    mutationFn: async ({ id, ...updates }: { id: string } & Record<string, any>) => {
       assertCanWrite();
       const { error } = await supabase
         .from("groups" as any)
@@ -388,20 +389,11 @@ export function useDeleteGroup() {
   return useMutation({
     mutationFn: async (id: string) => {
       assertCanWrite();
-      // Check if group has sessions — if so, soft-delete by setting status to inactive
-      const { data: sessions } = await supabase
-        .from("group_sessions" as any)
-        .select("id")
-        .eq("group_id", id)
-        .limit(1);
-      
-      if (sessions && sessions.length > 0) {
-        throw new Error("GROUP_HAS_SESSIONS");
-      }
-
-      // No sessions — safe to hard delete members then the group
-      await supabase.from("group_members" as any).delete().eq("group_id", id);
-      const { error } = await supabase.from("groups" as any).delete().eq("id", id);
+      // Logical delete only: meetings, attendance, payments and applications stay saved.
+      const now = new Date().toISOString();
+      const { error } = await supabase.from("groups" as any)
+        .update({ lifecycle_status: "deleted", deleted_at: now, publication_status: "unpublished", status: "inactive" })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -513,5 +505,60 @@ export function useUpdateAttendance() {
       qc.invalidateQueries({ queryKey: ["group-attendance", groupSessionId] });
       qc.invalidateQueries({ queryKey: ["group-all-attendance"] });
     },
+  });
+}
+
+// Applications (registrations)
+export function useGroupRegistrations(groupId: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["group-registrations", groupId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("group_registrations" as any)
+        .select("*").eq("group_id", groupId!).order("submitted_at", { ascending: false });
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!user && !!groupId,
+  });
+}
+
+export function useDecideRegistration() {
+  const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
+  return useMutation({
+    mutationFn: async ({ id, decision }: { id: string; decision: "confirm" | "reject" | "waitlist" }) => {
+      assertCanWrite();
+      const { error } = await supabase.rpc("decide_group_registration" as any, { _registration_id: id, _decision: decision });
+      if (error) throw error;
+    },
+    onSuccess: () => ["group-registrations", "group-members", "clients"].forEach(k => qc.invalidateQueries({ queryKey: [k] })),
+  });
+}
+
+export function useTransferRegistrations() {
+  const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
+  return useMutation({
+    mutationFn: async ({ ids, targetGroupId, newName }: { ids: string[]; targetGroupId: string | null; newName?: string }) => {
+      assertCanWrite();
+      const { data, error } = await supabase.rpc("transfer_group_registrations" as any, { _registration_ids: ids, _target_group_id: targetGroupId, _new_group_name: newName ?? null });
+      if (error) throw error;
+      return data as unknown as string;
+    },
+    onSuccess: () => ["group-registrations", "groups"].forEach(k => qc.invalidateQueries({ queryKey: [k] })),
+  });
+}
+
+export function useUpdateSupervisionParticipation() {
+  const qc = useQueryClient();
+  const assertCanWrite = useDemoWriteGuard();
+  return useMutation({
+    mutationFn: async ({ id, value }: { id: string; value: string }) => {
+      assertCanWrite();
+      const { error } = await supabase.from("group_attendance" as any).update({ supervision_participation: value }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["group-attendance"] }),
   });
 }

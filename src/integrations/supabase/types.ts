@@ -1909,6 +1909,7 @@ export type Database = {
           seed_batch_id: string | null
           seed_source: string | null
           status: string
+          supervision_participation: string
           updated_at: string
           user_id: string
         }
@@ -1921,6 +1922,7 @@ export type Database = {
           seed_batch_id?: string | null
           seed_source?: string | null
           status?: string
+          supervision_participation?: string
           updated_at?: string
           user_id: string
         }
@@ -1933,6 +1935,7 @@ export type Database = {
           seed_batch_id?: string | null
           seed_source?: string | null
           status?: string
+          supervision_participation?: string
           updated_at?: string
           user_id?: string
         }
@@ -1961,7 +1964,9 @@ export type Database = {
           id: string
           is_demo: boolean
           joined_at: string
+          left_at: string | null
           price_per_session: number | null
+          registration_id: string | null
           seed_batch_id: string | null
           seed_source: string | null
           user_id: string
@@ -1973,7 +1978,9 @@ export type Database = {
           id?: string
           is_demo?: boolean
           joined_at?: string
+          left_at?: string | null
           price_per_session?: number | null
+          registration_id?: string | null
           seed_batch_id?: string | null
           seed_source?: string | null
           user_id: string
@@ -1985,7 +1992,9 @@ export type Database = {
           id?: string
           is_demo?: boolean
           joined_at?: string
+          left_at?: string | null
           price_per_session?: number | null
+          registration_id?: string | null
           seed_batch_id?: string | null
           seed_source?: string | null
           user_id?: string
@@ -2001,6 +2010,92 @@ export type Database = {
           {
             foreignKeyName: "group_members_group_id_fkey"
             columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_registrations: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          decision_at: string | null
+          email: string
+          group_id: string
+          id: string
+          message: string | null
+          person_name: string
+          phone: string | null
+          source_registration_id: string | null
+          status: string
+          submitted_at: string
+          transferred_at: string | null
+          transferred_to_group_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          decision_at?: string | null
+          email: string
+          group_id: string
+          id?: string
+          message?: string | null
+          person_name: string
+          phone?: string | null
+          source_registration_id?: string | null
+          status?: string
+          submitted_at?: string
+          transferred_at?: string | null
+          transferred_to_group_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          decision_at?: string | null
+          email?: string
+          group_id?: string
+          id?: string
+          message?: string | null
+          person_name?: string
+          phone?: string | null
+          source_registration_id?: string | null
+          status?: string
+          submitted_at?: string
+          transferred_at?: string | null
+          transferred_to_group_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_registrations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_registrations_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_registrations_source_registration_id_fkey"
+            columns: ["source_registration_id"]
+            isOneToOne: false
+            referencedRelation: "group_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_registrations_transferred_to_group_id_fkey"
+            columns: ["transferred_to_group_id"]
             isOneToOne: false
             referencedRelation: "groups"
             referencedColumns: ["id"]
@@ -2150,14 +2245,24 @@ export type Database = {
       }
       groups: {
         Row: {
+          archived_at: string | null
           bill_absent: boolean
           bill_present: boolean
           bill_skipped: boolean
+          capacity: number | null
+          copied_from_group_id: string | null
           created_at: string
+          deleted_at: string | null
           description: string | null
+          group_type: string
           id: string
           is_demo: boolean
+          lifecycle_status: string
           name: string
+          participant_instructions: string | null
+          price_amount: number | null
+          publication_status: string
+          registration_token: string
           seed_batch_id: string | null
           seed_source: string | null
           status: string
@@ -2165,14 +2270,24 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          archived_at?: string | null
           bill_absent?: boolean
           bill_present?: boolean
           bill_skipped?: boolean
+          capacity?: number | null
+          copied_from_group_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
+          group_type?: string
           id?: string
           is_demo?: boolean
+          lifecycle_status?: string
           name: string
+          participant_instructions?: string | null
+          price_amount?: number | null
+          publication_status?: string
+          registration_token?: string
           seed_batch_id?: string | null
           seed_source?: string | null
           status?: string
@@ -2180,14 +2295,24 @@ export type Database = {
           user_id: string
         }
         Update: {
+          archived_at?: string | null
           bill_absent?: boolean
           bill_present?: boolean
           bill_skipped?: boolean
+          capacity?: number | null
+          copied_from_group_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
+          group_type?: string
           id?: string
           is_demo?: boolean
+          lifecycle_status?: string
           name?: string
+          participant_instructions?: string | null
+          price_amount?: number | null
+          publication_status?: string
+          registration_token?: string
           seed_batch_id?: string | null
           seed_source?: string | null
           status?: string
@@ -5058,6 +5183,10 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: number
       }
+      decide_group_registration: {
+        Args: { _decision: string; _registration_id: string }
+        Returns: Json
+      }
       decline_booking_request: {
         Args: { p_id: string; p_reason?: string }
         Returns: undefined
@@ -5228,6 +5357,7 @@ export type Database = {
           timezone: string
         }[]
       }
+      public_get_group_registration: { Args: { _token: string }; Returns: Json }
       public_get_therapist_profile: { Args: { p_token: string }; Returns: Json }
       public_get_therapist_profile_by_slug: {
         Args: { p_slug: string }
@@ -5239,6 +5369,16 @@ export type Database = {
           published_at: string
           slug: string
         }[]
+      }
+      public_submit_group_registration: {
+        Args: {
+          _email: string
+          _message: string
+          _name: string
+          _phone: string
+          _token: string
+        }
+        Returns: Json
       }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
@@ -5291,6 +5431,14 @@ export type Database = {
       therapist_profile_allowed: {
         Args: { p_user_id: string }
         Returns: boolean
+      }
+      transfer_group_registrations: {
+        Args: {
+          _new_group_name: string
+          _registration_ids: string[]
+          _target_group_id: string
+        }
+        Returns: string
       }
       user_has_demo_data: { Args: { p_user_id: string }; Returns: boolean }
       withdraw_from_prepayment_for_appointment: {

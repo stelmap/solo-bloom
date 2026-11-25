@@ -84,6 +84,7 @@ const StartPracticeGuidePage = lazyWithReload(() => import("./pages/StartPractic
 const AdminBookingRequestsPage = lazyWithReload(() => import("./pages/AdminBookingRequestsPage"));
 const ConfirmSessionPage = lazyWithReload(() => import("./pages/ConfirmSessionPage"));
 const PublicBookingPage = lazyWithReload(() => import("./pages/PublicBookingPage"));
+const PublicGroupSignupPage = lazyWithReload(() => import("./pages/PublicGroupSignupPage"));
 const BookingInboxPage = lazyWithReload(() => import("./pages/BookingInboxPage"));
 const SupervisionPage = lazyWithReload(() => import("./pages/SupervisionPage"));
 const DiagnosticsPage = lazyWithReload(() => import("./pages/DiagnosticsPage"));
@@ -162,6 +163,7 @@ const App = () => {
                 <Route path="/guides/start-private-practice" element={<StartPracticeGuidePage />} />
                 <Route path="/confirm-session" element={<ConfirmSessionPage />} />
                 <Route path="/book/:token" element={<PublicBookingPage />} />
+                <Route path="/group/:token" element={<PublicGroupSignupPage />} />
                 <Route path="/therapist/:slug" element={<PublicTherapistProfilePage />} />
                 <Route path="/agreement/:token" element={<PublicAgreementPage />} />
                 <Route path="/server-update" element={<ServerUpdatePage />} />

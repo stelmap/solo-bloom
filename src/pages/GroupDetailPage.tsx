@@ -28,12 +28,20 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { describeError } from "@/lib/errorMessages";
+import { GroupSettingsFields, GroupPublicationCard, GroupRegistrationsCard, GroupMessageDialog, settingsFromGroup, settingsToPatch, type GroupSettingsForm } from "@/components/groups/GroupExtras";
+import { groupsText } from "@/i18n/groupsExtra";
+import { useCreateGroup, useUpdateSupervisionParticipation } from "@/hooks/useGroups";
+import { Archive, CopyPlus, Mail } from "lucide-react";
 
 export default function GroupDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const gx = groupsText(lang);
+  const createGroup = useCreateGroup();
+  const [settings, setSettings] = useState<GroupSettingsForm>(settingsFromGroup(null));
+  const [messageOpen, setMessageOpen] = useState(false);
   const { symbol: cs } = useCurrency();
 
   const { data: group, isLoading: groupLoading } = useGroup(id);
@@ -88,14 +96,31 @@ export default function GroupDetailPage() {
   const openEdit = () => {
     if (!group) return;
     setEditForm({ name: group.name, description: group.description || "", status: group.status, bill_present: group.bill_present ?? true, bill_absent: group.bill_absent ?? false });
+    setSettings(settingsFromGroup(group));
     setEditOpen(true);
+  };
+
+  const handleArchiveToggle = async () => {
+    if (!id || !group) return;
+    const archiving = group.lifecycle_status !== "archived";
+    try {
+      await updateGroup.mutateAsync({ id, lifecycle_status: archiving ? "archived" : "active", archived_at: archiving ? new Date().toISOString() : null, status: archiving ? "inactive" : "active", ...(archiving ? { publication_status: "unpublished" } : {}) });
+    } catch (e: any) { toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" }); }
+  };
+
+  const handleCopy = async () => {
+    if (!group) return;
+    try {
+      const created: any = await createGroup.mutateAsync({ name: `${group.name} (${gx.copyOf})`.slice(0, 100), description: group.description, ...settingsToPatch(settingsFromGroup(group)), bill_present: group.bill_present, bill_skipped: group.bill_skipped, copied_from_group_id: group.id });
+      navigate(`/groups/${created.id}`);
+    } catch (e: any) { toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" }); }
   };
 
   const handleSaveEdit = async () => {
     if (!id || !editForm.name.trim() || editSaving) return;
     setEditSaving(true);
     try {
-      await updateGroup.mutateAsync({ id, name: editForm.name.trim(), description: editForm.description.trim(), status: editForm.status, bill_present: editForm.bill_present, bill_absent: editForm.bill_absent });
+      await updateGroup.mutateAsync({ id, name: editForm.name.trim(), description: editForm.description.trim(), status: editForm.status, bill_present: editForm.bill_present, ...settingsToPatch(settings) });
       toast({ title: t("groups.updated") });
       setEditOpen(false);
     } catch (e: any) {
@@ -154,9 +179,7 @@ export default function GroupDetailPage() {
       toast({ title: t("groups.deleted") });
       navigate("/groups");
     } catch (e: any) {
-      if (e.message === "GROUP_HAS_SESSIONS") {
-        toast({ title: t("common.error"), description: t("groups.cannotDeleteHasSessions"), variant: "destructive" });
-      } else {
+      {
         toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
       }
       setDeleteOpen(false);
@@ -187,10 +210,21 @@ export default function GroupDetailPage() {
               <Badge variant={group.status === "active" ? "default" : "secondary"}>
                 {group.status === "active" ? t("groups.active") : t("groups.inactive")}
               </Badge>
+              {group.group_type === "supervision" && <Badge variant="outline">{gx.supervision}</Badge>}
+              {group.lifecycle_status === "archived" && <Badge variant="secondary">{gx.archived}</Badge>}
             </div>
             {group.description && <p className="text-muted-foreground text-sm mt-1">{group.description}</p>}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            <Button variant="outline" size="sm" onClick={() => setMessageOpen(true)} disabled={members.length === 0}>
+              <Mail className="h-4 w-4 mr-1" /> {gx.sendMessage}
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleCopy} disabled={createGroup.isPending}>
+              <CopyPlus className="h-4 w-4 mr-1" /> {gx.copyGroup}
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleArchiveToggle}>
+              <Archive className="h-4 w-4 mr-1" /> {group.lifecycle_status === "archived" ? gx.unarchive : gx.archive}
+            </Button>
             <Button variant="outline" size="sm" onClick={openEdit}>
               <Pencil className="h-4 w-4 mr-1" /> {t("common.edit")}
             </Button>
@@ -200,12 +234,15 @@ export default function GroupDetailPage() {
           </div>
         </div>
 
+        <GroupPublicationCard group={group} />
+        <GroupRegistrationsCard group={group} />
+
         {/* Members Section */}
         <div className="bg-card rounded-xl border border-border p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold">{t("groups.members")} ({members.length})</h2>
+              <h2 className="text-lg font-semibold">{t("groups.members")} ({members.length}{group.capacity ? `/${group.capacity}` : ""})</h2>
             </div>
             <Button size="sm" onClick={() => setAddMemberOpen(true)} disabled={group.status === "inactive"}>
               <UserPlus className="h-4 w-4 mr-1" /> {t("groups.addMember")}
@@ -336,7 +373,7 @@ export default function GroupDetailPage() {
 
       {/* Edit Group Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{t("groups.editGroup")}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -358,19 +395,10 @@ export default function GroupDetailPage() {
               </Select>
             </div>
             <Separator />
-            <div className="space-y-3">
-              <div>
-                <Label className="flex items-center gap-2"><Receipt className="h-4 w-4" /> {t("groups.billingRules")}</Label>
-                <p className="text-xs text-muted-foreground mt-1">{t("groups.billingRulesDesc")}</p>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                <span className="text-sm">{t("groups.billPresent")}</span>
-                <Switch checked={editForm.bill_present} onCheckedChange={v => setEditForm(f => ({ ...f, bill_present: v }))} />
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                <span className="text-sm">{t("groups.billAbsent")}</span>
-                <Switch checked={editForm.bill_absent} onCheckedChange={v => setEditForm(f => ({ ...f, bill_absent: v }))} />
-              </div>
+            <GroupSettingsFields value={settings} onChange={setSettings} />
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+              <span className="text-sm">{t("groups.billPresent")}</span>
+              <Switch checked={editForm.bill_present} onCheckedChange={v => setEditForm(f => ({ ...f, bill_present: v }))} />
             </div>
             <Button onClick={handleSaveEdit} className="w-full" disabled={!editForm.name.trim() || editSaving}>
               {editSaving ? t("common.saving") : t("common.save")}
@@ -470,13 +498,16 @@ export default function GroupDetailPage() {
         onOpenChange={setDeleteOpen}
         onConfirm={handleDeleteGroup}
         title={t("groups.deleteGroupTitle")}
-        description={t("groups.deleteGroupDesc")}
+        description={gx.deleteDesc}
         loading={deleteGroup.isPending}
       />
 
       {/* Attendance Dialog */}
+      <GroupMessageDialog groupId={group.id} open={messageOpen} onOpenChange={setMessageOpen} />
+
       {attendanceSessionId && (
         <AttendanceDialog
+          supervision={group.group_type === "supervision"}
           groupSessionId={attendanceSessionId}
           open={!!attendanceSessionId}
           onOpenChange={(open) => { if (!open) setAttendanceSessionId(null); }}
@@ -486,8 +517,10 @@ export default function GroupDetailPage() {
   );
 }
 
-function AttendanceDialog({ groupSessionId, open, onOpenChange }: { groupSessionId: string; open: boolean; onOpenChange: (o: boolean) => void }) {
-  const { t } = useLanguage();
+function AttendanceDialog({ groupSessionId, open, onOpenChange, supervision }: { groupSessionId: string; open: boolean; onOpenChange: (o: boolean) => void; supervision?: boolean }) {
+  const { t, lang } = useLanguage();
+  const gx = groupsText(lang);
+  const updateSup = useUpdateSupervisionParticipation();
   const { toast } = useToast();
   const { data: attendance = [], isLoading } = useGroupAttendance(groupSessionId);
   const updateAttendance = useUpdateAttendance();
@@ -527,6 +560,17 @@ function AttendanceDialog({ groupSessionId, open, onOpenChange }: { groupSession
                     </div>
                     <span className="text-sm font-medium">{att.clients?.name}</span>
                   </div>
+                  <div className="flex items-center gap-2">
+                  {supervision && (
+                    <Select value={att.supervision_participation ?? "not_applicable"} onValueChange={(v) => updateSup.mutate({ id: att.id, value: v })}>
+                      <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active_work">{gx.supActive}</SelectItem>
+                        <SelectItem value="observer">{gx.supObserver}</SelectItem>
+                        <SelectItem value="not_applicable">{gx.supNA}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                   <Select value={att.status} onValueChange={(v) => handleStatusChange(att.id, v)}>
                     <SelectTrigger className={cn("w-32 h-8 text-xs border", STATUS_COLOR[att.status] || "")}>
                       <SelectValue />
@@ -537,6 +581,7 @@ function AttendanceDialog({ groupSessionId, open, onOpenChange }: { groupSession
                       <SelectItem value="skipped">{t("groups.skipped")}</SelectItem>
                     </SelectContent>
                   </Select>
+                  </div>
                 </div>
               );
             })}

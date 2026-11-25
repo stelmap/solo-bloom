@@ -183,3 +183,5 @@ Implementation delegated to the separate “Real interactive product experience�
 - [x] Home page switch with total, crossed-out price, savings and monthly equivalent; plans page defaults to Month and keeps the period chosen before sign-up.
 - [x] Subscription screen shows renewal amount.
 - [ ] In-app plan/period change applied at next renewal (approved policy) — needs a scheduled renewal-time switch; not built yet.
+- [x] Groups spec: type, instructions, capacity, price, absence rule, publication link, applications/waitlist/transfer, copy, archive, logical delete, supervision participation, participant emails (6 languages).
+- [ ] Groups: file uploads for materials (currently https links only); "application received" email to anonymous applicants not sent (abuse risk) — on-screen confirmation instead.
