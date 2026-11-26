@@ -168,7 +168,16 @@ export function GroupRegistrationsCard({ group, onOpenForm }: { group: any; onOp
   const fmt = (iso: string) => format(new Date(iso), "dd.MM.yyyy HH:mm");
   const runAct = async (id: string, d: "confirm" | "reject" | "waitlist") => {
     setActionError(null);
-    try { await decide.mutateAsync({ id, decision: d }); } catch (e: any) { setActionError(describeError(e.message?.includes("GROUP_FULL") ? g.groupFull : e.message)); return; }
+    const startedAt = Date.now();
+    let res: { client_id?: string } | null = null;
+    try { res = await decide.mutateAsync({ id, decision: d }); } catch (e: any) { setActionError(e.message?.includes("GROUP_FULL") ? g.groupFull : describeError(e.message)); return; }
+    if (d === "confirm" && res?.client_id) {
+      const { data: c } = await supabase.from("clients").select("name, status, created_at").eq("id", res.client_id).maybeSingle();
+      if (c) {
+        const isNew = new Date(c.created_at as string).getTime() >= startedAt - 60_000;
+        toast({ title: isNew ? a.newClient.replace("{name}", c.name) : a.linkedExisting.replace("{name}", c.name) + (c.status === "archived" ? a.linkedArchived : "") });
+      }
+    }
     if (d === "confirm") window.__lovableEvents?.track?.("project.group_application_confirmed", {});
     else if (d === "reject") window.__lovableEvents?.track?.("project.group_application_rejected", {});
     else window.__lovableEvents?.track?.("project.group_application_waitlisted", { source: "manual" });

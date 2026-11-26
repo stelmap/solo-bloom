@@ -529,8 +529,9 @@ export function useDecideRegistration() {
   return useMutation({
     mutationFn: async ({ id, decision }: { id: string; decision: "confirm" | "reject" | "waitlist" }) => {
       assertCanWrite();
-      const { error } = await supabase.rpc("decide_group_registration" as any, { _registration_id: id, _decision: decision });
+      const { data, error } = await supabase.rpc("decide_group_registration" as any, { _registration_id: id, _decision: decision });
       if (error) throw error;
+      return data as { ok: boolean; client_id?: string } | null;
     },
     onSuccess: () => ["group-registrations", "group-members", "clients"].forEach(k => qc.invalidateQueries({ queryKey: [k] })),
   });
