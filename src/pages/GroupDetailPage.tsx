@@ -38,6 +38,8 @@ import { GroupMembersSection } from "@/components/groups/GroupMembersSection";
 import { GroupMeetingsSection } from "@/components/groups/GroupMeetingsSection";
 import { GroupAttendanceDialog } from "@/components/groups/GroupAttendanceDialog";
 import { groupTabsText } from "@/i18n/groupTabsText";
+import { GroupQuickStart, GroupRecentActivity } from "@/components/groups/GroupOverviewPanels";
+import { sharedServiceName } from "@/lib/groupMeetings";
 import { GroupFormEditorCard, GroupFinanceCard } from "@/components/groups/GroupFormEditor";
 import { groupFormText } from "@/i18n/groupFormText";
 import { uniqueConfirmedParticipants } from "@/lib/groupForm";
@@ -210,7 +212,7 @@ export default function GroupDetailPage() {
 
 
   const gt = groupTabsText(lang);
-  const serviceName = sessions.find((s: any) => s.appointments?.services?.name)?.appointments?.services?.name;
+  const serviceName = sharedServiceName(sessions);
   const TABS = ["overview", "applications", "participants", "form", "analytics"] as const;
   const tabParam = searchParams.get("tab");
   const activeTab = (TABS as readonly string[]).includes(tabParam ?? "") ? tabParam! : "overview";
@@ -264,16 +266,18 @@ export default function GroupDetailPage() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6 mt-6">
-            <div className="bg-card rounded-xl border border-border p-5 space-y-2">
+            <GroupQuickStart group={group} hasMeetings={sessions.length > 0} membersCount={members.length} onOpenForm={() => setTab("form")} />
+            <div className="bg-card rounded-xl border border-border p-5 space-y-3">
               <h2 className="text-lg font-semibold">{gt.about}</h2>
               {group.description && <p className="text-sm text-muted-foreground whitespace-pre-line">{group.description}</p>}
-              <div className="flex flex-wrap gap-2 text-xs">
-                {group.capacity && <Badge variant="outline">{gx.capacity}: {group.capacity}</Badge>}
-                {group.price_amount != null && <Badge variant="outline">{gx.price}: {cs}{Number(group.price_amount).toFixed(2)}</Badge>}
-                <Badge variant="outline">{group.bill_absent ? gx.chargeAbsent : gx.noChargeAbsent}</Badge>
-              </div>
+              <dl className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                <div className="rounded-lg bg-muted/30 p-3"><dt className="text-xs text-muted-foreground">{gx.capacity}</dt><dd className="font-medium">{group.capacity ?? gt.capacityNone}</dd></div>
+                <div className="rounded-lg bg-muted/30 p-3"><dt className="text-xs text-muted-foreground">{gx.price}</dt><dd className="font-medium">{group.price_amount != null ? `${cs}${Number(group.price_amount).toFixed(2)}` : gt.priceNone}</dd></div>
+                <div className="rounded-lg bg-muted/30 p-3"><dt className="text-xs text-muted-foreground">{gx.absencePolicy}</dt><dd className="font-medium">{group.bill_absent ? gx.chargeAbsent : gx.noChargeAbsent}</dd></div>
+              </dl>
             </div>
             <GroupMeetingsSection group={group} sessions={sessions} membersCount={members.length} onAttendance={setAttendanceSessionId} />
+            <GroupRecentActivity registrations={regs} />
           </TabsContent>
 
           <TabsContent value="applications" className="mt-6">
