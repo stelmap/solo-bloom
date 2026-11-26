@@ -6,10 +6,12 @@
 | GRP-01 Extraction + tabs | Done | pages/GroupDetailPage.tsx; components/groups/GroupMembersSection.tsx, GroupMeetingsSection.tsx, GroupAttendanceDialog.tsx; i18n/groupTabsText.ts |
 | GRP-02 Overview | Done | components/groups/GroupMeetingsSection.tsx, GroupOverviewPanels.tsx (new); lib/groupMeetings.ts + test (new); pages/GroupDetailPage.tsx; i18n/groupTabsText.ts |
 | GRP-03 Applications | Done | components/groups/GroupExtras.tsx (GroupRegistrationsCard); lib/groupApplications.ts + test (new); i18n/groupApplicationsText.ts (new); pages/GroupDetailPage.tsx (onOpenForm prop) |
-| GRP-04 … GRP-08 | Not started | — |
+| GRP-04 Participants + pricing | Done | components/groups/GroupMembersSection.tsx; lib/groupParticipants.ts + test (new); i18n/groupParticipantsText.ts (new); pages/GroupDetailPage.tsx (onOpenApplications prop) |
+| GRP-05 … GRP-08 | Not started | — |
 
 ## Unresolved gaps
-- Per-person price: `useUpdateGroupMemberPrice` exists but no UI control in Participants.
+- Pricing: billing (SessionDetailSheet at completion) uses member `price_per_session`, else the meeting's own price — not `groups.price_amount`. Participants shows group price as "Standard"; it matches billing only when meetings use the group price. Overrides apply only to meetings completed afterwards; past charges untouched.
+- Participants: browser E2E with isolated data not run in GRP-04 (unit tests + type check only).
 - Group has no own service field; header shows service of its meetings.
 - Header service shown only when all group meetings share one service.
 - Overdue open meetings appear in History with a "status not updated" flag.

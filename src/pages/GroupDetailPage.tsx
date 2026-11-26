@@ -291,7 +291,7 @@ export default function GroupDetailPage() {
                 <Mail className="h-4 w-4 mr-1" /> {gx.sendMessage}
               </Button>
             </div>
-            <GroupMembersSection group={group} members={members} membersLoading={membersLoading} onAdd={() => setAddMemberOpen(true)} onRemove={setRemoveMemberId} />
+            <GroupMembersSection group={group} members={members} membersLoading={membersLoading} onAdd={() => setAddMemberOpen(true)} onRemove={setRemoveMemberId} onOpenApplications={() => setTab("applications")} />
           </TabsContent>
 
           <TabsContent value="form" className="space-y-6 mt-6">
