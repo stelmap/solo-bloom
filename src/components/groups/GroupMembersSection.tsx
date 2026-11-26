@@ -105,7 +105,7 @@ export function GroupMembersSection({ group, members, membersLoading, onAdd, onR
               </TableHeader>
               <TableBody>
                 {list.map((m: any) => {
-                  const eff = effectiveMemberPrice(m.price_per_session, standard);
+                  const eff = effectiveMemberPrice(m.price_per_session);
                   return (
                     <TableRow key={m.id}>
                       <TableCell className="font-medium">{m.clients?.name || "—"}</TableCell>
@@ -115,8 +115,8 @@ export function GroupMembersSection({ group, members, membersLoading, onAdd, onR
                       <TableCell className="hidden sm:table-cell text-sm">{format(new Date(m.joined_at), "dd.MM.yyyy")}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <span>{eff.individual ? money(eff.price) : eff.price != null ? money(eff.price) : tx.noPrice}</span>
-                          <Badge variant={eff.individual ? "default" : "outline"}>{eff.individual ? tx.individual : tx.standard}</Badge>
+                          <span className={eff.individual ? "" : "text-sm text-muted-foreground"}>{eff.individual ? `${money(eff.price)} ${code}` : tx.noPrice}</span>
+                          {eff.individual && <Badge>{tx.individual}</Badge>}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -137,6 +137,12 @@ export function GroupMembersSection({ group, members, membersLoading, onAdd, onR
               </TableBody>
             </Table>
           )}
+          {list.length > 0 && (
+            <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+              {standard != null && <p>{tx.groupDefault.replace("{p}", `${money(Number(standard))} ${code}`)}</p>}
+              <p>{tx.appliesHint}</p>
+            </div>
+          )}
         </>
       )}
 
@@ -147,8 +153,8 @@ export function GroupMembersSection({ group, members, membersLoading, onAdd, onR
             <div className="flex items-start gap-2">
               <RadioGroupItem value="standard" id="p-std" className="mt-1" />
               <Label htmlFor="p-std" className="font-normal">
-                {tx.useStandard}{standard != null ? ` (${money(Number(standard))})` : ""}
-                <span className="block text-xs text-muted-foreground">{tx.standardHint}</span>
+                {tx.useStandard}
+                <span className="block text-xs text-muted-foreground">{tx.standardHint}{standard != null ? ` ${tx.groupDefault.replace("{p}", `${money(Number(standard))} ${code}`)}` : ""}</span>
               </Label>
             </div>
             <div className="flex items-start gap-2">

@@ -3,10 +3,10 @@ import { effectiveMemberPrice, filterParticipants, parsePriceInput } from "./gro
 
 describe("group participants", () => {
   it("individual price overrides standard", () => {
-    expect(effectiveMemberPrice(30, 50)).toEqual({ price: 30, individual: true });
+    expect(effectiveMemberPrice(30)).toEqual({ price: 30, individual: true });
   });
-  it("no override falls back to standard price", () => {
-    expect(effectiveMemberPrice(null, 50)).toEqual({ price: 50, individual: false });
+  it("no override uses the meeting price, not a fixed group amount", () => {
+    expect(effectiveMemberPrice(null)).toEqual({ price: null, individual: false });
   });
   it("search matches name, email or phone", () => {
     const m = [{ clients: { name: "Anna", email: "a@x.com", phone: "123" } }, { clients: { name: "Bob", email: null, phone: "999" } }];

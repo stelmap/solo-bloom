@@ -1,7 +1,8 @@
-// Mirrors existing billing resolution (SessionDetailSheet): member override, else meeting price.
-export function effectiveMemberPrice(override: number | string | null | undefined, standard: number | string | null | undefined): { price: number | null; individual: boolean } {
+// Billing (SessionDetailSheet) charges the member override, else the specific meeting's price.
+// Without an override there is no fixed amount to show: the participant "uses meeting price".
+export function effectiveMemberPrice(override: number | string | null | undefined): { price: number | null; individual: boolean } {
   if (override != null && override !== "") return { price: Number(override), individual: true };
-  return { price: standard != null && standard !== "" ? Number(standard) : null, individual: false };
+  return { price: null, individual: false };
 }
 
 export function filterParticipants<T extends { clients?: { name?: string | null; email?: string | null; phone?: string | null } | null }>(members: T[], q: string): T[] {
