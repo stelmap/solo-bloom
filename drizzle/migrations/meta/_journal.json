@@ -253,6 +253,13 @@
       "when": 1795713593530,
       "tag": "0035_group_registration_server_field_validation",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1795715271241,
+      "tag": "0036_migration",
+      "breakpoints": true
     }
   ]
 }
