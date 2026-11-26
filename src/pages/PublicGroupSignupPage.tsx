@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Users, CheckCircle2, CalendarDays } from "lucide-react";
+import { Users, CheckCircle2, CalendarDays, Lock, Loader2, AlertCircle } from "lucide-react";
+import { groupSignupText } from "@/i18n/groupSignupText";
+import { validateSignup, parseServerError, type AnswerError } from "@/lib/groupSignupValidation";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { groupsText } from "@/i18n/groupsExtra";
 import { BrandName } from "@/components/BrandName";
@@ -29,6 +31,8 @@ export default function PublicGroupSignupPage() {
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [fieldErrs, setFieldErrs] = useState<Record<string, AnswerError | "server">>({});
+  const st = groupSignupText(lang);
   const tf = groupFormText(lang);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -44,83 +48,109 @@ export default function PublicGroupSignupPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setBusy(true); setError(null);
+    if (busy) return;
+    setError(null);
+    if (custom) {
+      const errs = validateSignup(custom.fields, form.name, form.email, answers);
+      setFieldErrs(errs);
+      if (Object.keys(errs).length) { setError(st.fix); return; }
+    }
+    setBusy(true);
     const { data, error } = custom
       ? await supabase.rpc("public_submit_group_registration_v2" as any, { _token: token, _name: form.name, _email: form.email, _answers: answers })
       : await supabase.rpc("public_submit_group_registration" as any, {
         _token: token, _name: form.name, _email: form.email, _phone: form.phone, _message: form.message,
       });
     setBusy(false);
-    if (error) { setError(error.message.includes("NOT_AVAILABLE") ? g.unavailable : error.message.includes("EMAIL") ? g.email : error.message.includes("REQUIRED_MISSING") ? tf.errSave : error.message); return; }
-    const st = (data as any)?.status ?? "pending";
-    window.__lovableEvents?.track?.("project.group_application_submitted", { status: st });
-    if (st === "waitlisted") window.__lovableEvents?.track?.("project.group_application_waitlisted", { source: "auto_full" });
-    setResult(st);
+    if (error) {
+      const pe = parseServerError(error.message);
+      if (pe.kind === "NOT_AVAILABLE") { setError(g.unavailable); return; }
+      if (pe.kind === "RATE_LIMIT") { setError(st.rate); return; }
+      if (pe.field) { setFieldErrs({ [pe.field]: pe.kind === "REQUIRED_MISSING" ? "required" : pe.kind === "INVALID_OPTION" ? "option" : pe.kind === "INVALID_EMAIL" ? "email" : "server" }); setError(st.fix); return; }
+      setError(st.failed); return;
+    }
+    const res = (data as any)?.status ?? "pending";
+    window.__lovableEvents?.track?.("project.group_application_submitted", { status: res });
+    if (res === "waitlisted") window.__lovableEvents?.track?.("project.group_application_waitlisted", { source: "auto_full" });
+    setResult(res);
   };
 
   const fmt = (iso: string) => new Intl.DateTimeFormat(lang, { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }).format(new Date(iso));
+  const errText = (k: AnswerError | "server", type?: string) => k === "server" ? (type === "phone" ? st.phone : type === "url" ? st.url : type === "email" ? st.email : st.fix) : st[k];
+  const req = (r: boolean) => r ? <span className="text-primary"> *</span> : <span className="font-normal text-muted-foreground"> ({st.optional})</span>;
 
   return (
-    <div className="min-h-screen bg-background flex items-start justify-center px-4 py-10">
+    <div className="min-h-screen bg-muted/30 flex items-start justify-center px-4 py-6 sm:py-10">
       <Helmet><title>{info?.name ? `${info.name} — Solo .Bizz` : "Solo .Bizz"}</title><meta name="robots" content="noindex" /></Helmet>
-      <div className="w-full max-w-lg space-y-6">
-        <div className="text-center text-sm"><BrandName /></div>
-        {info === undefined ? <p className="text-center text-muted-foreground">…</p> : info === null ? (
-          <div className="bg-card border border-border rounded-xl p-6 text-center text-muted-foreground">{g.unavailable}</div>
-        ) : (
-          <div className="bg-card border border-border rounded-xl p-6 space-y-5">
-            {imageUrl && <img src={imageUrl} alt="" className="w-full max-h-56 object-cover rounded-lg -mt-1" />}
+      <div className="w-full max-w-lg bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
+        <header className="px-6 py-4 border-b border-border text-lg font-semibold"><BrandName /></header>
+        <div className="p-6 space-y-5">
+        {info === undefined ? (
+          <p className="flex items-center justify-center gap-2 text-muted-foreground py-10" role="status"><Loader2 className="h-4 w-4 animate-spin" />{st.loading}</p>
+        ) : info === null ? (
+          <div className="text-center text-muted-foreground py-10 space-y-2"><AlertCircle className="h-8 w-8 mx-auto" /><p>{g.unavailable}</p></div>
+        ) : (<>
+            {imageUrl && <img src={imageUrl} alt="" className="w-full max-h-60 object-cover rounded-xl" />}
             <div className="flex items-start gap-3">
-              <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0"><Users className="h-5 w-5" /></div>
+              {!imageUrl && <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0"><Users className="h-6 w-6" /></div>}
               <div>
-                <h1 className="text-xl font-bold text-foreground">{info.name}</h1>
-                <p className="text-xs text-muted-foreground">{info.group_type === "supervision" ? g.supervision : g.regular}{info.price_amount != null ? ` · ${info.price_amount}` : ""}</p>
+                <h1 className="text-2xl font-bold text-foreground">{info.name}</h1>
+                <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-1"><Users className="h-3.5 w-3.5" />{info.group_type === "supervision" ? g.supervision : g.regular}</p>
               </div>
             </div>
             {info.description && <p className="text-sm text-foreground/90 whitespace-pre-line">{info.description}</p>}
             {info.sessions?.length > 0 && (
               <div>
                 <p className="text-sm font-medium flex items-center gap-2 mb-2"><CalendarDays className="h-4 w-4 text-primary" />{g.upcoming}</p>
-                <ul className="text-sm text-muted-foreground space-y-1">{info.sessions.map((s: any) => <li key={s.starts_at}>{fmt(s.starts_at)}</li>)}</ul>
+                <ul className="text-sm text-muted-foreground space-y-1">{info.sessions.map((x: any) => <li key={x.starts_at}>{fmt(x.starts_at)}</li>)}</ul>
               </div>
             )}
+            <hr className="border-border" />
             {result ? (
-              <div className="text-center space-y-2 py-4">
-                <CheckCircle2 className="h-10 w-10 text-primary mx-auto" />
-                <p className="font-semibold">{g.doneTitle}</p>
+              <div className="text-center space-y-2 py-6" role="status">
+                <CheckCircle2 className="h-12 w-12 text-primary mx-auto" />
+                <p className="text-lg font-semibold">{result === "duplicate" ? g.doneTitle : st.receivedTitle}</p>
                 <p className="text-sm text-muted-foreground">{result === "waitlisted" ? g.doneWait : result === "duplicate" ? g.doneDup : g.donePending}</p>
               </div>
             ) : (
-              <form onSubmit={submit} className="space-y-3">
-                <h2 className="font-semibold">{custom?.title || g.applyTitle}</h2>
-                {custom?.intro && <p className="text-sm text-muted-foreground whitespace-pre-line">{custom.intro}</p>}
+              <form onSubmit={submit} noValidate={!!custom} className="space-y-4">
+                <div className="space-y-1">
+                  <h2 className="text-lg font-semibold">{custom?.title || g.applyTitle}</h2>
+                  {custom?.intro && <p className="text-sm text-muted-foreground whitespace-pre-line">{custom.intro}</p>}
+                </div>
                 {info.is_full && <p className="text-sm text-warning">{g.full}</p>}
                 {custom ? custom.fields.map(fd => {
                   const id = `fld-${fd.id}`;
-                  const lbl = <Label htmlFor={id}>{fd.label}{fd.required ? " *" : ""}</Label>;
+                  const fe = fieldErrs[fd.id];
+                  const lbl = <Label htmlFor={id}>{fd.label}{req(fd.required)}</Label>;
                   const hint = fd.hint ? <p className="text-xs text-muted-foreground">{fd.hint}</p> : null;
-                  if (fd.id === "name") return <div key={fd.id} className="space-y-1.5">{lbl}<Input id={id} required maxLength={200} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>;
-                  if (fd.id === "email") return <div key={fd.id} className="space-y-1.5">{lbl}<Input id={id} required type="email" maxLength={255} value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>;
+                  const errEl = fe ? <p id={`${id}-err`} className="text-xs text-destructive">{errText(fe, fd.id === "email" ? "email" : fd.type)}</p> : null;
+                  const a11y = { "aria-invalid": !!fe, "aria-describedby": fe ? `${id}-err` : undefined };
+                  const clear = () => fe && setFieldErrs(x => { const n = { ...x }; delete n[fd.id]; return n; });
+                  if (fd.id === "name") return <div key={fd.id} className="space-y-1.5">{lbl}<Input id={id} {...a11y} autoComplete="name" placeholder={st.namePh} maxLength={200} value={form.name} onChange={e => { clear(); setForm(f => ({ ...f, name: e.target.value })); }} />{errEl}</div>;
+                  if (fd.id === "email") return <div key={fd.id} className="space-y-1.5">{lbl}<Input id={id} {...a11y} type="email" autoComplete="email" placeholder={st.emailPh} maxLength={255} value={form.email} onChange={e => { clear(); setForm(f => ({ ...f, email: e.target.value })); }} />{errEl}</div>;
                   const val = answers[fd.id] ?? "";
-                  const set = (v: string) => setAnswers(a => ({ ...a, [fd.id]: v }));
-                  if (fd.type === "checkbox") return <div key={fd.id} className="space-y-1"><label className="flex items-start gap-2 text-sm"><Checkbox id={id} checked={val === "true"} onCheckedChange={v => set(v ? "true" : "false")} required={fd.required} /><span>{fd.label}{fd.required ? " *" : ""}</span></label>{hint}</div>;
-                  if (fd.type === "dropdown") return <div key={fd.id} className="space-y-1.5">{lbl}<Select value={val} onValueChange={set}><SelectTrigger id={id}><SelectValue placeholder={tf.choose} /></SelectTrigger><SelectContent>{(fd.options ?? []).map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent></Select>{hint}</div>;
-                  if (fd.type === "long") return <div key={fd.id} className="space-y-1.5">{lbl}<Textarea id={id} rows={3} required={fd.required} maxLength={2000} value={val} onChange={e => set(e.target.value)} />{hint}</div>;
+                  const set = (v: string) => { clear(); setAnswers(a => ({ ...a, [fd.id]: v })); };
+                  if (fd.type === "checkbox") return <div key={fd.id} className="space-y-1"><label className="flex items-start gap-2 text-sm"><Checkbox id={id} {...a11y} checked={val === "true"} onCheckedChange={v => set(v ? "true" : "false")} /><span>{fd.label}{req(fd.required)}</span></label>{hint}{errEl}</div>;
+                  if (fd.type === "dropdown") return <div key={fd.id} className="space-y-1.5">{lbl}<Select value={val} onValueChange={set}><SelectTrigger id={id} {...a11y}><SelectValue placeholder={tf.choose} /></SelectTrigger><SelectContent>{(fd.options ?? []).map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent></Select>{hint}{errEl}</div>;
+                  if (fd.type === "long") return <div key={fd.id} className="space-y-1.5">{lbl}<Textarea id={id} {...a11y} rows={3} maxLength={2000} value={val} onChange={e => set(e.target.value)} />{hint}{errEl}</div>;
                   const inputType = fd.type === "email" ? "email" : fd.type === "phone" ? "tel" : fd.type === "url" ? "url" : "text";
-                  return <div key={fd.id} className="space-y-1.5">{lbl}<Input id={id} type={inputType} required={fd.required} maxLength={500} value={val} onChange={e => set(e.target.value)} />{hint}</div>;
+                  const ph = fd.type === "url" ? "https://" : fd.type === "email" ? st.emailPh : fd.type === "phone" ? "+" : undefined;
+                  return <div key={fd.id} className="space-y-1.5">{lbl}<Input id={id} {...a11y} type={inputType} placeholder={ph} maxLength={fd.type === "url" ? 500 : 500} value={val} onChange={e => set(e.target.value)} />{hint}{errEl}</div>;
                 }) : (<>
                 <div className="space-y-1.5"><Label>{g.yourName} *</Label><Input required maxLength={200} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
                   <div className="space-y-1.5"><Label>{g.email} *</Label><Input required type="email" maxLength={255} value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
                   <div className="space-y-1.5"><Label>{g.phone}</Label><Input maxLength={50} value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
                   <div className="space-y-1.5"><Label>{g.note}</Label><Textarea rows={3} maxLength={2000} value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} /></div>
                 </>)}
-                {error && <p className="text-sm text-destructive">{error}</p>}
-                <Button type="submit" className="w-full" disabled={busy}>{g.submit}</Button>
-                <p className="text-xs text-muted-foreground text-center">{g.privacy}</p>
+                {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
+                <Button type="submit" size="lg" className="w-full" disabled={busy}>{busy ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{st.sending}</> : g.submit}</Button>
+                <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1.5"><Lock className="h-3 w-3" />{g.privacy}</p>
               </form>
             )}
-          </div>
-        )}
+        </>)}
+        </div>
+        <footer className="px-6 py-3 border-t border-border text-center text-xs text-muted-foreground">{st.powered} <BrandName /></footer>
       </div>
     </div>
   );
