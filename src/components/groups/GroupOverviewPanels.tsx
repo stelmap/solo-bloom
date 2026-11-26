@@ -30,7 +30,7 @@ export function GroupQuickStart({ group, hasMeetings, membersCount, onOpenForm }
       <h2 className="text-lg font-semibold">{gt.quickStart}</h2>
       <div className="grid sm:grid-cols-2 gap-3">
         {item(false, Link2, gt.shareLink, published ? gt.shareLinkHint : gt.publishFirst, share)}
-        {item(hasMeetings, CalendarPlus, gt.addFirst, "", () => navigate(`/calendar?new=1&groupId=${group.id}`), membersCount === 0)}
+        {item(hasMeetings, CalendarPlus, gt.addFirst, gt.addFirstHint, () => navigate(`/calendar?new=1&groupId=${group.id}`), membersCount === 0)}
       </div>
     </div>
   );

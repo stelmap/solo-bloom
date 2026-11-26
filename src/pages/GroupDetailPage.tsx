@@ -266,7 +266,7 @@ export default function GroupDetailPage() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6 mt-6">
-            <GroupQuickStart group={group} hasMeetings={sessions.length > 0} membersCount={members.length} onOpenForm={() => setTab("form")} />
+            {sessions.length > 0 && <GroupQuickStart group={group} hasMeetings membersCount={members.length} onOpenForm={() => setTab("form")} />}
             <div className="bg-card rounded-xl border border-border p-5 space-y-3">
               <h2 className="text-lg font-semibold">{gt.about}</h2>
               {group.description && <p className="text-sm text-muted-foreground whitespace-pre-line">{group.description}</p>}
@@ -277,6 +277,7 @@ export default function GroupDetailPage() {
               </dl>
             </div>
             <GroupMeetingsSection group={group} sessions={sessions} membersCount={members.length} onAttendance={setAttendanceSessionId} />
+            {sessions.length === 0 && <GroupQuickStart group={group} hasMeetings={false} membersCount={members.length} onOpenForm={() => setTab("form")} />}
             <GroupRecentActivity registrations={regs} />
           </TabsContent>
 

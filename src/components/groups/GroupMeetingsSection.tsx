@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, CalendarDays, Clock, Plus, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react";
+import { Calendar, CalendarDays, Clock, Plus, ChevronLeft, ChevronRight, AlertTriangle, Sparkles, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -60,13 +60,19 @@ export function GroupMeetingsSection({ group, sessions, membersCount, onAttendan
 
   if (sessions.length === 0) {
     return (
-      <div className="bg-card rounded-xl border border-border p-8 text-center space-y-3">
-        <div className="mx-auto h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary"><CalendarDays className="h-7 w-7" /></div>
-        <h2 className="text-lg font-semibold">{gt.noMeetings}</h2>
-        <p className="text-sm text-muted-foreground max-w-sm mx-auto">{gt.noMeetingsHint}</p>
-        <div className="flex justify-center gap-2 flex-wrap">
-          {addBtn}
-          <Button size="sm" variant="outline" onClick={() => navigate("/calendar")}><Calendar className="h-4 w-4 mr-1" />{gt.openCalendarAll}</Button>
+      <div className="bg-card rounded-xl border border-border p-5">
+        <h2 className="text-lg font-semibold">{gt.upcoming}</h2>
+        <div className="text-center py-6 space-y-3">
+          <div className="relative mx-auto h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+            <CalendarDays className="h-8 w-8" />
+            <Sparkles className="absolute -top-2 -right-3 h-4 w-4" />
+          </div>
+          <h3 className="text-lg font-semibold">{gt.noMeetings}</h3>
+          <p className="text-sm text-muted-foreground max-w-sm mx-auto">{gt.noMeetingsHint}</p>
+          <div className="flex justify-center items-center gap-3 flex-wrap">
+            {addBtn}
+            <Button size="sm" variant="ghost" className="text-primary" onClick={() => navigate("/calendar")}><ExternalLink className="h-4 w-4 mr-1" />{gt.openCalendarAll}</Button>
+          </div>
         </div>
       </div>
     );
