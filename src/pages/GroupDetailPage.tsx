@@ -12,7 +12,7 @@ import {
   Check, X, MinusCircle, BarChart3, Save, Trash2, Receipt, Search,
 } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import {
   useGroup, useUpdateGroup, useDeleteGroup, useGroupMembers, useAddGroupMember,
   useRemoveGroupMember, useGroupSessions, useGroupAttendance,
@@ -31,7 +31,13 @@ import { describeError } from "@/lib/errorMessages";
 import { GroupSettingsFields, GroupPublicationCard, GroupRegistrationsCard, GroupMessageDialog, settingsFromGroup, settingsToPatch, type GroupSettingsForm } from "@/components/groups/GroupExtras";
 import { groupsText } from "@/i18n/groupsExtra";
 import { useCreateGroup, useUpdateSupervisionParticipation } from "@/hooks/useGroups";
-import { Archive, CopyPlus, Mail, Plus } from "lucide-react";
+import { Archive, CopyPlus, Mail, MoreHorizontal, Home, Inbox, FileText } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { GroupMembersSection } from "@/components/groups/GroupMembersSection";
+import { GroupMeetingsSection } from "@/components/groups/GroupMeetingsSection";
+import { GroupAttendanceDialog } from "@/components/groups/GroupAttendanceDialog";
+import { groupTabsText } from "@/i18n/groupTabsText";
 import { GroupFormEditorCard, GroupFinanceCard } from "@/components/groups/GroupFormEditor";
 import { groupFormText } from "@/i18n/groupFormText";
 import { uniqueConfirmedParticipants } from "@/lib/groupForm";
@@ -40,6 +46,7 @@ import { useGroupRegistrations } from "@/hooks/useGroups";
 export default function GroupDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const { t, lang } = useLanguage();
   const gx = groupsText(lang);
@@ -202,128 +209,93 @@ export default function GroupDetailPage() {
 
 
 
+  const gt = groupTabsText(lang);
+  const serviceName = sessions.find((s: any) => s.appointments?.services?.name)?.appointments?.services?.name;
+  const TABS = ["overview", "applications", "participants", "form", "analytics"] as const;
+  const tabParam = searchParams.get("tab");
+  const activeTab = (TABS as readonly string[]).includes(tabParam ?? "") ? tabParam! : "overview";
+  const setTab = (v: string) => { const next = new URLSearchParams(searchParams); if (v === "overview") next.delete("tab"); else next.set("tab", v); setSearchParams(next, { replace: true }); };
+
   return (
     <AppLayout>
       <div className="space-y-6 max-w-4xl">
-        {/* Header */}
-        <div className="flex items-center gap-3">
+        {/* Shared header */}
+        <div className="flex items-start gap-3">
           <Button variant="ghost" size="icon" aria-label={t("common.back")} onClick={() => navigate("/groups")}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
+          <div className="h-12 w-12 shrink-0 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+            <Users className="h-6 w-6" />
+          </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-foreground truncate">{group.name}</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl font-bold text-foreground break-words">{group.name}</h1>
               <Badge variant={group.status === "active" ? "default" : "secondary"}>
                 {group.status === "active" ? t("groups.active") : t("groups.inactive")}
               </Badge>
-              {group.group_type === "supervision" && <Badge variant="outline">{gx.supervision}</Badge>}
               {group.lifecycle_status === "archived" && <Badge variant="secondary">{gx.archived}</Badge>}
             </div>
-            {group.description && <p className="text-muted-foreground text-sm mt-1">{group.description}</p>}
+            <p className="text-sm text-muted-foreground mt-1">
+              {group.group_type === "supervision" ? gx.supervision : gt.regular}
+              {serviceName ? ` · ${serviceName}` : ""}
+            </p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap justify-end">
-            <Button variant="outline" size="sm" onClick={() => setMessageOpen(true)} disabled={members.length === 0}>
-              <Mail className="h-4 w-4 mr-1" /> {gx.sendMessage}
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleCopy} disabled={createGroup.isPending}>
-              <CopyPlus className="h-4 w-4 mr-1" /> {gx.copyGroup}
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleArchiveToggle}>
-              <Archive className="h-4 w-4 mr-1" /> {group.lifecycle_status === "archived" ? gx.unarchive : gx.archive}
-            </Button>
-            <Button variant="outline" size="sm" onClick={openEdit}>
-              <Pencil className="h-4 w-4 mr-1" /> {t("common.edit")}
-            </Button>
-            <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteOpen(true)}>
-              <Trash2 className="h-4 w-4 mr-1" /> {t("groups.deleteGroup")}
-            </Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" aria-label={gt.actions}><MoreHorizontal className="h-4 w-4" /></Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={openEdit}><Pencil className="h-4 w-4 mr-2" /> {t("common.edit")}</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleCopy} disabled={createGroup.isPending}><CopyPlus className="h-4 w-4 mr-2" /> {gx.copyGroup}</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleArchiveToggle}><Archive className="h-4 w-4 mr-2" /> {group.lifecycle_status === "archived" ? gx.unarchive : gx.archive}</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteOpen(true)}><Trash2 className="h-4 w-4 mr-2" /> {t("groups.deleteGroup")}</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        <GroupPublicationCard group={group} />
-        <GroupFormEditorCard group={group} />
-        <GroupRegistrationsCard group={group} />
+        <Tabs value={activeTab} onValueChange={setTab}>
+          <TabsList className="w-full justify-start overflow-x-auto h-auto">
+            <TabsTrigger value="overview"><Home className="h-4 w-4 mr-1.5" />{gt.overview}</TabsTrigger>
+            <TabsTrigger value="applications"><Inbox className="h-4 w-4 mr-1.5" />{gt.applications}</TabsTrigger>
+            <TabsTrigger value="participants"><Users className="h-4 w-4 mr-1.5" />{gt.participants}</TabsTrigger>
+            <TabsTrigger value="form"><FileText className="h-4 w-4 mr-1.5" />{gt.form}</TabsTrigger>
+            <TabsTrigger value="analytics"><BarChart3 className="h-4 w-4 mr-1.5" />{gt.analytics}</TabsTrigger>
+          </TabsList>
 
-        {/* Members Section */}
-        <div className="bg-card rounded-xl border border-border p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold">{t("groups.members")} ({members.length}{group.capacity ? `/${group.capacity}` : ""})</h2>
+          <TabsContent value="overview" className="space-y-6 mt-6">
+            <div className="bg-card rounded-xl border border-border p-5 space-y-2">
+              <h2 className="text-lg font-semibold">{gt.about}</h2>
+              {group.description && <p className="text-sm text-muted-foreground whitespace-pre-line">{group.description}</p>}
+              <div className="flex flex-wrap gap-2 text-xs">
+                {group.capacity && <Badge variant="outline">{gx.capacity}: {group.capacity}</Badge>}
+                {group.price_amount != null && <Badge variant="outline">{gx.price}: {cs}{Number(group.price_amount).toFixed(2)}</Badge>}
+                <Badge variant="outline">{group.bill_absent ? gx.chargeAbsent : gx.noChargeAbsent}</Badge>
+              </div>
             </div>
-            <Button size="sm" onClick={() => setAddMemberOpen(true)} disabled={group.status === "inactive"}>
-              <UserPlus className="h-4 w-4 mr-1" /> {t("groups.addMember")}
-            </Button>
-          </div>
-          {membersLoading ? (
-            <p className="text-muted-foreground text-sm">{t("common.loading")}</p>
-          ) : members.length === 0 ? (
-            <p className="text-muted-foreground text-sm text-center py-4">{t("groups.noMembers")}</p>
-          ) : (
-            <div className="space-y-2">
-              {members.map((m: any) => (
-                <div key={m.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs">
-                      {m.clients?.name?.split(" ").map((n: string) => n[0]).join("").toUpperCase() || "?"}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{m.clients?.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {t("groups.joinedAt")}: {format(new Date(m.joined_at), "dd.MM.yyyy")}
-                      </p>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="icon" aria-label={t("common.delete")} className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                    onClick={() => setRemoveMemberId(m.id)}>
-                    <UserMinus className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+            <GroupMeetingsSection group={group} sessions={sessions} membersCount={members.length} onAttendance={setAttendanceSessionId} />
+          </TabsContent>
+
+          <TabsContent value="applications" className="mt-6">
+            <GroupRegistrationsCard group={group} />
+          </TabsContent>
+
+          <TabsContent value="participants" className="space-y-4 mt-6">
+            <div className="flex justify-end">
+              <Button variant="outline" size="sm" onClick={() => setMessageOpen(true)} disabled={members.length === 0}>
+                <Mail className="h-4 w-4 mr-1" /> {gx.sendMessage}
+              </Button>
             </div>
-          )}
-        </div>
+            <GroupMembersSection group={group} members={members} membersLoading={membersLoading} onAdd={() => setAddMemberOpen(true)} onRemove={setRemoveMemberId} />
+          </TabsContent>
 
-        {/* Sessions Section */}
-        <div className="bg-card rounded-xl border border-border p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Calendar className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold flex-1">{t("groups.sessions")} ({sessions.length})</h2>
-            <Button size="sm" disabled={group.lifecycle_status !== "active" || members.length === 0} onClick={() => navigate(`/calendar?new=1&groupId=${group.id}`)}>
-              <Plus className="h-4 w-4 mr-1" />{gf.addSession}
-            </Button>
-          </div>
-          {sessions.length === 0 ? (
-            <p className="text-muted-foreground text-sm text-center py-4">{t("groups.noSessions")}</p>
-          ) : (
-            <div className="space-y-2">
-              {sessions.map((gs: any) => {
-                const apt = gs.appointments;
-                if (!apt) return null;
-                const dateStr = format(new Date(apt.scheduled_at), "dd.MM.yyyy HH:mm");
-                return (
-                  <div key={gs.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                    <div>
-                      <p className="text-sm font-medium">{apt.services?.name || t("groups.session")} — {dateStr}</p>
-                      <p className="text-xs text-muted-foreground">{apt.duration_minutes} {t("common.minutes")} · {cs}{Number(apt.price).toFixed(2)}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={apt.status === "completed" ? "default" : "secondary"} className="text-xs">
-                        {apt.status}
-                      </Badge>
-                      <Button variant="outline" size="sm" onClick={() => setAttendanceSessionId(gs.id)}>
-                        {t("groups.attendance")}
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+          <TabsContent value="form" className="space-y-6 mt-6">
+            <GroupPublicationCard group={group} />
+            <GroupFormEditorCard group={group} />
+          </TabsContent>
 
-        <GroupFinanceCard groupId={group.id} applications={regs.length} confirmedPeople={uniqueConfirmedParticipants(regs)} />
-
+          <TabsContent value="analytics" className="space-y-6 mt-6">
+            <GroupFinanceCard groupId={group.id} applications={regs.length} confirmedPeople={uniqueConfirmedParticipants(regs)} />
         {/* Analytics Section */}
         <div className="bg-card rounded-xl border border-border p-5">
           <div className="flex items-center gap-2 mb-4">
@@ -381,6 +353,8 @@ export default function GroupDetailPage() {
             <p className="text-muted-foreground text-sm text-center py-3">{t("groups.noAttendanceData")}</p>
           )}
         </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Edit Group Dialog */}
@@ -518,7 +492,7 @@ export default function GroupDetailPage() {
       <GroupMessageDialog groupId={group.id} open={messageOpen} onOpenChange={setMessageOpen} />
 
       {attendanceSessionId && (
-        <AttendanceDialog
+        <GroupAttendanceDialog
           supervision={group.group_type === "supervision"}
           groupSessionId={attendanceSessionId}
           open={!!attendanceSessionId}
@@ -526,80 +500,5 @@ export default function GroupDetailPage() {
         />
       )}
     </AppLayout>
-  );
-}
-
-function AttendanceDialog({ groupSessionId, open, onOpenChange, supervision }: { groupSessionId: string; open: boolean; onOpenChange: (o: boolean) => void; supervision?: boolean }) {
-  const { t, lang } = useLanguage();
-  const gx = groupsText(lang);
-  const updateSup = useUpdateSupervisionParticipation();
-  const { toast } = useToast();
-  const { data: attendance = [], isLoading } = useGroupAttendance(groupSessionId);
-  const updateAttendance = useUpdateAttendance();
-
-  const handleStatusChange = async (attId: string, newStatus: string) => {
-    try {
-      await updateAttendance.mutateAsync({ id: attId, status: newStatus, groupSessionId });
-    } catch (e: any) {
-      toast({ title: t("common.error"), description: describeError(e.message), variant: "destructive" });
-    }
-  };
-
-  const STATUS_ICON: Record<string, typeof Check> = { attended: Check, absent: X, skipped: MinusCircle };
-  const STATUS_COLOR: Record<string, string> = {
-    attended: "bg-success/10 border-success/30 text-success",
-    absent: "bg-destructive/10 border-destructive/30 text-destructive",
-    skipped: "bg-warning/10 border-warning/30 text-warning",
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader><DialogTitle>{t("groups.manageAttendance")}</DialogTitle></DialogHeader>
-        {isLoading ? (
-          <p className="text-muted-foreground text-sm text-center py-4">{t("common.loading")}</p>
-        ) : attendance.length === 0 ? (
-          <p className="text-muted-foreground text-sm text-center py-4">{t("groups.noAttendanceRecords")}</p>
-        ) : (
-          <div className="space-y-3">
-            {attendance.map((att: any) => {
-              const Icon = STATUS_ICON[att.status] || Check;
-              return (
-                <div key={att.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                  <div className="flex items-center gap-2">
-                    <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-semibold">
-                      {att.clients?.name?.[0]?.toUpperCase() || "?"}
-                    </div>
-                    <span className="text-sm font-medium">{att.clients?.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                  {supervision && (
-                    <Select value={att.supervision_participation ?? "not_applicable"} onValueChange={(v) => updateSup.mutate({ id: att.id, value: v })}>
-                      <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active_work">{gx.supActive}</SelectItem>
-                        <SelectItem value="observer">{gx.supObserver}</SelectItem>
-                        <SelectItem value="not_applicable">{gx.supNA}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                  <Select value={att.status} onValueChange={(v) => handleStatusChange(att.id, v)}>
-                    <SelectTrigger className={cn("w-32 h-8 text-xs border", STATUS_COLOR[att.status] || "")}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="attended">{t("groups.attended")}</SelectItem>
-                      <SelectItem value="absent">{t("groups.absent")}</SelectItem>
-                      <SelectItem value="skipped">{t("groups.skipped")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
   );
 }

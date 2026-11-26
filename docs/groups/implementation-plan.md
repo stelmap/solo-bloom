@@ -12,3 +12,10 @@ Principle: relocate/reuse first, add new only where needed.
 | GRP-06 | Form Configuration tab | 02 | GroupFormEditorCard as-is |
 | GRP-07 | Analytics tab (new) | 02 | Derived from existing data: applications funnel, attendance rate, finance; no new tables unless spec demands |
 | GRP-08 | QA | all | Tests for new pure metrics, browser check with test group |
+
+## Corrected tab mapping (GRP-01)
+- Overview: description/settings summary, meetings list + history, Add meeting (Calendar handoff), per-meeting Attendance.
+- Applications: GroupRegistrationsCard (approve/reject/waitlist/transfer).
+- Participants: GroupMembersSection (add/remove), participant messaging. Per-person price hook exists; no UI yet.
+- Form Configuration: GroupPublicationCard (publish/unpublish/copy link), GroupFormEditorCard (form + image).
+- Analytics: GroupFinanceCard, existing attendance stats, counters.
