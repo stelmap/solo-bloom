@@ -282,7 +282,7 @@ export default function GroupDetailPage() {
           </TabsContent>
 
           <TabsContent value="applications" className="mt-6">
-            <GroupRegistrationsCard group={group} />
+            <GroupRegistrationsCard group={group} onOpenForm={() => setTab("form")} />
           </TabsContent>
 
           <TabsContent value="participants" className="space-y-4 mt-6">

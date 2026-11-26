@@ -9,7 +9,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Globe, Copy, Inbox, Mail, ArrowRightLeft } from "lucide-react";
+import { Globe, Copy, Inbox, Mail, ArrowRightLeft, Search, ChevronLeft } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
+import { groupApplicationsText } from "@/i18n/groupApplicationsText";
+import { APPLICATION_FILTERS, filterApplications, countByStatus, allowedDecisions, type ApplicationFilter } from "@/lib/groupApplications";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -122,12 +126,12 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive" | "
   pending: "default", confirmed: "secondary", rejected: "destructive", waitlisted: "outline", transferred: "outline",
 };
 
-export function GroupRegistrationsCard({ group }: { group: any }) {
+export function GroupRegistrationsCard({ group, onOpenForm }: { group: any; onOpenForm?: () => void }) {
   const { lang } = useLanguage();
   const g = groupsText(lang);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { data: regs = [] } = useGroupRegistrations(group.id);
+  const { data: regs = [], isLoading } = useGroupRegistrations(group.id);
   const { data: groups = [] } = useGroups();
   const decide = useDecideRegistration();
   const transfer = useTransferRegistrations();
@@ -137,20 +141,6 @@ export function GroupRegistrationsCard({ group }: { group: any }) {
   const [target, setTarget] = useState("new");
   const [newName, setNewName] = useState("");
   const targets = useMemo(() => groups.filter((x: any) => x.id !== group.id && x.lifecycle_status === "active"), [groups, group.id]);
-
-  const act = async (id: string, decision: "confirm" | "reject" | "waitlist") => {
-    try {
-      await decide.mutateAsync({ id, decision });
-      if (decision === "confirm") window.__lovableEvents?.track?.("project.group_application_confirmed", {});
-      else if (decision === "reject") window.__lovableEvents?.track?.("project.group_application_rejected", {});
-      else window.__lovableEvents?.track?.("project.group_application_waitlisted", { source: "manual" });
-      if (notify) {
-        await supabase.functions.invoke("send-group-email", { body: { kind: "decision", registrationId: id, language: lang } });
-      }
-    } catch (e: any) {
-      toast({ title: describeError(e.message?.includes("GROUP_FULL") ? g.groupFull : e.message), variant: "destructive" });
-    }
-  };
 
   const doTransfer = async () => {
     try {
@@ -162,13 +152,113 @@ export function GroupRegistrationsCard({ group }: { group: any }) {
   };
 
   const movable = (r: any) => r.status === "waitlisted" || r.status === "pending";
+  const a = groupApplicationsText(lang);
+  const isMobile = useIsMobile();
+  const [filter, setFilter] = useState<ApplicationFilter>("all");
+  const [query, setQuery] = useState("");
+  const [order, setOrder] = useState<"newest" | "oldest">("newest");
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const counts = useMemo(() => countByStatus(regs), [regs]);
+  const visible = useMemo(() => filterApplications(regs, filter, query, order), [regs, filter, query, order]);
+  const active = regs.find((r: any) => r.id === activeId) ?? null;
+  const published = group.publication_status === "published";
+  const fmt = (iso: string) => format(new Date(iso), "dd.MM.yyyy HH:mm");
+  const runAct = async (id: string, d: "confirm" | "reject" | "waitlist") => {
+    setActionError(null);
+    try { await decide.mutateAsync({ id, decision: d }); } catch (e: any) { setActionError(describeError(e.message?.includes("GROUP_FULL") ? g.groupFull : e.message)); return; }
+    if (d === "confirm") window.__lovableEvents?.track?.("project.group_application_confirmed", {});
+    else if (d === "reject") window.__lovableEvents?.track?.("project.group_application_rejected", {});
+    else window.__lovableEvents?.track?.("project.group_application_waitlisted", { source: "manual" });
+    if (notify) {
+      try { await supabase.functions.invoke("send-group-email", { body: { kind: "decision", registrationId: id, language: lang } }); }
+      catch (e: any) { toast({ title: describeError(e.message), variant: "destructive" }); }
+    }
+  };
+
+  const details = active && (
+    <div className="space-y-4">
+      {isMobile && <Button variant="ghost" size="sm" onClick={() => setActiveId(null)}><ChevronLeft className="h-4 w-4 mr-1" />{a.back}</Button>}
+      <div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <h3 className="text-lg font-semibold break-words">{active.person_name}</h3>
+          <Badge variant={STATUS_VARIANT[active.status]} className="text-xs">{(g as any)[active.status] ?? active.status}</Badge>
+        </div>
+        <p className="text-sm text-muted-foreground break-all">{active.email}</p>
+        <p className="text-xs text-muted-foreground mt-1">{a.submitted}: {fmt(active.submitted_at)}</p>
+      </div>
+      {active.phone && <div><p className="text-xs text-muted-foreground">{a.phone}</p><p className="text-sm">{active.phone}</p></div>}
+      {active.message && <div><p className="text-xs text-muted-foreground">{a.message}</p><p className="text-sm whitespace-pre-line">{active.message}</p></div>}
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{a.answers}</p>
+        {Array.isArray(active.answers) && active.answers.some((x: any) => x.value) ? active.answers.filter((x: any) => x.value).map((x: any) => (
+          <div key={x.id} className="rounded-lg bg-muted/30 p-3">
+            <p className="text-xs text-muted-foreground">{x.label}</p>
+            <p className="text-sm whitespace-pre-line">{x.type === "checkbox" ? "✓" : String(x.value)}</p>
+          </div>
+        )) : <p className="text-sm text-muted-foreground">{a.noAnswers}</p>}
+      </div>
+      {actionError && <p role="alert" className="text-sm text-destructive">{actionError}</p>}
+      {allowedDecisions(active.status).length > 0 && (
+        <div className="flex gap-2 flex-wrap pt-2 border-t border-border">
+          {allowedDecisions(active.status).map(d => (
+            <Button key={d} size="sm" disabled={decide.isPending}
+              variant={d === "confirm" ? "default" : d === "waitlist" ? "outline" : "ghost"}
+              className={d === "reject" ? "text-destructive" : undefined}
+              onClick={() => runAct(active.id, d)}>
+              {decide.isPending ? a.processing : d === "confirm" ? g.confirm : d === "waitlist" ? g.toWaitlist : g.reject}
+            </Button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const list = (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-1.5">
+        {APPLICATION_FILTERS.map(f => (
+          <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} className="h-8" onClick={() => setFilter(f)}>
+            {f === "all" ? a.all : (g as any)[f]} ({counts[f]})
+          </Button>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input className="pl-9" placeholder={a.search} value={query} onChange={e => setQuery(e.target.value)} />
+        </div>
+        <Select value={order} onValueChange={v => setOrder(v as "newest" | "oldest")}>
+          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="newest">{a.newest}</SelectItem><SelectItem value="oldest">{a.oldest}</SelectItem></SelectContent>
+        </Select>
+      </div>
+      {visible.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">{a.noResults}</p> : (
+        <div className="divide-y divide-border rounded-lg border border-border">
+          {visible.map((r: any) => (
+            <div key={r.id} className={cn("flex items-center gap-3 p-3 cursor-pointer transition-colors", activeId === r.id ? "bg-primary/10" : "hover:bg-muted/40")}
+              onClick={() => { setActiveId(r.id); setActionError(null); }}>
+              <Checkbox disabled={!movable(r)} checked={selected.has(r.id)} onClick={e => e.stopPropagation()}
+                onCheckedChange={v => setSelected(s => { const n = new Set(s); v ? n.add(r.id) : n.delete(r.id); return n; })} />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium truncate">{r.person_name}</p>
+                <p className="text-xs text-muted-foreground truncate">{r.email} · {fmt(r.submitted_at)}</p>
+              </div>
+              <Badge variant={STATUS_VARIANT[r.status]} className="text-xs shrink-0">{(g as any)[r.status] ?? r.status}</Badge>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="bg-card rounded-xl border border-border p-5">
       <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
         <div className="flex items-center gap-2">
           <Inbox className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold">{g.registrations} ({regs.length})</h2>
+          <h2 className="text-lg font-semibold">{g.registrations}</h2>
+          <Badge variant="secondary">{a.total}: {regs.length}</Badge>
         </div>
         <div className="flex items-center gap-3">
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -179,32 +269,21 @@ export function GroupRegistrationsCard({ group }: { group: any }) {
           </Button>
         </div>
       </div>
-      {regs.length === 0 ? <p className="text-muted-foreground text-sm text-center py-4">{g.noRegistrations}</p> : (
-        <div className="space-y-2">
-          {regs.map((r: any) => (
-            <div key={r.id} className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 rounded-lg bg-muted/30">
-              <div className="flex items-start gap-3 flex-1 min-w-0">
-                <Checkbox className="mt-1" disabled={!movable(r)} checked={selected.has(r.id)}
-                  onCheckedChange={v => setSelected(s => { const n = new Set(s); v ? n.add(r.id) : n.delete(r.id); return n; })} />
-                <div className="min-w-0">
-                  <p className="text-sm font-medium flex items-center gap-2 flex-wrap">{r.person_name}
-                    <Badge variant={STATUS_VARIANT[r.status]} className="text-xs">{(g as any)[r.status]}</Badge></p>
-                  <p className="text-xs text-muted-foreground truncate">{r.email}{r.phone ? ` · ${r.phone}` : ""} · {format(new Date(r.submitted_at), "dd.MM.yyyy HH:mm")}</p>
-                  {r.message && <p className="text-xs text-foreground/80 mt-1 whitespace-pre-line">{r.message}</p>}
-                  {Array.isArray(r.answers) && r.answers.filter((a: any) => a.value).map((a: any) => (
-                    <p key={a.id} className="text-xs text-foreground/80 mt-0.5 whitespace-pre-line"><span className="text-muted-foreground">{a.label}:</span> {a.type === "checkbox" ? "✓" : a.value}</p>
-                  ))}
-                </div>
-              </div>
-              {(r.status === "pending" || r.status === "waitlisted") && (
-                <div className="flex gap-1.5 flex-wrap">
-                  <Button size="sm" disabled={decide.isPending} onClick={() => act(r.id, "confirm")}>{g.confirm}</Button>
-                  {r.status === "pending" && <Button size="sm" variant="outline" disabled={decide.isPending} onClick={() => act(r.id, "waitlist")}>{g.toWaitlist}</Button>}
-                  <Button size="sm" variant="ghost" className="text-destructive" disabled={decide.isPending} onClick={() => act(r.id, "reject")}>{g.reject}</Button>
-                </div>
-              )}
-            </div>
-          ))}
+      {isLoading ? <p className="text-sm text-muted-foreground text-center py-6">…</p> : regs.length === 0 ? (
+        <div className="text-center py-8 space-y-3">
+          <Inbox className="h-8 w-8 mx-auto text-primary" />
+          <p className="font-medium">{g.noRegistrations}</p>
+          <p className="text-sm text-muted-foreground">{a.shareHint}</p>
+          {published
+            ? <Button size="sm" onClick={async () => { await navigator.clipboard.writeText(groupSignupUrl(group.registration_token, lang)); toast({ title: g.linkCopied }); }}><Copy className="h-4 w-4 mr-1" />{g.copyLink}</Button>
+            : onOpenForm && <Button size="sm" variant="outline" onClick={onOpenForm}><Globe className="h-4 w-4 mr-1" />{a.openForm}</Button>}
+        </div>
+      ) : isMobile ? (active ? details : list) : (
+        <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-5">
+          {list}
+          <div className="rounded-lg border border-border p-4 min-h-[200px]">
+            {details || <p className="text-sm text-muted-foreground text-center py-10">{a.selectHint}</p>}
+          </div>
         </div>
       )}
       <Dialog open={transferOpen} onOpenChange={setTransferOpen}>
