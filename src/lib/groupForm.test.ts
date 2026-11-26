@@ -42,3 +42,29 @@ describe("group finances", () => {
     ])).toBe(1);
   });
 });
+
+import { cleanForm as cf, normalizeForm as nf, moveOption, removeField as rf, moveField as mf } from "./groupForm";
+describe("GRP-05 form configuration", () => {
+  const d2 = { name: "Name", email: "Email" };
+  it("keeps form title and intro through normalize and clean", () => {
+    const f = nf({ title: " Join ", intro: "Hi", fields: [] }, d2);
+    expect(cf(f)).toMatchObject({ title: "Join", intro: "Hi" });
+  });
+  it("title/intro survive field remove and reorder", () => {
+    const f = nf({ title: "T", fields: [{ id: "a", label: "A", type: "url", required: false }, { id: "b", label: "B", type: "phone", required: false }] }, d2);
+    expect(mf(f, "b", -1).title).toBe("T");
+    expect(rf(f, "a").title).toBe("T");
+  });
+  it("supports email, phone and url field types", () => {
+    const f = nf({ fields: [{ id: "u", label: "Site", type: "url", required: true }] }, d2);
+    expect(cf(f).fields[2]).toMatchObject({ type: "url", required: true });
+  });
+  it("system email field label can change but stays required", () => {
+    const f = nf({ fields: [{ id: "email", label: "E-mail", type: "url", required: false }] }, d2);
+    expect(cf(f).fields[1]).toMatchObject({ id: "email", label: "E-mail", type: "short", required: true });
+  });
+  it("reorders dropdown options", () => {
+    expect(moveOption(["a", "b", "c"], 2, -1)).toEqual(["a", "c", "b"]);
+    expect(moveOption(["a"], 0, -1)).toEqual(["a"]);
+  });
+});

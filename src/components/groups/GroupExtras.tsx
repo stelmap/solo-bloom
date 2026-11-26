@@ -1,3 +1,4 @@
+import type React from "react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -87,7 +88,7 @@ export function GroupSettingsFields({ value, onChange }: { value: GroupSettingsF
   );
 }
 
-export function GroupPublicationCard({ group }: { group: any }) {
+export function GroupPublicationCard({ group, actions }: { group: any; actions?: React.ReactNode }) {
   const { lang } = useLanguage();
   const g = groupsText(lang);
   const { toast } = useToast();
@@ -103,11 +104,12 @@ export function GroupPublicationCard({ group }: { group: any }) {
           <h2 className="text-lg font-semibold">{g.publication}</h2>
           <Badge variant={published ? "default" : "secondary"}>{published ? g.published : g.unpublished}</Badge>
         </div>
+        <div className="flex gap-2 flex-wrap">{actions}
         <Button size="sm" variant={published ? "outline" : "default"} disabled={disabled || update.isPending}
           onClick={() => update.mutate({ id: group.id, publication_status: published ? "unpublished" : "published" },
             { onError: (e: any) => toast({ title: describeError(e.message), variant: "destructive" }) })}>
           {published ? g.unpublish : g.publish}
-        </Button>
+        </Button></div>
       </div>
       <p className="text-sm text-muted-foreground">{g.publishHint}</p>
       {published && (

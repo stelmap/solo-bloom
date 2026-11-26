@@ -295,7 +295,6 @@ export default function GroupDetailPage() {
           </TabsContent>
 
           <TabsContent value="form" className="space-y-6 mt-6">
-            <GroupPublicationCard group={group} />
             <GroupFormEditorCard group={group} />
           </TabsContent>
 

@@ -8,7 +8,9 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ArrowDown, ArrowUp, Eye, FileText, ImagePlus, Plus, Trash2, Wallet } from "lucide-react";
+import { ArrowDown, ArrowUp, Eye, FileText, ImagePlus, Plus, Trash2, Wallet, X, Loader2 } from "lucide-react";
+import { GroupPublicationCard } from "@/components/groups/GroupExtras";
+import { groupFormConfigText } from "@/i18n/groupFormConfigText";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -18,7 +20,7 @@ import { groupFormText } from "@/i18n/groupFormText";
 import { groupSignupUrl, groupsText } from "@/i18n/groupsExtra";
 import { useUpdateGroup } from "@/hooks/useGroups";
 import { describeError } from "@/lib/errorMessages";
-import { cleanForm, groupFinance, moveField, normalizeForm, removeField, validateForm, type FieldType, type FormField, type RegistrationForm } from "@/lib/groupForm";
+import { FIELD_TYPES, moveOption, cleanForm, groupFinance, moveField, normalizeForm, removeField, validateForm, type FieldType, type FormField, type RegistrationForm } from "@/lib/groupForm";
 import { format } from "date-fns";
 
 export const GROUP_IMAGE_BUCKET = "group-form-images";
@@ -47,7 +49,9 @@ export function GroupFormEditorCard({ group }: { group: any }) {
   const initial = useMemo(() => normalizeForm(group.registration_form ?? { fields: [
     { id: "phone", label: t.presets.phone, type: "short", required: false },
     { id: "message", label: gx.note, type: "long", required: false },
-  ] }, { name: t.name, email: t.email }), [group.registration_form, t, gx.note]);
+  ] }, { name: t.name, email: t.email }), [JSON.stringify(group.registration_form ?? null), t, gx.note]);
+  const c = groupFormConfigText(lang);
+  const [saveError, setSaveError] = useState(false);
   const [form, setForm] = useState<RegistrationForm>(initial);
   const [showErrors, setShowErrors] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -57,16 +61,16 @@ export function GroupFormEditorCard({ group }: { group: any }) {
 
   const errors = validateForm(form);
   const errFor = (id: string) => (showErrors ? errors.find((e) => e.id === id) : undefined);
-  const setField = (id: string, patch: Partial<FormField>) => setForm((f) => ({ fields: f.fields.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
-  const add = (label: string, type: FieldType = "short") => setForm((f) => ({ fields: [...f.fields, { id: newId(), label, type, required: false }] }));
+  const setField = (id: string, patch: Partial<FormField>) => setForm((f) => ({ ...f, fields: f.fields.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
+  const add = (label: string, type: FieldType = "short") => setForm((f) => ({ ...f, fields: [...f.fields, { id: newId(), label, type, required: false }] }));
 
   const save = async () => {
     if (errors.length) { setShowErrors(true); toast({ title: t.errSave, variant: "destructive" }); return; }
     try {
       await update.mutateAsync({ id: group.id, registration_form: cleanForm(form) } as any);
-      setShowErrors(false);
+      setShowErrors(false); setSaveError(false);
       toast({ title: t.saved });
-    } catch (e: any) { toast({ title: describeError(e.message), variant: "destructive" }); }
+    } catch (e: any) { setSaveError(true); toast({ title: c.saveFailed, description: describeError(e.message), variant: "destructive" }); }
   };
 
   const onFile = async (file?: File) => {
@@ -96,21 +100,35 @@ export function GroupFormEditorCard({ group }: { group: any }) {
   };
 
   const custom = form.fields.length - 2;
+  const dirty = JSON.stringify(cleanForm(form)) !== JSON.stringify(cleanForm(initial));
+  const setOpts = (id: string, fn: (o: string[]) => string[]) => setForm((x) => ({ ...x, fields: x.fields.map((f) => (f.id === id ? { ...f, options: fn(f.options ?? []) } : f)) }));
   return (
-    <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /><h2 className="text-lg font-semibold">{t.formTitle}</h2></div>
-        <div className="flex gap-2">
-          <Button size="sm" variant="outline" disabled={group.publication_status !== "published"} onClick={() => window.open(groupSignupUrl(group.registration_token, lang), "_blank", "noopener")}>
-            <Eye className="h-4 w-4 mr-1" />{t.preview}
-          </Button>
-          <Button size="sm" onClick={save} disabled={update.isPending}>{t.save}</Button>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <GroupPublicationCard group={group} actions={<>
+        <Button size="sm" variant="outline" disabled={group.publication_status !== "published"} onClick={() => window.open(groupSignupUrl(group.registration_token, lang), "_blank", "noopener")}>
+          <Eye className="h-4 w-4 mr-1" />{t.preview}
+        </Button>
+        <Button size="sm" onClick={save} disabled={update.isPending || !dirty}>
+          {update.isPending ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" />{c.saving}</> : t.save}
+        </Button>
+      </>} />
+      {(dirty || saveError) && (
+        <p className={`text-sm ${saveError ? "text-destructive" : "text-muted-foreground"}`} role="status">{saveError ? c.saveFailed : c.unsaved}</p>
+      )}
 
+    <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+      <div className="flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /><h2 className="text-lg font-semibold">{c.intro}</h2></div>
+      <div className="space-y-1.5">
+        <Label htmlFor="gf-title">{c.formHeading}</Label>
+        <Input id="gf-title" maxLength={200} placeholder={c.formHeadingPh} value={form.title ?? ""} onChange={(e) => setForm((x) => ({ ...x, title: e.target.value }))} />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="gf-intro">{c.formIntro}</Label>
+        <Textarea id="gf-intro" rows={3} maxLength={2000} placeholder={c.formIntroPh} value={form.intro ?? ""} onChange={(e) => setForm((x) => ({ ...x, intro: e.target.value }))} />
+      </div>
       <div className="space-y-2">
         <Label>{t.image}</Label>
-        {imageUrl && <img src={imageUrl} alt="" className="w-full max-h-48 object-cover rounded-lg border border-border" />}
+        {imageUrl && <img src={imageUrl} alt="" className="h-28 w-auto max-w-full object-cover rounded-lg border border-border" />}
         <div className="flex gap-2 items-center flex-wrap">
           <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
           <Button size="sm" variant="outline" disabled={uploading} onClick={() => fileRef.current?.click()}>
@@ -121,20 +139,25 @@ export function GroupFormEditorCard({ group }: { group: any }) {
         </div>
       </div>
 
+    </div>
+
+    <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+      <h2 className="text-lg font-semibold">{c.fields}</h2>
       <div className="space-y-2">
         {form.fields.map((f, i) => {
           const err = errFor(f.id);
           return (
             <div key={f.id} className="p-3 rounded-lg bg-muted/30 space-y-2">
               <div className="flex gap-2 items-start">
+                <span className="mt-2 w-6 text-sm text-muted-foreground tabular-nums">{i + 1}.</span>
                 <div className="flex-1 space-y-1">
                   <Input aria-label={t.label} value={f.label} maxLength={200} onChange={(e) => setField(f.id, { label: e.target.value })} aria-invalid={err?.code === "label"} />
                   {err?.code === "label" && <p className="text-xs text-destructive">{t.errLabel}</p>}
                 </div>
                 {f.system ? <Badge variant="secondary" className="mt-2">{t.system}</Badge> : (
                   <div className="flex gap-1">
-                    <Button size="icon" variant="ghost" aria-label="up" disabled={i <= 2} onClick={() => setForm((x) => moveField(x, f.id, -1))}><ArrowUp className="h-4 w-4" /></Button>
-                    <Button size="icon" variant="ghost" aria-label="down" disabled={i === form.fields.length - 1} onClick={() => setForm((x) => moveField(x, f.id, 1))}><ArrowDown className="h-4 w-4" /></Button>
+                    <Button size="icon" variant="ghost" aria-label={c.moveUp} disabled={i <= 2} onClick={() => setForm((x) => moveField(x, f.id, -1))}><ArrowUp className="h-4 w-4" /></Button>
+                    <Button size="icon" variant="ghost" aria-label={c.moveDown} disabled={i === form.fields.length - 1} onClick={() => setForm((x) => moveField(x, f.id, 1))}><ArrowDown className="h-4 w-4" /></Button>
                     <Button size="icon" variant="ghost" aria-label={t.remove} className="text-destructive" onClick={() => setForm((x) => removeField(x, f.id))}><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 )}
@@ -144,14 +167,22 @@ export function GroupFormEditorCard({ group }: { group: any }) {
                   <div className="grid sm:grid-cols-3 gap-2 items-center">
                     <Select value={f.type} onValueChange={(v) => setField(f.id, { type: v as FieldType })}>
                       <SelectTrigger aria-label={t.type}><SelectValue /></SelectTrigger>
-                      <SelectContent>{(["short", "long", "dropdown", "checkbox"] as const).map((k) => <SelectItem key={k} value={k}>{t[k]}</SelectItem>)}</SelectContent>
+                      <SelectContent>{FIELD_TYPES.map((k) => <SelectItem key={k} value={k}>{k === "email" || k === "phone" || k === "url" ? c[k] : t[k]}</SelectItem>)}</SelectContent>
                     </Select>
                     <Input placeholder={t.hint} maxLength={300} value={f.hint ?? ""} onChange={(e) => setField(f.id, { hint: e.target.value })} />
                     <label className="flex items-center gap-2 text-sm"><Switch checked={f.required} onCheckedChange={(v) => setField(f.id, { required: v })} />{t.required}</label>
                   </div>
                   {f.type === "dropdown" && (
                     <div className="space-y-1">
-                      <Textarea rows={3} placeholder={t.options} value={(f.options ?? []).join("\n")} onChange={(e) => setField(f.id, { options: e.target.value.split("\n") })} />
+                      {(f.options ?? []).map((o, oi, arr) => (
+                        <div key={oi} className="flex gap-1 items-center">
+                          <Input aria-label={`${c.option} ${oi + 1}`} maxLength={200} value={o} onChange={(e) => setOpts(f.id, (l) => l.map((v, k) => (k === oi ? e.target.value : v)))} />
+                          <Button size="icon" variant="ghost" aria-label={c.moveUp} disabled={oi === 0} onClick={() => setOpts(f.id, (l) => moveOption(l, oi, -1))}><ArrowUp className="h-4 w-4" /></Button>
+                          <Button size="icon" variant="ghost" aria-label={c.moveDown} disabled={oi === arr.length - 1} onClick={() => setOpts(f.id, (l) => moveOption(l, oi, 1))}><ArrowDown className="h-4 w-4" /></Button>
+                          <Button size="icon" variant="ghost" aria-label={t.remove} onClick={() => setOpts(f.id, (l) => l.filter((_, k) => k !== oi))}><X className="h-4 w-4" /></Button>
+                        </div>
+                      ))}
+                      <Button size="sm" variant="ghost" disabled={(f.options ?? []).length >= 50} onClick={() => setOpts(f.id, (l) => [...l, ""])}><Plus className="h-4 w-4 mr-1" />{c.addOption}</Button>
                       {err?.code === "options" && <p className="text-xs text-destructive">{t.errOptions}</p>}
                       {err?.code === "duplicateOption" && <p className="text-xs text-destructive">{t.errDup}</p>}
                     </div>
@@ -170,6 +201,8 @@ export function GroupFormEditorCard({ group }: { group: any }) {
           <DropdownMenuItem onClick={() => add(t.custom)}>{t.custom}</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <p className="text-xs text-muted-foreground">{c.historyNote}</p>
+    </div>
     </div>
   );
 }

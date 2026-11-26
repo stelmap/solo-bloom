@@ -92,7 +92,8 @@ export default function PublicGroupSignupPage() {
               </div>
             ) : (
               <form onSubmit={submit} className="space-y-3">
-                <h2 className="font-semibold">{g.applyTitle}</h2>
+                <h2 className="font-semibold">{custom?.title || g.applyTitle}</h2>
+                {custom?.intro && <p className="text-sm text-muted-foreground whitespace-pre-line">{custom.intro}</p>}
                 {info.is_full && <p className="text-sm text-warning">{g.full}</p>}
                 {custom ? custom.fields.map(fd => {
                   const id = `fld-${fd.id}`;
@@ -105,7 +106,8 @@ export default function PublicGroupSignupPage() {
                   if (fd.type === "checkbox") return <div key={fd.id} className="space-y-1"><label className="flex items-start gap-2 text-sm"><Checkbox id={id} checked={val === "true"} onCheckedChange={v => set(v ? "true" : "false")} required={fd.required} /><span>{fd.label}{fd.required ? " *" : ""}</span></label>{hint}</div>;
                   if (fd.type === "dropdown") return <div key={fd.id} className="space-y-1.5">{lbl}<Select value={val} onValueChange={set}><SelectTrigger id={id}><SelectValue placeholder={tf.choose} /></SelectTrigger><SelectContent>{(fd.options ?? []).map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent></Select>{hint}</div>;
                   if (fd.type === "long") return <div key={fd.id} className="space-y-1.5">{lbl}<Textarea id={id} rows={3} required={fd.required} maxLength={2000} value={val} onChange={e => set(e.target.value)} />{hint}</div>;
-                  return <div key={fd.id} className="space-y-1.5">{lbl}<Input id={id} required={fd.required} maxLength={500} value={val} onChange={e => set(e.target.value)} />{hint}</div>;
+                  const inputType = fd.type === "email" ? "email" : fd.type === "phone" ? "tel" : fd.type === "url" ? "url" : "text";
+                  return <div key={fd.id} className="space-y-1.5">{lbl}<Input id={id} type={inputType} required={fd.required} maxLength={500} value={val} onChange={e => set(e.target.value)} />{hint}</div>;
                 }) : (<>
                 <div className="space-y-1.5"><Label>{g.yourName} *</Label><Input required maxLength={200} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
                   <div className="space-y-1.5"><Label>{g.email} *</Label><Input required type="email" maxLength={255} value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>

@@ -1,6 +1,8 @@
-export type FieldType = "short" | "long" | "dropdown" | "checkbox";
+export type FieldType = "short" | "long" | "email" | "phone" | "url" | "dropdown" | "checkbox";
+export const FIELD_TYPES: FieldType[] = ["short", "long", "email", "phone", "url", "dropdown", "checkbox"];
 export type FormField = { id: string; label: string; type: FieldType; required: boolean; hint?: string; options?: string[]; system?: boolean };
-export type RegistrationForm = { fields: FormField[] };
+/** title/intro: optional form introduction, independent from the group description. */
+export type RegistrationForm = { fields: FormField[]; title?: string; intro?: string };
 
 export const SYSTEM_IDS = ["name", "email"] as const;
 
@@ -11,7 +13,10 @@ export function normalizeForm(raw: any, defaults: { name: string; email: string 
   const name: FormField = { id: "name", type: "short", required: true, system: true, label: byId.get("name")?.label?.trim() || defaults.name };
   const email: FormField = { id: "email", type: "short", required: true, system: true, label: byId.get("email")?.label?.trim() || defaults.email };
   const rest = list.filter((f) => !SYSTEM_IDS.includes(f.id as any)).map((f) => ({ ...f, system: false }));
-  return { fields: [name, email, ...rest] };
+  const out: RegistrationForm = { fields: [name, email, ...rest] };
+  if (typeof raw?.title === "string") out.title = raw.title;
+  if (typeof raw?.intro === "string") out.intro = raw.intro;
+  return out;
 }
 
 export type FieldError = { id: string; code: "label" | "options" | "duplicateOption" };
@@ -29,7 +34,8 @@ export function validateForm(form: RegistrationForm): FieldError[] {
 }
 
 export function cleanForm(form: RegistrationForm): RegistrationForm {
-  return { fields: form.fields.map((f) => ({
+  const title = form.title?.trim(); const intro = form.intro?.trim();
+  return { ...(title ? { title } : {}), ...(intro ? { intro } : {}), fields: form.fields.map((f) => ({
     id: f.id, label: f.label.trim(), type: f.system ? "short" : f.type, required: f.system ? true : !!f.required,
     ...(f.hint?.trim() ? { hint: f.hint.trim() } : {}),
     ...(f.type === "dropdown" && !f.system ? { options: (f.options ?? []).map((o) => o.trim()).filter(Boolean) } : {}),
@@ -42,12 +48,18 @@ export function moveField(form: RegistrationForm, id: string, dir: -1 | 1): Regi
   const j = i + dir;
   if (i < 2 || j < 2 || j >= fields.length) return form; // system fields stay on top
   [fields[i], fields[j]] = [fields[j], fields[i]];
-  return { fields };
+  return { ...form, fields };
 }
 
 export function removeField(form: RegistrationForm, id: string): RegistrationForm {
   if (SYSTEM_IDS.includes(id as any)) return form;
-  return { fields: form.fields.filter((f) => f.id !== id) };
+  return { ...form, fields: form.fields.filter((f) => f.id !== id) };
+}
+
+/** Dropdown option list helpers (pure; used by the editor). */
+export function moveOption(opts: string[], i: number, dir: -1 | 1): string[] {
+  const j = i + dir; if (i < 0 || j < 0 || j >= opts.length) return opts;
+  const n = [...opts]; [n[i], n[j]] = [n[j], n[i]]; return n;
 }
 
 // ---- Group finances (read-only; built from records created when meetings are closed) ----

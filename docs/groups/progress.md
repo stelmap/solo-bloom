@@ -8,7 +8,8 @@
 | GRP-03 Applications | Done | components/groups/GroupExtras.tsx (GroupRegistrationsCard); lib/groupApplications.ts + test (new); i18n/groupApplicationsText.ts (new); pages/GroupDetailPage.tsx (onOpenForm prop) |
 | GRP-04 Participants + pricing | Done | components/groups/GroupMembersSection.tsx; lib/groupParticipants.ts + test (new); i18n/groupParticipantsText.ts (new); pages/GroupDetailPage.tsx (onOpenApplications prop) |
 | GRP-04.1 Pricing display | Done | GroupMembersSection.tsx; lib/groupParticipants.ts + test; i18n/groupParticipantsText.ts |
-| GRP-05 … GRP-08 | Not started | — |
+| GRP-05 Form configuration | Done | components/groups/GroupFormEditor.tsx; GroupExtras.tsx (GroupPublicationCard `actions` slot); lib/groupForm.ts + test; i18n/groupFormConfigText.ts (new); pages/GroupDetailPage.tsx (form tab); pages/PublicGroupSignupPage.tsx (minimal: form title/intro, input types) |
+| GRP-06 … GRP-08 | Not started | — |
 
 ## Unresolved gaps
 - Pricing (GRP-04.1): billing charges member `price_per_session`, else the specific meeting price. Participants UI now shows "Uses meeting price" without override, individual amount + currency with override, group default price shown separately as reference only; note that changes never recalculate existing charges/payments.
@@ -26,3 +27,4 @@
 - Applications: decisions offered only for New/Waitlisted (existing rule); backend also allows rejecting a confirmed application, not exposed in UI.
 - Applications: answers render from stored snapshots (label+value); applications submitted before the custom form have no snapshot answers — only phone/message (for GRP-05).
 - Applications: list is client-side filtered over all loaded rows (no server pagination).
+- Form (GRP-05): title/intro stored inside existing `registration_form` JSON (no migration). New types email/phone/url are validated by browser input types only; server RPC stores them as text (no server format check). History is preserved by existing per-application snapshots (label/type/value at submit). Browser E2E with isolated data not run.
