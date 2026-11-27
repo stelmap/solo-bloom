@@ -121,7 +121,7 @@ export default function BookingInboxPage() {
 
   async function handleDecline(req: BookingRequestRow, reason: "cancelled_therapist" | "spam") {
     try {
-      await decline.mutateAsync({ id: req.id, reason });
+      await decline.mutateAsync({ id: req.id, reason, language: lang });
       toast({ title: reason === "spam" ? t("bookingInbox.toastMarkedSpam") : t("bookingInbox.toastDeclined") });
     } catch (e: any) {
       toast({ title: t("bookingInbox.toastCouldNotUpdate"), description: describeError(e.message), variant: "destructive" });

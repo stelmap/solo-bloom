@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import { canTriggerBookingConfirmation } from '../../../supabase/functions/send-booking-confirmation-email/trigger-access';
+import { formatSlot, googleCalendarUrl, isLang, ownerContext } from '../../../supabase/functions/_shared/meeting-email-context';
 
 // Execute the actual handler with isolated Auth/database/email adapters. No
 // production records are created and no email is delivered by these tests.
@@ -30,8 +31,8 @@ async function run(userId?: string, status?: string) {
   const fixture = setup(userId, status);
   const { transpileModule, ScriptTarget, ModuleKind } = await import('typescript');
   const { outputText: code } = transpileModule(fixture.source, { compilerOptions: { target: ScriptTarget.ES2022, module: ModuleKind.None } });
-  new Function('Deno', 'createClient', 'corsHeaders', 'sendAppEmail', 'canTriggerBookingConfirmation', code)(
-    fixture.deno, fixture.createClient, {}, fixture.sendEmail, canTriggerBookingConfirmation,
+  new Function('Deno', 'createClient', 'corsHeaders', 'sendAppEmail', 'canTriggerBookingConfirmation', 'formatSlot', 'googleCalendarUrl', 'isLang', 'ownerContext', code)(
+    fixture.deno, fixture.createClient, {}, fixture.sendEmail, canTriggerBookingConfirmation, formatSlot, googleCalendarUrl, isLang, ownerContext,
   );
   const handler = fixture.getHandler();
   if (!handler) throw new Error('Handler was not registered');

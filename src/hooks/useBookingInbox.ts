@@ -93,12 +93,19 @@ export function useConfirmBookingRequest() {
 export function useDeclineBookingRequest() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { id: string; reason?: "cancelled_therapist" | "spam" }) => {
+    mutationFn: async (vars: { id: string; reason?: "cancelled_therapist" | "spam"; language?: string }) => {
+      const reason = vars.reason ?? "cancelled_therapist";
       const { error } = await (supabase as any).rpc("decline_booking_request", {
         p_id: vars.id,
-        p_reason: vars.reason ?? "cancelled_therapist",
+        p_reason: reason,
       });
       if (error) throw error;
+      // Spam is never answered; a genuine decline tells the client to rebook.
+      if (reason === "cancelled_therapist") {
+        void supabase.functions
+          .invoke("send-booking-declined-email", { body: { requestId: vars.id, language: vars.language } })
+          .catch((e) => console.warn("booking-declined email failed", e));
+      }
     },
     onSuccess: () => invalidate(qc),
   });

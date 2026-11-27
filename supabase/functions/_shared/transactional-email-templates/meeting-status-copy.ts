@@ -1,0 +1,11 @@
+import type { Lang } from './status-email.tsx'
+
+/** Shared labels for meeting-status emails, in all six interface languages. */
+export const LABELS: Record<Lang, { specialist: string; date: string; time: string; proposedDate: string; proposedTime: string; cancelledDate: string; proposedWhen: string; joinLink: string; address: string; reason: string }> = {
+  uk: { specialist: 'Спеціаліст', date: 'Дата зустрічі', time: 'Час зустрічі', proposedDate: 'Запропонована дата', proposedTime: 'Запропонований час', cancelledDate: 'Дата скасованої зустрічі', proposedWhen: 'Запропоновані дата та час', joinLink: 'Посилання для приєднання', address: 'Адреса', reason: 'Причина' },
+  en: { specialist: 'Specialist', date: 'Meeting date', time: 'Meeting time', proposedDate: 'Requested date', proposedTime: 'Requested time', cancelledDate: 'Cancelled meeting date', proposedWhen: 'Requested date and time', joinLink: 'Join link', address: 'Address', reason: 'Reason' },
+  ru: { specialist: 'Специалист', date: 'Дата встречи', time: 'Время встречи', proposedDate: 'Предложенная дата', proposedTime: 'Предложенное время', cancelledDate: 'Дата отменённой встречи', proposedWhen: 'Предложенные дата и время', joinLink: 'Ссылка для подключения', address: 'Адрес', reason: 'Причина' },
+  pl: { specialist: 'Specjalista', date: 'Data spotkania', time: 'Godzina spotkania', proposedDate: 'Proponowana data', proposedTime: 'Proponowana godzina', cancelledDate: 'Data odwołanego spotkania', proposedWhen: 'Proponowana data i godzina', joinLink: 'Link do dołączenia', address: 'Adres', reason: 'Powód' },
+  fr: { specialist: 'Spécialiste', date: 'Date du rendez-vous', time: 'Heure du rendez-vous', proposedDate: 'Date proposée', proposedTime: 'Heure proposée', cancelledDate: 'Date du rendez-vous annulé', proposedWhen: 'Date et heure proposées', joinLink: 'Lien pour rejoindre', address: 'Adresse', reason: 'Motif' },
+  de: { specialist: 'Fachperson', date: 'Termindatum', time: 'Terminzeit', proposedDate: 'Vorgeschlagenes Datum', proposedTime: 'Vorgeschlagene Uhrzeit', cancelledDate: 'Datum des abgesagten Termins', proposedWhen: 'Vorgeschlagenes Datum und Uhrzeit', joinLink: 'Link zum Beitreten', address: 'Adresse', reason: 'Grund' },
+}

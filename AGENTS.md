@@ -46,3 +46,4 @@
 - Group deletion is logical (lifecycle_status/deleted_at); meetings, attendance, payments and applications are never removed by deleting a group.
 - Group meeting identity uses the unique group_sessions.appointment_id link, with a reverse-link fallback for legacy data; creation retries preserve saved attendance and group recurrence edits retain meeting IDs/history rather than cascade-deleting records.
 - Registration form descriptions reuse the shared rich editor and groupDescriptionHtml sanitizer; owner previews fetch saved owner-scoped rows and mount the public form in non-submitting, non-tracking mode, preventing unpublished data leaks and visual drift.
+- Meeting-status client emails (pending/confirmed/cancelled/declined) share transactional-email-templates/status-email.tsx and _shared/meeting-email-context.ts; senders derive recipient, timezone and booking link server-side, so layouts stay consistent and callers cannot redirect emails.

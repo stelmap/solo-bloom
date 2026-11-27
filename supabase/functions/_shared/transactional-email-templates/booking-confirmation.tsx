@@ -1,192 +1,40 @@
 /// <reference types="npm:@types/react@18.3.1" />
 import * as React from 'npm:react@18.3.1'
-import { Section, Text } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
-import { SoloBizzShell, styles, BRAND } from '../email-templates/brand.tsx'
+import { ICON, StatusEmail, normalizeLang, safeHttpsUrl, subjectWhen, timeWithZone, titleCaseName, type Lang } from './status-email.tsx'
+import { LABELS } from './meeting-status-copy.ts'
 
-const SITE_NAME = 'Solo .Bizz'
-
-// Normalize ALL-CAPS names into Title Case so the header doesn't shout.
-function titleCaseName(name?: string) {
-  if (!name) return name
-  const trimmed = name.trim()
-  if (!trimmed || /\p{Ll}/u.test(trimmed)) return trimmed
-  return trimmed
-    .toLocaleLowerCase()
-    .split(/(\s+|[-'’])/)
-    .map((part) => (/^\s+$/.test(part) || part === '-' || part === "'" || part === '’'
-      ? part
-      : part.charAt(0).toLocaleUpperCase() + part.slice(1)))
-    .join('')
+const T: Record<Lang, { subject: string; title: string; intro: string; cta: string; note: string; closing: string }> = {
+  uk: { subject: 'Вашу зустріч підтверджено', title: 'Вашу зустріч підтверджено!', intro: 'Ваша зустріч зі спеціалістом успішно заброньована.', cta: 'Додати до календаря', note: 'Перед початком зустрічі ви отримаєте нагадування.', closing: 'До зустрічі!' },
+  en: { subject: 'Your meeting is confirmed', title: 'Your meeting is confirmed!', intro: 'Your meeting with the specialist has been booked successfully.', cta: 'Add to calendar', note: 'You will receive a reminder before the meeting starts.', closing: 'See you soon!' },
+  ru: { subject: 'Ваша встреча подтверждена', title: 'Ваша встреча подтверждена!', intro: 'Ваша встреча со специалистом успешно забронирована.', cta: 'Добавить в календарь', note: 'Перед началом встречи вы получите напоминание.', closing: 'До встречи!' },
+  pl: { subject: 'Twoje spotkanie zostało potwierdzone', title: 'Twoje spotkanie zostało potwierdzone!', intro: 'Spotkanie ze specjalistą zostało pomyślnie zarezerwowane.', cta: 'Dodaj do kalendarza', note: 'Przed rozpoczęciem spotkania otrzymasz przypomnienie.', closing: 'Do zobaczenia!' },
+  fr: { subject: 'Votre rendez-vous est confirmé', title: 'Votre rendez-vous est confirmé !', intro: 'Votre rendez-vous avec le spécialiste a bien été réservé.', cta: 'Ajouter au calendrier', note: 'Vous recevrez un rappel avant le début du rendez-vous.', closing: 'À bientôt !' },
+  de: { subject: 'Ihr Termin ist bestätigt', title: 'Ihr Termin ist bestätigt!', intro: 'Ihr Termin mit der Fachperson wurde erfolgreich gebucht.', cta: 'Zum Kalender hinzufügen', note: 'Vor Beginn des Termins erhalten Sie eine Erinnerung.', closing: 'Bis bald!' },
 }
 
-type Lang = 'en' | 'fr' | 'pl' | 'uk' | 'ru' | 'de'
-function normalizeLang(value: unknown): Lang {
-  const v = String(value || '').toLowerCase().slice(0, 2)
-  return (['fr', 'pl', 'uk', 'ru', 'de'] as const).includes(v as any) ? (v as Lang) : 'en'
-}
+interface Props { specialistName?: string; sessionDate?: string; sessionTime?: string; timezone?: string; location?: string; joinUrl?: string; calendarUrl?: string; language?: string }
 
-const STRINGS: Record<Lang, {
-  subject: string
-  tagline: string
-  badge: string
-  greeting: (n: string) => string
-  intro: (s: string) => React.ReactNode
-  specialistLabel: string
-  dateLabel: string
-  timeLabel: string
-  serviceLabel: string
-  outro: string
-  footer: string
-}> = {
-  en: {
-    subject: 'Your meeting has been confirmed',
-    tagline: 'Meeting confirmed',
-    badge: 'Confirmed',
-    greeting: (n) => `See you soon, ${n}`,
-    intro: (s) => <>Great news — your meeting with <strong>{s}</strong> has been confirmed.</>,
-    specialistLabel: 'Specialist', dateLabel: 'Date', timeLabel: 'Time', serviceLabel: 'Service',
-    outro: 'You will receive a reminder before the meeting starts.',
-    footer: `You received this confirmation because you have a booking with a ${SITE_NAME} practitioner.`,
-  },
-  fr: {
-    subject: 'Votre rendez-vous est confirmé',
-    tagline: 'Rendez-vous confirmé',
-    badge: 'Confirmé',
-    greeting: (n) => `À très vite, ${n}`,
-    intro: (s) => <>Bonne nouvelle — votre rendez-vous avec <strong>{s}</strong> est confirmé.</>,
-    specialistLabel: 'Spécialiste', dateLabel: 'Date', timeLabel: 'Heure', serviceLabel: 'Service',
-    outro: 'Vous recevrez un rappel avant le début du rendez-vous.',
-    footer: `Vous recevez cette confirmation car vous avez une réservation avec un praticien ${SITE_NAME}.`,
-  },
-  pl: {
-    subject: 'Twoje spotkanie zostało potwierdzone',
-    tagline: 'Spotkanie potwierdzone',
-    badge: 'Potwierdzone',
-    greeting: (n) => `Do zobaczenia wkrótce, ${n}`,
-    intro: (s) => <>Dobra wiadomość — Twoje spotkanie z <strong>{s}</strong> zostało potwierdzone.</>,
-    specialistLabel: 'Specjalista', dateLabel: 'Data', timeLabel: 'Godzina', serviceLabel: 'Usługa',
-    outro: 'Otrzymasz przypomnienie przed rozpoczęciem spotkania.',
-    footer: `Otrzymujesz to potwierdzenie, ponieważ masz rezerwację u specjalisty ${SITE_NAME}.`,
-  },
-  uk: {
-    subject: 'Вашу зустріч підтверджено',
-    tagline: 'Зустріч підтверджено',
-    badge: 'Підтверджено',
-    greeting: (n) => `До зустрічі, ${n}`,
-    intro: (s) => <>Гарні новини — вашу зустріч із <strong>{s}</strong> підтверджено.</>,
-    specialistLabel: 'Спеціаліст', dateLabel: 'Дата', timeLabel: 'Час', serviceLabel: 'Послуга',
-    outro: 'Ви отримаєте нагадування перед початком зустрічі.',
-    footer: `Ви отримали це підтвердження, бо маєте бронювання у спеціаліста ${SITE_NAME}.`,
-  },
-  ru: {
-    subject: 'Ваша встреча подтверждена',
-    tagline: 'Встреча подтверждена',
-    badge: 'Подтверждено',
-    greeting: (n) => `До встречи, ${n}`,
-    intro: (s) => <>Отличные новости — ваша встреча с <strong>{s}</strong> подтверждена.</>,
-    specialistLabel: 'Специалист', dateLabel: 'Дата', timeLabel: 'Время', serviceLabel: 'Услуга',
-    outro: 'Вы получите напоминание перед началом встречи.',
-    footer: `Вы получили это подтверждение, потому что у вас есть бронирование у специалиста ${SITE_NAME}.`,
-  },
-  de: {
-    subject: 'Ihr Termin wurde bestätigt',
-    tagline: 'Termin bestätigt',
-    badge: 'Bestätigt',
-    greeting: (n) => `Bis bald, ${n}`,
-    intro: (s) => <>Gute Nachricht — Ihr Termin mit <strong>{s}</strong> wurde bestätigt.</>,
-    specialistLabel: 'Fachperson', dateLabel: 'Datum', timeLabel: 'Uhrzeit', serviceLabel: 'Leistung',
-    outro: 'Sie erhalten vor Beginn des Termins eine Erinnerung.',
-    footer: `Sie erhalten diese Bestätigung, weil Sie eine Buchung bei einer ${SITE_NAME}-Fachperson haben.`,
-  },
-}
-
-interface BookingConfirmationProps {
-  clientName?: string
-  specialistName?: string
-  businessName?: string
-  specialistTitle?: string
-  sessionDate?: string
-  sessionTime?: string
-  serviceName?: string
-  language?: string
-}
-
-const BookingConfirmationEmail = ({
-  clientName = 'Client',
-  specialistName = 'your specialist',
-  businessName,
-  specialistTitle,
-  sessionDate = '',
-  sessionTime = '',
-  serviceName,
-  language,
-}: BookingConfirmationProps) => {
-  const lang = normalizeLang(language)
-  const T = STRINGS[lang]
-  const name = titleCaseName(specialistName) || specialistName
-  const subtitle = [specialistTitle, businessName].filter(Boolean).join(' · ')
-
+const BookingConfirmationEmail = (p: Props) => {
+  const lang = normalizeLang(p.language)
+  const t = T[lang]; const L = LABELS[lang]
+  const join = safeHttpsUrl(p.joinUrl)
   return (
-    <SoloBizzShell
-      lang={lang}
-      preview={T.subject}
-      tagline={T.tagline}
-      icon=""
-      title={T.greeting(clientName)}
-      subtitle={T.intro(name)}
-    >
-      <Text style={badge}>{T.badge}</Text>
-      <Detail label={T.specialistLabel} value={name} sub={subtitle} />
-      <Detail label={T.dateLabel} value={sessionDate} />
-      <Detail label={T.timeLabel} value={sessionTime} />
-      {serviceName ? <Detail label={T.serviceLabel} value={serviceName} /> : null}
-      <Text style={{ ...styles.paragraph, marginTop: '16px' }}>{T.outro}</Text>
-      <Text style={styles.smallMuted}>{T.footer}</Text>
-    </SoloBizzShell>
+    <StatusEmail lang={lang} status="confirmed" preview={t.title} title={t.title} intro={t.intro}
+      details={[
+        { icon: ICON.person, label: L.specialist, value: titleCaseName(p.specialistName) },
+        { icon: ICON.calendar, label: L.date, value: p.sessionDate },
+        { icon: ICON.clock, label: L.time, value: timeWithZone(p.sessionTime, p.timezone) },
+        { icon: ICON.mail, label: L.joinLink, value: join, href: join },
+        { icon: ICON.calendar, label: L.address, value: join ? undefined : p.location },
+      ]}
+      cta={{ label: t.cta, href: safeHttpsUrl(p.calendarUrl) }} note={t.note} closing={t.closing} />
   )
-}
-
-function Detail({ label, value, sub }: { label: string; value: string; sub?: string }) {
-  return (
-    <Section style={styles.detailRow}>
-      <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue}>{value}</Text>
-      {sub ? <Text style={{ ...styles.footerText, marginTop: '2px' }}>{sub}</Text> : null}
-    </Section>
-  )
-}
-
-const badge = {
-  display: 'inline-block',
-  backgroundColor: BRAND.greenBg,
-  color: BRAND.green,
-  fontSize: '12px',
-  fontWeight: 700,
-  padding: '5px 12px',
-  borderRadius: '999px',
-  margin: '0 0 10px',
 }
 
 export const template = {
   component: BookingConfirmationEmail,
-  subject: (data: Record<string, any>) => {
-    const base = STRINGS[normalizeLang(data?.language)].subject
-    const name = titleCaseName(data?.specialistName || '') || data?.specialistName || ''
-    const shortDate = (String(data?.sessionDate || '').split(',').find((part) => /\d/.test(part)) || '').replace(/\s*\d{4}\s*(р\.|г\.)?\s*$/u, '').trim()
-    const time = String(data?.sessionTime || '').split(/[·–]/)[0].trim()
-    const when = [shortDate, time].filter(Boolean).join(', ')
-    return [base, [name, when].filter(Boolean).join(', ')].filter(Boolean).join(' — ')
-  },
+  subject: (d: Record<string, any>) => [T[normalizeLang(d?.language)].subject, subjectWhen(d)].filter(Boolean).join(' — '),
   displayName: 'Booking confirmation',
-  previewData: {
-    clientName: 'Jane',
-    specialistName: 'Dr. Anna Kovalenko',
-    businessName: 'Cognitive Behavioural Therapy',
-    specialistTitle: 'Psychotherapist',
-    sessionDate: 'Thursday, 30 May 2026',
-    sessionTime: '10:00 – 11:00',
-    serviceName: 'Individual consultation',
-    language: 'uk',
-  },
+  previewData: { specialistName: 'Olga Stelmakh', sessionDate: '30 листопада 2026, понеділок', sessionTime: '09:00', timezone: 'Europe/Warsaw', calendarUrl: 'https://calendar.google.com/calendar/render?action=TEMPLATE', language: 'uk' },
 } satisfies TemplateEntry

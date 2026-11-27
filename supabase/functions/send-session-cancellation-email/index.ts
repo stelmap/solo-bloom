@@ -1,6 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 import { sendAppEmail } from '../_shared/transactional-email-templates/send-and-log.ts'
+import { formatSlot, ownerContext } from '../_shared/meeting-email-context.ts'
 
 const LANGS = ['uk', 'en', 'pl', 'de', 'fr', 'ru']
 const txt = (v: unknown, n: number) => typeof v === 'string' ? v.replace(/[\u0000-\u001f\u007f<>]/g, ' ').replace(/https?:\/\/\S+/gi, '').replace(/\s+/g, ' ').trim().slice(0, n) || undefined : undefined
@@ -33,21 +34,26 @@ Deno.serve(async (req) => {
     // Recipient is derived from the therapist's own appointment (RLS scoped).
     const { data: apt, error: aptErr } = await supabase
       .from('appointments')
-      .select('id, client_id, scheduled_at, clients(name, email)')
+      .select('id, user_id, client_id, scheduled_at, clients(name, email)')
       .eq('id', appointmentId)
       .maybeSingle()
     if (aptErr) return json({ error: 'lookup_failed' }, 400)
     const client = (apt as any)?.clients
     if (!client?.email) return json({ error: 'client_has_no_email' }, 400)
 
+    const lang = LANGS.includes(body?.language) ? body.language : 'en'
+    // Owner-scoped reads through the caller's RLS; no client-provided owner ID.
+    const ctx = await ownerContext(supabase, (apt as any).user_id, lang)
+    const when = (apt as any).scheduled_at ? formatSlot((apt as any).scheduled_at, lang) : { sessionDate: txt(body?.sessionDate, 60), sessionTime: txt(body?.sessionTime, 30) }
     const result = await sendAppEmail('session-cancellation', client.email, {
       idempotencyKey: `session-cancel-${appointmentId}`,
       templateData: {
-        clientName: client.name,
-        sessionDate: txt(body?.sessionDate, 60),
-        sessionTime: txt(body?.sessionTime, 30),
+        specialistName: ctx.specialistName,
+        ...when,
+        timezone: ctx.timezone,
         cancellationReason: txt(body?.cancellationReason, 300),
-        language: LANGS.includes(body?.language) ? body.language : 'en',
+        bookingUrl: ctx.bookingUrl,
+        language: lang,
       },
     })
     return json(result)

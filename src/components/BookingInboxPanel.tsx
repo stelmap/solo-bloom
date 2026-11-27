@@ -125,7 +125,7 @@ export function BookingInboxPanel({ className }: { className?: string }) {
 
   async function handleDecline(req: BookingRequestRow) {
     try {
-      await decline.mutateAsync({ id: req.id, reason: "cancelled_therapist" });
+      await decline.mutateAsync({ id: req.id, reason: "cancelled_therapist", language: lang });
       toast({ title: t("bookingInbox.toastDeclined") });
     } catch (e: any) {
       toast({ title: t("bookingInbox.toastCouldNotUpdate"), description: describeError(e.message), variant: "destructive" });
