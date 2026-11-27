@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Users, CheckCircle2, CalendarDays, Lock, Loader2, AlertCircle } from "lucide-react";
+import { CheckCircle2, Lock, Loader2, AlertCircle } from "lucide-react";
 import { groupSignupText } from "@/i18n/groupSignupText";
 import { validateSignup, parseServerError, type AnswerError } from "@/lib/groupSignupValidation";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -82,7 +82,6 @@ export default function PublicGroupSignupPage({ previewInfo, onReturn }: { previ
     setResult(res);
   };
 
-  const fmt = (iso: string) => new Intl.DateTimeFormat(lang, { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }).format(new Date(iso));
   const errText = (k: AnswerError | "server", type?: string) => k === "server" ? (type === "phone" ? st.phone : type === "url" ? st.url : type === "email" ? st.email : st.fix) : st[k];
   const req = (r: boolean) => r ? <span className="text-primary"> *</span> : <span className="font-normal text-muted-foreground"> ({st.optional})</span>;
 
@@ -98,21 +97,6 @@ export default function PublicGroupSignupPage({ previewInfo, onReturn }: { previ
           <div className="text-center text-muted-foreground py-10 space-y-2"><AlertCircle className="h-8 w-8 mx-auto" /><p>{g.unavailable}</p></div>
         ) : (<>
             {imageUrl && <img src={imageUrl} alt="" className="w-full max-h-60 object-cover rounded-xl" />}
-            <div className="flex items-start gap-3">
-              {!imageUrl && <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0"><Users className="h-6 w-6" /></div>}
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">{info.name}</h1>
-                <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-1"><Users className="h-3.5 w-3.5" />{info.group_type === "supervision" ? g.supervision : g.regular}</p>
-              </div>
-            </div>
-            {info.description && <p className="text-sm text-foreground/90 whitespace-pre-line">{info.description}</p>}
-            {info.sessions?.length > 0 && (
-              <div>
-                <p className="text-sm font-medium flex items-center gap-2 mb-2"><CalendarDays className="h-4 w-4 text-primary" />{g.upcoming}</p>
-                <ul className="text-sm text-muted-foreground space-y-1">{info.sessions.map((x: any) => <li key={x.starts_at}>{fmt(x.starts_at)}</li>)}</ul>
-              </div>
-            )}
-            <hr className="border-border" />
             {result ? (
               <div className="text-center space-y-2 py-6" role="status">
                 <CheckCircle2 className="h-12 w-12 text-primary mx-auto" />

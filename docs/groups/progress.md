@@ -14,6 +14,7 @@
 | 27 Nov — Applications workspace | Verified desktop/mobile + search, confirmation, bulk transfer | AppLayout.tsx; GroupDetailPage.tsx; GroupExtras.tsx; groupCorrectionsText.ts |
 | 27 Nov — Rich form description | Saved/editor/public rendering verified | RichTextEditor.tsx; GroupFormEditor.tsx; PublicGroupSignupPage.tsx; groupDescription.ts + test |
 | 27 Nov — Unpublished preview | Verified saved-only, no submission/tracking, anonymous denial | GroupFormEditor.tsx; PublicGroupSignupPage.tsx + test |
+| 27 Nov — Remove public group information | Removed group name/type/description/upcoming meetings from public form and shared owner preview; retained configured form image/title/intro, fields and submission behavior | pages/PublicGroupSignupPage.tsx |
 
 Details and acceptance evidence: [27 November verification](verification-2026-11-27.md). No database migrations or pricing/approval changes in this package.
 
@@ -34,5 +35,5 @@ Details and acceptance evidence: [27 November verification](verification-2026-11
 - Applications: answers render from stored snapshots (label+value); applications submitted before the custom form have no snapshot answers — only phone/message (for GRP-05).
 - Applications: client-side filtering over paginated complete reads; no server-side search.
 - Form (GRP-05): title/intro stored inside existing `registration_form` JSON (no migration). Email/phone/url now validated server-side (GRP-06, RPC errors carry field id). History is preserved by existing per-application snapshots (label/type/value at submit). Browser E2E with isolated data not run.
-- Public page (GRP-06): E2E done on temporary test group (cleaned up). Public page shows group type only (no price, meeting format field does not exist on groups). Duplicate dropdown options compared exactly.
+- Public page (GRP-06): E2E done on temporary test group (cleaned up). Group information removed on 27 November; configured form content remains. Duplicate dropdown options compared exactly.
 - BUG-GRP-001: existing confirmation reactivates archived matched clients per owner decision; verified without duplicate client creation on 27 November. No approval RPC change in this package.
