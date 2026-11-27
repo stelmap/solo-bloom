@@ -14,6 +14,7 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Link,
   Preview,
   Section,
@@ -262,6 +263,8 @@ interface ShellProps {
   title: React.ReactNode
   subtitle?: React.ReactNode
   tagline?: string
+  /** Optional HTTPS PNG shown centered above a centered hero title. */
+  heroImage?: string
   children: React.ReactNode
   footer?: React.ReactNode
 }
@@ -278,6 +281,7 @@ export const SoloBizzShell: React.FC<ShellProps> = ({
   title,
   subtitle,
   tagline = 'Business · Manager',
+  heroImage,
   children,
   footer,
 }) => (
@@ -293,12 +297,13 @@ export const SoloBizzShell: React.FC<ShellProps> = ({
               <span style={styles.wordmarkSolo}>Solo</span>
               <span style={styles.wordmarkBizz}>&nbsp;.Bizz</span>
             </Heading>
-            <Text style={styles.tagline}>{tagline}</Text>
+            {tagline ? <Text style={styles.tagline}>{tagline}</Text> : null}
           </Section>
           {/* Hero */}
-          <Section style={styles.hero}>
-            <Heading style={styles.heroTitle}>{title}</Heading>
-            {subtitle ? <Text style={styles.heroSub}>{subtitle}</Text> : null}
+          <Section style={heroImage ? { ...styles.hero, backgroundColor: BRAND.white, paddingTop: '24px', textAlign: 'center' as const } : styles.hero}>
+            {heroImage ? <Img src={heroImage} alt="" width="48" height="48" style={{ width: '48px', height: '48px', margin: '0 auto 12px' }} /> : null}
+            <Heading style={heroImage ? { ...styles.heroTitle, fontSize: '20px', textAlign: 'center' as const } : styles.heroTitle}>{title}</Heading>
+            {subtitle ? <Text style={heroImage ? { ...styles.heroSub, textAlign: 'center' as const, color: BRAND.muted } : styles.heroSub}>{subtitle}</Text> : null}
           </Section>
           {/* Body */}
           <Section style={styles.body}>{children}</Section>
