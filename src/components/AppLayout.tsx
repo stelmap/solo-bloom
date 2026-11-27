@@ -12,7 +12,7 @@ import { track } from "@/lib/analytics";
 
 const PRODUCT_ENTERED_KEY = "__product_entered_at";
 
-export function AppLayout({ children, fluid = false }: { children: React.ReactNode; fluid?: boolean }) {
+export function AppLayout({ children, fluid = false, wide = false }: { children: React.ReactNode; fluid?: boolean; wide?: boolean }) {
   const [pinned] = useSidebarPinned();
   // Content shifts only for the pinned sidebar; hover expansion floats above it.
   const sidebarOffset = pinned ? "lg:ml-[216px]" : "lg:ml-[68px]";
@@ -55,7 +55,7 @@ export function AppLayout({ children, fluid = false }: { children: React.ReactNo
       <main className={cn(sidebarOffset, "transition-[margin] duration-200 ease-out min-h-screen")}>
         <DemoBanner />
           <PaddleMigrationBanner />
-        <div className="p-4 lg:px-10 xl:px-14 lg:py-8 pt-16 lg:pt-8 max-w-[1600px] mx-auto">
+        <div className={cn(wide ? "p-6 pt-16 lg:pt-6 w-full" : "p-4 lg:px-10 xl:px-14 lg:py-8 pt-16 lg:pt-8 max-w-[1600px] mx-auto")}>
           {children}
         </div>
       </main>

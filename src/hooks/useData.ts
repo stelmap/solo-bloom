@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { calculateCapacity } from "@/lib/capacity";
 import { practiceClock, calendarDate } from "@/lib/calendarClock";
 import { fetchAllPages } from "@/lib/fetchAllPages";
+import { ensureGroupSession, withCanonicalGroup } from "@/lib/groupSessionSync";
 import { track } from "@/lib/analytics";
 import { getDemoActionMessage, useDemoMode, useDemoWriteGuard, useFreeStarterMode, FREE_STARTER_CLIENT_LIMIT } from "@/hooks/useDemoWorkspace";
 import { claimPaymentSlot, incomeDedupeKey } from "@/lib/incomeDedupe";
@@ -39,7 +40,7 @@ async function withIncomeDedupeGuard<T>(
 export const FREE_STARTER_LIMIT_ERROR = "FREE_STARTER_CLIENT_LIMIT_REACHED";
 export const PLAN_CLIENT_LIMIT_ERROR = "PLAN_CLIENT_LIMIT_REACHED";
 
-const INVALIDATE_APPOINTMENTS = ["appointments", "dashboard-stats", "client-appointments"];
+const INVALIDATE_APPOINTMENTS = ["appointments", "dashboard-stats", "client-appointments", "group-sessions"];
 const INVALIDATE_FINANCIAL = ["income", "income-all", "income-sum", "expenses", "expected-payments", "dashboard-stats", "tax-accrual-status", "invoices"];
 const attachDemoFlag = <T extends Record<string, any>>(payload: T, isDemoMode: boolean): T => (
   isDemoMode ? { ...payload, is_demo: true } : payload
@@ -571,14 +572,15 @@ export function useAppointments(range?: { from?: string; to?: string }) {
   return useQuery({
     queryKey: ["appointments", user?.id, from ?? null, to ?? null],
     queryFn: async () => {
-      return fetchAllPages(async (offset, end) => {
+      const appointments = await fetchAllPages(async (offset, end) => {
         let q = supabase.from("appointments")
-          .select("*, clients(name), services(name, price), group_sessions!appointments_group_session_id_fkey(id, group_id, groups(name))")
+          .select("*, clients(name), services(name, price), group_sessions!appointments_group_session_id_fkey(id, group_id, groups(name)), canonical_group_sessions:group_sessions!group_sessions_appointment_id_fkey(id, group_id, groups(name))")
           .order("scheduled_at", { ascending: true }).order("id", { ascending: true });
         if (from) q = q.gte("scheduled_at", from);
         if (to) q = q.lte("scheduled_at", to);
         return await q.range(offset, end);
       });
+      return appointments.map(withCanonicalGroup);
     },
     enabled: !!user,
     staleTime: STALE_SHORT,
@@ -2685,6 +2687,17 @@ export function useEditRecurringAppointments() {
       if (updates.price !== undefined) fieldUpdates.price = updates.price;
       if (updates.notes !== undefined) fieldUpdates.notes = updates.notes;
 
+      // Ordinary group edits must not regenerate (and cascade-delete) linked records.
+      const { data: sourceGroup, error: sourceError } = await supabase.from("group_sessions").select("group_id").eq("appointment_id", appointmentId).maybeSingle();
+      if (sourceError) throw sourceError;
+      if (sourceGroup && recurrenceUpdates && scope !== "this") {
+        const { data: rule, error } = await supabase.from("recurring_rules").select("days_of_week, interval_weeks").eq("id", ruleId).single();
+        if (error) throw error;
+        const daysChanged = recurrenceUpdates.days_of_week && JSON.stringify([...recurrenceUpdates.days_of_week].sort()) !== JSON.stringify([...(rule.days_of_week ?? [])].sort());
+        const intervalChanged = recurrenceUpdates.interval_weeks !== undefined && recurrenceUpdates.interval_weeks !== rule.interval_weeks;
+        if (!daysChanged && !intervalChanged) recurrenceUpdates = undefined;
+      }
+
       if (scope === "this") {
         const thisUpdates: Record<string, any> = { ...fieldUpdates };
         if (deltaMs) {
@@ -2720,6 +2733,37 @@ export function useEditRecurringAppointments() {
           cutoffDate = apt!.scheduled_at;
         } else {
           cutoffDate = new Date(0).toISOString(); // all
+        }
+
+        if (sourceGroup) {
+          if (!user) throw new Error("Authentication required");
+          const { data: profile } = await supabase.from("profiles").select("timezone").eq("user_id", user.id).maybeSingle();
+          const now = practiceClock(profile?.timezone).wallClockMs;
+          const existing = await fetchAllPages<any>((from, to) => supabase.from("appointments").select("id, status, scheduled_at, duration_minutes, payment_status").eq("recurring_rule_id", ruleId).gte("scheduled_at", cutoffDate).order("scheduled_at").order("id").range(from, to));
+          const protectedPayments = ["paid_now", "paid_in_advance", "paid_from_prepayment", "partially_paid", "partially_paid_from_prepayment"];
+          const editable = existing.filter(a => activeStatuses.includes(a.status) && Date.parse(a.scheduled_at) >= now && !protectedPayments.includes(a.payment_status));
+          const ruleForGen = { ...updatedRule, start_date: new Date(Math.max(now, Date.parse(cutoffDate), Date.parse(`${updatedRule.start_date}T00:00:00Z`))).toISOString().slice(0, 10) };
+          const generated = generateRecurringAppointments(ruleForGen, user.id).filter(a => Date.parse(a.scheduled_at) >= now).sort((a, b) => Date.parse(a.scheduled_at) - Date.parse(b.scheduled_at));
+          const { data: members, error: membersError } = await supabase.from("group_members").select("client_id").eq("group_id", sourceGroup.group_id);
+          if (membersError) throw membersError;
+          for (let i = 0; i < generated.length; i++) {
+            const next = generated[i]; const previous = editable[i];
+            if (previous) {
+              const { error } = await supabase.from("appointments").update({ ...fieldUpdates, scheduled_at: next.scheduled_at }).eq("id", previous.id);
+              if (error) throw error;
+              await ensureGroupSession({ groupId: sourceGroup.group_id, appointmentId: previous.id, userId: user.id, memberClientIds: [], isDemoMode });
+            } else {
+              const { data: created, error } = await supabase.from("appointments").insert(attachDemoFlag(next, isDemoMode)).select("id").single();
+              if (error) throw error;
+              await ensureGroupSession({ groupId: sourceGroup.group_id, appointmentId: created.id, userId: user.id, notes: next.notes ?? "", memberClientIds: (members ?? []).map(m => m.client_id), isDemoMode });
+            }
+          }
+          // Retain surplus occurrences and their attendance/financial history as cancelled.
+          for (const previous of editable.slice(generated.length)) {
+            const { error } = await supabase.from("appointments").update({ status: "cancelled" }).eq("id", previous.id);
+            if (error) throw error;
+          }
+          return;
         }
 
         // Delete future active appointments

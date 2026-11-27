@@ -22,6 +22,15 @@ import { useUpdateGroup } from "@/hooks/useGroups";
 import { describeError } from "@/lib/errorMessages";
 import { FIELD_TYPES, moveOption, cleanForm, groupFinance, moveField, normalizeForm, removeField, validateForm, type FieldType, type FormField, type RegistrationForm } from "@/lib/groupForm";
 import { format } from "date-fns";
+import { RichTextEditor } from "@/components/RichTextEditor";
+import { groupDescriptionHtml } from "@/lib/groupDescription";
+import { groupCorrectionsText } from "@/i18n/groupCorrectionsText";
+import PublicGroupSignupPage from "@/pages/PublicGroupSignupPage";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useGroupSessions, useGroupMembers } from "@/hooks/useGroups";
+import { useProfile } from "@/hooks/useData";
+import { practiceClock } from "@/lib/calendarClock";
+import { splitMeetings } from "@/lib/groupMeetings";
 
 export const GROUP_IMAGE_BUCKET = "group-form-images";
 
@@ -29,7 +38,8 @@ export function useGroupImageUrl(path: string | null | undefined) {
   return useQuery({
     queryKey: ["group-form-image", path],
     queryFn: async () => {
-      const { data } = await supabase.storage.from(GROUP_IMAGE_BUCKET).createSignedUrl(path!, 3600);
+      if (!path) return null;
+      const { data } = await supabase.storage.from(GROUP_IMAGE_BUCKET).createSignedUrl(path, 3600);
       return data?.signedUrl ?? null;
     },
     enabled: !!path, staleTime: 30 * 60 * 1000,
@@ -51,6 +61,13 @@ export function GroupFormEditorCard({ group }: { group: any }) {
     { id: "message", label: gx.note, type: "long", required: false },
   ] }, { name: t.name, email: t.email }), [JSON.stringify(group.registration_form ?? null), t, gx.note]);
   const c = groupFormConfigText(lang);
+  const correction = groupCorrectionsText(lang);
+  const [previewInfo, setPreviewInfo] = useState<any>(undefined);
+  const [previewPrompt, setPreviewPrompt] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const { data: sessions = [] } = useGroupSessions(group.id);
+  const { data: members = [] } = useGroupMembers(group.id);
+  const { data: profile } = useProfile();
   const [saveError, setSaveError] = useState(false);
   const [form, setForm] = useState<RegistrationForm>(initial);
   const [showErrors, setShowErrors] = useState(false);
@@ -65,12 +82,26 @@ export function GroupFormEditorCard({ group }: { group: any }) {
   const add = (label: string, type: FieldType = "short") => setForm((f) => ({ ...f, fields: [...f.fields, { id: newId(), label, type, required: false }] }));
 
   const save = async () => {
-    if (errors.length) { setShowErrors(true); toast({ title: t.errSave, variant: "destructive" }); return; }
+    if (errors.length) { setShowErrors(true); toast({ title: t.errSave, variant: "destructive" }); return false; }
     try {
-      await update.mutateAsync({ id: group.id, registration_form: cleanForm(form) } as any);
+      await update.mutateAsync({ id: group.id, registration_form: cleanForm({ ...form, intro: groupDescriptionHtml(form.intro) }) } as any);
       setShowErrors(false); setSaveError(false);
       toast({ title: t.saved });
-    } catch (e: any) { setSaveError(true); toast({ title: c.saveFailed, description: describeError(e.message), variant: "destructive" }); }
+      return true;
+    } catch (e: any) { setSaveError(true); toast({ title: c.saveFailed, description: describeError(e.message), variant: "destructive" }); return false; }
+  };
+
+  const openSavedPreview = async () => {
+    if (!user || group.user_id !== user.id) return;
+    setPreviewLoading(true);
+    try {
+      const { data: saved, error } = await supabase.from("groups").select("*").eq("id", group.id).eq("user_id", user.id).single();
+      if (error) throw error;
+      const { upcoming } = splitMeetings(sessions, practiceClock(profile?.timezone).wallClockMs);
+      setPreviewInfo({ name: saved.name, description: saved.description, group_type: saved.group_type, form: saved.registration_form ?? initial, image_path: saved.registration_image_path, is_full: saved.capacity != null && members.length >= saved.capacity, sessions: upcoming.map(s => ({ starts_at: s.appointments?.scheduled_at })) });
+      setPreviewPrompt(false);
+    } catch (e: any) { toast({ title: describeError(e.message), variant: "destructive" }); }
+    finally { setPreviewLoading(false); }
   };
 
   const onFile = async (file?: File) => {
@@ -105,7 +136,7 @@ export function GroupFormEditorCard({ group }: { group: any }) {
   return (
     <div className="space-y-6">
       <GroupPublicationCard group={group} actions={<>
-        <Button size="sm" variant="outline" disabled={group.publication_status !== "published"} onClick={() => window.open(groupSignupUrl(group.registration_token, lang), "_blank", "noopener")}>
+        <Button size="sm" variant="outline" disabled={previewLoading || update.isPending} onClick={() => dirty ? setPreviewPrompt(true) : openSavedPreview()}>
           <Eye className="h-4 w-4 mr-1" />{t.preview}
         </Button>
         <Button size="sm" onClick={save} disabled={update.isPending || !dirty}>
@@ -124,7 +155,7 @@ export function GroupFormEditorCard({ group }: { group: any }) {
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="gf-intro">{c.formIntro}</Label>
-        <Textarea id="gf-intro" rows={3} maxLength={2000} placeholder={c.formIntroPh} value={form.intro ?? ""} onChange={(e) => setForm((x) => ({ ...x, intro: e.target.value }))} />
+        <RichTextEditor value={groupDescriptionHtml(form.intro)} allowLinks extendedToolbar placeholder={c.formIntroPh} onChange={(intro) => setForm((x) => ({ ...x, intro }))} />
       </div>
       <div className="space-y-2">
         <Label>{t.image}</Label>
@@ -203,6 +234,12 @@ export function GroupFormEditorCard({ group }: { group: any }) {
       </DropdownMenu>
       <p className="text-xs text-muted-foreground">{c.historyNote}</p>
     </div>
+    <Dialog open={previewPrompt} onOpenChange={setPreviewPrompt}>
+      <DialogContent><DialogHeader><DialogTitle>{t.preview}</DialogTitle></DialogHeader><p className="text-sm text-muted-foreground">{correction.savedPreview}</p><div className="flex flex-wrap gap-2"><Button disabled={update.isPending || previewLoading} onClick={async () => { if (await save()) await openSavedPreview(); }}>{correction.savePreview}</Button><Button variant="outline" disabled={previewLoading} onClick={openSavedPreview}>{correction.continuePreview}</Button></div></DialogContent>
+    </Dialog>
+    {user && group.user_id === user.id && <Dialog open={previewInfo !== undefined} onOpenChange={o => { if (!o) setPreviewInfo(undefined); }}>
+      <DialogContent className="max-w-3xl max-h-[92dvh] overflow-y-auto p-0"><DialogHeader className="sr-only"><DialogTitle>{correction.previewMode}</DialogTitle></DialogHeader><PublicGroupSignupPage previewInfo={previewInfo} onReturn={() => setPreviewInfo(undefined)} /></DialogContent>
+    </Dialog>}
     </div>
   );
 }

@@ -10,7 +10,12 @@
 | GRP-04.1 Pricing display | Done | GroupMembersSection.tsx; lib/groupParticipants.ts + test; i18n/groupParticipantsText.ts |
 | GRP-05 Form configuration | Done | components/groups/GroupFormEditor.tsx; GroupExtras.tsx (GroupPublicationCard `actions` slot); lib/groupForm.ts + test; i18n/groupFormConfigText.ts (new); pages/GroupDetailPage.tsx (form tab); pages/PublicGroupSignupPage.tsx (minimal: form title/intro, input types) |
 | GRP-06 Public registration page | Done | pages/PublicGroupSignupPage.tsx; lib/groupSignupValidation.ts + test (new); i18n/groupSignupText.ts (new); drizzle 0035 (replaces submit RPC validation only) |
-| GRP-07 … GRP-08 | Not started | — |
+| 27 Nov — Calendar synchronization | Implemented; core browser flow verified; recurrence-pattern QA outstanding | hooks/useData.ts, useGroups.ts, usePracticeLiveUpdates.ts; pages/CalendarPage.tsx; GroupMeetingsSection.tsx; lib/groupMeetings.ts, groupSessionSync.ts + tests |
+| 27 Nov — Applications workspace | Verified desktop/mobile + search, confirmation, bulk transfer | AppLayout.tsx; GroupDetailPage.tsx; GroupExtras.tsx; groupCorrectionsText.ts |
+| 27 Nov — Rich form description | Saved/editor/public rendering verified | RichTextEditor.tsx; GroupFormEditor.tsx; PublicGroupSignupPage.tsx; groupDescription.ts + test |
+| 27 Nov — Unpublished preview | Verified saved-only, no submission/tracking, anonymous denial | GroupFormEditor.tsx; PublicGroupSignupPage.tsx + test |
+
+Details and acceptance evidence: [27 November verification](verification-2026-11-27.md). No database migrations or pricing/approval changes in this package.
 
 ## Unresolved gaps
 - Pricing (GRP-04.1): billing charges member `price_per_session`, else the specific meeting price. Participants UI now shows "Uses meeting price" without override, individual amount + currency with override, group default price shown separately as reference only; note that changes never recalculate existing charges/payments.
@@ -24,10 +29,10 @@
 - Refunds not represented in finance calculations (no defined model).
 - Applicant emails not sent to anonymous submitters (on-screen confirmation only).
 - Materials are HTTPS links only (no file upload).
-- No published test group → end-to-end public flow unverified.
+- Public submission, new/existing/archived client confirmation, membership and bulk transfer verified on isolated test data on 27 November.
 - Applications: decisions offered only for New/Waitlisted (existing rule); backend also allows rejecting a confirmed application, not exposed in UI.
 - Applications: answers render from stored snapshots (label+value); applications submitted before the custom form have no snapshot answers — only phone/message (for GRP-05).
-- Applications: list is client-side filtered over all loaded rows (no server pagination).
+- Applications: client-side filtering over paginated complete reads; no server-side search.
 - Form (GRP-05): title/intro stored inside existing `registration_form` JSON (no migration). Email/phone/url now validated server-side (GRP-06, RPC errors carry field id). History is preserved by existing per-application snapshots (label/type/value at submit). Browser E2E with isolated data not run.
 - Public page (GRP-06): E2E done on temporary test group (cleaned up). Public page shows group type only (no price, meeting format field does not exist on groups). Duplicate dropdown options compared exactly.
-- BUG-GRP-001 (fixed): confirm RPC already creates/links client + membership atomically. Reported cases matched an existing client by email (different name; one archived → hidden from active Clients). Owner now sees which client was linked/created after confirm; group-full error now shows its real message. Open decision: whether confirmation should reactivate archived clients (no established rule; not changed).
+- BUG-GRP-001: existing confirmation reactivates archived matched clients per owner decision; verified without duplicate client creation on 27 November. No approval RPC change in this package.

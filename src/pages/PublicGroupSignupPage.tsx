@@ -16,17 +16,21 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { groupFormText } from "@/i18n/groupFormText";
 import { normalizeForm } from "@/lib/groupForm";
+import { groupDescriptionHtml } from "@/lib/groupDescription";
+import { richTextContentClass } from "@/components/RichTextEditor";
+import { groupCorrectionsText } from "@/i18n/groupCorrectionsText";
 
 const LANGS = ["uk", "en", "pl", "de", "fr", "ru"];
 
-export default function PublicGroupSignupPage() {
+export default function PublicGroupSignupPage({ previewInfo, onReturn }: { previewInfo?: any; onReturn?: () => void } = {}) {
+  const preview = previewInfo !== undefined;
   const { token = "" } = useParams();
   const [params] = useSearchParams();
   const { lang: appLang } = useLanguage();
   const urlLang = params.get("lang");
   const lang = urlLang && LANGS.includes(urlLang) ? urlLang : appLang;
   const g = groupsText(lang);
-  const [info, setInfo] = useState<any>(undefined);
+  const [info, setInfo] = useState<any>(previewInfo);
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +38,7 @@ export default function PublicGroupSignupPage() {
   const [fieldErrs, setFieldErrs] = useState<Record<string, AnswerError | "server">>({});
   const st = groupSignupText(lang);
   const tf = groupFormText(lang);
+  const correction = groupCorrectionsText(lang);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const custom = info?.form ? normalizeForm(info.form, { name: g.yourName, email: g.email }) : null;
@@ -43,11 +48,13 @@ export default function PublicGroupSignupPage() {
   }, [info?.image_path]);
 
   useEffect(() => {
+    if (preview) { setInfo(previewInfo); return; }
     supabase.rpc("public_get_group_registration" as any, { _token: token }).then(({ data }) => { setInfo(data ?? null); if (data) window.__lovableEvents?.track?.("project.group_signup_page_viewed", {}); });
-  }, [token]);
+  }, [token, preview, previewInfo]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (preview) return;
     if (busy) return;
     setError(null);
     if (custom) {
@@ -80,10 +87,10 @@ export default function PublicGroupSignupPage() {
   const req = (r: boolean) => r ? <span className="text-primary"> *</span> : <span className="font-normal text-muted-foreground"> ({st.optional})</span>;
 
   return (
-    <div className="min-h-screen bg-muted/30 flex items-start justify-center px-4 py-6 sm:py-10">
+    <div className={`${preview ? "" : "min-h-screen"} bg-muted/30 flex items-start justify-center px-4 py-6 sm:py-10`}>
       <Helmet><title>{info?.name ? `${info.name} — Solo .Bizz` : "Solo .Bizz"}</title><meta name="robots" content="noindex" /></Helmet>
       <div className="w-full max-w-lg bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
-        <header className="px-6 py-4 border-b border-border text-lg font-semibold"><BrandName /></header>
+        <header className="px-6 py-4 border-b border-border text-lg font-semibold"><BrandName />{preview && <div className="flex flex-wrap items-center justify-between gap-2 mt-3"><span className="text-sm text-primary">{correction.previewMode}</span><Button size="sm" variant="outline" onClick={onReturn}>{correction.backToForm}</Button></div>}</header>
         <div className="p-6 space-y-5">
         {info === undefined ? (
           <p className="flex items-center justify-center gap-2 text-muted-foreground py-10" role="status"><Loader2 className="h-4 w-4 animate-spin" />{st.loading}</p>
@@ -116,7 +123,7 @@ export default function PublicGroupSignupPage() {
               <form onSubmit={submit} noValidate={!!custom} className="space-y-4">
                 <div className="space-y-1">
                   <h2 className="text-lg font-semibold">{custom?.title || g.applyTitle}</h2>
-                  {custom?.intro && <p className="text-sm text-muted-foreground whitespace-pre-line">{custom.intro}</p>}
+                  {custom?.intro && <div className={`${richTextContentClass} [overflow-wrap:anywhere]`} dangerouslySetInnerHTML={{ __html: groupDescriptionHtml(custom.intro) }} />}
                 </div>
                 {info.is_full && <p className="text-sm text-warning">{g.full}</p>}
                 {custom ? custom.fields.map(fd => {
@@ -144,7 +151,7 @@ export default function PublicGroupSignupPage() {
                   <div className="space-y-1.5"><Label>{g.note}</Label><Textarea rows={3} maxLength={2000} value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} /></div>
                 </>)}
                 {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
-                <Button type="submit" size="lg" className="w-full" disabled={busy}>{busy ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{st.sending}</> : g.submit}</Button>
+                <Button type="submit" size="lg" className="w-full" disabled={busy || preview}>{busy ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{st.sending}</> : g.submit}</Button>
                 <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1.5"><Lock className="h-3 w-3" />{g.privacy}</p>
               </form>
             )}

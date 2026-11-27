@@ -5,6 +5,7 @@ import Highlight from "@tiptap/extension-highlight";
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough, Highlighter,
   List, ListOrdered, Indent, Outdent,
+  Undo2, Redo2, RemoveFormatting,
 } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { Link2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useState } from "react";
+import { groupCorrectionsText } from "@/i18n/groupCorrectionsText";
 
 export const richTextContentClass = cn(
   "text-sm leading-relaxed text-foreground",
@@ -42,6 +44,7 @@ type Props = {
   autoFocus?: boolean;
   /** Allow safe hyperlinks (public profile text). */
   allowLinks?: boolean;
+  extendedToolbar?: boolean;
 };
 
 function ToolbarToggle({
@@ -67,10 +70,11 @@ function ToolbarToggle({
   );
 }
 
-function Toolbar({ editor, disabled, allowLinks }: { editor: Editor; disabled?: boolean; allowLinks?: boolean }) {
+function Toolbar({ editor, disabled, allowLinks, extendedToolbar }: { editor: Editor; disabled?: boolean; allowLinks?: boolean; extendedToolbar?: boolean }) {
   const { t, lang } = useLanguage();
   const [linkOpen, setLinkOpen] = useState(false);
   const [href, setHref] = useState("");
+  const extra = groupCorrectionsText(lang);
   const LL = LINK_COPY[(String(lang).slice(0, 2) as keyof typeof LINK_COPY)] ?? LINK_COPY.en;
   const applyLink = () => {
     let v = href.trim();
@@ -186,13 +190,18 @@ function Toolbar({ editor, disabled, allowLinks }: { editor: Editor; disabled?: 
             </PopoverContent>
           </Popover>
         )}
+        {extendedToolbar && <>
+          <ToolbarToggle label={extra.undo} disabled={disabled || !editor.can().undo()} onClick={() => editor.chain().focus().undo().run()}><Undo2 className="h-4 w-4" /></ToolbarToggle>
+          <ToolbarToggle label={extra.redo} disabled={disabled || !editor.can().redo()} onClick={() => editor.chain().focus().redo().run()}><Redo2 className="h-4 w-4" /></ToolbarToggle>
+          <ToolbarToggle label={extra.clear} disabled={disabled} onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}><RemoveFormatting className="h-4 w-4" /></ToolbarToggle>
+        </>}
       </div>
     </TooltipProvider>
   );
 }
 
 export function RichTextEditor({
-  value, onChange, onBlur, placeholder, disabled, className, minHeight = "180px", autoFocus, allowLinks,
+  value, onChange, onBlur, placeholder, disabled, className, minHeight = "180px", autoFocus, allowLinks, extendedToolbar,
 }: Props) {
   const sanitizeNoteHtml = allowLinks ? sanitizeProfileHtml : sanitizeNotes;
   const editor = useEditor({
@@ -241,7 +250,7 @@ export function RichTextEditor({
 
   return (
     <div className={cn("rounded-md border border-input bg-background overflow-hidden focus-within:ring-1 focus-within:ring-ring", className)}>
-      <Toolbar editor={editor} disabled={disabled} allowLinks={allowLinks} />
+      <Toolbar editor={editor} disabled={disabled} allowLinks={allowLinks} extendedToolbar={extendedToolbar} />
       <div className="relative">
         {editor.isEmpty && placeholder && (
           <p className="pointer-events-none absolute left-3 top-2 text-sm text-muted-foreground pr-3">

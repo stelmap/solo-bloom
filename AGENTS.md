@@ -44,3 +44,5 @@
 - Auth previews render synchronously to avoid the legacy React Email stream decoder corrupting multibyte Unicode; email icons are immutable HTTPS PNGs rather than font-dependent symbols.
 - Group applications live in group_registrations (owner-only RLS); visitors read/submit only via token RPCs for published active groups, and confirm/transfer go through owner-checked RPCs that never delete prior applications, so history and privacy are preserved.
 - Group deletion is logical (lifecycle_status/deleted_at); meetings, attendance, payments and applications are never removed by deleting a group.
+- Group meeting identity uses the unique group_sessions.appointment_id link, with a reverse-link fallback for legacy data; creation retries preserve saved attendance and group recurrence edits retain meeting IDs/history rather than cascade-deleting records.
+- Registration form descriptions reuse the shared rich editor and groupDescriptionHtml sanitizer; owner previews fetch saved owner-scoped rows and mount the public form in non-submitting, non-tracking mode, preventing unpublished data leaks and visual drift.

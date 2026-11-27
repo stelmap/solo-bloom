@@ -3,9 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemoMode, useDemoWriteGuard } from "@/hooks/useDemoWorkspace";
 import { track } from "@/lib/analytics";
+import { fetchAllPages } from "@/lib/fetchAllPages";
+import { ensureGroupSession } from "@/lib/groupSessionSync";
 
 const STALE_MEDIUM = 60_000;
-const INVALIDATE_GROUPS = ["groups", "group-detail", "group-members", "group-sessions", "group-attendance"];
+const INVALIDATE_GROUPS = ["groups", "group-detail", "group-members", "group-sessions", "group-attendance", "group-all-attendance", "client-appointments"];
 const attachDemoFlag = <T extends Record<string, any>>(payload: T, isDemoMode: boolean): T => (
   isDemoMode ? { ...payload, is_demo: true } : payload
 );
@@ -72,13 +74,12 @@ export function useGroupSessions(groupId: string | undefined) {
   return useQuery({
     queryKey: ["group-sessions", groupId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (!groupId) return [];
+      return fetchAllPages<any>((from, to) => supabase
         .from("group_sessions" as any)
         .select("*, appointments!group_sessions_appointment_id_fkey(id, scheduled_at, duration_minutes, status, price, services(name))")
-        .eq("group_id", groupId!)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data as any[];
+        .eq("group_id", groupId)
+        .order("created_at", { ascending: false }).order("id").range(from, to));
     },
     enabled: !!user && !!groupId,
     staleTime: STALE_MEDIUM,
@@ -450,36 +451,8 @@ export function useCreateGroupSession() {
       notes?: string;
       memberClientIds: string[];
     }) => {
-      // Create the group session
-      const { data: gs, error: gsErr } = await supabase
-        .from("group_sessions" as any)
-        .insert(attachDemoFlag({ group_id: groupId, appointment_id: appointmentId, user_id: user!.id, notes: notes || "" }, isDemoMode))
-        .select()
-        .single();
-      if (gsErr) throw gsErr;
-
-      // Link appointment to group session
-      await supabase
-        .from("appointments")
-        .update({ group_session_id: (gs as any).id } as any)
-        .eq("id", appointmentId);
-
-      // Initialize attendance for all current members
-      if (memberClientIds.length > 0) {
-        const attendanceRows = memberClientIds.map(clientId => ({
-          group_session_id: (gs as any).id,
-          client_id: clientId,
-          user_id: user!.id,
-          status: "attended",
-          ...(isDemoMode ? { is_demo: true } : {}),
-        }));
-        const { error: attErr } = await supabase
-          .from("group_attendance" as any)
-          .insert(attendanceRows);
-        if (attErr) throw attErr;
-      }
-
-      return gs;
+      if (!user) throw new Error("Authentication required");
+      return ensureGroupSession({ groupId, appointmentId, notes, memberClientIds, userId: user.id, isDemoMode });
     },
     onSuccess: (_, vars) => {
       INVALIDATE_GROUPS.forEach(k => qc.invalidateQueries({ queryKey: [k] }));
@@ -514,12 +487,12 @@ export function useGroupRegistrations(groupId: string | undefined) {
   return useQuery({
     queryKey: ["group-registrations", groupId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("group_registrations" as any)
-        .select("*").eq("group_id", groupId!).order("submitted_at", { ascending: false });
-      if (error) throw error;
-      return data as any[];
+      if (!groupId) return [];
+      return fetchAllPages<any>((from, to) => supabase.from("group_registrations" as any)
+        .select("*").eq("group_id", groupId).order("submitted_at", { ascending: false }).order("id").range(from, to));
     },
     enabled: !!user && !!groupId,
+    refetchOnMount: "always",
   });
 }
 
@@ -531,7 +504,7 @@ export function useDecideRegistration() {
       assertCanWrite();
       const { data, error } = await supabase.rpc("decide_group_registration" as any, { _registration_id: id, _decision: decision });
       if (error) throw error;
-      return data as { ok: boolean; client_id?: string } | null;
+      return data as { ok: boolean; client_id?: string; reactivated?: boolean } | null;
     },
     onSuccess: () => ["group-registrations", "group-members", "clients"].forEach(k => qc.invalidateQueries({ queryKey: [k] })),
   });

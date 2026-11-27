@@ -1,5 +1,12 @@
 # Roadmap
 
+## Groups corrections — 27 November 2026
+- [x] Task 1: synchronize Calendar/group meetings and classify by end time in practice timezone; core creation/reschedule/completion checked.
+- [x] Task 2: widen Applications and show complete historical responses; requested desktop widths/mobile/search/approval/bulk transfer checked.
+- [x] Task 3: reuse rich-text editor for saved form descriptions with sanitization; saved/public rendering checked.
+- [x] Task 4: isolated owner preview of saved forms without publishing; saved-only/fields/privacy/UA-EN-PL checked.
+- [x] Task 5: executed 46 automated tests and browser regressions; partial acceptance results and remaining unverified scenarios documented in docs/groups/verification-2026-11-27.md.
+
 ## Керування терапевтичними групами — 21 листопада 2026
 - [ ] Розширити наявні групи: тип, інструкції, ціна, ліміт, публікація, збереження історії при архівації/видаленні.
 - [ ] Додати захищену реєстрацію, підтвердження, список очікування та атомарне перенесення/копіювання груп.

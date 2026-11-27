@@ -2,16 +2,20 @@
 export const UPCOMING_STATUSES = ["scheduled", "confirmed", "reminder_sent"];
 export const HISTORY_PAGE_SIZE = 10;
 
-export interface MeetingLike { id: string; appointments?: { scheduled_at: string; status: string; service_id?: string | null; services?: { name?: string } | null } | null }
+export interface MeetingLike { id: string; appointments?: { scheduled_at: string; duration_minutes?: number | null; status: string; service_id?: string | null; services?: { name?: string } | null } | null }
+
+export function meetingEndMs(a: NonNullable<MeetingLike["appointments"]>) {
+  return Date.parse(a.scheduled_at) + Math.max(0, Number(a.duration_minutes) || 0) * 60_000;
+}
 
 export function splitMeetings<T extends MeetingLike>(sessions: T[], nowWallClockMs: number) {
   const upcoming: T[] = []; const history: T[] = [];
   for (const s of sessions) {
     const a = s.appointments; if (!a) continue;
     const t = Date.parse(a.scheduled_at);
-    if (UPCOMING_STATUSES.includes(a.status) && t >= nowWallClockMs) upcoming.push(s); else history.push(s);
+    if (UPCOMING_STATUSES.includes(a.status) && (t >= nowWallClockMs || meetingEndMs(a) > nowWallClockMs)) upcoming.push(s); else history.push(s);
   }
-  const at = (s: T) => Date.parse(s.appointments!.scheduled_at);
+  const at = (s: T) => Date.parse(s.appointments?.scheduled_at ?? "");
   upcoming.sort((x, y) => at(x) - at(y));
   history.sort((x, y) => at(y) - at(x));
   return { upcoming, history };
@@ -19,7 +23,7 @@ export function splitMeetings<T extends MeetingLike>(sessions: T[], nowWallClock
 
 /** Past meeting still in an open status — shown in history, flagged so it is never silently hidden. */
 export function isOverdue(m: MeetingLike, nowWallClockMs: number) {
-  const a = m.appointments; return !!a && UPCOMING_STATUSES.includes(a.status) && Date.parse(a.scheduled_at) < nowWallClockMs;
+  const a = m.appointments; return !!a && UPCOMING_STATUSES.includes(a.status) && meetingEndMs(a) <= nowWallClockMs;
 }
 
 /** Service name only when every meeting shares the same service. */

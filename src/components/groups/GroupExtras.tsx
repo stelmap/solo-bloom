@@ -14,6 +14,7 @@ import { Globe, Copy, Inbox, Mail, ArrowRightLeft, Search, ChevronLeft } from "l
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { groupApplicationsText } from "@/i18n/groupApplicationsText";
+import { groupCorrectionsText } from "@/i18n/groupCorrectionsText";
 import { APPLICATION_FILTERS, filterApplications, countByStatus, allowedDecisions, type ApplicationFilter } from "@/lib/groupApplications";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -155,6 +156,7 @@ export function GroupRegistrationsCard({ group, onOpenForm }: { group: any; onOp
 
   const movable = (r: any) => r.status === "waitlisted" || r.status === "pending";
   const a = groupApplicationsText(lang);
+  const correction = groupCorrectionsText(lang);
   const isMobile = useIsMobile();
   const [filter, setFilter] = useState<ApplicationFilter>("all");
   const [query, setQuery] = useState("");
@@ -165,7 +167,7 @@ export function GroupRegistrationsCard({ group, onOpenForm }: { group: any; onOp
   const visible = useMemo(() => filterApplications(regs, filter, query, order), [regs, filter, query, order]);
   const active = regs.find((r: any) => r.id === activeId) ?? null;
   const published = group.publication_status === "published";
-  const fmt = (iso: string) => format(new Date(iso), "dd.MM.yyyy HH:mm");
+  const fmt = (iso: string) => new Intl.DateTimeFormat(lang, { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
   const runAct = async (id: string, d: "confirm" | "reject" | "waitlist") => {
     setActionError(null);
     const startedAt = Date.now();
@@ -188,7 +190,7 @@ export function GroupRegistrationsCard({ group, onOpenForm }: { group: any; onOp
   };
 
   const details = active && (
-    <div className="space-y-4">
+    <div className="space-y-6 min-w-0">
       {isMobile && <Button variant="ghost" size="sm" onClick={() => setActiveId(null)}><ChevronLeft className="h-4 w-4 mr-1" />{a.back}</Button>}
       <div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -199,13 +201,13 @@ export function GroupRegistrationsCard({ group, onOpenForm }: { group: any; onOp
         <p className="text-xs text-muted-foreground mt-1">{a.submitted}: {fmt(active.submitted_at)}</p>
       </div>
       {active.phone && <div><p className="text-xs text-muted-foreground">{a.phone}</p><p className="text-sm">{active.phone}</p></div>}
-      {active.message && <div><p className="text-xs text-muted-foreground">{a.message}</p><p className="text-sm whitespace-pre-line">{active.message}</p></div>}
+      {active.message && <div><p className="text-sm text-muted-foreground">{a.message}</p><p className="text-base whitespace-pre-wrap [overflow-wrap:anywhere]">{active.message}</p></div>}
       <div className="space-y-2">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{a.answers}</p>
-        {Array.isArray(active.answers) && active.answers.some((x: any) => x.value) ? active.answers.filter((x: any) => x.value).map((x: any) => (
-          <div key={x.id} className="rounded-lg bg-muted/30 p-3">
-            <p className="text-xs text-muted-foreground">{x.label}</p>
-            <p className="text-sm whitespace-pre-line">{x.type === "checkbox" ? "✓" : String(x.value)}</p>
+        <h4 className="text-base font-semibold">{a.answers}</h4>
+        {Array.isArray(active.answers) && active.answers.length ? active.answers.map((x: any) => (
+          <div key={x.id} className="py-2 min-w-0">
+            <p className="text-sm text-muted-foreground break-words">{x.label}</p>
+            <p className="text-base whitespace-pre-wrap [overflow-wrap:anywhere]">{x.value === "" || x.value === null || x.value === undefined ? correction.notProvided : x.type === "checkbox" ? (x.value === true || x.value === "true" ? correction.yes : correction.no) : String(x.value)}</p>
           </div>
         )) : <p className="text-sm text-muted-foreground">{a.noAnswers}</p>}
       </div>
@@ -226,36 +228,31 @@ export function GroupRegistrationsCard({ group, onOpenForm }: { group: any; onOp
   );
 
   const list = (
-    <div className="space-y-3">
-      <div className="flex flex-wrap gap-1.5">
-        {APPLICATION_FILTERS.map(f => (
-          <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} className="h-8" onClick={() => setFilter(f)}>
-            {f === "all" ? a.all : (g as any)[f]} ({counts[f]})
-          </Button>
-        ))}
-      </div>
-      <div className="flex gap-2">
+    <div className="space-y-3 min-w-0">
+      <div className="flex flex-col xl:flex-row gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input className="pl-9" placeholder={a.search} value={query} onChange={e => setQuery(e.target.value)} />
         </div>
         <Select value={order} onValueChange={v => setOrder(v as "newest" | "oldest")}>
-          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-full xl:w-36"><SelectValue /></SelectTrigger>
           <SelectContent><SelectItem value="newest">{a.newest}</SelectItem><SelectItem value="oldest">{a.oldest}</SelectItem></SelectContent>
         </Select>
       </div>
-      {visible.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">{a.noResults}</p> : (
-        <div className="divide-y divide-border rounded-lg border border-border">
+      {visible.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">{query.trim() ? a.noResults : correction.emptyStatus}</p> : (
+        <div className="divide-y divide-border max-h-[70vh] overflow-y-auto">
           {visible.map((r: any) => (
-            <div key={r.id} className={cn("flex items-center gap-3 p-3 cursor-pointer transition-colors", activeId === r.id ? "bg-primary/10" : "hover:bg-muted/40")}
+             <div key={r.id} className={cn("flex items-start gap-3 p-3 cursor-pointer transition-colors rounded-md", activeId === r.id ? "bg-primary/10" : "hover:bg-muted/40")}
+              role="button" tabIndex={0} onKeyDown={e => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setActiveId(r.id); setActionError(null); } }}
               onClick={() => { setActiveId(r.id); setActionError(null); }}>
               <Checkbox disabled={!movable(r)} checked={selected.has(r.id)} onClick={e => e.stopPropagation()}
                 onCheckedChange={v => setSelected(s => { const n = new Set(s); v ? n.add(r.id) : n.delete(r.id); return n; })} />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium truncate">{r.person_name}</p>
-                <p className="text-xs text-muted-foreground truncate">{r.email} · {fmt(r.submitted_at)}</p>
+                <p className="text-lg font-semibold [overflow-wrap:anywhere]">{r.person_name}</p>
+                <p className="text-sm text-muted-foreground [overflow-wrap:anywhere]">{r.email}</p>
+                <p className="text-xs text-muted-foreground mt-1">{fmt(r.submitted_at)}</p>
+                <Badge variant={STATUS_VARIANT[r.status]} className="text-xs mt-2">{(g as any)[r.status] ?? r.status}</Badge>
               </div>
-              <Badge variant={STATUS_VARIANT[r.status]} className="text-xs shrink-0">{(g as any)[r.status] ?? r.status}</Badge>
             </div>
           ))}
         </div>
@@ -264,14 +261,14 @@ export function GroupRegistrationsCard({ group, onOpenForm }: { group: any; onOp
   );
 
   return (
-    <div className="bg-card rounded-xl border border-border p-5">
+    <div className="bg-card rounded-lg p-6 min-w-0">
       <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
         <div className="flex items-center gap-2">
           <Inbox className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-semibold">{g.registrations}</h2>
           <Badge variant="secondary">{a.total}: {regs.length}</Badge>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             <Checkbox checked={notify} onCheckedChange={v => setNotify(!!v)} />{g.emailDecision}
           </label>
@@ -279,6 +276,9 @@ export function GroupRegistrationsCard({ group, onOpenForm }: { group: any; onOp
             <ArrowRightLeft className="h-4 w-4 mr-1" />{g.transfer} ({selected.size})
           </Button>
         </div>
+      </div>
+      <div className="flex flex-wrap md:flex-nowrap gap-2 mb-6" aria-label={a.status}>
+        {APPLICATION_FILTERS.map(f => <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} onClick={() => setFilter(f)}>{f === "all" ? a.all : (g as any)[f]} ({counts[f]})</Button>)}
       </div>
       {isLoading ? <p className="text-sm text-muted-foreground text-center py-6">…</p> : regs.length === 0 ? (
         <div className="text-center py-8 space-y-3">
@@ -290,9 +290,9 @@ export function GroupRegistrationsCard({ group, onOpenForm }: { group: any; onOp
             : onOpenForm && <Button size="sm" variant="outline" onClick={onOpenForm}><Globe className="h-4 w-4 mr-1" />{a.openForm}</Button>}
         </div>
       ) : isMobile ? (active ? details : list) : (
-        <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-5">
+        <div className="grid md:grid-cols-[minmax(0,35fr)_minmax(0,65fr)] gap-6">
           {list}
-          <div className="rounded-lg border border-border p-4 min-h-[200px]">
+          <div className="md:border-l md:border-border md:pl-6 min-w-0 min-h-[400px]">
             {details || <p className="text-sm text-muted-foreground text-center py-10">{a.selectHint}</p>}
           </div>
         </div>

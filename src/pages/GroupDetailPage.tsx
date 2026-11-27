@@ -219,8 +219,8 @@ export default function GroupDetailPage() {
   const setTab = (v: string) => { const next = new URLSearchParams(searchParams); if (v === "overview") next.delete("tab"); else next.set("tab", v); setSearchParams(next, { replace: true }); };
 
   return (
-    <AppLayout>
-      <div className="space-y-6 max-w-4xl">
+    <AppLayout wide>
+      <div className="space-y-6 w-full min-w-0">
         {/* Shared header */}
         <div className="flex items-start gap-3">
           <Button variant="ghost" size="icon" aria-label={t("common.back")} onClick={() => navigate("/groups")}>

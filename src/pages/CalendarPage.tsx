@@ -30,6 +30,8 @@ import {
   type SessionKind,
 } from "@/lib/calendarVisuals";
 import { practiceClock, calendarDate, monthHiddenCount } from "@/lib/calendarClock";
+import { withCanonicalGroup } from "@/lib/groupSessionSync";
+import { fetchAllPages } from "@/lib/fetchAllPages";
 import { QueryFeedback } from "@/components/QueryFeedback";
 import { dedupeAppointmentsById } from "@/lib/calendarDedupe";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
@@ -1154,8 +1156,8 @@ export default function CalendarPage() {
               const ruleId = (result as any).rule?.id;
               if (ruleId) {
                 const firstAptId = (firstApt as any).id;
-                const { data: ruleApts } = await supabase.from("appointments")
-                  .select("id").eq("recurring_rule_id", ruleId).neq("id", firstAptId).order("scheduled_at");
+                const ruleApts = await fetchAllPages<any>((from, to) => supabase.from("appointments")
+                  .select("id").eq("recurring_rule_id", ruleId).neq("id", firstAptId).order("scheduled_at").order("id").range(from, to));
                 if (ruleApts && ruleApts.length > 0) {
                   await supabase.from("appointments")
                     .update({ notes: `[Group: ${groupName}] ${savedNotes || ""}`.trim() } as any)
@@ -1292,7 +1294,7 @@ export default function CalendarPage() {
   // Deep link ?new=1: open the new-session dialog with today's date pre-filled.
   useEffect(() => {
     if (searchParams.get("new") !== "1") return;
-    setForm((f) => ({ ...f, date: f.date || format(new Date(), "yyyy-MM-dd"), time: f.time || "09:00" }));
+    setForm((f) => ({ ...f, date: f.date || practiceClock(profile?.timezone).dateKey, time: f.time || "09:00" }));
     const presetGroup = searchParams.get("groupId");
     if (presetGroup) { setIsGroupSession(true); setGroupId(presetGroup); }
     setCreateOpen(true);
@@ -1311,10 +1313,10 @@ export default function CalendarPage() {
     queryFn: async () => {
       if (!linkedId) return null;
       const { data, error } = await supabase.from("appointments")
-        .select("*, clients(name), services(name, price), group_sessions!appointments_group_session_id_fkey(id, group_id, groups(name))")
+        .select("*, clients(name), services(name, price), group_sessions!appointments_group_session_id_fkey(id, group_id, groups(name)), canonical_group_sessions:group_sessions!group_sessions_appointment_id_fkey(id, group_id, groups(name))")
         .eq("id", linkedId).maybeSingle();
       if (error) throw error;
-      return data;
+      return data ? withCanonicalGroup(data) : null;
     },
   });
   const handledFocusRef = useRef<string | null>(null);
@@ -1726,7 +1728,7 @@ export default function CalendarPage() {
           });
 
         const results = await Promise.all(updates);
-        for (const key of ["appointments", "dashboard-stats", "client-appointments"]) {
+        for (const key of ["appointments", "dashboard-stats", "client-appointments", "group-sessions"]) {
           await qc.invalidateQueries({ queryKey: [key] });
         }
         const failed = results.find(result => result.error);
@@ -3100,7 +3102,7 @@ export default function CalendarPage() {
       </Dialog>
 
       <SessionDetailSheet
-        appointment={detailApt}
+        appointment={detailApt ? appointments.find(a => a.id === detailApt.id) ?? (linkedAppointment?.id === detailApt.id ? linkedAppointment : detailApt) : null}
         open={sessionSheetOpen}
         onOpenChange={(o) => { setSessionSheetOpen(o); if (!o) setDetailApt(null); }}
         use12h={use12h}

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, CalendarDays, Clock, Plus, ChevronLeft, ChevronRight, AlertTriangle, Sparkles, ExternalLink } from "lucide-react";
@@ -21,7 +21,10 @@ export function GroupMeetingsSection({ group, sessions, membersCount, onAttendan
   const navigate = useNavigate();
   const { symbol: cs } = useCurrency();
   const { data: profile } = useProfile();
-  const now = practiceClock(profile?.timezone).wallClockMs;
+  const [instant, setInstant] = useState(Date.now);
+  useEffect(() => { const timer = window.setInterval(() => setInstant(Date.now()), 15_000); return () => window.clearInterval(timer); }, []);
+  const clock = practiceClock(profile?.timezone, instant);
+  const now = clock.wallClockMs;
   const { upcoming, history } = useMemo(() => splitMeetings(sessions, now), [sessions, now]);
   const [view, setView] = useState<"upcoming" | "history">("upcoming");
   const [page, setPage] = useState(1);
@@ -42,7 +45,7 @@ export function GroupMeetingsSection({ group, sessions, membersCount, onAttendan
       <div key={gs.id} className="flex flex-wrap items-center gap-3 py-3 border-b border-border last:border-0">
         <div className="h-10 w-10 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><CalendarDays className="h-5 w-5" /></div>
         <div className="flex-1 min-w-[180px]">
-          <p className="text-sm font-semibold text-foreground">{fmt(apt.scheduled_at)}</p>
+          <p className="text-sm font-semibold text-foreground">{apt.scheduled_at.slice(0, 10) === clock.dateKey && <span className="text-primary mr-2">{t("calendar.today")}</span>}{fmt(apt.scheduled_at)}</p>
           <p className="text-xs text-muted-foreground">{apt.services?.name || t("groups.session")} · {cs}{Number(apt.price).toFixed(2)}</p>
         </div>
         <span className="flex items-center gap-1 text-xs text-muted-foreground"><Clock className="h-3.5 w-3.5" />{apt.duration_minutes} {t("common.minutes")}</span>
