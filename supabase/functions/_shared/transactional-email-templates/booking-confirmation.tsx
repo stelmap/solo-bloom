@@ -170,7 +170,14 @@ const badge = {
 
 export const template = {
   component: BookingConfirmationEmail,
-  subject: (data: Record<string, any>) => STRINGS[normalizeLang(data?.language)].subject,
+  subject: (data: Record<string, any>) => {
+    const base = STRINGS[normalizeLang(data?.language)].subject
+    const name = titleCaseName(data?.specialistName || '') || data?.specialistName || ''
+    const shortDate = (String(data?.sessionDate || '').split(',').find((part) => /\d/.test(part)) || '').replace(/\s*\d{4}\s*(р\.|г\.)?\s*$/u, '').trim()
+    const time = String(data?.sessionTime || '').split(/[·–]/)[0].trim()
+    const when = [shortDate, time].filter(Boolean).join(', ')
+    return [base, [name, when].filter(Boolean).join(', ')].filter(Boolean).join(' — ')
+  },
   displayName: 'Booking confirmation',
   previewData: {
     clientName: 'Jane',
