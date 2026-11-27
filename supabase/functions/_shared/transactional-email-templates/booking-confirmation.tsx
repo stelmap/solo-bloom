@@ -1,9 +1,8 @@
 /// <reference types="npm:@types/react@18.3.1" />
 import * as React from 'npm:react@18.3.1'
-import {
-  Body, Container, Head, Heading, Html, Preview, Section, Text,
-} from 'npm:@react-email/components@0.0.22'
+import { Section, Text } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
+import { SoloBizzShell, styles, BRAND } from '../email-templates/brand.tsx'
 
 const SITE_NAME = 'Solo .Bizz'
 
@@ -11,96 +10,94 @@ const SITE_NAME = 'Solo .Bizz'
 function titleCaseName(name?: string) {
   if (!name) return name
   const trimmed = name.trim()
-  if (!trimmed) return trimmed
-  const hasLower = /\p{Ll}/u.test(trimmed)
-  if (hasLower) return trimmed
+  if (!trimmed || /\p{Ll}/u.test(trimmed)) return trimmed
   return trimmed
     .toLocaleLowerCase()
     .split(/(\s+|[-'’])/)
-    .map((part) =>
-      /^\s+$/.test(part) || part === '-' || part === "'" || part === '’'
-        ? part
-        : part.charAt(0).toLocaleUpperCase() + part.slice(1),
-    )
+    .map((part) => (/^\s+$/.test(part) || part === '-' || part === "'" || part === '’'
+      ? part
+      : part.charAt(0).toLocaleUpperCase() + part.slice(1)))
     .join('')
 }
 
-type Lang = 'en' | 'fr' | 'pl' | 'uk'
+type Lang = 'en' | 'fr' | 'pl' | 'uk' | 'ru' | 'de'
 function normalizeLang(value: unknown): Lang {
   const v = String(value || '').toLowerCase().slice(0, 2)
-  if (v === 'fr' || v === 'pl' || v === 'uk') return v
-  return 'en'
+  return (['fr', 'pl', 'uk', 'ru', 'de'] as const).includes(v as any) ? (v as Lang) : 'en'
 }
 
 const STRINGS: Record<Lang, {
-  preview: string
   subject: string
-  label: string
-  badgeConfirmed: string
+  tagline: string
+  badge: string
   greeting: (n: string) => string
   intro: (s: string) => React.ReactNode
+  specialistLabel: string
   dateLabel: string
   timeLabel: string
   serviceLabel: string
   outro: string
   footer: string
-  htmlLang: string
 }> = {
   en: {
-    preview: 'Your meeting has been confirmed',
     subject: 'Your meeting has been confirmed',
-    label: 'Meeting CONFIRMED',
-    badgeConfirmed: 'Confirmed appointment',
-    greeting: (n) => `See you soon, ${n} 👋`,
-    intro: (s) => <>Great news — your meeting with <strong>{s}</strong> has been confirmed. We’re looking forward to seeing you.</>,
-    dateLabel: 'DATE',
-    timeLabel: 'TIME',
-    serviceLabel: 'SERVICE',
+    tagline: 'Meeting confirmed',
+    badge: 'Confirmed',
+    greeting: (n) => `See you soon, ${n}`,
+    intro: (s) => <>Great news — your meeting with <strong>{s}</strong> has been confirmed.</>,
+    specialistLabel: 'Specialist', dateLabel: 'Date', timeLabel: 'Time', serviceLabel: 'Service',
     outro: 'You will receive a reminder before the meeting starts.',
     footer: `You received this confirmation because you have a booking with a ${SITE_NAME} practitioner.`,
-    htmlLang: 'en',
   },
   fr: {
-    preview: 'Votre rendez-vous a été confirmée',
-    subject: 'Votre rendez-vous a été confirmée',
-    label: 'Rendez-vous CONFIRMÉE',
-    badgeConfirmed: 'Rendez-vous confirmé',
-    greeting: (n) => `À très vite, ${n} 👋`,
-    intro: (s) => <>Bonne nouvelle — votre rendez-vous avec <strong>{s}</strong> est confirmée. Nous avons hâte de vous voir.</>,
-    dateLabel: 'DATE',
-    timeLabel: 'HEURE',
-    serviceLabel: 'SERVICE',
-    outro: 'Vous recevrez un rappel avant le début de la rendez-vous.',
+    subject: 'Votre rendez-vous est confirmé',
+    tagline: 'Rendez-vous confirmé',
+    badge: 'Confirmé',
+    greeting: (n) => `À très vite, ${n}`,
+    intro: (s) => <>Bonne nouvelle — votre rendez-vous avec <strong>{s}</strong> est confirmé.</>,
+    specialistLabel: 'Spécialiste', dateLabel: 'Date', timeLabel: 'Heure', serviceLabel: 'Service',
+    outro: 'Vous recevrez un rappel avant le début du rendez-vous.',
     footer: `Vous recevez cette confirmation car vous avez une réservation avec un praticien ${SITE_NAME}.`,
-    htmlLang: 'fr',
   },
   pl: {
-    preview: 'Twoje spotkanie została potwierdzona',
-    subject: 'Twoje spotkanie została potwierdzona',
-    label: 'Spotkanie POTWIERDZONA',
-    badgeConfirmed: 'Wizyta potwierdzona',
-    greeting: (n) => `Do zobaczenia wkrótce, ${n} 👋`,
-    intro: (s) => <>Dobra wiadomość — Twoje spotkanie z <strong>{s}</strong> została potwierdzona. Do zobaczenia.</>,
-    dateLabel: 'DATA',
-    timeLabel: 'GODZINA',
-    serviceLabel: 'USŁUGA',
+    subject: 'Twoje spotkanie zostało potwierdzone',
+    tagline: 'Spotkanie potwierdzone',
+    badge: 'Potwierdzone',
+    greeting: (n) => `Do zobaczenia wkrótce, ${n}`,
+    intro: (s) => <>Dobra wiadomość — Twoje spotkanie z <strong>{s}</strong> zostało potwierdzone.</>,
+    specialistLabel: 'Specjalista', dateLabel: 'Data', timeLabel: 'Godzina', serviceLabel: 'Usługa',
     outro: 'Otrzymasz przypomnienie przed rozpoczęciem spotkania.',
     footer: `Otrzymujesz to potwierdzenie, ponieważ masz rezerwację u specjalisty ${SITE_NAME}.`,
-    htmlLang: 'pl',
   },
   uk: {
-    preview: 'Ваш сеанс підтверджено',
-    subject: 'Ваш сеанс підтверджено',
-    label: 'СЕАНС ПІДТВЕРДЖЕНО',
-    badgeConfirmed: 'Зустріч підтверджено',
-    greeting: (n) => `До зустрічі, ${n} 👋`,
-    intro: (s) => <>Гарні новини — ваш сеанс із <strong>{s}</strong> підтверджено. Чекаємо на вас.</>,
-    dateLabel: 'Дата',
-    timeLabel: 'Час',
-    serviceLabel: 'Послуга',
-    outro: 'Ви отримаєте нагадування перед початком сеансу.',
+    subject: 'Вашу зустріч підтверджено',
+    tagline: 'Зустріч підтверджено',
+    badge: 'Підтверджено',
+    greeting: (n) => `До зустрічі, ${n}`,
+    intro: (s) => <>Гарні новини — вашу зустріч із <strong>{s}</strong> підтверджено.</>,
+    specialistLabel: 'Спеціаліст', dateLabel: 'Дата', timeLabel: 'Час', serviceLabel: 'Послуга',
+    outro: 'Ви отримаєте нагадування перед початком зустрічі.',
     footer: `Ви отримали це підтвердження, бо маєте бронювання у спеціаліста ${SITE_NAME}.`,
-    htmlLang: 'uk',
+  },
+  ru: {
+    subject: 'Ваша встреча подтверждена',
+    tagline: 'Встреча подтверждена',
+    badge: 'Подтверждено',
+    greeting: (n) => `До встречи, ${n}`,
+    intro: (s) => <>Отличные новости — ваша встреча с <strong>{s}</strong> подтверждена.</>,
+    specialistLabel: 'Специалист', dateLabel: 'Дата', timeLabel: 'Время', serviceLabel: 'Услуга',
+    outro: 'Вы получите напоминание перед началом встречи.',
+    footer: `Вы получили это подтверждение, потому что у вас есть бронирование у специалиста ${SITE_NAME}.`,
+  },
+  de: {
+    subject: 'Ihr Termin wurde bestätigt',
+    tagline: 'Termin bestätigt',
+    badge: 'Bestätigt',
+    greeting: (n) => `Bis bald, ${n}`,
+    intro: (s) => <>Gute Nachricht — Ihr Termin mit <strong>{s}</strong> wurde bestätigt.</>,
+    specialistLabel: 'Fachperson', dateLabel: 'Datum', timeLabel: 'Uhrzeit', serviceLabel: 'Leistung',
+    outro: 'Sie erhalten vor Beginn des Termins eine Erinnerung.',
+    footer: `Sie erhalten diese Bestätigung, weil Sie eine Buchung bei einer ${SITE_NAME}-Fachperson haben.`,
   },
 }
 
@@ -115,12 +112,6 @@ interface BookingConfirmationProps {
   language?: string
 }
 
-function initials(name?: string) {
-  if (!name) return '?'
-  const parts = name.trim().split(/\s+/)
-  return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase() || '?'
-}
-
 const BookingConfirmationEmail = ({
   clientName = 'Client',
   specialistName = 'your specialist',
@@ -131,79 +122,50 @@ const BookingConfirmationEmail = ({
   serviceName,
   language,
 }: BookingConfirmationProps) => {
-  const T = STRINGS[normalizeLang(language)]
-  const displaySpecialistName = titleCaseName(specialistName) || specialistName
+  const lang = normalizeLang(language)
+  const T = STRINGS[lang]
+  const name = titleCaseName(specialistName) || specialistName
   const subtitle = [specialistTitle, businessName].filter(Boolean).join(' · ')
 
   return (
-    <Html lang={T.htmlLang} dir="ltr">
-      <Head />
-      <Preview>{T.preview}</Preview>
-      <Body style={main}>
-        <Container style={container}>
-          {/* Header */}
-          <Section style={header}>
-            <Text style={logo}>Solo<span style={logoDot}>.Bizz</span></Text>
-            <Text style={headerLabel}>{T.label}</Text>
-            <table cellPadding={0} cellSpacing={0} role="presentation" style={{ marginTop: 18 }}>
-              <tr>
-                <td style={{ verticalAlign: 'middle', paddingRight: 14 }}>
-                  <div style={avatarFallback}>{initials(displaySpecialistName)}</div>
-                </td>
-                <td style={{ verticalAlign: 'middle' }}>
-                  <Text style={specName}>{displaySpecialistName}</Text>
-                  {subtitle && <Text style={specSub}>{subtitle}</Text>}
-                </td>
-              </tr>
-            </table>
-          </Section>
-
-          {/* Body */}
-          <Section style={bodySection}>
-            <div style={badgeConfirmed}>✓ {T.badgeConfirmed}</div>
-            <Heading style={h1}>{T.greeting(clientName)}</Heading>
-            <Text style={lead}>{T.intro(displaySpecialistName)}</Text>
-
-            <Section style={detailsCard}>
-              <Row label={T.dateLabel} value={sessionDate} icon="📅" />
-              <div style={divider} />
-              <Row label={T.timeLabel} value={sessionTime} icon="🕐" />
-              {serviceName && (
-                <>
-                  <div style={divider} />
-                  <Row label={T.serviceLabel} value={serviceName} icon="💼" />
-                </>
-              )}
-            </Section>
-
-            <Text style={outroText}>{T.outro}</Text>
-          </Section>
-
-          {/* Footer */}
-          <Section style={footerSection}>
-            <Text style={footerBrand}>Solo<span style={logoDot}>.Bizz</span></Text>
-            <Text style={footerText}>{T.footer}</Text>
-          </Section>
-        </Container>
-      </Body>
-    </Html>
+    <SoloBizzShell
+      lang={lang}
+      preview={T.subject}
+      tagline={T.tagline}
+      icon=""
+      title={T.greeting(clientName)}
+      subtitle={T.intro(name)}
+    >
+      <Text style={badge}>{T.badge}</Text>
+      <Detail label={T.specialistLabel} value={name} sub={subtitle} />
+      <Detail label={T.dateLabel} value={sessionDate} />
+      <Detail label={T.timeLabel} value={sessionTime} />
+      {serviceName ? <Detail label={T.serviceLabel} value={serviceName} /> : null}
+      <Text style={{ ...styles.paragraph, marginTop: '16px' }}>{T.outro}</Text>
+      <Text style={styles.smallMuted}>{T.footer}</Text>
+    </SoloBizzShell>
   )
 }
 
-function Row({ label, value, icon }: { label: string; value: string; icon?: string }) {
+function Detail({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <table cellPadding={0} cellSpacing={0} role="presentation" style={{ width: '100%' }}>
-      <tr>
-        <td style={{ width: 48, verticalAlign: 'top', paddingTop: 4 }}>
-          <div style={iconBox}>{icon}</div>
-        </td>
-        <td style={{ verticalAlign: 'top' }}>
-          <Text style={rowLabel}>{label}</Text>
-          <Text style={rowValue}>{value}</Text>
-        </td>
-      </tr>
-    </table>
+    <Section style={styles.detailRow}>
+      <Text style={styles.detailLabel}>{label}</Text>
+      <Text style={styles.detailValue}>{value}</Text>
+      {sub ? <Text style={{ ...styles.footerText, marginTop: '2px' }}>{sub}</Text> : null}
+    </Section>
   )
+}
+
+const badge = {
+  display: 'inline-block',
+  backgroundColor: BRAND.greenBg,
+  color: BRAND.green,
+  fontSize: '12px',
+  fontWeight: 700,
+  padding: '5px 12px',
+  borderRadius: '999px',
+  margin: '0 0 10px',
 }
 
 export const template = {
@@ -218,39 +180,6 @@ export const template = {
     sessionDate: 'Thursday, 30 May 2026',
     sessionTime: '10:00 – 11:00',
     serviceName: 'Individual consultation',
-    language: 'en',
+    language: 'uk',
   },
 } satisfies TemplateEntry
-
-// ----- styles (mirrored from session-reminder for visual parity) -----
-const FONT_STACK = "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
-const SERIF_STACK = "'Instrument Serif', 'DM Serif Display', 'Times New Roman', Georgia, serif"
-
-const main = { backgroundColor: '#ffffff', fontFamily: FONT_STACK, margin: 0, padding: '24px 12px' }
-const container = { maxWidth: '560px', margin: '0 auto', backgroundColor: '#ffffff', borderRadius: '20px', overflow: 'hidden', border: '1px solid #f0eee9', fontFamily: FONT_STACK }
-
-const header = { backgroundColor: '#11122b', padding: '28px 28px 26px', color: '#ffffff', fontFamily: FONT_STACK }
-const logo = { fontSize: '22px', fontWeight: 'bold' as const, color: '#ffffff', margin: 0, fontFamily: FONT_STACK }
-const logoDot = { color: '#FF9900' }
-const headerLabel = { fontSize: '11px', color: '#8a8ca6', fontWeight: 'bold' as const, letterSpacing: '0.18em', margin: '22px 0 0', fontFamily: FONT_STACK }
-const avatarFallback = { width: 48, height: 48, borderRadius: 999, backgroundColor: '#FF9900', color: '#11122b', fontWeight: 'bold' as const, fontSize: 16, lineHeight: '48px', textAlign: 'center' as const, fontFamily: FONT_STACK }
-const specName = { fontSize: '17px', fontWeight: 'bold' as const, color: '#ffffff', margin: 0, lineHeight: 1.2, fontFamily: FONT_STACK }
-const specSub = { fontSize: '13px', color: '#b4b6cf', margin: '4px 0 0', fontFamily: FONT_STACK }
-
-const bodySection = { padding: '28px 28px 8px', fontFamily: FONT_STACK }
-const badgeConfirmed = { display: 'inline-block', fontSize: '12px', fontWeight: 'bold' as const, padding: '6px 12px', borderRadius: '999px', margin: '0 0 16px', fontFamily: FONT_STACK, backgroundColor: '#e6f7ed', color: '#1f9d55' }
-
-const h1 = { fontSize: '30px', fontWeight: 'bold' as const, color: '#0f172a', margin: '0 0 12px', lineHeight: 1.15, fontFamily: SERIF_STACK }
-const lead = { fontSize: '15px', color: '#5b6076', lineHeight: 1.6, margin: '0 0 24px', fontFamily: FONT_STACK }
-
-const detailsCard = { backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #f0eee9', borderLeft: '3px solid #FF9900', padding: '20px 22px', margin: '0 0 20px', fontFamily: FONT_STACK }
-const iconBox = { width: 36, height: 36, borderRadius: 10, backgroundColor: '#11122b', color: '#FF9900', lineHeight: '36px', textAlign: 'center' as const, fontSize: 16, fontFamily: FONT_STACK }
-const rowLabel = { fontSize: '11px', color: '#8a8ca6', fontWeight: 'bold' as const, letterSpacing: '0.12em', margin: '0 0 4px' }
-const rowValue = { fontSize: '16px', color: '#0f172a', fontWeight: 'bold' as const, margin: 0 }
-const divider = { height: 1, backgroundColor: '#e8e5dc', margin: '14px 0' }
-
-const outroText = { fontSize: '14px', color: '#5b6076', lineHeight: 1.6, margin: '8px 0 0', fontFamily: FONT_STACK }
-
-const footerSection = { padding: '24px 28px 28px', borderTop: '1px solid #f0eee9', textAlign: 'center' as const, fontFamily: FONT_STACK }
-const footerBrand = { fontSize: '14px', color: '#0f172a', fontWeight: 'bold' as const, margin: '0 0 8px', fontFamily: FONT_STACK }
-const footerText = { fontSize: '12px', color: '#8a8ca6', margin: 0, lineHeight: 1.6, fontFamily: FONT_STACK }
