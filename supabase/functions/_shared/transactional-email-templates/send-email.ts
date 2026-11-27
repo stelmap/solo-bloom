@@ -1,5 +1,5 @@
 import * as React from 'npm:react@18.3.1'
-import { renderAsync } from 'npm:@react-email/components@0.0.22'
+import { render } from 'npm:@react-email/components@0.0.22'
 import { EmailAPIError, sendLovableEmail } from 'npm:@lovable.dev/email-js@0.1.0'
 import { createUnsubscribeToken } from '../email-unsubscribe-token.ts'
 import { TEMPLATES } from './registry.ts'
@@ -60,8 +60,8 @@ export async function sendTemplateEmail(
 
   const templateData = options.templateData ?? {}
   const element = React.createElement(template.component, templateData)
-  const html = await renderAsync(element)
-  const text = await renderAsync(element, { plainText: true })
+  const html = render(element)
+  const text = render(element, { plainText: true })
   const idempotencyKey = options.idempotencyKey
     ? `${options.idempotencyKey}:unsubscribe-v1`
     : crypto.randomUUID()
