@@ -539,7 +539,8 @@ export default function PublicBookingPage() {
     // If the booking was auto-confirmed (link mode = auto and the client matched
     // an existing profile), trigger the confirmation email immediately. Manual
     // mode emails are sent by the therapist from the Booking Inbox on approval.
-    if (row?.status === "confirmed" && row?.request_id) {
+    // Confirmed bookings get the confirmation; pending ones get "request received".
+    if (row?.request_id) {
       try {
         const slot = new Date(selectedSlot);
         const lang = normLang(info?.language);

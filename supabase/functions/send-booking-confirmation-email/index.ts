@@ -55,12 +55,16 @@ Deno.serve(async (req) => {
     const fallbackName =
       `${request.first_name ?? ''}${request.last_name ? ' ' + request.last_name : ''}`.trim() || 'Client'
 
-    const result = await sendAppEmail('booking-confirmation', request.email, {
-      idempotencyKey: `booking-confirm-${request.id}`,
+    // Unconfirmed requests get the "request received" email; confirmed ones the confirmation.
+    const isConfirmed = request.status === 'confirmed'
+    const result = await sendAppEmail(isConfirmed ? 'booking-confirmation' : 'booking-request-received', request.email, {
+      idempotencyKey: isConfirmed ? `booking-confirm-${request.id}` : `booking-received-${request.id}`,
       templateData: {
         clientName: fallbackName,
         specialistName: (owner as any)?.full_name || (owner as any)?.business_name || undefined,
-        sessionDate: slot.toLocaleDateString(LOC[reqLang], { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }),
+        sessionDate: isConfirmed
+          ? slot.toLocaleDateString(LOC[reqLang], { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+          : `${slot.toLocaleDateString(LOC[reqLang], { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}, ${slot.toLocaleDateString(LOC[reqLang], { weekday: 'long', timeZone: 'UTC' })}`,
         sessionTime: slot.toLocaleTimeString(LOC[reqLang], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }),
         language: reqLang,
       },
